@@ -1,0 +1,4 @@
+*.wasm !text !filter !merge !diff
+*.data !text !filter !merge !diff
+*.png !text !filter !merge !diff
+*.sdf !text !filter !merge !diff
