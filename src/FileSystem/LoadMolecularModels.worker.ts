@@ -171,7 +171,7 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): {[key:str
     // For everything else, if given chain has only one item, collapse it.
     debugger
 
-    ligandsByChain = collapseSingleResidueChains(ligandsByChain);
+    //ligandsByChain = collapseSingleResidueChains(ligandsByChain);
     // proteinAtomsByChain = collapseSingleResidueChains(proteinAtomsByChain);
     // nucleicAtomsByChain = collapseSingleResidueChains(nucleicAtomsByChain);
     // metalAtomsByChain = collapseSingleResidueChains(metalAtomsByChain);
