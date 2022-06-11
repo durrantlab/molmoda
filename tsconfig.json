@@ -34,7 +34,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "src/worker.js", "src/UI/Viewer/3Dmol-nojquery.JDD.js"  ],
   "exclude": [
     "node_modules"
   ]
