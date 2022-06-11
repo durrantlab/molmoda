@@ -103,7 +103,12 @@ export default class TreeView extends Vue {
     }
     this.jQueryTreeObj = $('<div></div>');
     this.jQueryContainerObj.append(this.jQueryTreeObj);
-    this.jQueryTreeObj.bstreeview({ data: this.treeData });
+    this.jQueryTreeObj.bstreeview({ 
+      data: this.treeData,
+      // Below handled through custom css instead
+      indent: 0,
+      parentsMarginLeft: 0
+    });
     dom.i2svg();
   }
 
@@ -116,7 +121,16 @@ export default class TreeView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss">
-.tree-item .item-icon {
+.tree-item .item-icon, .tree-group .item-icon {
   margin-right: 5px !important;
+}
+.tree-item, .tree-group {
+  white-space: nowrap;
+}
+.tree-item {
+  margin-left: 14px;
+}
+.list-group {
+  margin-left: 14px;
 }
 </style>

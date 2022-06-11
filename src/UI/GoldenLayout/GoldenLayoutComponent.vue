@@ -6,7 +6,7 @@
     :data-width="width"
     :data-height="height"
   >
-    <div :id="randomID" class="tab-pane fade show active container-fluid p-3">
+    <div :id="slugID" :style="style" class="tab-pane fade show active container-fluid p-3">
       <slot></slot>
     </div>
   </div>
@@ -23,7 +23,8 @@ import { slugify } from "../../Core/Utils";
     name: String,
     state: String, // JSON
     width: Number,
-    height: Number
+    height: Number,
+    style: String,
   },
 })
 export default class GoldenLayoutComponent extends Vue {
@@ -31,27 +32,18 @@ export default class GoldenLayoutComponent extends Vue {
   state!: string;
   width!: number;
   height!: number;
+  style!: string;
 
-  pickedRandomID: string = "";
-
-  // computed randomID
-  get randomID() {
+  // computed slugID
+  get slugID() {
     return slugify(this.name);
-    // if (this.pickedRandomID === "") {
-    //   // Create random id comprised only of letters
-    //   this.pickedRandomID = (
-    //     Math.random().toString(36).substring(2, 15) +
-    //     Math.random().toString(36).substring(2, 15)
-    //   ).replace(/[^a-z]+/g, "");
-    // }
-    // return this.pickedRandomID;
   }
 
   get processedState() {
     let obj = JSON.parse(this.state);
     return JSON.stringify({
       ...obj,
-      domID: this.randomID
+      domID: this.slugID
     });
   }
 }
