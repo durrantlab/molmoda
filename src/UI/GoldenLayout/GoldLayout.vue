@@ -7,7 +7,7 @@
           <TreeView />
         </GoldenLayoutComponent>
 
-        <GoldenLayoutComponent name="Viewer" state="{}" :width="60" style="height:100%;">
+        <GoldenLayoutComponent name="Viewer" state="{}" :width="60" :style="'height:100%;'">
           <Mol3D />
         </GoldenLayoutComponent>
 

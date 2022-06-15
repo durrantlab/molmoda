@@ -5,7 +5,7 @@ import { store } from "@/Store";
 
 // @ts-ignore
 import * as tmp from "@/UI/Viewer/3Dmol-nojquery.JDD";
-import { IAtom, IChain, IFileContents, IMolEntry, IResidue } from "./ModelInterfaces";
+import { IAtom, IChain, IFileContents, IMolEntry, IResidue } from "../../UI/TreeView/TreeInterfaces";
 const $3Dmol = tmp as any;
 
 export function loadMolecularModelFromText(
@@ -16,20 +16,51 @@ export function loadMolecularModelFromText(
     const worker = new Worker(
         new URL("./LoadMolecularModels.worker", import.meta.url)
     );
-    return runWorker(worker, { molText, format, molName }).then((treeViewData: IFileContents) => {
+    return runWorker(worker, { molText, format, molName }).then((payload: any[]) => {
+
+        let treeViewData: IFileContents = payload[0];
+        let models = convertAllAtomArraysToModels(treeViewData);
+        // debugger;
+        store.commit("treeview/pushToList", {
+            name: "treeData",
+            val: treeViewData
+        });
+
+        // You need to be able to map model ids to the model data quickly (e.g.,
+        // for clicking on the tree view). Let's build that index here.
+        let pathsAndIds: any[] = payload[1];
+        let idsToLeafs: {[key:string]: any} = {};
+        pathsAndIds.forEach((pathAndId: any) => {
+            let path: number[] = pathAndId[0];
+            let id: string = pathAndId[1];
+            if (!treeViewData.nodes) { return; }
+            let leaf = treeViewData.nodes[path[0]];
+            for (let i = 1; i < path.length; i++) {
+                let idx: number = path[i];
+                if (!leaf.nodes) { return; }
+                leaf = leaf.nodes[idx];
+            }
+            idsToLeafs[id] = leaf;
+        });
+
+        store.commit("treeview/addToObj", {
+            name: "idToLeaf",
+            val: idsToLeafs
+        });
+
+        setTimeout(() => {
+            for (let id in idsToLeafs) {
+                let leaf = idsToLeafs[id] as IMolEntry;
+                leaf.styles = [{selection: {}, style: {}}]
+            }
+            console.log("moo");
+        }, 5000);
 
         // let [organizedAtoms, treeViewData] = payload;
         // debugger;
         // Convert to a model
         // const model = new $3Dmol.GLModel();
         // model.addAtoms(organizedAtoms);
-
-        let models = convertAllAtomArraysToModels(treeViewData);
-
-        store.commit("treeview/setVar", {
-            name: "treeData",
-            val: [treeViewData]
-        });
 
         // debugger;
 

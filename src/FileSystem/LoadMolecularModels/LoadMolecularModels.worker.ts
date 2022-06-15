@@ -7,8 +7,11 @@ import {
 
 // @ts-ignore
 import * as tmp from "@/UI/Viewer/3Dmol-nojquery.JDD";
-import { ionSel, lipidSel, metalSel, nucleicSel, proteinSel, solventSel } from "../ComponentSelections";
-import { IAtom, IChain, IFileContents, IMolEntry, IResidue } from "./ModelInterfaces";
+import { ionSel, lipidSel, metalSel, nucleicSel, proteinSel, solventSel } from "./Lookups/ComponentSelections";
+import { ionsStyle, ligandsStyle, lipidStyle, metalsStyle, nucleicStyle, proteinStyle, solventStyle } from "./Lookups/DefaultStyles";
+import { IAtom, IChain, IFileContents, IMolEntry, IResidue, IStyle, MolType } from "../../UI/TreeView/TreeInterfaces";
+import { getTerminalNodes } from "@/UI/TreeView/TreeUtils";
+import { randomID } from "@/Core/Utils";
 const $3Dmol = (tmp as any);
 
 let glviewer: any;
@@ -143,6 +146,18 @@ function collapseSingleResidueChains(molEntry: IMolEntry): IMolEntry {
     return molEntry;
 }
 
+function addMolTypeAndStyle(molEntry: IMolEntry, styles: IStyle[], idx: number): any[] {
+    let pathToId: any[] = [];
+    let molType = molEntry.type;
+    for (const leaf of getTerminalNodes([molEntry], [idx])) {
+        leaf.mol.type = molType;
+        leaf.mol.styles = styles;
+        leaf.mol.id = randomID();
+        pathToId.push([leaf.idxPath, leaf.mol.id]);
+    }
+    return pathToId;
+}
+
 function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileContents {
     // This that are bonded to each other are considered to be in the same
     // component.
@@ -173,6 +188,18 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
     nucleicAtomsByChain = collapseSingleResidueChains(nucleicAtomsByChain);
     metalAtomsByChain = collapseSingleResidueChains(metalAtomsByChain);
     lipidAtomsByChain = collapseSingleResidueChains(lipidAtomsByChain);
+
+    proteinAtomsByChain.type = MolType.PROTEIN;
+    nucleicAtomsByChain.type = MolType.NUCLEIC;
+    ligandsByChain.type = MolType.LIGAND;
+    metalAtomsByChain.type = MolType.METAL;
+    lipidAtomsByChain.type = MolType.LIPID;
+    ionAtomsNoChain.type = MolType.IONS;
+    solventAtomsNoChain.type = MolType.SOLVENT;
+
+    // // add in default styles
+    // proteinAtomsByChain.style = proteinStyle;
+    // nucleicAtomsByChain.style = nucleicStyle;
 
     // Page into single object
     let fileContents: IFileContents = {
@@ -250,9 +277,36 @@ waitForDataFromMainThread().then((data) => {
     let organizedAtoms = divideAtomsIntoDistinctComponents(data);
     let treeViewData = makeTreeViewData(organizedAtoms);
 
-    // console.log(mol);
-    // glviewer.addRawModel_JDD(mol);
-    // let atoms = mol.selectedAtoms({});
+    let pathsToIds: any[] = [];
 
-    sendResponseToMainThread(treeViewData);
+    if (treeViewData.nodes) {
+        for (let idx = 0; idx < treeViewData.nodes.length; idx++) {
+            let node = treeViewData.nodes[idx];
+            switch (node.type) {
+                case MolType.PROTEIN:
+                    pathsToIds.push(...addMolTypeAndStyle(node, proteinStyle, idx));
+                    break;
+                case MolType.NUCLEIC:
+                    pathsToIds.push(...addMolTypeAndStyle(node, nucleicStyle, idx));
+                    break;
+                case MolType.LIGAND:
+                    pathsToIds.push(...addMolTypeAndStyle(node, ligandsStyle, idx));
+                    break;
+                case MolType.METAL:
+                    pathsToIds.push(...addMolTypeAndStyle(node, metalsStyle, idx));
+                    break;
+                case MolType.LIPID:
+                    pathsToIds.push(...addMolTypeAndStyle(node, lipidStyle, idx));
+                    break;
+                case MolType.IONS:
+                    pathsToIds.push(...addMolTypeAndStyle(node, ionsStyle, idx));
+                    break;
+                case MolType.SOLVENT:
+                    pathsToIds.push(...addMolTypeAndStyle(node, solventStyle, idx));
+                    break;
+            }
+        }
+    }
+
+    sendResponseToMainThread([treeViewData, pathsToIds]);
 });

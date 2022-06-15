@@ -16,6 +16,19 @@ export function addVueXStoreModule(moduleName: string, vals: any): void {
             setVar(state: any, payload: NameValPair) {
                 state[payload.name] = payload.val;
             },
+            pushToList(state: any, payload: NameValPair) {
+                if (Array.isArray(payload.val)) {
+                    state[payload.name].push(...payload.val);
+                } else {
+                    state[payload.name].push(payload.val);
+                }
+            },
+            addToObj(state: any, payload: NameValPair) {
+                state[payload.name] = {
+                    ...state[payload.name],
+                    ...payload.val
+                };
+            }
         },
     };
 }

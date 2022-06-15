@@ -25,53 +25,8 @@ declare var $: any;
 console.log("treeview");
 
 addVueXStoreModule("treeview", {
-  "treeData": [
-    {
-      text: "Node 1",
-      icon: "fa-regular fa-folder",
-      class: "tree-item",
-      nodes: [
-        {
-          text: "Sub Node 1",
-          icon: "fa-regular fa-file",
-          class: "tree-item",
-          nodes: [
-            {
-              id: "sub-node-1",
-              text: "Sub Child Node 1",
-              icon: "fa fa-folder",
-              class: "nav-level-3",
-              href: "https://google.com",
-            },
-            {
-              text: "Sub Child Node 2",
-              icon: "fa fa-folder",
-            },
-          ],
-        },
-        {
-          text: "Sub Node 2",
-          icon: "fa fa-folder",
-        },
-      ],
-    },
-    {
-      text: "Node 2",
-      icon: "fa fa-folder",
-    },
-    {
-      text: "Node 3",
-      icon: "fa fa-folder",
-    },
-    {
-      text: "Node 4",
-      icon: "fa fa-folder",
-    },
-    {
-      text: "Node 5bd_",
-      icon: "fa fa-folder",
-    },
-  ],
+  "treeData": [],
+  "idToLeaf": {}
 });
 
 @Options({
@@ -107,9 +62,17 @@ export default class TreeView extends Vue {
       data: this.treeData,
       // Below handled through custom css instead
       indent: 0,
-      parentsMarginLeft: 0
+      parentsMarginLeft: 0,
+      openNodeLinkOnNewTab: false
     });
     dom.i2svg();
+    this.jQueryTreeObj.find(".tree-item").on("click", (e: Event) => {
+      // Get id
+      let id = $(e.currentTarget).attr("id");
+      console.log(this.$store.state["treeview"]["idToLeaf"][id]);
+      // console.log(id);
+      // debugger;
+    });
   }
 
   mounted() {
