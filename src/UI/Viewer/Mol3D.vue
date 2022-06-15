@@ -39,15 +39,15 @@ export default class Mol3D extends Vue {
 
     // Use a recursive function to find the terminal leaves of mols.
     let terminalNodes = getTerminalNodes(val);
-    for (const leaf of terminalNodes) {
-      api.viewer.viewer.addRawModel_JDD(leaf.mol.model);
-      if (leaf.mol.styles) {
-        for (const style of leaf.mol.styles) {
-          leaf.mol.model.setStyle(style.selection, style.style);
+    for (const mol of terminalNodes) {
+      api.viewer.viewer.addRawModel_JDD(mol.model);
+      if (mol.styles) {
+        for (const style of mol.styles) {
+          mol.model.setStyle(style.selection, style.style);
         }
       } else {
         // If not specified
-        leaf.mol.model.setStyle({}, {line: {}});
+        mol.model.setStyle({}, {line: {}});
       }
     }
     api.viewer.viewer.zoomTo();

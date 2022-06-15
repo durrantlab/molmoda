@@ -15,7 +15,8 @@ import { dom } from "@fortawesome/fontawesome-svg-core";
 import { addVueXStoreModule } from "@/Store";
 
 import { Options, Vue } from "vue-class-component";
-import { Watch } from 'vue-property-decorator';
+import { Watch } from "vue-property-decorator";
+import { getNodeOfId } from "./TreeUtils";
 
 // import "bootstrap/js/dist/dropdown";
 // import "bootstrap/js/dist/collapse";
@@ -25,8 +26,7 @@ declare var $: any;
 console.log("treeview");
 
 addVueXStoreModule("treeview", {
-  "treeData": [],
-  "idToLeaf": {}
+  treeData: [],
 });
 
 @Options({
@@ -45,7 +45,7 @@ export default class TreeView extends Vue {
     return this.$store.state["treeview"]["treeData"];
   }
 
-  @Watch('treeData', { deep: true })
+  @Watch("treeData", { deep: true })
   onTreeDataChanged(val: any, oldVal: any) {
     this.loadData();
   }
@@ -56,22 +56,33 @@ export default class TreeView extends Vue {
     if (this.jQueryTreeObj) {
       this.jQueryTreeObj.remove();
     }
-    this.jQueryTreeObj = $('<div></div>');
+    this.jQueryTreeObj = $("<div></div>");
     this.jQueryContainerObj.append(this.jQueryTreeObj);
-    this.jQueryTreeObj.bstreeview({ 
+    this.jQueryTreeObj.bstreeview({
       data: this.treeData,
       // Below handled through custom css instead
       indent: 0,
       parentsMarginLeft: 0,
-      openNodeLinkOnNewTab: false
+      openNodeLinkOnNewTab: false,
     });
     dom.i2svg();
     this.jQueryTreeObj.find(".tree-item").on("click", (e: Event) => {
       // Get id
       let id = $(e.currentTarget).attr("id");
-      console.log(this.$store.state["treeview"]["idToLeaf"][id]);
-      // console.log(id);
-      // debugger;
+      // console.log(this.$store.state["treeview"]["idToLeaf"][id]);
+      let node = getNodeOfId(id, this.$store.state["treeview"]["treeData"]);
+      if (node) {
+        node.styles = [
+          {
+            selection: {},
+            style: {
+              line: {
+                color: "red",
+              },
+            },
+          },
+        ];
+      }
     });
   }
 
@@ -84,10 +95,12 @@ export default class TreeView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss">
-.tree-item .item-icon, .tree-group .item-icon {
+.tree-item .item-icon,
+.tree-group .item-icon {
   margin-right: 5px !important;
 }
-.tree-item, .tree-group {
+.tree-item,
+.tree-group {
   white-space: nowrap;
 }
 .tree-item {

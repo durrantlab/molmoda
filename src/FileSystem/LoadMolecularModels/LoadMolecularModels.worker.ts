@@ -146,16 +146,13 @@ function collapseSingleResidueChains(molEntry: IMolEntry): IMolEntry {
     return molEntry;
 }
 
-function addMolTypeAndStyle(molEntry: IMolEntry, styles: IStyle[], idx: number): any[] {
-    let pathToId: any[] = [];
+function addMolTypeAndStyle(molEntry: IMolEntry, styles: IStyle[]): void {
     let molType = molEntry.type;
-    for (const leaf of getTerminalNodes([molEntry], [idx])) {
-        leaf.mol.type = molType;
-        leaf.mol.styles = styles;
-        leaf.mol.id = randomID();
-        pathToId.push([leaf.idxPath, leaf.mol.id]);
+    for (const mol of getTerminalNodes([molEntry])) {
+        mol.type = molType;
+        mol.styles = styles;
+        mol.id = randomID();
     }
-    return pathToId;
 }
 
 function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileContents {
@@ -277,36 +274,35 @@ waitForDataFromMainThread().then((data) => {
     let organizedAtoms = divideAtomsIntoDistinctComponents(data);
     let treeViewData = makeTreeViewData(organizedAtoms);
 
-    let pathsToIds: any[] = [];
+    // let pathsAndIds: any[] = [];
 
     if (treeViewData.nodes) {
-        for (let idx = 0; idx < treeViewData.nodes.length; idx++) {
-            let node = treeViewData.nodes[idx];
+        for (const node of treeViewData.nodes) {
             switch (node.type) {
                 case MolType.PROTEIN:
-                    pathsToIds.push(...addMolTypeAndStyle(node, proteinStyle, idx));
+                    addMolTypeAndStyle(node, proteinStyle)
                     break;
                 case MolType.NUCLEIC:
-                    pathsToIds.push(...addMolTypeAndStyle(node, nucleicStyle, idx));
+                    addMolTypeAndStyle(node, nucleicStyle)
                     break;
                 case MolType.LIGAND:
-                    pathsToIds.push(...addMolTypeAndStyle(node, ligandsStyle, idx));
+                    addMolTypeAndStyle(node, ligandsStyle)
                     break;
                 case MolType.METAL:
-                    pathsToIds.push(...addMolTypeAndStyle(node, metalsStyle, idx));
+                    addMolTypeAndStyle(node, metalsStyle)
                     break;
                 case MolType.LIPID:
-                    pathsToIds.push(...addMolTypeAndStyle(node, lipidStyle, idx));
+                    addMolTypeAndStyle(node, lipidStyle)
                     break;
                 case MolType.IONS:
-                    pathsToIds.push(...addMolTypeAndStyle(node, ionsStyle, idx));
+                    addMolTypeAndStyle(node, ionsStyle)
                     break;
                 case MolType.SOLVENT:
-                    pathsToIds.push(...addMolTypeAndStyle(node, solventStyle, idx));
+                    addMolTypeAndStyle(node, solventStyle)
                     break;
             }
         }
     }
 
-    sendResponseToMainThread([treeViewData, pathsToIds]);
+    sendResponseToMainThread(treeViewData);
 });

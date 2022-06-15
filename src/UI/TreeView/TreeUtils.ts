@@ -1,25 +1,37 @@
 import { IMolEntry } from "./TreeInterfaces";
 
-interface ILeaf {
-    idxPath: number[],
-    mol: IMolEntry;
-}
-
-export function getTerminalNodes(mols: IMolEntry[], idxPaths: number[] = []): ILeaf[] {
+export function getTerminalNodes(mols: IMolEntry[]): IMolEntry[] {
     // Use a recursive function to find the terminal leaves of mols.
-    function findLeaves(mls: IMolEntry[], idxPaths: number[]): ILeaf[] {
-        let leaves: ILeaf[] = [];
+    function findLeaves(mls: IMolEntry[]): IMolEntry[] {
+        let leaves: IMolEntry[] = [];
         
-        for (let i = 0; i < mls.length; i++) {
-            const mol = mls[i];
-            // const idxPath = idxPaths.concat([i]);
+        for (const mol of mls) {
             if (mol.nodes) {
-                leaves = leaves.concat(findLeaves(mol.nodes, idxPaths));
+                leaves = leaves.concat(findLeaves(mol.nodes));
             } else {
-                leaves.push({mol, idxPath: idxPaths.concat([i])});
+                leaves.push(mol);
             }
         }
         return leaves;
     }
-    return findLeaves(mols, idxPaths);
+    return findLeaves(mols);
+}
+
+export function getNodeOfId(id: string, mols: IMolEntry[]): IMolEntry | null {
+    // Use a recursive function to find the node of id.
+    function findNode(mls: IMolEntry[], id: string): IMolEntry | null {
+        for (const mol of mls) {
+            if (mol.id === id) {
+                return mol;
+            }
+            if (mol.nodes) {
+                const node = findNode(mol.nodes, id);
+                if (node !== null) {
+                    return node;
+                }
+            }
+        }
+        return null;
+    }
+    return findNode(mols, id);
 }
