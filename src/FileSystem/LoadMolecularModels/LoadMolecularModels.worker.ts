@@ -20,6 +20,8 @@ function organizeSelByChain(sel: any, mol: any, entryName: string): IMolEntry {
     const selectedAtoms = mol.selectedAtoms(sel);
     const molEntry: IMolEntry = {
         text: entryName,
+        viewerDirty: true,
+        treeShow: false,
         chains: [],
     }
     let lastChainID: string = "";
@@ -48,6 +50,8 @@ function flattenChains(molEntry: IMolEntry): IMolEntry {
     const flattened: IMolEntry = {
         text: molEntry.text,
         atoms: [],
+        viewerDirty: true,
+        treeShow: false,
     }
     molEntry.chains.forEach((chain: IChain) => {
         if (!chain.atoms) { 
@@ -69,6 +73,8 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
     const dividedMolEntry: IMolEntry = {
         text: molEntry.text,
         chains: [],
+        viewerDirty: true,
+        treeShow: false,
     }
     let lastChainID: string = "";
     molEntry.chains.forEach((chain: IChain) => {
@@ -99,6 +105,8 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
                 residues.push({
                     text: newKey,
                     atoms: [],
+                    viewerDirty: true,
+                    treeShow: false,
                 });
                 lastResidueID = newKey;
             }
@@ -212,6 +220,7 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
     let fileContents: IFileContents = {
         text: makeTitleDOM(data.molName),
         treeShow: false,
+        viewerDirty: true,
         mols: [
             proteinAtomsByChain,
             nucleicAtomsByChain,
@@ -239,39 +248,17 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
 
 function makeTreeViewData(organizedAtoms: IFileContents): IFileContents {
     if (organizedAtoms.mols) {
-        organizedAtoms.icon = "fa-regular fa-folder";
-        organizedAtoms.class = "tree-group";
         organizedAtoms.nodes = organizedAtoms.mols;
         delete organizedAtoms.mols;
 
         organizedAtoms.nodes.forEach((molEntry: IMolEntry) => {
             if (molEntry.chains) {
-                molEntry.icon = "fa-regular fa-folder";
-                molEntry.class = "tree-group";
-    
                 molEntry.chains.forEach((chain: IChain) => {
                     if (chain.residues) {
-                        chain.nodes = chain.residues;
-                        chain.icon = "fa-regular fa-folder";
-                        chain.class = "tree-group";
-    
-                        // Iterate through chain.nodes and add data to each node.
-                        chain.nodes.forEach((residue: IResidue) => {
-                            residue.icon = "fa-regular fa-file";
-                            residue.class = "tree-item";
-                        });
-    
+                        chain.nodes = chain.residues;    
                         delete chain.residues;
-                    } else {
-                        // No residues, so it's terminal node.
-                        chain.icon = "fa-regular fa-file";
-                        chain.class = "tree-item";
                     }
                 });
-            } else {
-                // No chains, so it's a terminal node.
-                molEntry.icon = "fa-regular fa-file";
-                molEntry.class = "tree-item";
             }
             molEntry.nodes = molEntry.chains;
             delete molEntry.chains;

@@ -25,6 +25,8 @@ const $3Dmol = tmp as any;
 export default class Mol3D extends Vue {
   //   msg!: string;
 
+  molCache: { [id: string]: any } = {};
+
   get treeview(): any {
     return this.$store.state["treeview"]["treeData"];
   }
@@ -32,28 +34,39 @@ export default class Mol3D extends Vue {
   @Watch("treeview", { immediate: false, deep: true })
   onTreeviewChanged(val: IMolEntry[], oldVal: IMolEntry[]) {
     // TODO: For now, just reload everything. If this gets slow, good to look
-    // for changes using hashes.
+    // for changes using hashes. 
+    
+    // TODO: Still haven't implemented hiding/removing models.
 
     // Remove all models from the viewer.
-    api.viewer.viewer.clear();
+    // api.viewer.viewer.clear();
 
     // Use a recursive function to find the terminal leaves of mols.
     let terminalNodes = getTerminalNodes(val);
+    let somethingChanged = false;
     for (const mol of terminalNodes) {
-      api.viewer.viewer.addRawModel_JDD(mol.model);
-      if (mol.styles) {
-        for (const style of mol.styles) {
-          mol.model.setStyle(style.selection, style.style);
+      let id = mol.id as string;
+      if (!this.molCache[id] || mol.viewerDirty) {
+        let visMol = api.viewer.viewer.addRawModel_JDD(mol.model);
+        if (mol.styles) {
+          for (const style of mol.styles) {
+            mol.model.setStyle(style.selection, style.style);
+          }
+        } else {
+          // If not specified
+          mol.model.setStyle({}, { line: {} });
         }
-      } else {
-        // If not specified
-        mol.model.setStyle({}, {line: {}});
+        this.molCache[id] = visMol;
+        mol.viewerDirty = false;
+        somethingChanged = true;
       }
     }
-    api.viewer.viewer.zoomTo();
-    api.viewer.viewer.render();
+    if (somethingChanged) {
+      api.viewer.viewer.zoomTo();  // TODO: Getting everything?
+      api.viewer.viewer.render();
+      console.log("Changed!", val);
+    }
 
-    console.log("Changed!", val);
   }
 
   // Mounted
@@ -64,7 +77,7 @@ export default class Mol3D extends Vue {
     viewer.setBackgroundColor(0xffffff);
 
     // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
-      let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
+    let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
       // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic
       // let fetchPromise = fetch("https://files.rcsb.org/view/1HQ3.pdb")  // has ions
       // let fetchPromise = fetch("https://files.rcsb.org/ligands/view/ATP_ideal.sdf")

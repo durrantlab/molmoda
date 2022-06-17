@@ -117,6 +117,7 @@ export default class TreeView2 extends Vue {
           },
         },
       ];
+      node.viewerDirty = true;
     }
   }
 }

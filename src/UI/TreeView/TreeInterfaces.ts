@@ -4,10 +4,9 @@ interface ICommonNode {
     text: string;
     atoms?: IAtom[];
     model?: any;
-    icon?: string;
-    class?: string;
     id?: string;  // random id for terminal nodes
-    treeShow?: boolean;
+    treeShow: boolean;
+    viewerDirty: boolean;  // triggers 3dmoljs viewer
 }
 
 export interface IAtom {
