@@ -2,229 +2,187 @@
 <script src="dist/sl-vue-tree.js"></script> -->
 
 <template>
-  <span id="treeContainer" ref="treeContainer">
-    <div id="tree" ref="tree"></div>
+  <span v-for="treeDatum in getTreeData" v-bind:key="treeDatum.id">
+    <div class="title" :style="indentStyle">
+      <!-- expand icon -->
+      <IconSwitcher
+        v-if="treeDatum.nodes"
+        class="title-element clickable"
+        :useFirst="treeDatum.treeShow"
+        :iconID1="['fa', 'angle-down']"
+        :iconID2="['fa', 'angle-right']"
+        :width="15"
+        @click="toggleShow(treeDatum.id)"
+      />
+      <div v-else :style="flexFixedWidth(15)"></div>
+
+      <!-- item icon -->
+      <IconSwitcher
+        class="title-element clickable"
+        :useFirst="treeDatum.nodes !== undefined"
+        :iconID1="['far', 'folder']"
+        :iconID2="['far', 'file']"
+        :width="18"
+        @click="titleClick(treeDatum.id)"
+      />
+
+      <!-- title text -->
+      <div class="title-text clickable" @click="titleClick(treeDatum.id)">
+        {{ treeDatum.text }}
+      </div>
+
+      <!-- menu-item buttons -->
+      <div class="btn-bar" :style="flexFixedWidth(35)">BTN</div>
+    </div>
+
+    <!-- Show sub-items if appropriate -->
+    <Transition name="slide">
+      <div v-if="treeDatum.nodes && treeDatum.treeShow" :style="indentStyle">
+        <TreeView :treeData="treeDatum.nodes" :depth="depth + 1" />
+      </div>
+    </Transition>
   </span>
 </template>
 
 <script lang="ts">
 /* eslint-disable */
 
-import "@/libs/bs5treeview/bstreeview.jdd";
-import { dom } from "@fortawesome/fontawesome-svg-core";
 import { addVueXStoreModule } from "@/Store";
 
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { getAllNodes, getNodeOfId } from "./TreeUtils";
-
-// import "bootstrap/js/dist/dropdown";
-// import "bootstrap/js/dist/collapse";
-
-declare var $: any;
+import { getNodeOfId } from "./TreeUtils";
+import IconSwitcher from "./IconSwitcher.vue";
 
 addVueXStoreModule("treeview", {
   treeData: [],
 });
 
-interface IDOMTreeViewItem {
-  id: string;
-  header: any;
-  body: any;
-  collapsed: boolean;
-}
-
 @Options({
   props: {
-    menuData: Object,
+    depth: {
+      type: Number,
+      default: 0,
+    },
+    treeData: {
+      type: Array,
+      default: undefined,
+    },
   },
-  components: {},
+  components: {
+    IconSwitcher,
+  },
 })
 export default class TreeView extends Vue {
-  //   menuData!: IMenuAction | IMenuSubmenu;
+  depth!: number;
+  treeData!: any;
 
-  jQueryTreeObj: any;
-  jQueryContainerObj: any;
-
-  get treeData(): any {
-    return this.$store.state["treeview"]["treeData"];
+  get indentStyle(): string {
+    return `margin-left:${8 * this.depth}px`;
   }
 
-  @Watch("treeData", { deep: true })
-  onTreeDataChanged(val: any, oldVal: any) {
-    this.loadData();
+  flexFixedWidth(width: number): string {
+    return `flex:0; max-width:${width}px; min-width:${width}px;`;
   }
 
-  private getDOMItems(): IDOMTreeViewItem[] {
-    const results: IDOMTreeViewItem[] = [];
-    for (const node of getAllNodes(this.treeData)) {
-      const id = node.id as string;
-      const header = this.jQueryTreeObj.find(`#${id}`);
-      const body = header.next(".list-group");
-      const collapsed = !body.hasClass("show");
-      results.push({
-        id,
-        collapsed,
-        header,
-        body,
-      });
+  get getTreeData(): any {
+    if (!this.treeData) {
+      return this.$store.state["treeview"]["treeData"];
     }
-    return results;
+
+    return this.treeData;
   }
 
-  private restoreCollapsedStates(domItems: IDOMTreeViewItem[]): void {
-    for (const domItem of domItems) {
-      if (!domItem.collapsed) {
-        this.jQueryTreeObj
-          .find(`#${domItem.id}`)
-          .next(".list-group")
-          .addClass("show");
-      }
+  getNode(id: string): any {
+    return getNodeOfId(id, this.getTreeData);
+  }
+
+  toggleShow(id: string) {
+    let node = this.getNode(id);
+    if (node !== null) {
+      node.treeShow = !node.treeShow;
     }
   }
 
-  // private addTreeButtons(domItems: IDOMTreeViewItem[]): void {
-  //   // console.log(domItems);
-  //   // debugger;
-  //   for (const domItem of domItems) {
-  //     const header = domItem.header;
-  //     header.append("moose");
-  //     // if (header.html()) {
-  //     // }
-  //   }
-  // }
-
-  loadData() {
-    let domItems: any[] = [];
-    if (this.jQueryTreeObj) {
-      domItems = this.getDOMItems();
-
-      // clear DOM (because bstreeview has no reload feature:
-      // https://github.com/chniter/bstreeview/issues/24)
-      this.jQueryTreeObj.remove();
-    }
-
-    // (Re)create tree
-    this.jQueryTreeObj = $("<div></div>");
-    this.jQueryContainerObj.append(this.jQueryTreeObj);
-    this.jQueryTreeObj.bstreeview({
-      data: this.treeData,
-      // Below handled through custom css instead
-      indent: 0,
-      parentsMarginLeft: 0,
-      openNodeLinkOnNewTab: false,
-    });
-
-    // Reload icons
-    dom.i2svg();
-
-    // Restore collapsed states
-    if (domItems.length > 0 && domItems[0].header.length > 0) {
-      this.restoreCollapsedStates(domItems);
-    } else {
-      // Didn't get dom items previously
-      // domItems = this.getDOMItems();
-    }
-    // console.log("domItems", domItems);
-
-    // setTimeout(() => {
-    //   this.addTreeButtons(domItems);
-    //   alert("domItems");
-    // });
-
-    // Make items clickable
-    this.jQueryTreeObj.find(".tree-item").on("click", (e: Event) => {
-      let id = $(e.currentTarget).attr("id");
-      let node = getNodeOfId(id, this.$store.state["treeview"]["treeData"]);
-      if (node) {
-        node.styles = [
-          {
-            selection: {},
-            style: {
-              line: {
-                color: "red",
-              },
+  titleClick(id: string) {
+    let node = this.getNode(id);
+    if (node != null) {
+      node.styles = [
+        {
+          selection: {},
+          style: {
+            line: {
+              color: "red",
             },
           },
-        ];
-      }
-    });
-  }
-
-  mounted() {
-    this.jQueryContainerObj = $(this.$refs.treeContainer as HTMLElement);
-    this.loadData();
+        },
+      ];
+      node.viewerDirty = true;
+    }
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss">
-.tree-item .item-icon,
-.tree-group .item-icon {
-  margin-right: 5px !important;
-}
-// .tree-item,
-// .tree-group {
-//   white-space: nowrap;
-//   overflow: hidden;
-//   text-overflow: ellipsis;
-// }
-.tree-item {
-  margin-left: 14px;
-}
-.list-group {
-  margin-left: 14px;
-}
-// #molecules .tree-cntnr {
-//   background-color:red;
-// }
-// #molecules .tree-flx-cntnr {
-//   display: flex;
-// }
-// #molecules .tree-btn, #molecules .tree-title {
-//   background-color:red;
-//   flex: flex-grow;
-// }
-
-#molecules .list-group-item {
+<style lang="scss" scoped>
+.title {
   display: flex;
 }
 
-#molecules .list-group-item .tree-title,
-#molecules .list-group-item .tree-btn {
-  flex: auto;
-  margin-top:-4px;
+.title-element {
+  margin-right: 2px;
 }
 
-#molecules .list-group-item .tree-title {
+.title-text {
+  flex: auto;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-#molecules .list-group-item .state-icon {
-  flex: 0;
-  max-width: 8px;
-  min-width: 8px;
+.clickable {
+  cursor: pointer;
 }
 
-#molecules .list-group-item .item-icon {
-  flex: 0;
-  max-width: 25px;
-  min-width: 25px;
-  margin-right: 0px !important;
+.title-text:hover {
+  text-decoration: underline;
 }
 
-#molecules .list-group-item .state-icon {
-  flex: 0;
-  max-width: 8px;
-  min-width: 8px;
+.btn-bar {
+  overflow: hidden;
 }
 
-#molecules .list-group-item .tree-btn {
-  max-width: 35px;
-  min-width: 35px;
+// See https://codepen.io/kdydesign/pen/VrQZqx
+$transition-time: 0.2s;
+.slide-enter-active {
+   -moz-transition-duration: $transition-time;
+   -webkit-transition-duration: $transition-time;
+   -o-transition-duration: $transition-time;
+   transition-duration: $transition-time;
+   -moz-transition-timing-function: ease-in;
+   -webkit-transition-timing-function: ease-in;
+   -o-transition-timing-function: ease-in;
+   transition-timing-function: ease-in;
 }
 
+.slide-leave-active {
+   -moz-transition-duration: $transition-time;
+   -webkit-transition-duration: $transition-time;
+   -o-transition-duration: $transition-time;
+   transition-duration: $transition-time;
+   -moz-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+   -webkit-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+   -o-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+   transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+}
+
+.slide-enter-to, .slide-leave {
+   max-height: 100px;
+   overflow: hidden;
+}
+
+.slide-enter, .slide-leave-to {
+   overflow: hidden;
+   max-height: 0;
+}
 </style>

@@ -3,7 +3,7 @@
     <GoldenLayoutContainer type="column">
       <GoldenLayoutContainer type="row" :height="90">
         <GoldenLayoutComponent name="Molecules" state="{}" :width="20">
-          <TreeView2 />
+          <TreeView />
         </GoldenLayoutComponent>
 
         <GoldenLayoutComponent name="Viewer" state="{}" :width="60" :style="'height:100%;'">
@@ -78,7 +78,6 @@ import "bootstrap/js/dist/tab";
 import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
 import Mol3D from "../Viewer/Mol3D.vue";
 import TreeView from "@/UI/TreeView/TreeView.vue";
-import TreeView2 from "@/UI/TreeView/TreeView2.vue";
 
 @Options({
   props: {},
@@ -87,7 +86,6 @@ import TreeView2 from "@/UI/TreeView/TreeView2.vue";
     GoldenLayoutComponent,
     Mol3D,
     TreeView,
-    TreeView2,
     FormWrapper,
     FormInput,
     FormSelect,
