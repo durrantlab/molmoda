@@ -5,6 +5,8 @@ If no format specified, get it from the file extension.
 
 Button?
 
+If you click on a tree folder, act on everything below it as well?
+
 # DONE
 
 Can you load and parse molecules from webworker?

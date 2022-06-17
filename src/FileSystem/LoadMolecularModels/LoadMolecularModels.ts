@@ -24,23 +24,6 @@ export function loadMolecularModelFromText(
             val: treeViewData
         });
 
-        // setTimeout(() => {
-        //     for (let id in idsToLeafs) {
-        //         let leaf = idsToLeafs[id] as IMolEntry;
-        //         leaf.styles = [{selection: {}, style: {}}]
-        //     }
-        //     console.log("moo");
-        // }, 5000);
-
-        // let [organizedAtoms, treeViewData] = payload;
-        // debugger;
-        // Convert to a model
-        // const model = new $3Dmol.GLModel();
-        // model.addAtoms(organizedAtoms);
-
-        // debugger;
-
-        // const proteinModel = model.selectedAtoms(proteinSel);
         return models;
     });
 }

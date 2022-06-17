@@ -7,6 +7,7 @@ interface ICommonNode {
     icon?: string;
     class?: string;
     id?: string;  // random id for terminal nodes
+    treeShow?: boolean;
 }
 
 export interface IAtom {
@@ -32,11 +33,6 @@ export enum MolType {
     SOLVENT = "solvent",
 }
 
-export interface IStyle {
-    selection: any;
-    style: any;
-}
-
 export interface IMolEntry extends ICommonNode {
     type?: MolType;
     styles?: IStyle[];
@@ -47,4 +43,9 @@ export interface IMolEntry extends ICommonNode {
 export interface IFileContents extends ICommonNode {
     mols?: IMolEntry[];
     nodes?: IMolEntry[];
+}
+
+export interface IStyle {
+    selection: any;
+    style: any;
 }

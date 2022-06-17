@@ -17,6 +17,22 @@ export function getTerminalNodes(mols: IMolEntry[]): IMolEntry[] {
     return findLeaves(mols);
 }
 
+export function getAllNodes(mols: IMolEntry[]): IMolEntry[] {
+    // Use a recursive function to find the terminal leaves of mols.
+    function findNodes(mls: IMolEntry[]): IMolEntry[] {
+        let allNodes: IMolEntry[] = [];
+        
+        for (const mol of mls) {
+            if (mol.nodes) {
+                allNodes = allNodes.concat(findNodes(mol.nodes));
+            } 
+            allNodes.push(mol);
+        }
+        return allNodes;
+    }
+    return findNodes(mols);
+}
+
 export function getNodeOfId(id: string, mols: IMolEntry[]): IMolEntry | null {
     // Use a recursive function to find the node of id.
     function findNode(mls: IMolEntry[], id: string): IMolEntry | null {

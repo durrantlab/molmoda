@@ -8,6 +8,7 @@ import { setupVueXStore } from './Store'
 import * as api from './Api';
 import { addMenuItem, MenuItemType } from './UI/Menu/Menu'
 import { loadFontAwesomeFonts } from './UI/FontAwesome'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 // import { test } from './test_parser'
 
@@ -45,7 +46,9 @@ addMenuItem(
 api.sys.loadStatus.menuFinalized(true);
 
 let store = setupVueXStore();
-createApp(App).use(store).mount('#app');
+createApp(App)
+    .component("font-awesome-icon", FontAwesomeIcon)
+    .use(store).mount('#app');
 
 // loadMolecularModelFromText("molText", "mol2");
 

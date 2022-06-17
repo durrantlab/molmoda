@@ -10,7 +10,7 @@ import * as tmp from "@/UI/Viewer/3Dmol-nojquery.JDD";
 import { ionSel, lipidSel, metalSel, nucleicSel, proteinSel, solventSel } from "./Lookups/ComponentSelections";
 import { ionsStyle, ligandsStyle, lipidStyle, metalsStyle, nucleicStyle, proteinStyle, solventStyle } from "./Lookups/DefaultStyles";
 import { IAtom, IChain, IFileContents, IMolEntry, IResidue, IStyle, MolType } from "../../UI/TreeView/TreeInterfaces";
-import { getTerminalNodes } from "@/UI/TreeView/TreeUtils";
+import { getAllNodes, getTerminalNodes } from "@/UI/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 const $3Dmol = (tmp as any);
 
@@ -146,12 +146,22 @@ function collapseSingleResidueChains(molEntry: IMolEntry): IMolEntry {
     return molEntry;
 }
 
+function makeTitleDOM(title: string): string {
+    // return `<div class='tree-title'>${title}</div><div class='tree-btn'>moo</div>`;
+    // TODO: Refactor this away
+    return title;
+}
+
 function addMolTypeAndStyle(molEntry: IMolEntry, styles: IStyle[]): void {
     let molType = molEntry.type;
     for (const mol of getTerminalNodes([molEntry])) {
         mol.type = molType;
         mol.styles = styles;
+    }
+    for (const mol of getAllNodes([molEntry])) {
         mol.id = randomID();
+        mol.text =  makeTitleDOM(mol.text);
+        mol.treeShow = false;
     }
 }
 
@@ -200,7 +210,8 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
 
     // Page into single object
     let fileContents: IFileContents = {
-        text: data.molName,
+        text: makeTitleDOM(data.molName),
+        treeShow: false,
         mols: [
             proteinAtomsByChain,
             nucleicAtomsByChain,
@@ -272,9 +283,12 @@ function makeTreeViewData(organizedAtoms: IFileContents): IFileContents {
 
 waitForDataFromMainThread().then((data) => {
     let organizedAtoms = divideAtomsIntoDistinctComponents(data);
+
     let treeViewData = makeTreeViewData(organizedAtoms);
 
     // let pathsAndIds: any[] = [];
+
+    treeViewData.id = randomID();
 
     if (treeViewData.nodes) {
         for (const node of treeViewData.nodes) {
