@@ -15,6 +15,7 @@
 /* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
 
 // @ts-ignore
 import * as Dropdown from "bootstrap/js/dist/dropdown";
@@ -25,18 +26,11 @@ import { IMenuAction } from "./Menu";
 // var $ = require("jquery");
 
 @Options({
-  props: {
-    menuData: Object,
-    isTopLevel: {
-      type: Boolean,
-      default: false,
-    },
-  },
   components: {},
 })
 export default class MenuActionLink extends Vue {
-  menuData!: IMenuAction;
-  isTopLevel!: boolean;
+  @Prop() menuData!: IMenuAction;
+  @Prop({ default: false }) isTopLevel!: boolean;
 
   runFunction(item: IMenuAction): void {
     if (item.function) {

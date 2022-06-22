@@ -4,24 +4,24 @@ import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { store } from "@/Store";
 
 // @ts-ignore
-import * as tmp from "@/UI/Viewer/3Dmol-nojquery.JDD";
-import { IAtom, IChain, IFileContents, IMolEntry, IResidue } from "../../UI/TreeView/TreeInterfaces";
+import * as tmp from "@/UI/Panels/Viewer/3Dmol-nojquery.JDD";
+import { IAtom, IChain, IFileContents, IMolEntry, IResidue } from "../../UI/Navigation/TreeView/TreeInterfaces";
 const $3Dmol = tmp as any;
 
 export function loadMolecularModelFromText(
     molText: string,
     format: string,
     molName: string
-): Promise<any> {
+): Promise<any[]> {
     const worker = new Worker(
         new URL("./LoadMolecularModels.worker", import.meta.url)
     );
-    return runWorker(worker, { molText, format, molName }).then((treeViewData: IFileContents) => {
-
-        let models = convertAllAtomArraysToModels(treeViewData);
-        store.commit("treeview/pushToList", {
-            name: "treeData",
-            val: treeViewData
+    return runWorker(worker, { molText, format, molName }).then((molecularData: IFileContents) => {
+        let models = convertAllAtomArraysToModels(molecularData);
+        
+        store.commit("pushToList", {
+            name: "molecules",
+            val: molecularData
         });
 
         return models;

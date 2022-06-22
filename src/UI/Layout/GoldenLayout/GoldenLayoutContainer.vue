@@ -8,22 +8,15 @@
 /* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
 
-@Options({
-  props: {
-    name: String,
-    title: String,
-    type: String,
-    width: Number,
-    height: Number
-  },
-})
+@Options({})
 export default class GoldenLayoutContainer extends Vue {
-  name!: string;
-  title!: string;
-  type!: string;
-  width!: number;
-  height!: number;
+  @Prop() name!: string;
+  @Prop() title!: string;
+  @Prop() type!: string;
+  @Prop() width!: number;
+  @Prop() height!: number;
 
   // mounted
   mounted() {

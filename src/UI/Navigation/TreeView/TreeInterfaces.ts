@@ -5,8 +5,10 @@ interface ICommonNode {
     atoms?: IAtom[];
     model?: any;
     id?: string;  // random id for terminal nodes
-    treeShow: boolean;
+    treeExpanded: boolean;
     viewerDirty: boolean;  // triggers 3dmoljs viewer
+    visible: boolean;
+    focused: boolean;
 }
 
 export interface IAtom {
@@ -25,7 +27,7 @@ export interface IChain extends ICommonNode {
 export enum MolType {
     PROTEIN = "protein",
     NUCLEIC = "nucleic",
-    LIGAND = "ligand",
+    COMPOUND = "compound",
     METAL = "metal",
     LIPID = "lipid",
     IONS = "ions",

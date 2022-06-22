@@ -6,7 +6,7 @@ import App from './App.vue'
 import './registerServiceWorker'
 import { setupVueXStore } from './Store'
 import * as api from './Api';
-import { addMenuItem, MenuItemType } from './UI/Menu/Menu'
+import { addMenuItem, MenuItemType } from './UI/Navigation/Menu/Menu'
 import { loadFontAwesomeFonts } from './UI/FontAwesome'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 

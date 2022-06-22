@@ -11,9 +11,10 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import GoldLayout from "./UI/GoldenLayout/GoldLayout.vue";
-import Menu from "./UI/Menu/Menu.vue";
-import * as api from "./Api";
+import { Prop } from "vue-property-decorator";
+import GoldLayout from "@/UI/Layout/GoldenLayout/GoldLayout.vue";
+import Menu from "@/UI/Navigation/Menu/Menu.vue";
+import * as api from "@/Api";
 
 @Options({
   components: {

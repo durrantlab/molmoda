@@ -7,49 +7,11 @@
         </GoldenLayoutComponent>
 
         <GoldenLayoutComponent name="Viewer" state="{}" :width="60" :style="'height:100%;'">
-          <Mol3D />
+          <ViewerPanel />
         </GoldenLayoutComponent>
 
         <GoldenLayoutComponent name="Options" state="{}" :width="20">
-          <!-- <span @click="test">Some test goes here. What do you think?</span> -->
-          <div :style="'background-color:' + test2">{{ test }}; {{ sel }}</div>
-          <FormWrapper label="My Label">
-            <FormInput
-              v-model="test"
-              placeHolder="place"
-              id="test"
-              type="number"
-            ></FormInput>
-          </FormWrapper>
-          <FormWrapper label="My color">
-            <FormInput
-              v-model="test2"
-              placeHolder="#ffffff"
-              id="clr"
-              type="color"
-            ></FormInput>
-          </FormWrapper>
-          <FormWrapper label="my label">
-            <FormSelect
-              id="sel"
-              v-model="sel"
-              :options="['i am nice', 'we', 'dog face', 'cat(face )']"
-            ></FormSelect>
-          </FormWrapper>
-          <FormWrapper label="my check lbl">
-            <FormCheckBox
-              id="chk"
-              text="my check"
-              v-model="chk"
-              :disabled="true"
-            ></FormCheckBox>
-            <FormCheckBox
-              id="chk"
-              text="my check"
-              v-model="chk"
-              :toggle="true"
-            ></FormCheckBox>
-          </FormWrapper>
+          <OptionsPanel />
         </GoldenLayoutComponent>
       </GoldenLayoutContainer>
       <GoldenLayoutContainer type="row" :height="10">
@@ -67,38 +29,27 @@
 /* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
 import { GoldenLayout, ComponentContainer } from "golden-layout";
 import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
-import FormWrapper from "../Forms/FormWrapper.vue";
-import FormInput from "../Forms/FormInput.vue";
-import FormSelect from "../Forms/FormSelect.vue";
-import FormCheckBox from "../Forms/FormCheckBox.vue";
 import "bootstrap/js/dist/tab";
 import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
-import Mol3D from "../Viewer/Mol3D.vue";
-import TreeView from "@/UI/TreeView/TreeView.vue";
+import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
+import OptionsPanel from "@/UI/Panels/Options/OptionsPanel.vue";
+import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 
 @Options({
-  props: {},
   components: {
     GoldenLayoutContainer,
     GoldenLayoutComponent,
-    Mol3D,
+    ViewerPanel,
+    OptionsPanel,
     TreeView,
-    FormWrapper,
-    FormInput,
-    FormSelect,
-    FormCheckBox,
   },
 })
 export default class GoldLayout extends Vue {
   // msg!: string;
-
-  test = 3;
-  test2 = "#ff0000";
-  sel = "we";
-  chk = true;
 
   private convertDOMToData(dom: HTMLElement): any[] {
     let children = dom.children;
@@ -153,8 +104,6 @@ export default class GoldLayout extends Vue {
         // Move el to the container
         container.element.appendChild(el);
 
-        // console.log(container.tab.element);
-
         // Also add classes to make it work with bootstrap
         // container.element
         // container.tab.element
@@ -192,8 +141,6 @@ export default class GoldLayout extends Vue {
       },
       content: this.convertDOMToData(dataDOM),
     };
-
-    console.log(config);
 
     this.setupGoldenLayout(dataDOM, config);
 

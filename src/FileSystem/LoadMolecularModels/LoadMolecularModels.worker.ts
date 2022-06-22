@@ -6,11 +6,11 @@ import {
 } from "@/Core/WebWorkers/WorkerHelper";
 
 // @ts-ignore
-import * as tmp from "@/UI/Viewer/3Dmol-nojquery.JDD";
+import * as tmp from "@/UI/Panels/Viewer/3Dmol-nojquery.JDD";
 import { ionSel, lipidSel, metalSel, nucleicSel, proteinSel, solventSel } from "./Lookups/ComponentSelections";
 import { ionsStyle, ligandsStyle, lipidStyle, metalsStyle, nucleicStyle, proteinStyle, solventStyle } from "./Lookups/DefaultStyles";
-import { IAtom, IChain, IFileContents, IMolEntry, IResidue, IStyle, MolType } from "../../UI/TreeView/TreeInterfaces";
-import { getAllNodes, getTerminalNodes } from "@/UI/TreeView/TreeUtils";
+import { IAtom, IChain, IFileContents, IMolEntry, IResidue, IStyle, MolType } from "../../UI/Navigation/TreeView/TreeInterfaces";
+import { getAllNodes, getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 const $3Dmol = (tmp as any);
 
@@ -21,7 +21,9 @@ function organizeSelByChain(sel: any, mol: any, entryName: string): IMolEntry {
     const molEntry: IMolEntry = {
         text: entryName,
         viewerDirty: true,
-        treeShow: false,
+        treeExpanded: false,
+        visible: true,
+        focused: false,
         chains: [],
     }
     let lastChainID: string = "";
@@ -51,7 +53,9 @@ function flattenChains(molEntry: IMolEntry): IMolEntry {
         text: molEntry.text,
         atoms: [],
         viewerDirty: true,
-        treeShow: false,
+        treeExpanded: false,
+        visible: true,
+        focused: false,
     }
     molEntry.chains.forEach((chain: IChain) => {
         if (!chain.atoms) { 
@@ -74,7 +78,9 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
         text: molEntry.text,
         chains: [],
         viewerDirty: true,
-        treeShow: false,
+        treeExpanded: false,
+        visible: true,
+        focused: false,
     }
     let lastChainID: string = "";
     molEntry.chains.forEach((chain: IChain) => {
@@ -106,7 +112,9 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
                     text: newKey,
                     atoms: [],
                     viewerDirty: true,
-                    treeShow: false,
+                    treeExpanded: false,
+                    visible: true,
+                    focused: false,
                 });
                 lastResidueID = newKey;
             }
@@ -169,7 +177,9 @@ function addMolTypeAndStyle(molEntry: IMolEntry, styles: IStyle[]): void {
     for (const mol of getAllNodes([molEntry])) {
         mol.id = randomID();
         mol.text =  makeTitleDOM(mol.text);
-        mol.treeShow = false;
+        mol.treeExpanded = false;
+        mol.visible = true;
+        mol.viewerDirty = true;
     }
 }
 
@@ -206,7 +216,7 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
 
     proteinAtomsByChain.type = MolType.PROTEIN;
     nucleicAtomsByChain.type = MolType.NUCLEIC;
-    ligandsByChain.type = MolType.LIGAND;
+    ligandsByChain.type = MolType.COMPOUND;
     metalAtomsByChain.type = MolType.METAL;
     lipidAtomsByChain.type = MolType.LIPID;
     ionAtomsNoChain.type = MolType.IONS;
@@ -219,8 +229,10 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
     // Page into single object
     let fileContents: IFileContents = {
         text: makeTitleDOM(data.molName),
-        treeShow: false,
+        treeExpanded: false,
         viewerDirty: true,
+        visible: true,
+        focused: false,
         mols: [
             proteinAtomsByChain,
             nucleicAtomsByChain,
@@ -286,7 +298,7 @@ waitForDataFromMainThread().then((data) => {
                 case MolType.NUCLEIC:
                     addMolTypeAndStyle(node, nucleicStyle)
                     break;
-                case MolType.LIGAND:
+                case MolType.COMPOUND:
                     addMolTypeAndStyle(node, ligandsStyle)
                     break;
                 case MolType.METAL:

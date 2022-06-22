@@ -30,6 +30,8 @@
 /* eslint-disable */
 
 import { Options } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
+
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
@@ -43,17 +45,14 @@ import {
 } from "./Menu";
 
 @Options({
-  props: {
-    menuData: Object,
-  },
   components: {
     MenuActionLink,
     MenuLevel2,
   },
 })
 export default class MenuLevel1 extends MenuLevelParent {
-  menuData!: IMenuAction | IMenuSubmenu;
-
+  @Prop() menuData!: IMenuAction | IMenuSubmenu;
+  
   get menuItemsWithSeparators(): (
     | IMenuAction
     | IMenuSubmenu

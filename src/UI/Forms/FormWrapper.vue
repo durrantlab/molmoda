@@ -1,8 +1,9 @@
 <template>
-  <div class="mb-3">
-    <label v-if="label !== ''" :for="randomID" class="form-label">{{
-      label
-    }}</label>
+  <div class="mb-2">
+    <label v-if="label !== ''" :for="randomID" class="form-label mb-0">
+      <small v-if="smallLabel">{{ label }}</small>
+      <span v-else>{{ label }}</span>
+    </label>
     <div :id="randomID" :aria-label="label" :title="label">
       <slot></slot>
     </div>
@@ -16,11 +17,11 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
 @Options({
-  props: {},
   components: {},
 })
 export default class FormWrapper extends Vue {
   @Prop({ default: "" }) label!: string;
+  @Prop({ default: false }) smallLabel!: boolean;
 
   get randomID(): string {
     return (

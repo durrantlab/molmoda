@@ -7,8 +7,6 @@
 // // @ts-ignore
 // // import {Viewer} from "molstar/build/viewer/molstar";
 
-// // console.log(Viewer);
-
 // // var $ = require("jquery");
 
 // import 'jquery';
@@ -17,13 +15,10 @@
 
 // import * as $3Dmol from '3dmol/build/3Dmol-nojquery.js';
 
-// // console.log($3Dmol);
-
 // // @ts-ignore
 // // import * as mol3d from "3dmol/3Dmol/3dmol";
 // // import * as mol3d from "3dmol/3Dmol/parsers";
 // // import * as mol3d from "./3Dmol-nojquery";
-// // console.log("XXX", mol3d);
 
 // // declare var molstar;
 
@@ -244,10 +239,8 @@
 //     // return;
 
 //     // const task = parseMol2(mol2Txt, "nanokind").run().then((out) => {
-//     //     console.log(out);
 //     //     // @ts-ignore
 //     //     for (const structure of out.result.structures) {
-//     //         console.log(structure);
 //     //     }
 //     // });
 // }

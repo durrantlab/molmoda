@@ -1,6 +1,6 @@
 <template>
   <select
-    class="form-select"
+    class="form-select form-select-sm"
     :id="id"
     :disabled="disabled"
     @input="handleInput"
@@ -36,6 +36,7 @@ export default class FormSelect extends Vue {
 
   handleInput(e: any) {
     this.$emit("update:modelValue", e.target.value);
+    this.$emit("changed");
   }
 
   slugify(v: string): string {

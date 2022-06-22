@@ -31,22 +31,18 @@
 /* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuLevel1 from "./MenuLevel1.vue";
 import { IMenuAction, IMenuSubmenu, menuData } from "./Menu";
 
 @Options({
-  props: {
-    // msg: String,
-  },
   components: {
     MenuLevel1,
   },
 })
 export default class Menu extends Vue {
-  // msg!: string;
-
   get getMenuData(): (IMenuAction | IMenuSubmenu)[] {
     return menuData;
   }

@@ -1,7 +1,10 @@
 <template>
   <input
     :type="type"
-    :class="'form-control' + (type === 'color' ? ' form-control-color' : '')"
+    :class="
+      'form-control form-control-sm' +
+      (type === 'color' ? ' form-control-color' : '')
+    "
     :id="id"
     :placeholder="placeHolder"
     :disabled="disabled"
@@ -17,12 +20,6 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
 @Options({
-  // props: {
-  //   label: String,
-  //   id: String,
-  //   type: String,
-  //   placeHolder: String,
-  // },
   components: {},
 })
 export default class FormInput extends Vue {
@@ -34,7 +31,7 @@ export default class FormInput extends Vue {
   @Prop({ default: false }) disabled!: boolean;
 
   handleInput(e: any) {
-    this.$emit('update:modelValue', e.target.value);
+    this.$emit("update:modelValue", e.target.value);
   }
 }
 </script>

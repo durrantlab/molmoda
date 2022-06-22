@@ -4,7 +4,7 @@
     class="title-element"
   >
     <div v-if="useFirst"><font-awesome-icon :icon="iconID1" /></div>
-    <div v-else><font-awesome-icon :icon="iconID2" /></div>
+    <div v-else><font-awesome-icon :icon="iconID2" :style="icon2Style" /></div>
   </div>
 </template>
 
@@ -12,33 +12,17 @@
 /* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
 
 @Options({
-  props: {
-    useFirst: {
-      type: Boolean,
-      required: true,
-    },
-    iconID1: {
-      type: Array,
-      required: true,
-    },
-    iconID2: {
-      type: Array,
-      required: true,
-    },
-    width: {
-      type: Number,
-      default: 15
-    }
-  },
   components: {},
 })
 export default class IconSwitcher extends Vue {
-  useFirst!: boolean;
-  iconID1!: Array<string>;
-  iconID2!: Array<string>;
-  width!: number;
+  @Prop({ required: true }) useFirst!: boolean;
+  @Prop({ required: true }) iconID1!: Array<string>;
+  @Prop({ required: true }) iconID2!: Array<string>;
+  @Prop({ default: 15 }) width!: number;
+  @Prop({ default: {} }) icon2Style!: any;
 
   get flexFixedWidth(): string {
     return `flex:0; max-width:${this.width}px; min-width:${this.width}px;`;

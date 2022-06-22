@@ -20,6 +20,7 @@
     "core-js": "^3.8.3",
     "golden-layout": "^2.5.0",
     "jquery": "^3.6.0",
+    "lodash": "^4.17.21",
     "molstar": "^3.8.2",
     "mutationobserver-shim": "^0.3.7",
     "portal-vue": "^2.1.7",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@types/jquery": "^3.5.14",
+    "@types/lodash": "^4.14.182",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
     "@vue/cli-plugin-babel": "~5.0.0",

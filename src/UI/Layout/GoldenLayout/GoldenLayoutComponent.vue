@@ -16,23 +16,16 @@
 /* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
-import { slugify } from "../../Core/Utils";
+import { Prop } from "vue-property-decorator";
+import { slugify } from "@/Core/Utils";
 
-@Options({
-  props: {
-    name: String,
-    state: String, // JSON
-    width: Number,
-    height: Number,
-    style: String,
-  },
-})
+@Options({})
 export default class GoldenLayoutComponent extends Vue {
-  name!: string;
-  state!: string;
-  width!: number;
-  height!: number;
-  style!: string;
+  @Prop() name!: string;
+  @Prop() state!: string;
+  @Prop() width!: number;
+  @Prop() height!: number;
+  @Prop() style!: string;
 
   // computed slugID
   get slugID() {

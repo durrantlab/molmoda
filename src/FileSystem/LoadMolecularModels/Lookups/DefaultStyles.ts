@@ -1,8 +1,10 @@
-import { IStyle } from "@/UI/TreeView/TreeInterfaces";
+import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
-const unbondedAtoms: IStyle = {
+export const unbondedAtomsStyle: IStyle = {
     selection: { bonds: 0 },
-    style: { sphere: {} },
+    style: { sphere: {
+        radius: 0.5
+    } },
 };
 
 const sphereStyle: IStyle = {
@@ -20,25 +22,24 @@ const stickStyle: IStyle = {
 };
 
 export const proteinStyle: IStyle[] = [
-    unbondedAtoms,
     {
         selection: {},
         style: {
             cartoon: {
                 color: "spectrum",
-            },
+            }
         },
     },
 ];
 
-export const nucleicStyle: IStyle[] = [stickStyle, unbondedAtoms];
+export const nucleicStyle: IStyle[] = [stickStyle];
 
-export const ligandsStyle: IStyle[] = [stickStyle, unbondedAtoms];
+export const ligandsStyle: IStyle[] = [stickStyle];
 
-export const metalsStyle: IStyle[] = [sphereStyle, unbondedAtoms];
+export const metalsStyle: IStyle[] = [sphereStyle];
 
-export const lipidStyle: IStyle[] = [stickStyle, unbondedAtoms];
+export const lipidStyle: IStyle[] = [stickStyle];
 
-export const ionsStyle: IStyle[] = [sphereStyle, unbondedAtoms];
+export const ionsStyle: IStyle[] = [sphereStyle];
 
-export const solventStyle: IStyle[] = [stickStyle, unbondedAtoms];
+export const solventStyle: IStyle[] = [stickStyle];

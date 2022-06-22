@@ -1,5 +1,5 @@
 import { Vue } from "vue-class-component";
-import * as api from "../../Api";
+import * as api from "../../../Api";
 
 export enum MenuItemType {
     ACTION,

@@ -7,46 +7,45 @@ interface NameValPair {
     val: any;
 }
 
+let commonMutations = {
+    setVar(state: any, payload: NameValPair) {
+        state[payload.name] = payload.val;
+    },
+    pushToList(state: any, payload: NameValPair) {
+        if (Array.isArray(payload.val)) {
+            state[payload.name].push(...payload.val);
+        } else {
+            state[payload.name].push(payload.val);
+        }
+    },
+    addToObj(state: any, payload: NameValPair) {
+        state[payload.name] = {
+            ...state[payload.name],
+            ...payload.val
+        };
+    }
+}
+
 let modules: { [key: string]: any } = {};
 export function addVueXStoreModule(moduleName: string, vals: any): void {
     modules[moduleName] = {
         namespaced: true,
         state: vals,
-        mutations: {
-            setVar(state: any, payload: NameValPair) {
-                state[payload.name] = payload.val;
-            },
-            pushToList(state: any, payload: NameValPair) {
-                if (Array.isArray(payload.val)) {
-                    state[payload.name].push(...payload.val);
-                } else {
-                    state[payload.name].push(payload.val);
-                }
-            },
-            addToObj(state: any, payload: NameValPair) {
-                state[payload.name] = {
-                    ...state[payload.name],
-                    ...payload.val
-                };
-            }
-        },
+        mutations: commonMutations
     };
 }
 
 export var store: any;
 export function setupVueXStore() {
-    console.log("store");
     let storeVars = {
         state: {
-            // menuData: {},
+            "molecules": []
         },
         getters: {},
-        mutations: {},
+        mutations: commonMutations,
         actions: {},
         modules: modules,
     };
-
-    console.log(storeVars);
 
     store = createStore(storeVars);
 

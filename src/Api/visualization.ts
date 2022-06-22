@@ -1,6 +1,6 @@
 let viewerObj: any;
 
-export const viewerApi = {
+export const visualizationApi = {
     get viewer(): any {
         return viewerObj;
     },

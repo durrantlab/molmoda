@@ -3,8 +3,8 @@
 
 import { menuApi } from "./menus";
 import { sysApi } from "./sys";
-import { viewerApi } from "./viewer";
+import { visualizationApi } from "./visualization";
 
 export const menus = menuApi;
 export const sys = sysApi;
-export const viewer = viewerApi;
+export const visualization = visualizationApi;
