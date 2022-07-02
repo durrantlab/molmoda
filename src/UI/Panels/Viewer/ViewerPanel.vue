@@ -12,7 +12,7 @@ import { Prop } from "vue-property-decorator";
 import { loadMolecularModelFromText } from "@/FileSystem/LoadMolecularModels/LoadMolecularModels";
 import * as api from "@/Api/";
 import {
-  getAllNodes,
+  getAllNodesFlattened,
   getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
@@ -63,7 +63,6 @@ export default class ViewerPanel extends Vue {
       // If it's not in the cache, the molecule has likely not been loaded.
       // Always load it.
       if (!this.molCache[id]) {
-        console.log("adding model to 3dmoljs", id);
         let visMol = api.visualization.viewer.addRawModel_JDD(mol.model);
         this.molCache[id] = visMol;
         this.makeAtomsHoverableAndClickable({model: visMol});
@@ -74,7 +73,7 @@ export default class ViewerPanel extends Vue {
         if (!mol.visible) {
           // hide it.
           mol.model.hide();
-        } else if (mol.styles) {
+        } else if (mol.stylesSels) {
           // There are styles to apply
           mol.model.show();
 
@@ -91,11 +90,11 @@ export default class ViewerPanel extends Vue {
 
           // Add new styles
           let spheresUsed = false;
-          for (const style of mol.styles) {
-            if (!style.style["surface"]) {
+          for (const styleSel of mol.stylesSels) {
+            if (!styleSel.style["surface"]) {
               // It's a style
-              mol.model.setStyle(style.selection, style.style, true);
-              if (style.style.sphere) {
+              mol.model.setStyle(styleSel.selection, styleSel.style, true);
+              if (styleSel.style.sphere) {
                 spheresUsed = true;
               }
             } else {
@@ -118,7 +117,7 @@ export default class ViewerPanel extends Vue {
 
           // Regardless of specified style, anything not bound to other things
           // should be visible.
-          if (mol.styles.length > 0 && !spheresUsed) {
+          if (mol.stylesSels.length > 0 && !spheresUsed) {
             // If there's any style, no style is spheres, make sure unbonded
             // atoms are shown.
             mol.model.setStyle(
@@ -142,7 +141,7 @@ export default class ViewerPanel extends Vue {
 
   zoomPerFocus(allMolecules: IMolEntry[], visibleTerminalNodeModels: any[]) {
     let molsToFocus: IMolEntry[] = [];
-    for (const mol of getAllNodes(allMolecules)) {
+    for (const mol of getAllNodesFlattened(allMolecules)) {
       if (mol.focused) {
         if (!mol.nodes) {
           // Already terminal
@@ -159,7 +158,9 @@ export default class ViewerPanel extends Vue {
     }
 
     api.visualization.viewer.render();
-    api.visualization.viewer.zoomTo({ model: molsToFocus }, 500, true);
+    if (this.$store.state["updateZoom"]) {
+      api.visualization.viewer.zoomTo({ model: molsToFocus }, 500, true);
+    }
     // api.visualization.viewer.zoom(0.8);
   }
 
@@ -208,8 +209,9 @@ export default class ViewerPanel extends Vue {
 
     api.visualization.viewer.setClickable(
       {}, true,
-      function(atom: any, viewer: any, event: any, container: any) {
+      (atom: any, viewer: any, event: any, container: any) => {
         api.visualization.viewer.zoomTo({ x: atom.x, y: atom.y, z: atom.z }, 500, true);
+        this.$store.commit("clearFocusedMolecule", false);
       }
     );
   }
@@ -222,8 +224,8 @@ export default class ViewerPanel extends Vue {
     api.visualization.viewer = viewer;
     viewer.setBackgroundColor(0xffffff);
 
-    let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
-      // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
+    // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
+      let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
       // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic
       // let fetchPromise = fetch("https://files.rcsb.org/view/1HQ3.pdb")  // has ions
       // let fetchPromise = fetch("https://files.rcsb.org/ligands/view/ATP_ideal.sdf")

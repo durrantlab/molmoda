@@ -36,7 +36,7 @@ export enum MolType {
 
 export interface IMolEntry extends ICommonNode {
     type?: MolType;
-    styles?: IStyle[];
+    stylesSels?: IStyleAndSel[];
     chains?: IChain[];
     nodes?: IChain[];
 }
@@ -46,7 +46,21 @@ export interface IFileContents extends ICommonNode {
     nodes?: IMolEntry[];
 }
 
+export interface IColorStyle {
+    color?: string;
+    colorscheme?: string;
+    radius?: number;
+}
+
 export interface IStyle {
+    sphere?: IColorStyle;
+    stick?: IColorStyle;
+    line?: IColorStyle;
+    cartoon?: IColorStyle;
+    surface?: IColorStyle;  // NOTE: Not how 3dmoljs handles surface.
+}
+
+export interface IStyleAndSel {
     selection: any;
-    style: any;
+    style: IStyle;
 }

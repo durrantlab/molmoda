@@ -1,27 +1,27 @@
-import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
-export const unbondedAtomsStyle: IStyle = {
+export const unbondedAtomsStyle: IStyleAndSel = {
     selection: { bonds: 0 },
     style: { sphere: {
         radius: 0.5
     } },
 };
 
-const sphereStyle: IStyle = {
+const sphereStyle: IStyleAndSel = {
     selection: {},
     style: {
         sphere: {},
     },
 };
 
-const stickStyle: IStyle = {
+const stickStyle: IStyleAndSel = {
     selection: {},
     style: {
         stick: {},
     },
 };
 
-export const proteinStyle: IStyle[] = [
+export const proteinStyle: IStyleAndSel[] = [
     {
         selection: {},
         style: {
@@ -32,14 +32,14 @@ export const proteinStyle: IStyle[] = [
     },
 ];
 
-export const nucleicStyle: IStyle[] = [stickStyle];
+export const nucleicStyle: IStyleAndSel[] = [stickStyle];
 
-export const ligandsStyle: IStyle[] = [stickStyle];
+export const ligandsStyle: IStyleAndSel[] = [stickStyle];
 
-export const metalsStyle: IStyle[] = [sphereStyle];
+export const metalsStyle: IStyleAndSel[] = [sphereStyle];
 
-export const lipidStyle: IStyle[] = [stickStyle];
+export const lipidStyle: IStyleAndSel[] = [stickStyle];
 
-export const ionsStyle: IStyle[] = [sphereStyle];
+export const ionsStyle: IStyleAndSel[] = [sphereStyle];
 
-export const solventStyle: IStyle[] = [stickStyle];
+export const solventStyle: IStyleAndSel[] = [stickStyle];

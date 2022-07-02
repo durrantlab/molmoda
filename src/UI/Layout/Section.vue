@@ -1,9 +1,13 @@
 <template>
-  <div :id="id">
-    <p class="mb-0">
+  <div :id="id" class="mb-2">
+    <div class="mb-0">
       <strong v-if="level === 1">{{title}}</strong>
       <i v-else>{{title}}</i>
-    </p>
+      
+      <div style="float:right;">
+        <slot name="afterTitle"></slot>
+      </div>
+    </div>
     <slot></slot>
   </div>
 </template>

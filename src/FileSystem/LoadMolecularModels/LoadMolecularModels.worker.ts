@@ -9,8 +9,8 @@ import {
 import * as tmp from "@/UI/Panels/Viewer/3Dmol-nojquery.JDD";
 import { ionSel, lipidSel, metalSel, nucleicSel, proteinSel, solventSel } from "./Lookups/ComponentSelections";
 import { ionsStyle, ligandsStyle, lipidStyle, metalsStyle, nucleicStyle, proteinStyle, solventStyle } from "./Lookups/DefaultStyles";
-import { IAtom, IChain, IFileContents, IMolEntry, IResidue, IStyle, MolType } from "../../UI/Navigation/TreeView/TreeInterfaces";
-import { getAllNodes, getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { IAtom, IChain, IFileContents, IMolEntry, IResidue, IStyleAndSel, MolType } from "../../UI/Navigation/TreeView/TreeInterfaces";
+import { getAllNodesFlattened, getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 const $3Dmol = (tmp as any);
 
@@ -168,13 +168,13 @@ function makeTitleDOM(title: string): string {
     return title;
 }
 
-function addMolTypeAndStyle(molEntry: IMolEntry, styles: IStyle[]): void {
+function addMolTypeAndStyle(molEntry: IMolEntry, stylesAndSels: IStyleAndSel[]): void {
     let molType = molEntry.type;
     for (const mol of getTerminalNodes([molEntry])) {
         mol.type = molType;
-        mol.styles = styles;
+        mol.stylesSels = stylesAndSels;
     }
-    for (const mol of getAllNodes([molEntry])) {
+    for (const mol of getAllNodesFlattened([molEntry])) {
         mol.id = randomID();
         mol.text =  makeTitleDOM(mol.text);
         mol.treeExpanded = false;

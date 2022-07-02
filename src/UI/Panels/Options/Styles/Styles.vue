@@ -1,11 +1,13 @@
 <template>
   <Section title="Styles">
-    <Style
-      v-for="styleAndName in stylesAndNames"
+    <span
+      v-for="styleAndName, idx in stylesAndNames"
       v-bind:key="styleAndName.name"
-      :styleAndName="styleAndName"
-    ></Style>
-  </Section>
+    >
+    <!-- {{stylesAndNames[idx]}} -->
+      <Style :styleName="stylesAndNames[idx]"></Style>
+    </span>
+    </Section>
 </template>
 
 <script lang="ts">
@@ -22,10 +24,10 @@ import Style, { IStyleName } from "./Style.vue";
 // @ts-ignore
 import isEqual from "lodash/isEqual";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadMolecularModels/Lookups/DefaultStyles";
-import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 interface IStyleCount {
-  style: IStyle,
+  styleAndSel: IStyleAndSel,
   count: number,
 }
 
@@ -38,29 +40,32 @@ interface IStyleCount {
 })
 export default class Styles extends Vue {
   get stylesAndNames(): IStyleName[] {
-    let allStyles: { [key: string]: IStyle[] } = {};
+    let allStylesAndSels: { [key: string]: IStyleAndSel[] } = {};
     let molecules = this.$store.state["molecules"];
 
     // Get the styles for all visible components, organized by molecule type.
     for (let node of getTerminalNodes(molecules)) {
       if (!node.type) { continue; }
       // if (node.type === "metal") { continue; }  // Can't change metal style
-      if (!node.styles) { continue; }
+      if (!node.stylesSels) { continue; }
       if (!node.visible) { continue; }
 
-      if (allStyles[node.type] === undefined) {
-        allStyles[node.type] = [];
+      if (allStylesAndSels[node.type] === undefined) {
+        allStylesAndSels[node.type] = [];
       }
 
-      allStyles[node.type].push(...node.styles);
+      allStylesAndSels[node.type].push(...node.stylesSels);
     }
 
     // For each type, get the styles that all molecules have in common. Note
     // that a given type may have no styles in common, in which case it will be
     // associated with an empty list.
     let allStylesAndCounts: {[key: string]: IStyleCount[]} = {};
-    for (let type in allStyles) {
-      let styles = allStyles[type];
+    for (let type in allStylesAndSels) {
+      let styles = allStylesAndSels[type];
+
+      // if (styles.length === 0) { continue; }
+      
       let stylesAndCounts = this.convertStyleToStyleCount([styles[0]]);
       for (let i = 1; i < styles.length; i++) {
         let newStyleCounts = this.convertStyleToStyleCount([styles[i]]);
@@ -73,21 +78,23 @@ export default class Styles extends Vue {
       allStylesAndCounts[type] = stylesAndCounts;
     }
 
-    return Object.keys(allStylesAndCounts).map(
+    let allStylesAndCountsInfo: IStyleName[] = Object.keys(allStylesAndCounts).map(
       (k: string) => {
         return { 
           name: k, 
-          style: allStylesAndCounts[k].length > 0 
-            ? allStylesAndCounts[k][0].style  // First one is the most common.
+          styleAndSel: allStylesAndCounts[k].length > 0 
+            ? allStylesAndCounts[k][0].styleAndSel  // First one is the most common.
             : {}  // No styles for this type.
         } as IStyleName;
       }
     );
+
+    return allStylesAndCountsInfo;
   }
 
-  private convertStyleToStyleCount(styles: IStyle[]): IStyleCount[] {
-    return styles.map((s: IStyle): IStyleCount => {
-      return { style: s, count: 1 };
+  private convertStyleToStyleCount(styles: IStyleAndSel[]): IStyleCount[] {
+    return styles.map((s: IStyleAndSel): IStyleCount => {
+      return { styleAndSel: s, count: 1 };
     });
   }
 
@@ -98,7 +105,7 @@ export default class Styles extends Vue {
     for (let newStyleCount of newStyleCounts) {
       let styleExistsInStylesAndCounts = false;
       for (let styleAndCount of stylesAndCounts) {
-        if (isEqual(styleAndCount.style, newStyleCount.style)) {
+        if (isEqual(styleAndCount.styleAndSel, newStyleCount.styleAndSel)) {
           styleAndCount.count++;
           styleExistsInStylesAndCounts = true;
           break;

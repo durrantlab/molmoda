@@ -2,19 +2,60 @@
 <script src="dist/sl-vue-tree.js"></script> -->
 
 <template>
-  <span v-for="treeDatum in getLocalTreeData" v-bind:key="treeDatum.id">
-    <TitleBar :treeDatum="treeDatum" :depth="depth" :treeData="treeData" />
+  <div class="title" :style="indentStyle">
+    <!-- expand icon -->
+    <IconSwitcher
+      v-if="treeDatum.nodes"
+      class="title-element clickable"
+      :useFirst="treeDatum.treeExpanded"
+      :iconID1="['fa', 'angle-down']"
+      :iconID2="['fa', 'angle-right']"
+      :width="15"
+      @click="toggleExpand(treeDatumID)"
+    />
+    <div v-else :style="flexFixedWidth(15)"></div>
 
-    <!-- Show sub-items if appropriate -->
-    <Transition name="slide">
-      <div
-        v-if="treeDatum.nodes && treeDatum.treeExpanded"
-        :style="indentStyle"
-      >
-        <TreeView :treeData="treeDatum.nodes" :depth="depth + 1" />
-      </div>
-    </Transition>
-  </span>
+    <!-- item icon -->
+    <!-- <IconSwitcher
+      class="title-element clickable"
+      :useFirst="treeDatum.nodes !== undefined"
+      :iconID1="['far', 'folder']"
+      :iconID2="['far', 'file']"
+      :width="18"
+      @click="titleClick(treeDatumID)"
+    /> -->
+
+    <!-- title text -->
+    <div 
+      class="title-text clickable" 
+      @click="titleClick(treeDatumID)"
+      :style="treeDatum.visible ? '' : 'color: lightgray;'">
+      {{ treeDatum.text }}
+    </div>
+
+    <!-- menu-item buttons -->
+    <IconBar :width="52">
+      <IconSwitcher
+        class="title-element clickable"
+        :useFirst="treeDatum.visible"
+        :iconID1="['far', 'eye']"
+        :iconID2="['far', 'eye-slash']"
+        :icon2Style="{color: 'lightgray'}"
+        :width="24"
+        @click="toggleVisible(treeDatumID)"
+      />
+      <IconSwitcher
+        class="title-element clickable"
+        :useFirst="treeDatum.focused"
+        :iconID1="['fa', 'arrows-to-eye']"
+        :iconID2="['fa', 'arrows-to-eye']"
+        :icon2Style="{color: 'lightgray'}"
+        :width="24"
+        @click="toggleFocused(treeDatumID)"
+      />
+      <!-- @click="toggleExpand(treeDatumID)" -->
+    </IconBar>
+  </div>
 </template>
 
 <script lang="ts">
@@ -22,23 +63,26 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-// import { Watch } from "vue-property-decorator";
-import { getAllNodesFlattened, getNodeOfId } from "./TreeUtils";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
-import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
-import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
+import { IMolEntry } from "../TreeView/TreeInterfaces";
+import { getNodeOfId, getAllNodesFlattened } from "../TreeView/TreeUtils";
+import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 
 @Options({
   components: {
     IconSwitcher,
     IconBar,
-    TitleBar
   },
 })
-export default class TreeView extends Vue {
+export default class TitleBar extends Vue {
+  @Prop({ required: true }) treeDatum!: IMolEntry;
   @Prop({ default: 0 }) depth!: number;
-  @Prop({ default: undefined }) treeData!: Array<any>;
+  @Prop({ default: undefined}) treeData!: IMolEntry[];
+
+  get treeDatumID(): string {
+    return this.treeDatum.id as string;
+  }
 
   flexFixedWidth(width: number): string {
     return flexFixedWidthStyle(width);
@@ -118,6 +162,33 @@ export default class TreeView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+.title {
+  display: flex;
+}
+
+.title-element {
+  margin-right: 2px;
+  display: inline-block;
+}
+
+.title-text {
+  flex: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.title-text:hover {
+  text-decoration: underline;
+}
+
+.btn-bar {
+  overflow: hidden;
+}
 
 // See https://codepen.io/kdydesign/pen/VrQZqx
 $transition-time: 0.2s;

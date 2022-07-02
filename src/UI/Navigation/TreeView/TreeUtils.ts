@@ -4,7 +4,7 @@ export function getTerminalNodes(mols: IMolEntry[]): IMolEntry[] {
     // Use a recursive function to find the terminal leaves of mols.
     function findLeaves(mls: IMolEntry[]): IMolEntry[] {
         let leaves: IMolEntry[] = [];
-        
+
         for (const mol of mls) {
             if (mol.nodes) {
                 leaves = leaves.concat(findLeaves(mol.nodes));
@@ -17,15 +17,15 @@ export function getTerminalNodes(mols: IMolEntry[]): IMolEntry[] {
     return findLeaves(mols);
 }
 
-export function getAllNodes(mols: IMolEntry[]): IMolEntry[] {
+export function getAllNodesFlattened(mols: IMolEntry[]): IMolEntry[] {
     // Use a recursive function to find the terminal leaves of mols.
     function findNodes(mls: IMolEntry[]): IMolEntry[] {
         let allNodes: IMolEntry[] = [];
-        
+
         for (const mol of mls) {
             if (mol.nodes) {
                 allNodes = allNodes.concat(findNodes(mol.nodes));
-            } 
+            }
             allNodes.push(mol);
         }
         return allNodes;
@@ -50,4 +50,22 @@ export function getNodeOfId(id: string, mols: IMolEntry[]): IMolEntry | null {
         return null;
     }
     return findNode(mols, id);
+}
+
+export function getNodesOfType(
+    mols: IMolEntry[],
+    type: string,
+    onlyConsiderVisible = false
+): IMolEntry[] {
+    let nodesToConsider = getAllNodesFlattened(mols);
+    nodesToConsider = nodesToConsider.filter((node) => node.type === type);
+
+    if (onlyConsiderVisible) {
+        nodesToConsider = nodesToConsider.filter((node) => node.visible);
+    }
+
+    // Note that children of compounds also marked compounds, so no need to
+    // explicitly search for/include children.
+
+    return nodesToConsider;
 }

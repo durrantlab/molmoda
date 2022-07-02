@@ -1,36 +1,64 @@
 <template>
   <Section
-    v-bind:key="styleAndName.name"
+    v-bind:key="styleName.name"
     :level="2"
-    :title="capitalize(styleAndName.name)"
+    :title="capitalize(styleName.name)"
   >
+    <template v-slot:afterTitle>
+      <IconSwitcher
+        :useFirst="isVisible"
+        :iconID1="['far', 'eye']"
+        :iconID2="['far', 'eye-slash']"
+        :icon2Style="{ color: 'lightgray' }"
+        :width="24"
+        @click="toggleVisible(styleName.name)"
+        :clickable="true"
+      />
+    </template>
+    <!-- <span style="color: red">{{ atomsOption }}</span> -->
     <FormSelect
-      :id="'atoms-' + styleAndName.name"
+      :id="'atoms-' + styleName.name"
       v-model="atomsOption"
       :options="[
-        'Atoms: None',
-        'Atoms: Lines',
-        'Atoms: Sticks',
-        'Atoms: Spheres',
+        { description: 'Atoms: Hidden', val: 'atoms-hidden' },
+        { description: 'Atoms: Lines', val: 'line' },
+        { description: 'Atoms: Sticks', val: 'stick' },
+        { description: 'Atoms: Spheres', val: 'sphere' },
       ]"
-      @changed="translateComponentToStyle"
+      @changed="updateMolecules(atomsOption)"
+    ></FormSelect>
+    <!-- {{styleName.styleAndSel.style}} MOOOOO -->
+    <ColorStyle 
+      v-if="atomsOption !== 'atoms-hidden'" 
+      v-model="styleName.styleAndSel.style" 
+    />
+    <span style="color: red">NOT REACTIVE: </span>{{ styleName }}
+
+    <FormSelect
+      v-if="styleName.name === 'protein'"
+      :id="'protein-' + styleName.name"
+      v-model="backboneOption"
+      :options="[
+        { description: 'Backbone: Hidden', val: 'backbone-hidden' },
+        { description: 'Backbone: Cartoon', val: 'cartoon' },
+        // {description: 'Protein: Tubes', val: 'tubes'},
+      ]"
+      @changed="updateMolecules(backboneOption)"
     ></FormSelect>
 
     <FormSelect
-      v-if="styleAndName.name === 'protein'"
-      :id="'protein-' + styleAndName.name"
-      v-model="proteinOption"
-      :options="['Protein: None', 'Protein: Cartoon', 'Protein: Tubes']"
-      @changed="translateComponentToStyle"
-    ></FormSelect>
-
-    <FormSelect
-      v-if="styleAndName.name !== 'metal'"
-      :id="'surface-' + styleAndName.name"
+      v-if="styleName.name !== 'metal'"
+      :id="'surface-' + styleName.name"
       v-model="surfaceOption"
-      :options="['Surface: None', 'Surface: Surface']"
-      @changed="translateComponentToStyle"
+      :options="[
+        { description: 'Surface: Hidden', val: 'surface-hidden' },
+        { description: 'Surface', val: 'surface' },
+      ]"
+      @changed="updateMolecules(surfaceOption)"
     ></FormSelect>
+
+    <!-- <FormFull v-model="colorForm"></FormFull> -->
+    <!-- <ColorStyle /> -->
   </Section>
 </template>
 
@@ -40,7 +68,10 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import Section from "@/UI/Layout/Section.vue";
-import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+  getNodesOfType,
+  getTerminalNodes,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 import { capitalize } from "@/Core/Utils";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
@@ -48,10 +79,14 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 // @ts-ignore
 import isEqual from "lodash/isEqual";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadMolecularModels/Lookups/DefaultStyles";
-import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
+import FormFull from "@/UI/Forms/FormFull.vue";
+import { FormElemType } from "@/UI/Forms/FormFull.vue";
+import ColorStyle from "./ColorStyle.vue";
 
 export interface IStyleName {
-  style: IStyle;
+  styleAndSel: IStyleAndSel;
   name: string;
 }
 
@@ -59,70 +94,109 @@ export interface IStyleName {
   components: {
     Section,
     FormSelect,
+    IconSwitcher,
+    FormFull,
+    ColorStyle,
   },
 })
 export default class Style extends Vue {
-  @Prop() styleAndName!: IStyleName;
+  @Prop({ required: true }) styleName!: IStyleName;
 
-  atomsOption = "atoms-none";
-  proteinOption = "protein-none";
-  surfaceOption = "surface-none";
+  isVisible: boolean = true;
+  atomsOption = "atoms-hidden";
+  backboneOption = "backbone-hidden";
+  surfaceOption = "surface-hidden";
 
-  translateComponentToStyle(): void {
-    let style: {[key: string]: any} = {};
-    switch (this.atomsOption) {
-        case 'atoms-none':
-          break;
-        case 'atoms-lines':
-          style["line"] = {};
-          break;
-        case 'atoms-sticks':
-          style["stick"] = {};
-          break;
-        case 'atoms-spheres':
-          style["sphere"] = {};
-          break;
+  toggleVisible(name: string) {
+    this.isVisible = !this.isVisible;
+    let nodesOfThisType = getNodesOfType(
+      this.$store.state["molecules"],
+      name,
+      true // onlyConsiderVisible
+    );
+    for (let node of nodesOfThisType) {
+      node.visible = this.isVisible;
+      node.viewerDirty = true;
+    }
+  }
+
+  private setInitialSelectVals(styleInfo: IStyleAndSel) {
+    if (styleInfo.style === undefined) {
+      // Happens when all styles have been previously set to hidden.
+      styleInfo.style = {};
     }
 
-    switch (this.proteinOption) {
-        case 'protein-none':
-          break;
-        case 'protein-cartoon':
-          style["cartoon"] = {
-            color: "spectrum"
-          };
-          break;
-        case 'protein-tubes':
-          style["cartoon"] = {
-            color: "spectrum",
-            tubes: true
-          };
-          break;
+    if (styleInfo.style.sphere) { this.atomsOption = "sphere"; } 
+    else if (styleInfo.style.stick) { this.atomsOption = "stick"; } 
+    else if (styleInfo.style.line) { this.atomsOption = "line"; } 
+    else { this.atomsOption = "atoms-hidden"; }
+
+    if (styleInfo.style.cartoon) { this.backboneOption = "cartoon"; }
+    else { this.backboneOption = "backbone-hidden"; }
+
+    if (styleInfo.style.surface) { this.surfaceOption = "surface"; }
+    else { this.surfaceOption = "surface-hidden"; }
+  }
+
+  updateMolecules(val: string): void {
+    // console.log(this.styleName, val, componentLbl);
+    // console.log(val, componentLbl);
+
+    let style = this.styleName.styleAndSel ? this.styleName.styleAndSel.style : {};
+
+    // Deal items with hidden visualizations, which are equivalent to 3Dmoljs
+    // styles.
+    switch (val) {
+      case "atoms-hidden":
+        if (style.line) { delete style.line; }
+        if (style.stick) { delete style.stick; }
+        if (style.sphere) { delete style.sphere; }
+        break;
+      case "backbone-hidden":
+        if (style.cartoon) { delete style.cartoon; }
+        break;
+      case "surface-hidden":
+        if (style.surface) { delete style.surface; }
+        break;
+      default:
+        // Not hidden, so use specified value.
+        (style as any)[val] = {}; // TODO: Need to use colors, not empty object.
     }
 
-    switch (this.surfaceOption) {
-        case 'surface-none':
-          break;
-        case 'surface-surface':
-          style["surface"] = {};
-          break;
+    // In case of atoms, representations are mutually exclusive.
+    switch (val) {
+      case "line":
+        if (style.stick) { delete style.stick; }
+        if (style.sphere) { delete style.sphere; }
+        break;
+      case "stick":
+        if (style.line) { delete style.line; }
+        if (style.sphere) { delete style.sphere; }
+        break;
+      case "sphere":
+        if (style.line) { delete style.line; }
+        if (style.stick) { delete style.stick; }
+        break;
     }
 
     // iterate through terminal nodes
     let molecules = this.$store.state["molecules"];
     for (let node of getTerminalNodes(molecules)) {
       if (!node.type) { continue; }
-      if (!node.styles) { continue; }
+      if (!node.stylesSels) { continue; }
       if (!node.visible) { continue; }
 
-      if (node.type === this.styleAndName.name) {
-        node.styles = [];
+      // Check if the node type matches this style
+      if (node.type === this.styleName.name) {
+        // Add the styles to the node list if it's not empty ({}).
+        node.stylesSels = [];
         if (!isEqual(style, {})) {
-          node.styles.push({
+          node.stylesSels.push({
             style: style,
             selection: {},
           });
         }
+        // Mark this for rerendering in viewer.
         node.viewerDirty = true;
       }
     }
@@ -131,41 +205,18 @@ export default class Style extends Vue {
       name: "molecules",
       val: molecules,
     });
+
+    // this.$emit("update:styleName", e.target.value);
   }
 
-  private translateStyleToComponent(styleInfo: IStyle) {
-    if (styleInfo.style.sphere) {
-      this.atomsOption = "atoms-spheres";
-    } else if (styleInfo.style.stick) {
-      this.atomsOption = "atoms-sticks";
-    } else if (styleInfo.style.line) {
-      this.atomsOption = "atoms-lines";
-    } else {
-      this.atomsOption = "atoms-none";
-    }
-
-    if (styleInfo.style.cartoon) {
-      this.proteinOption = "protein-cartoon";
-    } else {
-      this.proteinOption = "protein-none";
-    }
-
-    if (styleInfo.style.surface) {
-      this.surfaceOption = "surface-surface";
-    } else {
-      this.surfaceOption = "surface-none";
-    }
-  }
-
-  capitalize(str: string): string {
-    return capitalize(str);
-  }
+  capitalize(str: string): string { return capitalize(str); }
 
   mounted() {
     // Start by selecting defaults TODO: Actually, not sure this is necessary.
     // All components will always have SOME style (assigned at load).
-    
-    this.translateStyleToComponent(this.styleAndName.style);
+
+    // this.translateStyleToComponent(this.styleName.style);
+    this.setInitialSelectVals(this.styleName.styleAndSel);
   }
 }
 </script>

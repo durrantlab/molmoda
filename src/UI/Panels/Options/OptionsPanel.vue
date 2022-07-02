@@ -1,5 +1,7 @@
 <template>
   <Styles />
+  <br />
+  <hr />
   <div :style="'background-color:' + test2">{{ test }}; {{ sel }}</div>
   <FormWrapper label="My Label">
     <FormInput

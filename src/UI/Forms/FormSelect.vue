@@ -8,11 +8,11 @@
   >
     <!-- <option selected>Open this select menu</option> -->
     <option
-      v-for="opt in options"
-      :value="slugify(opt)"
-      v-bind:key="slugify(opt)"
+      v-for="opt in optionsToUse"
+      :value="opt.val"
+      v-bind:key="opt.val"
     >
-      {{opt}}
+      {{opt.description}}
     </option>
   </select>
 </template>
@@ -20,27 +20,43 @@
 <script lang="ts">
 /* eslint-disable */
 
-import { slugify } from "@/Core/Utils";
+import { randomID, slugify } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+
+interface IOption {
+  description: string;
+  val: any;
+}
 
 @Options({
   components: {},
 })
 export default class FormSelect extends Vue {
   @Prop({ required: true }) modelValue!: string;
-
-  @Prop({ required: true }) id!: string;
+  @Prop({ default: randomID() }) id!: string;
   @Prop({ default: false }) disabled!: boolean;
-  @Prop({ required: true }) options!: string[];
+  @Prop({ required: true }) options!: (string | IOption)[];
+
+  get optionsToUse(): IOption[] {
+    return this.options.map((o: string | IOption) => {
+      if (typeof o === "string") {
+        return {
+          description: o,
+          val: slugify(o)
+        };
+      } else {
+        return o;
+      }
+    });
+  }
 
   handleInput(e: any) {
     this.$emit("update:modelValue", e.target.value);
-    this.$emit("changed");
-  }
 
-  slugify(v: string): string {
-    return slugify(v);
+    // In some circumstances (e.g., changing values in an object), not reactive.
+    // So emit also "changed" to indicate the value has changed.
+    this.$emit("changed");
   }
 }
 </script>

@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
+import { Vue } from "vue-class-component";
 import { createStore } from "vuex";
 
 interface NameValPair {
@@ -39,10 +41,23 @@ export var store: any;
 export function setupVueXStore() {
     let storeVars = {
         state: {
-            "molecules": []
+            "molecules": [],
+            "updateZoom": true
         },
         getters: {},
-        mutations: commonMutations,
+        mutations: {
+            ...commonMutations,
+            clearFocusedMolecule(state: any, updateZoom = true) {
+                if (!updateZoom) { state["updateZoom"] = false; }
+                for (let node of getAllNodesFlattened(state["molecules"])) {
+                    node.focused = false;
+                }
+                // Revert updateZoom after rerender
+                if (!updateZoom) { 
+                    setTimeout(() => { state["updateZoom"] = true; }, 0);
+                }
+            }
+        },
         actions: {},
         modules: modules,
     };
