@@ -2,7 +2,7 @@
   <div :id="id" class="mb-2">
     <div class="mb-0">
       <strong v-if="level === 1">{{title}}</strong>
-      <i v-else>{{title}}</i>
+      <em v-else>{{title}}</em>
       
       <div style="float:right;">
         <slot name="afterTitle"></slot>

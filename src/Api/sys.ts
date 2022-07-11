@@ -2,29 +2,16 @@ import { sysVars } from "@/Core/SysVars";
 
 export const sysApi = {
     loadStatus: {
-        started(val?: boolean) {
-            if (val !== undefined) {
-                sysVars.loadStatus.started = val;
-            }
-            return sysVars.loadStatus.started;
-        },
-        pluginsLoaded(val?: boolean) {
-            if (val !== undefined) {
-                sysVars.loadStatus.pluginsLoaded = val;
-            }
-            return sysVars.loadStatus.pluginsLoaded;
-        },
-        menuFinalized(val?: boolean) {
-            if (val !== undefined) {
-                sysVars.loadStatus.menuFinalized = val;
-            }
-            return sysVars.loadStatus.menuFinalized;
-        },
-        vueRendered(val?: boolean) {
-            if (val !== undefined) {
-                sysVars.loadStatus.vueRendered = val;
-            }
-            return sysVars.loadStatus.vueRendered;
-        }
+        get started(): boolean { return sysVars.loadStatus.started; },
+        set started(val: boolean) { sysVars.loadStatus.started = val; },
+        
+        get pluginsLoaded(): boolean { return sysVars.loadStatus.pluginsLoaded; },
+        set pluginsLoaded(val: boolean) { sysVars.loadStatus.pluginsLoaded = val; },
+
+        get menuFinalized(): boolean { return sysVars.loadStatus.menuFinalized; },
+        set menuFinalized(val: boolean) { sysVars.loadStatus.menuFinalized = val; },
+
+        get vueRendered(): boolean { return sysVars.loadStatus.vueRendered; },
+        set vueRendered(val: boolean) { sysVars.loadStatus.vueRendered = val; },
     }
 }

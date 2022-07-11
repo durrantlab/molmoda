@@ -1,10 +1,10 @@
 <template>
   <Section title="Styles">
+    <!-- <span style="color: red">MOOSE: </span>{{ stylesAndNames }} -->
     <span
       v-for="styleAndName, idx in stylesAndNames"
       v-bind:key="styleAndName.name"
     >
-    <!-- {{stylesAndNames[idx]}} -->
       <Style :styleName="stylesAndNames[idx]"></Style>
     </span>
     </Section>
@@ -64,7 +64,7 @@ export default class Styles extends Vue {
     for (let type in allStylesAndSels) {
       let styles = allStylesAndSels[type];
 
-      // if (styles.length === 0) { continue; }
+      // if (styles.length === 0) { debugger; }
       
       let stylesAndCounts = this.convertStyleToStyleCount([styles[0]]);
       for (let i = 1; i < styles.length; i++) {

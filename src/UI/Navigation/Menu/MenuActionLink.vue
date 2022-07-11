@@ -21,7 +21,7 @@ import { Prop } from "vue-property-decorator";
 import * as Dropdown from "bootstrap/js/dist/dropdown";
 
 import "bootstrap/js/dist/collapse";
-import { IMenuAction } from "./Menu";
+import { IMenuItem } from "./Menu";
 
 // var $ = require("jquery");
 
@@ -29,10 +29,10 @@ import { IMenuAction } from "./Menu";
   components: {},
 })
 export default class MenuActionLink extends Vue {
-  @Prop() menuData!: IMenuAction;
+  @Prop() menuData!: IMenuItem;
   @Prop({ default: false }) isTopLevel!: boolean;
 
-  runFunction(item: IMenuAction): void {
+  runFunction(item: IMenuItem): void {
     if (item.function) {
       // Hide all toggles
       const dropdownElementList = document.querySelectorAll(".dropdown-toggle");

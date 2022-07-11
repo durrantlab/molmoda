@@ -6,6 +6,7 @@
     <div style="flex-grow: 5;">
       <GoldLayout />
     </div>
+    <AboutPlugin />
   </div>
 </template>
 
@@ -15,17 +16,19 @@ import { Prop } from "vue-property-decorator";
 import GoldLayout from "@/UI/Layout/GoldenLayout/GoldLayout.vue";
 import Menu from "@/UI/Navigation/Menu/Menu.vue";
 import * as api from "@/Api";
+import AboutPlugin from "@/Plugins/Core/About/About.vue";
 
 @Options({
   components: {
     GoldLayout,
     Menu,
+    AboutPlugin
   },
 })
 export default class App extends Vue {
   mounted() {
     // Close enough to rendered, I think.
-    api.sys.loadStatus.vueRendered(true);
+    api.sys.loadStatus.vueRendered =true;
   }
 }
 </script>

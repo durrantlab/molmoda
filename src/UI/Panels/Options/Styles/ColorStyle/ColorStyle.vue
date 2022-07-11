@@ -1,0 +1,295 @@
+<template>
+  <FormFull v-model="constructedColorForm"></FormFull>
+</template>
+
+<script lang="ts">
+/* eslint-disable */
+
+import { Options, Vue } from "vue-class-component";
+import { Prop } from "vue-property-decorator";
+import Section from "@/UI/Layout/Section.vue";
+import FormSelect from "@/UI/Forms/FormSelect.vue";
+
+// @ts-ignore
+import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
+import FormFull, { FormElemType } from "@/UI/Forms/FormFull.vue";
+import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { isEqual } from "lodash";
+
+import { colorNameToHex, hexToColorName } from "./ColorConverter";
+
+interface INameAndColorStyle {
+  name: string;
+  colorStyle: IColorStyle;
+}
+
+class ColorStyleOptions {
+  private colorStyles: INameAndColorStyle[] = [
+    {
+      name: "Element",
+      colorStyle: { colorscheme: "default" },
+    },
+    {
+      name: "ColorCarbons",
+      colorStyle: { colorscheme: "#COLORNAMECarbon" },
+      // colorStyle: { colorscheme: "LightCoralCarbon" },
+    },
+    {
+      name: "Spectrum",
+      colorStyle: { color: "spectrum" },
+    },
+    {
+      name: "SecondaryStructure",
+      colorStyle: { colorscheme: "ssJmol" },
+    },
+    {
+      name: "Chain",
+      colorStyle: { colorscheme: "chain" },
+    },
+    {
+      name: "Solid",
+      colorStyle: { color: "#HEX" },
+    },
+  ];
+
+  public defaultColor = "#C0C0C0"; // silver
+  public color = "#C0C0C0"; // silver
+
+  public nameToIndex(name: string): number {
+    return this.colorStyles.findIndex((colorStyle) => colorStyle.name === name);
+  }
+
+  public styleToIndex(style: IColorStyle): number {
+    if (style.color !== undefined && style.color !== "spectrum") {
+      // It must be "Solid"
+      return this.nameToIndex("Solid");
+    }
+
+    if (
+      style.colorscheme !== undefined &&
+      style.colorscheme.endsWith("Carbon")
+    ) {
+      // It must be "ColorCarbons"
+      return this.nameToIndex("ColorCarbons");
+    }
+
+    // If you get here, it's easy to determine based on deep equality.
+    return this.colorStyles.findIndex((colorStyle) =>
+      isEqual(colorStyle.colorStyle, style)
+    );
+  }
+
+  public indexToName(index: number): string {
+    return this.colorStyles[index].name;
+  }
+
+  private addColorToStyle(colorStyle: IColorStyle): IColorStyle {
+    let strColorStyle = JSON.stringify(colorStyle);
+
+    // Has #HEX?
+    if (strColorStyle.indexOf("#HEX") > -1) {
+      strColorStyle = strColorStyle.replace(/#HEX/g, this.color);
+    }
+
+    // Has #COLORNAME?
+    if (strColorStyle.indexOf("#COLORNAME") > -1) {
+      strColorStyle = strColorStyle.replace(
+        /#COLORNAME/g,
+        hexToColorName(this.color)
+      );
+    }
+
+    return JSON.parse(strColorStyle);
+  }
+
+  public indexToStyle(index: number): IColorStyle {
+    let colorStyle = this.colorStyles[index].colorStyle;
+    colorStyle = this.addColorToStyle(colorStyle);
+    return colorStyle;
+  }
+
+  public nameToStyle(name: string): IColorStyle {
+    let colorStyle = this.colorStyles[this.nameToIndex(name)].colorStyle;
+    colorStyle = this.addColorToStyle(colorStyle);
+    return colorStyle;
+  }
+
+  public extractHexColorsFromStyle(style: IStyle): string[] {
+    const styleRecast = style as { [key: string]: IColorStyle };
+    const colors: string[] = [];
+    for (const rep in styleRecast) {
+      const colorStyle = styleRecast[rep] as IColorStyle;
+      // Is it hex?
+      if (colorStyle.color?.startsWith("#")) {
+        colors.push(colorStyle.color);
+      }
+
+      // Is it colorName?
+      if (colorStyle.colorscheme?.endsWith("Carbon")) {
+        // Remove Carbon at end.
+        let colorName = colorStyle.colorscheme.substring(
+          0,
+          colorStyle.colorscheme.length - 6
+        );
+        colors.push(colorNameToHex(colorName));
+      }
+    }
+
+    return colors;
+  }
+}
+
+@Options({
+  components: {
+    Section,
+    FormSelect,
+    IconSwitcher,
+    FormFull,
+  },
+  emits: { changed: "changed", "update:modelValue": "update:modelValue" },
+})
+export default class ColorStyle extends Vue {
+  // Looks like this: { "cartoon": { "color": "spectrum" } }
+  @Prop({ required: true }) modelValue!: IStyle;
+  @Prop({ required: true }) repName!: string;
+  @Prop({ default: true }) allowColorByElement!: boolean;
+  @Prop({ default: true }) allowColorCarbons!: boolean;
+  @Prop({ default: true }) allowSpectrum!: boolean;
+  @Prop({ default: true }) allowSecondaryStructure!: boolean;
+
+  colorStyles = new ColorStyleOptions();
+
+  get constructedColorForm(): any[] {
+    let style: IStyle = this.modelValue;
+    let styleAsObjForRef = style as { [key: string]: IColorStyle };
+
+    // If any val is {}, set to default.
+    // console.log("*****", styleAsObjForRef[this.repName]);
+    if (
+      isEqual(styleAsObjForRef[this.repName], {}) ||
+      !styleAsObjForRef[this.repName]
+    ) {
+      // @ts-ignore
+      style[this.repName] = this.colorStyles.nameToStyle("Element");
+    }
+
+    let colorStyleIdx = this.colorStyles.styleToIndex(
+      // @ts-ignore
+      style[this.repName]
+    );
+
+    // Build the color form
+
+    let colorFormOptions = [];
+    
+    if (this.allowColorByElement) {
+      colorFormOptions.push({
+        description: "Color by Element",
+        val: this.colorStyles.nameToIndex("Element"),
+      });
+    }
+
+    if (this.allowColorCarbons) {
+      colorFormOptions.push({
+        description: "Color Carbons",
+        val: this.colorStyles.nameToIndex("ColorCarbons"),
+      });
+    }
+
+    if (this.allowSpectrum) {
+      colorFormOptions.push({
+        description: "Color by Spectrum",
+        val: this.colorStyles.nameToIndex("Spectrum"),
+      });
+    }
+
+    if (this.allowSecondaryStructure) {
+      colorFormOptions.push({
+        description: "Color by Secondary Structure",
+        val: this.colorStyles.nameToIndex("SecondaryStructure"),
+      });
+    }
+
+    colorFormOptions.push(
+      ...[
+        {
+          description: "Color by Chain",
+          val: this.colorStyles.nameToIndex("Chain"),
+        },
+        {
+          description: "Color by Solid",
+          val: this.colorStyles.nameToIndex("Solid"),
+        },
+      ]
+    )
+
+    let colorForm: any[] = [
+      {
+        type: FormElemType.Select,
+        varName: "colorscheme",
+        val: colorStyleIdx,
+        options: colorFormOptions,
+      },
+    ];
+
+    // If the color scheme is color carbons or solid, add the color option to
+    // the form.
+    if (
+      [
+        this.colorStyles.nameToIndex("ColorCarbons"),
+        this.colorStyles.nameToIndex("Solid"),
+      ].indexOf(colorStyleIdx) > -1
+    ) {
+      colorForm.push({
+        type: FormElemType.Color,
+        varName: "color",
+        // TODO: Assuming only one below. Ok?
+        val: this.colorStyles.extractHexColorsFromStyle(style)[0],
+      });
+    }
+
+    return colorForm;
+  }
+
+  set constructedColorForm(val: any) {
+    // Emit something that looks like this:
+    // { "cartoon": '{ "color": "spectrum" }' }
+
+    // TODO: Note that below assumes only one style [0].
+    // let resp: { [key: string]: IColorStyle } = {};
+
+    let resp: { [key: string]: IColorStyle } = { ...this.modelValue };
+
+    let colorschemeIdx = val.filter((v: any) => {
+      return v.varName === "colorscheme";
+    })[0]?.val;
+    let color = val.filter((v: any) => {
+      return v.varName === "color";
+    })[0]?.val;
+
+    // console.log("color:", color);
+    // debugger;
+
+    this.colorStyles.color =
+      color === undefined ? this.colorStyles.defaultColor : color;
+    resp[this.repName] = this.colorStyles.indexToStyle(colorschemeIdx);
+
+    // console.log("IN:", this.modelValue);
+    // console.log("OUT:", resp);
+    // debugger;
+
+    console.log("from color style:", resp);
+    this.$emit("update:modelValue", resp);
+    this.$emit("changed");
+  }
+
+  mounted() {
+    // Start by selecting defaults TODO: Actually, not sure this is necessary.
+    // All components will always have SOME style (assigned at load).
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss">
+</style>

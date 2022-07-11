@@ -92,18 +92,17 @@ export default class ViewerPanel extends Vue {
           let spheresUsed = false;
           for (const styleSel of mol.stylesSels) {
             if (!styleSel.style["surface"]) {
-              // It's a style
+              // It's a style, not a surface.
+              // console.log("style right before adding to 3dmoljs:", styleSel.style);
               mol.model.setStyle(styleSel.selection, styleSel.style, true);
-              if (styleSel.style.sphere) {
-                spheresUsed = true;
-              }
+              if (styleSel.style.sphere) {spheresUsed = true;}
             } else {
               // It's a surface
               api.visualization.viewer
                 .addSurface(
                   // $3Dmol.SurfaceType.VDW,
                   $3Dmol.SurfaceType.MS,
-                  {}, // style
+                  styleSel.style.surface, // style
                   { model: mol.model } // selection
                 )
                 .then((surface: any) => {
@@ -224,8 +223,8 @@ export default class ViewerPanel extends Vue {
     api.visualization.viewer = viewer;
     viewer.setBackgroundColor(0xffffff);
 
-    // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
-      let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
+    let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
+      // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
       // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic
       // let fetchPromise = fetch("https://files.rcsb.org/view/1HQ3.pdb")  // has ions
       // let fetchPromise = fetch("https://files.rcsb.org/ligands/view/ATP_ideal.sdf")

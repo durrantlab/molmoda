@@ -7,12 +7,19 @@ Button?
 
 Plugins. Divide into core (always loads) and optional.
 
+Surfaces don't turn off with associated molecules.
+
+# DONE
+
+Color in widget doesn't always update, though it does on protein. Color by
+solid, though perhaps elsewhere.
+
+Other problems with vis system. for example, protein atoms => sphere, can't
+color.
+
 When setting up styles panel, sometimes doesn't reflect changes if hidden.
 Especially after having turned to hidden explicitly (never comes back). Need to
 invdstigate.
-
-
-# DONE
 
 Toggle visibility and focus in styles too. Might be ablet to eliinate "none" category.
 

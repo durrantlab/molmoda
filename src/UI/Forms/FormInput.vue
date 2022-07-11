@@ -11,7 +11,6 @@
     :disabled="disabled"
     @input="handleInput"
     :value="modelValue"
-
     :min="min"
     :max="max"
     :step="step"
@@ -36,22 +35,39 @@ export default class FormInput extends Vue {
   @Prop({ default: false }) disabled!: boolean;
 
   // Below used for range.
-  @Prop({ default: undefined}) min!: number;
-  @Prop({ default: undefined}) max!: number;
-  @Prop({ default: undefined}) step!: number;
+  @Prop({ default: undefined }) min!: number;
+  @Prop({ default: undefined }) max!: number;
+  @Prop({ default: undefined }) step!: number;
+
+  lastHandleInputTimeStamp = 0;
+  timeOutLastHandleInput: any = null;
 
   handleInput(e: any) {
-    let val = e.target.value;
-    if (this.type === "number") {
-      // TODO: Need some sort of validation here. When can't be parsed, returns
-      // null.
-      val = parseFloat(val);
-    }
-    this.$emit("update:modelValue", val);
+    // Note that it's delayed to prevent rapid reactivity. Especially good for
+    // color selector.
+    
+    const EMIT_VAL_FREQUENCY = 500;
 
-    // In some circumstances (e.g., changing values in an object), not reactive.
-    // So emit also "changed" to indicate the value has changed.
-    this.$emit("changed");
+    // If less 0.5 seconds haven't passed yet, don't try again.
+    if (Date.now() - this.lastHandleInputTimeStamp < EMIT_VAL_FREQUENCY) {
+      return;
+    }
+
+    this.lastHandleInputTimeStamp = Date.now();
+    this.timeOutLastHandleInput = setTimeout(() => {
+      let val = e.target.value;
+      if (this.type === "number") {
+        // TODO: Need some sort of validation here. When can't be parsed, returns
+        // null.
+        val = parseFloat(val);
+      }
+
+      this.$emit("update:modelValue", val);
+
+      // In some circumstances (e.g., changing values in an object), not reactive.
+      // So emit also "changed" to indicate the value has changed.
+      this.$emit("changed");
+    }, EMIT_VAL_FREQUENCY);
   }
 }
 </script>

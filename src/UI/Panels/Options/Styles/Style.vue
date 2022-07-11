@@ -19,20 +19,18 @@
     <FormSelect
       :id="'atoms-' + styleName.name"
       v-model="atomsOption"
-      :options="[
-        { description: 'Atoms: Hidden', val: 'atoms-hidden' },
-        { description: 'Atoms: Lines', val: 'line' },
-        { description: 'Atoms: Sticks', val: 'stick' },
-        { description: 'Atoms: Spheres', val: 'sphere' },
-      ]"
+      :options="atomsStyleOptions"
       @changed="updateMolecules(atomsOption)"
     ></FormSelect>
-    <!-- {{styleName.styleAndSel.style}} MOOOOO -->
     <ColorStyle 
       v-if="atomsOption !== 'atoms-hidden'" 
-      v-model="styleName.styleAndSel.style" 
+      v-model="styleName.styleAndSel.style"
+      :repName="atomsOption"
+      @changed="updateMolecules(atomsOption)"
+      :allowColorCarbons="styleName.name !== 'metal'"
+      :allowSpectrum="false"
+      :allowSecondaryStructure="styleName.name === 'protein'"
     />
-    <span style="color: red">NOT REACTIVE: </span>{{ styleName }}
 
     <FormSelect
       v-if="styleName.name === 'protein'"
@@ -45,6 +43,14 @@
       ]"
       @changed="updateMolecules(backboneOption)"
     ></FormSelect>
+    <ColorStyle 
+      v-if="backboneOption !== 'backbone-hidden'" 
+      v-model="styleName.styleAndSel.style"
+      :repName="backboneOption"
+      @changed="updateMolecules(backboneOption)"
+      :allowColorByElement="false"
+      :allowColorCarbons="false"
+    />
 
     <FormSelect
       v-if="styleName.name !== 'metal'"
@@ -56,6 +62,14 @@
       ]"
       @changed="updateMolecules(surfaceOption)"
     ></FormSelect>
+    <ColorStyle 
+      v-if="surfaceOption !== 'surface-hidden'" 
+      v-model="styleName.styleAndSel.style"
+      :repName="surfaceOption"
+      @changed="updateMolecules(surfaceOption)"
+      :allowSpectrum="false"
+      :allowSecondaryStructure="styleName.name === 'protein'"
+    />
 
     <!-- <FormFull v-model="colorForm"></FormFull> -->
     <!-- <ColorStyle /> -->
@@ -83,7 +97,7 @@ import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull.vue";
 import { FormElemType } from "@/UI/Forms/FormFull.vue";
-import ColorStyle from "./ColorStyle.vue";
+import ColorStyle from "./ColorStyle/ColorStyle.vue";
 
 export interface IStyleName {
   styleAndSel: IStyleAndSel;
@@ -106,6 +120,25 @@ export default class Style extends Vue {
   atomsOption = "atoms-hidden";
   backboneOption = "backbone-hidden";
   surfaceOption = "surface-hidden";
+
+  get atomsStyleOptions(): any {
+    let options = [
+      { description: 'Atoms: Hidden', val: 'atoms-hidden' },
+    ];
+
+    if (this.styleName.name !== "metal") {
+      options.push(
+        ...[
+          { description: 'Atoms: Lines', val: 'line' },
+          { description: 'Atoms: Sticks', val: 'stick' },
+        ]
+      )
+    }
+
+    options.push({ description: 'Atoms: Spheres', val: 'sphere' });
+
+    return options;
+  }
 
   toggleVisible(name: string) {
     this.isVisible = !this.isVisible;
@@ -138,15 +171,13 @@ export default class Style extends Vue {
     else { this.surfaceOption = "surface-hidden"; }
   }
 
-  updateMolecules(val: string): void {
-    // console.log(this.styleName, val, componentLbl);
-    // console.log(val, componentLbl);
-
+  updateMolecules(repName: string): void {
+    // TODO: Seems like this should happen in Styles.vue
     let style = this.styleName.styleAndSel ? this.styleName.styleAndSel.style : {};
 
-    // Deal items with hidden visualizations, which are equivalent to 3Dmoljs
-    // styles.
-    switch (val) {
+    // Deal items with hidden visualizations. Delete entries that are
+    // incompatible with hidden.
+    switch (repName) {
       case "atoms-hidden":
         if (style.line) { delete style.line; }
         if (style.stick) { delete style.stick; }
@@ -160,11 +191,25 @@ export default class Style extends Vue {
         break;
       default:
         // Not hidden, so use specified value.
-        (style as any)[val] = {}; // TODO: Need to use colors, not empty object.
+
+        // This required to deal with restoring a viz after everything set to
+        // hidden.
+        if (this.styleName.styleAndSel === undefined) {
+          this.styleName.styleAndSel = {
+            selection: {},
+            style: {}
+          }
+        }
+
+        // @ts-ignore
+        let val = this.styleName.styleAndSel.style[repName];
+        if (val === undefined) { val = {}; }
+
+        (style as any)[repName] = val;
     }
 
     // In case of atoms, representations are mutually exclusive.
-    switch (val) {
+    switch (repName) {
       case "line":
         if (style.stick) { delete style.stick; }
         if (style.sphere) { delete style.sphere; }
@@ -200,6 +245,8 @@ export default class Style extends Vue {
         node.viewerDirty = true;
       }
     }
+
+    console.log("New molecules:", molecules);
 
     this.$store.commit("setVar", {
       name: "molecules",

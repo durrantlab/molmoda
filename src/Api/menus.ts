@@ -1,5 +1,7 @@
+import { addMenuItem, IMenuItem } from "@/UI/Navigation/Menu/Menu";
+
 export const menuApi = {
-    addItem: () => {
-        console.log("moo");
+    addItem: (menuItem: IMenuItem) => {
+        addMenuItem(menuItem);
     }
 }

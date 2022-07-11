@@ -35,7 +35,7 @@ import { Prop } from "vue-property-decorator";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuLevel1 from "./MenuLevel1.vue";
-import { IMenuAction, IMenuSubmenu, menuData } from "./Menu";
+import { IMenuItem, IMenuSubmenu, menuData } from "./Menu";
 
 @Options({
   components: {
@@ -43,7 +43,7 @@ import { IMenuAction, IMenuSubmenu, menuData } from "./Menu";
   },
 })
 export default class Menu extends Vue {
-  get getMenuData(): (IMenuAction | IMenuSubmenu)[] {
+  get getMenuData(): (IMenuItem | IMenuSubmenu)[] {
     return menuData;
   }
 

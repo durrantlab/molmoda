@@ -37,7 +37,7 @@ import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
 import MenuLevel2 from "./MenuLevel2.vue";
 import {
-  IMenuAction,
+  IMenuItem,
   IMenuSeparator,
   IMenuSubmenu,
   MenuItemType,
@@ -51,21 +51,21 @@ import {
   },
 })
 export default class MenuLevel1 extends MenuLevelParent {
-  @Prop() menuData!: IMenuAction | IMenuSubmenu;
+  @Prop() menuData!: IMenuItem | IMenuSubmenu;
   
   get menuItemsWithSeparators(): (
-    | IMenuAction
+    | IMenuItem
     | IMenuSubmenu
     | IMenuSeparator
   )[] {
     // Adds separators
     let newMenuItemsWithSeparator: (
-      | IMenuAction
+      | IMenuItem
       | IMenuSubmenu
       | IMenuSeparator
     )[] = [];
 
-    let items: (IMenuAction | IMenuSubmenu)[] = (this.menuData as IMenuSubmenu)
+    let items: (IMenuItem | IMenuSubmenu)[] = (this.menuData as IMenuSubmenu)
       .items;
     if (!items) {
       return newMenuItemsWithSeparator;
