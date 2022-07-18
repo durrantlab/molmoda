@@ -11,13 +11,11 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
 import Section from "@/UI/Layout/Section.vue";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { capitalize } from "@/Core/Utils";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 import Style, { IStyleName } from "./Style.vue";
 

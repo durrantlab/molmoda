@@ -26,10 +26,9 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
 import { GoldenLayout, ComponentContainer } from "golden-layout";
 import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";

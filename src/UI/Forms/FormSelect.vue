@@ -18,7 +18,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { randomID, slugify } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";

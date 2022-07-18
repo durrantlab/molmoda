@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 
 interface ICommonNode {
     text: string;

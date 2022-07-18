@@ -16,12 +16,12 @@
           style="cursor: pointer"
         >
           <!-- <div style="width:100px; float:left;">{{menuData.text}}</div> -->
-          {{ menuData.text }}&nbsp;
+          {{ menuData._text }}&nbsp;
         </a>
         <ul class="dropdown-menu">
           <MenuActionLink
             v-for="item in getItems(menuData)"
-            v-bind:key="item.text"
+            v-bind:key="item._text"
             :isTopLevel="false"
             :menuData="item"
           />
@@ -32,7 +32,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";

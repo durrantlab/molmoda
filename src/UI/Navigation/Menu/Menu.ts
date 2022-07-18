@@ -11,90 +11,26 @@ export interface IMenuSeparator {
     type: MenuItemType;
 }
 
-export interface IMenuSubmenu extends IMenuSeparator {
-    text: string;
+export interface IMenuSubmenu {
+    // This doesn't have an action, but contains items that may have actions (or
+    // themselves be other submenus).
+    
+    // Using _text to match IMenuItem. Note that IMenuSubmenu is never used
+    // directly in any plugin anyway.
+    _text: string;
     items: (IMenuSubmenu | IMenuItem)[];
+    type: MenuItemType;
 }
 
-export interface IMenuItem extends IMenuSeparator {
-    text: string;
-    pathNames: string[];
+export interface IMenuItem {
+    path: string[] | string | undefined; // Directory structure, ending in text label
     function?: () => void;
+    type?: MenuItemType;  // If absent, will assume MenuItemType.ACTION
+
+    // Below are used internally, not from plugin.
+    _pathNames?: string[];
+    _text?: string;
 }
-
-// This is where the menu data is actually stored (not in VueX store, because no
-// need to save on restart).
-export const menuData: (IMenuItem | IMenuSubmenu)[] = [];
-
-// export const menuData: (IMenuItem | IMenuSubmenu)[] = [
-//     {
-//         text: "Home",
-//         type: MenuItemType.ACTION,
-//         function: () => {
-//             console.log("Home");
-//         },
-//     },
-//     {
-//         text: "Link",
-//         type: MenuItemType.ACTION,
-//         function: () => {
-//             console.log("Link");
-//         },
-//     },
-//     {
-//         text: "Dropdown",
-//         type: MenuItemType.SUBMENU,
-//         items: [
-//             {
-//                 text: "Action",
-//                 type: MenuItemType.ACTION,
-//                 function: () => {
-//                     console.log("Action");
-//                 },
-//             },
-//             {
-//                 text: "Dropdow2",
-//                 type: MenuItemType.SUBMENU,
-//                 items: [
-//                     {
-//                         text: "Action5",
-//                         type: MenuItemType.ACTION,
-//                         function: () => {
-//                             console.log("Action5");
-//                         },
-//                     },
-//                     {
-//                         text: "Dropdow2a",
-//                         type: MenuItemType.SUBMENU,
-//                         items: [
-//                             {
-//                                 text: "Action5a",
-//                                 type: MenuItemType.ACTION,
-//                                 function: () => {
-//                                     console.log("Action5a");
-//                                 },
-//                             },
-//                             {
-//                                 text: "Action6a",
-//                                 type: MenuItemType.ACTION,
-//                                 function: () => {
-//                                     console.log("Action6a");
-//                                 },
-//                             },
-//                         ],
-//                     },
-//                     {
-//                         text: "Action6",
-//                         type: MenuItemType.ACTION,
-//                         function: () => {
-//                             console.log("Action6");
-//                         },
-//                     },
-//                 ],
-//             },
-//         ],
-//     },
-// ];
 
 export class MenuLevelParent extends Vue {
     isAction(item: IMenuItem | IMenuSubmenu | IMenuSeparator): boolean {
@@ -114,40 +50,68 @@ function menuDataHasName(
     menuDat: (IMenuItem | IMenuSubmenu)[],
     name: string
 ): boolean {
-    return menuDat.map((m) => m.text).includes(name);
+    return menuDat
+        .map((m: IMenuItem | IMenuSubmenu) => m._text)
+        .includes(name);
 }
 
 function getSubMenu(
     menuDat: (IMenuItem | IMenuSubmenu)[],
     name: string
 ): (IMenuItem | IMenuSubmenu)[] {
-    return (menuDat.find((m) => m.text === name) as IMenuSubmenu).items;
+    return (
+        menuDat.find((m) => (m as IMenuSubmenu)._text === name) as IMenuSubmenu
+    ).items;
 }
 
 export function addMenuItem(
-    menuItem: IMenuItem
-) {
-    if (api.sys.loadStatus.menuFinalized) {
-        // Error: Menu already finalized. Assert
-        throw new Error("Menu already finalized.");
+    newMenuItem: IMenuItem,
+    existingMenuItems: (IMenuItem | IMenuSubmenu)[]
+): (IMenuItem | IMenuSubmenu)[] {
+    // if (api.sys.loadStatus.menuFinalized) {
+    //     // Error: Menu already finalized. Assert
+    //     throw new Error("Menu already finalized.");
+    // }
+
+    let existingMenuItemsPlaceholder = existingMenuItems;
+
+    // Convert newMenuItem.path to newMenuItem._text and newMenuItem._pathNames.
+    if (typeof newMenuItem.path === "string") {
+        // If newMenuItem.path is string, divide by "/"
+        const prts = newMenuItem.path.split("/");
+        newMenuItem._text = prts.pop();
+        newMenuItem._pathNames = prts;
+    } else {
+        // Already a list of paths, ending in text label.
+        const path = newMenuItem.path as string[];
+        newMenuItem._text = path.pop();
+        newMenuItem._pathNames = path;
+    }
+    newMenuItem.path = undefined;
+
+    // If type is not set, default to MenuItemType.ACTION.
+    if (newMenuItem.type === undefined) {
+        newMenuItem.type = MenuItemType.ACTION;
     }
 
-    let menuDataToUse = menuData;
-
-    for (const level of menuItem.pathNames) {
-        if (level) {
-            if (!menuDataHasName(menuDataToUse, level)) {
-                menuDataToUse.push({
-                    type: MenuItemType.SUBMENU,
-                    text: level,
-                    items: [],
-                } as IMenuSubmenu);
-            }
-            menuDataToUse = getSubMenu(menuDataToUse, level);
-        } else {
-            break;
+    for (const level of newMenuItem._pathNames) {
+        // This level doesn't exist, so add it.
+        if (!menuDataHasName(existingMenuItemsPlaceholder, level)) {
+            existingMenuItemsPlaceholder.push({
+                type: MenuItemType.SUBMENU,
+                _text: level,
+                items: [],
+            } as IMenuSubmenu);
         }
+        existingMenuItemsPlaceholder = getSubMenu(
+            existingMenuItemsPlaceholder,
+            level
+        );
     }
 
-    menuDataToUse.push(menuItem);
+    // You've gone down all the levels in pathNames, so add the item.
+    existingMenuItemsPlaceholder.push(newMenuItem);
+
+    // Return the whole menu-data object.
+    return existingMenuItems;
 }

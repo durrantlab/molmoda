@@ -26,7 +26,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";

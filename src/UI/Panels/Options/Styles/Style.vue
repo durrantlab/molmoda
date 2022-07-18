@@ -77,7 +77,7 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment, no-case-declarations */
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
@@ -116,7 +116,7 @@ export interface IStyleName {
 export default class Style extends Vue {
   @Prop({ required: true }) styleName!: IStyleName;
 
-  isVisible: boolean = true;
+  isVisible = true;
   atomsOption = "atoms-hidden";
   backboneOption = "backbone-hidden";
   surfaceOption = "surface-hidden";

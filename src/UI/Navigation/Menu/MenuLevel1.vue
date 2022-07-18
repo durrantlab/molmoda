@@ -6,8 +6,9 @@
     :menuData="menuData"
   />
   <li v-else class="nav-item dropdown">
+    <!-- dropdown-toggle -->
     <a
-      class="nav-link dropdown-toggle"
+      class="nav-link"
       data-bs-auto-close="outside"
       href="#"
       id="navbarDropdown"
@@ -15,7 +16,7 @@
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
-      {{ menuData.text }}
+      {{ menuData._text }}
     </a>
     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
       <span v-for="(item, idx) in menuItemsWithSeparators" v-bind:key="idx">
@@ -27,7 +28,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";

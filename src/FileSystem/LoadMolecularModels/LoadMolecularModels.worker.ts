@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
     sendResponseToMainThread,
@@ -26,7 +26,7 @@ function organizeSelByChain(sel: any, mol: any, entryName: string): IMolEntry {
         focused: false,
         chains: [],
     }
-    let lastChainID: string = "";
+    let lastChainID = "";
     selectedAtoms.forEach((atom: IAtom) => {
         if (atom.chain !== lastChainID) {
             // @ts-ignore
@@ -82,7 +82,7 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
         visible: true,
         focused: false,
     }
-    let lastChainID: string = "";
+    let lastChainID = "";
     molEntry.chains.forEach((chain: IChain) => {
         if (!chain.atoms) { return; }  // Already divided apparently.
 
@@ -94,19 +94,19 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
             });
             lastChainID = chain.text;
         }
-        let lastResidueID: string = "";
+        let lastResidueID = "";
         chain.atoms.forEach((atom: IAtom) => {
-            let chains = dividedMolEntry.chains;
+            const chains = dividedMolEntry.chains;
             if (!chains) {
                 throw new Error("No chains found in dividedMolEntry.");
             }
-            let residues = chains[chains.length - 1].residues;
+            const residues = chains[chains.length - 1].residues;
             if (!residues) {
                 // Always exists. This here only to satisfy typechecker.
                 throw new Error("No residues found in dividedMolEntry.");
             }
 
-            let newKey = residueID(atom);
+            const newKey = residueID(atom);
             if (newKey !== lastResidueID) {
                 residues.push({
                     text: newKey,
@@ -118,8 +118,8 @@ function divideChainsIntoResidues(molEntry: IMolEntry): IMolEntry {
                 });
                 lastResidueID = newKey;
             }
-            let lastResidueIdx = residues.length - 1;
-            let atoms = residues[lastResidueIdx].atoms;
+            const lastResidueIdx = residues.length - 1;
+            const atoms = residues[lastResidueIdx].atoms;
             if (atoms) {
                 atoms.push(atom);
             }
@@ -169,7 +169,7 @@ function makeTitleDOM(title: string): string {
 }
 
 function addMolTypeAndStyle(molEntry: IMolEntry, stylesAndSels: IStyleAndSel[]): void {
-    let molType = molEntry.type;
+    const molType = molEntry.type;
     for (const mol of getTerminalNodes([molEntry])) {
         mol.type = molType;
         mol.stylesSels = stylesAndSels;
@@ -189,13 +189,13 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
 
     // glviewer for use in webworker.
     if (!glviewer) { glviewer = $3Dmol.createViewer("", {}); }
-    let mol = glviewer.makeGLModel_JDD(data.molText, data.format);
+    const mol = glviewer.makeGLModel_JDD(data.molText, data.format);
 
     let proteinAtomsByChain: IMolEntry = organizeSelByChain(proteinSel, mol, "Protein");
     let nucleicAtomsByChain: IMolEntry = organizeSelByChain(nucleicSel, mol, "Nucleic");
-    let solventAtomsByChain: IMolEntry = organizeSelByChain(solventSel, mol, "Solvent");
+    const solventAtomsByChain: IMolEntry = organizeSelByChain(solventSel, mol, "Solvent");
     let metalAtomsByChain: IMolEntry = organizeSelByChain(metalSel, mol, "Metals");
-    let ionAtomsByChain: IMolEntry = organizeSelByChain(ionSel, mol, "Ions");
+    const ionAtomsByChain: IMolEntry = organizeSelByChain(ionSel, mol, "Ions");
     let lipidAtomsByChain: IMolEntry = organizeSelByChain(lipidSel, mol, "Lipids");
     let ligandsByChain: IMolEntry = organizeSelByChain({}, mol, "Compounds");  // Everything else is ligands
 
@@ -204,8 +204,8 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
     ligandsByChain = divideChainsIntoResidues(ligandsByChain);
 
     // Solvent and ions don't need to be divided by chain.
-    let solventAtomsNoChain: IMolEntry = flattenChains(solventAtomsByChain);
-    let ionAtomsNoChain: IMolEntry = flattenChains(ionAtomsByChain);
+    const solventAtomsNoChain: IMolEntry = flattenChains(solventAtomsByChain);
+    const ionAtomsNoChain: IMolEntry = flattenChains(ionAtomsByChain);
     
     // For everything else, if given chain has only one item, collapse it.
     ligandsByChain = collapseSingleResidueChains(ligandsByChain);
@@ -227,7 +227,7 @@ function divideAtomsIntoDistinctComponents(data: {[key:string]: any}): IFileCont
     // nucleicAtomsByChain.style = nucleicStyle;
 
     // Page into single object
-    let fileContents: IFileContents = {
+    const fileContents: IFileContents = {
         text: makeTitleDOM(data.molName),
         treeExpanded: false,
         viewerDirty: true,
@@ -281,9 +281,9 @@ function makeTreeViewData(organizedAtoms: IFileContents): IFileContents {
 }
 
 waitForDataFromMainThread().then((data) => {
-    let organizedAtoms = divideAtomsIntoDistinctComponents(data);
+    const organizedAtoms = divideAtomsIntoDistinctComponents(data);
 
-    let treeViewData = makeTreeViewData(organizedAtoms);
+    const treeViewData = makeTreeViewData(organizedAtoms);
 
     // let pathsAndIds: any[] = [];
 

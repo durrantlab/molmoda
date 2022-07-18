@@ -3,8 +3,8 @@
   <MenuActionLink v-if="isAction(menuData)" :isTopLevel="false" :menuData="menuData" />
   <span v-else>
     <!-- It's a submenu. still in main dropdown, but grouped -->
-    <li><span class="dropdown-item-text text-muted">{{menuData.text}}</span></li>
-    <span v-for="item in getItems(menuData)" v-bind:key="item.text">
+    <li><span class="dropdown-item-text text-muted">{{menuData._text}}</span></li>
+    <span v-for="item in getItems(menuData)" v-bind:key="item._text">
       <MenuActionLink v-if="isAction(item)" :isTopLevel="false" :menuData="item" />
       <MenuLevel3 v-else :menuData="item"></MenuLevel3>
     </span>
@@ -12,7 +12,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";

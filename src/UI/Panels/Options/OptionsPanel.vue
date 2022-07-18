@@ -43,11 +43,8 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
-// import { Watch } from "vue-property-decorator";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";

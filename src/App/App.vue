@@ -1,12 +1,12 @@
 <template>
   <div class="full-screen" style="display:flex;flex-direction:column;">
     <div style="flex-grow: 5;">
-      <Menu />
+      <Menu :menuData="menuData" />
     </div>
     <div style="flex-grow: 5;">
       <GoldLayout />
     </div>
-    <AboutPlugin />
+    <AllPlugins @onPluginSetup="onPluginSetup" :credits="credits"/>
   </div>
 </template>
 
@@ -16,16 +16,29 @@ import { Prop } from "vue-property-decorator";
 import GoldLayout from "@/UI/Layout/GoldenLayout/GoldLayout.vue";
 import Menu from "@/UI/Navigation/Menu/Menu.vue";
 import * as api from "@/Api";
-import AboutPlugin from "@/Plugins/Core/About/About.vue";
+import AllPlugins from "../Plugins/AllPlugins.vue";
+import { addMenuItem, IMenuItem, IMenuSubmenu } from "../UI/Navigation/Menu/Menu";
+import { ICredit, Licenses } from "../Plugins/PluginInterfaces";
+import { globalCredits } from "./GlobalCredits";
+import { IPluginSetupInfo } from "@/Plugins/PluginParent";
 
 @Options({
   components: {
     GoldLayout,
     Menu,
-    AboutPlugin
+    AllPlugins
   },
 })
 export default class App extends Vue {
+  menuData: (IMenuItem | IMenuSubmenu)[] = [];
+
+  credits: ICredit[] = globalCredits;
+
+  onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
+    this.menuData = addMenuItem(pluginSetupInfo.menuData, this.menuData);
+    this.credits = [...this.credits, ...pluginSetupInfo.credits];
+  }
+
   mounted() {
     // Close enough to rendered, I think.
     api.sys.loadStatus.vueRendered =true;

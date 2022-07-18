@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { store } from "@/Store";
@@ -17,7 +17,7 @@ export function loadMolecularModelFromText(
         new URL("./LoadMolecularModels.worker", import.meta.url)
     );
     return runWorker(worker, { molText, format, molName }).then((molecularData: IFileContents) => {
-        let models = convertAllAtomArraysToModels(molecularData);
+        const models = convertAllAtomArraysToModels(molecularData);
         
         store.commit("pushToList", {
             name: "molecules",
@@ -29,11 +29,11 @@ export function loadMolecularModelFromText(
 }
 
 function convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
-    let models: any[] = [];
+    const models: any[] = [];
 
     // Replace "atoms" with actual models.
     if (treeViewData.atoms) {
-        let model = atomsToModel(treeViewData.atoms);
+        const model = atomsToModel(treeViewData.atoms);
         models.push(model);
         treeViewData.model = model;
         delete treeViewData.atoms;
@@ -42,7 +42,7 @@ function convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
     if (treeViewData.nodes) {
         treeViewData.nodes.forEach((molEntry: IMolEntry) => {
             if (molEntry.atoms) {
-                let model = atomsToModel(molEntry.atoms);
+                const model = atomsToModel(molEntry.atoms);
                 models.push(model);
                 molEntry.model = model;
                 delete molEntry.atoms;
@@ -50,7 +50,7 @@ function convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
             if (molEntry.nodes) {
                 molEntry.nodes.forEach((chain: IChain) => {
                     if (chain.atoms) {
-                        let model = atomsToModel(chain.atoms);
+                        const model = atomsToModel(chain.atoms);
                         models.push(model);
                         chain.model = model;
                         delete chain.atoms;
@@ -59,7 +59,7 @@ function convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
                     if (chain.nodes) {
                         chain.nodes.forEach((residue: IResidue) => {
                             if (residue.atoms) {
-                                let model = atomsToModel(residue.atoms);
+                                const model = atomsToModel(residue.atoms);
                                 models.push(model);
                                 residue.model = model;
                                 delete residue.atoms;

@@ -3,11 +3,10 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { Prop } from "vue-property-decorator";
 
 import { loadMolecularModelFromText } from "@/FileSystem/LoadMolecularModels/LoadMolecularModels";
 import * as api from "@/Api/";

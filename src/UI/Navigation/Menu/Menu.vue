@@ -17,8 +17,8 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <!-- iterate over menuData -->
           <MenuLevel1
-            v-for="menuDatum in getMenuData"
-            v-bind:key="menuDatum.text"
+            v-for="menuDatum in menuData"
+            v-bind:key="menuDatum._text"
             :menuData="menuDatum"
           />
         </ul>
@@ -28,14 +28,13 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuLevel1 from "./MenuLevel1.vue";
-import { IMenuItem, IMenuSubmenu, menuData } from "./Menu";
+import { IMenuItem, IMenuSubmenu } from "./Menu";
 
 @Options({
   components: {
@@ -43,9 +42,11 @@ import { IMenuItem, IMenuSubmenu, menuData } from "./Menu";
   },
 })
 export default class Menu extends Vue {
-  get getMenuData(): (IMenuItem | IMenuSubmenu)[] {
-    return menuData;
-  }
+  @Prop({ required: true }) menuData!: (IMenuItem | IMenuSubmenu)[];
+
+  // get getMenuData(): (IMenuItem | IMenuSubmenu)[] {
+  //   return menuData;
+  // }
 
   // mounted() {
   //   setVar("menuData", );

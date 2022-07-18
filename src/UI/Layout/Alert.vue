@@ -1,5 +1,5 @@
 <template>
-  <div class="accordion mb-2" :id="id">
+  <div :class="'alert alert-' + type" role="alert">
     <slot></slot>
   </div>
 </template>
@@ -12,8 +12,8 @@ import { Prop } from "vue-property-decorator";
 @Options({
   components: {},
 })
-export default class Accordian extends Vue {
-  @Prop({ default: "" }) id!: string;
+export default class Alert extends Vue {
+  @Prop({ default: "primary" }) type!: string;
 }
 </script>
 

@@ -1,7 +1,6 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
-import { Vue } from "vue-class-component";
 import { createStore } from "vuex";
 
 interface NameValPair {
@@ -9,7 +8,7 @@ interface NameValPair {
     val: any;
 }
 
-let commonMutations = {
+const commonMutations = {
     setVar(state: any, payload: NameValPair) {
         state[payload.name] = payload.val;
     },
@@ -23,46 +22,62 @@ let commonMutations = {
     addToObj(state: any, payload: NameValPair) {
         state[payload.name] = {
             ...state[payload.name],
-            ...payload.val
+            ...payload.val,
         };
-    }
-}
+    },
+};
 
-let modules: { [key: string]: any } = {};
+const modules: { [key: string]: any } = {};
 export function addVueXStoreModule(moduleName: string, vals: any): void {
     modules[moduleName] = {
         namespaced: true,
         state: vals,
-        mutations: commonMutations
+        mutations: commonMutations,
     };
 }
 
-export var store: any;
+export let store: any;
 export function setupVueXStore() {
-    let storeVars = {
+    const storeVars = {
         state: {
-            "molecules": [],
-            "updateZoom": true
+            molecules: [],
+            updateZoom: true,
         },
         getters: {},
         mutations: {
             ...commonMutations,
             clearFocusedMolecule(state: any, updateZoom = true) {
-                if (!updateZoom) { state["updateZoom"] = false; }
-                for (let node of getAllNodesFlattened(state["molecules"])) {
+                if (!updateZoom) {
+                    state["updateZoom"] = false;
+                }
+                for (const node of getAllNodesFlattened(state["molecules"])) {
                     node.focused = false;
                 }
                 // Revert updateZoom after rerender
-                if (!updateZoom) { 
-                    setTimeout(() => { state["updateZoom"] = true; }, 0);
+                if (!updateZoom) {
+                    setTimeout(() => {
+                        state["updateZoom"] = true;
+                    }, 0);
                 }
-            }
+            },
         },
         actions: {},
         modules: modules,
     };
 
     store = createStore(storeVars);
+
+    store.watch(
+        // When the returned result changes...
+        function (state: any) {
+            return state;
+        },
+        // Run this callback
+        (state: any) => {
+            console.log("something changed somewhere in the state!");
+        },
+        {"deep": true}
+    );
 
     // For debugging
     // @ts-ignore

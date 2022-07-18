@@ -18,11 +18,9 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-// import { Watch } from "vue-property-decorator";
 import { getAllNodesFlattened, getNodeOfId } from "./TreeUtils";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";

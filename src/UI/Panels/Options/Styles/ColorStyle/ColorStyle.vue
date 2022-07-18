@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
