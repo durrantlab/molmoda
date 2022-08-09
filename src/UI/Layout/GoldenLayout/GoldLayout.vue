@@ -50,7 +50,7 @@ import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 export default class GoldLayout extends Vue {
   // msg!: string;
 
-  private convertDOMToData(dom: HTMLElement): any[] {
+  private _convertDOMToData(dom: HTMLElement): any[] {
     let children = dom.children;
     let content = [];
     for (const el of children) {
@@ -63,7 +63,7 @@ export default class GoldLayout extends Vue {
         // It's a container
         content.push({
           type: type,
-          content: this.convertDOMToData(child),
+          content: this._convertDOMToData(child),
           width: width,
           height: height,
         });
@@ -88,7 +88,7 @@ export default class GoldLayout extends Vue {
     return content;
   }
 
-  private setupGoldenLayout(dataDOM: HTMLElement, config: any) {
+  private _setupGoldenLayout(dataDOM: HTMLElement, config: any) {
     const glContainer = document.getElementById("golden-layout") as HTMLElement;
     const myLayout = new GoldenLayout(glContainer);
     myLayout.registerComponentFactoryFunction(
@@ -138,10 +138,10 @@ export default class GoldLayout extends Vue {
         showPopoutIcon: false,
         // showCloseIcon: false
       },
-      content: this.convertDOMToData(dataDOM),
+      content: this._convertDOMToData(dataDOM),
     };
 
-    this.setupGoldenLayout(dataDOM, config);
+    this._setupGoldenLayout(dataDOM, config);
 
     // Remove dataDOM
     dataDOM.remove();

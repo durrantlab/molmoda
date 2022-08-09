@@ -40,6 +40,7 @@ import {
   IMenuItem,
   IMenuSeparator,
   IMenuSubmenu,
+  menuDataSorted,
   MenuItemType,
   MenuLevelParent,
 } from "./Menu";
@@ -70,6 +71,9 @@ export default class MenuLevel1 extends MenuLevelParent {
     if (!items) {
       return newMenuItemsWithSeparator;
     }
+
+    // Sort the items by rank
+    menuDataSorted(items);
 
     for (let i = 0; i < items.length; i++) {
       let item = items[i];

@@ -1,7 +1,7 @@
-import { ICredit, Licenses } from "@/Plugins/PluginInterfaces";
+import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
 
 // These are credits that aren't associated with a specific plugin.
-export const globalCredits: ICredit[] = [
+export const globalCredits: ISoftwareCredit[] = [
     {
       name: "webpack",
       url: "https://webpack.js.org/",

@@ -1,10 +1,9 @@
-If no format specified, get it from the file extension.
+# Ongoing
 
-Button?
+https://doc.babylonjs.com/divingDeeper/mesh/simplifyingMeshes
+https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Meshes/meshSimplification.ts
 
 When change colors and things, shouldn't refocus.
-
-Surfaces don't turn off with associated molecules.
 
 When you load multi-frame pdb or mol2, need to deal with that still.
 
@@ -14,11 +13,6 @@ Messaging. Need toast, log, system alert, etc. You started working on toast.
     go to next one (if present).
     https://getbootstrap.com/docs/5.0/components/toasts/
 
-Ability to save store to localstorage, and download.
-    https://www.npmjs.com/package/vuex-persist
-    https://github.com/championswimmer/vuex-persist/issues/99 
-    Don't think this is going to work. Started to work on custom solution...
-
 vue-chartjs (or V Chart Plugin better?)
 
 You need to be able to reorder the molecules. 
@@ -26,19 +20,72 @@ You need to be able to reorder the molecules.
 
 Also need to be able to extract a molecule, and merge it.
 
-
 https://github.com/pulsardev/vue-tour
 https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
 Table component?
 
-
 Surface opacity? Sticks/lines width? Etc.
 
-You can start working on loading and saving without openbabel.js.
+Would be good to be able to use multiple processors for queue. Give some thought
+to how. Likely needs webworker?
+
+Also, popup to just show text (info). Already have it somewhere but good to move
+to Popup directory.
+
+Make ViewerPanel library agnostic (not just 3dmoljs).
+
+Settings panel to control things like fog, whether outline:
+viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
+
+SAve PDB & Mol2. Filenames messed up. Not converting compound to mol2.
+
+Need functions to output pdb and mol2. (use open babel for mol2).
+
+New session, but with ability to detect if saved or not.
+
+When you go to drag molecular components, important that all components be the
+same, regardless of chain, residue, molecule, etc. So you'll need to stanardize
+that.
+
+# DONE
+
+1FDA is good to test. More files in ZIP than are in outline. Very confusing.
+
+Would be good to have simple popup with single text input for use in saving and
+exporting. (Mostly done, except for export VRML.) 
+
+Menu items should have rank option for ordering. (Works on leafs, but not
+branches, meaning submenus). What about using something like optional [#] at
+start of menu name?
+
+Surfaces don't turn off with associated molecules.
+
+load 1xdn2.biotite. Not respecting hidden solvent.
+
+Also look at sizes of libraries.
+
+Way to add contributors/organizations too (not just software)? PDB, etc. Also,
+maybe refs to this and software credits?
+
+Still heirarchy on a compound. Shouldn't be one.
+
+Need to organize dynamic imports. Should automatically add to credits. And need
+to make sure dividing into separate chunks.
+
+Ability to save store to localstorage, and download.
+    https://www.npmjs.com/package/vuex-persist
+    https://github.com/championswimmer/vuex-persist/issues/99 
+    Don't think this is going to work. Started to work on custom solution...
+
+Load in aspirin and unfurl tree. Undefineds there.
+
+If no format specified, get it from the file extension.
+
+Button?
 
 Shouldn't be able to focus on molecule that is not visible.
 
-# DONE
+You can start working on loading and saving without openbabel.js.
 
 Continue implementing forms per https://getbootstrap.com/docs/5.2/forms/select/
 (now on radios)

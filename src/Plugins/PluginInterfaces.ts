@@ -45,8 +45,13 @@ export const Licenses = {
     } as ILicense,
 };
 
-export interface ICredit {
+export interface ISoftwareCredit {
     name: string;
     url: string;
     license: ILicense;
+}
+
+export interface IContributorCredit {
+    name: string;
+    url?: string;
 }

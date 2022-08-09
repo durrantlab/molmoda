@@ -45,6 +45,7 @@
         @click="toggleVisible(treeDatumID)"
       />
       <IconSwitcher
+      v-if="treeDatum.visible"
         class="title-element clickable"
         :useFirst="treeDatum.focused"
         :iconID1="['fa', 'arrows-to-eye']"

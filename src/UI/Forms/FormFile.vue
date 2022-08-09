@@ -12,10 +12,10 @@
       @change="fileChanged"
       :accept="accept"
     />
-    <Alert type="light" style="padding: 0; margin: 0;">
-      <small>{{ acceptableFileTypesMsg }}. </small>
-      <small v-if="errorMsg !== ''" class="text-danger">{{ errorMsg }}.</small>
-    </Alert>
+    <FormElementDescription>
+      {{ acceptableFileTypesMsg }}.
+      <span v-if="errorMsg !== ''" class="text-danger">{{ errorMsg }}.</span>
+    </FormElementDescription>
   </div>
 </template>
 
@@ -23,68 +23,95 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { randomID } from "@/Core/Utils";
-import {
-  acceptableFileTypesMessage,
-  allAcceptableFileTypes,
-} from "@/Plugins/Core/Loaders/LoadFiles";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import Alert from "@/UI/Layout/Alert.vue";
-
-export interface IFileInfo {
-  name: string;
-  size: number;
-  contents: string;
-  type: string; // all caps, extension (e.g., "PDB")
-}
+import { IFileInfo } from "@/FileSystem/Interfaces";
+import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
+import * as api from "@/Api/";
 
 @Options({
   components: {
-    Alert,
+    FormElementDescription,
   },
 })
 export default class FormFile extends Vue {
   @Prop({ default: randomID() }) id!: string;
   @Prop({ default: true }) multiple!: boolean;
   @Prop({}) accept!: string;
+  @Prop({ default: false }) isZip!: boolean;
 
-  acceptableFileTypesMsg = acceptableFileTypesMessage;
   errorMsg = "";
+
+  get acceptableFileTypesMsg(): string {
+    return (
+      "Acceptable file types: " + this.accept.toUpperCase().replace(/,/g, ", ")
+    );
+  }
+
+  get allAcceptableFileTypes(): string[] {
+    return this.accept.split(",").map((a) => a.toUpperCase().substring(1));
+  }
+
+  getType(filename: string): string {
+    // Type is file extension, uppercase.
+    let filePrts = filename.split(".");
+    let type = filePrts.pop()?.toUpperCase() as string;
+
+    // If extension is TXT, get next extension. Because Windows often
+    // appends .txt to ends of files.
+    if (type === "TXT") {
+      type = filePrts.pop()?.toUpperCase() as string;
+    }
+
+    return type;
+  }
 
   fileToFileInfo(file: File): Promise<IFileInfo> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
+
       reader.onload = (e: ProgressEvent) => {
-        let fileReader = e.target as FileReader;
-        let txt = fileReader.result as string;
-        txt = txt.replace(/\r\n/g, "\n");
-
         // Type is file extension, uppercase.
-        let filePrts = file.name.split(".");
-        let type = filePrts.pop()?.toUpperCase() as string;
-
-        // If extension is TXT, get next extension. Because Windows often
-        // appends .txt to ends of files.
-        if (type === "TXT") {
-          type = filePrts.pop()?.toUpperCase() as string;
-        }
+        const type = this.getType(file.name);
 
         // If it's not an acceptable file type, abort effort.
-        if (allAcceptableFileTypes.indexOf(type) === -1) {
+        if (this.allAcceptableFileTypes.indexOf(type) === -1) {
           reject(`Cannot load files of type ${type}`);
         }
 
-        resolve({
-          name: file.name,
-          size: file.size,
-          contents: txt,
-          type: type,
-        } as IFileInfo);
+        let fileReader = e.target as FileReader;
+        let txt = fileReader.result as string;
+        let txtPromise: Promise<string>;
+        if (!this.isZip) {
+          txtPromise = new Promise((resolve, reject) => {
+            txt = txt.replace(/\r\n/g, "\n");
+            resolve(txt);
+          });
+        } else {
+          // It's a zip file
+          txtPromise = api.fs.uncompress(txt, "file.json");
+        }
+
+        txtPromise.then((txt) => {
+          resolve({
+            name: file.name,
+            size: file.size,
+            contents: txt,
+            type: type,
+          } as IFileInfo);
+        });
       };
+
       reader.onerror = (e: any) => {
         reject(e);
       };
-      reader.readAsText(file);
+
+      if (!this.isZip) {
+        reader.readAsText(file);
+      } else {
+        // It's a zip file.
+        reader.readAsBinaryString(file);
+      }
     });
   }
 

@@ -15,6 +15,12 @@ module.exports = defineConfig({
                 "webpack:///[resource-path]?[hash]";
         }
     },
+    pluginOptions: {
+        webpackBundleAnalyzer: {
+            openAnalyzer: true,
+        },
+    },
+
     // {
     //     // devtool: 'source-map',
     //     devtool: 'eval-source-map'

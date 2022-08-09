@@ -14,7 +14,9 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull, { FormElemType } from "@/UI/Forms/FormFull.vue";
 import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { isEqual } from "lodash";
+
+// @ts-ignore
+import isEqual from 'lodash.isequal';
 
 import { colorNameToHex, hexToColorName } from "./ColorConverter";
 
@@ -24,7 +26,7 @@ interface INameAndColorStyle {
 }
 
 class ColorStyleOptions {
-  private colorStyles: INameAndColorStyle[] = [
+  private _colorStyles: INameAndColorStyle[] = [
     {
       name: "Element",
       colorStyle: { colorscheme: "default" },
@@ -56,7 +58,7 @@ class ColorStyleOptions {
   public color = "#C0C0C0"; // silver
 
   public nameToIndex(name: string): number {
-    return this.colorStyles.findIndex((colorStyle) => colorStyle.name === name);
+    return this._colorStyles.findIndex((colorStyle) => colorStyle.name === name);
   }
 
   public styleToIndex(style: IColorStyle): number {
@@ -74,16 +76,16 @@ class ColorStyleOptions {
     }
 
     // If you get here, it's easy to determine based on deep equality.
-    return this.colorStyles.findIndex((colorStyle) =>
+    return this._colorStyles.findIndex((colorStyle) =>
       isEqual(colorStyle.colorStyle, style)
     );
   }
 
   public indexToName(index: number): string {
-    return this.colorStyles[index].name;
+    return this._colorStyles[index].name;
   }
 
-  private addColorToStyle(colorStyle: IColorStyle): IColorStyle {
+  private _addColorToStyle(colorStyle: IColorStyle): IColorStyle {
     let strColorStyle = JSON.stringify(colorStyle);
 
     // Has #HEX?
@@ -103,14 +105,14 @@ class ColorStyleOptions {
   }
 
   public indexToStyle(index: number): IColorStyle {
-    let colorStyle = this.colorStyles[index].colorStyle;
-    colorStyle = this.addColorToStyle(colorStyle);
+    let colorStyle = this._colorStyles[index].colorStyle;
+    colorStyle = this._addColorToStyle(colorStyle);
     return colorStyle;
   }
 
   public nameToStyle(name: string): IColorStyle {
-    let colorStyle = this.colorStyles[this.nameToIndex(name)].colorStyle;
-    colorStyle = this.addColorToStyle(colorStyle);
+    let colorStyle = this._colorStyles[this.nameToIndex(name)].colorStyle;
+    colorStyle = this._addColorToStyle(colorStyle);
     return colorStyle;
   }
 

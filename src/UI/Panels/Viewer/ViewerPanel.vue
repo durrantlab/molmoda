@@ -8,7 +8,6 @@
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 
-import { loadMolecularModelFromText } from "@/FileSystem/LoadMolecularModels/LoadMolecularModels";
 import * as api from "@/Api/";
 import {
   getAllNodesFlattened,
@@ -18,7 +17,7 @@ import {
 // @ts-ignore
 import * as tmp from "./3Dmol-nojquery.JDD";
 import { IMolEntry } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { unbondedAtomsStyle } from "@/FileSystem/LoadMolecularModels/Lookups/DefaultStyles";
+import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Lookups/DefaultStyles";
 const $3Dmol = tmp as any;
 
 @Options({})
@@ -37,18 +36,27 @@ export default class ViewerPanel extends Vue {
     if (allMolecules.length === 0) {
       return;
     }
-    this.updateStylesAndZoom(allMolecules);
+    this._updateStylesAndZoom(allMolecules);
   }
 
-  updateStylesAndZoom(allMolecules: IMolEntry[] | undefined = undefined) {
+  private _updateStylesAndZoom(allMolecules: IMolEntry[] | undefined = undefined) {
     if (allMolecules === undefined) {
       allMolecules = this.treeview as IMolEntry[];
     }
-    let visibleTerminalNodeModels = this.checkStyleChanges(allMolecules);
-    this.zoomPerFocus(allMolecules, visibleTerminalNodeModels);
+    let visibleTerminalNodeModels = this._checkStyleChanges(allMolecules);
+    this._zoomPerFocus(allMolecules, visibleTerminalNodeModels);
   }
 
-  checkStyleChanges(allMolecules: IMolEntry[]): any[] {
+  private _clearSurface(mol: IMolEntry) {
+    if (mol.id && this.surfaces[mol.id]) {
+      for (const surface of this.surfaces[mol.id]) {
+        api.visualization.viewer.removeSurface(surface);
+        delete this.surfaces[mol.id];
+      }
+    }
+  }
+
+  private _checkStyleChanges(allMolecules: IMolEntry[]): any[] {
     let visibleTerminalNodeModels: any[] = [];
     let terminalNodes = getTerminalNodes(allMolecules);
 
@@ -64,7 +72,7 @@ export default class ViewerPanel extends Vue {
       if (!this.molCache[id]) {
         let visMol = api.visualization.viewer.addRawModel_JDD(mol.model);
         this.molCache[id] = visMol;
-        this.makeAtomsHoverableAndClickable({model: visMol});
+        this._makeAtomsHoverableAndClickable({model: visMol});
       }
 
       // If a molecule is marked "dirty", a new style needs to be applied.
@@ -72,20 +80,18 @@ export default class ViewerPanel extends Vue {
         if (!mol.visible) {
           // hide it.
           mol.model.hide();
+
+          // Clear any surfaces associated with this molecule.
+          this._clearSurface(mol);
         } else if (mol.stylesSels) {
-          // There are styles to apply
+          // There are styles to apply, so make sure it's visible.
           mol.model.show();
 
           // Clear current styles
           mol.model.setStyle({}, {});
 
           // Clear any surfaces associated with this molecule.
-          if (mol.id && this.surfaces[mol.id]) {
-            for (const surface of this.surfaces[mol.id]) {
-              api.visualization.viewer.removeSurface(surface);
-              delete this.surfaces[mol.id];
-            }
-          }
+          this._clearSurface(mol);
 
           // Add new styles
           let spheresUsed = false;
@@ -137,7 +143,7 @@ export default class ViewerPanel extends Vue {
     return visibleTerminalNodeModels;
   }
 
-  zoomPerFocus(allMolecules: IMolEntry[], visibleTerminalNodeModels: any[]) {
+  private _zoomPerFocus(allMolecules: IMolEntry[], visibleTerminalNodeModels: any[]) {
     let molsToFocus: IMolEntry[] = [];
     for (const mol of getAllNodesFlattened(allMolecules)) {
       if (mol.focused) {
@@ -163,7 +169,7 @@ export default class ViewerPanel extends Vue {
   }
 
 
-  makeAtomsHoverableAndClickable(sel: any) {
+  private _makeAtomsHoverableAndClickable(sel: any) {
     api.visualization.viewer.setHoverable(
       sel,
       true,
@@ -219,19 +225,22 @@ export default class ViewerPanel extends Vue {
     let viewer = $3Dmol.createViewer("mol-viewer", {
       defaultcolors: $3Dmol.rasmolElementColors,
     });
+
+    console.warn('viewer.setViewStyle({style:"outline"})');
+
     api.visualization.viewer = viewer;
     viewer.setBackgroundColor(0xffffff);
 
-    let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
-      // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
-      // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic
-      // let fetchPromise = fetch("https://files.rcsb.org/view/1HQ3.pdb")  // has ions
-      // let fetchPromise = fetch("https://files.rcsb.org/ligands/view/ATP_ideal.sdf")
-      .then((response) => response.text())
-      .then((text) => {
-        return loadMolecularModelFromText(text, "pdb", "myfile.pdb");
-        // return loadMolecularModelFromText(text, "sdf", "myfile.sdf");
-      });
+    // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
+    //   // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
+    //   // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic
+    //   // let fetchPromise = fetch("https://files.rcsb.org/view/1HQ3.pdb")  // has ions
+    //   // let fetchPromise = fetch("https://files.rcsb.org/ligands/view/ATP_ideal.sdf")
+    //   .then((response) => response.text())
+    //   .then((text) => {
+    //     return loadMolecularModelFromText(text, "pdb", "myfile.pdb");
+    //     // return loadMolecularModelFromText(text, "sdf", "myfile.sdf");
+    //   });
   }
 }
 </script>

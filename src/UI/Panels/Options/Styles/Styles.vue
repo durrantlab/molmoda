@@ -20,8 +20,7 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 import Style, { IStyleName } from "./Style.vue";
 
 // @ts-ignore
-import isEqual from "lodash/isEqual";
-import { unbondedAtomsStyle } from "@/FileSystem/LoadMolecularModels/Lookups/DefaultStyles";
+import isEqual from 'lodash.isequal';
 import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 interface IStyleCount {
@@ -64,10 +63,10 @@ export default class Styles extends Vue {
 
       // if (styles.length === 0) { debugger; }
       
-      let stylesAndCounts = this.convertStyleToStyleCount([styles[0]]);
+      let stylesAndCounts = this._convertStyleToStyleCount([styles[0]]);
       for (let i = 1; i < styles.length; i++) {
-        let newStyleCounts = this.convertStyleToStyleCount([styles[i]]);
-        stylesAndCounts = this.tallyStyles(stylesAndCounts, newStyleCounts);
+        let newStyleCounts = this._convertStyleToStyleCount([styles[i]]);
+        stylesAndCounts = this._tallyStyles(stylesAndCounts, newStyleCounts);
       }
 
       // Sort the styles by count, descending.
@@ -90,13 +89,13 @@ export default class Styles extends Vue {
     return allStylesAndCountsInfo;
   }
 
-  private convertStyleToStyleCount(styles: IStyleAndSel[]): IStyleCount[] {
+  private _convertStyleToStyleCount(styles: IStyleAndSel[]): IStyleCount[] {
     return styles.map((s: IStyleAndSel): IStyleCount => {
       return { styleAndSel: s, count: 1 };
     });
   }
 
-  private tallyStyles(stylesAndCounts: IStyleCount[], newStyleCounts: IStyleCount[]): IStyleCount[] {
+  private _tallyStyles(stylesAndCounts: IStyleCount[], newStyleCounts: IStyleCount[]): IStyleCount[] {
     // TODO: Move to Utils.ts?
     // Assuming stylesAndCounts and newStyleCounts don't contain duplicates.
 

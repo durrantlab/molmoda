@@ -2,10 +2,11 @@
 
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { store } from "@/Store";
+import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 
 // @ts-ignore
 import * as tmp from "@/UI/Panels/Viewer/3Dmol-nojquery.JDD";
-import { IAtom, IChain, IFileContents, IMolEntry, IResidue } from "../../UI/Navigation/TreeView/TreeInterfaces";
+import { IAtom, IChain, ICommonNode, IFileContents, IMolEntry, IResidue } from "../../UI/Navigation/TreeView/TreeInterfaces";
 const $3Dmol = tmp as any;
 
 export function loadMolecularModelFromText(
@@ -17,7 +18,13 @@ export function loadMolecularModelFromText(
         new URL("./LoadMolecularModels.worker", import.meta.url)
     );
     return runWorker(worker, { molText, format, molName }).then((molecularData: IFileContents) => {
-        const models = convertAllAtomArraysToModels(molecularData);
+        const models = _convertAllAtomArraysToModels(molecularData);
+
+        // Set molName as src on all terminal nodes
+        molecularData.src = molName;
+        getTerminalNodes(molecularData.nodes as IMolEntry[]).forEach((node: ICommonNode) => {
+            node.src = molName;
+        });
         
         store.commit("pushToList", {
             name: "molecules",
@@ -28,7 +35,7 @@ export function loadMolecularModelFromText(
     });
 }
 
-function convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
+function _convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
     const models: any[] = [];
 
     // Replace "atoms" with actual models.
@@ -71,10 +78,15 @@ function convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
         });
     }
 
+    // TODO: Below for debugging. Can remove it time.
+    // for (const model of models) {
+    //     convertToPDB(model);
+    // }
+
     return models;
 }
 
-function atomsToModel(atoms: IAtom[]): any {
+export function atomsToModel(atoms: IAtom[]): any {
     const model = new $3Dmol.GLModel();
     model.addAtoms(atoms);
     return model;

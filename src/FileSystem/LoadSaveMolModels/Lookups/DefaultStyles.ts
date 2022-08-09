@@ -7,14 +7,14 @@ export const unbondedAtomsStyle: IStyleAndSel = {
     } },
 };
 
-const sphereStyle: IStyleAndSel = {
+const _sphereStyle: IStyleAndSel = {
     selection: {},
     style: {
         sphere: {},
     },
 };
 
-const stickStyle: IStyleAndSel = {
+const _stickStyle: IStyleAndSel = {
     selection: {},
     style: {
         stick: {},
@@ -32,14 +32,14 @@ export const proteinStyle: IStyleAndSel[] = [
     },
 ];
 
-export const nucleicStyle: IStyleAndSel[] = [stickStyle];
+export const nucleicStyle: IStyleAndSel[] = [_stickStyle];
 
-export const ligandsStyle: IStyleAndSel[] = [stickStyle];
+export const ligandsStyle: IStyleAndSel[] = [_stickStyle];
 
-export const metalsStyle: IStyleAndSel[] = [sphereStyle];
+export const metalsStyle: IStyleAndSel[] = [_sphereStyle];
 
-export const lipidStyle: IStyleAndSel[] = [stickStyle];
+export const lipidStyle: IStyleAndSel[] = [_stickStyle];
 
-export const ionsStyle: IStyleAndSel[] = [sphereStyle];
+export const ionsStyle: IStyleAndSel[] = [_sphereStyle];
 
-export const solventStyle: IStyleAndSel[] = [stickStyle];
+export const solventStyle: IStyleAndSel[] = [_stickStyle];

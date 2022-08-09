@@ -8,7 +8,7 @@ interface NameValPair {
     val: any;
 }
 
-const commonMutations = {
+const _commonMutations = {
     setVar(state: any, payload: NameValPair) {
         state[payload.name] = payload.val;
     },
@@ -27,12 +27,12 @@ const commonMutations = {
     },
 };
 
-const modules: { [key: string]: any } = {};
+const _modules: { [key: string]: any } = {};
 export function addVueXStoreModule(moduleName: string, vals: any): void {
-    modules[moduleName] = {
+    _modules[moduleName] = {
         namespaced: true,
         state: vals,
-        mutations: commonMutations,
+        mutations: _commonMutations,
     };
 }
 
@@ -45,7 +45,7 @@ export function setupVueXStore() {
         },
         getters: {},
         mutations: {
-            ...commonMutations,
+            ..._commonMutations,
             clearFocusedMolecule(state: any, updateZoom = true) {
                 if (!updateZoom) {
                     state["updateZoom"] = false;
@@ -62,22 +62,25 @@ export function setupVueXStore() {
             },
         },
         actions: {},
-        modules: modules,
+        modules: _modules,
     };
 
     store = createStore(storeVars);
 
-    store.watch(
-        // When the returned result changes...
-        function (state: any) {
-            return state;
-        },
-        // Run this callback
-        (state: any) => {
-            console.log("something changed somewhere in the state!");
-        },
-        {"deep": true}
-    );
+    // store.watch(
+    //     // When the returned result changes...
+    //     function (state: any) {
+    //         return state;
+    //     },
+    //     // Run this callback
+    //     (state: any) => {
+    //         // TODO: This just testing.
+    //         // saveState(state);
+    //         // const obj = jsonToState(jsonStr);
+    //         console.log("something changed somewhere in the state!");
+    //     },
+    //     { deep: true }
+    // );
 
     // For debugging
     // @ts-ignore

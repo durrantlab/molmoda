@@ -1,11 +1,14 @@
 import * as JobQueue from "@/JobQueue";
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { Vue } from "vue-class-component";
-import { ICredit } from "./PluginInterfaces";
+import { IContributorCredit, ISoftwareCredit } from "./PluginInterfaces";
+import * as api from "@/Api";
 
 export interface IPluginSetupInfo {
-    credits: ICredit[];
+    softwareCredits: ISoftwareCredit[];
+    contributorCredits: IContributorCredit[];
     menuData: IMenuItem;
+    pluginId: string;
 }
 
 export abstract class PluginParent extends Vue {
@@ -13,7 +16,8 @@ export abstract class PluginParent extends Vue {
     abstract menuPath: string[] | string;
 
     // Be sure to credit authors (with license).
-    abstract credits: ICredit[];
+    abstract softwareCredits: ISoftwareCredit[];
+    abstract contributorCredits: IContributorCredit[];
 
     // A unique id defines the plugin.
     abstract pluginId: string;
@@ -30,17 +34,27 @@ export abstract class PluginParent extends Vue {
     // This function submits jobs to the job queue system. Note that it is jobs
     // plural. The function variable `parameterSets` is a list of parameters,
     // one per job.
-    submitJobs(parameterSets: any[]) {
+    protected _submitJobs(parameterSets?: any[]) {
+        if (parameterSets === undefined) {
+            parameterSets = [undefined]
+        }
         if (parameterSets.length === undefined) {
-            throw new Error(`parameterSets must be an array. If your plugin (${this.pluginId}) only submits one job, wrap it in [].`);
+            throw new Error(
+                `parameterSets must be an array. If your plugin (${this.pluginId}) only submits one job, wrap it in [].`
+            );
+        }
+        if (parameterSets.length === 0) {
+            parameterSets = [undefined]
         }
 
-        const jobs: JobQueue.JobInfo[] = parameterSets.map((p: JobQueue.JobInfo) => {
-            return {
-                commandName: this.pluginId,
-                params: p,
-            } as JobQueue.JobInfo;
-        });
+        const jobs: JobQueue.JobInfo[] = parameterSets.map(
+            (p: JobQueue.JobInfo) => {
+                return {
+                    commandName: this.pluginId,
+                    params: p,
+                } as JobQueue.JobInfo;
+            }
+        );
         JobQueue.submitJobs(jobs);
     }
 
@@ -54,16 +68,18 @@ export abstract class PluginParent extends Vue {
 
         // Add to menu and credits.
         this.$emit("onPluginSetup", {
-            credits: this.credits,
+            softwareCredits: this.softwareCredits,
+            contributorCredits: this.contributorCredits,
             menuData: {
                 path: this.menuPath,
                 function: () => {
                     this.start();
-                },
+                }
             } as IMenuItem,
+            pluginId: this.pluginId,
         } as IPluginSetupInfo);
 
         // Register with job queue system
-        JobQueue.registerJobType(this.pluginId, this.runJob.bind(this));
+        api.hooks.onJobQueueCommand(this.pluginId, this.runJob.bind(this));
     }
 }

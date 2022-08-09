@@ -1,47 +1,123 @@
 <template>
-  <div class="full-screen" style="display:flex;flex-direction:column;">
-    <div style="flex-grow: 5;">
+  <div class="full-screen" style="display: flex; flex-direction: column">
+    <div style="flex-grow: 5">
       <Menu :menuData="menuData" />
     </div>
-    <div style="flex-grow: 5;">
+    <div style="flex-grow: 5">
       <GoldLayout />
     </div>
-    <AllPlugins @onPluginSetup="onPluginSetup" :credits="credits"/>
+    <AllPlugins
+      @onPluginSetup="onPluginSetup"
+      :softwareCredits="softwareCredits"
+      :contributorCredits="contributorCredits"
+      @onError="onError"
+    />
+    <ErrorModal :message="errorMsg"></ErrorModal>
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
 import GoldLayout from "@/UI/Layout/GoldenLayout/GoldLayout.vue";
 import Menu from "@/UI/Navigation/Menu/Menu.vue";
-import * as api from "@/Api";
 import AllPlugins from "../Plugins/AllPlugins.vue";
-import { addMenuItem, IMenuItem, IMenuSubmenu } from "../UI/Navigation/Menu/Menu";
-import { ICredit, Licenses } from "../Plugins/PluginInterfaces";
-import { globalCredits } from "./GlobalCredits";
+import {
+  addMenuItem,
+  IMenuItem,
+  IMenuSubmenu,
+} from "../UI/Navigation/Menu/Menu";
+import {
+  IContributorCredit,
+  ISoftwareCredit,
+} from "../Plugins/PluginInterfaces";
+import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { IPluginSetupInfo } from "@/Plugins/PluginParent";
+import ErrorModal from "@/UI/MessageAlerts/ErrorModal.vue";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 @Options({
   components: {
     GoldLayout,
     Menu,
-    AllPlugins
+    AllPlugins,
+    ErrorModal,
   },
 })
 export default class App extends Vue {
+  // Menu data
   menuData: (IMenuItem | IMenuSubmenu)[] = [];
 
-  credits: ICredit[] = globalCredits;
+  // Software credits (libraries used)
+  softwareCredits: ISoftwareCredit[] = globalSoftwareCredits;
 
+  // Contributor credits (people)
+  contributorCredits: IContributorCredit[] = [
+    {
+      name: "Center for Research Computing (University of Pittsburgh)",
+      url: "https://crc.pitt.edu/",
+    },
+  ];
+
+  // Triggers error modal with this message.
+  errorMsg = "";
+
+  /**
+   * Removes credits with duplicate names.
+   * @param {(ISoftwareCredit | IContributorCredit)[]} credits  Credits to
+   *                                                            consider.
+   * @return Returns the list of credits, with ones that have duplicate names
+   *         removed.
+   */
+  private _removeDuplicateNames(
+    credits: (ISoftwareCredit | IContributorCredit)[]
+  ): (ISoftwareCredit | IContributorCredit)[] {
+    return credits.filter(
+      (v: any, i: any, a: any) =>
+        a.findIndex((x: any) => x.name === v.name) === i
+    );
+  }
+
+  /**
+   * Called when a plugin has finished setting up. Collects the menu and credits
+   * data.
+   * @param {IPluginSetupInfo} pluginSetupInfo  Information about the plugin
+   *                                            that has finished setting up.
+   */
   onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
-    this.menuData = addMenuItem(pluginSetupInfo.menuData, this.menuData);
-    this.credits = [...this.credits, ...pluginSetupInfo.credits];
+    this.menuData = addMenuItem(
+      pluginSetupInfo.menuData,
+      this.menuData,
+      pluginSetupInfo.pluginId
+    );
+    this.softwareCredits = [
+      ...this.softwareCredits,
+      ...pluginSetupInfo.softwareCredits,
+      ...Object.values(dynamicImports).map((v) => v.credit),
+    ];
+
+    // Remove items from credits if they have the same name
+    this.softwareCredits = this._removeDuplicateNames(
+      this.softwareCredits
+    ) as ISoftwareCredit[];
+
+    this.contributorCredits = [
+      ...this.contributorCredits,
+      ...pluginSetupInfo.contributorCredits,
+    ];
+
+    // Remove items from contributorCredits if they have the same name
+    this.contributorCredits = this._removeDuplicateNames(
+      this.contributorCredits
+    );
+  }
+
+  onError(error: string) {
+    this.errorMsg = error;
   }
 
   mounted() {
     // Close enough to rendered, I think.
-    api.sys.loadStatus.vueRendered =true;
+    // api.sys.loadStatus.vueRendered = true;
   }
 }
 </script>

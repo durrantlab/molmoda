@@ -54,27 +54,27 @@ export enum FormElemType {
   Range,
 }
 
-interface IFormElement {
+interface _IFormElement {
   type: FormElemType;
   varName: string;
   label?: string;
 }
 
-interface IFormTextOrColor extends IFormElement {
+interface _IFormTextOrColor extends _IFormElement {
   val: string;
 }
 
-interface IFormNumber extends IFormElement {
+interface _IFormNumber extends _IFormElement {
   val: number;
 }
 
-interface IFormRange extends IFormNumber {
+interface _IFormRange extends _IFormNumber {
   min: number;
   max: number;
   step: number;
 }
 
-interface IFormSelect extends IFormElement {
+interface _IFormSelect extends _IFormElement {
   val: string;
   options: string[];
 }
@@ -88,20 +88,20 @@ interface IFormSelect extends IFormElement {
 })
 export default class FormFull extends Vue {
   @Prop({ required: true }) modelValue!: (
-    | IFormTextOrColor
-    | IFormNumber
-    | IFormSelect
-    | IFormRange
+    | _IFormTextOrColor
+    | _IFormNumber
+    | _IFormSelect
+    | _IFormRange
   )[];
 
   FormElementType = FormElemType; // So accessible in template
 
   getSelectOptions(val: any) {
-    return (val as IFormSelect).options;
+    return (val as _IFormSelect).options;
   }
 
   getRangeMinMaxStep(val: any) {
-    let val2 = val as IFormRange;
+    let val2 = val as _IFormRange;
     return {
       min: val2.min,
       max: val2.max,

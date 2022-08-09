@@ -7,21 +7,18 @@
     @onAction="onAction"
     :actionBtnEnabled="filesToLoad.length > 0"
   >
-    <!-- <p>Moo</p> -->
-    <FormFile
-      @onFilesLoaded="onFilesLoaded"
-      :accept="accept"
-    />
+    <FormFile ref="formFile" @onFilesLoaded="onFilesLoaded" :accept="accept" />
   </Popup>
 </template>
 
 <script lang="ts">
 import { PluginParent } from "@/Plugins/PluginParent";
-import Popup from "@/UI/Layout/Popup.vue";
+import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
-import { ICredit } from "../../PluginInterfaces";
-import FormFile, { IFileInfo } from "@/UI/Forms/FormFile.vue";
-import { fileTypesAccepts } from "./LoadFiles";
+import FormFile from "@/UI/Forms/FormFile.vue";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
+import { IFileInfo } from "@/FileSystem/Interfaces";
 
 @Options({
   components: {
@@ -30,8 +27,12 @@ import { fileTypesAccepts } from "./LoadFiles";
   },
 })
 export default class LoadFilePlugin extends PluginParent {
-  menuPath = "File/Load/From File";
-  credits: ICredit[] = [];
+  menuPath = "File/Molecules/Import/[0] Local File";
+  softwareCredits: ISoftwareCredit[] = [];
+  contributorCredits: IContributorCredit[] = [{
+    name: "Jacob D. Durrant",
+    url: "http://durrantlab.com/",
+  }];
   accept = fileTypesAccepts;
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadfile";
@@ -44,16 +45,18 @@ export default class LoadFilePlugin extends PluginParent {
 
   onAction(): void {
     this.open = false;
-    this.submitJobs(this.filesToLoad);
+    this._submitJobs(this.filesToLoad);
   }
 
   start(): void {
+    // Below is hackish...
+    (this.$refs.formFile as FormFile).clearFile();
+
     this.open = true;
   }
 
-  runJob(parameters: any) {
-    console.log(parameters);
-    debugger;
+  runJob(parameters: IFileInfo) {
+    loadMoleculeFile(parameters);
   }
 }
 </script>

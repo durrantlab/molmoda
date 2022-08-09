@@ -22,8 +22,8 @@
       :options="atomsStyleOptions"
       @changed="updateMolecules(atomsOption)"
     ></FormSelect>
-    <ColorStyle 
-      v-if="atomsOption !== 'atoms-hidden'" 
+    <ColorStyle
+      v-if="atomsOption !== 'atoms-hidden'"
       v-model="styleName.styleAndSel.style"
       :repName="atomsOption"
       @changed="updateMolecules(atomsOption)"
@@ -43,8 +43,8 @@
       ]"
       @changed="updateMolecules(backboneOption)"
     ></FormSelect>
-    <ColorStyle 
-      v-if="backboneOption !== 'backbone-hidden'" 
+    <ColorStyle
+      v-if="backboneOption !== 'backbone-hidden'"
       v-model="styleName.styleAndSel.style"
       :repName="backboneOption"
       @changed="updateMolecules(backboneOption)"
@@ -62,8 +62,8 @@
       ]"
       @changed="updateMolecules(surfaceOption)"
     ></FormSelect>
-    <ColorStyle 
-      v-if="surfaceOption !== 'surface-hidden'" 
+    <ColorStyle
+      v-if="surfaceOption !== 'surface-hidden'"
       v-model="styleName.styleAndSel.style"
       :repName="surfaceOption"
       @changed="updateMolecules(surfaceOption)"
@@ -91,12 +91,10 @@ import { capitalize } from "@/Core/Utils";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
-import isEqual from "lodash/isEqual";
-import { unbondedAtomsStyle } from "@/FileSystem/LoadMolecularModels/Lookups/DefaultStyles";
+import isEqual from "lodash.isequal";
 import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull.vue";
-import { FormElemType } from "@/UI/Forms/FormFull.vue";
 import ColorStyle from "./ColorStyle/ColorStyle.vue";
 
 export interface IStyleName {
@@ -122,20 +120,18 @@ export default class Style extends Vue {
   surfaceOption = "surface-hidden";
 
   get atomsStyleOptions(): any {
-    let options = [
-      { description: 'Atoms: Hidden', val: 'atoms-hidden' },
-    ];
+    let options = [{ description: "Atoms: Hidden", val: "atoms-hidden" }];
 
     if (this.styleName.name !== "metal") {
       options.push(
         ...[
-          { description: 'Atoms: Lines', val: 'line' },
-          { description: 'Atoms: Sticks', val: 'stick' },
+          { description: "Atoms: Lines", val: "line" },
+          { description: "Atoms: Sticks", val: "stick" },
         ]
-      )
+      );
     }
 
-    options.push({ description: 'Atoms: Spheres', val: 'sphere' });
+    options.push({ description: "Atoms: Spheres", val: "sphere" });
 
     return options;
   }
@@ -153,41 +149,64 @@ export default class Style extends Vue {
     }
   }
 
-  private setInitialSelectVals(styleInfo: IStyleAndSel) {
+  private _setInitialSelectVals(styleInfo: IStyleAndSel) {
     if (styleInfo.style === undefined) {
       // Happens when all styles have been previously set to hidden.
       styleInfo.style = {};
     }
 
-    if (styleInfo.style.sphere) { this.atomsOption = "sphere"; } 
-    else if (styleInfo.style.stick) { this.atomsOption = "stick"; } 
-    else if (styleInfo.style.line) { this.atomsOption = "line"; } 
-    else { this.atomsOption = "atoms-hidden"; }
+    if (styleInfo.style.sphere) {
+      this.atomsOption = "sphere";
+    } else if (styleInfo.style.stick) {
+      this.atomsOption = "stick";
+    } else if (styleInfo.style.line) {
+      this.atomsOption = "line";
+    } else {
+      this.atomsOption = "atoms-hidden";
+    }
 
-    if (styleInfo.style.cartoon) { this.backboneOption = "cartoon"; }
-    else { this.backboneOption = "backbone-hidden"; }
+    if (styleInfo.style.cartoon) {
+      this.backboneOption = "cartoon";
+    } else {
+      this.backboneOption = "backbone-hidden";
+    }
 
-    if (styleInfo.style.surface) { this.surfaceOption = "surface"; }
-    else { this.surfaceOption = "surface-hidden"; }
+    if (styleInfo.style.surface) {
+      this.surfaceOption = "surface";
+    } else {
+      this.surfaceOption = "surface-hidden";
+    }
   }
 
   updateMolecules(repName: string): void {
     // TODO: Seems like this should happen in Styles.vue
-    let style = this.styleName.styleAndSel ? this.styleName.styleAndSel.style : {};
+    let style = this.styleName.styleAndSel
+      ? this.styleName.styleAndSel.style
+      : {};
 
     // Deal items with hidden visualizations. Delete entries that are
     // incompatible with hidden.
     switch (repName) {
       case "atoms-hidden":
-        if (style.line) { delete style.line; }
-        if (style.stick) { delete style.stick; }
-        if (style.sphere) { delete style.sphere; }
+        if (style.line) {
+          delete style.line;
+        }
+        if (style.stick) {
+          delete style.stick;
+        }
+        if (style.sphere) {
+          delete style.sphere;
+        }
         break;
       case "backbone-hidden":
-        if (style.cartoon) { delete style.cartoon; }
+        if (style.cartoon) {
+          delete style.cartoon;
+        }
         break;
       case "surface-hidden":
-        if (style.surface) { delete style.surface; }
+        if (style.surface) {
+          delete style.surface;
+        }
         break;
       default:
         // Not hidden, so use specified value.
@@ -197,13 +216,15 @@ export default class Style extends Vue {
         if (this.styleName.styleAndSel === undefined) {
           this.styleName.styleAndSel = {
             selection: {},
-            style: {}
-          }
+            style: {},
+          };
         }
 
         // @ts-ignore
         let val = this.styleName.styleAndSel.style[repName];
-        if (val === undefined) { val = {}; }
+        if (val === undefined) {
+          val = {};
+        }
 
         (style as any)[repName] = val;
     }
@@ -211,25 +232,43 @@ export default class Style extends Vue {
     // In case of atoms, representations are mutually exclusive.
     switch (repName) {
       case "line":
-        if (style.stick) { delete style.stick; }
-        if (style.sphere) { delete style.sphere; }
+        if (style.stick) {
+          delete style.stick;
+        }
+        if (style.sphere) {
+          delete style.sphere;
+        }
         break;
       case "stick":
-        if (style.line) { delete style.line; }
-        if (style.sphere) { delete style.sphere; }
+        if (style.line) {
+          delete style.line;
+        }
+        if (style.sphere) {
+          delete style.sphere;
+        }
         break;
       case "sphere":
-        if (style.line) { delete style.line; }
-        if (style.stick) { delete style.stick; }
+        if (style.line) {
+          delete style.line;
+        }
+        if (style.stick) {
+          delete style.stick;
+        }
         break;
     }
 
     // iterate through terminal nodes
     let molecules = this.$store.state["molecules"];
     for (let node of getTerminalNodes(molecules)) {
-      if (!node.type) { continue; }
-      if (!node.stylesSels) { continue; }
-      if (!node.visible) { continue; }
+      if (!node.type) {
+        continue;
+      }
+      if (!node.stylesSels) {
+        continue;
+      }
+      if (!node.visible) {
+        continue;
+      }
 
       // Check if the node type matches this style
       if (node.type === this.styleName.name) {
@@ -256,14 +295,16 @@ export default class Style extends Vue {
     // this.$emit("update:styleName", e.target.value);
   }
 
-  capitalize(str: string): string { return capitalize(str); }
+  capitalize(str: string): string {
+    return capitalize(str);
+  }
 
   mounted() {
     // Start by selecting defaults TODO: Actually, not sure this is necessary.
     // All components will always have SOME style (assigned at load).
 
     // this.translateStyleToComponent(this.styleName.style);
-    this.setInitialSelectVals(this.styleName.styleAndSel);
+    this._setInitialSelectVals(this.styleName.styleAndSel);
   }
 }
 </script>

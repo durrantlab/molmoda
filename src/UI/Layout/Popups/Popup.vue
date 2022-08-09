@@ -12,8 +12,8 @@
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body">
-          <p><slot></slot></p>
+        <div class="modal-body" style="overflow: hidden;">
+          <slot></slot>
         </div>
         <div class="modal-footer">
           <button
@@ -40,6 +40,7 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable @typescript-eslint/ban-types */
 
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
@@ -56,6 +57,7 @@ export default class Popup extends Vue {
   @Prop() actionBtnTxt!: string; // If undefined, no ok button
   @Prop({ default: true }) cancelXBtn!: boolean;
   @Prop({ default: true }) actionBtnEnabled!: boolean;
+  @Prop({}) onShown!: Function;
 
   id: string = "modal-" + randomID();
   modal: any;
@@ -79,6 +81,9 @@ export default class Popup extends Vue {
     this.modal = new Modal(modalElem, {});
 
     modalElem.addEventListener("shown.bs.modal", (event) => {
+      if (this.onShown) {
+        this.onShown();
+      }
       this.$emit("update:modelValue", true);
     });
 

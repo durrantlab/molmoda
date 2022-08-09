@@ -1,27 +1,19 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
-interface ICommonNode {
-    text: string;
-    atoms?: IAtom[];
-    model?: any;
-    id?: string;  // random id for terminal nodes
-    treeExpanded: boolean;
-    viewerDirty: boolean;  // triggers 3dmoljs viewer
-    visible: boolean;
-    focused: boolean;
-}
-
 export interface IAtom {
     chain: string;
     resi: number;
     resn: string;
-}
-
-export interface IResidue extends ICommonNode { }
-
-export interface IChain extends ICommonNode { 
-    residues?: IResidue[];
-    nodes?: IResidue[];
+    serial?: number;
+    atom?: string;  // atom name
+    altLoc?: string;
+    pdbline?: string;
+    x?: number;
+    y?: number;
+    z?: number;
+    b?: number;
+    elem?: string;
+    bonds?: number[];
 }
 
 export enum MolType {
@@ -34,6 +26,25 @@ export enum MolType {
     SOLVENT = "solvent",
 }
 
+export interface ICommonNode {
+    text: string;
+    atoms?: IAtom[];
+    model?: any;
+    id?: string;  // random id for terminal nodes
+    src?: string;  // usually file name
+    treeExpanded: boolean;
+    viewerDirty: boolean;  // triggers 3dmoljs viewer
+    visible: boolean;
+    focused: boolean;
+}    
+
+export interface IResidue extends ICommonNode { }
+
+export interface IChain extends ICommonNode { 
+    residues?: IResidue[];
+    nodes?: IResidue[];
+}
+
 export interface IMolEntry extends ICommonNode {
     type?: MolType;
     stylesSels?: IStyleAndSel[];
@@ -42,6 +53,7 @@ export interface IMolEntry extends ICommonNode {
 }
 
 export interface IFileContents extends ICommonNode {
+    type?: MolType;
     mols?: IMolEntry[];
     nodes?: IMolEntry[];
 }

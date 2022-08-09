@@ -1,6 +1,6 @@
-let layoutParentDOM: HTMLElement;
+let _layoutParentDOM: HTMLElement;
 
-const queryToClasses: { [key: string]: string[] } = {
+const _queryToClasses: { [key: string]: string[] } = {
     ".lm_tab:not(.lm_active)": ["btn", "btn-default"],
     ".lm_active": ["btn", "btn-primary", "text-white"],
     ".lm_tab": ["reduced-padding-on-right"],
@@ -8,39 +8,39 @@ const queryToClasses: { [key: string]: string[] } = {
     ".lm_drag_handle": ["bg-light"]
 };
 
-let allClasses: Set<string>;
+let _allClasses: Set<string>;
 
 // Add color classes
 export function addBootstrapColorClasses() {
-    if (!layoutParentDOM) {
-        layoutParentDOM = document.querySelectorAll(
+    if (!_layoutParentDOM) {
+        _layoutParentDOM = document.querySelectorAll(
             ".lm_goldenlayout"
         )[0] as HTMLElement;
     }
 
     // Get all classes
-    if (!allClasses) {
-        allClasses = new Set([]);
-        for (const query in queryToClasses) {
-            const classes: string[] = queryToClasses[query];
+    if (!_allClasses) {
+        _allClasses = new Set([]);
+        for (const query in _queryToClasses) {
+            const classes: string[] = _queryToClasses[query];
             for (const className of classes) {
-                allClasses.add(className);
+                _allClasses.add(className);
             }
         }
     }
 
     // Remove classes
-    for (const cls of allClasses) {
-        const elements = layoutParentDOM.querySelectorAll(`.${cls}`);
+    for (const cls of _allClasses) {
+        const elements = _layoutParentDOM.querySelectorAll(`.${cls}`);
         for (const element of elements) {
             element.classList.remove(cls);
         }
     }
 
     // Add back only where needed.
-    for (const query in queryToClasses) {
-        const classes = queryToClasses[query];
-        const elements = layoutParentDOM.querySelectorAll(query);
+    for (const query in _queryToClasses) {
+        const classes = _queryToClasses[query];
+        const elements = _layoutParentDOM.querySelectorAll(query);
         for (const element of elements) {
             for (const className of classes) {
                 element.classList.add(className);

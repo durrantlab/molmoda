@@ -1,6 +1,6 @@
 import { IColorStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
-interface IColorInfo {
+interface _IColorInfo {
     hex: string;
     name: string;
     rgb?: number[];
@@ -149,7 +149,7 @@ export let colorInfomation = [
 ];
 
 // Convert hex to rgb values
-function hexToRgb(hex: string): number[] | null {
+function _hexToRgb(hex: string): number[] | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
         ? [
@@ -160,17 +160,17 @@ function hexToRgb(hex: string): number[] | null {
         : null;
 }
 
-colorInfomation = colorInfomation.map((v: IColorInfo): IColorInfo => {
-    v.rgb = hexToRgb(v.hex) as number[];
+colorInfomation = colorInfomation.map((v: _IColorInfo): _IColorInfo => {
+    v.rgb = _hexToRgb(v.hex) as number[];
     return v;
 });
 
 export function hexToColorName(hex: string): string {
     // First, get rgb
-    const rgb = hexToRgb(hex) as number[];
+    const rgb = _hexToRgb(hex) as number[];
 
     // No go through colorInformation and calculate distance to rgb
-    const distances = colorInfomation.map((v: IColorInfo): number => {
+    const distances = colorInfomation.map((v: _IColorInfo): number => {
         const rgb2 = v.rgb as number[];
         const distance = Math.sqrt(
             Math.pow(rgb2[0] - rgb[0], 2) +
@@ -186,7 +186,7 @@ export function hexToColorName(hex: string): string {
 }
 
 export function colorNameToHex(name: string): string {
-    const color = colorInfomation.find((v: IColorInfo): boolean => v.name === name);
+    const color = colorInfomation.find((v: _IColorInfo): boolean => v.name === name);
     if (color) {
         return color.hex;
     }
