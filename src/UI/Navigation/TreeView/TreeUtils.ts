@@ -33,7 +33,10 @@ export function getAllNodesFlattened(mols: IMolContainer[]): IMolContainer[] {
     return findNodes(mols);
 }
 
-export function getNodeOfId(id: string, mols: IMolContainer[]): IMolContainer | null {
+export function getNodeOfId(
+    id: string,
+    mols: IMolContainer[]
+): IMolContainer | null {
     // Use a recursive function to find the node of id.
     function findNode(mls: IMolContainer[], i: string): IMolContainer | null {
         for (const mol of mls) {
@@ -68,4 +71,46 @@ export function getNodesOfType(
     // explicitly search for/include children.
 
     return nodesToConsider;
+}
+
+export function removeNode(id: string, mols: IMolContainer[]): void {
+    const node = getNodeOfId(id, mols);
+    if (!node || !node.parentId) {
+        return;
+    }
+
+    const parentNode = getNodeOfId(node.parentId, mols);
+    if (!parentNode || !parentNode.nodes) {
+        return;
+    }
+
+    parentNode.nodes = parentNode.nodes.filter((n) => n.id !== id);
+}
+
+export function addNodeAfter(
+    nodeToAdd: IMolContainer,
+    existingNode: IMolContainer,
+    mols: IMolContainer[]
+): void {
+    if (!existingNode.parentId) {
+        return;
+    }
+
+    // Get the parent node of existing node
+    const parentNode = getNodeOfId(existingNode.parentId, mols);
+
+    if (!parentNode || !parentNode.nodes) {
+        return;
+    }
+
+    // Get index of existing node in the list.
+    const existingNodeIndex = parentNode.nodes.findIndex(
+        (n) => n.id === existingNode.id
+    );
+
+    // Insert the new node after the existing node.
+    parentNode.nodes.splice(existingNodeIndex + 1, 0, nodeToAdd);
+
+    // Update nodeToAdd parentId
+    nodeToAdd.parentId = parentNode.id;
 }

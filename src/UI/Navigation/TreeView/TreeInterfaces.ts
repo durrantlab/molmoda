@@ -31,6 +31,7 @@ export interface IMolContainer {
     title: string;                // appears in tree
     model?: IAtom[] | GLModel;    // IAtom in worker, GLMoldel in main thread
     id?: string;                  // random id for terminal nodes
+    parentId?: string;            // parent id for tree
     src?: string;                 // usually file name
     nodes?: IMolContainer[];      // Next level down in menu. So if molecule,
                                   // then chain. If chain, then residue. Etc.

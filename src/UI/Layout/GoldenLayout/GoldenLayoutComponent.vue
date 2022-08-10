@@ -6,14 +6,17 @@
     :data-width="width"
     :data-height="height"
   >
-    <div :id="slugID" :style="style" class="tab-pane fade show active container-fluid p-3">
+    <div
+      :id="slugID"
+      :style="style"
+      :class="'tab-pane fade show active container-fluid p-3 ' + extraClass"
+    >
       <slot></slot>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { slugify } from "@/Core/Utils";
@@ -25,6 +28,7 @@ export default class GoldenLayoutComponent extends Vue {
   @Prop() width!: number;
   @Prop() height!: number;
   @Prop() style!: string;
+  @Prop({ default: "" }) extraClass!: string;
 
   // computed slugID
   get slugID() {
@@ -35,7 +39,7 @@ export default class GoldenLayoutComponent extends Vue {
     let obj = JSON.parse(this.state);
     return JSON.stringify({
       ...obj,
-      domID: this.slugID
+      domID: this.slugID,
     });
   }
 }
@@ -45,7 +49,7 @@ export default class GoldenLayoutComponent extends Vue {
 #molecules .list-group-item {
   border: 0 !important;
   padding: 0;
-  cursor:pointer;
+  cursor: pointer;
 }
 </style>
 

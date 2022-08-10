@@ -207,12 +207,6 @@ function collapseSingles(molEntry: IMolContainer): IMolContainer {
     return molEntry;
 }
 
-function makeTitleDOM(title: string): string {
-    // return `<div class='tree-title'>${title}</div><div class='tree-btn'>moo</div>`;
-    // TODO: Refactor this away
-    return title;
-}
-
 function addMolTypeAndStyle(
     molContainer: IMolContainer,
     stylesAndSels: IStyleAndSel[]
@@ -224,7 +218,6 @@ function addMolTypeAndStyle(
     }
     for (const mol of getAllNodesFlattened([molContainer])) {
         mol.id = randomID();
-        mol.title = makeTitleDOM(mol.title);
         mol.treeExpanded = false;
         mol.visible = true;
         mol.viewerDirty = true;
@@ -280,7 +273,7 @@ function divideAtomsIntoDistinctComponents(data: {
 
     // Page into single object
     let fileContents: IMolContainer = {
-        title: makeTitleDOM(data.molName),
+        title: data.molName,
         treeExpanded: false,
         viewerDirty: true,
         visible: true,
@@ -337,6 +330,17 @@ function cleanUpFileContents(fileContents: IMolContainer): IMolContainer {
     return fileContents;
 }
 
+function addParentIds(fileContents: IMolContainer): void {
+    const allNodes = getAllNodesFlattened([fileContents]);
+    allNodes.forEach((anyNode: IMolContainer) => {
+        if (anyNode.nodes && anyNode.nodes.length > 0) {
+            anyNode.nodes.forEach((node: IMolContainer) => {
+                node.parentId = anyNode.id;
+            });
+        }
+    });
+}
+
 waitForDataFromMainThread().then((data) => {
     const organizedAtoms = divideAtomsIntoDistinctComponents(data);
 
@@ -372,6 +376,8 @@ waitForDataFromMainThread().then((data) => {
                 break;
         }
     }
+
+    addParentIds(organizedAtoms);
 
     sendResponseToMainThread(organizedAtoms);
 });

@@ -1,28 +1,23 @@
-<!-- <link rel="stylesheet" href="dist/sl-vue-tree-dark.css">
-<script src="dist/sl-vue-tree.js"></script> -->
-
 <template>
-  <div>
-    <span v-for="treeDatum in getLocalTreeData" v-bind:key="treeDatum.id">
-      <TitleBar :treeDatum="treeDatum" :depth="depth" :treeData="treeData" />
+  <div
+    v-for="treeDatum in getLocalTreeData"
+    v-bind:key="treeDatum.id"
+    class="sortable-group sortable-handle"
+    :data-molid="treeDatum.id"
+    :style="styleToUse"
+  >
+    <TitleBar :treeDatum="treeDatum" :depth="depth" :treeData="treeData" />
 
-      <!-- Show sub-items if appropriate -->
-      <Transition name="slide">
-        <div
-          v-if="treeDatum.nodes && treeDatum.treeExpanded"
-          :style="indentStyle"
-          :class="'depth-' + depth"
-          :ref="treeDatum.id"
-          @mousemove.stop="recordMouseMove(depth)"
-        >
-          <TreeView
-            :treeData="treeDatum.nodes"
-            :depth="depth + 1"
-            @onMouseMovedDepth="onMouseMovedDepth"
-          />
-        </div>
-      </Transition>
-    </span>
+    <!-- Show sub-items if appropriate -->
+    <!-- <Transition name="slide"> -->
+    <TreeView
+      v-if="treeDatum.nodes && treeDatum.treeExpanded"
+      :treeData="treeDatum.nodes"
+      :depth="depth + 1"
+      :styleToUse="indentStyle"
+      :ref="treeDatum.id"
+    />
+    <!-- </Transition> -->
   </div>
 </template>
 
@@ -31,7 +26,7 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { getAllNodesFlattened, getNodeOfId } from "./TreeUtils";
+import { removeNode, getAllNodesFlattened, getNodeOfId, addNodeAfter } from "./TreeUtils";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
@@ -39,6 +34,7 @@ import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
 
 // @ts-ignore
 import Sortable from "sortablejs";
+import { IMolContainer } from "./TreeInterfaces";
 
 @Options({
   components: {
@@ -50,43 +46,9 @@ import Sortable from "sortablejs";
 export default class TreeView extends Vue {
   @Prop({ default: 0 }) depth!: number;
   @Prop({ default: undefined }) treeData!: Array<any>;
-  @Prop({ default: 0 }) depthDraggable!: Array<any>;
+  @Prop({ default: undefined }) styleToUse!: string;
 
   sortables: any[] = [];
-
-  onMouseMovedDepth(depth: number) {
-    if (this.depth === 0) {
-      // Emit has "bubbled up" to the top-most level.
-      console.log(depth);
-
-    } else {
-      // Propogate emit to the parent.
-      this.recordMouseMove(depth);
-    }
-    // this.$emit("onMouseMovedDepth", depth);
-  }
-
-  recordMouseMove(depth: number) {
-    this.$emit("onMouseMovedDepth", depth);
-    this.onMouseMovedDepth(depth);
-
-    // console.log("depth: " + depth.toString());
-  }
-
-  @Watch("depthDraggable")
-  onDepthDraggableChange(newDepth: number) {
-    debugger;
-    for (let sortable of this.sortables) {
-      switch (newDepth) {
-        case 0:
-          sortable.options.filter = ".depth-1";
-          break;
-        case 1:
-          sortable.options.filter = ".depth-0";
-          break;
-      }
-    }
-  }
 
   flexFixedWidth(width: number): string {
     return flexFixedWidthStyle(width);
@@ -107,44 +69,103 @@ export default class TreeView extends Vue {
 
   @Watch("getLocalTreeData", { deep: true })
   onGetLocalTreeDataChange(newValue: any) {
-    // console.log(this.depth);
     if (this.depth !== 0) {
-      // 0 is like proteins
-      // 1 is like chains
+      // This only applies to top-most level.
       return;
     }
 
-    // Need to make new list sortable.
-    for (let sortable of this.sortables) {
-      sortable.destroy();
-    }
+    // return;
+    // // console.log(this.depth);
+    // // if (this.depth !== 0) {
+    //   // 0 is like proteins
+    //   // 1 is like chains
+    //   // return;
+    // // }
 
-    this.sortables = [];
-
+    // Let list render
     this.$nextTick(() => {
-      // Let list render
-      for (let treeDatum of this.getLocalTreeData) {
-        let el = this.$refs[treeDatum.id] as HTMLElement[];
-        if (el === undefined) {
-          continue;
-        }
-        let sortable = Sortable.create(el[0], {
-          fallbackOnBody: true,
-          dragoverBubble: true,
-          group: "molecules",
-          handle: ".title-text",
-          filter: "",
-          onFilter: (evt: any) => {
-            console.log("start");
-            // debugger;
-          },
-        });
-        this.sortables.push(sortable);
-
-        // sortable.options.filter = "";
-
-        // debugger;
+      // Need to make new list sortable.
+      for (let sortable of this.sortables) {
+        sortable.destroy();
       }
+
+      let containerOpts = {
+        group: {
+          name: "shared",
+          // revertClone: false
+          // put: true
+        },
+        draggable: ".sortable-handle"
+      };
+
+      let targetDiv: HTMLElement;
+      let draggedDiv: HTMLElement;
+
+
+      let itemOpts = {
+        ...containerOpts,
+        animation: 50,
+        // fallbackOnBody: true,
+        swapThreshold: 0.5,
+        onEnd: (evt: any) => {
+          let draggedID = draggedDiv.getAttribute("data-molid") as string;
+          let nodeDragged = getNodeOfId(draggedID, this.storeMolecules) as IMolContainer;
+
+          // Force rerender
+          nodeDragged.viewerDirty = true;
+
+          // Delete the dragged node
+          removeNode(draggedID, this.storeMolecules);
+          
+          // Get target node
+          let targetDivID = targetDiv.getAttribute("data-molid") as string;
+          let nodeTarget = getNodeOfId(targetDivID, this.storeMolecules) as IMolContainer;
+
+          if (nodeTarget === null) {
+            // Probably trying to drag it to the outside, so no node target.
+            // TODO: Confirm below is reactive.
+            this.storeMolecules.push(nodeDragged);
+          } else {
+            // There is a target node. Add after that.
+            addNodeAfter(nodeDragged, nodeTarget, this.storeMolecules);
+          }
+        },
+        onMove: (evt: any) => {
+          targetDiv = evt.to;
+          draggedDiv = evt.dragged;
+        }
+      };
+
+      this.sortables = [];
+
+      document.querySelectorAll("#molecules .sortable-group").forEach((e) => {
+        this.sortables.push(Sortable.create(e as HTMLElement, itemOpts));
+      });
+      let el = document.getElementById("molecules");
+      this.sortables.push(Sortable.create(el as HTMLElement, containerOpts));
+
+      // for (let treeDatum of this.getLocalTreeData) {
+      //   let el = this.$refs[treeDatum.id] as HTMLElement[];
+      //   if (el === undefined) {
+      //     continue;
+      //   }
+      //   let sortable = Sortable.create(el[0], {
+      //     fallbackOnBody: true,
+      //     dragoverBubble: true,
+      //     group: "molecules",
+      //     handle: ".title-text",
+      //     filter: "",
+      //     onFilter: (evt: any) => {
+      //       console.log("start");
+      //       // debugger;
+      //     },
+      //   });
+      //   this.sortables.push(sortable);
+
+      //   // sortable.options.filter = "";
+
+      //   // debugger;
+      // }
     });
   }
 

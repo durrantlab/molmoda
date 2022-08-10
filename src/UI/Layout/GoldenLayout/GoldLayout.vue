@@ -2,11 +2,16 @@
   <div ref="golden-layout-data" id="golden-layout-data">
     <GoldenLayoutContainer type="column">
       <GoldenLayoutContainer type="row" :height="90">
-        <GoldenLayoutComponent name="Molecules" state="{}" :width="20">
+        <GoldenLayoutComponent name="Molecules" extraClass="sortable-group" state="{}" :width="20">
           <TreeView />
         </GoldenLayoutComponent>
 
-        <GoldenLayoutComponent name="Viewer" state="{}" :width="60" :style="'height:100%;'">
+        <GoldenLayoutComponent
+          name="Viewer"
+          state="{}"
+          :width="60"
+          :style="'height:100%;'"
+        >
           <ViewerPanel />
         </GoldenLayoutComponent>
 

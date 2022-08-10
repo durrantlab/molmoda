@@ -41,7 +41,8 @@ Need functions to output pdb and mol2. (use open babel for mol2).
 
 New session, but with ability to detect if saved or not.
 
-Ability to drag moleculsr components
+Ability to drag moleculsr components. Working, but still not great. Need to
+stress test.
 
 # DONE
 
