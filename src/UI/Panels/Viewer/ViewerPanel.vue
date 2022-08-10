@@ -16,7 +16,7 @@ import {
 
 // @ts-ignore
 import * as tmp from "./3Dmol-nojquery.JDD";
-import { IMolEntry } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Lookups/DefaultStyles";
 const $3Dmol = tmp as any;
 
@@ -32,22 +32,22 @@ export default class ViewerPanel extends Vue {
   }
 
   @Watch("treeview", { immediate: false, deep: true })
-  onTreeviewChanged(allMolecules: IMolEntry[], oldAllMolecules: IMolEntry[]) {
+  onTreeviewChanged(allMolecules: IMolContainer[], oldAllMolecules: IMolContainer[]) {
     if (allMolecules.length === 0) {
       return;
     }
     this._updateStylesAndZoom(allMolecules);
   }
 
-  private _updateStylesAndZoom(allMolecules: IMolEntry[] | undefined = undefined) {
+  private _updateStylesAndZoom(allMolecules: IMolContainer[] | undefined = undefined) {
     if (allMolecules === undefined) {
-      allMolecules = this.treeview as IMolEntry[];
+      allMolecules = this.treeview as IMolContainer[];
     }
     let visibleTerminalNodeModels = this._checkStyleChanges(allMolecules);
     this._zoomPerFocus(allMolecules, visibleTerminalNodeModels);
   }
 
-  private _clearSurface(mol: IMolEntry) {
+  private _clearSurface(mol: IMolContainer) {
     if (mol.id && this.surfaces[mol.id]) {
       for (const surface of this.surfaces[mol.id]) {
         api.visualization.viewer.removeSurface(surface);
@@ -56,7 +56,7 @@ export default class ViewerPanel extends Vue {
     }
   }
 
-  private _checkStyleChanges(allMolecules: IMolEntry[]): any[] {
+  private _checkStyleChanges(allMolecules: IMolContainer[]): any[] {
     let visibleTerminalNodeModels: any[] = [];
     let terminalNodes = getTerminalNodes(allMolecules);
 
@@ -79,16 +79,16 @@ export default class ViewerPanel extends Vue {
       if (mol.viewerDirty) {
         if (!mol.visible) {
           // hide it.
-          mol.model.hide();
+          (mol.model as any).hide();
 
           // Clear any surfaces associated with this molecule.
           this._clearSurface(mol);
         } else if (mol.stylesSels) {
           // There are styles to apply, so make sure it's visible.
-          mol.model.show();
+          (mol.model as any).show();
 
           // Clear current styles
-          mol.model.setStyle({}, {});
+          (mol.model as any).setStyle({}, {});
 
           // Clear any surfaces associated with this molecule.
           this._clearSurface(mol);
@@ -99,7 +99,7 @@ export default class ViewerPanel extends Vue {
             if (!styleSel.style["surface"]) {
               // It's a style, not a surface.
               // console.log("style right before adding to 3dmoljs:", styleSel.style);
-              mol.model.setStyle(styleSel.selection, styleSel.style, true);
+              (mol.model as any).setStyle(styleSel.selection, styleSel.style, true);
               if (styleSel.style.sphere) {spheresUsed = true;}
             } else {
               // It's a surface
@@ -108,7 +108,7 @@ export default class ViewerPanel extends Vue {
                   // $3Dmol.SurfaceType.VDW,
                   $3Dmol.SurfaceType.MS,
                   styleSel.style.surface, // style
-                  { model: mol.model } // selection
+                  { model: (mol.model as any) } // selection
                 )
                 .then((surface: any) => {
                   if (mol.id) {
@@ -124,7 +124,7 @@ export default class ViewerPanel extends Vue {
           if (mol.stylesSels.length > 0 && !spheresUsed) {
             // If there's any style, no style is spheres, make sure unbonded
             // atoms are shown.
-            mol.model.setStyle(
+            (mol.model as any).setStyle(
               unbondedAtomsStyle.selection,
               unbondedAtomsStyle.style,
               true
@@ -132,7 +132,7 @@ export default class ViewerPanel extends Vue {
           }
         } else {
           // Visible, but no style specified. This should never happen.
-          mol.model.setStyle({}, { line: {} });
+          (mol.model as any).setStyle({}, { line: {} });
           console.warn("error?");
         }
 
@@ -143,15 +143,15 @@ export default class ViewerPanel extends Vue {
     return visibleTerminalNodeModels;
   }
 
-  private _zoomPerFocus(allMolecules: IMolEntry[], visibleTerminalNodeModels: any[]) {
-    let molsToFocus: IMolEntry[] = [];
+  private _zoomPerFocus(allMolecules: IMolContainer[], visibleTerminalNodeModels: any[]) {
+    let molsToFocus: IMolContainer[] = [];
     for (const mol of getAllNodesFlattened(allMolecules)) {
       if (mol.focused) {
         if (!mol.nodes) {
           // Already terminal
-          molsToFocus = [mol.model];
+          molsToFocus = [mol.model as any];
         } else {
-          molsToFocus = getTerminalNodes(mol.nodes).map((n) => n.model);
+          molsToFocus = getTerminalNodes(mol.nodes).map((n) => n.model) as any[];
         }
         break;
       }

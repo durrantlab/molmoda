@@ -30,11 +30,12 @@
       class="title-text clickable" 
       @click="titleClick(treeDatumID)"
       :style="treeDatum.visible ? '' : 'color: lightgray;'">
-      {{ treeDatum.text }}
+      {{ treeDatum.title }}
     </div>
 
     <!-- menu-item buttons -->
     <IconBar :width="52">
+      <!-- the eye icon should always be farthest to the right, so list it first -->
       <IconSwitcher
         class="title-element clickable"
         :useFirst="treeDatum.visible"
@@ -54,7 +55,6 @@
         :width="24"
         @click="toggleFocused(treeDatumID)"
       />
-      <!-- @click="toggleExpand(treeDatumID)" -->
     </IconBar>
   </div>
 </template>
@@ -65,7 +65,7 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
-import { IMolEntry } from "../TreeView/TreeInterfaces";
+import { IMolContainer } from "../TreeView/TreeInterfaces";
 import { getNodeOfId, getAllNodesFlattened } from "../TreeView/TreeUtils";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 
@@ -76,9 +76,9 @@ import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
   },
 })
 export default class TitleBar extends Vue {
-  @Prop({ required: true }) treeDatum!: IMolEntry;
+  @Prop({ required: true }) treeDatum!: IMolContainer;
   @Prop({ default: 0 }) depth!: number;
-  @Prop({ default: undefined}) treeData!: IMolEntry[];
+  @Prop({ default: undefined}) treeData!: IMolContainer[];
 
   get treeDatumID(): string {
     return this.treeDatum.id as string;
@@ -168,7 +168,8 @@ export default class TitleBar extends Vue {
 
 .title-element {
   margin-right: 2px;
-  display: inline-block;
+  display: block;
+  float: right;
 }
 
 .title-text {

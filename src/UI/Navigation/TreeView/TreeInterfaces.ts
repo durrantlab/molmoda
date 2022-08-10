@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 
+export interface GLModel { }
 export interface IAtom {
     chain: string;
     resi: number;
@@ -26,37 +27,22 @@ export enum MolType {
     SOLVENT = "solvent",
 }
 
-export interface ICommonNode {
-    text: string;
-    atoms?: IAtom[];
-    model?: any;
-    id?: string;  // random id for terminal nodes
-    src?: string;  // usually file name
+export interface IMolContainer {
+    title: string;                // appears in tree
+    model?: IAtom[] | GLModel;    // IAtom in worker, GLMoldel in main thread
+    id?: string;                  // random id for terminal nodes
+    src?: string;                 // usually file name
+    nodes?: IMolContainer[];      // Next level down in menu. So if molecule,
+                                  // then chain. If chain, then residue. Etc.
+    type?: MolType;
     treeExpanded: boolean;
-    viewerDirty: boolean;  // triggers 3dmoljs viewer
     visible: boolean;
     focused: boolean;
-}    
-
-export interface IResidue extends ICommonNode { }
-
-export interface IChain extends ICommonNode { 
-    residues?: IResidue[];
-    nodes?: IResidue[];
+    viewerDirty: boolean;         // triggers 3dmoljs viewer
+    stylesSels?: IStyleAndSel[];  // styles and selections for this node
 }
 
-export interface IMolEntry extends ICommonNode {
-    type?: MolType;
-    stylesSels?: IStyleAndSel[];
-    chains?: IChain[];
-    nodes?: IChain[];
-}
-
-export interface IFileContents extends ICommonNode {
-    type?: MolType;
-    mols?: IMolEntry[];
-    nodes?: IMolEntry[];
-}
+export interface IResidue extends IMolContainer { }
 
 export interface IColorStyle {
     color?: string;

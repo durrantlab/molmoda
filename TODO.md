@@ -37,17 +37,22 @@ Make ViewerPanel library agnostic (not just 3dmoljs).
 Settings panel to control things like fog, whether outline:
 viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
 
-SAve PDB & Mol2. Filenames messed up. Not converting compound to mol2.
-
 Need functions to output pdb and mol2. (use open babel for mol2).
 
 New session, but with ability to detect if saved or not.
 
+Ability to drag moleculsr components
+
+# DONE
+
+Eyeball button should be to the farthest right, so when others get hidden not so
+disruptive (no hole).
+
+SAve PDB & Mol2. Filenames messed up. Not converting compound to mol2.
+
 When you go to drag molecular components, important that all components be the
 same, regardless of chain, residue, molecule, etc. So you'll need to stanardize
 that.
-
-# DONE
 
 1FDA is good to test. More files in ZIP than are in outline. Very confusing.
 

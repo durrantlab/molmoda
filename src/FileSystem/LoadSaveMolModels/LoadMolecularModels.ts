@@ -2,11 +2,11 @@
 
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { store } from "@/Store";
-import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getAllNodesFlattened, getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 
 // @ts-ignore
 import * as tmp from "@/UI/Panels/Viewer/3Dmol-nojquery.JDD";
-import { IAtom, IChain, ICommonNode, IFileContents, IMolEntry, IResidue } from "../../UI/Navigation/TreeView/TreeInterfaces";
+import { IAtom, IMolContainer, IResidue } from "../../UI/Navigation/TreeView/TreeInterfaces";
 const $3Dmol = tmp as any;
 
 export function loadMolecularModelFromText(
@@ -17,14 +17,17 @@ export function loadMolecularModelFromText(
     const worker = new Worker(
         new URL("./LoadMolecularModels.worker", import.meta.url)
     );
-    return runWorker(worker, { molText, format, molName }).then((molecularData: IFileContents) => {
+    return runWorker(worker, { molText, format, molName })
+    .then((molecularData: IMolContainer) => {
         const models = _convertAllAtomArraysToModels(molecularData);
 
         // Set molName as src on all terminal nodes
         molecularData.src = molName;
-        getTerminalNodes(molecularData.nodes as IMolEntry[]).forEach((node: ICommonNode) => {
-            node.src = molName;
-        });
+        if (molecularData.nodes) {
+            getTerminalNodes(molecularData.nodes).forEach((node: IMolContainer) => {
+                node.src = molName;
+            });
+        }
         
         store.commit("pushToList", {
             name: "molecules",
@@ -35,48 +38,16 @@ export function loadMolecularModelFromText(
     });
 }
 
-function _convertAllAtomArraysToModels(treeViewData: IFileContents): any[] {
+function _convertAllAtomArraysToModels(treeViewData: IMolContainer): any[] {
     const models: any[] = [];
-
-    // Replace "atoms" with actual models.
-    if (treeViewData.atoms) {
-        const model = atomsToModel(treeViewData.atoms);
-        models.push(model);
-        treeViewData.model = model;
-        delete treeViewData.atoms;
-    }
-
-    if (treeViewData.nodes) {
-        treeViewData.nodes.forEach((molEntry: IMolEntry) => {
-            if (molEntry.atoms) {
-                const model = atomsToModel(molEntry.atoms);
-                models.push(model);
-                molEntry.model = model;
-                delete molEntry.atoms;
-            }
-            if (molEntry.nodes) {
-                molEntry.nodes.forEach((chain: IChain) => {
-                    if (chain.atoms) {
-                        const model = atomsToModel(chain.atoms);
-                        models.push(model);
-                        chain.model = model;
-                        delete chain.atoms;
-                    }
-
-                    if (chain.nodes) {
-                        chain.nodes.forEach((residue: IResidue) => {
-                            if (residue.atoms) {
-                                const model = atomsToModel(residue.atoms);
-                                models.push(model);
-                                residue.model = model;
-                                delete residue.atoms;
-                            }
-                        });
-                    }
-                });
-            }
-        });
-    }
+    getAllNodesFlattened([treeViewData])
+    .forEach((node: IMolContainer) => {
+        if (node.model) {
+            const model = atomsToModel(node.model as IAtom[]);
+            models.push(model);
+            node.model = model;
+        }
+    });
 
     // TODO: Below for debugging. Can remove it time.
     // for (const model of models) {

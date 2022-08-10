@@ -30,7 +30,7 @@ import { convertToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertToPDB";
 import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
-import { IAtom, ICommonNode, IMolEntry } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 @Options({
   components: {
@@ -87,9 +87,9 @@ export default class SavePDBMol2Plugin extends PluginParent {
     this.open = true;
   }
 
-  private _getFilename(node: IMolEntry, ext: string): string {
+  private _getFilename(node: IMolContainer, ext: string): string {
     let txtPrts = [getFileNameParts(node.src as string).basename];
-    let firstAtom: IAtom = node.model.selectedAtoms({})[0];
+    let firstAtom: IAtom = (node.model as any).selectedAtoms({})[0];
     if (node.type === "compound") {
       txtPrts.push(firstAtom.resn.trim());
       txtPrts.push(firstAtom.resi.toString().trim());

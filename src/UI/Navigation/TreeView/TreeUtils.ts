@@ -1,9 +1,9 @@
-import { IMolEntry } from "./TreeInterfaces";
+import { IMolContainer } from "./TreeInterfaces";
 
-export function getTerminalNodes(mols: IMolEntry[]): IMolEntry[] {
+export function getTerminalNodes(mols: IMolContainer[]): IMolContainer[] {
     // Use a recursive function to find the terminal leaves of mols.
-    function findLeaves(mls: IMolEntry[]): IMolEntry[] {
-        let leaves: IMolEntry[] = [];
+    function findLeaves(mls: IMolContainer[]): IMolContainer[] {
+        let leaves: IMolContainer[] = [];
 
         for (const mol of mls) {
             if (mol.nodes) {
@@ -17,10 +17,10 @@ export function getTerminalNodes(mols: IMolEntry[]): IMolEntry[] {
     return findLeaves(mols);
 }
 
-export function getAllNodesFlattened(mols: IMolEntry[]): IMolEntry[] {
+export function getAllNodesFlattened(mols: IMolContainer[]): IMolContainer[] {
     // Use a recursive function to find the terminal leaves of mols.
-    function findNodes(mls: IMolEntry[]): IMolEntry[] {
-        let allNodes: IMolEntry[] = [];
+    function findNodes(mls: IMolContainer[]): IMolContainer[] {
+        let allNodes: IMolContainer[] = [];
 
         for (const mol of mls) {
             if (mol.nodes) {
@@ -33,15 +33,15 @@ export function getAllNodesFlattened(mols: IMolEntry[]): IMolEntry[] {
     return findNodes(mols);
 }
 
-export function getNodeOfId(id: string, mols: IMolEntry[]): IMolEntry | null {
+export function getNodeOfId(id: string, mols: IMolContainer[]): IMolContainer | null {
     // Use a recursive function to find the node of id.
-    function findNode(mls: IMolEntry[], id: string): IMolEntry | null {
+    function findNode(mls: IMolContainer[], i: string): IMolContainer | null {
         for (const mol of mls) {
-            if (mol.id === id) {
+            if (mol.id === i) {
                 return mol;
             }
             if (mol.nodes) {
-                const node = findNode(mol.nodes, id);
+                const node = findNode(mol.nodes, i);
                 if (node !== null) {
                     return node;
                 }
@@ -53,10 +53,10 @@ export function getNodeOfId(id: string, mols: IMolEntry[]): IMolEntry | null {
 }
 
 export function getNodesOfType(
-    mols: IMolEntry[],
+    mols: IMolContainer[],
     type: string,
     onlyConsiderVisible = false
-): IMolEntry[] {
+): IMolContainer[] {
     let nodesToConsider = getAllNodesFlattened(mols);
     nodesToConsider = nodesToConsider.filter((node) => node.type === type);
 
