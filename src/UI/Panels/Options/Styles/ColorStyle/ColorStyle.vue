@@ -12,13 +12,14 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
-import FormFull, { FormElemType } from "@/UI/Forms/FormFull.vue";
+import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // @ts-ignore
 import isEqual from 'lodash.isequal';
 
 import { colorNameToHex, hexToColorName } from "./ColorConverter";
+import { FormElemType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 interface INameAndColorStyle {
   name: string;

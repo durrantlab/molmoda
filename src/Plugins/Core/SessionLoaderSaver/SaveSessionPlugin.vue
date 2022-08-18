@@ -5,26 +5,26 @@
     :intro="intro"
     placeHolder="Enter Filename (e.g., my_session.biotite)"
     :isActionBtnEnabled="isBtnEnabled"
-    :filterFunc="filterFunc"
+    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    @onDone="onDone"
+    @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { saveState } from "@/Store/LoadAndSaveStore";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
     PopupOneTextInput,
   },
 })
-export default class SaveSessionPlugin extends PluginParent {
+export default class SaveSessionPlugin extends PopupPluginParent {
   menuPath = "File/Session/[1] Save As";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -38,14 +38,12 @@ export default class SaveSessionPlugin extends PluginParent {
   intro = `Please provide the name of the session file to save. Note that the
       extension ".biotite" will be automatically appended.`;
 
-  open = false;
-
   /**
    * Filters text to match desired format.
    * @param {string} filename  The text to evaluate.
    * @returns The filtered text.
    */
-  filterFunc(filename: string) {
+  filterUserData(filename: string) {
     return fileNameFilter(filename);
   }
 
@@ -64,14 +62,11 @@ export default class SaveSessionPlugin extends PluginParent {
    * @param {string} filename  The text entered into the popup.
    * @returns void
    */
-  onDone(filename: string): void {
-    this.open = false;
-    this._submitJobs([{ filename }]);
+  onPopupDone(filename: string): void {
+    this.closePopup();
+    this.submitJobs([{ filename }]);
   }
 
-  start(): void {
-    this.open = true;
-  }
 
   runJob(parameters: any) {
     let filename = parameters.filename;

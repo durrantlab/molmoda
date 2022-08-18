@@ -7,7 +7,7 @@
     <p style="overflow: hidden; text-overflow: ellipsis;">{{ message }}</p>
   </Popup>
     <!-- actionBtnTxt="Load" -->
-    <!-- @onAction="onAction" -->
+    <!-- @onDone="onDone" -->
     <!-- :actionBtnEnabled="isBtnEnabled" -->
     <!-- :onShown="onPopupShown" -->
 </template>

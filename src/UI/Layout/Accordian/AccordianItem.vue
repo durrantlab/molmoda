@@ -2,11 +2,11 @@
   <div class="accordion-item" :id="id">
     <h2 class="accordion-header" :id="'heading-' + id">
       <button
-        class="accordion-button bg-primary text-white p-1"
+        :class="'accordion-button bg-primary text-white p-1' + (show ? '' : ' collapsed')"
         type="button"
         data-bs-toggle="collapse"
         :data-bs-target="'#collapse-' + id"
-        aria-expanded="true"
+        :aria-expanded="show"
         :aria-controls="'collapse-' + id"
       >
         {{title}}
@@ -14,7 +14,7 @@
     </h2>
     <div
       :id="'collapse-' + id"
-      class="accordion-collapse collapse show"
+      :class="'accordion-collapse collapse' + (show ? ' show' : '')"
       :aria-labelledby="'heading-' + id"
       :data-bs-parent="'#' + id"
     >
@@ -31,21 +31,18 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
 @Options({
-  props: {
-    id: {
-      type: String,
-      default: "",
-    },
-    title: {
-      type: String,
-      default: "Title",
-    },
-  },
   components: {},
 })
 export default class AccordianItem extends Vue {
   @Prop({ default: "" }) id!: string;
   @Prop({ default: "Title" }) title!: string;
+  @Prop({ default: false }) showInitially!: boolean;
+
+  show = false;
+
+  mounted() {
+    this.show = this.showInitially;
+  }
 }
 </script>
 

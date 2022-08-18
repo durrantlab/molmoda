@@ -1,4 +1,4 @@
-import { IMolContainer } from "./TreeInterfaces";
+import { IMolContainer, MolType } from "./TreeInterfaces";
 
 export function getTerminalNodes(mols: IMolContainer[]): IMolContainer[] {
     // Use a recursive function to find the terminal leaves of mols.
@@ -57,7 +57,7 @@ export function getNodeOfId(
 
 export function getNodesOfType(
     mols: IMolContainer[],
-    type: string,
+    type: MolType,
     onlyConsiderVisible = false
 ): IMolContainer[] {
     let nodesToConsider = getAllNodesFlattened(mols);
@@ -113,4 +113,23 @@ export function addNodeAfter(
 
     // Update nodeToAdd parentId
     nodeToAdd.parentId = parentNode.id;
+}
+
+export function getRootNodesOfType(mols: IMolContainer[], type: MolType): IMolContainer[] {
+    // Think of this as the opposite of getTerminalNodes. Instead of getting the
+    // nodes with no more children, you're getting the nodes whose parent type
+    // is different.
+    const allNodes = getAllNodesFlattened(mols);
+    return allNodes.filter((node) => {
+        if (node.type !== type) {
+            return false;
+        }
+        if (node.parentId) {
+            const parentNode = getNodeOfId(node.parentId, mols);
+            if (parentNode) {
+                return parentNode.type !== type;
+            }
+        }
+        return true;
+    });
 }

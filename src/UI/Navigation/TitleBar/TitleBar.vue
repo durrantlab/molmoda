@@ -65,7 +65,7 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
-import { IMolContainer } from "../TreeView/TreeInterfaces";
+import { IMolContainer, MolType } from "../TreeView/TreeInterfaces";
 import { getNodeOfId, getAllNodesFlattened } from "../TreeView/TreeUtils";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 
@@ -80,8 +80,8 @@ export default class TitleBar extends Vue {
   @Prop({ default: 0 }) depth!: number;
   @Prop({ default: undefined}) treeData!: IMolContainer[];
 
-  get treeDatumID(): string {
-    return this.treeDatum.id as string;
+  get treeDatumID(): MolType {
+    return this.treeDatum.id as MolType;
   }
 
   flexFixedWidth(width: number): string {

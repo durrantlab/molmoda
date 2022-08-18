@@ -4,7 +4,7 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
-    @onAction="onAction"
+    @onDone="onPopupDone"
     :actionBtnEnabled="filesToLoad.length > 0"
   >
     <FormFile ref="formFile" @onFilesLoaded="onFilesLoaded" :accept="accept" />
@@ -12,13 +12,13 @@
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Interfaces";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
@@ -26,7 +26,7 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
     FormFile,
   },
 })
-export default class LoadFilePlugin extends PluginParent {
+export default class LoadFilePlugin extends PopupPluginParent {
   menuPath = "File/Molecules/Import/[0] Local File";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [{
@@ -37,22 +37,20 @@ export default class LoadFilePlugin extends PluginParent {
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadfile";
 
-  open = false;
+  intro = "";  // Not used.
 
   onFilesLoaded(files: IFileInfo[]): void {
     this.filesToLoad = files;
   }
 
-  onAction(): void {
-    this.open = false;
-    this._submitJobs(this.filesToLoad);
+  onPopupDone(): void {
+    this.closePopup();
+    this.submitJobs(this.filesToLoad);
   }
 
-  start(): void {
+  onPopupOpen(): void {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
-
-    this.open = true;
   }
 
   runJob(parameters: IFileInfo) {

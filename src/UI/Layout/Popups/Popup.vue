@@ -1,5 +1,5 @@
 <template>
-  <div class="modal fade" :id="id" tabindex="-1">
+  <div class="modal fade" :id="id" tabindex="-1" @keypress="onKeypress">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -72,8 +72,14 @@ export default class Popup extends Vue {
   }
 
   actionBtn() {
-    this.$emit("onAction");
+    this.$emit("onDone");
     this.$emit("update:modelValue", false);
+  }
+
+  onKeypress(e: KeyboardEvent) {
+    if (e.key === 'Enter' && this.actionBtnTxt && this.actionBtnEnabled) {
+      this.actionBtn();
+    }
   }
 
   mounted() {

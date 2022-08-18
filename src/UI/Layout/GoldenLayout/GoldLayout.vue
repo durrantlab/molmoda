@@ -15,8 +15,8 @@
           <ViewerPanel />
         </GoldenLayoutComponent>
 
-        <GoldenLayoutComponent name="Options" state="{}" :width="20">
-          <OptionsPanel />
+        <GoldenLayoutComponent name="Styles" state="{}" :width="20">
+          <StylesPanel />
         </GoldenLayoutComponent>
       </GoldenLayoutContainer>
       <GoldenLayoutContainer type="row" :height="10">
@@ -40,7 +40,7 @@ import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
 import "bootstrap/js/dist/tab";
 import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
-import OptionsPanel from "@/UI/Panels/Options/OptionsPanel.vue";
+import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 
 @Options({
@@ -48,7 +48,7 @@ import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
     GoldenLayoutContainer,
     GoldenLayoutComponent,
     ViewerPanel,
-    OptionsPanel,
+    StylesPanel,
     TreeView,
   },
 })

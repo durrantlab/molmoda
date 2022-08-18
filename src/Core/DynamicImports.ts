@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
 
 export interface IDynamicImport {
@@ -35,6 +37,23 @@ export const dynamicImports = {
                 "file-saver"
             ).then((mod) => {
                 return mod.default;
+            });
+        }
+    } as IDynamicImport,
+    mol3d: {
+        credit: {
+            name: "3Dmol.js",
+            url: "https://3dmol.csb.pitt.edu/",
+            license: Licenses.BSD3,
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "3dmol" */
+                /* webpackMode: "lazy" */
+                // @ts-ignore
+                "@/UI/Panels/Viewer/3Dmol-nojquery.JDD"
+            ).then(($3Dmol) => {
+                return $3Dmol;
             });
         }
     } as IDynamicImport,

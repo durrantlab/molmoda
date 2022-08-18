@@ -4,7 +4,7 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
-    @onAction="onAction"
+    @onDone="onPopupDone"
     :actionBtnEnabled="filesToLoad.length > 0"
   >
     <FormFile
@@ -25,6 +25,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { jsonToState } from "@/Store/LoadAndSaveStore";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
@@ -32,7 +33,7 @@ import { jsonToState } from "@/Store/LoadAndSaveStore";
     FormFile,
   },
 })
-export default class OpenSessionPlugin extends PluginParent {
+export default class OpenSessionPlugin extends PopupPluginParent {
   menuPath = "File/[1] Session/[0] Open";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [{
@@ -41,23 +42,20 @@ export default class OpenSessionPlugin extends PluginParent {
   }];
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadsession";
-
-  open = false;
+  intro = "";  // Not used
 
   onFilesLoaded(files: IFileInfo[]): void {
     this.filesToLoad = files;
   }
 
-  onAction(): void {
-    this.open = false;
-    this._submitJobs(this.filesToLoad);
+  onPopupDone(): void {
+    this.closePopup();
+    this.submitJobs(this.filesToLoad);
   }
 
-  start(): void {
+  onPopupOpen(): void {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
-
-    this.open = true;
   }
 
   runJob(parameters: IFileInfo) {

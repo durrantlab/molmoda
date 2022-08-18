@@ -5,9 +5,9 @@
     :intro="intro"
     placeHolder="Enter Filename (e.g., my_image.png)"
     :isActionBtnEnabled="isBtnEnabled"
-    :filterFunc="filterFunc"
+    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    @onDone="onDone"
+    @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
 
@@ -18,13 +18,14 @@ import * as api from "@/Api";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
     PopupOneTextInput
   },
 })
-export default class SavePNGPlugin extends PluginParent {
+export default class SavePNGPlugin extends PopupPluginParent {
   menuPath = "File/Molecules/[6] Export/PNG";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
@@ -38,14 +39,12 @@ export default class SavePNGPlugin extends PluginParent {
   intro = `Please provide the name of the PNG file to save. Note that the
       extension ".png" will be automatically appended.`;
 
-  open = false;
-
   /**
    * Filters text to match desired format.
    * @param {string} filename  The text to evaluate.
    * @returns The filtered text.
    */
-  filterFunc(filename: string) {
+  filterUserData(filename: string) {
     return fileNameFilter(filename);
   }
 
@@ -64,13 +63,9 @@ export default class SavePNGPlugin extends PluginParent {
    * @param {string} filename  The text entered into the popup.
    * @returns void
    */
-  onDone(filename: string): void {
-    this.open = false;
-    this._submitJobs([{ filename }]);
-  }
-
-  start(): void {
-    this.open = true;
+  onPopupDone(filename: string): void {
+    this.closePopup();
+    this.submitJobs([{ filename }]);
   }
 
   runJob(parameters: any) {

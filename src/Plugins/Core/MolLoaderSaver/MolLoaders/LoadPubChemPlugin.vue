@@ -4,17 +4,11 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
-    @onAction="onAction"
+    @onDone="onPopupDone"
     :actionBtnEnabled="isBtnEnabled"
     :onShown="onPopupShown"
   >
-    <p>
-      Enter the molecule name or PubChem Chemical Identification (CID) number.
-      {{ appName }} will look up the CID if you enter the name. Search the
-      <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank"
-        >PubChem Database</a
-      >, a database of small molecules, to find the CID on your own.
-    </p>
+    <p v-html="intro"></p>
     <FormWrapper
       ><FormInput
         ref="formMolName"
@@ -30,7 +24,7 @@
         ref="formCID"
         v-model="cid"
         placeHolder="Enter the CID (e.g., 2244)"
-        :filterFunc="filterFunc"
+        :filterFunc="filterUserData"
         @onKeyDown="onCIDKeyDown"
       ></FormInput>
     </FormWrapper>
@@ -48,9 +42,13 @@ import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { slugify } from "@/Core/Utils";
 import { appName } from "@/main";
 import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
-import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import {
+  IContributorCredit,
+  ISoftwareCredit,
+} from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import { IFileInfo } from "@/FileSystem/Interfaces";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
@@ -59,7 +57,7 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
     FormWrapper,
   },
 })
-export default class LoadPubChemPlugin extends PluginParent {
+export default class LoadPubChemPlugin extends PopupPluginParent {
   menuPath = "File/Molecules/Import/[6] PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -77,14 +75,17 @@ export default class LoadPubChemPlugin extends PluginParent {
   molName = "";
   molNameRespDescription = "";
 
-  open = false;
+  intro = `Enter the molecule name or PubChem Chemical Identification (CID) number.
+      ${appName} will look up the CID if you enter the name. Search the
+      <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem
+      Database</a>, a database of small molecules, to find the CID on your own.`;
 
   /**
    * Filters text to match desired format.
    * @param {string} val  The text to evaluate.
    * @returns The filtered text.
    */
-  filterFunc(val: string) {
+  filterUserData(val: string) {
     // Keep only numbers
     val = val.replace(/[^0-9]/g, "");
     return val;
@@ -104,7 +105,7 @@ export default class LoadPubChemPlugin extends PluginParent {
    * @param {string} text  The text to evaluate.
    * @returns A boolean value, whether to disable the button.
    */
-  get isBtnEnabled(): boolean {
+  isBtnEnabled(): boolean {
     // Regex for any integer
     let r = /[0-9]+/;
 
@@ -141,8 +142,8 @@ export default class LoadPubChemPlugin extends PluginParent {
       .catch(catchFunc);
   }
 
-  onAction(): void {
-    this.open = false;
+  onPopupDone(): void {
+    this.closePopup();
 
     let filename = "";
     if (this.molName !== "") {
@@ -156,7 +157,7 @@ export default class LoadPubChemPlugin extends PluginParent {
       .then((fileInfo: IFileInfo) => {
         fileInfo.name = filename;
         fileInfo.type = "SDF";
-        this._submitJobs([fileInfo]);
+        this.submitJobs([fileInfo]);
       })
       .catch((err: string) => {
         // If it failed, it could be because there's no 3D coordinates. Try 2D.
@@ -166,7 +167,7 @@ export default class LoadPubChemPlugin extends PluginParent {
           .then((fileInfo: IFileInfo) => {
             fileInfo.name = filename;
             fileInfo.type = "SDF";
-            this._submitJobs([fileInfo]);
+            this.submitJobs([fileInfo]);
           })
           .catch((err: string) => {
             this.$emit("onError", err);
@@ -180,8 +181,7 @@ export default class LoadPubChemPlugin extends PluginParent {
     focusTarget.focus();
   }
 
-  start(): void {
-    this.open = true;
+  onPopupOpen(): void {
     this.cid = "";
     this.molName = "";
   }

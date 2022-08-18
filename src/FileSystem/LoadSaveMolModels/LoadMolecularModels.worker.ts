@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import {
     sendResponseToMainThread,
     waitForDataFromMainThread,
 } from "@/Core/WebWorkers/WorkerHelper";
 
-// @ts-ignore
-import * as tmp from "@/UI/Panels/Viewer/3Dmol-nojquery.JDD";
 import {
     ionSel,
     lipidSel,
@@ -35,12 +31,21 @@ import {
     getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
-const $3Dmol = tmp as any;
+import { dynamicImports } from "@/Core/DynamicImports";
 
 let glviewer: any;
 
 function organizeSelByChain(sel: any, mol: any, entryName: string): IMolContainer {
-    const selectedAtoms = mol.selectedAtoms(sel);
+    let selectedAtoms = mol.selectedAtoms(sel);
+
+    // If chain is " " for any atom, set it to "X"
+    selectedAtoms = selectedAtoms.map((atom: IAtom) => {
+        if (atom.chain === " ") {
+            atom.chain = "X";
+        }
+        return atom;
+    });
+
     const molEntry: IMolContainer = {
         title: entryName,
         viewerDirty: true,
@@ -163,7 +168,7 @@ function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
 
 // If any key is associated with a list of length 1, collapse it so the key is
 // merged with the key one up.
-function collapseSingles(molEntry: IMolContainer): IMolContainer {
+function collapseSingles(molEntry: IMolContainer, childTitleFirst = false): IMolContainer {
     if (molEntry.nodes) {
         let anyNodeMerged = true;
         while (anyNodeMerged) {
@@ -175,7 +180,9 @@ function collapseSingles(molEntry: IMolContainer): IMolContainer {
                 if (anyNode.nodes && (anyNodeNodes.length === 1)) {
                     // Only 1 child node
                     const childNode = anyNodeNodes[0];
-                    anyNode.title = `${anyNode.title}:${childNode.title}`;
+                    anyNode.title = childTitleFirst 
+                        ? `${childNode.title}:${anyNode.title}` 
+                        : `${anyNode.title}:${childNode.title}`;
                     anyNode.model = childNode.model;
                     anyNode.type = childNode.type;
     
@@ -192,15 +199,19 @@ function collapseSingles(molEntry: IMolContainer): IMolContainer {
         
     }
     
-    // Now for some purly cosmetic changes to the top-level menu items.
-    if (molEntry.title.startsWith("Compound:")) {
-        molEntry.title = molEntry.title.substring(9);
-        // Does it start with /[A-Z]:/?
-        if (molEntry.title.match(/^[A-Z]:/)) {
-            // Put chain at end.
-            molEntry.title = molEntry.title.replace(/^([A-Z]):(.*?)$/g, "$2:$1");
+    // Now for some purly cosmetic changes to the top-level menu items. (test
+    // 1HU4, 1XDN, and 2HU4).
+
+    if (molEntry.title.endsWith(":Compound")) {
+        if (!molEntry.nodes || (molEntry.nodes.length === 0)) {
+            // It has no children. Simply remove the "Compound" suffix.
+            molEntry.title = molEntry.title.substring(0, molEntry.title.length - 9);
+        } else {
+            // It has children. Probably looks like "X:Compound"
+            molEntry.title = molEntry.title.split(":")[1];
         }
     } else {
+        // Looks like "Protein:A". Just remove chain.
         molEntry.title = molEntry.title.split(":")[0];
     }
     
@@ -226,72 +237,75 @@ function addMolTypeAndStyle(
 
 function divideAtomsIntoDistinctComponents(data: {
     [key: string]: any;
-}): IMolContainer {
+}): Promise<IMolContainer> {
     // This that are bonded to each other are considered to be in the same
     // component.
 
     // glviewer for use in webworker.
-    if (!glviewer) {
-        glviewer = $3Dmol.createViewer("", {});
-    }
-    const mol = glviewer.makeGLModel_JDD(data.molText, data.format);
+    return dynamicImports.mol3d.module.then(($3Dmol: any) => {
+        if (!glviewer) {
+            glviewer = $3Dmol.createViewer("", {});
+        }
+        const mol = glviewer.makeGLModel_JDD(data.molText, data.format);
+    
+        let proteinAtomsByChain = organizeSelByChain(proteinSel, mol, "Protein");
+        let nucleicAtomsByChain = organizeSelByChain(nucleicSel, mol, "Nucleic");
+        const solventAtomsByChain = organizeSelByChain(solventSel, mol, "Solvent");
+        let metalAtomsByChain = organizeSelByChain(metalSel, mol, "Metal");
+        const ionAtomsByChain = organizeSelByChain(ionSel, mol, "Ion");
+        let lipidAtomsByChain = organizeSelByChain(lipidSel, mol, "Lipid");
+        let compoundsByChain = organizeSelByChain({}, mol, "Compound"); // Everything else is ligands
+    
+        // Further divide by residue (since likely each ligand is on its own
+        // residue, not bound to any other).
+        compoundsByChain = divideChainsIntoResidues(compoundsByChain);
+    
+        // Solvent and ions don't need to be divided by chain.
+        const solventAtomsNoChain: IMolContainer = flattenChains(solventAtomsByChain);
+        const ionAtomsNoChain: IMolContainer = flattenChains(ionAtomsByChain);
+    
+        // For everything else, if given chain has only one item, collapse it.
+        compoundsByChain = collapseSingles(compoundsByChain, true);
+        proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
+        nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
+        metalAtomsByChain = collapseSingles(metalAtomsByChain);
+        lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
+    
+        proteinAtomsByChain.type = MolType.PROTEIN;
+        nucleicAtomsByChain.type = MolType.NUCLEIC;
+        compoundsByChain.type = MolType.COMPOUND;
+        metalAtomsByChain.type = MolType.METAL;
+        lipidAtomsByChain.type = MolType.LIPID;
+        ionAtomsNoChain.type = MolType.IONS;
+        solventAtomsNoChain.type = MolType.SOLVENT;
+    
+        // // add in default styles
+        // proteinAtomsByChain.style = proteinStyle;
+        // nucleicAtomsByChain.style = nucleicStyle;
+    
+        // Page into single object
+        let fileContents: IMolContainer = {
+            title: data.molName,
+            treeExpanded: false,
+            viewerDirty: true,
+            visible: true,
+            focused: false,
+            nodes: [
+                proteinAtomsByChain,
+                nucleicAtomsByChain,
+                compoundsByChain,
+                metalAtomsByChain,
+                lipidAtomsByChain,
+                ionAtomsNoChain,
+                solventAtomsNoChain,
+            ],
+        };
+    
+        fileContents = cleanUpFileContents(fileContents);
+    
+        return fileContents;
+    });
 
-    let proteinAtomsByChain = organizeSelByChain(proteinSel, mol, "Protein");
-    let nucleicAtomsByChain = organizeSelByChain(nucleicSel, mol, "Nucleic");
-    const solventAtomsByChain = organizeSelByChain(solventSel, mol, "Solvent");
-    let metalAtomsByChain = organizeSelByChain(metalSel, mol, "Metal");
-    const ionAtomsByChain = organizeSelByChain(ionSel, mol, "Ion");
-    let lipidAtomsByChain = organizeSelByChain(lipidSel, mol, "Lipid");
-    let compoundsByChain = organizeSelByChain({}, mol, "Compound"); // Everything else is ligands
-
-    // Further divide by residue (since likely each ligand is on its own
-    // residue, not bound to any other).
-    compoundsByChain = divideChainsIntoResidues(compoundsByChain);
-
-    // Solvent and ions don't need to be divided by chain.
-    const solventAtomsNoChain: IMolContainer = flattenChains(solventAtomsByChain);
-    const ionAtomsNoChain: IMolContainer = flattenChains(ionAtomsByChain);
-
-    // For everything else, if given chain has only one item, collapse it.
-    compoundsByChain = collapseSingles(compoundsByChain);
-    proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
-    nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
-    metalAtomsByChain = collapseSingles(metalAtomsByChain);
-    lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
-
-    proteinAtomsByChain.type = MolType.PROTEIN;
-    nucleicAtomsByChain.type = MolType.NUCLEIC;
-    compoundsByChain.type = MolType.COMPOUND;
-    metalAtomsByChain.type = MolType.METAL;
-    lipidAtomsByChain.type = MolType.LIPID;
-    ionAtomsNoChain.type = MolType.IONS;
-    solventAtomsNoChain.type = MolType.SOLVENT;
-
-    // // add in default styles
-    // proteinAtomsByChain.style = proteinStyle;
-    // nucleicAtomsByChain.style = nucleicStyle;
-
-    // Page into single object
-    let fileContents: IMolContainer = {
-        title: data.molName,
-        treeExpanded: false,
-        viewerDirty: true,
-        visible: true,
-        focused: false,
-        nodes: [
-            proteinAtomsByChain,
-            nucleicAtomsByChain,
-            compoundsByChain,
-            metalAtomsByChain,
-            lipidAtomsByChain,
-            ionAtomsNoChain,
-            solventAtomsNoChain,
-        ],
-    };
-
-    fileContents = cleanUpFileContents(fileContents);
-
-    return fileContents;
 }
 
 function cleanUpFileContents(fileContents: IMolContainer): IMolContainer {
@@ -341,9 +355,9 @@ function addParentIds(fileContents: IMolContainer): void {
     });
 }
 
-waitForDataFromMainThread().then((data) => {
-    const organizedAtoms = divideAtomsIntoDistinctComponents(data);
-
+waitForDataFromMainThread()
+.then(data => divideAtomsIntoDistinctComponents(data))
+.then((organizedAtoms: IMolContainer) => {
     organizedAtoms.id = randomID();
 
     const nodesToConsider: IMolContainer[] = [organizedAtoms];

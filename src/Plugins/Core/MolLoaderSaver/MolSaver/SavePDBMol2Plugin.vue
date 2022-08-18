@@ -6,14 +6,13 @@
     :intro="intro"
     placeHolder="Enter Filename (e.g., my_molecules.zip)"
     :isActionBtnEnabled="isBtnEnabled"
-    :filterFunc="filterFunc"
+    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    @onDone="onDone"
+    @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import { Options } from "vue-class-component";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import {
@@ -31,13 +30,14 @@ import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
 import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
     PopupOneTextInput,
   },
 })
-export default class SavePDBMol2Plugin extends PluginParent {
+export default class SavePDBMol2Plugin extends PopupPluginParent {
   menuPath = "File/Molecules/[6] Export/PDB & Mol2";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
@@ -52,14 +52,12 @@ export default class SavePDBMol2Plugin extends PluginParent {
       extension ".zip" will be automatically appended. The ZIP file will
       contain the PDB and MOL2 files of all visible molecules.`;
 
-  open = false;
-
   /**
    * Filters text to match desired format.
    * @param {string} filename  The text to evaluate.
    * @returns The filtered text.
    */
-  filterFunc(filename: string) {
+  filterUserData(filename: string) {
     return fileNameFilter(filename);
   }
 
@@ -78,13 +76,9 @@ export default class SavePDBMol2Plugin extends PluginParent {
    * @param {string} filename  The text entered into the popup.
    * @returns void
    */
-  onDone(filename: string): void {
-    this.open = false;
-    this._submitJobs([{ filename }]);
-  }
-
-  start(): void {
-    this.open = true;
+  onPopupDone(filename: string): void {
+    this.closePopup();
+    this.submitJobs([{ filename }]);
   }
 
   private _getFilename(node: IMolContainer, ext: string): string {

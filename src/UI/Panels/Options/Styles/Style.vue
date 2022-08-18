@@ -70,9 +70,6 @@
       :allowSpectrum="false"
       :allowSecondaryStructure="styleName.name === 'protein'"
     />
-
-    <!-- <FormFull v-model="colorForm"></FormFull> -->
-    <!-- <ColorStyle /> -->
   </Section>
 </template>
 
@@ -92,9 +89,9 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyleAndSel, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
-import FormFull from "@/UI/Forms/FormFull.vue";
+import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorStyle from "./ColorStyle/ColorStyle.vue";
 
 export interface IStyleName {
@@ -136,11 +133,11 @@ export default class Style extends Vue {
     return options;
   }
 
-  toggleVisible(name: string) {
+  toggleVisible(type: MolType) {
     this.isVisible = !this.isVisible;
     let nodesOfThisType = getNodesOfType(
       this.$store.state["molecules"],
-      name,
+      type,
       true // onlyConsiderVisible
     );
     for (let node of nodesOfThisType) {

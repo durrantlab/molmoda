@@ -1,6 +1,6 @@
 <template>
   <Styles />
-  <br />
+  <!-- <br />
   <hr />
   <div :style="'background-color:' + test2">{{ test }}; {{ sel }}</div>
   <FormWrapper label="My Label">
@@ -39,7 +39,7 @@
       v-model="chk"
       :toggle="true"
     ></FormCheckBox>
-  </FormWrapper>
+  </FormWrapper> -->
 </template>
 
 <script lang="ts">
@@ -62,11 +62,11 @@ import Styles from "./Styles/Styles.vue";
     Styles
   },
 })
-export default class OptionsPanel extends Vue {
-  test = 3;
-  test2 = "#ff0000";
-  sel = "we";
-  chk = true;
+export default class StylesPanel extends Vue {
+  // test = 3;
+  // test2 = "#ff0000";
+  // sel = "we";
+  // chk = true;
 
 }
 </script>

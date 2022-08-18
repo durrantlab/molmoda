@@ -3,8 +3,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 
@@ -14,11 +12,9 @@ import {
   getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
-// @ts-ignore
-import * as tmp from "./3Dmol-nojquery.JDD";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Lookups/DefaultStyles";
-const $3Dmol = tmp as any;
+import { dynamicImports } from "@/Core/DynamicImports";
 
 @Options({})
 export default class ViewerPanel extends Vue {
@@ -26,6 +22,7 @@ export default class ViewerPanel extends Vue {
 
   // Need to keep track of surfaces, associating them with molecule ids.
   surfaces: { [id: string]: number[] } = {};
+  surfaceType = 2;
 
   get treeview(): any {
     return this.$store.state["molecules"];
@@ -106,7 +103,8 @@ export default class ViewerPanel extends Vue {
               api.visualization.viewer
                 .addSurface(
                   // $3Dmol.SurfaceType.VDW,
-                  $3Dmol.SurfaceType.MS,
+                  // $3Dmol.SurfaceType.MS, 
+                  this.surfaceType,
                   styleSel.style.surface, // style
                   { model: (mol.model as any) } // selection
                 )
@@ -222,14 +220,19 @@ export default class ViewerPanel extends Vue {
 
   // Mounted
   mounted() {
-    let viewer = $3Dmol.createViewer("mol-viewer", {
-      defaultcolors: $3Dmol.rasmolElementColors,
-    });
+    dynamicImports.mol3d.module.then(($3Dmol: any) => {
+      this.surfaceType = $3Dmol.SurfaceType.MS;
 
-    console.warn('viewer.setViewStyle({style:"outline"})');
+      let viewer = $3Dmol.createViewer("mol-viewer", {
+        defaultcolors: $3Dmol.rasmolElementColors,
+      });
 
-    api.visualization.viewer = viewer;
-    viewer.setBackgroundColor(0xffffff);
+      console.warn('viewer.setViewStyle({style:"outline"})');
+
+      api.visualization.viewer = viewer;
+      viewer.setBackgroundColor(0xffffff);
+    })
+
 
     // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
     //   // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")

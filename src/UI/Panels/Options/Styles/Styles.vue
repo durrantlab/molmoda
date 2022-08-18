@@ -1,6 +1,5 @@
 <template>
   <Section title="Styles">
-    <!-- <span style="color: red">MOOSE: </span>{{ stylesAndNames }} -->
     <span
       v-for="styleAndName, idx in stylesAndNames"
       v-bind:key="styleAndName.name"

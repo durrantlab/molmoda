@@ -23,11 +23,6 @@ export const globalCredits: ISoftwareCredit[] = [
       license: Licenses.MIT,
     },
     {
-      name: "3Dmol.js",
-      url: "https://3dmol.csb.pitt.edu/",
-      license: Licenses.BSD3,
-    },
-    {
       name: "GoldenLayout",
       url: "https://golden-layout.com/",
       license: Licenses.MIT,

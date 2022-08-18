@@ -4,7 +4,7 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     :actionBtnTxt="actionBtnTxt"
-    @onAction="onAction"
+    @onDone="onDone"
     :actionBtnEnabled="isActionBtnEnabled(val)"
     :onShown="onPopupShown"
   >
@@ -60,18 +60,12 @@ export default class PopupOneTextInput extends Vue {
     this.$emit("update:modelValue", val);
   }
 
-  // @Watch("open")
-  // onOpenChange(newValue: boolean) {
-  //   debugger;
-  //   this.$emit("update:modelValue", newValue);
-  // }
-
-  onAction(): void {
+  onDone(): void {
     if (this.val === undefined) {
       return;
     }
     this.open = false;
-    this.$emit("onDone", this.val);
+    this.$emit("onTextDone", this.val);
   }
 
   onPopupShown() {

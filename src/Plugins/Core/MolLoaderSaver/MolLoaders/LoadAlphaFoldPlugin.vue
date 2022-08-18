@@ -5,27 +5,27 @@
     :intro="intro"
     placeHolder="Enter UniProt Accession (e.g., P86927)"
     :isActionBtnEnabled="isBtnEnabled"
-    :filterFunc="filterFunc"
+    :filterFunc="filterUserData"
     actionBtnTxt="Load"
-    @onDone="onDone"
+    @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import { Options } from "vue-class-component";
 import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { loadRemote } from "./Utils";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
     PopupOneTextInput,
   },
 })
-export default class LoadAlphaFoldPlugin extends PluginParent {
+export default class LoadAlphaFoldPlugin extends PopupPluginParent {
   menuPath = "File/Molecules/Import/[4] AlphaFold";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -45,14 +45,12 @@ export default class LoadAlphaFoldPlugin extends PluginParent {
         >AlphaFold Protein Structure Database</a
       >, a database of predicted protein structures, if you're uncertain.`;
 
-  open = false;
-
   /**
    * Filters text to match desired format.
    * @param {string} uniprot  The text to evaluate.
    * @returns The filtered text.
    */
-  filterFunc(uniprot: string) {
+  filterUserData(uniprot: string) {
     // https://www.uniprot.org/help/accession_numbers
 
     uniprot = uniprot.toUpperCase();
@@ -84,8 +82,8 @@ export default class LoadAlphaFoldPlugin extends PluginParent {
    * @param {string} uniprot  The text entered into the popup.
    * @returns void
    */
-  onDone(uniprot: string): void {
-    this.open = false;
+  onPopupDone(uniprot: string): void {
+    this.closePopup();
 
     loadRemote(
       `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
@@ -96,17 +94,13 @@ export default class LoadAlphaFoldPlugin extends PluginParent {
         if (pdbUrl) {
           // Load the PDB file.
           loadRemote(pdbUrl).then((fileInf: IFileInfo): void => {
-            this._submitJobs([fileInf]);
+            this.submitJobs([fileInf]);
           });
         }
       })
       .catch((err: string) => {
         this.$emit("onError", err);
       });
-  }
-
-  start(): void {
-    this.open = true;
   }
 
   runJob(parameters: IFileInfo) {

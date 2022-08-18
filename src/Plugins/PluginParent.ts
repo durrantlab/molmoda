@@ -24,7 +24,7 @@ export abstract class PluginParent extends Vue {
 
     // The start function runs when the user first begins using the plugin. For
     // example, if the plugin is in a popup, this function would open the popup.
-    abstract start(): void;
+    abstract onPluginStart(): void;
 
     // Every plugin runs some calculation. This is the function that does the
     // calculating. It receives the same parameterSets submitted via the
@@ -34,7 +34,7 @@ export abstract class PluginParent extends Vue {
     // This function submits jobs to the job queue system. Note that it is jobs
     // plural. The function variable `parameterSets` is a list of parameters,
     // one per job.
-    protected _submitJobs(parameterSets?: any[]) {
+    protected submitJobs(parameterSets?: any[]) {
         if (parameterSets === undefined) {
             parameterSets = [undefined]
         }
@@ -73,7 +73,7 @@ export abstract class PluginParent extends Vue {
             menuData: {
                 path: this.menuPath,
                 function: () => {
-                    this.start();
+                    this.onPluginStart();
                 }
             } as IMenuItem,
             pluginId: this.pluginId,

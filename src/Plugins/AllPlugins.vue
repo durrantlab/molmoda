@@ -10,6 +10,7 @@
     <SavePNGPlugin @onError="onError" @onPluginSetup="onPluginSetup"></SavePNGPlugin>
     <SaveVRMLPlugin @onError="onError" @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <SavePDBMol2Plugin @onError="onError" @onPluginSetup="onPluginSetup"></SavePDBMol2Plugin>
+    <TestPlugin @onError="onError" @onPluginSetup="onPluginSetup"></TestPlugin>
   </div>
 </template>
 
@@ -28,6 +29,7 @@ import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldP
 import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
 import LoadFilePlugin from "./Core/MolLoaderSaver/MolLoaders/LoadFilePlugin.vue";
 import SavePDBMol2Plugin from "./Core/MolLoaderSaver/MolSaver/SavePDBMol2Plugin.vue";
+import TestPlugin from "./Optional/TestPlugin.vue";
 
 @Options({
   components: {
@@ -40,7 +42,8 @@ import SavePDBMol2Plugin from "./Core/MolLoaderSaver/MolSaver/SavePDBMol2Plugin.
     OpenSessionPlugin,
     SavePNGPlugin,
     SaveVRMLPlugin,
-    SavePDBMol2Plugin
+    SavePDBMol2Plugin,
+    TestPlugin
   },
 })
 export default class AllPlugins extends Vue {

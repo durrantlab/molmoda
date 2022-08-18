@@ -5,9 +5,9 @@
     :intro="intro"
     placeHolder="Enter Filename (e.g., my_model.vrml)"
     :isActionBtnEnabled="isBtnEnabled"
-    :filterFunc="filterFunc"
+    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    @onDone="onDone"
+    @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
 
@@ -22,13 +22,14 @@ import {
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { ISaveTxt } from "@/Core/FS";
+import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
   components: {
     PopupOneTextInput,
   },
 })
-export default class SaveVRMLPlugin extends PluginParent {
+export default class SaveVRMLPlugin extends PopupPluginParent {
   menuPath = "File/Molecules/[6] Export/VRML";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
@@ -42,14 +43,12 @@ export default class SaveVRMLPlugin extends PluginParent {
   intro = `Please provide the name of the VRML file to save. Note that the
       extension ".vrml" will be automatically appended.`;
 
-  open = false;
-
   /**
    * Filters text to match desired format.
    * @param {string} filename  The text to evaluate.
    * @returns The filtered text.
    */
-  filterFunc(filename: string) {
+  filterUserData(filename: string) {
     return fileNameFilter(filename);
   }
 
@@ -68,13 +67,9 @@ export default class SaveVRMLPlugin extends PluginParent {
    * @param {string} filename  The text entered into the popup.
    * @returns void
    */
-  onDone(filename: string): void {
-    this.open = false;
-    this._submitJobs([{ filename }]);
-  }
-
-  start(): void {
-    this.open = true;
+  onPopupDone(filename: string): void {
+    this.closePopup();
+    this.submitJobs([{ filename }]);
   }
 
   runJob(parameters: any) {

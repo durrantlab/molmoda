@@ -1,6 +1,6 @@
 <template>
   <Popup title="About" v-model="open" cancelBtnTxt="Done">
-    <p>TODO: Info about {{ appName }} here.</p>
+    <p v-html="intro"></p>
 
     <p>
       The following organizations and individuals have contributed, directly or
@@ -60,13 +60,14 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
 import { appName } from "@/main";
+import { PopupPluginParent } from "../PopupPluginParent";
 
 @Options({
   components: {
     Popup,
   },
 })
-export default class AboutPlugin extends PluginParent {
+export default class AboutPlugin extends PopupPluginParent {
   @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
@@ -79,8 +80,7 @@ export default class AboutPlugin extends PluginParent {
     },
   ];
   pluginId = "about";
-
-  open = false;
+  intro = `TODO: Info about ${appName} here.`;
 
   get softwareCreditsToShowInOrder(): ISoftwareCredit[] {
     // Sort by name.
@@ -108,8 +108,9 @@ export default class AboutPlugin extends PluginParent {
     return appName;
   }
 
-  start(): void {
-    this.open = true;
+  onPopupDone(): void {
+    // Does nothing
+    return;
   }
 
   runJob(parameters: any) {

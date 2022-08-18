@@ -15,16 +15,11 @@ Messaging. Need toast, log, system alert, etc. You started working on toast.
 
 vue-chartjs (or V Chart Plugin better?)
 
-You need to be able to reorder the molecules. 
-    https://www.npmjs.com/package/vuedraggable
-
 Also need to be able to extract a molecule, and merge it.
 
 https://github.com/pulsardev/vue-tour
 https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
 Table component?
-
-Surface opacity? Sticks/lines width? Etc.
 
 Would be good to be able to use multiple processors for queue. Give some thought
 to how. Likely needs webworker?
@@ -32,7 +27,7 @@ to how. Likely needs webworker?
 Also, popup to just show text (info). Already have it somewhere but good to move
 to Popup directory.
 
-Make ViewerPanel library agnostic (not just 3dmoljs).
+Make ViewerPanel library agnostic (not just 3dmoljs). Is this worth it?
 
 Settings panel to control things like fog, whether outline:
 viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
@@ -42,9 +37,34 @@ Need functions to output pdb and mol2. (use open babel for mol2).
 New session, but with ability to detect if saved or not.
 
 Ability to drag moleculsr components. Working, but still not great. Need to
-stress test.
+stress test. Actually, are you sure you want to be able to rearrange the order?
+Overly complicated, and might be eaiser to keep things organized if not. I do
+recommend extract/copy/merge functions, but maybe not drag and drop. Think about
+that some. (To extract, etc., you might need to be able to select a portion of a
+protein).
+
+Vue component to specify whether to combine PDBs (receptors) or not. Basically
+combine everything but something designated ligand.
+    CombineProteins should be integrated into FormFull
+
+Plugins should be able to do check and abort. For example, of not all ligands
+have 3D coordinates. But make generic, user-defined.
+
+You should be able to rename molecule. Also delete and extract.
+
+On optional plugin, can you reopen it once closed?
+
+Undo/redo.
 
 # DONE
+
+1HU4 makes bad tree?
+
+Surface opacity? Sticks/lines width? Etc. (No, better to keep interface as
+simple as possible)
+
+You need to be able to reorder the molecules. 
+    https://www.npmjs.com/package/vuedraggable
 
 Eyeball button should be to the farthest right, so when others get hidden not so
 disruptive (no hole).
