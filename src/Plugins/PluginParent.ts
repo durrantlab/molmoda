@@ -31,6 +31,12 @@ export abstract class PluginParent extends Vue {
     // submitJobs function (see below), but one at a time.
     abstract runJob(parameters: any): void;
 
+    // This function is called when the plugin is mounted.
+    protected onMounted() {
+        // can be optionally overridden.
+        return;
+    }
+
     // This function submits jobs to the job queue system. Note that it is jobs
     // plural. The function variable `parameterSets` is a list of parameters,
     // one per job.
@@ -81,5 +87,7 @@ export abstract class PluginParent extends Vue {
 
         // Register with job queue system
         api.hooks.onJobQueueCommand(this.pluginId, this.runJob.bind(this));
+
+        this.onMounted();
     }
 }

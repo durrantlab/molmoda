@@ -2,6 +2,9 @@
 
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { createStore } from "vuex";
+import * as api from "@/Api";
+import { allHooks } from "@/Api/Hooks";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 interface NameValPair {
     name: string;
@@ -25,6 +28,17 @@ const _commonMutations = {
             ...payload.val,
         };
     },
+    replaceMolecules(state: any, mols: IMolContainer[]) {
+        debugger;
+
+        // remove entries in state.molecules
+        while (state.molecules.length > 0) {
+            state.molecules.pop();
+        }
+
+        // Add in new items
+        state.molecules.push(...mols);
+    }
 };
 
 const _modules: { [key: string]: any } = {};
@@ -67,20 +81,20 @@ export function setupVueXStore() {
 
     store = createStore(storeVars);
 
-    // store.watch(
-    //     // When the returned result changes...
-    //     function (state: any) {
-    //         return state;
-    //     },
-    //     // Run this callback
-    //     (state: any) => {
-    //         // TODO: This just testing.
-    //         // saveState(state);
-    //         // const obj = jsonToState(jsonStr);
-    //         console.log("something changed somewhere in the state!");
-    //     },
-    //     { deep: true }
-    // );
+    store.watch(
+        // When the returned result changes...
+        function (state: any) {
+            return state.molecules;
+        },
+        // Run this callback
+        (molecules: any) => {
+            // saveState(state);
+            allHooks.onMoleculesChanged.forEach((func) => {
+                func(molecules);
+            });
+        },
+        { deep: true }
+    );
 
     // For debugging
     // @ts-ignore

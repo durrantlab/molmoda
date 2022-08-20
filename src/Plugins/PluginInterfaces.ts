@@ -43,6 +43,10 @@ export const Licenses = {
         // name: "CC BY 4.0",
         url: "https://creativecommons.org/licenses/by/4.0/",
     } as ILicense,
+    PUBLICDOMAIN: {
+        name: "Public Domain",
+        url: "https://creativecommons.org/publicdomain/zero/1.0/",
+    }
 };
 
 export interface ISoftwareCredit {

@@ -57,6 +57,22 @@ export const dynamicImports = {
             });
         }
     } as IDynamicImport,
+    memfs: {
+        credit: {
+            name: "memfs",
+            url: "https://github.com/streamich/memfs",
+            license: Licenses.PUBLICDOMAIN
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "memfs" */
+                /* webpackMode: "lazy" */
+                "memfs"
+            ).then((memfs) => {
+                return memfs;
+            });
+        }
+    }
 }
 
     

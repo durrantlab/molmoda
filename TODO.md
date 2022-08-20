@@ -36,13 +36,6 @@ Need functions to output pdb and mol2. (use open babel for mol2).
 
 New session, but with ability to detect if saved or not.
 
-Ability to drag moleculsr components. Working, but still not great. Need to
-stress test. Actually, are you sure you want to be able to rearrange the order?
-Overly complicated, and might be eaiser to keep things organized if not. I do
-recommend extract/copy/merge functions, but maybe not drag and drop. Think about
-that some. (To extract, etc., you might need to be able to select a portion of a
-protein).
-
 Vue component to specify whether to combine PDBs (receptors) or not. Basically
 combine everything but something designated ligand.
     CombineProteins should be integrated into FormFull
@@ -50,13 +43,24 @@ combine everything but something designated ligand.
 Plugins should be able to do check and abort. For example, of not all ligands
 have 3D coordinates. But make generic, user-defined.
 
-You should be able to rename molecule. Also delete and extract.
+You should be able to rename molecule. Also delete and extract. Would require
+select
 
 On optional plugin, can you reopen it once closed?
 
-Undo/redo.
+Undo/redo. Note that in replaceMolecules, mols and state.molecules end up being
+the same, so clearing before adding doesn't work. Need to serialize.
+
+Menu should close when popup opens.
 
 # DONE
+
+Ability to drag moleculsr components. Working, but still not great. Need to
+stress test. Actually, are you sure you want to be able to rearrange the order?
+Overly complicated, and might be eaiser to keep things organized if not. I do
+recommend extract/copy/merge functions, but maybe not drag and drop. Think about
+that some. (To extract, etc., you might need to be able to select a portion of a
+protein).
 
 1HU4 makes bad tree?
 

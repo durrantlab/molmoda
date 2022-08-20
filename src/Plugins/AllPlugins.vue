@@ -11,6 +11,7 @@
     <SaveVRMLPlugin @onError="onError" @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <SavePDBMol2Plugin @onError="onError" @onPluginSetup="onPluginSetup"></SavePDBMol2Plugin>
     <TestPlugin @onError="onError" @onPluginSetup="onPluginSetup"></TestPlugin>
+    <Undo @onError="onError" @onPluginSetup="onPluginSetup"></Undo>
   </div>
 </template>
 
@@ -29,6 +30,8 @@ import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldP
 import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
 import LoadFilePlugin from "./Core/MolLoaderSaver/MolLoaders/LoadFilePlugin.vue";
 import SavePDBMol2Plugin from "./Core/MolLoaderSaver/MolSaver/SavePDBMol2Plugin.vue";
+import Undo from "./Core/UndoRedo/Undo.vue";
+
 import TestPlugin from "./Optional/TestPlugin.vue";
 
 @Options({
@@ -43,6 +46,8 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     SavePNGPlugin,
     SaveVRMLPlugin,
     SavePDBMol2Plugin,
+    Undo,
+
     TestPlugin
   },
 })

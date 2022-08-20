@@ -2,6 +2,11 @@
 
 import { registerJobType } from "@/JobQueue"
 
+// Arrays of functions to call.
+export const allHooks = {
+    onMoleculesChanged: [] as Function[]
+}
+
 export const hooksApi = {
     /**
      * Tells the queue system about a given job type.
@@ -12,5 +17,9 @@ export const hooksApi = {
      */
     onJobQueueCommand(command: string, func: Function): void {
         registerJobType(command, func);
+    },
+
+    onMoleculesChanged(func: Function): void {
+        allHooks.onMoleculesChanged.push(func);
     }
 }

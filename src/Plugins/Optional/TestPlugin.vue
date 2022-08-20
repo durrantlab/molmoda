@@ -24,6 +24,7 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 @Options({
   components: {
@@ -73,7 +74,10 @@ export default class TestPlugin extends OptionalPluginParent {
   ];
 
   runJob(args: IUserArg[]) {
-    debugger;
+    dynamicImports.memfs.module
+    .then((memfs: any) => {
+      debugger;
+    });
   }
 }
 </script>

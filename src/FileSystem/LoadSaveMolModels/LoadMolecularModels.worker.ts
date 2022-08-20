@@ -21,6 +21,7 @@ import {
     solventStyle,
 } from "./Lookups/DefaultStyles";
 import {
+    GLModel,
     IAtom,
     IMolContainer,
     IStyleAndSel,
@@ -35,7 +36,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 
 let glviewer: any;
 
-function organizeSelByChain(sel: any, mol: any, entryName: string): IMolContainer {
+function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolContainer {
     let selectedAtoms = mol.selectedAtoms(sel);
 
     // If chain is " " for any atom, set it to "X"

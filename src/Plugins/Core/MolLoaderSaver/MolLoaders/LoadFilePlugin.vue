@@ -27,7 +27,7 @@ import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
   },
 })
 export default class LoadFilePlugin extends PopupPluginParent {
-  menuPath = "File/Molecules/Import/[0] Local File";
+  menuPath = "[4] File/Molecules/Import/[0] Local File";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [{
     name: "Jacob D. Durrant",

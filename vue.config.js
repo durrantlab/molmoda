@@ -1,4 +1,5 @@
 const { defineConfig } = require("@vue/cli-service");
+
 module.exports = defineConfig({
     transpileDependencies: true,
     productionSourceMap: true,
@@ -13,6 +14,18 @@ module.exports = defineConfig({
 
             config.output.devtoolFallbackModuleFilenameTemplate =
                 "webpack:///[resource-path]?[hash]";
+        }
+
+        config.resolve.fallback = {
+            "fs": false,
+            "tls": false,
+            "net": false,
+            "path": false,
+            "zlib": false,
+            "http": false,
+            "https": false,
+            "stream": false,
+            "crypto": false,
         }
     },
     pluginOptions: {

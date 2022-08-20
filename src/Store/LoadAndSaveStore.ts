@@ -1,8 +1,9 @@
-import { atomsToModel } from "@/FileSystem/LoadSaveMolModels/LoadMolecularModels";
 import * as api from "@/Api/";
 import { ISaveTxt } from "@/Core/FS";
+import { atomsToModels } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
-export function jsonToState(jsonStr: string): any {
+export function jsonToState(jsonStr: string): Promise<any> {
     // Viewer needs to reload everything, so set viewierDirty to true in all
     // cases. This is a little hackish, but easier than recursing I think.
     jsonStr = jsonStr.replace(/"viewerDirty": *false/g, '"viewerDirty":true');
@@ -10,33 +11,15 @@ export function jsonToState(jsonStr: string): any {
     // Now convert it to an object.
     const obj = JSON.parse(jsonStr);
 
-    // Recurse through state and replace model value with "moo"
-    function replaceModel(stateNoMdls: any, stateWithMdls: any): any {
-        // Iterate through properties
-        for (const key in stateNoMdls) {
-            if (key === "model") {
-                stateWithMdls[key] = atomsToModel(stateNoMdls[key]);
-            } else if (typeof stateNoMdls[key] === "object") {
-                if (stateNoMdls[key].length) {
-                    // It's an array.
-                    stateWithMdls[key] = stateNoMdls[key].map((item: any) => {
-                        return replaceModel(item, {});
-                    });
-                } else {
-                    // If property is an object, recurse
-                    stateWithMdls[key] = {};
-                    replaceModel(stateNoMdls[key], stateWithMdls[key]);
-                }
-            } else {
-                // Otherwise, just copy the value
-                stateWithMdls[key] = stateNoMdls[key];
-            }
+    const promises = (obj.molecules as IMolContainer[]).map(mol => atomsToModels(mol));
+    
+    return Promise.all(promises)
+    .then((mols: IMolContainer[]) => {
+        for (const i in mols) {
+            obj.molecules[i] = mols[i];
         }
-        return stateWithMdls;
-    }
-    const state2 = replaceModel(obj, {});
-
-    return state2;
+        return obj;
+    });
 }
 
 function _stateToJson(state: any): string {

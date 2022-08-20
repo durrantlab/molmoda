@@ -59,8 +59,10 @@ export default class OpenSessionPlugin extends PopupPluginParent {
   }
 
   runJob(parameters: IFileInfo) {
-    let state = jsonToState(parameters.contents);
-    this.$store.replaceState(state);
+    jsonToState(parameters.contents)
+    .then((state) => {
+      this.$store.replaceState(state);
+    });
   }
 }
 </script>

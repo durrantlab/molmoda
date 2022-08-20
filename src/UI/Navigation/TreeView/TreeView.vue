@@ -2,7 +2,6 @@
   <div
     v-for="treeDatum in getLocalTreeData"
     v-bind:key="treeDatum.id"
-    class="sortable-group sortable-handle"
     :data-molid="treeDatum.id"
     :style="styleToUse"
   >
@@ -32,8 +31,6 @@ import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
 import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
 
-// @ts-ignore
-import Sortable from "sortablejs";
 import { IMolContainer } from "./TreeInterfaces";
 
 @Options({
@@ -47,8 +44,6 @@ export default class TreeView extends Vue {
   @Prop({ default: 0 }) depth!: number;
   @Prop({ default: undefined }) treeData!: Array<any>;
   @Prop({ default: undefined }) styleToUse!: string;
-
-  sortables: any[] = [];
 
   flexFixedWidth(width: number): string {
     return flexFixedWidthStyle(width);
@@ -65,108 +60,6 @@ export default class TreeView extends Vue {
 
   get storeMolecules(): any {
     return this.$store.state["molecules"];
-  }
-
-  @Watch("getLocalTreeData", { deep: true })
-  onGetLocalTreeDataChange(newValue: any) {
-    if (this.depth !== 0) {
-      // This only applies to top-most level.
-      return;
-    }
-
-    // return;
-    // // console.log(this.depth);
-    // // if (this.depth !== 0) {
-    //   // 0 is like proteins
-    //   // 1 is like chains
-    //   // return;
-    // // }
-
-    // Let list render
-    this.$nextTick(() => {
-      // Need to make new list sortable.
-      for (let sortable of this.sortables) {
-        sortable.destroy();
-      }
-
-      let containerOpts = {
-        group: {
-          name: "shared",
-          // revertClone: false
-          // put: true
-        },
-        draggable: ".sortable-handle"
-      };
-
-      let targetDiv: HTMLElement;
-      let draggedDiv: HTMLElement;
-
-
-      let itemOpts = {
-        ...containerOpts,
-        animation: 50,
-        // fallbackOnBody: true,
-        swapThreshold: 0.5,
-        onEnd: (evt: any) => {
-          let draggedID = draggedDiv.getAttribute("data-molid") as string;
-          let nodeDragged = getNodeOfId(draggedID, this.storeMolecules) as IMolContainer;
-
-          // Force rerender
-          nodeDragged.viewerDirty = true;
-
-          // Delete the dragged node
-          removeNode(draggedID, this.storeMolecules);
-          
-          // Get target node
-          let targetDivID = targetDiv.getAttribute("data-molid") as string;
-          let nodeTarget = getNodeOfId(targetDivID, this.storeMolecules) as IMolContainer;
-
-          if (nodeTarget === null) {
-            // Probably trying to drag it to the outside, so no node target.
-            // TODO: Confirm below is reactive.
-            this.storeMolecules.push(nodeDragged);
-          } else {
-            // There is a target node. Add after that.
-            addNodeAfter(nodeDragged, nodeTarget, this.storeMolecules);
-          }
-        },
-        onMove: (evt: any) => {
-          targetDiv = evt.to;
-          draggedDiv = evt.dragged;
-        }
-      };
-
-      this.sortables = [];
-
-      document.querySelectorAll("#molecules .sortable-group").forEach((e) => {
-        this.sortables.push(Sortable.create(e as HTMLElement, itemOpts));
-      });
-      let el = document.getElementById("molecules");
-      this.sortables.push(Sortable.create(el as HTMLElement, containerOpts));
-
-      // for (let treeDatum of this.getLocalTreeData) {
-      //   let el = this.$refs[treeDatum.id] as HTMLElement[];
-      //   if (el === undefined) {
-      //     continue;
-      //   }
-      //   let sortable = Sortable.create(el[0], {
-      //     fallbackOnBody: true,
-      //     dragoverBubble: true,
-      //     group: "molecules",
-      //     handle: ".title-text",
-      //     filter: "",
-      //     onFilter: (evt: any) => {
-      //       console.log("start");
-      //       // debugger;
-      //     },
-      //   });
-      //   this.sortables.push(sortable);
-
-      //   // sortable.options.filter = "";
-
-      //   // debugger;
-      // }
-    });
   }
 
   get getLocalTreeData(): any {
