@@ -31,19 +31,26 @@ export enum MolType {
     SOLVENT = "solvent",
 }
 
+export enum SelectedType {
+    FALSE = "false",
+    TRUE = "true",
+    CHILD_OF_TRUE = "child_of_true",
+}
+
 export interface IMolContainer {
     title: string;                // appears in tree
     model?: IAtom[] | GLModel;    // IAtom in worker, GLMoldel in main thread
+    treeExpanded: boolean;
+    visible: boolean;
+    selected: SelectedType;
+    focused: boolean;
+    viewerDirty: boolean;         // triggers 3dmoljs viewer
     id?: string;                  // random id for terminal nodes
     parentId?: string;            // parent id for tree
     src?: string;                 // usually file name
     nodes?: IMolContainer[];      // Next level down in menu. So if molecule,
                                   // then chain. If chain, then residue. Etc.
     type?: MolType;
-    treeExpanded: boolean;
-    visible: boolean;
-    focused: boolean;
-    viewerDirty: boolean;         // triggers 3dmoljs viewer
     stylesSels?: IStyleAndSel[];  // styles and selections for this node
 }
 

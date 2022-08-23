@@ -14,7 +14,7 @@
         ref="formMolName"
         v-model="molName"
         placeHolder="(Optional) Enter the Chemical Name (e.g., Aspirin)"
-        @changed="searchByName"
+        @onChange="searchByName"
         :delayBetweenChangesDetected="2000"
         :description="molNameRespDescription"
       ></FormInput>

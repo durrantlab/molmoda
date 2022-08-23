@@ -15,6 +15,7 @@
       :placeHolder="placeHolder"
       :filterFunc="filterFunc"
     ></FormInput>
+    <slot></slot>
   </Popup>
 </template>
 
@@ -24,7 +25,7 @@
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options, Vue } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
-import { Prop } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 
 function _alwaysTrue(): boolean {
   return true;
@@ -49,6 +50,7 @@ export default class PopupOneTextInput extends Vue {
   @Prop({ default: "Load" }) actionBtnTxt!: string; // If undefined, no ok button
   @Prop({ default: _alwaysTrue }) isActionBtnEnabled!: Function;
   @Prop({ default: _neverFilter }) filterFunc!: Function;
+  @Prop({ default: "" }) defaultVal!: string;
 
   val = "";
 
@@ -69,10 +71,15 @@ export default class PopupOneTextInput extends Vue {
   }
 
   onPopupShown() {
-    this.val = "";
+    this.val = this.defaultVal;
     let focusTarget = (this.$refs.formInput as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
+  }
+
+  @Watch("defaultVal")
+  onDefaultValChange(newVal: string) {
+    this.val = newVal;
   }
 }
 </script>

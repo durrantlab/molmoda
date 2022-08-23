@@ -4,6 +4,10 @@ export abstract class PopupPluginParent extends PluginParent {
     abstract intro: string;
     public open = false;
 
+    // In some cases, it is necessary to pass information to the plugin when it
+    // opens. Typicaly when using the plugin outside the menu system.
+    protected payload = undefined;
+
     /**
      * Filters user input to match desired format.
      * @param {any} userInput  The text to evaluate.
@@ -45,8 +49,9 @@ export abstract class PopupPluginParent extends PluginParent {
         return;
     }
 
-    onPluginStart(): void {
+    onPluginStart(payload?: any): void {
         // Children should not overwrite this function! Use onPopupOpen instead.
+        this.payload = payload;
         this.openPopup();
         this.onPopupOpen();
     }

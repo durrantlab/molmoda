@@ -10,12 +10,10 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { OptionalPluginParent } from "../OptionalPluginParent";
 import {
   FormElement,
   FormElemType,
@@ -25,6 +23,8 @@ import {
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { OptionalPluginParent } from "./OptionalPluginParent";
+import { Options } from "vue-class-component";
 
 @Options({
   components: {

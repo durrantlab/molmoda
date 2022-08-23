@@ -54,8 +54,8 @@ export default class FormSelect extends Vue {
     this.$emit("update:modelValue", e.target.value);
 
     // In some circumstances (e.g., changing values in an object), not reactive.
-    // So emit also "changed" to indicate the value has changed.
-    this.$emit("changed");
+    // So emit also "onChange" to indicate the value has changed.
+    this.$emit("onChange");
   }
 }
 </script>

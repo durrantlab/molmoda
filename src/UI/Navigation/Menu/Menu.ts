@@ -1,5 +1,4 @@
 import { Vue } from "vue-class-component";
-import * as api from "../../../Api";
 
 export enum MenuItemType {
     ACTION,
@@ -135,6 +134,10 @@ export function addMenuItem(
     //     // Error: Menu already finalized. Assert
     //     throw new Error("Menu already finalized.");
     // }
+    if (newMenuItem.path === null) {
+        // One of the rare plugins that does't use the menu system.
+        return existingMenuItems;
+    }
 
     _convertPathToTextAndPathNames(newMenuItem);
     _extractRankFromText(newMenuItem);

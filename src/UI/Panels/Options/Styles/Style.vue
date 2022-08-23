@@ -13,6 +13,8 @@
         :width="24"
         @click="toggleVisible(styleName.name)"
         :clickable="true"
+        title="Visible"
+        tipPlacement="left"
       />
     </template>
     <!-- <span style="color: red">{{ atomsOption }}</span> -->
@@ -20,13 +22,13 @@
       :id="'atoms-' + styleName.name"
       v-model="atomsOption"
       :options="atomsStyleOptions"
-      @changed="updateMolecules(atomsOption)"
+      @onChange="updateMolecules(atomsOption)"
     ></FormSelect>
     <ColorStyle
       v-if="atomsOption !== 'atoms-hidden'"
       v-model="styleName.styleAndSel.style"
       :repName="atomsOption"
-      @changed="updateMolecules(atomsOption)"
+      @onChange="updateMolecules(atomsOption)"
       :allowColorCarbons="styleName.name !== 'metal'"
       :allowSpectrum="false"
       :allowSecondaryStructure="styleName.name === 'protein'"
@@ -41,13 +43,13 @@
         { description: 'Backbone: Cartoon', val: 'cartoon' },
         // {description: 'Protein: Tubes', val: 'tubes'},
       ]"
-      @changed="updateMolecules(backboneOption)"
+      @onChange="updateMolecules(backboneOption)"
     ></FormSelect>
     <ColorStyle
       v-if="backboneOption !== 'backbone-hidden'"
       v-model="styleName.styleAndSel.style"
       :repName="backboneOption"
-      @changed="updateMolecules(backboneOption)"
+      @onChange="updateMolecules(backboneOption)"
       :allowColorByElement="false"
       :allowColorCarbons="false"
     />
@@ -60,13 +62,13 @@
         { description: 'Surface: Hidden', val: 'surface-hidden' },
         { description: 'Surface', val: 'surface' },
       ]"
-      @changed="updateMolecules(surfaceOption)"
+      @onChange="updateMolecules(surfaceOption)"
     ></FormSelect>
     <ColorStyle
       v-if="surfaceOption !== 'surface-hidden'"
       v-model="styleName.styleAndSel.style"
       :repName="surfaceOption"
-      @changed="updateMolecules(surfaceOption)"
+      @onChange="updateMolecules(surfaceOption)"
       :allowSpectrum="false"
       :allowSecondaryStructure="styleName.name === 'protein'"
     />
@@ -96,7 +98,7 @@ import ColorStyle from "./ColorStyle/ColorStyle.vue";
 
 export interface IStyleName {
   styleAndSel: IStyleAndSel;
-  name: string;
+  name: MolType;
 }
 
 @Options({

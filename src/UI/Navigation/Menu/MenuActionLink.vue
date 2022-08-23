@@ -23,8 +23,6 @@ import Dropdown from 'bootstrap/js/dist/dropdown';
 import "bootstrap/js/dist/collapse";
 import { IMenuItem } from "./Menu";
 
-// var $ = require("jquery");
-
 @Options({
   components: {},
 })

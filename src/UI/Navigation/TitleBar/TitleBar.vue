@@ -2,7 +2,7 @@
 <script src="dist/sl-vue-tree.js"></script> -->
 
 <template>
-  <div class="title" :style="indentStyle">
+  <div class="title" :style="indentStyle + selectedStyle(treeDatumID)">
     <!-- expand icon -->
     <IconSwitcher
       v-if="treeDatum.nodes"
@@ -26,70 +26,116 @@
     /> -->
 
     <!-- title text -->
-    <div 
-      class="title-text clickable" 
+    <div
+      class="title-text clickable"
       @click="titleClick(treeDatumID)"
-      :style="treeDatum.visible ? '' : 'color: lightgray;'">
+      :style="treeDatum.visible ? '' : 'color: lightgray;'"
+    >
       {{ treeDatum.title }}
+      <span v-if="treeDatum.nodes">({{ treeDatum.nodes?.length }})</span>
     </div>
 
     <!-- menu-item buttons -->
-    <IconBar :width="52">
+    <IconBar :width="24 * Object.keys(iconsToDisplay).length">
       <!-- the eye icon should always be farthest to the right, so list it first -->
       <IconSwitcher
         class="title-element clickable"
         :useFirst="treeDatum.visible"
         :iconID1="['far', 'eye']"
         :iconID2="['far', 'eye-slash']"
-        :icon2Style="{color: 'lightgray'}"
-        :width="24"
+        :icon2Style="{ color: 'lightgray' }"
+        :width="22"
         @click="toggleVisible(treeDatumID)"
+        title="Visible"
       />
       <IconSwitcher
-      v-if="treeDatum.visible"
+        v-if="iconsToDisplay.focused"
         class="title-element clickable"
         :useFirst="treeDatum.focused"
         :iconID1="['fa', 'arrows-to-eye']"
         :iconID2="['fa', 'arrows-to-eye']"
-        :icon2Style="{color: 'lightgray'}"
-        :width="24"
+        :icon2Style="{ color: 'lightgray' }"
+        :width="22"
         @click="toggleFocused(treeDatumID)"
+        title="Focus"
       />
+      <IconSwitcher
+        v-if="iconsToDisplay.extract"
+        class="title-element clickable"
+        :useFirst="true"
+        :iconID1="['fa', 'scissors']"
+        :iconID2="['fa', 'scissors']"
+        :width="22"
+        @click="extractMol(treeDatumID)"
+        title="Extract"
+      />
+      <IconSwitcher
+        v-if="iconsToDisplay.clone"
+        class="title-element clickable"
+        :useFirst="true"
+        :iconID1="['far', 'clone']"
+        :iconID2="['far', 'clone']"
+        :width="22"
+        @click="cloneMol(treeDatumID)"
+        title="Clone"
+      />
+      <IconSwitcher
+        v-if="iconsToDisplay.rename"
+        class="title-element clickable"
+        :useFirst="true"
+        :iconID1="['fa', 'pencil']"
+        :iconID2="['fa', 'pencil']"
+        :width="22"
+        @click="renameMol(treeDatumID)"
+        title="Rename"
+      />
+      <!-- 
+        :icon2Style="{ color: 'lightgray' }" -->
     </IconBar>
   </div>
 </template>
 
 <script lang="ts">
-
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
-import { IMolContainer, MolType } from "../TreeView/TreeInterfaces";
+import {
+  IMolContainer,
+  MolType,
+  SelectedType,
+} from "../TreeView/TreeInterfaces";
 import { getNodeOfId, getAllNodesFlattened } from "../TreeView/TreeUtils";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
+import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
+import * as api from "@/Api";
+
+interface IIconsToDisplay {
+  visible?: boolean;
+  focused?: boolean;
+  rename?: boolean;
+  extract?: boolean;
+  clone?: boolean;
+}
 
 @Options({
   components: {
     IconSwitcher,
     IconBar,
+    Tooltip,
   },
 })
 export default class TitleBar extends Vue {
   @Prop({ required: true }) treeDatum!: IMolContainer;
   @Prop({ default: 0 }) depth!: number;
-  @Prop({ default: undefined}) treeData!: IMolContainer[];
+  @Prop({ default: undefined }) treeData!: IMolContainer[];
 
   get treeDatumID(): MolType {
     return this.treeDatum.id as MolType;
   }
 
-  flexFixedWidth(width: number): string {
-    return flexFixedWidthStyle(width);
-  }
-
   get indentStyle(): string {
-    return `margin-left:${8 * this.depth}px`;
+    return `margin-left:${8 * this.depth}px;`;
   }
 
   get getLocalTreeData(): any {
@@ -97,6 +143,52 @@ export default class TitleBar extends Vue {
       return this.$store.state["molecules"];
     }
     return this.treeData;
+  }
+
+  get iconsToDisplay(): IIconsToDisplay {
+    let toDisplay: IIconsToDisplay = {};
+
+    // Always visible toggle
+    toDisplay.visible = true;
+
+    // If visible, also focus icon
+    if (this.treeDatum.visible) {
+      toDisplay.focused = true;
+    }
+
+    // If selected, add rename, extract, copy icons
+    if (this.isSelected(this.treeDatumID)) {
+      toDisplay.rename = true;
+      if (this.treeDatum.parentId) {
+        toDisplay.extract = true;
+        toDisplay.clone = true;
+      }
+    }
+
+    return toDisplay;
+  }
+
+  flexFixedWidth(width: number): string {
+    return flexFixedWidthStyle(width);
+  }
+
+  selectedStyle(id: string): string {
+    let node = this.getNode(id);
+    return node.selected !== SelectedType.FALSE
+      ? "background-color: #f0f0f0;"
+      : "";
+  }
+
+  // selectedClass(id: string): string {
+  //   let node = this.getNode(id);
+  //   return node.selected !== SelectedType.FALSE
+  //     ? "bg-primary text-white"
+  //     : "";
+  // }
+
+  isSelected(id: string): boolean {
+    let node = this.getNode(id);
+    return node.selected === SelectedType.TRUE;
   }
 
   getNode(id: string): any {
@@ -112,6 +204,7 @@ export default class TitleBar extends Vue {
 
   toggleVisible(id: string) {
     let node = this.getNode(id);
+
     if (node !== null) {
       let newVisible = !node.visible;
       node.visible = newVisible;
@@ -133,25 +226,43 @@ export default class TitleBar extends Vue {
     } else {
       // Otherwise, focus only on the one you clicked.
       for (let node of getAllNodesFlattened(allData)) {
-        node.focused = (node.id === id);
+        node.focused = node.id === id;
       }
     }
   }
 
+  renameMol(treeDatumID: string) {
+    api.plugins.runPlugin("renamemol", treeDatumID);
+  }
+
+  cloneMol(treeDatumID: string) {
+    api.plugins.runPlugin("clonemol", treeDatumID);
+  }
+
+  extractMol(treeDatumID: string) {
+    api.plugins.runPlugin("extractmol", treeDatumID);
+  }
+
   titleClick(id: string) {
     let node = this.getNode(id);
-    if (node != null) {
-      node.styles = [
-        {
-          selection: {},
-          style: {
-            line: {
-              color: "red",
-            },
-          },
-        },
-      ];
-      node.viewerDirty = true;
+    let deselectOnly = node.selected === SelectedType.TRUE;
+
+    // All nodes should be unselected.
+    for (let nd of getAllNodesFlattened(this.$store.state.molecules)) {
+      nd.selected = SelectedType.FALSE;
+    }
+
+    if (deselectOnly) {
+      return;
+    }
+
+    node.selected = SelectedType.TRUE;
+
+    // Children too
+    if (node.nodes) {
+      for (let nd of getAllNodesFlattened(node.nodes)) {
+        nd.selected = SelectedType.CHILD_OF_TRUE;
+      }
     }
   }
 }
@@ -225,5 +336,12 @@ $transition-time: 0.2s;
 .slide-leave-to {
   overflow: hidden;
   max-height: 0;
+}
+</style>
+
+<style lang="scss">
+.svg-inline--fa {
+  // margin-left: 0 !important;
+  // margin-right: 0 !important;
 }
 </style>

@@ -43,17 +43,60 @@ combine everything but something designated ligand.
 Plugins should be able to do check and abort. For example, of not all ligands
 have 3D coordinates. But make generic, user-defined.
 
-You should be able to rename molecule. Also delete and extract. Would require
-select
+Also delete and extract. Would require select
 
 On optional plugin, can you reopen it once closed?
 
-Undo/redo. Note that in replaceMolecules, mols and state.molecules end up being
-the same, so clearing before adding doesn't work. Need to serialize.
-
 Menu should close when popup opens.
 
+Gray out undo/redo if not possible?
+
+Idea to consider: Ability to select molecule. Rename/extract/etc only appears
+when selected. Menu items too. And then widget to select protein/ligand allows
+you to choose between all visible and all selected. 
+
+If you rename too quickly, value not recorded. Might be problem with other
+plugins too with only one text input.
+
+When you clone, not enough to do deep copy. Because then when you hide original,
+hides clone. Need to regenerate GLModel for clone.
+
+Both extract and clone move node to top. Some code in common (see TODO: code in
+common). Good to make dedicated function.
+
+Need delete molecule too.
+
+Need a deselect all menu item.
+
+Clone and extract can be moved into one. Just add checkbox to specify "delete
+original (extract rather than clone)" or something like that.
+
+You should be able to do clone on top-level molecule. Copying the molecule.
+Extract doesn't make sense, though.
+
+Allow user to select themes from option menu?
+
 # DONE
+
+Select color shoul be done with bootstrap classes so themable.
+
+Parentheses after tree item indicating number of hcildren nodes (if any).
+
+Note you souldn't be able to extract or clone top-level molecules.
+
+Also, you can select molecules that aren't visible (so you don't have to display
+large molecular library to use it, for example).
+
+Note extract doesn't require name change. 
+
+Make plugin parent type for all edit buttons?
+
+You should be able to rename molecule. 
+
+Also, put a cap on how many previous states stored?
+
+Undo/redo. Note that in replaceMolecules, mols and state.molecules end up being
+the same, so clearing before adding doesn't work. Need to serialize.
 
 Ability to drag moleculsr components. Working, but still not great. Need to
 stress test. Actually, are you sure you want to be able to rearrange the order?

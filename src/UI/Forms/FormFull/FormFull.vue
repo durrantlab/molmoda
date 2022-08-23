@@ -19,25 +19,25 @@
         v-if="formElem.type === FormElementType.Text"
         type="text"
         v-model="allowVal(formElem).val"
-        @changed="dataUpdated"
+        @onChange="dataUpdated"
       />
       <FormInput
         v-else-if="formElem.type === FormElementType.Number"
         type="number"
         v-model.number="allowVal(formElem).val"
-        @changed="dataUpdated"
+        @onChange="dataUpdated"
       />
       <FormInput
         v-else-if="formElem.type === FormElementType.Color"
         type="color"
         v-model.number="allowVal(formElem).val"
-        @changed="dataUpdated"
+        @onChange="dataUpdated"
       />
       <FormSelect
         v-else-if="formElem.type === FormElementType.Select"
         v-model="allowVal(formElem).val"
         :options="getSelectOptions(formElem)"
-        @changed="dataUpdated"
+        @onChange="dataUpdated"
       />
       <FormInput
         v-else-if="formElem.type === FormElementType.Range"
@@ -46,7 +46,7 @@
         :min="getRangeMinMaxStep(formElem).min"
         :max="getRangeMinMaxStep(formElem).max"
         :step="getRangeMinMaxStep(formElem).step"
-        @changed="dataUpdated"
+        @onChange="dataUpdated"
       />
     </FormWrapper>
   </span>

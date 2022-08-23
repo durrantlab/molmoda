@@ -11,7 +11,7 @@
       :role="toggle ? 'switch' : ''"
     />
     <label v-if="text !== ''" :for="id" class="form-check-label">
-      {{ text }} {{ modelValue }}
+      {{ text }}
     </label>
   </div>
 </template>
@@ -35,8 +35,8 @@ export default class FormCheckBox extends Vue {
     this.$emit("update:modelValue", e.target.checked);
 
     // In some circumstances (e.g., changing values in an object), not reactive.
-    // So emit also "changed" to indicate the value has changed.
-    this.$emit("changed");
+    // So emit also "onChange" to indicate the value has changed.
+    this.$emit("onChange");
   }
 }
 </script>

@@ -41,8 +41,8 @@ export default class Radios extends Vue {
     this.$emit("update:modelValue", e);
 
     // In some circumstances (e.g., changing values in an object), not reactive.
-    // So emit also "changed" to indicate the value has changed.
-    this.$emit("changed");
+    // So emit also "onChange" to indicate the value has changed.
+    this.$emit("onChange");
   }
 
   idToUse(option: string): string {

@@ -26,6 +26,7 @@ import {
     IMolContainer,
     IStyleAndSel,
     MolType,
+    SelectedType,
 } from "../../UI/Navigation/TreeView/TreeInterfaces";
 import {
     getAllNodesFlattened,
@@ -53,6 +54,7 @@ function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolCont
         treeExpanded: false,
         visible: true,
         focused: false,
+        selected: SelectedType.FALSE,
         nodes: [],
     };
     let lastChainID = "";
@@ -65,6 +67,7 @@ function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolCont
                 viewerDirty: true,
                 treeExpanded: false,
                 visible: true,
+                selected: SelectedType.FALSE,
                 focused: false,
             });
             lastChainID = atom.chain;
@@ -87,6 +90,7 @@ function flattenChains(molEntry: IMolContainer): IMolContainer {
         viewerDirty: true,
         treeExpanded: false,
         visible: true,
+        selected: SelectedType.FALSE,
         focused: false,
     };
     molEntry.nodes.forEach((chain: IMolContainer) => {
@@ -114,6 +118,7 @@ function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
         viewerDirty: true,
         treeExpanded: false,
         visible: true,
+        selected: SelectedType.FALSE,
         focused: false,
     };
     let lastChainID = "";
@@ -128,8 +133,9 @@ function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
                 nodes: [],
                 treeExpanded: false,
                 visible: true,
-                viewerDirty: true,
+                selected: SelectedType.FALSE,
                 focused: false,
+                viewerDirty: true,
             });
             lastChainID = chain.title;
         }
@@ -153,6 +159,7 @@ function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
                     viewerDirty: true,
                     treeExpanded: false,
                     visible: true,
+                    selected: SelectedType.FALSE,
                     focused: false,
                 });
                 lastResidueID = newKey;
@@ -290,6 +297,7 @@ function divideAtomsIntoDistinctComponents(data: {
             treeExpanded: false,
             viewerDirty: true,
             visible: true,
+            selected: SelectedType.FALSE,
             focused: false,
             nodes: [
                 proteinAtomsByChain,

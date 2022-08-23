@@ -1,41 +1,71 @@
 // Note that worker sends json. Need to convert atom information to GLModel.
 
+/* eslint-disable @typescript-eslint/ban-types */
+
 import { dynamicImports } from "@/Core/DynamicImports";
 import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getAllNodesFlattened, getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 
+interface ICopiedObj {
+    promises: Promise<any>[];
+    newNode: any;
+}
+
+function copyObjRecursively(obj: any, modelFunc: Function): ICopiedObj {
+    const promises: Promise<any>[] = [];
+    const _copyObjRecursively = (oldNode: any, mdlFunc: Function) => {
+        // Can't just use JSON.parse(JSON.stringify(obj)) because need to
+        // interconvert between GLModel and [IAtom].
+        const origNode: {[key: string]: any} = {};
+        for (const key in oldNode) {
+            const val = oldNode[key];
+            if (key === "model") {
+                const modelPromise = mdlFunc(oldNode, origNode);
+                promises.push(modelPromise);
+            } else if (Array.isArray(val)) {
+                origNode[key] = val.map((item: any) => {
+                    return _copyObjRecursively(item, mdlFunc);
+                });
+            } else if (typeof val === "object") {
+                origNode[key] = _copyObjRecursively(val, mdlFunc);
+            } else {
+                origNode[key] = val;
+            }
+        }
+        return origNode;
+    }
+
+    const newObj = _copyObjRecursively(obj, modelFunc);
+    return {newNode: newObj, promises} as ICopiedObj;
+}
 
 export function atomsToModels(molecularData: IMolContainer): Promise<IMolContainer> {
-    const nodesWithAtoms = getAllNodesFlattened([molecularData])
-        .filter(node => node.model);
-
-    // Convert all the atom arrays to GLModels
-    const promises: Promise<GLModel>[] = nodesWithAtoms.map(
-        (node: IMolContainer): Promise<GLModel> => {
-            return _atomsToModel(node.model as IAtom[])
+    const recurseResult = copyObjRecursively(
+        molecularData, 
+        (origNode: IMolContainer, newNode: IMolContainer): Promise<void> => {
+            return _atomsToModel(origNode.model as IAtom[])
             .then((model: GLModel) => {
-                node.model = model;
-                return Promise.resolve(model);
-            }
-        );
-    });
-    
-    return Promise.all(promises)
+                newNode.model = model;
+                return Promise.resolve();
+            });
+        }
+    );
+
+    return Promise.all(recurseResult.promises)
     .then(() => {
-        return molecularData;
-    })
+        return recurseResult.newNode;
+    });
 }
 
 export function modelsToAtoms(molecularData: IMolContainer): IMolContainer {
-    const nodesWithModels = getAllNodesFlattened([molecularData])
-        .filter(node => node.model);
-
-    // Convert all the GLModels to atom arrays
-    nodesWithModels.forEach((node: IMolContainer) => {
-        node.model = (node.model as GLModel).selectedAtoms({});
-    });
-
-    return molecularData;
+    const recurseResult = copyObjRecursively(
+        molecularData, 
+        (origNode: IMolContainer, newNode: IMolContainer): void => { // Promise<void> => {
+            newNode.model = (origNode.model as GLModel).selectedAtoms({});
+        }
+    );
+    
+    return recurseResult.newNode;
 }
 
 function _atomsToModel(atoms: IAtom[]): Promise<GLModel> {

@@ -10,8 +10,6 @@ import { Prop } from "vue-property-decorator";
 import Section from "@/UI/Layout/Section.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
-// @ts-ignore
-import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
@@ -146,10 +144,9 @@ class ColorStyleOptions {
   components: {
     Section,
     FormSelect,
-    IconSwitcher,
     FormFull,
   },
-  emits: { changed: "changed", "update:modelValue": "update:modelValue" },
+  emits: { onChange: "onChange", "update:modelValue": "update:modelValue" },
 })
 export default class ColorStyle extends Vue {
   // Looks like this: { "cartoon": { "color": "spectrum" } }
@@ -283,7 +280,7 @@ export default class ColorStyle extends Vue {
 
     console.log("from color style:", resp);
     this.$emit("update:modelValue", resp);
-    this.$emit("changed");
+    this.$emit("onChange");
   }
 
   mounted() {

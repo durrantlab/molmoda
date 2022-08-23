@@ -6,18 +6,18 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParent } from "@/Plugins/PluginParent";
 import * as api from "@/Api";
-import { addToUndoStack, undo } from "./UndoStack";
+import { addToUndoStack, redo, undo } from "./UndoStack";
 
 @Options({
   components: {
     Popup,
   },
 })
-export default class Undo extends PluginParent {
+export default class Redo extends PluginParent {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
-  menuPath = ["[5] Edit", "[0] Revisions", "[1] Undo"];
+  menuPath = ["[5] Edit", "Revisions", "[2] Redo"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -25,19 +25,19 @@ export default class Undo extends PluginParent {
       url: "http://durrantlab.com/",
     },
   ];
-  pluginId = "undo";
+  pluginId = "redo";
 
   onPluginStart() {
     this.submitJobs();
   }
 
   onMounted() {
-    api.hooks.onMoleculesChanged(addToUndoStack);
+    // api.hooks.onMoleculesChanged(addToUndoStack);
   }
 
   runJob() {
     // About plugin does not have a job.
-    undo(this.$store);
+    redo(this.$store);
   }
 }
 </script>

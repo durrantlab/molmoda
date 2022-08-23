@@ -11,9 +11,14 @@ export interface IPluginSetupInfo {
     pluginId: string;
 }
 
+// Keep track of all loaded plugins. Useful for loading a plugin independent of
+// the menu system.
+export const loadedPlugins: {[key: string]: PluginParent} = {};
+
 export abstract class PluginParent extends Vue {
-    // The menu path, since all plugins should be accessible from the menu.
-    abstract menuPath: string[] | string;
+    // The menu path. The vast majority of plugins should be accessible from the
+    // menu. But set to null if you don't want it to be.
+    abstract menuPath: string[] | string | null;
 
     // Be sure to credit authors (with license).
     abstract softwareCredits: ISoftwareCredit[];
@@ -24,7 +29,9 @@ export abstract class PluginParent extends Vue {
 
     // The start function runs when the user first begins using the plugin. For
     // example, if the plugin is in a popup, this function would open the popup.
-    abstract onPluginStart(): void;
+    // The variable payload is included if you want to pass extra data to the
+    // plugin. Probably only useful if not using the menu system.
+    abstract onPluginStart(payload?: any): void;
 
     // Every plugin runs some calculation. This is the function that does the
     // calculating. It receives the same parameterSets submitted via the
@@ -79,7 +86,9 @@ export abstract class PluginParent extends Vue {
             menuData: {
                 path: this.menuPath,
                 function: () => {
-                    this.onPluginStart();
+                    // Could use this, but use api for consistency's sake.
+                    // this.onPluginStart();
+                    api.plugins.runPlugin(this.pluginId);
                 }
             } as IMenuItem,
             pluginId: this.pluginId,
@@ -87,6 +96,8 @@ export abstract class PluginParent extends Vue {
 
         // Register with job queue system
         api.hooks.onJobQueueCommand(this.pluginId, this.runJob.bind(this));
+
+        loadedPlugins[this.pluginId] = this;
 
         this.onMounted();
     }
