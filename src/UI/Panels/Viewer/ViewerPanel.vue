@@ -3,6 +3,9 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable no-unreachable */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 
@@ -29,19 +32,19 @@ export default class ViewerPanel extends Vue {
   }
 
   @Watch("treeview", { immediate: false, deep: true })
-  onTreeviewChanged(allMolecules: IMolContainer[], oldAllMolecules: IMolContainer[]) {
+  onTreeviewChanged(
+    allMolecules: IMolContainer[],
+    _oldAllMolecules: IMolContainer[]
+  ) {
     if (allMolecules.length === 0) {
       return;
     }
-    this._updateStylesAndZoom(allMolecules);
+    this._updateStylesAndZoom();
   }
 
-  private _updateStylesAndZoom(allMolecules: IMolContainer[] | undefined = undefined) {
-    if (allMolecules === undefined) {
-      allMolecules = this.treeview as IMolContainer[];
-    }
-    let visibleTerminalNodeModels = this._checkStyleChanges(allMolecules);
-    this._zoomPerFocus(allMolecules, visibleTerminalNodeModels);
+  private _updateStylesAndZoom() {
+    let visibleTerminalNodeModels = this._checkStyleChanges();
+    this._zoomPerFocus(visibleTerminalNodeModels);
   }
 
   private _clearSurface(mol: IMolContainer) {
@@ -53,9 +56,46 @@ export default class ViewerPanel extends Vue {
     }
   }
 
-  private _checkStyleChanges(allMolecules: IMolContainer[]): any[] {
+  private _removeOldModels(terminalNodes: IMolContainer[]): void {
+    // Remove any molecules not presently in the terminal nodes.
+
+    // Get the ids of the actual terminal nodes (should have deleted element
+    // already removed)
+    let idsOfTerminalNodes = terminalNodes.map((node) => node.id);
+
+    // If one has been deleted, it hasn't yet been removed from the cache. Make
+    // note of that here.
+    let idsOfMolsToDelete: string[] = [];
+    for (let molCacheId in this.molCache) {
+      if (idsOfTerminalNodes.indexOf(molCacheId) === -1) {
+        // So there's an id in the cache that isn't in the tree.
+        idsOfMolsToDelete.push(molCacheId);
+      }
+    }
+
+    // Remove it from the cache, viewer, etc.
+    idsOfMolsToDelete.forEach((id: string) => {
+      let mol = this.molCache[id];
+  
+      // remove from viewer
+      api.visualization.viewer.removeModel(mol);
+  
+      // Remove from cache
+      delete this.molCache[id];
+
+      // Remove from terminal nodes (local variable) so you don't regenerate it
+      // again.
+      // terminalNodes = terminalNodes.filter((node) => node.id !== id);
+    });
+
+    // return terminalNodes;
+  }
+
+  private _checkStyleChanges(): any[] {
     let visibleTerminalNodeModels: any[] = [];
-    let terminalNodes = getTerminalNodes(allMolecules);
+    let terminalNodes = getTerminalNodes(this.treeview);
+
+    this._removeOldModels(terminalNodes);
 
     for (const mol of terminalNodes) {
       let id = mol.id as string;
@@ -67,9 +107,10 @@ export default class ViewerPanel extends Vue {
       // If it's not in the cache, the molecule has likely not been loaded.
       // Always load it.
       if (!this.molCache[id]) {
+        console.log("Loading: " + id)
         let visMol = api.visualization.viewer.addRawModel_JDD(mol.model);
         this.molCache[id] = visMol;
-        this._makeAtomsHoverableAndClickable({model: visMol});
+        this._makeAtomsHoverableAndClickable({ model: visMol });
       }
 
       // If a molecule is marked "dirty", a new style needs to be applied.
@@ -96,17 +137,23 @@ export default class ViewerPanel extends Vue {
             if (!styleSel.style["surface"]) {
               // It's a style, not a surface.
               // console.log("style right before adding to 3dmoljs:", styleSel.style);
-              (mol.model as any).setStyle(styleSel.selection, styleSel.style, true);
-              if (styleSel.style.sphere) {spheresUsed = true;}
+              (mol.model as any).setStyle(
+                styleSel.selection,
+                styleSel.style,
+                true
+              );
+              if (styleSel.style.sphere) {
+                spheresUsed = true;
+              }
             } else {
               // It's a surface
               api.visualization.viewer
                 .addSurface(
                   // $3Dmol.SurfaceType.VDW,
-                  // $3Dmol.SurfaceType.MS, 
+                  // $3Dmol.SurfaceType.MS,
                   this.surfaceType,
                   styleSel.style.surface, // style
-                  { model: (mol.model as any) } // selection
+                  { model: mol.model as any } // selection
                 )
                 .then((surface: any) => {
                   if (mol.id) {
@@ -141,15 +188,19 @@ export default class ViewerPanel extends Vue {
     return visibleTerminalNodeModels;
   }
 
-  private _zoomPerFocus(allMolecules: IMolContainer[], visibleTerminalNodeModels: any[]) {
+  private _zoomPerFocus(
+    visibleTerminalNodeModels: any[]
+  ) {
     let molsToFocus: IMolContainer[] = [];
-    for (const mol of getAllNodesFlattened(allMolecules)) {
+    for (const mol of getAllNodesFlattened(this.treeview)) {
       if (mol.focused) {
         if (!mol.nodes) {
           // Already terminal
           molsToFocus = [mol.model as any];
         } else {
-          molsToFocus = getTerminalNodes(mol.nodes).map((n) => n.model) as any[];
+          molsToFocus = getTerminalNodes(mol.nodes).map(
+            (n) => n.model
+          ) as any[];
         }
         break;
       }
@@ -166,18 +217,25 @@ export default class ViewerPanel extends Vue {
     // api.visualization.viewer.zoom(0.8);
   }
 
-
   private _makeAtomsHoverableAndClickable(sel: any) {
     api.visualization.viewer.setHoverable(
       sel,
       true,
-      function (atom: any, viewer: any, event: any, container: any) {
+      function (atom: any, viewer: any, _event: any, _container: any) {
         if (!atom.label) {
           let lbls: string[] = [];
-          if (atom.chain) { lbls.push(atom.chain); }
-          if (atom.resn) { lbls.push(atom.resn); }
-          if (atom.resi) { lbls.push(atom.resi); }
-          if (atom.atom) { lbls.push(atom.atom); }
+          if (atom.chain) {
+            lbls.push(atom.chain);
+          }
+          if (atom.resn) {
+            lbls.push(atom.resn);
+          }
+          if (atom.resi) {
+            lbls.push(atom.resi);
+          }
+          if (atom.atom) {
+            lbls.push(atom.atom);
+          }
           if (lbls.length > 0) {
             let lblTxt = lbls.join(":");
 
@@ -199,7 +257,7 @@ export default class ViewerPanel extends Vue {
           }
         }
       },
-      function (atom: any, viewer: any, event: any, container: any) {
+      function (atom: any, viewer: any, _event: any, _container: any) {
         if (atom.label) {
           setTimeout(() => {
             viewer.removeLabel(atom.label);
@@ -210,9 +268,14 @@ export default class ViewerPanel extends Vue {
     );
 
     api.visualization.viewer.setClickable(
-      {}, true,
-      (atom: any, viewer: any, event: any, container: any) => {
-        api.visualization.viewer.zoomTo({ x: atom.x, y: atom.y, z: atom.z }, 500, true);
+      {},
+      true,
+      (atom: any, _viewer: any, _event: any, _container: any) => {
+        api.visualization.viewer.zoomTo(
+          { x: atom.x, y: atom.y, z: atom.z },
+          500,
+          true
+        );
         this.$store.commit("clearFocusedMolecule", false);
       }
     );
@@ -227,12 +290,14 @@ export default class ViewerPanel extends Vue {
         defaultcolors: $3Dmol.rasmolElementColors,
       });
 
+      // @ts-ignore
+      window["viewer"] = viewer;
+
       console.warn('viewer.setViewStyle({style:"outline"})');
 
       api.visualization.viewer = viewer;
       viewer.setBackgroundColor(0xffffff);
-    })
-
+    });
 
     // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
     //   // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")

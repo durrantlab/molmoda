@@ -8,9 +8,10 @@ import { faAngleDown } from "@fortawesome/free-solid-svg-icons/faAngleDown";
 // import { faAngleUp } from "@fortawesome/free-solid-svg-icons/faAngleUp";
 import { faAngleRight } from "@fortawesome/free-solid-svg-icons/faAngleRight";
 import { faArrowsToEye } from "@fortawesome/free-solid-svg-icons/faArrowsToEye";
-import { faScissors } from "@fortawesome/free-solid-svg-icons/faScissors";
+// import { faScissors } from "@fortawesome/free-solid-svg-icons/faScissors";
 import { faClone } from "@fortawesome/free-regular-svg-icons/faClone";
 import { faPencil } from "@fortawesome/free-solid-svg-icons/faPencil";
+import { faRectangleXmark } from "@fortawesome/free-regular-svg-icons/faRectangleXmark";
 
 export function loadFontAwesomeFonts() {
     library.add(faFolder);
@@ -21,8 +22,9 @@ export function loadFontAwesomeFonts() {
     library.add(faEye);
     library.add(faEyeSlash);
     library.add(faArrowsToEye);
-    library.add(faScissors);
+    // library.add(faScissors);
     library.add(faClone);
     library.add(faPencil);
+    library.add(faRectangleXmark);
     // dom.watch();
 }

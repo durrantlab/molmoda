@@ -60,24 +60,24 @@
         title="Focus"
       />
       <IconSwitcher
-        v-if="iconsToDisplay.extract"
+        v-if="iconsToDisplay.delete"
         class="title-element clickable"
         :useFirst="true"
-        :iconID1="['fa', 'scissors']"
-        :iconID2="['fa', 'scissors']"
+        :iconID1="['far', 'rectangle-xmark']"
+        :iconID2="['far', 'rectangle-xmark']"
         :width="22"
-        @click="extractMol(treeDatumID)"
-        title="Extract"
+        @click="deleteMol(treeDatumID)"
+        title="Delete"
       />
       <IconSwitcher
-        v-if="iconsToDisplay.clone"
+        v-if="iconsToDisplay.cloneExtract"
         class="title-element clickable"
         :useFirst="true"
         :iconID1="['far', 'clone']"
         :iconID2="['far', 'clone']"
         :width="22"
-        @click="cloneMol(treeDatumID)"
-        title="Clone"
+        @click="cloneExtractMol(treeDatumID)"
+        title="Clone/Extract"
       />
       <IconSwitcher
         v-if="iconsToDisplay.rename"
@@ -114,8 +114,8 @@ interface IIconsToDisplay {
   visible?: boolean;
   focused?: boolean;
   rename?: boolean;
-  extract?: boolean;
-  clone?: boolean;
+  cloneExtract?: boolean;
+  delete?: boolean;
 }
 
 @Options({
@@ -160,8 +160,8 @@ export default class TitleBar extends Vue {
     if (this.isSelected(this.treeDatumID)) {
       toDisplay.rename = true;
       if (this.treeDatum.parentId) {
-        toDisplay.extract = true;
-        toDisplay.clone = true;
+        toDisplay.cloneExtract = true;
+        toDisplay.delete = true;
       }
     }
 
@@ -235,12 +235,12 @@ export default class TitleBar extends Vue {
     api.plugins.runPlugin("renamemol", treeDatumID);
   }
 
-  cloneMol(treeDatumID: string) {
-    api.plugins.runPlugin("clonemol", treeDatumID);
+  cloneExtractMol(treeDatumID: string) {
+    api.plugins.runPlugin("cloneextractmol", treeDatumID);
   }
 
-  extractMol(treeDatumID: string) {
-    api.plugins.runPlugin("extractmol", treeDatumID);
+  deleteMol(treeDatumID: string) {
+    api.plugins.runPlugin("deletemol", treeDatumID);
   }
 
   titleClick(id: string) {

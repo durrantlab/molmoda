@@ -43,8 +43,6 @@ combine everything but something designated ligand.
 Plugins should be able to do check and abort. For example, of not all ligands
 have 3D coordinates. But make generic, user-defined.
 
-Also delete and extract. Would require select
-
 On optional plugin, can you reopen it once closed?
 
 Menu should close when popup opens.
@@ -60,16 +58,9 @@ plugins too with only one text input.
 
 When you clone, not enough to do deep copy. Because then when you hide original,
 hides clone. Need to regenerate GLModel for clone.
-
-Both extract and clone move node to top. Some code in common (see TODO: code in
-common). Good to make dedicated function.
-
-Need delete molecule too.
+    Note: You tried to implement this, broke it. Need to fix.
 
 Need a deselect all menu item.
-
-Clone and extract can be moved into one. Just add checkbox to specify "delete
-original (extract rather than clone)" or something like that.
 
 You should be able to do clone on top-level molecule. Copying the molecule.
 Extract doesn't make sense, though.
@@ -77,6 +68,22 @@ Extract doesn't make sense, though.
 Allow user to select themes from option menu?
 
 # DONE
+
+Need delete molecule too. 
+* Not being removed. 
+* I have confirmed the problem in _zoomPerFocus. If I comment it mostly out,
+    still doesn’t work.
+* Confirmed being removed from cache. That's not the problem.
+* In example, even when using your library, remove does change value of
+  viewer.getModel(X). But it doesn't change it in the context of your app.  
+
+Also delete and extract. Would require select
+
+Both extract and clone move node to top. Some code in common (see TODO: code in
+common). Good to make dedicated function.
+
+Clone and extract can be moved into one. Just add checkbox to specify "delete
+original (extract rather than clone)" or something like that.
 
 Select color shoul be done with bootstrap classes so themable.
 

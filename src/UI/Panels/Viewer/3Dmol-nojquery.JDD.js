@@ -25084,6 +25084,10 @@ $3Dmol.GLModel = (function() {
         this.getID = function() {
             return id;
         };
+
+        this.setID_JDD = function(i) {
+          id = i;
+        }
         
         /**
          * Returns model's frames property, a list of atom lists
@@ -31522,6 +31526,7 @@ $3Dmol.GLViewer = (function() {
          * @return {$3Dmol.GLModel}
          */
         this.addRawModel_JDD =  function(data) {
+          data.setID_JDD(models.length);
           models.push(data);
           return data;
         };

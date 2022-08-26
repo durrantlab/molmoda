@@ -1,4 +1,5 @@
 const { defineConfig } = require("@vue/cli-service");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = defineConfig({
     transpileDependencies: true,
@@ -17,16 +18,23 @@ module.exports = defineConfig({
         }
 
         config.resolve.fallback = {
-            "fs": false,
-            "tls": false,
-            "net": false,
-            "path": false,
-            "zlib": false,
-            "http": false,
-            "https": false,
-            "stream": false,
-            "crypto": false,
-        }
+            fs: false,
+            tls: false,
+            net: false,
+            path: false,
+            zlib: false,
+            http: false,
+            https: false,
+            stream: false,
+            crypto: false,
+        };
+        config.plugins.push(
+            new CopyPlugin({
+                patterns: [
+                    { from: "src/libs/jquery-3.6.0.min.js", to: "js/" },
+                ],
+            })
+        );
     },
     pluginOptions: {
         webpackBundleAnalyzer: {

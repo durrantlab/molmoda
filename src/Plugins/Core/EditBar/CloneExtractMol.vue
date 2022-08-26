@@ -18,7 +18,7 @@
     <FormWrapper cls="border-0 mt-3">
       <FormCheckBox
         id="extract"
-        text="Delete original molecule (i.e., extract rather than clone)"
+        text="Delete original molecule (extract rather than clone)"
         v-model="doExtract"
         @onChange="onModeChange"
       ></FormCheckBox>
@@ -48,6 +48,10 @@ import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+  atomsToModels,
+  modelsToAtoms,
+} from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -103,8 +107,13 @@ export default class CloneExtractMol extends EditBarPluginParent {
   runJob() {
     if (this.nodeToActOn) {
       let newNode: IMolContainer;
+      let convertedNode: Promise<IMolContainer>;
       if (this.doExtract) {
+        // You're going to extract the molecule.
+
         newNode = this.nodeToActOn;
+        convertedNode = Promise.resolve(newNode);
+
         // Get the parent node and remove this from it's nodes.
         if (newNode.parentId) {
           const parentNode = getNodeOfId(
@@ -120,21 +129,27 @@ export default class CloneExtractMol extends EditBarPluginParent {
           }
         }
       } else {
-        // Cloning. Make a deep copy of the node.
-        newNode = cloneDeep(this.nodeToActOn);
+        // Cloning the molecule. Make a deep copy of the node.
+        // newNode = cloneDeep(this.nodeToActOn);
+        newNode = modelsToAtoms(this.nodeToActOn);
+        convertedNode = atomsToModels(this.nodeToActOn).then((newNode) => {
+          return newNode;
+        });
       }
 
-      newNode.title = this.newTitle;
-      newNode.selected = SelectedType.FALSE;
-      newNode.viewerDirty = true;
-      newNode.id = randomID();
-      newNode.focused = false;
+      convertedNode.then((node) => {
+        node.title = this.newTitle;
+        node.selected = SelectedType.FALSE;
+        node.viewerDirty = true;
+        node.id = randomID();
+        node.focused = false;
 
-      delete newNode.parentId;
+        delete node.parentId;
 
-      this.$store.commit("pushToList", {
-        name: "molecules",
-        val: newNode,
+        this.$store.commit("pushToList", {
+          name: "molecules",
+          val: node,
+        });
       });
     }
   }

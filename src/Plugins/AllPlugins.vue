@@ -14,7 +14,8 @@
     <Redo @onError="onError" @onPluginSetup="onPluginSetup"></Redo>
     <RenameMol @onError="onError" @onPluginSetup="onPluginSetup"></RenameMol>
     <CloneExtractMol @onError="onError" @onPluginSetup="onPluginSetup"></CloneExtractMol>
-  
+    <DeleteMol @onError="onError" @onPluginSetup="onPluginSetup"></DeleteMol>
+    
     <TestPlugin @onError="onError" @onPluginSetup="onPluginSetup"></TestPlugin>
   </div>
 </template>
@@ -38,6 +39,7 @@ import Undo from "./Core/UndoRedo/Undo.vue";
 import Redo from "./Core/UndoRedo/Redo.vue";
 import RenameMol from "./Core/EditBar/RenameMol.vue";
 import CloneExtractMol from "./Core/EditBar/CloneExtractMol.vue";
+import DeleteMol from "./Core/EditBar/DeleteMol.vue";
 
 import TestPlugin from "./Optional/TestPlugin.vue";
 
@@ -57,6 +59,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     Redo,
     RenameMol,
     CloneExtractMol,
+    DeleteMol,
 
     TestPlugin
   },
