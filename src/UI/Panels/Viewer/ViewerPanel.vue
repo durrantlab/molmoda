@@ -12,6 +12,7 @@ import { Watch } from "vue-property-decorator";
 import * as api from "@/Api/";
 import {
   getAllNodesFlattened,
+  getNodeOfId,
   getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
@@ -47,11 +48,12 @@ export default class ViewerPanel extends Vue {
     this._zoomPerFocus(visibleTerminalNodeModels);
   }
 
-  private _clearSurface(mol: IMolContainer) {
-    if (mol.id && this.surfaces[mol.id]) {
-      for (const surface of this.surfaces[mol.id]) {
+  private _clearSurface(mol: IMolContainer | string) {
+    let id = (typeof mol === "string") ? mol : mol.id;
+    if (id && this.surfaces[id]) {
+      for (const surface of this.surfaces[id]) {
         api.visualization.viewer.removeSurface(surface);
-        delete this.surfaces[mol.id];
+        delete this.surfaces[id];
       }
     }
   }
@@ -76,6 +78,9 @@ export default class ViewerPanel extends Vue {
     // Remove it from the cache, viewer, etc.
     idsOfMolsToDelete.forEach((id: string) => {
       let mol = this.molCache[id];
+
+      // Clear any surfaces
+      this._clearSurface(id);
   
       // remove from viewer
       api.visualization.viewer.removeModel(mol);

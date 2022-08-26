@@ -1,5 +1,7 @@
 <template>
-  <FormFull v-model="constructedColorForm"></FormFull>
+  <div class="ms-2">
+    <FormFull v-model="constructedColorForm"></FormFull>
+  </div>
 </template>
 
 <script lang="ts">
@@ -14,7 +16,7 @@ import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // @ts-ignore
-import isEqual from 'lodash.isequal';
+import isEqual from "lodash.isequal";
 
 import { colorNameToHex, hexToColorName } from "./ColorConverter";
 import { FormElemType } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -57,7 +59,9 @@ class ColorStyleOptions {
   public color = "#C0C0C0"; // silver
 
   public nameToIndex(name: string): number {
-    return this._colorStyles.findIndex((colorStyle) => colorStyle.name === name);
+    return this._colorStyles.findIndex(
+      (colorStyle) => colorStyle.name === name
+    );
   }
 
   public styleToIndex(style: IColorStyle): number {
@@ -181,7 +185,7 @@ export default class ColorStyle extends Vue {
     // Build the color form
 
     let colorFormOptions = [];
-    
+
     if (this.allowColorByElement) {
       colorFormOptions.push({
         description: "Color by Element",
@@ -221,7 +225,7 @@ export default class ColorStyle extends Vue {
           val: this.colorStyles.nameToIndex("Solid"),
         },
       ]
-    )
+    );
 
     let colorForm: any[] = [
       {
