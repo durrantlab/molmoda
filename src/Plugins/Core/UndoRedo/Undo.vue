@@ -6,7 +6,7 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParent } from "@/Plugins/PluginParent";
 import * as api from "@/Api";
-import { addToUndoStack, undo } from "./UndoStack";
+import { addToUndoStack, undo, undoStack } from "./UndoStack";
 
 @Options({
   components: {
@@ -29,6 +29,13 @@ export default class Undo extends PluginParent {
 
   onPluginStart() {
     this.submitJobs();
+  }
+
+  checkUseAllowed(): string | null {
+    if (undoStack.length === 0) {
+      return "No additional undo is available.";
+    }
+    return null;
   }
 
   onMounted() {

@@ -25,6 +25,7 @@ import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { OptionalPluginParent } from "./OptionalPluginParent";
 import { Options } from "vue-class-component";
+import * as api from "@/Api";
 
 @Options({
   components: {
@@ -74,9 +75,18 @@ export default class TestPlugin extends OptionalPluginParent {
   ];
 
   runJob(args: IUserArg[]) {
+    dynamicImports.browserfs.module
+    .then((browserfs: any) => {
+      debugger;
+    });
+    
     dynamicImports.memfs.module
     .then((memfs: any) => {
-      debugger;
+      // debugger;
+      memfs.writeFileSync("test.txt", "Hello World");
+      console.log(memfs.readFileSync("test.txt", "utf8"));
+      // api.messages.popupMessage("My title", "My message");
+      // api.messages.popupError("My message");
     });
   }
 }

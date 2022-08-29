@@ -7,18 +7,19 @@
   />
   <li v-else class="nav-item dropdown">
     <!-- dropdown-toggle -->
+    <!-- This is the top-level menu (across top of screen) -->
     <a
-      class="nav-link"
+      class="nav-link top-level-menu-item"
       data-bs-auto-close="outside"
       href="#"
-      id="navbarDropdown"
+      :id="'navbarDropdown-' + idSlug"
       role="button"
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
       {{ menuData._text }}
     </a>
-    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+    <ul class="dropdown-menu" :aria-labelledby="'navbarDropdown-' + idSlug">
       <span v-for="(item, idx) in menuItemsWithSeparators" v-bind:key="idx">
         <li v-if="isSeparator(item)"><hr class="dropdown-divider" /></li>
         <MenuLevel2 v-else :menuData="item" />
@@ -28,7 +29,6 @@
 </template>
 
 <script lang="ts">
-
 import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
@@ -44,6 +44,7 @@ import {
   MenuItemType,
   MenuLevelParent,
 } from "./Menu";
+import { slugify } from "@/Core/Utils";
 
 @Options({
   components: {
@@ -53,12 +54,12 @@ import {
 })
 export default class MenuLevel1 extends MenuLevelParent {
   @Prop() menuData!: IMenuItem | IMenuSubmenu;
-  
-  get menuItemsWithSeparators(): (
-    | IMenuItem
-    | IMenuSubmenu
-    | IMenuSeparator
-  )[] {
+
+  get idSlug(): string {
+    return slugify(this.menuData._text as string);
+  }
+
+  get menuItemsWithSeparators(): (IMenuItem | IMenuSubmenu | IMenuSeparator)[] {
     // Adds separators
     let newMenuItemsWithSeparator: (
       | IMenuItem

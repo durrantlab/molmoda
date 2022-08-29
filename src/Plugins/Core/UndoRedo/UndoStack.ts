@@ -6,8 +6,8 @@ import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 // @ts-ignore
 import cloneDeep from "lodash.clonedeep";
 
-const undoStack: IMolContainer[][] = [];
-let redoStack: IMolContainer[][] = [];
+export const undoStack: IMolContainer[][] = [];
+export let redoStack: IMolContainer[][] = [];
 let timeoutId: number;
 const maxItemsOnUndoStack = 10;
 

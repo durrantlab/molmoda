@@ -15,8 +15,6 @@ Messaging. Need toast, log, system alert, etc. You started working on toast.
 
 vue-chartjs (or V Chart Plugin better?)
 
-Also need to be able to extract a molecule, and merge it.
-
 https://github.com/pulsardev/vue-tour
 https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
 Table component?
@@ -34,40 +32,60 @@ viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
 
 Need functions to output pdb and mol2. (use open babel for mol2).
 
-New session, but with ability to detect if saved or not.
+New session, but with ability to detect if saved or not. This is almost done.
+    When then try to close, catches it, opens savesession plugin. But need to
+    make sure all that works, supplement with additional text if closing (maybe
+    no cancel), and hten popup after telliung them they can save.
 
-Vue component to specify whether to combine PDBs (receptors) or not. Basically
-combine everything but something designated ligand.
-    CombineProteins should be integrated into FormFull
-
-Plugins should be able to do check and abort. For example, of not all ligands
-have 3D coordinates. But make generic, user-defined.
-
-On optional plugin, can you reopen it once closed?
-
-Menu should close when popup opens.
-
-Gray out undo/redo if not possible?
+On optional plugin, can you reopen it once closed? Only if cancel. If run, can
+rerun later.
 
 Idea to consider: Ability to select molecule. Rename/extract/etc only appears
 when selected. Menu items too. And then widget to select protein/ligand allows
 you to choose between all visible and all selected. 
+Vue component to specify whether to combine PDBs (receptors) or not. Basically
+combine everything but something designated ligand.
+    CombineProteins should be integrated into FormFull
 
 If you rename too quickly, value not recorded. Might be problem with other
 plugins too with only one text input.
 
-When you clone, not enough to do deep copy. Because then when you hide original,
-hides clone. Need to regenerate GLModel for clone.
-    Note: You tried to implement this, broke it. Need to fix.
+Allow user to select themes from option menu?
+
+When loading molecule, cursor indicates as much. Good to standardize that
+(api-level).
+
+Implement checkUseAllowed for export menu options.
+
+Can you undo the initial loading of the molecule? Good to investigate.
+
+Also can't delete top-level molecule, I think. (but can clone it... I checked)
+
+Can you sylize modal per functio (default, info, alert).
+
+Load molecule from pubchem (can always load, no validation)
+
+# DONE
+
+with new api.messages.popupError, no need to bubble up onError to app. Just
+handle in plugin itself. Also, there should be a callback on that.
+
+Also need to be able to extract a molecule, and merge it.
+
+Plugins should be able to do check and abort. For example, of not all ligands
+have 3D coordinates. But make generic, user-defined.
+* Gray out undo/redo if not possible?
+
+Menu should close when popup opens.
 
 Need a deselect all menu item.
 
 You should be able to do clone on top-level molecule. Copying the molecule.
 Extract doesn't make sense, though.
 
-Allow user to select themes from option menu?
-
-# DONE
+When you clone, not enough to do deep copy. Because then when you hide original,
+hides clone. Need to regenerate GLModel for clone.
+    Note: You tried to implement this, broke it. Need to fix.
 
 Need delete molecule too. 
 * Not being removed. 

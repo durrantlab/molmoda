@@ -15,7 +15,7 @@
       placeHolder="Name of new molecule"
       :filterFunc="filterUserData"
     ></FormInput>
-    <FormWrapper cls="border-0 mt-3">
+    <FormWrapper cls="border-0 mt-3" v-if="allowExtract">
       <FormCheckBox
         id="extract"
         text="Delete original molecule (extract rather than clone)"
@@ -27,8 +27,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Options } from "vue-class-component";
 import {
   IContributorCredit,
@@ -36,8 +34,6 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import EditBarPluginParent from "./EditBarPluginParent";
 
-// @ts-ignore
-import cloneDeep from "lodash.clonedeep";
 import {
   IMolContainer,
   SelectedType,
@@ -47,7 +43,7 @@ import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getAllNodesFlattened, getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
 import {
   atomsToModels,
   modelsToAtoms,
@@ -82,6 +78,16 @@ export default class CloneExtractMol extends EditBarPluginParent {
     return this.doExtract ? "Extract" : "Clone";
   }
 
+  get allowExtract(): boolean {
+    if (this.nodeToActOn === undefined || this.nodeToActOn === null) {
+      return false;
+    }
+    if (this.nodeToActOn.parentId) {
+      return true;
+    }
+    return false;
+  }
+
   public onPopupOpen(): void {
     let focusTarget = (this.$refs.formInput as any).$refs
       .inputElem as HTMLInputElement;
@@ -106,43 +112,46 @@ export default class CloneExtractMol extends EditBarPluginParent {
 
   runJob() {
     if (this.nodeToActOn) {
-      let newNode: IMolContainer;
+      let newerNode: IMolContainer;
       let convertedNode: Promise<IMolContainer>;
       if (this.doExtract) {
         // You're going to extract the molecule.
 
-        newNode = this.nodeToActOn;
-        convertedNode = Promise.resolve(newNode);
+        newerNode = this.nodeToActOn;
+        convertedNode = Promise.resolve(newerNode);
 
         // Get the parent node and remove this from it's nodes.
-        if (newNode.parentId) {
+        if (newerNode.parentId) {
           const parentNode = getNodeOfId(
-            newNode.parentId,
+            newerNode.parentId,
             this.$store.state.molecules
           );
 
           // Remove this node from the parent's nodes list.
           if (parentNode && parentNode.nodes) {
             parentNode.nodes = parentNode.nodes.filter(
-              (n) => n.id !== newNode.id
+              (n) => n.id !== newerNode.id
             );
           }
         }
       } else {
         // Cloning the molecule. Make a deep copy of the node.
-        // newNode = cloneDeep(this.nodeToActOn);
-        newNode = modelsToAtoms(this.nodeToActOn);
-        convertedNode = atomsToModels(this.nodeToActOn).then((newNode) => {
-          return newNode;
+        newerNode = modelsToAtoms(this.nodeToActOn);
+        convertedNode = atomsToModels(newerNode).then((newestNode) => {
+          return newestNode;
         });
       }
 
       convertedNode.then((node) => {
         node.title = this.newTitle;
-        node.selected = SelectedType.FALSE;
-        node.viewerDirty = true;
-        node.id = randomID();
-        node.focused = false;
+
+        let subNodes = getAllNodesFlattened([node]);
+        subNodes.forEach((n) => {
+          n.id = randomID();
+          n.selected = SelectedType.FALSE;
+          n.viewerDirty = true;
+          n.focused = false;
+        });
 
         delete node.parentId;
 

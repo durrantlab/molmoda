@@ -49,6 +49,7 @@ import {
 import { loadRemote } from "./Utils";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import * as api from "@/Api";
 
 @Options({
   components: {
@@ -170,7 +171,7 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
             this.submitJobs([fileInfo]);
           })
           .catch((err: string) => {
-            this.$emit("onError", err);
+            api.messages.popupError(err);
           });
       });
   }

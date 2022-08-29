@@ -2,8 +2,15 @@
   <div ref="golden-layout-data" id="golden-layout-data">
     <GoldenLayoutContainer type="column">
       <GoldenLayoutContainer type="row" :height="90">
-        <GoldenLayoutComponent name="Molecules" extraClass="sortable-group" state="{}" :width="20">
-          <TreeView />
+        <GoldenLayoutComponent
+          name="Molecules"
+          extraClass="sortable-group"
+          state="{}"
+          :width="20"
+        >
+          <div @click.self="clearSelection" style="height:100%;">
+            <TreeView />
+          </div>
         </GoldenLayoutComponent>
 
         <GoldenLayoutComponent
@@ -42,6 +49,7 @@ import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
+import * as api from "@/Api";
 
 @Options({
   components: {
@@ -132,6 +140,10 @@ export default class GoldLayout extends Vue {
     addBootstrapColorClasses();
 
     // this.makeGoldenLayoutBootstrapCompatible();
+  }
+
+  clearSelection() {
+    api.plugins.runPlugin("clearselection");
   }
 
   // Mounted

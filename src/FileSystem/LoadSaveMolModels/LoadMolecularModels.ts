@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { dynamicImports } from "@/Core/DynamicImports";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { store } from "@/Store";
-import { getAllNodesFlattened, getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 
-import { GLModel, IAtom, IMolContainer } from "../../UI/Navigation/TreeView/TreeInterfaces";
+import { IMolContainer } from "../../UI/Navigation/TreeView/TreeInterfaces";
 import { atomsToModels } from "./MolsToFromJSON";
 
 export function loadMolecularModelFromText(
@@ -37,27 +36,6 @@ export function loadMolecularModelFromText(
 
         return molecularData;
     });
-
-
-
-        // return _convertAllAtomArraysToModels(molecularData)
-        // .then((models: GLModel[]) => {
-        //     // Set molName as src on all terminal nodes
-        //     molecularData.src = molName;
-        //     if (molecularData.nodes) {
-        //         getTerminalNodes(molecularData.nodes).forEach((node: IMolContainer) => {
-        //             node.src = molName;
-        //         });
-        //     }
-            
-        //     store.commit("pushToList", {
-        //         name: "molecules",
-        //         val: molecularData
-        //     });
-    
-        //     return models;
-        // })
-    // });
 }
 
 

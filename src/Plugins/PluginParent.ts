@@ -44,6 +44,12 @@ export abstract class PluginParent extends Vue {
         return;
     }
 
+    protected checkUseAllowed(): string | null {
+        // This can be optionally overwritten. If it returns a string, show that
+        // as an error message. If null, proceed to run the plugin.
+        return null;
+    }
+
     // This function submits jobs to the job queue system. Note that it is jobs
     // plural. The function variable `parameterSets` is a list of parameters,
     // one per job.
@@ -88,7 +94,13 @@ export abstract class PluginParent extends Vue {
                 function: () => {
                     // Could use this, but use api for consistency's sake.
                     // this.onPluginStart();
-                    api.plugins.runPlugin(this.pluginId);
+                    const msg = this.checkUseAllowed();
+                    if (msg !== null) {
+                        // this.$emit("onError", msg);
+                        api.messages.popupError(msg);
+                    } else {
+                        api.plugins.runPlugin(this.pluginId);
+                    }
                 }
             } as IMenuItem,
             pluginId: this.pluginId,

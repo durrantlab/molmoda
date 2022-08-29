@@ -159,10 +159,8 @@ export default class TitleBar extends Vue {
     // If selected, add rename, extract, copy icons
     if (this.isSelected(this.treeDatumID)) {
       toDisplay.rename = true;
-      if (this.treeDatum.parentId) {
-        toDisplay.cloneExtract = true;
-        toDisplay.delete = true;
-      }
+      toDisplay.cloneExtract = true;
+      toDisplay.delete = true;
     }
 
     return toDisplay;

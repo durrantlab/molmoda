@@ -2,22 +2,24 @@
   <PopupOneTextInput
     v-model="open"
     title="Save a Session"
-    :intro="intro"
+    :intro="introToUse"
     placeHolder="Enter Filename (e.g., my_session.biotite)"
     :isActionBtnEnabled="isBtnEnabled"
     :filterFunc="filterUserData"
     actionBtnTxt="Save"
     @onTextDone="onPopupDone"
+    :prohibitCancel="windowClosing"
   ></PopupOneTextInput>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { saveState } from "@/Store/LoadAndSaveStore";
+import { saveState, setStoreIsDirty } from "@/Store/LoadAndSaveStore";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import * as api from "@/Api";
 
 @Options({
   components: {
@@ -38,6 +40,20 @@ export default class SaveSessionPlugin extends PopupPluginParent {
   intro = `Please provide the name of the session file to save. Note that the
       extension ".biotite" will be automatically appended.`;
 
+  windowClosing = false;
+
+  get introToUse(): string {
+    let i = "";
+    
+    if (this.windowClosing) {
+      i += "Be sure to save your work before closing!</p><p>";
+    }
+
+    i += this.intro;
+
+    return i;
+  }
+
   /**
    * Filters text to match desired format.
    * @param {string} filename  The text to evaluate.
@@ -57,6 +73,19 @@ export default class SaveSessionPlugin extends PopupPluginParent {
     return matchesFilename(filename);
   }
 
+  checkUseAllowed(): string | null {
+    if (this.$store.state.molecules.length === 0) {
+      return "Nothing to save (empty project). Try adding molecules first.";
+    }
+
+    return null;
+  }
+
+  onPopupOpen(): void {
+    this.windowClosing = this.payload !== undefined;
+    this.payload = undefined;
+  }
+
   /**
    * Runs when the popup closes.
    * @param {string} filename  The text entered into the popup.
@@ -67,7 +96,6 @@ export default class SaveSessionPlugin extends PopupPluginParent {
     this.submitJobs([{ filename }]);
   }
 
-
   runJob(parameters: any) {
     let filename = parameters.filename;
 
@@ -76,7 +104,12 @@ export default class SaveSessionPlugin extends PopupPluginParent {
       filename += ".biotite";
     }
 
-    saveState(filename, this.$store.state);
+    saveState(filename, this.$store.state).then(() => {
+      setStoreIsDirty(false);
+      if (this.windowClosing) {
+        api.messages.popupMessage("Session Ended", "Your file has been saved. You may now close this tab/window.");
+      }
+    });
   }
 }
 </script>

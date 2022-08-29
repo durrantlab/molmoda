@@ -21,7 +21,7 @@ module.exports = defineConfig({
             fs: false,
             tls: false,
             net: false,
-            path: false,
+            path: require.resolve('path-browserify'),
             zlib: false,
             http: false,
             https: false,

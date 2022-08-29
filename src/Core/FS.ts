@@ -26,62 +26,36 @@ function _addExt(params: ISaveTxt, defaultExt: string): ISaveTxt {
     return params;
 }
 
-export function saveTxt(params: ISaveTxt): void {
+export function saveTxt(params: ISaveTxt): Promise<any> {
     params = _addExt(params, ".txt");
     if (params.compress) {
         params.compress = _addExt(params.compress, ".zip");
     }
 
     if (params.compress) {
-        saveZipWithTxtFiles(params.compress, [params]);
-    } else {
-        dynamicImports.fileSaver.module.then((fileSaver: any) => {
-            // Don't compress the output
-            const blob = new Blob([params.content as string], {
-                type: "text/plain;charset=utf-8",
-            });
-            fileSaver.saveAs(blob, params.fileName);
+        return saveZipWithTxtFiles(params.compress, [params]);
+    }
+
+    // Don't compress the output
+    return dynamicImports.fileSaver.module.then((fileSaver: any) => {
+        const blob = new Blob([params.content as string], {
+            type: "text/plain;charset=utf-8",
         });
-    }
+        fileSaver.saveAs(blob, params.fileName);
 
-    const promises: Promise<any>[] = [dynamicImports.fileSaver.module];
-    if (params.compress) {
-        promises.push(dynamicImports.jsZip.module);
-    }
+        return Promise.resolve();
+    });
 
-    // Promise.all(promises).then((payload) => {
-    //     const fileSaver = payload[0];
-
-    //     if (params.compress) {
-    //         // Compress the output
-    //         const JSZip = payload[1];
-    //         const zip = new JSZip();
-    //         zip.file(params.fileName, params.content, {
-    //             compression: "DEFLATE",
-    //             // Note: Below doesn't seem to improve compression, so
-    //             // comment out.
-    //             // compressionOptions: {
-    //             //     compressionOptions: 9
-    //             // }
-    //         });
-    //         zip.generateAsync({ type: "blob" }).then((content: any) => {
-    //             // see FileSaver.js
-    //             fileSaver.saveAs(content, params.compressFilename);
-    //         });
-    //     } else {
-    //         // Don't compress the output
-    //         const blob = new Blob([params.content], {
-    //             type: "text/plain;charset=utf-8",
-    //         });
-    //         fileSaver.saveAs(blob, params.fileName);
-    //     }
-    // });
+    // const promises: Promise<any>[] = [dynamicImports.fileSaver.module];
+    // if (params.compress) {
+    //     promises.push(dynamicImports.jsZip.module);
+    // }
 }
 
 export function saveZipWithTxtFiles(
     zipParams: ISaveTxt,
     files: ISaveTxt[]
-): void {
+): Promise<any> {
     zipParams = _addExt(zipParams, ".zip");
     files = files.map((file) => _addExt(file, ".txt"));
 
@@ -90,7 +64,7 @@ export function saveZipWithTxtFiles(
         dynamicImports.jsZip.module,
     ];
 
-    Promise.all(promises).then((payload) => {
+    return Promise.all(promises).then((payload) => {
         const fileSaver = payload[0];
 
         // Compress the output
@@ -110,6 +84,8 @@ export function saveZipWithTxtFiles(
             // see FileSaver.js
             fileSaver.saveAs(content, zipParams.fileName);
         });
+
+        return Promise.resolve();
     });
 }
 

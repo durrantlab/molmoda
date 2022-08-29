@@ -8,7 +8,7 @@
   >
     <div
       :id="slugID"
-      :style="style"
+      :style="style + '; height:100%; cursor:pointer;'"
       :class="'tab-pane fade show active container-fluid p-3 ' + extraClass"
     >
       <slot></slot>

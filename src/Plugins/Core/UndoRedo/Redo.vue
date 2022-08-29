@@ -6,7 +6,7 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParent } from "@/Plugins/PluginParent";
 import * as api from "@/Api";
-import { addToUndoStack, redo, undo } from "./UndoStack";
+import { addToUndoStack, redo, redoStack, undo } from "./UndoStack";
 
 @Options({
   components: {
@@ -29,6 +29,13 @@ export default class Redo extends PluginParent {
 
   onPluginStart() {
     this.submitJobs();
+  }
+
+  checkUseAllowed(): string | null {
+    if (redoStack.length === 0) {
+      return "No additional redo is available.";
+    }
+    return null;
   }
 
   onMounted() {

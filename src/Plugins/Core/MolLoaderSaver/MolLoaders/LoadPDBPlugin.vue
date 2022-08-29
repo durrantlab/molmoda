@@ -19,6 +19,7 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import * as api from "@/Api";
 
 @Options({
   components: {
@@ -78,7 +79,7 @@ export default class LoadFilePlugin extends PopupPluginParent {
       })
       .catch((err: string) => {
         // TODO: Check if CIF exists?
-        this.$emit("onError", err);
+        api.messages.popupError(err);
       });
   }
 

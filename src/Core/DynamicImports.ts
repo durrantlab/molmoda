@@ -4,7 +4,7 @@ import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
 
 export interface IDynamicImport {
     credit: ISoftwareCredit;
-    module: Promise<any>
+    module: Promise<any>;
 }
 
 export const dynamicImports = {
@@ -12,7 +12,7 @@ export const dynamicImports = {
         credit: {
             name: "JSZip",
             url: "https://stuk.github.io/jszip/",
-            license: Licenses.MIT
+            license: Licenses.MIT,
         },
         get module(): Promise<any> {
             return import(
@@ -22,13 +22,13 @@ export const dynamicImports = {
             ).then((mod) => {
                 return mod.default;
             });
-        }
+        },
     } as IDynamicImport,
     fileSaver: {
         credit: {
             name: "FileSaver.js",
             url: "https://github.com/eligrey/FileSaver.js/",
-            license: Licenses.MIT
+            license: Licenses.MIT,
         },
         get module(): Promise<any> {
             return import(
@@ -38,7 +38,7 @@ export const dynamicImports = {
             ).then((mod) => {
                 return mod.default;
             });
-        }
+        },
     } as IDynamicImport,
     mol3d: {
         credit: {
@@ -55,13 +55,13 @@ export const dynamicImports = {
             ).then(($3Dmol) => {
                 return $3Dmol;
             });
-        }
+        },
     } as IDynamicImport,
     memfs: {
         credit: {
             name: "memfs",
             url: "https://github.com/streamich/memfs",
-            license: Licenses.PUBLICDOMAIN
+            license: Licenses.PUBLICDOMAIN,
         },
         get module(): Promise<any> {
             return import(
@@ -71,9 +71,22 @@ export const dynamicImports = {
             ).then((memfs) => {
                 return memfs;
             });
-        }
-    }
-}
-
-    
-
+        },
+    },
+    browserfs: {
+        credit: {
+            name: "browserfs",
+            url: "https://github.com/jvilk/BrowserFS",
+            license: Licenses.MIT,
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "browserfs" */
+                /* webpackMode: "lazy" */
+                "browserfs"
+            ).then((browserfs) => {
+                return browserfs;
+            });
+        },
+    },
+};

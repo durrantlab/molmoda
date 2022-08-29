@@ -1,23 +1,30 @@
 <template>
-  <div class="modal fade" :id="id" tabindex="-1" @keypress="onKeypress">
+  <div
+    class="modal fade"
+    :id="id"
+    tabindex="-1"
+    @keypress="onKeypress"
+    data-bs-backdrop="static"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header alert alert-primary">
+          <!-- bg-danger text-white -->
           <h5 class="modal-title">{{ title }}</h5>
           <button
-            v-if="cancelXBtn"
+            v-if="cancelXBtn && !prohibitCancel"
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
             aria-label="Close"
           ></button>
         </div>
-        <div class="modal-body" style="overflow: hidden;">
+        <div class="modal-body" style="overflow: hidden">
           <slot></slot>
         </div>
         <div class="modal-footer">
           <button
-            v-if="cancelBtnTxt"
+            v-if="cancelBtnTxt && !prohibitCancel"
             type="button"
             class="btn btn-secondary"
             data-bs-dismiss="modal"
@@ -32,6 +39,15 @@
             @click="actionBtn"
           >
             {{ actionBtnTxt }}
+          </button>
+          <!-- :disabled="!actionBtnEnabled" -->
+          <button
+            v-if="actionBtnTxt2"
+            type="button"
+            class="btn btn-primary"
+            @click="actionBtn2"
+          >
+            {{ actionBtnTxt2 }}
           </button>
         </div>
       </div>
@@ -55,8 +71,10 @@ export default class Popup extends Vue {
   @Prop({ default: "My Title" }) title!: string;
   @Prop() cancelBtnTxt!: string; // If undefined, no cancel button
   @Prop() actionBtnTxt!: string; // If undefined, no ok button
+  @Prop({ default: "" }) actionBtnTxt2!: string; // If undefined, no ok button
   @Prop({ default: true }) cancelXBtn!: boolean;
   @Prop({ default: true }) actionBtnEnabled!: boolean;
+  @Prop({ default: false }) prohibitCancel!: boolean;
   @Prop({}) onShown!: Function;
 
   id: string = "modal-" + randomID();
@@ -76,8 +94,13 @@ export default class Popup extends Vue {
     this.$emit("update:modelValue", false);
   }
 
+  actionBtn2() {
+    this.$emit("onDone2");
+    this.$emit("update:modelValue", false);
+  }
+
   onKeypress(e: KeyboardEvent) {
-    if (e.key === 'Enter' && this.actionBtnTxt && this.actionBtnEnabled) {
+    if (e.key === "Enter" && this.actionBtnTxt && this.actionBtnEnabled) {
       this.actionBtn();
     }
   }
@@ -95,6 +118,10 @@ export default class Popup extends Vue {
 
     modalElem.addEventListener("hidden.bs.modal", (event) => {
       this.$emit("update:modelValue", false);
+
+      // So below fires regardless of how closed. In contrast, onDone fires if
+      // click on actionBtn.
+      this.$emit("onClosed");
     });
   }
 }

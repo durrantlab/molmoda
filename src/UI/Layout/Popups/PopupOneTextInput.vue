@@ -7,6 +7,7 @@
     @onDone="onDone"
     :actionBtnEnabled="isActionBtnEnabled(val)"
     :onShown="onPopupShown"
+    :prohibitCancel="prohibitCancel"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormInput
@@ -51,6 +52,7 @@ export default class PopupOneTextInput extends Vue {
   @Prop({ default: _alwaysTrue }) isActionBtnEnabled!: Function;
   @Prop({ default: _neverFilter }) filterFunc!: Function;
   @Prop({ default: "" }) defaultVal!: string;
+  @Prop({ default: false }) prohibitCancel!: boolean;
 
   val = "";
 

@@ -1,22 +1,24 @@
 <template>
   <div>
-    <AboutPlugin @onError="onError" @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
-    <LoadFilePlugin @onError="onError" @onPluginSetup="onPluginSetup"></LoadFilePlugin>
-    <LoadPDBPlugin @onError="onError" @onPluginSetup="onPluginSetup"></LoadPDBPlugin>
-    <LoadAlphaFoldPlugin @onError="onError" @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
-    <LoadPubChemPlugin @onError="onError" @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
-    <SaveSessionPlugin @onError="onError" @onPluginSetup="onPluginSetup"></SaveSessionPlugin>
-    <OpenSessionPlugin @onError="onError" @onPluginSetup="onPluginSetup"></OpenSessionPlugin>
-    <SavePNGPlugin @onError="onError" @onPluginSetup="onPluginSetup"></SavePNGPlugin>
-    <SaveVRMLPlugin @onError="onError" @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
-    <SavePDBMol2Plugin @onError="onError" @onPluginSetup="onPluginSetup"></SavePDBMol2Plugin>
-    <Undo @onError="onError" @onPluginSetup="onPluginSetup"></Undo>
-    <Redo @onError="onError" @onPluginSetup="onPluginSetup"></Redo>
-    <RenameMol @onError="onError" @onPluginSetup="onPluginSetup"></RenameMol>
-    <CloneExtractMol @onError="onError" @onPluginSetup="onPluginSetup"></CloneExtractMol>
-    <DeleteMol @onError="onError" @onPluginSetup="onPluginSetup"></DeleteMol>
+    <AboutPlugin @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
+    <LoadFilePlugin @onPluginSetup="onPluginSetup"></LoadFilePlugin>
+    <LoadPDBPlugin @onPluginSetup="onPluginSetup"></LoadPDBPlugin>
+    <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
+    <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
+    <SaveSessionPlugin @onPluginSetup="onPluginSetup"></SaveSessionPlugin>
+    <OpenSessionPlugin @onPluginSetup="onPluginSetup"></OpenSessionPlugin>
+    <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
+    <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
+    <SavePDBMol2Plugin @onPluginSetup="onPluginSetup"></SavePDBMol2Plugin>
+    <Undo @onPluginSetup="onPluginSetup"></Undo>
+    <Redo @onPluginSetup="onPluginSetup"></Redo>
+    <RenameMol @onPluginSetup="onPluginSetup"></RenameMol>
+    <CloneExtractMol @onPluginSetup="onPluginSetup"></CloneExtractMol>
+    <DeleteMol @onPluginSetup="onPluginSetup"></DeleteMol>
+    <ClearSelection @onPluginSetup="onPluginSetup"></ClearSelection>
+    <SimpleMsg @onPluginSetup="onPluginSetup"></SimpleMsg>
     
-    <TestPlugin @onError="onError" @onPluginSetup="onPluginSetup"></TestPlugin>
+    <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
   </div>
 </template>
 
@@ -40,6 +42,8 @@ import Redo from "./Core/UndoRedo/Redo.vue";
 import RenameMol from "./Core/EditBar/RenameMol.vue";
 import CloneExtractMol from "./Core/EditBar/CloneExtractMol.vue";
 import DeleteMol from "./Core/EditBar/DeleteMol.vue";
+import ClearSelection from "./Core/EditBar/ClearSelection.vue";
+import SimpleMsg from "./Core/SimpleMsg.vue";
 
 import TestPlugin from "./Optional/TestPlugin.vue";
 
@@ -60,6 +64,8 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     RenameMol,
     CloneExtractMol,
     DeleteMol,
+    ClearSelection,
+    SimpleMsg,
 
     TestPlugin
   },
@@ -67,10 +73,6 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 export default class AllPlugins extends Vue {
   @Prop({ required: true }) softwareCredits!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCredits!: IContributorCredit[];
-
-  onError(error: string) {
-    this.$emit("onError", error);
-  }
 
   onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
     // Relay up the chain (from individual plugins to app).

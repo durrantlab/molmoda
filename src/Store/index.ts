@@ -2,9 +2,10 @@
 
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { createStore } from "vuex";
-import * as api from "@/Api";
 import { allHooks } from "@/Api/Hooks";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import * as api from "@/Api";
+import { setStoreIsDirty } from "./LoadAndSaveStore";
 
 interface NameValPair {
     name: string;
@@ -38,7 +39,7 @@ const _commonMutations = {
 
         // Add in new items
         state.molecules.push(...mols);
-    }
+    },
 };
 
 const _modules: { [key: string]: any } = {};
@@ -92,6 +93,16 @@ export function setupVueXStore() {
             allHooks.onMoleculesChanged.forEach((func) => {
                 func(molecules);
             });
+        },
+        { deep: true }
+    );
+
+    store.watch(
+        function (state: any) {
+            return state;
+        },
+        (_state: any) => {
+            setStoreIsDirty(true);
         },
         { deep: true }
     );

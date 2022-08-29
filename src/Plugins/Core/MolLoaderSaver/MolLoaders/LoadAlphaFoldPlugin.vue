@@ -19,6 +19,7 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
 import { loadRemote } from "./Utils";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import * as api from "@/Api";
 
 @Options({
   components: {
@@ -99,7 +100,7 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
         }
       })
       .catch((err: string) => {
-        this.$emit("onError", err);
+        api.messages.popupError(err);
       });
   }
 

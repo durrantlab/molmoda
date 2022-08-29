@@ -10,9 +10,7 @@
       @onPluginSetup="onPluginSetup"
       :softwareCredits="softwareCredits"
       :contributorCredits="contributorCredits"
-      @onError="onError"
     />
-    <ErrorModal :message="errorMsg"></ErrorModal>
   </div>
 </template>
 
@@ -32,15 +30,15 @@ import {
 } from "../Plugins/PluginInterfaces";
 import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { IPluginSetupInfo } from "@/Plugins/PluginParent";
-import ErrorModal from "@/UI/MessageAlerts/ErrorModal.vue";
 import { dynamicImports } from "@/Core/DynamicImports";
+
+import * as api from "@/Api";
 
 @Options({
   components: {
     GoldLayout,
     Menu,
     AllPlugins,
-    ErrorModal,
   },
 })
 export default class App extends Vue {
@@ -109,10 +107,6 @@ export default class App extends Vue {
     this.contributorCredits = this._removeDuplicateNames(
       this.contributorCredits
     );
-  }
-
-  onError(error: string) {
-    this.errorMsg = error;
   }
 
   mounted() {
