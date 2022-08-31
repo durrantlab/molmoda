@@ -1,4 +1,4 @@
-// These molecule files can be loaded using 3Dmol.js directly, without requiring
+// You can load some molecule files using 3Dmol.js directly, without requiring
 // any conversion. See https://3dmol.csb.pitt.edu/doc/types.html#FileFormats
 
 import { IFileInfo } from "./Interfaces";
@@ -18,14 +18,14 @@ export const filetypesMolsWith3DMol = [
     // "CUBE"  // But not used
 ];
 
-// These molecule files can be loaded by converting to PDB or SDF via openbabel.
+// You can load these molecule files by converting to PDB or SDF via openbabel.
 // TODO: Complete this list later.
 export const fileTypesToConvertWithBabel = ["MOL"];
 
-// TODO: Might want to load other data too. Could add here. Maybe even a hook
-// that plugins can use...
+// TODO: Might want to load other data too. Could add here. Perhaps a hook that
+// plugins can use...
 
-// Just to have list of extensions (upper case).
+// Create a list of extensions (upper case).
 const _allAcceptableFileTypes = [
     ...filetypesMolsWith3DMol,
     ...fileTypesToConvertWithBabel,
@@ -49,7 +49,7 @@ export const fileTypesAccepts = _allAcceptableFileTypes
  * @param  {IFileInfo} fileInfo The file info object.
  */
 export function loadMoleculeFile(fileInfo: IFileInfo) {
-    // Can it be loaded directly by 3dmoljs?
+    // Can3dmoljs load it directly?
     if (filetypesMolsWith3DMol.includes(fileInfo.type)) {
         let type = fileInfo.type.toLowerCase();
         if (type === "ent") {
@@ -58,7 +58,7 @@ export function loadMoleculeFile(fileInfo: IFileInfo) {
         loadMolecularModelFromText(fileInfo.contents, type, fileInfo.name);
     } else if (fileTypesToConvertWithBabel.includes(fileInfo.type)) {
         // Load it by converting to PDB or SDF.
-        // TODO: Implement openbabel here
+        // TODO: Openbabel here
         alert("need to convert!");
     } else {
         // TODO: Any loading functions registered by plugins (to support other

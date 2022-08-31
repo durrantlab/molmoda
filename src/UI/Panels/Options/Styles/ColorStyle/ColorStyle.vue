@@ -247,7 +247,7 @@ export default class ColorStyle extends Vue {
       colorForm.push({
         type: FormElemType.Color,
         varName: "color",
-        // TODO: Assuming only one below. Ok?
+        // TODO: Assuming one below. Ok?
         val: this.colorStyles.extractHexColorsFromStyle(style)[0],
       });
     }
@@ -259,7 +259,7 @@ export default class ColorStyle extends Vue {
     // Emit something that looks like this:
     // { "cartoon": '{ "color": "spectrum" }' }
 
-    // TODO: Note that below assumes only one style [0].
+    // TODO: Note that below assumes one style [0].
     // let resp: { [key: string]: IColorStyle } = {};
 
     let resp: { [key: string]: IColorStyle } = { ...this.modelValue };

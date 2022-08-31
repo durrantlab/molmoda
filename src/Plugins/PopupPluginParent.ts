@@ -4,14 +4,14 @@ export abstract class PopupPluginParent extends PluginParent {
     abstract intro: string;
     public open = false;
 
-    // In some cases, it is necessary to pass information to the plugin when it
-    // opens. Typicaly when using the plugin outside the menu system.
+    // In some cases, must pass information to the plugin when it opens.
+    // Typicaly when using the plugin outside the menu system.
     protected payload: any = undefined;
 
     /**
      * Filters user input to match desired format.
      * 
-     * @param {any} userInput  The text to evaluate.
+     * @param {any} userInput  The text to assess.
      * @returns {any} The filtered value.
      */
     public filterUserData(userInput: any): any {
@@ -23,7 +23,7 @@ export abstract class PopupPluginParent extends PluginParent {
      * If the user data is a properly formatted, enable the button. Otherwise,
      * disabled.
      * 
-     * @param {any} _userInput  The user input to evaluate.
+     * @param {any} _userInput  The user input to assess.
      * @returns {boolean} A boolean value, whether to disable the button.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

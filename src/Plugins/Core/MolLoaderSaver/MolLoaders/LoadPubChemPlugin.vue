@@ -81,13 +81,13 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
 
   /**
    * Filters text to match desired format.
-   * 
-   * @param {string} val  The text to evaluate.
+   *
+   * @param {string} val  The text to assess.
    * @returns {string} The filtered text.
    */
   filterUserData(val: string): string {
-    // Keep only numbers
-    val = val.replace(/[^0-9]/g, "");
+    // Keep numbers
+    val = val.replace(/\D/g, "");
     return val;
   }
 
@@ -107,7 +107,7 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
    */
   isBtnEnabled(): boolean {
     // Regex for any integer
-    let r = /[0-9]+/;
+    let r = /\d+/;
 
     // Return bool whether text matches regex
     return this.cid.toString().match(r) !== null;
@@ -139,6 +139,7 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
         this.molNameRespDescription = `<div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block;">Found "${
           this.molName
         }", known also as ${synonyms.join(", ")}<div>`;
+        return;
       })
       .catch(catchFunc);
   }
@@ -159,6 +160,7 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
         fileInfo.name = filename;
         fileInfo.type = "SDF";
         this.submitJobs([fileInfo]);
+        return;
       })
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .catch((_err: string) => {
@@ -170,6 +172,7 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
             fileInfo.name = filename;
             fileInfo.type = "SDF";
             this.submitJobs([fileInfo]);
+            return;
           })
           .catch((err: string) => {
             api.messages.popupError(err);

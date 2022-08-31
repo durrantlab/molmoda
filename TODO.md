@@ -63,10 +63,8 @@ All classes that inherit PopupPluginParent should not use @beforePopupOpen and
 @onPopupOpen. Need some way to enforce this. Really, whole validation system to
 verify everythign documented correctly too.
 
-https://www.npmjs.com/package/eslint-plugin-jsdoc
-https://github.com/RunDevelopment/eslint-plugin-clean-regex
+
 https://github.com/xjamundx/eslint-plugin-promise
-https://github.com/kantord/eslint-plugin-write-good-comments
 https://github.com/brettz9/eslint-plugin
 https://github.com/mysticatea/eslint-plugin
 https://github.com/sindresorhus/eslint-plugin-unicorn
@@ -79,6 +77,10 @@ https://github.com/AlloyTeam/eslint-config-alloy
 
 
 # DONE
+
+https://github.com/RunDevelopment/eslint-plugin-clean-regex
+https://github.com/kantord/eslint-plugin-write-good-comments
+https://www.npmjs.com/package/eslint-plugin-jsdoc
 
 Also can't delete top-level molecule, I think. (but can clone it... I checked)
 

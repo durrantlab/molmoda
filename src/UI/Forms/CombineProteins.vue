@@ -103,7 +103,7 @@ export default class CombineProteins extends Vue {
 
   // handleInput(e: any): void {
   //   if (this.filterFunc) {
-  //     // If there's a filter funciton, update everything immediately.
+  //     // If there's a filter funciton, update everything.
 
   //     // Get carot location
   //     let carot = e.target.selectionStart;
@@ -118,7 +118,7 @@ export default class CombineProteins extends Vue {
   //   }
 
   //   // No filter funciton. Note that it's delayed to prevent rapid reactivity.
-  //   // Especially good for color selector.
+  //   // Good for color selector.
 
   //   // If less 0.5 seconds haven't passed yet, don't try again.
   //   if (Date.now() - this.lastHandleInputTimeStamp < this.delayBetweenChangesDetected) {
@@ -138,7 +138,7 @@ export default class CombineProteins extends Vue {
   //     this.$emit("update:modelValue", val);
 
   //     // In some circumstances (e.g., changing values in an object), not reactive.
-  //     // So emit also "onChange" to indicate the value has changed.
+  //     // So emit also "onChange" to signal the value has changed.
   //     this.$emit("onChange");
   //   }, this.delayBetweenChangesDetected);
   // }

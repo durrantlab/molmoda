@@ -61,6 +61,10 @@ export default class OpenSessionPlugin extends PopupPluginParent {
     jsonToState(parameters.contents)
     .then((state) => {
       this.$store.replaceState(state);
+      return;
+    })
+    .catch((err: any) => {
+      console.error(err);
     });
   }
 }

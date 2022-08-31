@@ -150,7 +150,7 @@ export default class Style extends Vue {
 
   private _setInitialSelectVals(styleInfo: IStyleAndSel) {
     if (styleInfo.style === undefined) {
-      // Happens when all styles have been previously set to hidden.
+      // Happens when used has hidden all styles.
       styleInfo.style = {};
     }
 

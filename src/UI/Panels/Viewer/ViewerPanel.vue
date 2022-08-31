@@ -32,8 +32,10 @@ export default class ViewerPanel extends Vue {
   }
 
   @Watch("treeview", { immediate: false, deep: true })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onTreeviewChanged(
     allMolecules: IMolContainer[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _oldAllMolecules: IMolContainer[]
   ) {
     if (allMolecules.length === 0) {
@@ -56,7 +58,7 @@ export default class ViewerPanel extends Vue {
   }
 
   private _clearSurface(mol: IMolContainer | string) {
-    let id = (typeof mol === "string") ? mol : mol.id;
+    let id = typeof mol === "string" ? mol : mol.id;
     if (id && this.surfaces[id]) {
       for (const surface of this.surfaces[id]) {
         api.visualization.viewer.removeSurface(surface);
@@ -88,12 +90,12 @@ export default class ViewerPanel extends Vue {
     // already removed)
     let idsOfTerminalNodes = terminalNodes.map((node) => node.id);
 
-    // If one has been deleted, it hasn't yet been removed from the cache. Make
-    // note of that here.
+    // If the user has deleted one, the system has not yet removed it from the
+    // cache. Make note of that here.
     let idsOfMolsToDelete: string[] = [];
     for (let molCacheId in this.molCache) {
       if (idsOfTerminalNodes.indexOf(molCacheId) === -1) {
-        // So there's an id in the cache that isn't in the tree.
+        // There's an id in the cache that isn't in the tree.
         idsOfMolsToDelete.push(molCacheId);
       }
     }
@@ -123,16 +125,16 @@ export default class ViewerPanel extends Vue {
         visibleTerminalNodeModels.push(mol.model);
       }
 
-      // If it's not in the cache, the molecule has likely not been loaded.
-      // Always load it.
+      // If it's not in the cache, the system has probably not yet loaded the
+      // molecule. Always load it.
       if (!this.molCache[id]) {
-        console.log("Loading: " + id)
+        console.log("Loading: " + id);
         let visMol = api.visualization.viewer.addRawModel_JDD(mol.model);
         this.molCache[id] = visMol;
         this._makeAtomsHoverableAndClickable({ model: visMol });
       }
 
-      // If a molecule is marked "dirty", a new style needs to be applied.
+      // If the system has marked a molecule "dirty", apply a new style.
       if (mol.viewerDirty) {
         if (!mol.visible) {
           // hide it.
@@ -141,7 +143,7 @@ export default class ViewerPanel extends Vue {
           // Clear any surfaces associated with this molecule.
           this._clearSurface(mol);
         } else if (mol.stylesSels) {
-          // There are styles to apply, so make sure it's visible.
+          // Styles to apply, so make sure it's visible.
           (mol.model as any).show();
 
           // Clear current styles
@@ -179,15 +181,19 @@ export default class ViewerPanel extends Vue {
                     this.surfaces[mol.id] = this.surfaces[mol.id] || [];
                     this.surfaces[mol.id].push(surface);
                   }
+                  return;
+                })
+                .catch((err: any) => {
+                  console.log(err);
                 });
             }
           }
 
-          // Regardless of specified style, anything not bound to other things
+          // Regardless of specified style, anything not bound to other molecule
           // should be visible.
           if (mol.stylesSels.length > 0 && !spheresUsed) {
             // If there's any style, no style is spheres, make sure unbonded
-            // atoms are shown.
+            // atoms are visible.
             (mol.model as any).setStyle(
               unbondedAtomsStyle.selection,
               unbondedAtomsStyle.style,
@@ -207,9 +213,7 @@ export default class ViewerPanel extends Vue {
     return visibleTerminalNodeModels;
   }
 
-  private _zoomPerFocus(
-    visibleTerminalNodeModels: any[]
-  ) {
+  private _zoomPerFocus(visibleTerminalNodeModels: any[]) {
     let molsToFocus: IMolContainer[] = [];
     for (const mol of getAllNodesFlattened(this.treeview)) {
       if (mol.focused) {
@@ -240,6 +244,7 @@ export default class ViewerPanel extends Vue {
     api.visualization.viewer.setHoverable(
       sel,
       true,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       function (atom: any, viewer: any, _event: any, _container: any) {
         if (!atom.label) {
           let lbls: string[] = [];
@@ -276,6 +281,7 @@ export default class ViewerPanel extends Vue {
           }
         }
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       function (atom: any, viewer: any, _event: any, _container: any) {
         if (atom.label) {
           setTimeout(() => {
@@ -289,6 +295,7 @@ export default class ViewerPanel extends Vue {
     api.visualization.viewer.setClickable(
       {},
       true,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       (atom: any, _viewer: any, _event: any, _container: any) => {
         api.visualization.viewer.zoomTo(
           { x: atom.x, y: atom.y, z: atom.z },
@@ -302,21 +309,26 @@ export default class ViewerPanel extends Vue {
 
   // Mounted
   mounted() {
-    dynamicImports.mol3d.module.then(($3Dmol: any) => {
-      this.surfaceType = $3Dmol.SurfaceType.MS;
+    dynamicImports.mol3d.module
+      .then(($3Dmol: any) => {
+        this.surfaceType = $3Dmol.SurfaceType.MS;
 
-      let viewer = $3Dmol.createViewer("mol-viewer", {
-        defaultcolors: $3Dmol.rasmolElementColors,
+        let viewer = $3Dmol.createViewer("mol-viewer", {
+          defaultcolors: $3Dmol.rasmolElementColors,
+        });
+
+        // @ts-ignore
+        window["viewer"] = viewer;
+
+        console.warn('viewer.setViewStyle({style:"outline"})');
+
+        api.visualization.viewer = viewer;
+        viewer.setBackgroundColor(0xffffff);
+        return;
+      })
+      .catch((err: any) => {
+        console.log(err);
       });
-
-      // @ts-ignore
-      window["viewer"] = viewer;
-
-      console.warn('viewer.setViewStyle({style:"outline"})');
-
-      api.visualization.viewer = viewer;
-      viewer.setBackgroundColor(0xffffff);
-    });
 
     // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
     //   // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")

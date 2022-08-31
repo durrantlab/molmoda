@@ -19,7 +19,7 @@ export default class GoldenLayoutContainer extends Vue {
 
   // mounted
   mounted() {
-    // Validate type. Must be 'row', 'column', or 'stack'.
+    // Type must be 'row', 'column', or 'stack'.
     if (["row", "column", "stack"].indexOf(this.type) === -1) {
       throw new Error(
         `Invalid type: ${this.type}. Must be 'row', 'column', or 'stack'.`

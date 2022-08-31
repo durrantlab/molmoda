@@ -18,7 +18,10 @@ import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { loadRemote } from "./Utils";
-import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import {
+  IContributorCredit,
+  ISoftwareCredit,
+} from "@/Plugins/PluginInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
 
@@ -46,13 +49,13 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
       <a href="https://alphafold.ebi.ac.uk/" target="_blank"
         >AlphaFold Protein Structure Database</a
       >, a database of predicted protein structures, if you're uncertain.`;
-  
+
   uniprot = "";
 
   /**
    * Filters text to match desired format.
-   * 
-   * @param {string} uniprot  The text to evaluate.
+   *
+   * @param {string} uniprot  The text to assess.
    * @returns {string} The filtered text.
    */
   filterUserData(uniprot: string): string {
@@ -60,8 +63,8 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
 
     uniprot = uniprot.toUpperCase();
 
-    // Keep only numbers and letters
-    uniprot = uniprot.replace(/[^A-Z0-9]/g, "");
+    // Keep numbers and letters
+    uniprot = uniprot.replace(/[^A-Z\d]/g, "");
 
     uniprot = uniprot.substring(0, 10);
     return uniprot;
@@ -75,8 +78,7 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
    */
   isBtnEnabled(): boolean {
     // // https://www.uniprot.org/help/accession_numbers
-    let r =
-      /[OPQ]\d[A-Z0-9]{3}\d|[A-NR-Z]\d([A-Z][A-Z0-9]{2}\d){1,2}/;
+    let r = /[OPQ]\d[A-Z\d]{3}\d|[A-NR-Z]\d([A-Z][A-Z\d]{2}\d){1,2}/;
 
     // Return bool whether text matches regex
     return this.uniprot.match(r) !== null;
@@ -97,13 +99,17 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
     )
       .then((fileInfo: IFileInfo) => {
         let json = JSON.parse(fileInfo.contents);
-        let pdbUrl = json[0]["pdbUrl"]; // TODO: When would there be multiple entreis?
+        let pdbUrl = json[0]["pdbUrl"]; // TODO: When would there be more than one entry?
         if (pdbUrl) {
           // Load the PDB file.
-          loadRemote(pdbUrl).then((fileInf: IFileInfo): void => {
-            this.submitJobs([fileInf]);
-          });
+          return loadRemote(pdbUrl);
         }
+        // Throw error
+        throw new Error("No PDB file found.");
+      })
+      .then((fileInf: IFileInfo): void => {
+        this.submitJobs([fileInf]);
+        return;
       })
       .catch((err: string) => {
         api.messages.popupError(err);

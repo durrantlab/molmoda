@@ -222,7 +222,7 @@ export default class TitleBar extends Vue {
       // If the one you're clicking is already focused, then unfocus all.
       this.$store.commit("clearFocusedMolecule");
     } else {
-      // Otherwise, focus only on the one you clicked.
+      // Otherwise, focus on the one you clicked.
       for (let node of getAllNodesFlattened(allData)) {
         node.focused = node.id === id;
       }
@@ -245,7 +245,7 @@ export default class TitleBar extends Vue {
     let node = this.getNode(id);
     let deselectOnly = node.selected === SelectedType.TRUE;
 
-    // All nodes should be unselected.
+    // System should unselect all nodes.
     for (let nd of getAllNodesFlattened(this.$store.state.molecules)) {
       nd.selected = SelectedType.FALSE;
     }

@@ -92,7 +92,7 @@ export default class MenuLevel1 extends MenuLevelParent {
       }
     }
 
-    // Remove last item if it is a separator.
+    // Remove last item if a separator.
     if (newMenuItemsWithSeparator.length > 0) {
       let lastItem =
         newMenuItemsWithSeparator[newMenuItemsWithSeparator.length - 1];

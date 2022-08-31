@@ -60,7 +60,7 @@ export default class SaveSessionPlugin extends PopupPluginParent {
   /**
    * Filters text to match desired format.
    * 
-   * @param {string} filename  The text to evaluate.
+   * @param {string} filename  The text to assess.
    * @returns {string} The filtered text.
    */
   filterUserData(filename: string): string {
@@ -106,11 +106,16 @@ export default class SaveSessionPlugin extends PopupPluginParent {
       filename += ".biotite";
     }
 
-    saveState(filename, this.$store.state).then(() => {
+    saveState(filename, this.$store.state)
+    .then(() => {
       setStoreIsDirty(false);
       if (this.windowClosing) {
         api.messages.popupMessage("Session Ended", "Your file has been saved. You may now close this tab/window.");
       }
+      return;
+    })
+    .catch((err: any) => {
+      console.log(err);
     });
   }
 }

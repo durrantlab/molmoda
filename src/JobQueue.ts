@@ -10,8 +10,13 @@ export interface JobInfo {
     delayAfterRun?: number;  // MS
 }
 
+/**
+ * Run the next job in the queue.
+ * 
+ * @returns {number}  The number milliseconds to wait after running the job.
+ */
 function _runNextJob(): number {
-    // If a job is currently running, don't run another.
+    // If a job is running, don't run another.
     if (jobCurrentlyRunning) {
         console.log("job currently running");
         return 1000;
@@ -42,7 +47,10 @@ function _runNextJob(): number {
     return 1000;
 }
 
-export function jobQueueSetup(): void {
+/**
+ * Setup the job queue system.
+ */
+export function jobQueueSetup() {
     const checkJobAndRun = () => {
         console.log("Checking job queue.");
 
@@ -60,12 +68,24 @@ export function jobQueueSetup(): void {
 }
 
 
-// Don't call this function directly! Do it through the api!
-export function registerJobType(commandName: string, func: Function): void {
+/**
+ * Register a class of job/command. Don't call this function directly! Do it
+ * through the api!
+ *
+ * @param  {string}   commandName  The name of the command.
+ * @param  {Function} func         The function to run when the command is
+ *                                 called.
+ */
+export function registerJobType(commandName: string, func: Function) {
     registeredJobTypes[commandName] = func;
 }
 
-export function submitJobs(jobs: JobInfo[]): void {
+/**
+ * Submit a job to the queue.
+ * 
+ * @param  {JobInfo[]} jobs  The job to submit.
+ */
+export function submitJobs(jobs: JobInfo[]) {
     jobQueue.push(...jobs);
     _runNextJob();
 }

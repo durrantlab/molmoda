@@ -10,8 +10,8 @@ export interface IFileParts {
  * @returns {string} The filename with all non-alphanumeric characters removed.
  */
 export function fileNameFilter(filename: string): string {
-    // Keep only numbers and letters and period
-    filename = filename.replace(/[^a-zA-Z0-9.]/g, "");
+    // Keep numbers and letters and period
+    filename = filename.replace(/[^a-zA-Z\d.]/g, "");
     return filename;
 }
 
@@ -23,7 +23,7 @@ export function fileNameFilter(filename: string): string {
  */
 export function matchesFilename(filename: string): boolean {
     // Create regex for any number of letters and numbers and period
-    const r = /^[a-zA-Z0-9.]+$/;
+    const r = /^[a-zA-Z\d.]+$/;
 
     // Return bool whether text matches regex
     return filename.match(r) !== null;

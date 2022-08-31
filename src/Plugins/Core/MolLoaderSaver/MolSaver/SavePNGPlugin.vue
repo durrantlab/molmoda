@@ -44,7 +44,7 @@ export default class SavePNGPlugin extends PopupPluginParent {
   /**
    * Filters text to match desired format.
    * 
-   * @param {string} filename  The text to evaluate.
+   * @param {string} filename  The text to assess.
    * @returns {string} The filtered text.
    */
   filterUserData(filename: string): string {

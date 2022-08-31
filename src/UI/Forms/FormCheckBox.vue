@@ -35,7 +35,7 @@ export default class FormCheckBox extends Vue {
     this.$emit("update:modelValue", e.target.checked);
 
     // In some circumstances (e.g., changing values in an object), not reactive.
-    // So emit also "onChange" to indicate the value has changed.
+    // Emit also "onChange" to signal the value has changed.
     this.$emit("onChange");
   }
 }

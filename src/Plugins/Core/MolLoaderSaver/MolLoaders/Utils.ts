@@ -27,6 +27,7 @@ export function loadRemote(url: string): Promise<IFileInfo> {
                             ": " +
                             response.statusText
                     );
+                    return;
                 } else {
                     return response.text();
                 }

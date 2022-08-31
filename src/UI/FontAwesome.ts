@@ -13,6 +13,9 @@ import { faClone } from "@fortawesome/free-regular-svg-icons/faClone";
 import { faPencil } from "@fortawesome/free-solid-svg-icons/faPencil";
 import { faRectangleXmark } from "@fortawesome/free-regular-svg-icons/faRectangleXmark";
 
+/**
+ * Load the font awesome icons.
+ */
 export function loadFontAwesomeFonts() {
     library.add(faFolder);
     library.add(faFile);

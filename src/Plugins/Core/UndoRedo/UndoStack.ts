@@ -23,8 +23,8 @@ function addItemToUndoStack(item: IMolContainer[]) {
     undoStack.push(item);
 }
 
-// Only add something to the stack after delay, to prevent adding too many
-// things in rapid succession.
+// Add something to the stack after delay, to prevent adding excessive changes
+// in rapid succession.
 
 /**
  * Adds an item to the undo stack after the user has't done anything in a bit.

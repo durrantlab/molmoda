@@ -44,7 +44,10 @@ import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { getAllNodesFlattened, getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+  getAllNodesFlattened,
+  getNodeOfId,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 import {
   atomsToModels,
   modelsToAtoms,
@@ -146,24 +149,30 @@ export default class CloneExtractMol extends EditBarPluginParent {
         });
       }
 
-      convertedNode.then((node) => {
-        node.title = this.newTitle;
+      convertedNode
+        .then((node) => {
+          node.title = this.newTitle;
 
-        let subNodes = getAllNodesFlattened([node]);
-        subNodes.forEach((n) => {
-          n.id = randomID();
-          n.selected = SelectedType.FALSE;
-          n.viewerDirty = true;
-          n.focused = false;
+          let subNodes = getAllNodesFlattened([node]);
+          subNodes.forEach((n) => {
+            n.id = randomID();
+            n.selected = SelectedType.FALSE;
+            n.viewerDirty = true;
+            n.focused = false;
+          });
+
+          delete node.parentId;
+
+          this.$store.commit("pushToList", {
+            name: "molecules",
+            val: node,
+          });
+
+          return;
+        })
+        .catch((err: any) => {
+          console.log(err);
         });
-
-        delete node.parentId;
-
-        this.$store.commit("pushToList", {
-          name: "molecules",
-          val: node,
-        });
-      });
     }
   }
 }

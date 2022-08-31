@@ -31,7 +31,7 @@ import FormInput from "@/UI/Forms/FormInput.vue";
 import { Prop, Watch } from "vue-property-decorator";
 
 /**
- * Simply returns the input string, without any filtering.
+ * Teturns the input string, without any filtering.
  * 
  * @param {string} str The input string.
  * @returns {string} The input string.

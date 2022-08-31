@@ -8,7 +8,7 @@ export interface ISaveTxt {
 }
 
 /**
- * Adds an extension if it is missing.
+ * Adds an extension if missing.
  *
  * @param  {ISaveTxt} params   The parameters describing the text file.
  * @param  {string} defaultExt The default extension to use.
@@ -38,7 +38,7 @@ function _addExt(params: ISaveTxt, defaultExt: string): ISaveTxt {
  * Saves a text file.
  *
  * @param  {ISaveTxt} params The parameters describing the text file.
- * @returns {Promise<any>} A promise that resolves when the file is saved.
+ * @returns {Promise<any>} A promise that resolves after saving the file.
  */
 export function saveTxt(params: ISaveTxt): Promise<any> {
     params = _addExt(params, ".txt");
@@ -51,13 +51,13 @@ export function saveTxt(params: ISaveTxt): Promise<any> {
     }
 
     // Don't compress the output
-    return dynamicImports.fileSaver.module.then((fileSaver: any) => {
+    return dynamicImports.fileSaver.module
+    .then((fileSaver: any) => {
         const blob = new Blob([params.content as string], {
             type: "text/plain;charset=utf-8",
         });
         fileSaver.saveAs(blob, params.fileName);
-
-        return Promise.resolve();
+        return;
     });
 
     // const promises: Promise<any>[] = [dynamicImports.fileSaver.module];
@@ -72,7 +72,7 @@ export function saveTxt(params: ISaveTxt): Promise<any> {
  * @param  {ISaveTxt} zipParams The parameters describing the zip file.
  * @param  {ISaveTxt[]} files   A list of parameters describing the text files
  *                              to add to the zip file.
- * @returns {Promise<any>} A promise that resolves when the zip file is saved.
+ * @returns {Promise<any>} A promise that resolves after saving the zip file.
  */
 export function saveZipWithTxtFiles(
     zipParams: ISaveTxt,
@@ -86,7 +86,8 @@ export function saveZipWithTxtFiles(
         dynamicImports.jsZip.module,
     ];
 
-    return Promise.all(promises).then((payload) => {
+    return Promise.all(promises)
+    .then((payload) => {
         const fileSaver = payload[0];
 
         // Compress the output
@@ -102,12 +103,12 @@ export function saveZipWithTxtFiles(
                 // }
             });
         });
-        zip.generateAsync({ type: "blob" }).then((content: any) => {
-            // see FileSaver.js
-            fileSaver.saveAs(content, zipParams.fileName);
-        });
-
-        return Promise.resolve();
+        return [zip.generateAsync({ type: "blob" }), fileSaver];
+    })
+    .then((payload: any[]) => {
+        const [content, fileSaver] = payload;
+        fileSaver.saveAs(content, zipParams.fileName);
+        return;
     });
 }
 
@@ -149,9 +150,14 @@ function _dataURIToBlob(dataURI: string): Blob {
  * @param  {string} pngUri   The dataURI representing the PNG image.
  */
 export function savePngUri(fileName: string, pngUri: string) {
-    dynamicImports.fileSaver.module.then((fileSaver) => {
+    dynamicImports.fileSaver.module
+    .then((fileSaver) => {
         const blob = _dataURIToBlob(pngUri);
         fileSaver.saveAs(blob, fileName);
+        return;
+    })
+    .catch((err: any) => {
+        console.error(err);
     });
 }
 
@@ -166,8 +172,9 @@ export function savePngUri(fileName: string, pngUri: string) {
  */
 export function uncompress(s: string, fileName: string): Promise<string> {
     return dynamicImports.jsZip.module.then((JSZip) => {
-        return JSZip.loadAsync(s).then((zip: any) => {
-            return zip.file(fileName).async("string");
-        });
+        return JSZip.loadAsync(s)
+    })
+    .then((zip: any) => {
+        return zip.file(fileName).async("string");
     });
 }

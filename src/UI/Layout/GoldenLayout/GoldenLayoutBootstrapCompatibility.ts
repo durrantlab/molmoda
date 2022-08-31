@@ -39,7 +39,7 @@ export function addBootstrapColorClasses() {
         }
     }
 
-    // Add back only where needed.
+    // Add back where needed.
     for (const query in _queryToClasses) {
         const classes = _queryToClasses[query];
         const elements = _layoutParentDOM.querySelectorAll(query);

@@ -47,7 +47,7 @@ export interface IMolContainer {
     viewerDirty: boolean;         // triggers 3dmoljs viewer
     id?: string;                  // random id for terminal nodes
     parentId?: string;            // parent id for tree
-    src?: string;                 // usually file name
+    src?: string;                 // typically, the file name
     nodes?: IMolContainer[];      // Next level down in menu. So if molecule,
                                   // then chain. If chain, then residue. Etc.
     type?: MolType;

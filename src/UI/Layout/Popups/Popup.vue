@@ -142,7 +142,7 @@ export default class Popup extends Vue {
     modalElem.addEventListener("hidden.bs.modal", (_event) => {
       this.$emit("update:modelValue", false);
 
-      // So below fires regardless of how closed. In contrast, onDone fires if
+      // Below fires regardless of how closed. In contrast, onDone fires if
       // click on actionBtn.
       this.$emit("onClosed");
     });

@@ -92,6 +92,10 @@ export default class TestPlugin extends OptionalPluginParent {
       console.log(memfs.readFileSync("test.txt", "utf8"));
       // api.messages.popupMessage("My title", "My message");
       // api.messages.popupError("My message");
+      return;
+    })
+    .catch((err: any) => {
+      console.log(err);
     });
   }
 }

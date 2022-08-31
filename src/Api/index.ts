@@ -1,5 +1,5 @@
-// All calls to the api should go through here. Actual code can be associated
-// with appropriate files.
+// All calls to the api should go through here. You can associated the actual
+// code can with the appropriate files.
 
 // import { menuApi } from "./Menus";
 // import { sysApi } from "./Sys";

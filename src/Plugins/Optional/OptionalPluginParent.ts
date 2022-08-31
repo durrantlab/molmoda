@@ -18,7 +18,7 @@ export abstract class OptionalPluginParent extends PopupPluginParent {
     public onPopupDone(userParams: IUserArg[]) {
         this.closePopup();
 
-        // TODO: Note that below doesn't consider multiple proteins/ligands. There
+        // TODO: Note that below doesn't consider > 1 proteins/ligands. There
         // still work to do here.
         this.submitJobs([userParams]);
     }

@@ -29,7 +29,7 @@ export interface IMenuItem {
     function?: () => void;
     type?: MenuItemType; // If absent, will assume MenuItemType.ACTION
 
-    // Below are used internally, not from plugin.
+    // Below used internally, not from plugin.
     _rank?: number;
     _pathNames?: string[];
     _text?: string;
@@ -76,11 +76,11 @@ function _getSubMenu(menuDat: IMenuEntry[], name: string): IMenuSubmenu {
 }
 
 /**
- * Given menu item, momdify the ._text and ._pathNames entries. Convert
+ * Given menu item, update the ._text and ._pathNames entries. Convert
  * newMenuItem.path to newMenuItem._text and newMenuItem._pathNames. Done in
  * place, so no need to return anything.
  * 
- * @param  {IMenuItem} newMenuItem  Menu item to modify.
+ * @param  {IMenuItem} newMenuItem  Menu item to update.
  */
 function _convertPathToTextAndPathNames(newMenuItem: IMenuItem) {
     if (typeof newMenuItem.path === "string") {
@@ -123,7 +123,7 @@ function _getRankFromText(text: string): any {
  * Extract the rank in menu text, if any, and updates the ._rank and ._text
  * fields.
  *
- * @param  {IMenuItem} newMenuItem  Menu item to modify.
+ * @param  {IMenuItem} newMenuItem  Menu item to update.
  */
 function _extractRankFromText(newMenuItem: IMenuItem) {
     // Extract [#] from begining of IMenuItem._text
@@ -206,7 +206,7 @@ export function addMenuItem(
             pathNameWithoutRank
         );
 
-        // Check if rank needs to be updated.
+        // Check whether to update rank.
         if (rank !== undefined) {
             if (subMenu._rank === undefined) {
                 subMenu._rank = rank;

@@ -99,7 +99,7 @@ export default class TreeView extends Vue {
       // If the one you're clicking is already focused, then unfocus all.
       this.$store.commit("clearFocusedMolecule");
     } else {
-      // Otherwise, focus only on the one you clicked.
+      // Otherwise, focus on the one you clicked.
       for (let node of getAllNodesFlattened(allData)) {
         node.focused = node.id === id;
       }

@@ -29,7 +29,7 @@ export function collapseFormElementArray(
             } else {
                 data.push({
                     name: elem.id,
-                    // Just use number for type cast because has val property.
+                    // Use number for type cast because has val property.
                     val: (elem as IFormNumber).val,
                 });
             }

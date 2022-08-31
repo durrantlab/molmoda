@@ -92,14 +92,19 @@ export default class FormFile extends Vue {
           txtPromise = api.fs.uncompress(txt, "file.json");
         }
 
-        txtPromise.then((txt) => {
-          resolve({
-            name: file.name,
-            size: file.size,
-            contents: txt,
-            type: type,
-          } as IFileInfo);
-        });
+        txtPromise
+          .then((txt) => {
+            resolve({
+              name: file.name,
+              size: file.size,
+              contents: txt,
+              type: type,
+            } as IFileInfo);
+            return;
+          })
+          .catch((err: any) => {
+            console.log(err);
+          });
       };
 
       reader.onerror = (e: any) => {
@@ -136,6 +141,7 @@ export default class FormFile extends Vue {
         this.$emit("onFilesLoaded", filesLoaded);
         this.errorMsg = "";
         // this.clearFile();
+        return;
       })
       .catch((err: any) => {
         this.clearFile();

@@ -22,7 +22,7 @@ interface ICopiedObj {
 function copyObjRecursively(obj: any, modelFunc: Function): ICopiedObj {
     const promises: Promise<any>[] = [];
     const _copyObjRecursively = (oldNode: any, mdlFunc: Function) => {
-        // Can't just use JSON.parse(JSON.stringify(obj)) because need to
+        // Can't use JSON.parse(JSON.stringify(obj)) because need to
         // interconvert between GLModel and [IAtom].
         const origNode: {[key: string]: any} = {};
         for (const key in oldNode) {
@@ -61,7 +61,7 @@ export function atomsToModels(molContainer: IMolContainer): Promise<IMolContaine
             return _atomsToModel(origNode.model as IAtom[])
             .then((model: GLModel) => {
                 newNode.model = model;
-                return Promise.resolve();
+                return;
             });
         }
     );

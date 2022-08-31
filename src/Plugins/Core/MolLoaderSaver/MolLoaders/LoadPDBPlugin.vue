@@ -60,14 +60,14 @@ export default class LoadFilePlugin extends PopupPluginParent {
   /**
    * Filters text to match desired format.
    * 
-   * @param {string} pdb  The text to evaluate.
+   * @param {string} pdb  The text to assess.
    * @returns {string} The filtered text.
    */
   filterUserData(pdb: string): string {
     pdb = pdb.toUpperCase();
 
-    // Keep only numbers and letters
-    pdb = pdb.replace(/[^A-Z0-9]/g, "");
+    // Keep numbers and letters
+    pdb = pdb.replace(/[^A-Z\d]/g, "");
 
     pdb = pdb.substring(0, 4);
     return pdb;
@@ -82,6 +82,7 @@ export default class LoadFilePlugin extends PopupPluginParent {
     loadRemote(`https://files.rcsb.org/view/${this.pdbId.toUpperCase()}.pdb`)
       .then((fileInfo: IFileInfo) => {
         this.submitJobs([fileInfo]);
+        return;
       })
       .catch((err: string) => {
         // TODO: Check if CIF exists?

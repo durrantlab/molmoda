@@ -99,9 +99,9 @@ export function getNodeOfId(
  *
  * @param  {IMolContainer[]} mols                 The array of IMolContainer to
  *                                                search.
- * @param  {MolType}         type                 The type of nodes to find.
- * @param  {boolean}         [onlyVisible=false]  Whether to only consider
- *                                                visible nodes.
+ * @param  {MolType}         type                 The nodes types to find.
+ * @param  {boolean}         [onlyVisible=false]  Whether to consider visible
+ *                                                nodes alone.
  * @returns {IMolContainer[]}  The array of nodes with the given type.
  */
 export function getNodesOfType(
@@ -181,7 +181,7 @@ export function addNodeAfter(
  * Get the root (parent-most) nodes of a given type.
  *
  * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
- * @param  {MolType}         type  The type of nodes to find.
+ * @param  {MolType}         type  The nodes type to find.
  * @returns {IMolContainer[]}  The array of root nodes of the given type.
  */
 export function getRootNodesOfType(mols: IMolContainer[], type: MolType): IMolContainer[] {
