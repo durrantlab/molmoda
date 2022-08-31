@@ -2,9 +2,10 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
 
 /**
  * Loads a remote file and sends it to the relevant Vue component.
+ *
  * @param {string} url      The URL of the remote file to load.
- * @param {*}      vueComp  The Vue component.
- * @returns {Promise<boolean>}
+ * @returns {Promise<IFileInfo>} A promise that resolves the file info (name,
+ *     contents, type).
  */
 export function loadRemote(url: string): Promise<IFileInfo> {
     return new Promise((resolve, reject) => {

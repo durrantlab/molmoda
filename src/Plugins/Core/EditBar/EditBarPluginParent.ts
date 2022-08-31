@@ -7,7 +7,7 @@ import {
     getAllNodesFlattened,
     getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
-import { checkSomethingSelected } from "./Utils";
+import { checkAnyMolSelected } from "./Utils";
 
 export default abstract class EditBarPluginParent extends PopupPluginParent {
     nodeToActOn: IMolContainer = {
@@ -20,15 +20,15 @@ export default abstract class EditBarPluginParent extends PopupPluginParent {
     };
 
     checkUseAllowed(): string | null {
-        return checkSomethingSelected(this);
+        return checkAnyMolSelected(this);
     }
 
     protected setNodeToActOn(): void {
         if (this.payload) {
             // this.payload is the node id.
+            const id = this.payload;
             this.nodeToActOn = getNodeOfId(
-                this.payload,
-                this.$store.state.molecules
+                id, this.$store.state.molecules
             ) as IMolContainer;
         } else {
             // Find the selected molecule instead.
@@ -52,10 +52,10 @@ export default abstract class EditBarPluginParent extends PopupPluginParent {
 
     /**
      * Runs when the popup closes.
+     * 
      * @param {string} newName  The text entered into the popup.
-     * @returns void
      */
-    onPopupDone(newName: string): void {
+    onPopupDone(newName: string) {
         this.closePopup();
         this.submitJobs([newName]);
     }

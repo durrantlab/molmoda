@@ -10,7 +10,9 @@ const _queryToClasses: { [key: string]: string[] } = {
 
 let _allClasses: Set<string>;
 
-// Add color classes
+/**
+ * Adds the color classes to the golden layout DOM.
+ */
 export function addBootstrapColorClasses() {
     if (!_layoutParentDOM) {
         _layoutParentDOM = document.querySelectorAll(

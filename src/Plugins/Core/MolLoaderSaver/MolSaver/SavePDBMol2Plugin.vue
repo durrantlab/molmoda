@@ -1,13 +1,13 @@
 <template>
-  <!-- TODO: ???? below -->
   <PopupOneTextInput
-    v-model="open"
+    v-model:openValue="open"
     title="Save PDB and Mol2 Files"
     :intro="intro"
     placeHolder="Enter Filename (e.g., my_molecules.zip)"
-    :isActionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled()"
     :filterFunc="filterUserData"
     actionBtnTxt="Save"
+    v-model:text="filename"
     @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
@@ -29,7 +29,7 @@ import { convertToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertToPDB";
 import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
-import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
 @Options({
@@ -52,33 +52,38 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
       extension ".zip" will be automatically appended. The ZIP file will
       contain the PDB and MOL2 files of all visible molecules.`;
 
+  filename = "";
+
   /**
    * Filters text to match desired format.
+   * 
    * @param {string} filename  The text to evaluate.
-   * @returns The filtered text.
+   * @returns {string} The filtered text.
    */
-  filterUserData(filename: string) {
+  filterUserData(filename: string): string {
     return fileNameFilter(filename);
   }
 
   /**
    * If text is a properly formatted UniProt accession, enable the button.
    * Otherwise, disabled.
-   * @param {string} filename  The text to evaluate.
-   * @returns A boolean value, whether to disable the button.
+   * 
+   * @returns {boolean} Whether to disable the button.
    */
-  isBtnEnabled(filename: string): boolean {
-    return matchesFilename(filename);
+  isBtnEnabled(): boolean {
+    return matchesFilename(this.filename);
+  }
+
+  beforePopupOpen(): void {
+    this.filename = "";
   }
 
   /**
    * Runs when the popup closes.
-   * @param {string} filename  The text entered into the popup.
-   * @returns void
    */
-  onPopupDone(filename: string): void {
+  onPopupDone() {
     this.closePopup();
-    this.submitJobs([{ filename }]);
+    this.submitJobs([{ filename: this.filename }]);
   }
 
   private _getFilename(node: IMolContainer, ext: string): string {
@@ -116,12 +121,12 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
     const mergeNonCompounds = false;
 
     let compoundTxts = convertToPDB(
-      compoundNodes.map((node) => node.model),
+      compoundNodes.map((node) => node.model) as GLModel[],
       false // Never merge compounds
     );
 
     let nonCompoundTxts = convertToPDB(
-      nonCompoundNodes.map((node) => node.model),
+      nonCompoundNodes.map((node) => node.model) as GLModel[],
       mergeNonCompounds
     );
 

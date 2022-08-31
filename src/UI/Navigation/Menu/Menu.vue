@@ -38,7 +38,7 @@ import { Prop } from "vue-property-decorator";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuLevel1 from "./MenuLevel1.vue";
-import { IMenuItem, IMenuSubmenu, menuDataSorted } from "./Menu";
+import { IMenuEntry, menuDataSorted } from "./Menu";
 
 @Options({
   components: {
@@ -46,14 +46,14 @@ import { IMenuItem, IMenuSubmenu, menuDataSorted } from "./Menu";
   },
 })
 export default class Menu extends Vue {
-  @Prop({ required: true }) menuData!: (IMenuItem | IMenuSubmenu)[];
+  @Prop({ required: true }) menuData!: IMenuEntry[];
 
-  get menuDataSorted(): (IMenuItem | IMenuSubmenu)[] {
+  get menuDataSorted(): IMenuEntry[] {
     menuDataSorted(this.menuData);
     return this.menuData;
   }
 
-  // get getMenuData(): (IMenuItem | IMenuSubmenu)[] {
+  // get getMenuData(): IMenuEntry[] {
   //   return menuData;
   // }
 

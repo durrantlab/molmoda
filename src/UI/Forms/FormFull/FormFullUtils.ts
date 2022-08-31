@@ -1,7 +1,6 @@
 import {
     FormElement,
     FormElemType,
-    IFormElement,
     IFormGroup,
     IFormNumber,
 } from "./FormFullInterfaces";
@@ -11,11 +10,16 @@ export interface IUserArg {
     val: any;
 }
 
+/**
+ * Converts the data structure used to render forms into a flat array of
+ * IUserArg.
+ * 
+ * @param  {FormElement[]} formElements The form elements to convert.
+ * @returns {IUserArg[]} The converted array of IUserArg.
+ */
 export function collapseFormElementArray(
     formElements: FormElement[]
 ): IUserArg[] {
-    // Converts the data structure used to render forms into a flat associative
-    // array, varName => value.
     const data: IUserArg[] = [];
 
     const getData = (elems: FormElement[]) => {
@@ -37,6 +41,13 @@ export function collapseFormElementArray(
     return data;
 }
 
+/**
+ * Converts a list of user-specified arguments into a command-line string.
+ *
+ * @param  {IUserArg[]} userParams        The user-specified arguments.
+ * @param  {string}     [namePrefix="--"] The prefix for each argument name.
+ * @returns {string} The command-line string.
+ */
 export function userParamsToCommandLineString(
     userParams: IUserArg[],
     namePrefix = "--"

@@ -1,14 +1,14 @@
 <template>
   <PopupOneTextInput
-    v-model="open"
+    v-model:openValue="open"
     title="Rename Molecule"
     :intro="intro"
     placeHolder="New molecule name"
-    :isActionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled(title)"
     :filterFunc="filterUserData"
     actionBtnTxt="Rename"
     @onTextDone="onPopupDone"
-    :defaultVal="existingTitle"
+    v-model:text="title"
   ></PopupOneTextInput>
 </template>
 
@@ -37,12 +37,15 @@ export default class RenameMol extends EditBarPluginParent {
   ];
   pluginId = "renamemol";
   intro = `Enter the new name for this molecule.`;
-  existingTitle = "";
+  title = "";
+
+  beforePopupOpen(): void {
+    this.title = "";
+  }
 
   protected onPopupOpen(): void {
     this.setNodeToActOn();
-    this.existingTitle =
-      (this.nodeToActOn?.title as string);
+    this.title = this.nodeToActOn?.title;
   }
 
   runJob(newName: string) {

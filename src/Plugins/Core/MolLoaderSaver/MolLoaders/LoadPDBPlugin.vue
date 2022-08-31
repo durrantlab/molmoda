@@ -1,12 +1,13 @@
 <template>
   <PopupOneTextInput
-    v-model="open"
+    v-model:openValue="open"
     title="Load PDB ID"
     :intro="intro"
     placeHolder="Enter PDB ID (e.g., 1XDN)"
-    :isActionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled()"
     :filterFunc="filterUserData"
     actionBtnTxt="Load"
+    v-model:text="pdbId"
     @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
@@ -46,34 +47,39 @@ export default class LoadFilePlugin extends PopupPluginParent {
       database of biological molecules (e.g., proteins and nucleic acids), if
       you're uncertain.`;
 
-  isBtnEnabled(pdbId: string): boolean {
-    return pdbId.length === 4;
+  pdbId = "";
+
+  isBtnEnabled(): boolean {
+    return this.pdbId.length === 4;
+  }
+
+  beforePopupOpen(): void {
+    this.pdbId = "";
   }
 
   /**
    * Filters text to match desired format.
-   * @param {string} pdbId  The text to evaluate.
-   * @returns The filtered text.
+   * 
+   * @param {string} pdb  The text to evaluate.
+   * @returns {string} The filtered text.
    */
-  filterUserData(pdbId: string) {
-    pdbId = pdbId.toUpperCase();
+  filterUserData(pdb: string): string {
+    pdb = pdb.toUpperCase();
 
     // Keep only numbers and letters
-    pdbId = pdbId.replace(/[^A-Z0-9]/g, "");
+    pdb = pdb.replace(/[^A-Z0-9]/g, "");
 
-    pdbId = pdbId.substring(0, 4);
-    return pdbId;
+    pdb = pdb.substring(0, 4);
+    return pdb;
   }
 
   /**
    * Runs when the popup closes.
-   * @param {string} pdbId  The text entered into the popup.
-   * @returns void
    */
-  onPopupDone(pdbId: string): void {
+  onPopupDone() {
     this.closePopup();
 
-    loadRemote(`https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`)
+    loadRemote(`https://files.rcsb.org/view/${this.pdbId.toUpperCase()}.pdb`)
       .then((fileInfo: IFileInfo) => {
         this.submitJobs([fileInfo]);
       })

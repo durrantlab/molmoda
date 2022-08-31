@@ -3,7 +3,7 @@
     :userInputs="userInputs"
     :open="open"
     title="Load Molecule from PubChem"
-    :actionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
     @onPopupDone="onPopupDone"
   ></PopupOptionalPlugin>
@@ -25,7 +25,6 @@ import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { OptionalPluginParent } from "./OptionalPluginParent";
 import { Options } from "vue-class-component";
-import * as api from "@/Api";
 
 @Options({
   components: {
@@ -74,12 +73,18 @@ export default class TestPlugin extends OptionalPluginParent {
     } as IFormGroup,
   ];
 
-  runJob(args: IUserArg[]) {
-    dynamicImports.browserfs.module
-    .then((browserfs: any) => {
-      debugger;
-    });
-    
+  beforePopupOpen(): void {
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  runJob(_args: IUserArg[]) {
+    // dynamicImports.browserfs.module
+    // .then((browserfs: any) => {
+    //   const BFS = new browserfs.EmscriptenFS();
+    //   debugger;
+    // });
+
     dynamicImports.memfs.module
     .then((memfs: any) => {
       // debugger;

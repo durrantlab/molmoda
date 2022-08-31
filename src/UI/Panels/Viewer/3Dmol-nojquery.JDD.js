@@ -9030,7 +9030,7 @@ module.exports.readName = readName;
 
     if ((continuationByte & 0xC0) == 0x80) {
       return continuationByte & 0x3F;
-    } // If we end up here, it’s not a continuation byte
+    } // If we end up here, it's not a continuation byte
 
 
     throw Error('Invalid continuation byte');

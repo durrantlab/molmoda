@@ -6,7 +6,7 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParent } from "@/Plugins/PluginParent";
 import * as api from "@/Api";
-import { addToUndoStack, undo, undoStack } from "./UndoStack";
+import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
 
 @Options({
   components: {
@@ -39,7 +39,7 @@ export default class Undo extends PluginParent {
   }
 
   onMounted() {
-    api.hooks.onMoleculesChanged(addToUndoStack);
+    api.hooks.onMoleculesChanged(addToUndoStackAfterUserInaction);
   }
 
   runJob() {

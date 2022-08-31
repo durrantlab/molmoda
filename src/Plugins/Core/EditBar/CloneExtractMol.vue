@@ -5,8 +5,9 @@
     cancelBtnTxt="Cancel"
     :actionBtnTxt="extractOrCloneTxt"
     @onDone="onPopupDone"
-    :actionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled(newTitle)"
     :onShown="onPopupOpen"
+    :beforeShown="beforePopupOpen"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormInput
@@ -88,14 +89,17 @@ export default class CloneExtractMol extends EditBarPluginParent {
     return false;
   }
 
+  public beforePopupOpen(): void {
+    debugger;
+    this.setNodeToActOn();
+    this.doExtract = false;
+    this.newTitle = this.nodeToActOn?.title + " (cloned)";
+  }
+
   public onPopupOpen(): void {
     let focusTarget = (this.$refs.formInput as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
-
-    this.setNodeToActOn();
-    this.doExtract = false;
-    this.newTitle = (this.nodeToActOn?.title as string) + " (cloned)";
   }
 
   onModeChange() {

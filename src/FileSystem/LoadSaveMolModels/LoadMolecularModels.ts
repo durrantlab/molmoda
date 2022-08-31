@@ -7,6 +7,14 @@ import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolContainer } from "../../UI/Navigation/TreeView/TreeInterfaces";
 import { atomsToModels } from "./MolsToFromJSON";
 
+/**
+ * Loads a molecule from text, using a web worker.
+ * 
+ * @param  {string} molText The text of the molecule.
+ * @param  {string} format  The format of the molecule.
+ * @param  {string} molName The name of the molecule.
+ * @returns {Promise<IMolContainer>} A promise that resolves the molecule.
+ */
 export function loadMolecularModelFromText(
     molText: string,
     format: string,

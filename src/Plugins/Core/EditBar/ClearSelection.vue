@@ -13,7 +13,7 @@ import {
 import { PluginParent } from "@/Plugins/PluginParent";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { checkSomethingSelected } from "./Utils";
+import { checkAnyMolSelected } from "./Utils";
 
 @Options({
   components: {},
@@ -30,7 +30,7 @@ export default class ClearSelection extends PluginParent {
   pluginId = "clearselection";
 
   checkUseAllowed(): string | null {
-    return checkSomethingSelected(this);
+    return checkAnyMolSelected(this);
   }
 
   onPluginStart() {

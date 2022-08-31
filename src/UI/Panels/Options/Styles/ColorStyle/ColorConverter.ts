@@ -1,5 +1,3 @@
-import { IColorStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
-
 interface _IColorInfo {
     hex: string;
     name: string;
@@ -147,8 +145,12 @@ export let colorInfomation = [
     { hex: "#FFFF00", name: "Yellow" },
     { hex: "#9ACD32", name: "YellowGreen" },
 ];
-
-// Convert hex to rgb values
+/**
+ * Convert hex to rgb values
+ * 
+ * @param  {string} hex  Hex color value
+ * @returns {number[] | null}  RGB values
+ */
 function _hexToRgb(hex: string): number[] | null {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
@@ -165,6 +167,12 @@ colorInfomation = colorInfomation.map((v: _IColorInfo): _IColorInfo => {
     return v;
 });
 
+/**
+ * Get the color name closest to a given hex color
+ * 
+ * @param  {string} hex  Hex color value
+ * @returns {string}  Color name
+ */
 export function hexToColorName(hex: string): string {
     // First, get rgb
     const rgb = _hexToRgb(hex) as number[];
@@ -185,6 +193,12 @@ export function hexToColorName(hex: string): string {
     return colorInfomation[minDistanceIndex].name;
 }
 
+/**
+ * Get the hex color value closest to a given color name
+ * 
+ * @param  {string} name  Color name
+ * @returns {string}  Hex color value
+ */
 export function colorNameToHex(name: string): string {
     const color = colorInfomation.find((v: _IColorInfo): boolean => v.name === name);
     if (color) {

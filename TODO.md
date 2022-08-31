@@ -42,7 +42,7 @@ rerun later.
 
 Idea to consider: Ability to select molecule. Rename/extract/etc only appears
 when selected. Menu items too. And then widget to select protein/ligand allows
-you to choose between all visible and all selected. 
+you to choose between all visible and all selected.
 Vue component to specify whether to combine PDBs (receptors) or not. Basically
 combine everything but something designated ligand.
     CombineProteins should be integrated into FormFull
@@ -59,13 +59,32 @@ Implement checkUseAllowed for export menu options.
 
 Can you undo the initial loading of the molecule? Good to investigate.
 
-Also can't delete top-level molecule, I think. (but can clone it... I checked)
+All classes that inherit PopupPluginParent should not use @beforePopupOpen and
+@onPopupOpen. Need some way to enforce this. Really, whole validation system to
+verify everythign documented correctly too.
 
-Can you sylize modal per functio (default, info, alert).
+https://www.npmjs.com/package/eslint-plugin-jsdoc
+https://github.com/RunDevelopment/eslint-plugin-clean-regex
+https://github.com/xjamundx/eslint-plugin-promise
+https://github.com/kantord/eslint-plugin-write-good-comments
+https://github.com/brettz9/eslint-plugin
+https://github.com/mysticatea/eslint-plugin
+https://github.com/sindresorhus/eslint-plugin-unicorn
+https://github.com/SonarSource/eslint-plugin-sonarjs
+https://github.com/github/eslint-plugin-github
+https://github.com/KidkArolis/healthier
+https://github.com/sheerun/prettier-standard
+https://github.com/davidjbradshaw/eslint-config-adjunct
+https://github.com/AlloyTeam/eslint-config-alloy
+
+
+# DONE
+
+Also can't delete top-level molecule, I think. (but can clone it... I checked)
 
 Load molecule from pubchem (can always load, no validation)
 
-# DONE
+Can you sylize modal per functio (default, info, alert).
 
 with new api.messages.popupError, no need to bubble up onError to app. Just
 handle in plugin itself. Also, there should be a callback on that.
@@ -90,7 +109,7 @@ hides clone. Need to regenerate GLModel for clone.
 Need delete molecule too. 
 * Not being removed. 
 * I have confirmed the problem in _zoomPerFocus. If I comment it mostly out,
-    still doesn’t work.
+    still doesn't work.
 * Confirmed being removed from cache. That's not the problem.
 * In example, even when using your library, remove does change value of
   viewer.getModel(X). But it doesn't change it in the context of your app.  

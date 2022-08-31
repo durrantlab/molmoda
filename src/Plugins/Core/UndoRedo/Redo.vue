@@ -5,8 +5,7 @@ import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParent } from "@/Plugins/PluginParent";
-import * as api from "@/Api";
-import { addToUndoStack, redo, redoStack, undo } from "./UndoStack";
+import { redo, redoStack } from "./UndoStack";
 
 @Options({
   components: {

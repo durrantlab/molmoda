@@ -12,7 +12,6 @@ import { Watch } from "vue-property-decorator";
 import * as api from "@/Api/";
 import {
   getAllNodesFlattened,
-  getNodeOfId,
   getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
@@ -38,9 +37,17 @@ export default class ViewerPanel extends Vue {
     _oldAllMolecules: IMolContainer[]
   ) {
     if (allMolecules.length === 0) {
+      this._clearCache();
       return;
     }
     this._updateStylesAndZoom();
+  }
+
+  private _clearCache() {
+    for (const id in this.molCache) {
+      this._removeModel(id);
+    }
+    api.visualization.viewer.render();
   }
 
   private _updateStylesAndZoom() {
@@ -56,6 +63,22 @@ export default class ViewerPanel extends Vue {
         delete this.surfaces[id];
       }
     }
+  }
+
+  private _removeModel(id: string) {
+    let mol = this.molCache[id];
+
+    // Clear any surfaces
+    this._clearSurface(id);
+
+    // remove from viewer
+    api.visualization.viewer.removeModel(mol);
+
+    // Remove from cache
+    delete this.molCache[id];
+
+    // Note that not calling render here. Need to call it elsewhere fore these
+    // changes to appear in 3dmoljs viewer.
   }
 
   private _removeOldModels(terminalNodes: IMolContainer[]): void {
@@ -77,16 +100,7 @@ export default class ViewerPanel extends Vue {
 
     // Remove it from the cache, viewer, etc.
     idsOfMolsToDelete.forEach((id: string) => {
-      let mol = this.molCache[id];
-
-      // Clear any surfaces
-      this._clearSurface(id);
-  
-      // remove from viewer
-      api.visualization.viewer.removeModel(mol);
-  
-      // Remove from cache
-      delete this.molCache[id];
+      this._removeModel(id);
 
       // Remove from terminal nodes (local variable) so you don't regenerate it
       // again.

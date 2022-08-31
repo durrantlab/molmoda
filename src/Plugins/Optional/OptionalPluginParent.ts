@@ -8,11 +8,14 @@ export abstract class OptionalPluginParent extends PopupPluginParent {
     // Note that this isn't reactive (shouldn't be).
     abstract userInputs: FormElement[];
 
+    
     /**
      * Runs when the popup closes.
-     * @returns void
+     *
+     * @param  {IUserArg[]} userParams A list of (name, val), the user-specified
+     *                                 arguments.
      */
-    public onPopupDone(userParams: IUserArg[]): void {
+    public onPopupDone(userParams: IUserArg[]) {
         this.closePopup();
 
         // TODO: Note that below doesn't consider multiple proteins/ligands. There

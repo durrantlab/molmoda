@@ -338,8 +338,4 @@ $transition-time: 0.2s;
 </style>
 
 <style lang="scss">
-.svg-inline--fa {
-  // margin-left: 0 !important;
-  // margin-right: 0 !important;
-}
 </style>

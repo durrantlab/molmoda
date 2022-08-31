@@ -24,14 +24,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
-import { removeNode, getAllNodesFlattened, getNodeOfId, addNodeAfter } from "./TreeUtils";
+import { Prop } from "vue-property-decorator";
+import { getAllNodesFlattened, getNodeOfId } from "./TreeUtils";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
 import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
-
-import { IMolContainer } from "./TreeInterfaces";
 
 @Options({
   components: {

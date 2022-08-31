@@ -7,6 +7,14 @@ export interface ISaveTxt {
     compress?: ISaveTxt;
 }
 
+/**
+ * Adds an extension if it is missing.
+ *
+ * @param  {ISaveTxt} params   The parameters describing the text file.
+ * @param  {string} defaultExt The default extension to use.
+ * @returns {ISaveTxt} The parameters with the extension added to the filename
+ *     field.
+ */
 function _addExt(params: ISaveTxt, defaultExt: string): ISaveTxt {
     // Set some default values.
     params.ext = params.ext || defaultExt;
@@ -26,6 +34,12 @@ function _addExt(params: ISaveTxt, defaultExt: string): ISaveTxt {
     return params;
 }
 
+/**
+ * Saves a text file.
+ *
+ * @param  {ISaveTxt} params The parameters describing the text file.
+ * @returns {Promise<any>} A promise that resolves when the file is saved.
+ */
 export function saveTxt(params: ISaveTxt): Promise<any> {
     params = _addExt(params, ".txt");
     if (params.compress) {
@@ -52,6 +66,14 @@ export function saveTxt(params: ISaveTxt): Promise<any> {
     // }
 }
 
+/**
+ * Saves a zip file containing one or more text files.
+ *
+ * @param  {ISaveTxt} zipParams The parameters describing the zip file.
+ * @param  {ISaveTxt[]} files   A list of parameters describing the text files
+ *                              to add to the zip file.
+ * @returns {Promise<any>} A promise that resolves when the zip file is saved.
+ */
 export function saveZipWithTxtFiles(
     zipParams: ISaveTxt,
     files: ISaveTxt[]
@@ -89,6 +111,12 @@ export function saveZipWithTxtFiles(
     });
 }
 
+/**
+ * Converts a dataURI to a Blob.
+ * 
+ * @param  {string} dataURI The dataURI to convert.
+ * @returns {Blob} The Blob representing the dataURI.
+ */
 function _dataURIToBlob(dataURI: string): Blob {
     // see https://stackoverflow.com/questions/12168909/blob-from-dataurl
 
@@ -114,13 +142,28 @@ function _dataURIToBlob(dataURI: string): Blob {
     return new Blob([ab], { type: mimeString });
 }
 
-export function savePngUri(fileName: string, pngUri: string): void {
+/**
+ * Saves a dataURI representing a PNG image to a file.
+ *
+ * @param  {string} fileName The name of the file to save.
+ * @param  {string} pngUri   The dataURI representing the PNG image.
+ */
+export function savePngUri(fileName: string, pngUri: string) {
     dynamicImports.fileSaver.module.then((fileSaver) => {
         const blob = _dataURIToBlob(pngUri);
         fileSaver.saveAs(blob, fileName);
     });
 }
 
+/**
+ * Given a string of compressed data (representing a zip file), get the contents
+ * of a text file in it.
+ *
+ * @param  {string} s        The compressed data.
+ * @param  {string} fileName The name of the file to get.
+ * @returns {Promise<string>} A promise that resolves to the contents of the
+ *     file.
+ */
 export function uncompress(s: string, fileName: string): Promise<string> {
     return dynamicImports.jsZip.module.then((JSZip) => {
         return JSZip.loadAsync(s).then((zip: any) => {

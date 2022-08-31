@@ -5,16 +5,18 @@
     cancelBtnTxt="Cancel"
     :actionBtnTxt="actionBtnTxt"
     @onDone="onDone"
-    :actionBtnEnabled="isActionBtnEnabled(val)"
+    :isActionBtnEnabled="isActionBtnEnabled"
     :onShown="onPopupShown"
+    :beforeShown="beforePopupShown"
     :prohibitCancel="prohibitCancel"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormInput
       ref="formInput"
-      v-model="val"
+      v-model="textVal"
       :placeHolder="placeHolder"
       :filterFunc="filterFunc"
+      @onChange="onTextChange"
     ></FormInput>
     <slot></slot>
   </Popup>
@@ -28,10 +30,12 @@ import { Options, Vue } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import { Prop, Watch } from "vue-property-decorator";
 
-function _alwaysTrue(): boolean {
-  return true;
-}
-
+/**
+ * Simply returns the input string, without any filtering.
+ * 
+ * @param {string} str The input string.
+ * @returns {string} The input string.
+ */
 function _neverFilter(str: string): string {
   return str;
 }
@@ -43,37 +47,44 @@ function _neverFilter(str: string): string {
   },
 })
 export default class PopupOneTextInput extends Vue {
-  @Prop({ required: true }) modelValue!: any;
+  @Prop({ required: true }) openValue!: any;
   @Prop({ required: true }) title!: string;
   @Prop({ default: "" }) intro!: string;
   @Prop({ default: "" }) placeHolder!: string;
   // @Prop({ default: "Cancel" }) cancelBtnTxt!: string; // If undefined, no cancel button
   @Prop({ default: "Load" }) actionBtnTxt!: string; // If undefined, no ok button
-  @Prop({ default: _alwaysTrue }) isActionBtnEnabled!: Function;
+  @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: _neverFilter }) filterFunc!: Function;
-  @Prop({ default: "" }) defaultVal!: string;
   @Prop({ default: false }) prohibitCancel!: boolean;
+  @Prop({ default: "" }) text!: string;
 
-  val = "";
+  textVal = "";
 
   get open(): boolean {
-    return this.modelValue;
+    return this.openValue;
   }
 
   set open(val: boolean) {
-    this.$emit("update:modelValue", val);
+    this.$emit("update:openValue", val);
+  }
+
+  onTextChange() {
+    this.$emit("update:text", this.textVal);
   }
 
   onDone(): void {
-    if (this.val === undefined) {
+    if (this.textVal === undefined) {
       return;
     }
     this.open = false;
-    this.$emit("onTextDone", this.val);
+    this.$emit("onTextDone", this.textVal);
+  }
+
+  beforePopupShown() {
+    this.textVal = this.text;
   }
 
   onPopupShown() {
-    this.val = this.defaultVal;
     let focusTarget = (this.$refs.formInput as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
@@ -81,7 +92,7 @@ export default class PopupOneTextInput extends Vue {
 
   @Watch("defaultVal")
   onDefaultValChange(newVal: string) {
-    this.val = newVal;
+    this.textVal = newVal;
   }
 }
 </script>

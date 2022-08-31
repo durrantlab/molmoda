@@ -56,7 +56,8 @@ export default class FormInput extends Vue {
   lastHandleInputTimeStamp = 0;
   timeOutLastHandleInput: any = null;
 
-  onKeyDown(e: KeyboardEvent) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onKeyDown(_e: KeyboardEvent) {
     this.$emit("onKeyDown");
   }
 

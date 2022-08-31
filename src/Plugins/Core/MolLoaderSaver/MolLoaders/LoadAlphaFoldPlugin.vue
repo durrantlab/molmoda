@@ -1,12 +1,13 @@
 <template>
   <PopupOneTextInput
-    v-model="open"
+    v-model:openValue="open"
     title="Load AlphaFold Structure"
     :intro="intro"
     placeHolder="Enter UniProt Accession (e.g., P86927)"
-    :isActionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled()"
     :filterFunc="filterUserData"
     actionBtnTxt="Load"
+    v-model:text="uniprot"
     @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
@@ -45,13 +46,16 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
       <a href="https://alphafold.ebi.ac.uk/" target="_blank"
         >AlphaFold Protein Structure Database</a
       >, a database of predicted protein structures, if you're uncertain.`;
+  
+  uniprot = "";
 
   /**
    * Filters text to match desired format.
+   * 
    * @param {string} uniprot  The text to evaluate.
-   * @returns The filtered text.
+   * @returns {string} The filtered text.
    */
-  filterUserData(uniprot: string) {
+  filterUserData(uniprot: string): string {
     // https://www.uniprot.org/help/accession_numbers
 
     uniprot = uniprot.toUpperCase();
@@ -66,28 +70,30 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
   /**
    * If text is a properly formatted UniProt accession, enable the button.
    * Otherwise, disabled.
-   * @param {string} uniprot  The text to evaluate.
-   * @returns A boolean value, whether to disable the button.
+   *
+   * @returns {boolean} Whether to disable the button.
    */
-  isBtnEnabled(uniprot: string): boolean {
+  isBtnEnabled(): boolean {
     // // https://www.uniprot.org/help/accession_numbers
     let r =
-      /[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}/;
+      /[OPQ]\d[A-Z0-9]{3}\d|[A-NR-Z]\d([A-Z][A-Z0-9]{2}\d){1,2}/;
 
     // Return bool whether text matches regex
-    return uniprot.match(r) !== null;
+    return this.uniprot.match(r) !== null;
+  }
+
+  beforePopupOpen(): void {
+    this.uniprot = "";
   }
 
   /**
    * Runs when the popup closes.
-   * @param {string} uniprot  The text entered into the popup.
-   * @returns void
    */
-  onPopupDone(uniprot: string): void {
+  onPopupDone() {
     this.closePopup();
 
     loadRemote(
-      `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
+      `https://alphafold.ebi.ac.uk/api/prediction/${this.uniprot.toUpperCase()}`
     )
       .then((fileInfo: IFileInfo) => {
         let json = JSON.parse(fileInfo.contents);

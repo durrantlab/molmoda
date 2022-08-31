@@ -18,7 +18,7 @@ import { Prop } from "vue-property-decorator";
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
-import { IMenuItem, IMenuSubmenu, MenuLevelParent } from "./Menu";
+import { IMenuEntry, MenuLevelParent } from "./Menu";
 import MenuLevel3 from "./MenuLevel3.vue";
 
 @Options({
@@ -28,7 +28,7 @@ import MenuLevel3 from "./MenuLevel3.vue";
   },
 })
 export default class MenuLevel2 extends MenuLevelParent {
-  @Prop() menuData!: IMenuItem | IMenuSubmenu;
+  @Prop() menuData!: IMenuEntry;
 }
 </script>
 

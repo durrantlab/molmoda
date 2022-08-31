@@ -5,8 +5,7 @@
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
     @onDone="onPopupDone"
-    :actionBtnEnabled="isBtnEnabled"
-    :onShown="onPopupShown"
+    :isActionBtnEnabled="isBtnEnabled()"
   >
     <p v-html="intro"></p>
     <FormWrapper
@@ -34,7 +33,6 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-this-alias */
 
-import { PluginParent } from "@/Plugins/PluginParent";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
@@ -83,10 +81,11 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
 
   /**
    * Filters text to match desired format.
+   * 
    * @param {string} val  The text to evaluate.
-   * @returns The filtered text.
+   * @returns {string} The filtered text.
    */
-  filterUserData(val: string) {
+  filterUserData(val: string): string {
     // Keep only numbers
     val = val.replace(/[^0-9]/g, "");
     return val;
@@ -103,8 +102,8 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
   /**
    * If text is a properly formatted UniProt accession, enable the button.
    * Otherwise, disabled.
-   * @param {string} text  The text to evaluate.
-   * @returns A boolean value, whether to disable the button.
+   *
+   * @returns {boolean} Whether to disable the button.
    */
   isBtnEnabled(): boolean {
     // Regex for any integer
@@ -115,7 +114,8 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
   }
 
   searchByName(): void {
-    let catchFunc = (err: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let catchFunc = (_err: string) => {
       // this.molNameRespDescription = err;
       this.molNameRespDescription = `<span class="text-danger">Could not find a molecule named "${this.molName}".</span>`;
       this.cid = "";
@@ -160,7 +160,8 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
         fileInfo.type = "SDF";
         this.submitJobs([fileInfo]);
       })
-      .catch((err: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .catch((_err: string) => {
         // If it failed, it could be because there's no 3D coordinates. Try 2D.
         loadRemote(
           `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
@@ -176,13 +177,13 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
       });
   }
 
-  onPopupShown() {
+  onPopupOpen() {
     let focusTarget = (this.$refs.formMolName as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
   }
 
-  onPopupOpen(): void {
+  beforePopupOpen(): void {
     this.cid = "";
     this.molName = "";
   }

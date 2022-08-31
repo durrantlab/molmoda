@@ -54,7 +54,6 @@
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
@@ -108,12 +107,17 @@ export default class AboutPlugin extends PopupPluginParent {
     return appName;
   }
 
+  beforePopupOpen(): void {
+    return;
+  }
+
   onPopupDone(): void {
     // Does nothing
     return;
   }
 
-  runJob(parameters: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  runJob(_parameters: any) {
     // About plugin does not have a job.
     return;
   }

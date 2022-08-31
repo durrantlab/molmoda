@@ -1,4 +1,4 @@
-import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { GLModel, IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     solventSel,
     standardProteinResidues,
@@ -33,15 +33,28 @@ const _twoLetterElems = [
     "ZN",
 ];
 
-function _rjust(str: string, width: number) {
+/**
+ * Aligns a string to the right.
+ * 
+ * @param  {string} str   The string to align.
+ * @param  {number} width The width to align to.
+ * @returns {string} The aligned string.
+ */
+function _rjust(str: string, width: number): string {
     while (str.length < width) {
         str = " " + str;
     }
     str = str.substring(str.length - width);
     return str;
 }
-
-function _ljust(str: string, width: number) {
+/**
+ * Aligns a string to the left.
+ * 
+ * @param  {string} str   The string to align.
+ * @param  {number} width The width to align to.
+ * @returns {string} The aligned string.
+ */
+function _ljust(str: string, width: number): string {
     while (str.length < width) {
         str = str + " ";
     }
@@ -49,6 +62,13 @@ function _ljust(str: string, width: number) {
     return str;
 }
 
+/**
+ * Gets an atom name suitable for use in a PDB line.
+ * 
+ * @param  {string} atomName  The atom name.
+ * @param  {string} [element] The element, optional.
+ * @returns {string} The PDB atom name.
+ */
 function _alignAtomName(atomName: string, element?: string): string {
     // Inspired by
     // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L997
@@ -89,7 +109,15 @@ function _alignAtomName(atomName: string, element?: string): string {
     return _rjust(atomName, 4);
 }
 
-export function convertToPDB(mols: any[], merge = false): string[] {
+/**
+ * Given a list of 3dmol models, convert them to PDB format.
+ *
+ * @param  {GLModel[]} mols         The list of 3dmol models.
+ * @param  {boolean} [merge=false]  Whether to merge the models into a single
+ *                                  PDB string.
+ * @returns {string} The PDB string.
+ */
+export function convertToPDB(mols: GLModel[], merge = false): string[] {
     // mol is 3dmoljs molecule object.
 
     const pdbTxts: string[] = [];
@@ -97,7 +125,7 @@ export function convertToPDB(mols: any[], merge = false): string[] {
 
     let curSerial = 1;
 
-    mols.forEach((mol: any) => {
+    mols.forEach((mol: GLModel) => {
         const atoms: IAtom[] = mol.selectedAtoms({});
         const atomsToConect: IAtom[] = [];
         const pdbLines: string[] = [];

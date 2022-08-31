@@ -1,5 +1,7 @@
 import { Vue } from "vue-class-component";
 
+export type IMenuEntry = IMenuItem | IMenuSubmenu;
+
 export enum MenuItemType {
     ACTION,
     SUBMENU,
@@ -26,7 +28,7 @@ export interface IMenuItem {
     path: string[] | string | undefined; // Directory structure, ending in text label
     function?: () => void;
     type?: MenuItemType; // If absent, will assume MenuItemType.ACTION
-    
+
     // Below are used internally, not from plugin.
     _rank?: number;
     _pathNames?: string[];
@@ -34,38 +36,53 @@ export interface IMenuItem {
 }
 
 export class MenuLevelParent extends Vue {
-    isAction(item: IMenuItem | IMenuSubmenu | IMenuSeparator): boolean {
+    isAction(item: IMenuEntry | IMenuSeparator): boolean {
         return item.type === MenuItemType.ACTION;
     }
 
-    isSeparator(item: IMenuItem | IMenuSubmenu | IMenuSeparator): boolean {
+    isSeparator(item: IMenuEntry | IMenuSeparator): boolean {
         return item.type === MenuItemType.SEPARATOR;
     }
 
-    getItems(item: IMenuItem | IMenuSubmenu): (IMenuItem | IMenuSubmenu)[] {
+    getItems(item: IMenuEntry): IMenuEntry[] {
         const items = (item as IMenuSubmenu).items;
         menuDataSorted(items);
         return items;
     }
 }
 
-function _isNameInMenuData(
-    menuDat: (IMenuItem | IMenuSubmenu)[],
-    name: string
-): boolean {
-    return menuDat.map((m: IMenuItem | IMenuSubmenu) => m._text).includes(name);
+/**
+ * Given a list of menu entries, does one of them have a given name?
+ *
+ * @param  {IMenuEntry[]} menuDat List of menu entries.
+ * @param  {string}       name    Name to look for.
+ * @returns {boolean} True if found, false otherwise.
+ */
+function _isNameInMenuData(menuDat: IMenuEntry[], name: string): boolean {
+    return menuDat.map((m: IMenuEntry) => m._text).includes(name);
 }
 
-function _getSubMenu(
-    menuDat: (IMenuItem | IMenuSubmenu)[],
-    name: string
-): IMenuSubmenu {
-    return menuDat.find((m) => (m as IMenuSubmenu)._text === name) as IMenuSubmenu;
+/**
+ * Given menu data, get the submenu of an item with a given name.
+ *
+ * @param  {IMenuEntry[]} menuDat  List of menu entries.
+ * @param  {string}       name     Name of submenu to get.
+ * @returns {IMenuSubmenu} Submenu with the given name.
+ */
+function _getSubMenu(menuDat: IMenuEntry[], name: string): IMenuSubmenu {
+    return menuDat.find(
+        (m) => (m as IMenuSubmenu)._text === name
+    ) as IMenuSubmenu;
 }
 
-function _convertPathToTextAndPathNames(newMenuItem: IMenuItem): void {
-    // Convert newMenuItem.path to newMenuItem._text and newMenuItem._pathNames.
-    // Note that it is done in place, so no need to return anything.
+/**
+ * Given menu item, momdify the ._text and ._pathNames entries. Convert
+ * newMenuItem.path to newMenuItem._text and newMenuItem._pathNames. Done in
+ * place, so no need to return anything.
+ * 
+ * @param  {IMenuItem} newMenuItem  Menu item to modify.
+ */
+function _convertPathToTextAndPathNames(newMenuItem: IMenuItem) {
     if (typeof newMenuItem.path === "string") {
         // If newMenuItem.path is string, divide by "/"
         const prts = newMenuItem.path.split("/");
@@ -80,15 +97,18 @@ function _convertPathToTextAndPathNames(newMenuItem: IMenuItem): void {
     newMenuItem.path = undefined;
 }
 
+/**
+ * Extract the rank in menu text, if any.
+ *
+ * @param  {string} text  Text to extract rank from.
+ * @returns {any} Contains both the rank and the text with ranked removed.
+ */
 function _getRankFromText(text: string): any {
     const rankInfo = text.match(/^\[(\d+)\]/);
     let rank: number | undefined = undefined;
     if (rankInfo) {
         rank = parseInt(rankInfo[1]);
-        text = text.replace(
-            /^\[\d+\]/,
-            ""
-        ).trim();
+        text = text.replace(/^\[\d+\]/, "").trim();
 
         // If rank is not between 0 and 10, throw an error.
         if (rank < 0 || rank > 10) {
@@ -96,19 +116,29 @@ function _getRankFromText(text: string): any {
         }
     }
 
-    return {rank, text}
+    return { rank, text };
 }
 
-function _extractRankFromText(newMenuItem: IMenuItem): void {
+/**
+ * Extract the rank in menu text, if any, and updates the ._rank and ._text
+ * fields.
+ *
+ * @param  {IMenuItem} newMenuItem  Menu item to modify.
+ */
+function _extractRankFromText(newMenuItem: IMenuItem) {
     // Extract [#] from begining of IMenuItem._text
-    const {rank, text} = _getRankFromText(newMenuItem._text as string);
+    const { rank, text } = _getRankFromText(newMenuItem._text as string);
     newMenuItem._rank = rank;
     newMenuItem._text = text;
 }
 
-function _setNewMenuItemDefaults(newMenuItem: IMenuItem): void {
-    // All this in place, so no need to return anything.
-
+/**
+ * Sets defaults on menu items, for cases when not specified in plugins. All
+ * this in place, so no need to return anything.
+ *
+ * @param  {IMenuItem} newMenuItem  Menu item, with defaults set.
+ */
+function _setNewMenuItemDefaults(newMenuItem: IMenuItem) {
     // If type is not set, default to MenuItemType.ACTION.
     if (newMenuItem.type === undefined) {
         newMenuItem.type = MenuItemType.ACTION;
@@ -125,11 +155,19 @@ function _setNewMenuItemDefaults(newMenuItem: IMenuItem): void {
     // }
 }
 
+/**
+ * Add an entry to the menu system.
+ *
+ * @param  {IMenuItem} newMenuItem           Menu item to add.
+ * @param  {IMenuEntry[]} existingMenuItems  List of existing menu items.
+ * @param  {string} [pluginId]               Plugin id to add. Optional.
+ * @returns {IMenuEntry[]}  The new menu, with the entry added.
+ */
 export function addMenuItem(
     newMenuItem: IMenuItem,
-    existingMenuItems: (IMenuItem | IMenuSubmenu)[],
+    existingMenuItems: IMenuEntry[],
     pluginId?: string
-): (IMenuItem | IMenuSubmenu)[] {
+): IMenuEntry[] {
     // if (api.sys.loadStatus.menuFinalized) {
     //     // Error: Menu already finalized. Assert
     //     throw new Error("Menu already finalized.");
@@ -146,9 +184,14 @@ export function addMenuItem(
     let existingMenuItemsPlaceholder = existingMenuItems;
     for (const pathName of newMenuItem._pathNames as string[]) {
         // Get rank and pathName from text.
-        const {rank, text: pathNameWithoutRank} = _getRankFromText(pathName);
+        const { rank, text: pathNameWithoutRank } = _getRankFromText(pathName);
 
-        if (!_isNameInMenuData(existingMenuItemsPlaceholder, pathNameWithoutRank)) {
+        if (
+            !_isNameInMenuData(
+                existingMenuItemsPlaceholder,
+                pathNameWithoutRank
+            )
+        ) {
             // This level doesn't exist, so add it.
             existingMenuItemsPlaceholder.push({
                 type: MenuItemType.SUBMENU,
@@ -169,7 +212,9 @@ export function addMenuItem(
                 subMenu._rank = rank;
             } else if (subMenu._rank !== rank) {
                 // Error: Rank already set. Assert
-                throw new Error(`Plugin "${pluginId}" set rank of "${subMenu._text}" menu item to ${rank}, but it is already set to ${subMenu._rank}.`);
+                throw new Error(
+                    `Plugin "${pluginId}" set rank of "${subMenu._text}" menu item to ${rank}, but it is already set to ${subMenu._rank}.`
+                );
             }
         }
 
@@ -183,32 +228,34 @@ export function addMenuItem(
     return existingMenuItems;
 }
 
-export function menuDataSorted(menuData: (IMenuItem | IMenuSubmenu)[]): void {
-    // In place, so no need to return anything.
-
-    menuData.sort(
-        (a: IMenuItem | IMenuSubmenu, b: IMenuItem | IMenuSubmenu) => {
-            // Sort the items by rank. Defaults to 5 if not set.
-            const a_rank = (a._rank !== undefined) ? a._rank : 5;
-            const b_rank = (b._rank !== undefined) ? b._rank : 5;
-            if (a_rank < b_rank) {
-                return -1;
-            }
-            if (a_rank > b_rank) {
-                return 1;
-            }
-
-            // If ranks are equal, sort by text.
-            const a_text = a._text as string;
-            const b_text = b._text as string;
-            if (a_text < b_text) {
-                return -1;
-            }
-            if (a_text > b_text) {
-                return 1;
-            }
-
-            return 0;
+/** 
+ * Sort menu data by rank, then by text if rank equal. In place, so no need to
+ * return anything.
+ * 
+ * @param  {IMenuEntry[]} menuData  Menu data to sort.
+ */
+export function menuDataSorted(menuData: IMenuEntry[]) {
+    menuData.sort((a: IMenuEntry, b: IMenuEntry) => {
+        // Sort the items by rank. Defaults to 5 if not set.
+        const a_rank = a._rank !== undefined ? a._rank : 5;
+        const b_rank = b._rank !== undefined ? b._rank : 5;
+        if (a_rank < b_rank) {
+            return -1;
         }
-    );
+        if (a_rank > b_rank) {
+            return 1;
+        }
+
+        // If ranks are equal, sort by text.
+        const a_text = a._text as string;
+        const b_text = b._text as string;
+        if (a_text < b_text) {
+            return -1;
+        }
+        if (a_text > b_text) {
+            return 1;
+        }
+
+        return 0;
+    });
 }

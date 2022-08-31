@@ -96,7 +96,6 @@ export abstract class PluginParent extends Vue {
                     // this.onPluginStart();
                     const msg = this.checkUseAllowed();
                     if (msg !== null) {
-                        // this.$emit("onError", msg);
                         api.messages.popupError(msg);
                     } else {
                         api.plugins.runPlugin(this.pluginId);

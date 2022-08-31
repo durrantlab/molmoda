@@ -5,7 +5,7 @@
     cancelBtnTxt="Cancel"
     actionBtnTxt="Run"
     @onDone="onPopupDone"
-    :actionBtnEnabled="actionBtnEnabled"
+    :isActionBtnEnabled="isActionBtnEnabled"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormFull v-model="userInputsToUse"></FormFull>
@@ -38,7 +38,7 @@ export default class PopupOptionalPlugin extends Vue {
   @Prop({ required: true }) userInputs!: FormElement[];
   @Prop({ required: true }) open!: boolean;
   @Prop({ required: true }) title!: string;
-  @Prop({ default: true }) actionBtnEnabled!: boolean;
+  @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: "" }) intro!: string;
 
   openToUse = false;

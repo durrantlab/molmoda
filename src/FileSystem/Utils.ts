@@ -3,12 +3,24 @@ export interface IFileParts {
     ext: string;
 }
 
+/**
+ * Make sure a filename is valid by removing non-alphanumeric characters.
+ *
+ * @param  {string} filename The filename to check.
+ * @returns {string} The filename with all non-alphanumeric characters removed.
+ */
 export function fileNameFilter(filename: string): string {
     // Keep only numbers and letters and period
     filename = filename.replace(/[^a-zA-Z0-9.]/g, "");
     return filename;
 }
 
+/**
+ * Make sure a given filename is acceptable and valid.
+ * 
+ * @param  {string} filename The filename to check.
+ * @returns {boolean} Whether the filename is acceptable.
+ */
 export function matchesFilename(filename: string): boolean {
     // Create regex for any number of letters and numbers and period
     const r = /^[a-zA-Z0-9.]+$/;
@@ -17,6 +29,12 @@ export function matchesFilename(filename: string): boolean {
     return filename.match(r) !== null;
 }
 
+/**
+ * Get the basename and extension of a filename.
+ *
+ * @param  {string} filename The filename to get the parts of.
+ * @returns {IFileParts} The basename and extension of the filename.
+ */
 export function getFileNameParts(filename: string): IFileParts {
     // Split filename into parts
     const parts = filename.split(".");

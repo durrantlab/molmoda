@@ -37,7 +37,18 @@ import { dynamicImports } from "@/Core/DynamicImports";
 
 let glviewer: any;
 
-function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolContainer {
+/**
+ * Divides a molecule into chains.
+ *
+ * @param  {any}     sel     The selection to divide (e.g., a selection that
+ *                           gets all protein atoms).
+ * @param  {GLModel} mol     The molecule with the atoms. Note that the atoms
+ *                           specified by sel end up getting removed, because
+ *                           they are moved into their own molecules.
+ * @param  {string}  molName The name of the entry.
+ * @returns {IMolContainer} The molecule with the chains.
+ */
+function organizeSelByChain(sel: any, mol: GLModel, molName: string): IMolContainer {
     let selectedAtoms = mol.selectedAtoms(sel);
 
     // If chain is " " for any atom, set it to "X"
@@ -48,8 +59,8 @@ function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolCont
         return atom;
     });
 
-    const molEntry: IMolContainer = {
-        title: entryName,
+    const molContainer: IMolContainer = {
+        title: molName,
         viewerDirty: true,
         treeExpanded: false,
         visible: true,
@@ -59,7 +70,7 @@ function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolCont
     };
     let lastChainID = "";
     selectedAtoms.forEach((atom: IAtom) => {
-        const nodes = molEntry.nodes as IMolContainer[];
+        const nodes = molContainer.nodes as IMolContainer[];
         if (atom.chain !== lastChainID) {
             nodes.push({
                 title: atom.chain,
@@ -77,15 +88,22 @@ function organizeSelByChain(sel: any, mol: GLModel, entryName: string): IMolCont
     });
     mol.removeAtoms(selectedAtoms);
 
-    return molEntry;
+    return molContainer;
 }
 
-function flattenChains(molEntry: IMolContainer): IMolContainer {
-    if (!molEntry.nodes) {
-        throw new Error("No nodes found in molEntry.");
+/**
+ * Some molecular components don't need to be put in their own chains (e.g.,
+ * solvents and ions). This function flattens chains.
+ * 
+ * @param  {IMolContainer} molContainer The molecule (with chains) to flatten.
+ * @returns {IMolContainer} The flattened molecule.
+ */
+function flattenChains(molContainer: IMolContainer): IMolContainer {
+    if (!molContainer.nodes) {
+        throw new Error("No nodes found in molContainer.");
     }
     const flattened: IMolContainer = {
-        title: molEntry.title,
+        title: molContainer.title,
         model: [],
         viewerDirty: true,
         treeExpanded: false,
@@ -93,7 +111,7 @@ function flattenChains(molEntry: IMolContainer): IMolContainer {
         selected: SelectedType.FALSE,
         focused: false,
     };
-    molEntry.nodes.forEach((chain: IMolContainer) => {
+    molContainer.nodes.forEach((chain: IMolContainer) => {
         if (!chain.model) {
             throw new Error("No atoms found in chain.");
         }
@@ -103,17 +121,30 @@ function flattenChains(molEntry: IMolContainer): IMolContainer {
     return flattened;
 }
 
+/**
+ * Gets an id of a given atom (string representation).
+ * 
+ * @param  {IAtom} atom The atom to get the id of.
+ * @returns {string} The id of the atom.
+ */
 function residueID(atom: IAtom): string {
     return atom.resn + ":" + atom.resi;
 }
 
-function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
-    if (!molEntry.nodes) {
-        return molEntry;
+/**
+ * In some cases, it's useful to further divide chains into residues (e.g.,
+ * small-molecule compounds).
+ * 
+ * @param  {IMolContainer} molContainer The molecule to divide.
+ * @returns {IMolContainer} The divided molecule.
+ */
+function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
+    if (!molContainer.nodes) {
+        return molContainer;
     }
 
     const dividedMolEntry: IMolContainer = {
-        title: molEntry.title,
+        title: molContainer.title,
         nodes: [],
         viewerDirty: true,
         treeExpanded: false,
@@ -122,7 +153,7 @@ function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
         focused: false,
     };
     let lastChainID = "";
-    molEntry.nodes.forEach((chain: IMolContainer) => {
+    molContainer.nodes.forEach((chain: IMolContainer) => {
         if (!chain.model) {
             return;
         } // Already divided apparently.
@@ -174,15 +205,23 @@ function divideChainsIntoResidues(molEntry: IMolContainer): IMolContainer {
     return dividedMolEntry;
 }
 
-// If any key is associated with a list of length 1, collapse it so the key is
-// merged with the key one up.
-function collapseSingles(molEntry: IMolContainer, childTitleFirst = false): IMolContainer {
-    if (molEntry.nodes) {
+/**
+ * If any molecule is associated with a list of only 1 submolecules, collapse it
+ * so it is only one molecule, merging the titles.
+ *
+ * @param  {IMolContainer} molContainer            The molecule to collapse.
+ * @param  {boolean}       [childTitleFirst=false] When creating the merged
+ *                                                 title, but the name of the
+ *                                                 child molecule first.
+ * @returns {IMolContainer} The collapsed molecule.
+ */
+function collapseSingles(molContainer: IMolContainer, childTitleFirst = false): IMolContainer {
+    if (molContainer.nodes) {
         let anyNodeMerged = true;
         while (anyNodeMerged) {
             anyNodeMerged = false;
 
-            const allNodes = getAllNodesFlattened([molEntry]);
+            const allNodes = getAllNodesFlattened([molContainer]);
             allNodes.forEach((anyNode: IMolContainer) => {
                 const anyNodeNodes = anyNode.nodes as IMolContainer[];
                 if (anyNode.nodes && (anyNodeNodes.length === 1)) {
@@ -210,26 +249,32 @@ function collapseSingles(molEntry: IMolContainer, childTitleFirst = false): IMol
     // Now for some purly cosmetic changes to the top-level menu items. (test
     // 1HU4, 1XDN, and 2HU4).
 
-    if (molEntry.title.endsWith(":Compound")) {
-        if (!molEntry.nodes || (molEntry.nodes.length === 0)) {
+    if (molContainer.title.endsWith(":Compound")) {
+        if (!molContainer.nodes || (molContainer.nodes.length === 0)) {
             // It has no children. Simply remove the "Compound" suffix.
-            molEntry.title = molEntry.title.substring(0, molEntry.title.length - 9);
+            molContainer.title = molContainer.title.substring(0, molContainer.title.length - 9);
         } else {
             // It has children. Probably looks like "X:Compound"
-            molEntry.title = molEntry.title.split(":")[1];
+            molContainer.title = molContainer.title.split(":")[1];
         }
     } else {
         // Looks like "Protein:A". Just remove chain.
-        molEntry.title = molEntry.title.split(":")[0];
+        molContainer.title = molContainer.title.split(":")[0];
     }
     
-    return molEntry;
+    return molContainer;
 }
-
+/**
+ * Adds the molecule type, style, and selections.
+ *
+ * @param  {IMolContainer}  molContainer  The molecule to add the type and style
+ *                                        to.
+ * @param  {IStyleAndSel[]} stylesAndSels The styles and selections to add.
+ */
 function addMolTypeAndStyle(
     molContainer: IMolContainer,
     stylesAndSels: IStyleAndSel[]
-): void {
+) {
     const molType = molContainer.type;
     for (const mol of getTerminalNodes([molContainer])) {
         mol.type = molType;
@@ -243,6 +288,13 @@ function addMolTypeAndStyle(
     }
 }
 
+/**
+ * Given molecular data from the main thread, convert it into a IMolContainer
+ * object divided by component (protien, compound, solvent, etc.).
+ * 
+ * @param  {any} data The molecular data.
+ * @returns {Promise<IMolContainer>} The divided molecule.
+ */
 function divideAtomsIntoDistinctComponents(data: {
     [key: string]: any;
 }): Promise<IMolContainer> {
@@ -317,11 +369,18 @@ function divideAtomsIntoDistinctComponents(data: {
 
 }
 
-function cleanUpFileContents(fileContents: IMolContainer): IMolContainer {
-    if (fileContents.nodes) {
+/**
+ * Clean up the molContainer in preparation for sending it back to the main
+ * worker. 
+ * 
+ * @param  {IMolContainer} molContainer The molContainer to clean up.
+ * @returns {IMolContainer} The cleaned up molContainer.
+ */
+function cleanUpFileContents(molContainer: IMolContainer): IMolContainer {
+    if (molContainer.nodes) {
         // Iterate through organizedAtoms. If object and has no keys, remove it.
         // If list and has length 0, remove it.
-        fileContents.nodes = fileContents.nodes.filter((m: IMolContainer) => {
+        molContainer.nodes = molContainer.nodes.filter((m: IMolContainer) => {
             let totalSubItems = 0;
             totalSubItems += m.nodes ? m.nodes.length : 0;
             totalSubItems += m.model ? (m.model as IAtom[]).length : 0;
@@ -331,7 +390,7 @@ function cleanUpFileContents(fileContents: IMolContainer): IMolContainer {
         // Clean up a few additional things. If it's text has "undefined:",
         // replace that with "". If it has more than one node, add plural to
         // text in some cases.
-        for (const m of fileContents.nodes) {
+        for (const m of molContainer.nodes) {
             if (
                 m.nodes &&
                 m.nodes.length > 0 &&
@@ -348,13 +407,18 @@ function cleanUpFileContents(fileContents: IMolContainer): IMolContainer {
         }
     }
 
-    fileContents = collapseSingles(fileContents);
+    molContainer = collapseSingles(molContainer);
 
-    return fileContents;
+    return molContainer;
 }
 
-function addParentIds(fileContents: IMolContainer): void {
-    const allNodes = getAllNodesFlattened([fileContents]);
+/**
+ * Adds the parent ids to the nodes.
+ * 
+ * @param  {IMolContainer} molContainer The molContainer to add the ids to.
+ */
+function addParentIds(molContainer: IMolContainer) {
+    const allNodes = getAllNodesFlattened([molContainer]);
     allNodes.forEach((anyNode: IMolContainer) => {
         if (anyNode.nodes && anyNode.nodes.length > 0) {
             anyNode.nodes.forEach((node: IMolContainer) => {

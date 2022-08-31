@@ -4,13 +4,21 @@
 
 import { dynamicImports } from "@/Core/DynamicImports";
 import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 
 interface ICopiedObj {
     promises: Promise<any>[];
     newNode: any;
 }
 
+/**
+ * Deep copies an object, treating the value associated with the "model" key as
+ * a special case.
+ * 
+ * @param  {any}      obj       The object to copy.
+ * @param  {Function} modelFunc A function that deals with the value of the
+ *                              "model" key.
+ * @returns {ICopiedObj} The deep-copied object.
+ */
 function copyObjRecursively(obj: any, modelFunc: Function): ICopiedObj {
     const promises: Promise<any>[] = [];
     const _copyObjRecursively = (oldNode: any, mdlFunc: Function) => {
@@ -39,9 +47,16 @@ function copyObjRecursively(obj: any, modelFunc: Function): ICopiedObj {
     return {newNode: newObj, promises} as ICopiedObj;
 }
 
-export function atomsToModels(molecularData: IMolContainer): Promise<IMolContainer> {
+/**
+ * Given an IMolContainer with models specifies as IAtom[], convert the models
+ * to GLModel.
+ *
+ * @param  {IMolContainer} molContainer The IMolContainer to convert.
+ * @returns {Promise<IMolContainer>} The converted IMolContainer.
+ */
+export function atomsToModels(molContainer: IMolContainer): Promise<IMolContainer> {
     const recurseResult = copyObjRecursively(
-        molecularData, 
+        molContainer, 
         (origNode: IMolContainer, newNode: IMolContainer): Promise<void> => {
             return _atomsToModel(origNode.model as IAtom[])
             .then((model: GLModel) => {
@@ -57,9 +72,16 @@ export function atomsToModels(molecularData: IMolContainer): Promise<IMolContain
     });
 }
 
-export function modelsToAtoms(molecularData: IMolContainer): IMolContainer {
+/**
+ * Given an IMolContainer with models specified as GLModel, convert the models
+ * to IAtom[].
+ * 
+ * @param  {IMolContainer} molContainer The IMolContainer to convert.
+ * @returns {IMolContainer} The converted IMolContainer.
+ */
+export function modelsToAtoms(molContainer: IMolContainer): IMolContainer {
     const recurseResult = copyObjRecursively(
-        molecularData, 
+        molContainer, 
         (origNode: IMolContainer, newNode: IMolContainer): void => { // Promise<void> => {
             newNode.model = (origNode.model as GLModel).selectedAtoms({});
         }
@@ -68,6 +90,12 @@ export function modelsToAtoms(molecularData: IMolContainer): IMolContainer {
     return recurseResult.newNode;
 }
 
+/**
+ * Given an array of IAtom, convert the array to a GLModel.
+ * 
+ * @param  {IAtom[]} atoms The array of IAtom to convert.
+ * @returns {Promise<GLModel>} The converted GLModel.
+ */
 function _atomsToModel(atoms: IAtom[]): Promise<GLModel> {
     return dynamicImports.mol3d.module.then(($3Dmol: any) => {
         const model = new $3Dmol.GLModel();

@@ -2,7 +2,13 @@ import { PluginParent } from "@/Plugins/PluginParent";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 
-export function checkSomethingSelected(This: PluginParent): string | null {
+/**
+ * Checks whether a molecule is selected.
+ *
+ * @param  {PluginParent} This The associated EditBarPlugin.
+ * @returns {string | null} An error if none are selected, null otherwise.
+ */
+export function checkAnyMolSelected(This: PluginParent): string | null {
     // Check if anything is currently selected
     const selectedNodes = getAllNodesFlattened(
         This.$store.state.molecules

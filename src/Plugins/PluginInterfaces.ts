@@ -49,6 +49,8 @@ export const Licenses = {
     }
 };
 
+export type Credits = (ISoftwareCredit | IContributorCredit)[];
+
 export interface ISoftwareCredit {
     name: string;
     url: string;

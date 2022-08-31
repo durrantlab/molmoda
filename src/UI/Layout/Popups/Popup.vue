@@ -8,13 +8,12 @@
   >
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header alert alert-primary">
-          <!-- bg-danger text-white -->
+        <div :class="headerClasses">
           <h5 class="modal-title">{{ title }}</h5>
           <button
             v-if="cancelXBtn && !prohibitCancel"
             type="button"
-            class="btn-close"
+            :class="'btn-close ' + (styling === 0 ? 'btn-close-white' : '')"
             data-bs-dismiss="modal"
             aria-label="Close"
           ></button>
@@ -34,13 +33,13 @@
           <button
             v-if="actionBtnTxt"
             type="button"
-            :disabled="!actionBtnEnabled"
+            :disabled="!isActionBtnEnabled"
             class="btn btn-primary"
             @click="actionBtn"
           >
             {{ actionBtnTxt }}
           </button>
-          <!-- :disabled="!actionBtnEnabled" -->
+          <!-- :disabled="!isActionBtnEnabled" -->
           <button
             v-if="actionBtnTxt2"
             type="button"
@@ -62,6 +61,7 @@ import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import Modal from "bootstrap/js/dist/modal";
 import { randomID } from "@/Core/Utils";
+import { PopupVariant } from "./InterfacesAndEnums";
 
 @Options({
   components: {},
@@ -73,12 +73,18 @@ export default class Popup extends Vue {
   @Prop() actionBtnTxt!: string; // If undefined, no ok button
   @Prop({ default: "" }) actionBtnTxt2!: string; // If undefined, no ok button
   @Prop({ default: true }) cancelXBtn!: boolean;
-  @Prop({ default: true }) actionBtnEnabled!: boolean;
+  @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: false }) prohibitCancel!: boolean;
+  @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
   @Prop({}) onShown!: Function;
+  @Prop({}) beforeShown!: Function;
 
   id: string = "modal-" + randomID();
   modal: any;
+  
+  // 0 or 1, depending on how you want to set the style. TODO: Good to settle on
+  // one or the other.
+  styling = 1;  
 
   @Watch("modelValue")
   onModelValueChange(newValue: boolean) {
@@ -87,6 +93,14 @@ export default class Popup extends Vue {
     } else {
       this.modal.hide();
     }
+  }
+
+  get headerClasses(): string {
+    let styles = "modal-header ";
+    if (this.styling === 0) {
+      return styles + 'bg-' + this.variant + ' text-white';
+    }
+    return styles + 'alert alert-' + this.variant;
   }
 
   actionBtn() {
@@ -100,7 +114,7 @@ export default class Popup extends Vue {
   }
 
   onKeypress(e: KeyboardEvent) {
-    if (e.key === "Enter" && this.actionBtnTxt && this.actionBtnEnabled) {
+    if (e.key === "Enter" && this.actionBtnTxt && this.isActionBtnEnabled) {
       this.actionBtn();
     }
   }
@@ -109,14 +123,23 @@ export default class Popup extends Vue {
     let modalElem = document.getElementById(this.id) as HTMLElement;
     this.modal = new Modal(modalElem, {});
 
-    modalElem.addEventListener("shown.bs.modal", (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    modalElem.addEventListener("shown.bs.modal", (_event) => {
       if (this.onShown) {
         this.onShown();
       }
       this.$emit("update:modelValue", true);
     });
 
-    modalElem.addEventListener("hidden.bs.modal", (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    modalElem.addEventListener("show.bs.modal", (_event) => {
+      if (this.beforeShown) {
+        this.beforeShown();
+      }
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    modalElem.addEventListener("hidden.bs.modal", (_event) => {
       this.$emit("update:modelValue", false);
 
       // So below fires regardless of how closed. In contrast, onDone fires if
@@ -128,5 +151,5 @@ export default class Popup extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss">
+<style lang="scss" scoped>
 </style>

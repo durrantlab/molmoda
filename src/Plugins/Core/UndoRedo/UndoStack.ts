@@ -11,7 +11,12 @@ export let redoStack: IMolContainer[][] = [];
 let timeoutId: number;
 const maxItemsOnUndoStack = 10;
 
-function addItemToUndoStack(item: IMolContainer[]): void {
+/**
+ * Pushes a new item to the undo stack.
+ * 
+ * @param  {IMolContainer[]} item The item to push.
+ */
+function addItemToUndoStack(item: IMolContainer[]) {
     if (undoStack.length > maxItemsOnUndoStack) {
         undoStack.shift();
     }
@@ -20,7 +25,13 @@ function addItemToUndoStack(item: IMolContainer[]): void {
 
 // Only add something to the stack after delay, to prevent adding too many
 // things in rapid succession.
-export function addToUndoStack(molecules: IMolContainer[]): void {
+
+/**
+ * Adds an item to the undo stack after the user has't done anything in a bit.
+ * 
+ * @param  {IMolContainer[]} molecules The item to push.
+ */
+export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
     if (timeoutId) {
         window.clearTimeout(timeoutId);
     }
@@ -41,7 +52,12 @@ export function addToUndoStack(molecules: IMolContainer[]): void {
     }, 1000);
 }
 
-export function undo(store: any): void {   
+/**
+ * Undo the last user action.
+ * 
+ * @param  {any} store The Vuex store.
+ */
+export function undo(store: any) {   
     let lastItemOnUndoStack = undoStack.pop();
     if (lastItemOnUndoStack) {
         // Move current last one to redo.
@@ -67,7 +83,12 @@ export function undo(store: any): void {
     }
 }
 
-export function redo(store: any): void {   
+/**
+ * Redo the last user action.
+ * 
+ * @param  {any} store The Vuex store.
+ */
+export function redo(store: any) {   
     const lastItemRedoStack = redoStack.pop();
     if (lastItemRedoStack) {
         // Move current last one to redo.

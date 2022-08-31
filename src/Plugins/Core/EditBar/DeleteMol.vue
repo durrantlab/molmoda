@@ -5,7 +5,7 @@
     cancelBtnTxt="Cancel"
     actionBtnTxt="Delete"
     @onDone="onPopupDone"
-    :actionBtnEnabled="true"
+    :isActionBtnEnabled="true"
     :onShown="onPopupOpen"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
@@ -24,6 +24,7 @@ import EditBarPluginParent from "./EditBarPluginParent";
 
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 @Options({
   components: {
@@ -40,7 +41,11 @@ export default class DeleteMol extends EditBarPluginParent {
     },
   ];
   pluginId = "deletemol";
-  intro = "Delete mol...";
+  intro = "Delete the selected molecule.";
+
+  beforePopupOpen(): void {
+    return;
+  }
 
   public onPopupOpen(): void {
     this.setNodeToActOn();
@@ -65,6 +70,11 @@ export default class DeleteMol extends EditBarPluginParent {
             );
           }
         }
+      } else {
+        // It's a root node, without a parent id.
+        let molecules = this.$store.state.molecules;
+        molecules = molecules.filter((n: IMolContainer) => n.id !== this.nodeToActOn?.id);
+        this.$store.commit("updateMolecules", molecules);
       }
 
       // newNode.title = this.newTitle;

@@ -21,18 +21,16 @@ import Menu from "@/UI/Navigation/Menu/Menu.vue";
 import AllPlugins from "../Plugins/AllPlugins.vue";
 import {
   addMenuItem,
-  IMenuItem,
-  IMenuSubmenu,
+  IMenuEntry,
 } from "../UI/Navigation/Menu/Menu";
 import {
+  Credits,
   IContributorCredit,
   ISoftwareCredit,
 } from "../Plugins/PluginInterfaces";
 import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { IPluginSetupInfo } from "@/Plugins/PluginParent";
 import { dynamicImports } from "@/Core/DynamicImports";
-
-import * as api from "@/Api";
 
 @Options({
   components: {
@@ -43,7 +41,7 @@ import * as api from "@/Api";
 })
 export default class App extends Vue {
   // Menu data
-  menuData: (IMenuItem | IMenuSubmenu)[] = [];
+  menuData: IMenuEntry[] = [];
 
   // Software credits (libraries used)
   softwareCredits: ISoftwareCredit[] = globalSoftwareCredits;
@@ -61,14 +59,12 @@ export default class App extends Vue {
 
   /**
    * Removes credits with duplicate names.
-   * @param {(ISoftwareCredit | IContributorCredit)[]} credits  Credits to
-   *                                                            consider.
-   * @return Returns the list of credits, with ones that have duplicate names
-   *         removed.
-   */
-  private _removeDuplicateNames(
-    credits: (ISoftwareCredit | IContributorCredit)[]
-  ): (ISoftwareCredit | IContributorCredit)[] {
+   *
+   * @param {Credits} credits  Credits to consider.
+   * @returns {Credits} The list of credits, with ones that have duplicate names
+   *     removed.
+   */   
+  private _removeDuplicateNames(credits: Credits): Credits {
     return credits.filter(
       (v: any, i: any, a: any) =>
         a.findIndex((x: any) => x.name === v.name) === i
@@ -78,6 +74,7 @@ export default class App extends Vue {
   /**
    * Called when a plugin has finished setting up. Collects the menu and credits
    * data.
+   * 
    * @param {IPluginSetupInfo} pluginSetupInfo  Information about the plugin
    *                                            that has finished setting up.
    */

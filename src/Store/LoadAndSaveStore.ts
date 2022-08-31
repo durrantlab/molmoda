@@ -7,6 +7,12 @@ import {
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export let storeIsDirty = false;
+
+/**
+ * Marks the current store as dirty.
+ * 
+ * @param  {boolean} val  Whether its dirty.
+ */
 export function setStoreIsDirty(val: boolean) {
     storeIsDirty = val;
 }
@@ -25,6 +31,12 @@ window.addEventListener(
     true
 );
 
+/**
+ * Converts a json representation of the state to a state. object
+ * 
+ * @param  {string} jsonStr The json string.
+ * @returns {Promise<any>} A promise that resolves the state object.
+ */
 export function jsonToState(jsonStr: string): Promise<any> {
     // Viewer needs to reload everything, so set viewierDirty to true in all
     // cases. This is a little hackish, but easier than recursing I think.
@@ -45,6 +57,12 @@ export function jsonToState(jsonStr: string): Promise<any> {
     });
 }
 
+/**
+ * Converts the state to a json string.
+ * 
+ * @param  {any} state The state object.
+ * @returns {string} The json string.
+ */
 function _stateToJson(state: any): string {
     const newMolData = state.molecules.map((mol: IMolContainer) => {
         return modelsToAtoms(mol);
@@ -62,6 +80,13 @@ function _stateToJson(state: any): string {
     return JSON.stringify(newState);
 }
 
+/**
+ * Saves the state to a file.
+ *
+ * @param  {string} filename The filename to save to.
+ * @param  {any}    state    The state to save.
+ * @returns {Promise<any>} A promise that resolves when the save is complete.
+ */
 export function saveState(filename: string, state: any): Promise<any> {
     const jsonStr = _stateToJson(state);
     return api.fs.saveTxt({

@@ -43,6 +43,11 @@ export const fileTypesAccepts = _allAcceptableFileTypes
 //     .map((f) => `${f}`)
 //     .join(", ")}`;
 
+/**
+ * Given an IFileInfo object (name, contents, type), load the molecule.
+ *
+ * @param  {IFileInfo} fileInfo The file info object.
+ */
 export function loadMoleculeFile(fileInfo: IFileInfo) {
     // Can it be loaded directly by 3dmoljs?
     if (filetypesMolsWith3DMol.includes(fileInfo.type)) {

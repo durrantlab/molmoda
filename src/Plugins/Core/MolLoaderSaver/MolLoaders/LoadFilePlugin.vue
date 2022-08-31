@@ -5,7 +5,7 @@
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
     @onDone="onPopupDone"
-    :actionBtnEnabled="filesToLoad.length > 0"
+    :isActionBtnEnabled="filesToLoad.length > 0"
   >
     <FormFile ref="formFile" @onFilesLoaded="onFilesLoaded" :accept="accept" />
   </Popup>
@@ -48,7 +48,7 @@ export default class LoadFilePlugin extends PopupPluginParent {
     this.submitJobs(this.filesToLoad);
   }
 
-  onPopupOpen(): void {
+  beforePopupOpen(): void {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
   }

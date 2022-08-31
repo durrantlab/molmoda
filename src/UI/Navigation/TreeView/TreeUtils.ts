@@ -1,7 +1,18 @@
 import { IMolContainer, MolType } from "./TreeInterfaces";
 
+/**
+ * Get all the nodes that are terminal (have a model, not sub-molecules).
+ *
+ * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
+ * @returns {IMolContainer[]}  The array of terminal nodes.
+ */
 export function getTerminalNodes(mols: IMolContainer[]): IMolContainer[] {
-    // Use a recursive function to find the terminal leaves of mols.
+    /**
+     * A recursive function to find the terminal leaves of mols.
+     *
+     * @param  {IMolContainer[]} mls  The array of IMolContainer to search.
+     * @returns {IMolContainer[]}  The array of terminal nodes (leaves).
+     */
     function findLeaves(mls: IMolContainer[]): IMolContainer[] {
         let leaves: IMolContainer[] = [];
 
@@ -17,8 +28,21 @@ export function getTerminalNodes(mols: IMolContainer[]): IMolContainer[] {
     return findLeaves(mols);
 }
 
+/**
+ * Gets all the nodes, whether terminal or not.
+ *
+ * @param  {IMolContainer[]} mols  The hierarchical array of IMolContainer to
+ *                                 search.
+ * @returns {IMolContainer[]}  The flat array of all nodes.
+ */
 export function getAllNodesFlattened(mols: IMolContainer[]): IMolContainer[] {
-    // Use a recursive function to find the terminal leaves of mols.
+    /**
+     * A recursive function to find the terminal leaves of mols.
+     *
+     * @param  {IMolContainer[]} mls  The hierarchical array of IMolContainer to
+     *                                search.
+     * @returns {IMolContainer[]}  The flat array of nodes.
+     */
     function findNodes(mls: IMolContainer[]): IMolContainer[] {
         let allNodes: IMolContainer[] = [];
 
@@ -33,11 +57,26 @@ export function getAllNodesFlattened(mols: IMolContainer[]): IMolContainer[] {
     return findNodes(mols);
 }
 
+/**
+ * Find a node with a given id.
+ * 
+ * @param  {string}          id    The id of the node to find.
+ * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
+ * @returns {IMolContainer | null}  The node with the given id, or null if not
+ *     found.
+ */
 export function getNodeOfId(
     id: string,
     mols: IMolContainer[]
 ): IMolContainer | null {
-    // Use a recursive function to find the node of id.
+    /**
+     * A recursive function to find the node of id.
+     *
+     * @param  {IMolContainer[]} mls  The array of IMolContainer to search.
+     * @param  {string}          i    The id of the node to find.
+     * @returns {IMolContainer | null}  The node with the given id, or null if
+     *                                  not.
+     */
     function findNode(mls: IMolContainer[], i: string): IMolContainer | null {
         for (const mol of mls) {
             if (mol.id === i) {
@@ -55,15 +94,25 @@ export function getNodeOfId(
     return findNode(mols, id);
 }
 
+/**
+ * Find all nodes with a given type.
+ *
+ * @param  {IMolContainer[]} mols                 The array of IMolContainer to
+ *                                                search.
+ * @param  {MolType}         type                 The type of nodes to find.
+ * @param  {boolean}         [onlyVisible=false]  Whether to only consider
+ *                                                visible nodes.
+ * @returns {IMolContainer[]}  The array of nodes with the given type.
+ */
 export function getNodesOfType(
     mols: IMolContainer[],
     type: MolType,
-    onlyConsiderVisible = false
+    onlyVisible = false
 ): IMolContainer[] {
     let nodesToConsider = getAllNodesFlattened(mols);
     nodesToConsider = nodesToConsider.filter((node) => node.type === type);
 
-    if (onlyConsiderVisible) {
+    if (onlyVisible) {
         nodesToConsider = nodesToConsider.filter((node) => node.visible);
     }
 
@@ -73,7 +122,13 @@ export function getNodesOfType(
     return nodesToConsider;
 }
 
-export function removeNode(id: string, mols: IMolContainer[]): void {
+/**
+ * Remove a node of given id.
+ * 
+ * @param  {string}          id    The id of the node to remove.
+ * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
+ */
+export function removeNode(id: string, mols: IMolContainer[]) {
     const node = getNodeOfId(id, mols);
     if (!node || !node.parentId) {
         return;
@@ -87,11 +142,18 @@ export function removeNode(id: string, mols: IMolContainer[]): void {
     parentNode.nodes = parentNode.nodes.filter((n) => n.id !== id);
 }
 
+/**
+ * Add a node after another node.
+ *
+ * @param  {IMolContainer} nodeToAdd     The node to add.
+ * @param  {IMolContainer} existingNode  The node to add after.
+ * @param  {IMolContainer[]} mols        The array of IMolContainer to search.
+ */
 export function addNodeAfter(
     nodeToAdd: IMolContainer,
     existingNode: IMolContainer,
     mols: IMolContainer[]
-): void {
+) {
     if (!existingNode.parentId) {
         return;
     }
@@ -115,6 +177,13 @@ export function addNodeAfter(
     nodeToAdd.parentId = parentNode.id;
 }
 
+/**
+ * Get the root (parent-most) nodes of a given type.
+ *
+ * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
+ * @param  {MolType}         type  The type of nodes to find.
+ * @returns {IMolContainer[]}  The array of root nodes of the given type.
+ */
 export function getRootNodesOfType(mols: IMolContainer[], type: MolType): IMolContainer[] {
     // Think of this as the opposite of getTerminalNodes. Instead of getting the
     // nodes with no more children, you're getting the nodes whose parent type

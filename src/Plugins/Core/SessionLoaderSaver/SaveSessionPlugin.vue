@@ -1,13 +1,14 @@
 <template>
   <PopupOneTextInput
-    v-model="open"
+    v-model:openValue="open"
     title="Save a Session"
     :intro="introToUse"
     placeHolder="Enter Filename (e.g., my_session.biotite)"
-    :isActionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled()"
     :filterFunc="filterUserData"
     actionBtnTxt="Save"
     @onTextDone="onPopupDone"
+    v-model:text="filename"
     :prohibitCancel="windowClosing"
   ></PopupOneTextInput>
 </template>
@@ -42,6 +43,8 @@ export default class SaveSessionPlugin extends PopupPluginParent {
 
   windowClosing = false;
 
+  filename = "";
+
   get introToUse(): string {
     let i = "";
     
@@ -56,21 +59,22 @@ export default class SaveSessionPlugin extends PopupPluginParent {
 
   /**
    * Filters text to match desired format.
+   * 
    * @param {string} filename  The text to evaluate.
-   * @returns The filtered text.
+   * @returns {string} The filtered text.
    */
-  filterUserData(filename: string) {
+  filterUserData(filename: string): string {
     return fileNameFilter(filename);
   }
 
   /**
    * If text is a properly formatted UniProt accession, enable the button.
    * Otherwise, disabled.
-   * @param {string} filename  The text to evaluate.
-   * @returns A boolean value, whether to disable the button.
+   * 
+   * @returns {boolean} Whether to disable the button.
    */
-  isBtnEnabled(filename: string): boolean {
-    return matchesFilename(filename);
+  isBtnEnabled(): boolean {
+    return matchesFilename(this.filename);
   }
 
   checkUseAllowed(): string | null {
@@ -81,19 +85,17 @@ export default class SaveSessionPlugin extends PopupPluginParent {
     return null;
   }
 
-  onPopupOpen(): void {
+  beforePopupOpen(): void {
     this.windowClosing = this.payload !== undefined;
     this.payload = undefined;
   }
 
   /**
    * Runs when the popup closes.
-   * @param {string} filename  The text entered into the popup.
-   * @returns void
    */
-  onPopupDone(filename: string): void {
+  onPopupDone() {
     this.closePopup();
-    this.submitJobs([{ filename }]);
+    this.submitJobs([{ filename: this.filename }]);
   }
 
   runJob(parameters: any) {

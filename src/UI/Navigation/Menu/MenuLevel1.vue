@@ -37,7 +37,7 @@ import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
 import MenuLevel2 from "./MenuLevel2.vue";
 import {
-  IMenuItem,
+  IMenuEntry,
   IMenuSeparator,
   IMenuSubmenu,
   menuDataSorted,
@@ -53,22 +53,17 @@ import { slugify } from "@/Core/Utils";
   },
 })
 export default class MenuLevel1 extends MenuLevelParent {
-  @Prop() menuData!: IMenuItem | IMenuSubmenu;
+  @Prop() menuData!: IMenuEntry;
 
   get idSlug(): string {
     return slugify(this.menuData._text as string);
   }
 
-  get menuItemsWithSeparators(): (IMenuItem | IMenuSubmenu | IMenuSeparator)[] {
+  get menuItemsWithSeparators(): (IMenuEntry | IMenuSeparator)[] {
     // Adds separators
-    let newMenuItemsWithSeparator: (
-      | IMenuItem
-      | IMenuSubmenu
-      | IMenuSeparator
-    )[] = [];
+    let newMenuItemsWithSeparator: (IMenuEntry | IMenuSeparator)[] = [];
 
-    let items: (IMenuItem | IMenuSubmenu)[] = (this.menuData as IMenuSubmenu)
-      .items;
+    let items: IMenuEntry[] = (this.menuData as IMenuSubmenu).items;
     if (!items) {
       return newMenuItemsWithSeparator;
     }

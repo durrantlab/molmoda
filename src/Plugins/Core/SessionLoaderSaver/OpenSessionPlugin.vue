@@ -5,7 +5,7 @@
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
     @onDone="onPopupDone"
-    :actionBtnEnabled="filesToLoad.length > 0"
+    :isActionBtnEnabled="filesToLoad.length > 0"
   >
     <FormFile
       ref="formFile"
@@ -18,7 +18,6 @@
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
@@ -53,7 +52,7 @@ export default class OpenSessionPlugin extends PopupPluginParent {
     this.submitJobs(this.filesToLoad);
   }
 
-  onPopupOpen(): void {
+  beforePopupOpen(): void {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
   }

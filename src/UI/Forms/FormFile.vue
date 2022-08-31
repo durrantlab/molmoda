@@ -83,7 +83,7 @@ export default class FormFile extends Vue {
         let txt = fileReader.result as string;
         let txtPromise: Promise<string>;
         if (!this.isZip) {
-          txtPromise = new Promise((resolve, reject) => {
+          txtPromise = new Promise((resolve) => {
             txt = txt.replace(/\r\n/g, "\n");
             resolve(txt);
           });
@@ -115,7 +115,8 @@ export default class FormFile extends Vue {
     });
   }
 
-  fileChanged(e: Event) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fileChanged(_e: Event) {
     let input = this.$refs.fileinput as HTMLInputElement;
     let files = input.files;
 

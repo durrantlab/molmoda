@@ -1,18 +1,18 @@
 <template>
   <PopupOneTextInput
-    v-model="open"
+    v-model:openValue="open"
     title="Save a VRML Model"
     :intro="intro"
     placeHolder="Enter Filename (e.g., my_model.vrml)"
-    :isActionBtnEnabled="isBtnEnabled"
+    :isActionBtnEnabled="isBtnEnabled()"
     :filterFunc="filterUserData"
     actionBtnTxt="Save"
+    v-model:text="filename"
     @onTextDone="onPopupDone"
   ></PopupOneTextInput>
 </template>
 
 <script lang="ts">
-import { PluginParent } from "@/Plugins/PluginParent";
 import { Options } from "vue-class-component";
 import * as api from "@/Api";
 import {
@@ -43,33 +43,38 @@ export default class SaveVRMLPlugin extends PopupPluginParent {
   intro = `Please provide the name of the VRML file to save. Note that the
       extension ".vrml" will be automatically appended.`;
 
+  filename = "";
+
   /**
    * Filters text to match desired format.
+   * 
    * @param {string} filename  The text to evaluate.
-   * @returns The filtered text.
+   * @returns {string} The filtered text.
    */
-  filterUserData(filename: string) {
+  filterUserData(filename: string): string {
     return fileNameFilter(filename);
   }
 
   /**
    * If text is a properly formatted UniProt accession, enable the button.
    * Otherwise, disabled.
-   * @param {string} filename  The text to evaluate.
-   * @returns A boolean value, whether to disable the button.
+   * 
+   * @returns {boolean} Whether to disable the button.
    */
-  isBtnEnabled(filename: string): boolean {
-    return matchesFilename(filename);
+  isBtnEnabled(): boolean {
+    return matchesFilename(this.filename);
+  }
+
+  beforePopupOpen(): void {
+    this.filename = "";
   }
 
   /**
    * Runs when the popup closes.
-   * @param {string} filename  The text entered into the popup.
-   * @returns void
    */
-  onPopupDone(filename: string): void {
+  onPopupDone() {
     this.closePopup();
-    this.submitJobs([{ filename }]);
+    this.submitJobs([{ filename: this.filename }]);
   }
 
   runJob(parameters: any) {

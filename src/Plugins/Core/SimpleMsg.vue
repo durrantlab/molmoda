@@ -1,5 +1,5 @@
 <template>
-  <Popup :title="title" v-model="open" cancelBtnTxt="Ok" @onClosed="onClosed">
+  <Popup :title="title" v-model="open" cancelBtnTxt="Ok" @onClosed="onClosed" :variant="variant">
     <p style="overflow: hidden; text-overflow: ellipsis">{{ message }}</p>
   </Popup>
 </template>
@@ -11,12 +11,7 @@ import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { PluginParent } from "@/Plugins/PluginParent";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-
-export interface ISimpleMsg {
-  title: string;
-  message: string;
-  callBack?: Function;
-}
+import { ISimpleMsg, PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 @Options({
   components: {
@@ -40,12 +35,16 @@ export default class SimpleMsg extends PluginParent {
   open = false;
   title = "";
   message = "";
+  variant = PopupVariant.PRIMARY;
   callBack: any = undefined;
 
   onPluginStart(payload: ISimpleMsg) {
     this.title = payload.title;
     this.message = payload.message;
     this.callBack = payload.callBack;
+    if (payload.variant !== undefined) {
+      this.variant = payload.variant;
+    }
     this.open = true;
   }
 

@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
-import { createStore } from "vuex";
+import { createStore, Store } from "vuex";
 import { allHooks } from "@/Api/Hooks";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import * as api from "@/Api";
 import { setStoreIsDirty } from "./LoadAndSaveStore";
 
 interface NameValPair {
@@ -29,8 +28,8 @@ const _commonMutations = {
             ...payload.val,
         };
     },
-    replaceMolecules(state: any, mols: IMolContainer[]) {
-        debugger;
+    updateMolecules(state: any, mols: IMolContainer[]) {
+        // state.molecules = mols;
 
         // remove entries in state.molecules
         while (state.molecules.length > 0) {
@@ -43,7 +42,14 @@ const _commonMutations = {
 };
 
 const _modules: { [key: string]: any } = {};
-export function addVueXStoreModule(moduleName: string, vals: any): void {
+
+/**
+ * Add a module to the store.
+ *
+ * @param  {string} moduleName The name of the module to add to the vuex store.
+ * @param  {any}    vals       The state variables to include in this module.
+ */
+export function addVueXStoreModule(moduleName: string, vals: any) {
     _modules[moduleName] = {
         namespaced: true,
         state: vals,
@@ -52,7 +58,13 @@ export function addVueXStoreModule(moduleName: string, vals: any): void {
 }
 
 export let store: any;
-export function setupVueXStore() {
+
+/**
+ * Sets up the vuex store.
+ * 
+ * @returns {Store} The vuex store.
+ */
+export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
             molecules: [],
