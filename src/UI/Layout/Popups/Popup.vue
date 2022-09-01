@@ -63,6 +63,9 @@ import Modal from "bootstrap/js/dist/modal";
 import { randomID } from "@/Core/Utils";
 import { PopupVariant } from "./InterfacesAndEnums";
 
+/**
+ * Popup component
+ */
 @Options({
   components: {},
 })
@@ -86,6 +89,12 @@ export default class Popup extends Vue {
   // one or the other.
   styling = 1;  
 
+
+  /**
+   * Watch for changes to the modelValue property. Show the popup accordingly.
+   *
+   * @param {boolean} newValue  The new value of the modelValue property.
+   */
   @Watch("modelValue")
   onModelValueChange(newValue: boolean) {
     if (newValue) {
@@ -95,6 +104,11 @@ export default class Popup extends Vue {
     }
   }
 
+  /**
+   * Get the classes to add to the popup header.
+   * 
+   * @returns {string} The classes to add to the popup header.
+   */
   get headerClasses(): string {
     let styles = "modal-header ";
     if (this.styling === 0) {
@@ -103,22 +117,34 @@ export default class Popup extends Vue {
     return styles + 'alert alert-' + this.variant;
   }
 
+  /**
+   * Runs when the action button is pressed.
+   */
   actionBtn() {
     this.$emit("onDone");
     this.$emit("update:modelValue", false);
   }
 
+  /**
+   * Runs when a secondary action button is pressed.
+   */
   actionBtn2() {
     this.$emit("onDone2");
-    this.$emit("update:modelValue", false);
+    this.$emit("update:modelValue2", false);
   }
 
+  /**
+   * If enter just pressed, triggers action button press.
+   *
+   * @param {KeyboardEvent} e  The keyboard event.
+   */
   onKeypress(e: KeyboardEvent) {
     if (e.key === "Enter" && this.actionBtnTxt && this.isActionBtnEnabled) {
       this.actionBtn();
     }
   }
 
+  /** mounted function */
   mounted() {
     let modalElem = document.getElementById(this.id) as HTMLElement;
     this.modal = new Modal(modalElem, {});

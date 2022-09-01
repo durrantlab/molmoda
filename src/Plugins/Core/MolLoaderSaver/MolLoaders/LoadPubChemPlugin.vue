@@ -49,6 +49,9 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
 
+/**
+ * LoadPubChemPlugin
+ */
 @Options({
   components: {
     Popup,
@@ -91,10 +94,18 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
     return val;
   }
 
+  /**
+   * Get the name of the app.
+   *
+   * @returns {string} The name of the app.
+   */
   get appName(): string {
     return appName;
   }
 
+  /**
+   * Runs when the user presses a key in the CID input. Clears the molname.
+   */
   onCIDKeyDown() {
     this.molName = "";
   }
@@ -113,7 +124,10 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
     return this.cid.toString().match(r) !== null;
   }
 
-  searchByName(): void {
+  /**
+   * Searches pubmed by user-specified name. Tries to set the CID accordingly.
+   */
+  searchByName() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let catchFunc = (_err: string) => {
       // this.molNameRespDescription = err;
@@ -144,6 +158,30 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
       .catch(catchFunc);
   }
 
+  /**
+   * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
+   * 
+   * @param {string} filename  The filename to use.
+   * @returns {Promise<any>} A promise that resolves when it is loaded.
+   */
+  get2DVersion(filename: string): Promise<any> {
+    return loadRemote(
+      `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
+    )
+      .then((fileInfo: IFileInfo) => {
+        fileInfo.name = filename;
+        fileInfo.type = "SDF";
+        this.submitJobs([fileInfo]);
+        return;
+      })
+      .catch((err: string) => {
+        api.messages.popupError(err);
+      });
+  }
+
+  /**
+   * Runs when the user presses the action button and the popup closes.
+   */
   onPopupDone(): void {
     this.closePopup();
 
@@ -165,32 +203,33 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .catch((_err: string) => {
         // If it failed, it could be because there's no 3D coordinates. Try 2D.
-        loadRemote(
-          `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
-        )
-          .then((fileInfo: IFileInfo) => {
-            fileInfo.name = filename;
-            fileInfo.type = "SDF";
-            this.submitJobs([fileInfo]);
-            return;
-          })
-          .catch((err: string) => {
-            api.messages.popupError(err);
-          });
+        this.get2DVersion(filename);
       });
   }
 
+  /**
+   * Runs after the popup opens. Good for setting focus in text elements.
+   */
   onPopupOpen() {
     let focusTarget = (this.$refs.formMolName as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.cid = "";
     this.molName = "";
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IFileInfo} parameters  Information about the molecule to load.
+   */
   runJob(parameters: IFileInfo) {
     loadMoleculeFile(parameters);
   }

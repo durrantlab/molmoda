@@ -40,6 +40,9 @@ import "bootstrap/js/dist/collapse";
 import MenuLevel1 from "./MenuLevel1.vue";
 import { IMenuEntry, menuDataSorted } from "./Menu";
 
+/**
+ * Menu component
+ */
 @Options({
   components: {
     MenuLevel1,
@@ -48,18 +51,15 @@ import { IMenuEntry, menuDataSorted } from "./Menu";
 export default class Menu extends Vue {
   @Prop({ required: true }) menuData!: IMenuEntry[];
 
+  /**
+   * Gets the sorted menu data.
+   * 
+   * @returns {IMenuEntry[]}  The sorted menu data.
+   */
   get menuDataSorted(): IMenuEntry[] {
     menuDataSorted(this.menuData);
     return this.menuData;
   }
-
-  // get getMenuData(): IMenuEntry[] {
-  //   return menuData;
-  // }
-
-  // mounted() {
-  //   setVar("menuData", );
-  // }
 }
 </script>
 

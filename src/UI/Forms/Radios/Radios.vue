@@ -24,6 +24,9 @@ import { Prop } from "vue-property-decorator";
 import Radio from "./Radio.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 
+/**
+ * Radios component
+ */
 @Options({
   components: {
     Radio,
@@ -37,6 +40,11 @@ export default class Radios extends Vue {
 
   id = "";
 
+  /**
+   * Let the parent component know of any changes.
+   *
+   * @param {string} e  The new value.
+   */
   handleInput(e: string) {
     this.$emit("update:modelValue", e);
 
@@ -45,10 +53,17 @@ export default class Radios extends Vue {
     this.$emit("onChange");
   }
 
+  /**
+   * Get the id to use on the Radio component
+   *
+   * @param {string} option  The option name to use.
+   * @returns {string} The id to use.
+   */
   idToUse(option: string): string {
     return this.id + "-" + option;
   }
 
+  /** mounted function */
   mounted() {
     this.id = randomID();
   }

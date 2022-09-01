@@ -29,6 +29,9 @@ import { IFileInfo } from "@/FileSystem/Interfaces";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import * as api from "@/Api/";
 
+/**
+ * FormFile component
+ */
 @Options({
   components: {
     FormElementDescription,

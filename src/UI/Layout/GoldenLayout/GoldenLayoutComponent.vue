@@ -21,6 +21,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { slugify } from "@/Core/Utils";
 
+/**
+ * GoldenLayoutComponent component
+ */
 @Options({})
 export default class GoldenLayoutComponent extends Vue {
   @Prop() name!: string;

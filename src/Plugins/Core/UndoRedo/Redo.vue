@@ -7,12 +7,15 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParent } from "@/Plugins/PluginParent";
 import { redo, redoStack } from "./UndoStack";
 
+/**
+ * RedoPlugin
+ */
 @Options({
   components: {
     Popup,
   },
 })
-export default class Redo extends PluginParent {
+export default class RedoPlugin extends PluginParent {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
@@ -26,10 +29,19 @@ export default class Redo extends PluginParent {
   ];
   pluginId = "redo";
 
+  /**
+   * Runs when the user first starts the plugin. 
+   */
   onPluginStart() {
     this.submitJobs();
   }
 
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
   checkUseAllowed(): string | null {
     if (redoStack.length === 0) {
       return "No additional redo is available.";
@@ -37,12 +49,10 @@ export default class Redo extends PluginParent {
     return null;
   }
 
-  onMounted() {
-    // api.hooks.onMoleculesChanged(addToUndoStack);
-  }
-
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   */
   runJob() {
-    // About plugin does not have a job.
     redo(this.$store);
   }
 }

@@ -37,6 +37,43 @@ import { dynamicImports } from "@/Core/DynamicImports";
 
 let glviewer: any;
 
+enum NodesOrModel {
+    NODES,
+    MODEL,
+}
+
+/**
+ * Helper function to generate default mol container (used throughout).
+ *
+ * @param  {string}       molName                            The name of the
+ *                                                           container.
+ * @param  {NodesOrModel} [nodesOrModel=NodesOrModel.NODES]  Whether to generate
+ *                                                           nodes or model.
+ * @returns {IMolContainer}  The default mol container.
+ */
+function _getDefaultMolContainer(
+    molName: string,
+    nodesOrModel = NodesOrModel.NODES
+): IMolContainer {
+    let obj = {
+        title: molName,
+        viewerDirty: true,
+        treeExpanded: false,
+        visible: true,
+        focused: false,
+        selected: SelectedType.FALSE,
+    };
+
+    obj = {
+        ...obj,
+        ...(nodesOrModel === NodesOrModel.MODEL
+            ? { model: [] }
+            : { nodes: [] }),
+    };
+
+    return obj as IMolContainer;
+}
+
 /**
  * Divides a molecule into chains.
  *
@@ -63,15 +100,7 @@ function organizeSelByChain(
         return atom;
     });
 
-    const molContainer: IMolContainer = {
-        title: molName,
-        viewerDirty: true,
-        treeExpanded: false,
-        visible: true,
-        focused: false,
-        selected: SelectedType.FALSE,
-        nodes: [],
-    };
+    const molContainer: IMolContainer = _getDefaultMolContainer(molName);
     let lastChainID = "";
     selectedAtoms.forEach((atom: IAtom) => {
         const nodes = molContainer.nodes as IMolContainer[];
@@ -106,15 +135,11 @@ function flattenChains(molContainer: IMolContainer): IMolContainer {
     if (!molContainer.nodes) {
         throw new Error("No nodes found in molContainer.");
     }
-    const flattened: IMolContainer = {
-        title: molContainer.title,
-        model: [],
-        viewerDirty: true,
-        treeExpanded: false,
-        visible: true,
-        selected: SelectedType.FALSE,
-        focused: false,
-    };
+    const flattened: IMolContainer = _getDefaultMolContainer(
+        molContainer.title,
+        NodesOrModel.MODEL
+    );
+
     molContainer.nodes.forEach((chain: IMolContainer) => {
         if (!chain.model) {
             throw new Error("No atoms found in chain.");
@@ -147,33 +172,22 @@ function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
         return molContainer;
     }
 
-    const dividedMolEntry: IMolContainer = {
-        title: molContainer.title,
-        nodes: [],
-        viewerDirty: true,
-        treeExpanded: false,
-        visible: true,
-        selected: SelectedType.FALSE,
-        focused: false,
-    };
+    const dividedMolEntry: IMolContainer = _getDefaultMolContainer(
+        molContainer.title
+    );
+
     let lastChainID = "";
     molContainer.nodes.forEach((chain: IMolContainer) => {
         if (!chain.model) {
+            // Already divided apparently.
             return;
-        } // Already divided apparently.
+        }
 
         if (chain.title !== lastChainID) {
-            dividedMolEntry.nodes?.push({
-                title: chain.title,
-                nodes: [],
-                treeExpanded: false,
-                visible: true,
-                selected: SelectedType.FALSE,
-                focused: false,
-                viewerDirty: true,
-            });
+            dividedMolEntry.nodes?.push(_getDefaultMolContainer(chain.title));
             lastChainID = chain.title;
         }
+
         let lastResidueID = "";
         (chain.model as IAtom[]).forEach((atom: IAtom) => {
             const chains = dividedMolEntry.nodes;
@@ -188,19 +202,12 @@ function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
 
             const newKey = residueID(atom);
             if (newKey !== lastResidueID) {
-                residues.push({
-                    title: newKey,
-                    model: [],
-                    viewerDirty: true,
-                    treeExpanded: false,
-                    visible: true,
-                    selected: SelectedType.FALSE,
-                    focused: false,
-                });
+                residues.push(
+                    _getDefaultMolContainer(newKey, NodesOrModel.MODEL)
+                );
                 lastResidueID = newKey;
             }
-            const lastResidueIdx = residues.length - 1;
-            const atoms = residues[lastResidueIdx].model as IAtom[];
+            const atoms = residues[residues.length - 1].model as IAtom[];
             if (atoms) {
                 atoms.push(atom);
             }
@@ -367,11 +374,11 @@ function divideAtomsIntoDistinctComponents(data: {
         // Page into single object
         let fileContents: IMolContainer = {
             title: data.molName,
-            treeExpanded: false,
             viewerDirty: true,
+            treeExpanded: false,
             visible: true,
-            selected: SelectedType.FALSE,
             focused: false,
+            selected: SelectedType.FALSE,
             nodes: [
                 proteinAtomsByChain,
                 nucleicAtomsByChain,

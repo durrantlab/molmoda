@@ -26,6 +26,9 @@ interface INameAndColorStyle {
   colorStyle: IColorStyle;
 }
 
+/**
+ * Data class to store information about color styles.
+ */
 class ColorStyleOptions {
   private _colorStyles: INameAndColorStyle[] = [
     {
@@ -58,12 +61,24 @@ class ColorStyleOptions {
   public defaultColor = "#C0C0C0"; // silver
   public color = "#C0C0C0"; // silver
 
+  /**
+   * Converts a name to an index in _colorStyles.
+   * 
+   * @param {string} name  The name.
+   * @returns {number} The index.
+   */
   public nameToIndex(name: string): number {
     return this._colorStyles.findIndex(
       (colorStyle) => colorStyle.name === name
     );
   }
 
+  /**
+   * Converts a style to an index in the _colorStyles array.
+   * 
+   * @param {IColorStyle} style  The style.
+   * @returns {number} The index.
+   */
   public styleToIndex(style: IColorStyle): number {
     if (style.color !== undefined && style.color !== "spectrum") {
       // It must be "Solid"
@@ -84,10 +99,22 @@ class ColorStyleOptions {
     );
   }
 
+  /**
+   * Converts an index in the _colorStyles array to a name.
+   * 
+   * @param {number} index  The index.
+   * @returns {string} The name.
+   */
   public indexToName(index: number): string {
     return this._colorStyles[index].name;
   }
 
+  /**
+   * Adds a color to the style
+   * 
+   * @param {IColorStyle} colorStyle  The color style.
+   * @returns {IColorStyle}  The color style with the color added.
+   */
   private _addColorToStyle(colorStyle: IColorStyle): IColorStyle {
     let strColorStyle = JSON.stringify(colorStyle);
 
@@ -107,18 +134,36 @@ class ColorStyleOptions {
     return JSON.parse(strColorStyle);
   }
 
+  /**
+   * Given an index in the _colorStyles array, returns the color style.
+   * 
+   * @param {number} index  The index.
+   * @returns {IColorStyle}  The color style.
+   */
   public indexToStyle(index: number): IColorStyle {
     let colorStyle = this._colorStyles[index].colorStyle;
     colorStyle = this._addColorToStyle(colorStyle);
     return colorStyle;
   }
 
+  /**
+   * Given a name, returns the color style.
+   * 
+   * @param {string} name  The name.
+   * @returns {IColorStyle}  The color style.
+   */
   public nameToStyle(name: string): IColorStyle {
     let colorStyle = this._colorStyles[this.nameToIndex(name)].colorStyle;
     colorStyle = this._addColorToStyle(colorStyle);
     return colorStyle;
   }
 
+  /**
+   * Given a color style, get the hex colors.
+   * 
+   * @param {IStyle} style  The style.
+   * @returns {string[]}  The hex colors.
+   */
   public extractHexColorsFromStyle(style: IStyle): string[] {
     const styleRecast = style as { [key: string]: IColorStyle };
     const colors: string[] = [];
@@ -144,6 +189,9 @@ class ColorStyleOptions {
   }
 }
 
+/**
+ * ColorStyle component
+ */
 @Options({
   components: {
     Section,
@@ -163,6 +211,11 @@ export default class ColorStyle extends Vue {
 
   colorStyles = new ColorStyleOptions();
 
+  /**
+   * Gets the color form.
+   * 
+   * @returns {any[]}  The color form.
+   */
   get constructedColorForm(): any[] {
     let style: IStyle = this.modelValue;
     let styleAsObjForRef = style as { [key: string]: IColorStyle };
@@ -255,6 +308,11 @@ export default class ColorStyle extends Vue {
     return colorForm;
   }
 
+  /**
+   * Get the constructed color form.
+   * 
+   * @param {any} val  The color form.
+   */
   set constructedColorForm(val: any) {
     // Emit something that looks like this:
     // { "cartoon": '{ "color": "spectrum" }' }
@@ -287,6 +345,7 @@ export default class ColorStyle extends Vue {
     this.$emit("onChange");
   }
 
+  /** mounted function */
   mounted() {
     // Start by selecting defaults TODO: Actually, not sure this is necessary.
     // All components will always have SOME style (assigned at load).

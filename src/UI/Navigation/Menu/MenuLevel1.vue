@@ -46,6 +46,9 @@ import {
 } from "./Menu";
 import { slugify } from "@/Core/Utils";
 
+/**
+ * MenuLevel1 component
+ */
 @Options({
   components: {
     MenuActionLink,

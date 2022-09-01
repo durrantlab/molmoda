@@ -15,10 +15,13 @@ import {
   getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { GLModel, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Lookups/DefaultStyles";
 import { dynamicImports } from "@/Core/DynamicImports";
 
+/**
+ * ViewerPanel component
+ */
 @Options({})
 export default class ViewerPanel extends Vue {
   molCache: { [id: string]: any } = {};
@@ -27,16 +30,23 @@ export default class ViewerPanel extends Vue {
   surfaces: { [id: string]: number[] } = {};
   surfaceType = 2;
 
+  /**
+   * Get the molecules from the store
+   * 
+   * @returns {any} the molecules.
+   */
   get treeview(): any {
     return this.$store.state["molecules"];
   }
 
+  /**
+   * Checks if the treeview has changed.
+   * 
+   * @param {IMolContainer[]} allMolecules  The new molecules.
+   */
   @Watch("treeview", { immediate: false, deep: true })
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onTreeviewChanged(
-    allMolecules: IMolContainer[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _oldAllMolecules: IMolContainer[]
+    allMolecules: IMolContainer[]
   ) {
     if (allMolecules.length === 0) {
       this._clearCache();
@@ -45,6 +55,9 @@ export default class ViewerPanel extends Vue {
     this._updateStylesAndZoom();
   }
 
+  /**
+   * Clear the cache of molecules and surfaces.
+   */
   private _clearCache() {
     for (const id in this.molCache) {
       this._removeModel(id);
@@ -52,11 +65,19 @@ export default class ViewerPanel extends Vue {
     api.visualization.viewer.render();
   }
 
+  /**
+   * Update the styles and zoom of the molecules.
+   */
   private _updateStylesAndZoom() {
-    let visibleTerminalNodeModels = this._checkStyleChanges();
+    let visibleTerminalNodeModels = this._updateStyleChanges();
     this._zoomPerFocus(visibleTerminalNodeModels);
   }
 
+  /** 
+   * Clear the surface associated with a molecule or molecule id.
+   *
+   * @param {IMolContainer | string} mol  The molecule or molecule id.
+   */
   private _clearSurface(mol: IMolContainer | string) {
     let id = typeof mol === "string" ? mol : mol.id;
     if (id && this.surfaces[id]) {
@@ -67,6 +88,11 @@ export default class ViewerPanel extends Vue {
     }
   }
 
+  /**
+   * Remove a model.
+   * 
+   * @param {string} id The id of the model to remove.
+   */
   private _removeModel(id: string) {
     let mol = this.molCache[id];
 
@@ -83,7 +109,12 @@ export default class ViewerPanel extends Vue {
     // changes to appear in 3dmoljs viewer.
   }
 
-  private _removeOldModels(terminalNodes: IMolContainer[]): void {
+  /**
+   * Remove models no longer present in the vuex store molecules variables.
+   *
+   * @param {IMolContainer[]} terminalNodes  The terminal nodes of the treeview.
+   */
+  private _removeOldModels(terminalNodes: IMolContainer[]) {
     // Remove any molecules not presently in the terminal nodes.
 
     // Get the ids of the actual terminal nodes (should have deleted element
@@ -103,17 +134,16 @@ export default class ViewerPanel extends Vue {
     // Remove it from the cache, viewer, etc.
     idsOfMolsToDelete.forEach((id: string) => {
       this._removeModel(id);
-
-      // Remove from terminal nodes (local variable) so you don't regenerate it
-      // again.
-      // terminalNodes = terminalNodes.filter((node) => node.id !== id);
     });
-
-    // return terminalNodes;
   }
 
-  private _checkStyleChanges(): any[] {
-    let visibleTerminalNodeModels: any[] = [];
+  /**
+   * Updates any style changes.
+   *
+   * @returns {GLModel[]}  The GLModels that are visible.
+   */
+  private _updateStyleChanges(): GLModel[] {
+    let visibleTerminalNodeModels: GLModel[] = [];
     let terminalNodes = getTerminalNodes(this.treeview);
 
     this._removeOldModels(terminalNodes);
@@ -122,7 +152,7 @@ export default class ViewerPanel extends Vue {
       let id = mol.id as string;
 
       if (mol.visible) {
-        visibleTerminalNodeModels.push(mol.model);
+        visibleTerminalNodeModels.push(mol.model as GLModel);
       }
 
       // If it's not in the cache, the system has probably not yet loaded the
@@ -213,17 +243,22 @@ export default class ViewerPanel extends Vue {
     return visibleTerminalNodeModels;
   }
 
-  private _zoomPerFocus(visibleTerminalNodeModels: any[]) {
-    let molsToFocus: IMolContainer[] = [];
+  /**
+   * Zoom in on the visible molecules.
+   * 
+   * @param {GLModel[]} visibleTerminalNodeModels  The visible models.
+   */
+  private _zoomPerFocus(visibleTerminalNodeModels: GLModel[]) {
+    let molsToFocus: GLModel[] = [];
     for (const mol of getAllNodesFlattened(this.treeview)) {
       if (mol.focused) {
         if (!mol.nodes) {
           // Already terminal
-          molsToFocus = [mol.model as any];
+          molsToFocus = [mol.model as GLModel];
         } else {
           molsToFocus = getTerminalNodes(mol.nodes).map(
             (n) => n.model
-          ) as any[];
+          ) as GLModel[];
         }
         break;
       }
@@ -240,6 +275,11 @@ export default class ViewerPanel extends Vue {
     // api.visualization.viewer.zoom(0.8);
   }
 
+  /**
+   * Make the atoms mouseover hoverable and clickable.
+   * 
+   * @param {any} sel  The selection of the atoms to use.
+   */
   private _makeAtomsHoverableAndClickable(sel: any) {
     api.visualization.viewer.setHoverable(
       sel,
@@ -307,7 +347,7 @@ export default class ViewerPanel extends Vue {
     );
   }
 
-  // Mounted
+  /** mounted function */
   mounted() {
     dynamicImports.mol3d.module
       .then(($3Dmol: any) => {

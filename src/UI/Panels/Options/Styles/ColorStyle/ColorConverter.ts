@@ -147,7 +147,7 @@ export let colorInfomation = [
 ];
 /**
  * Convert hex to rgb values
- * 
+ *
  * @param  {string} hex  Hex color value
  * @returns {number[] | null}  RGB values
  */
@@ -169,7 +169,7 @@ colorInfomation = colorInfomation.map((v: _IColorInfo): _IColorInfo => {
 
 /**
  * Get the color name closest to a given hex color
- * 
+ *
  * @param  {string} hex  Hex color value
  * @returns {string}  Color name
  */
@@ -180,12 +180,13 @@ export function hexToColorName(hex: string): string {
     // No go through colorInformation and calculate distance to rgb
     const distances = colorInfomation.map((v: _IColorInfo): number => {
         const rgb2 = v.rgb as number[];
-        const distance = Math.sqrt(
+
+        // distance
+        return Math.sqrt(
             Math.pow(rgb2[0] - rgb[0], 2) +
                 Math.pow(rgb2[1] - rgb[1], 2) +
                 Math.pow(rgb2[2] - rgb[2], 2)
         );
-        return distance;
     });
 
     // Get index on min distance
@@ -195,12 +196,14 @@ export function hexToColorName(hex: string): string {
 
 /**
  * Get the hex color value closest to a given color name
- * 
+ *
  * @param  {string} name  Color name
  * @returns {string}  Hex color value
  */
 export function colorNameToHex(name: string): string {
-    const color = colorInfomation.find((v: _IColorInfo): boolean => v.name === name);
+    const color = colorInfomation.find(
+        (v: _IColorInfo): boolean => v.name === name
+    );
     if (color) {
         return color.hex;
     }

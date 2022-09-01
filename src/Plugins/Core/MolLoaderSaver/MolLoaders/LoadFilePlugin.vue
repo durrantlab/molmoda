@@ -20,6 +20,9 @@ import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadMoleculeFil
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
+/**
+ * LoadFilePlugin
+ */
 @Options({
   components: {
     Popup,
@@ -39,20 +42,37 @@ export default class LoadFilePlugin extends PopupPluginParent {
 
   intro = "";  // Not used.
 
-  onFilesLoaded(files: IFileInfo[]): void {
+  /**
+   * Runs when the files are loaded.
+   * 
+   * @param {IFileInfo[]} files  The files that were loaded.
+   */
+  onFilesLoaded(files: IFileInfo[]) {
     this.filesToLoad = files;
   }
 
-  onPopupDone(): void {
+  /**
+   * Runs when the popup closes via done button.
+   */
+  onPopupDone() {
     this.closePopup();
     this.submitJobs(this.filesToLoad);
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IFileInfo} parameters  Information about the molecule to load.
+   */
   runJob(parameters: IFileInfo) {
     loadMoleculeFile(parameters);
   }

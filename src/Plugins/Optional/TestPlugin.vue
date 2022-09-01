@@ -26,6 +26,9 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { OptionalPluginParent } from "./OptionalPluginParent";
 import { Options } from "vue-class-component";
 
+/**
+ * TestPlugin
+ */
 @Options({
   components: {
     PopupOptionalPlugin,
@@ -73,12 +76,21 @@ export default class TestPlugin extends OptionalPluginParent {
     } as IFormGroup,
   ];
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     return;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  runJob(_args: IUserArg[]) {
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
+   */
+   runJob(_args: IUserArg[]) {
+    console.log(_args);
     // dynamicImports.browserfs.module
     // .then((browserfs: any) => {
     //   const BFS = new browserfs.EmscriptenFS();

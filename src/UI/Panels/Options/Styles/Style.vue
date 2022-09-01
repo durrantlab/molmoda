@@ -101,6 +101,9 @@ export interface IStyleName {
   name: MolType;
 }
 
+/**
+ * Style component
+ */
 @Options({
   components: {
     Section,

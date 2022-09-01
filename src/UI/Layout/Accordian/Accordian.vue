@@ -9,6 +9,9 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * Accordian component
+ */
 @Options({
   components: {},
 })

@@ -21,12 +21,15 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import EditBarPluginParent from "./EditBarPluginParent";
 
+/**
+ * RenameMolPlugin
+ */
 @Options({
   components: {
     PopupOneTextInput,
   },
 })
-export default class RenameMol extends EditBarPluginParent {
+export default class RenameMolPlugin extends EditBarPluginParent {
   menuPath = "Edit/Molecules/[1] Rename";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -39,15 +42,20 @@ export default class RenameMol extends EditBarPluginParent {
   intro = `Enter the new name for this molecule.`;
   title = "";
 
-  beforePopupOpen(): void {
-    this.title = "";
-  }
-
-  protected onPopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.setNodeToActOn();
     this.title = this.nodeToActOn?.title;
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {string} newName  The new name of the renamed molecule.
+   */ 
   runJob(newName: string) {
     if (this.nodeToActOn) {
       this.nodeToActOn.title = newName;

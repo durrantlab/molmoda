@@ -32,6 +32,9 @@ import { slugify } from "@/Core/Utils";
 import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
+/**
+ * SavePDBMol2Plugin
+ */
 @Options({
   components: {
     PopupOneTextInput,
@@ -74,28 +77,39 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
     return matchesFilename(this.filename);
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.filename = "";
   }
 
   /**
-   * Runs when the popup closes.
+   * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
     this.closePopup();
     this.submitJobs([{ filename: this.filename }]);
   }
 
-  private _getFilename(node: IMolContainer, ext: string): string {
-    let txtPrts = [getFileNameParts(node.src as string).basename];
-    let firstAtom: IAtom = (node.model as any).selectedAtoms({})[0];
-    if (node.type === "compound") {
+  /**
+   * Get a filename appropriate for a given node (molecule).
+   * 
+   * @param {IMolContainer} molContainer  The molecule.
+   * @param {string} ext  The extension to use.
+   * @returns {string} The filename.
+   */
+  private _getFilename(molContainer: IMolContainer, ext: string): string {
+    let txtPrts = [getFileNameParts(molContainer.src as string).basename];
+    let firstAtom: IAtom = (molContainer.model as any).selectedAtoms({})[0];
+    if (molContainer.type === "compound") {
       txtPrts.push(firstAtom.resn.trim());
       txtPrts.push(firstAtom.resi.toString().trim());
     }
 
     txtPrts.push(firstAtom.chain.trim());
-    txtPrts.push(node.type as string);
+    txtPrts.push(molContainer.type as string);
 
     // remove undefined or ""
     txtPrts = txtPrts.filter((x) => x);
@@ -103,6 +117,11 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
     return slugify(txtPrts.join("-"), false) + "." + ext;
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {any} parameters  Information about the molecules to save.
+   */
   runJob(parameters: any) {
     let filename = parameters.filename;
 

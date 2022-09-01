@@ -14,6 +14,12 @@ export const dynamicImports = {
             url: "https://stuk.github.io/jszip/",
             license: Licenses.MIT,
         },
+
+        /**
+         * Gets the module.
+         * 
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "jszip" */
@@ -30,6 +36,12 @@ export const dynamicImports = {
             url: "https://github.com/eligrey/FileSaver.js/",
             license: Licenses.MIT,
         },
+
+        /**
+         * Gets the module.
+         * 
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "filesaver" */
@@ -46,6 +58,12 @@ export const dynamicImports = {
             url: "https://3dmol.csb.pitt.edu/",
             license: Licenses.BSD3,
         },
+
+        /**
+         * Gets the module.
+         * 
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "3dmol" */
@@ -63,6 +81,12 @@ export const dynamicImports = {
             url: "https://github.com/streamich/memfs",
             license: Licenses.PUBLICDOMAIN,
         },
+
+        /**
+         * Gets the module.
+         * 
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "memfs" */
@@ -79,6 +103,12 @@ export const dynamicImports = {
             url: "https://github.com/jvilk/BrowserFS",
             license: Licenses.MIT,
         },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "browserfs" */

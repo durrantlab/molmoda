@@ -118,6 +118,9 @@ interface IIconsToDisplay {
   delete?: boolean;
 }
 
+/**
+ * TitleBar component
+ */
 @Options({
   components: {
     IconSwitcher,
@@ -130,14 +133,29 @@ export default class TitleBar extends Vue {
   @Prop({ default: 0 }) depth!: number;
   @Prop({ default: undefined }) treeData!: IMolContainer[];
 
+  /**
+   * Get the id of the molecule (node).
+   * 
+   * @returns {string} The id of the molecule (node).
+   */
   get treeDatumID(): MolType {
     return this.treeDatum.id as MolType;
   }
 
+  /**
+   * Get the indent style for the title bar.
+   * 
+   * @returns {string} The indent style for the title bar.
+   */
   get indentStyle(): string {
     return `margin-left:${8 * this.depth}px;`;
   }
 
+  /**
+   * Get the data associated with this.treeData.
+   * 
+   * @returns {any}  The data associated with this.treeData.
+   */
   get getLocalTreeData(): any {
     if (!this.treeData) {
       return this.$store.state["molecules"];
@@ -145,6 +163,11 @@ export default class TitleBar extends Vue {
     return this.treeData;
   }
 
+  /**
+   * Determine which icons to display.
+   *
+   * @returns {IIconsToDisplay} Information about the icons to display.
+   */
   get iconsToDisplay(): IIconsToDisplay {
     let toDisplay: IIconsToDisplay = {};
 
@@ -166,10 +189,22 @@ export default class TitleBar extends Vue {
     return toDisplay;
   }
 
+  /**
+   * Get the style for a fixed-width element.
+   * 
+   * @param {number} width  The width of the element.
+   * @returns {string}  The style for the element.
+   */
   flexFixedWidth(width: number): string {
     return flexFixedWidthStyle(width);
   }
 
+  /**
+   * The background style to use, depending on whether the molecule is selected.
+   *
+   * @param {string} id  The id of the selected molecule (node).
+   * @returns {string}  The style.
+   */
   selectedStyle(id: string): string {
     let node = this.getNode(id);
     return node.selected !== SelectedType.FALSE
@@ -184,15 +219,32 @@ export default class TitleBar extends Vue {
   //     : "";
   // }
 
+  /**
+   * Whether a molecule is selected.
+   *
+   * @param {string} id The id of the molecule (node).
+   * @returns {boolean} Whether the molecule is selected.
+   */
   isSelected(id: string): boolean {
     let node = this.getNode(id);
     return node.selected === SelectedType.TRUE;
   }
 
+  /**
+   * Get the node with the given id.
+   * 
+   * @param {string} id  The id of the node.
+   * @returns {any}  The node with the given id.
+   */
   getNode(id: string): any {
     return getNodeOfId(id, this.getLocalTreeData);
   }
 
+  /**
+   * Expand or collapse a molecule (node).
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
   toggleExpand(id: string) {
     let node = this.getNode(id);
     if (node !== null) {
@@ -200,6 +252,11 @@ export default class TitleBar extends Vue {
     }
   }
 
+  /**
+   * Toggle whether a molecule is visible.
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
   toggleVisible(id: string) {
     let node = this.getNode(id);
 
@@ -216,6 +273,11 @@ export default class TitleBar extends Vue {
     }
   }
 
+  /**
+   * Toggle whether a molecule is focused.
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
   toggleFocused(id: string) {
     let allData = this.$store.state["molecules"];
     if (this.getNode(id).focused) {
@@ -229,18 +291,38 @@ export default class TitleBar extends Vue {
     }
   }
 
-  renameMol(treeDatumID: string) {
-    api.plugins.runPlugin("renamemol", treeDatumID);
+  /**
+   * Rename a molecule.
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
+  renameMol(id: string) {
+    api.plugins.runPlugin("renamemol", id);
   }
 
-  cloneExtractMol(treeDatumID: string) {
-    api.plugins.runPlugin("cloneextractmol", treeDatumID);
+  /**
+   * Clone a molecule.
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
+  cloneExtractMol(id: string) {
+    api.plugins.runPlugin("cloneextractmol", id);
   }
 
-  deleteMol(treeDatumID: string) {
-    api.plugins.runPlugin("deletemol", treeDatumID);
+  /**
+   * Delete a molecule.
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
+  deleteMol(id: string) {
+    api.plugins.runPlugin("deletemol", id);
   }
 
+  /**
+   * Runs when the user clicks the title.
+   * 
+   * @param {string} id  The id of the molecule (node).
+   */
   titleClick(id: string) {
     let node = this.getNode(id);
     let deselectOnly = node.selected === SelectedType.TRUE;

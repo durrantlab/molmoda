@@ -8,12 +8,15 @@ import { PluginParent } from "@/Plugins/PluginParent";
 import * as api from "@/Api";
 import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
 
+/**
+ * UndoPlugin
+ */
 @Options({
   components: {
     Popup,
   },
 })
-export default class Undo extends PluginParent {
+export default class UndoPlugin extends PluginParent {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
@@ -27,10 +30,19 @@ export default class Undo extends PluginParent {
   ];
   pluginId = "undo";
 
+  /**
+   * Runs when the user first starts the plugin. 
+   */
   onPluginStart() {
     this.submitJobs();
   }
 
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
   checkUseAllowed(): string | null {
     if (undoStack.length === 0) {
       return "No additional undo is available.";
@@ -38,12 +50,17 @@ export default class Undo extends PluginParent {
     return null;
   }
 
+  /**
+   * Called when the plugin is mounted.
+   */
   onMounted() {
     api.hooks.onMoleculesChanged(addToUndoStackAfterUserInaction);
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   */
   runJob() {
-    // About plugin does not have a job.
     undo(this.$store);
   }
 }

@@ -27,6 +27,9 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import CombineProteins from "@/UI/Forms/CombineProteins.vue";
 
+/**
+ * PopupOptionalPlugin component
+ */
 @Options({
   components: {
     Popup,
@@ -44,16 +47,25 @@ export default class PopupOptionalPlugin extends Vue {
   openToUse = false;
   userInputsToUse: FormElement[] = [];
 
+  /**
+   * Watches the open variable.
+   * 
+   * @param {boolean} newValue  The new value of the open variable.
+   */
   @Watch("open")
   onOpenChange(newValue: boolean) {
     this.openToUse = newValue;
   }
 
+  /**
+   * Runs when the popup is done because used pressed action button.
+   */
   onPopupDone() {
     const userParams: IUserArg[] = collapseFormElementArray(this.userInputs);
     this.$emit("onPopupDone", userParams);
   }
 
+  /** mounted function */
   mounted() {
     // Make a copy of user inputs so you can use with v-model. So not reactive
     // in parent.

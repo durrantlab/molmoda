@@ -35,6 +35,9 @@ export interface IMenuItem {
     _text?: string;
 }
 
+/**
+ * MenuLevelParent component
+ */
 export class MenuLevelParent extends Vue {
     isAction(item: IMenuEntry | IMenuSeparator): boolean {
         return item.type === MenuItemType.ACTION;

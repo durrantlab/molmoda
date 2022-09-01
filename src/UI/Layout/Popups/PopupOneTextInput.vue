@@ -40,6 +40,9 @@ function _neverFilter(str: string): string {
   return str;
 }
 
+/**
+ * PopupOneTextInput component
+ */
 @Options({
   components: {
     Popup,

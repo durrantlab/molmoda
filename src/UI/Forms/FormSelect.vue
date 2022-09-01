@@ -28,6 +28,9 @@ export interface IFromOption {
   val: any;
 }
 
+/**
+ * FormSelect component
+ */
 @Options({
   components: {},
 })

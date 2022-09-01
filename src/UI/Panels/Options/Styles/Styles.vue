@@ -27,6 +27,9 @@ interface IStyleCount {
   count: number,
 }
 
+/**
+ * Styles component
+ */
 @Options({
   components: {
     Section,

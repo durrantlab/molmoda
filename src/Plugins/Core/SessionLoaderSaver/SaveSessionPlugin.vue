@@ -22,6 +22,9 @@ import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
 
+/**
+ * SaveSessionPlugin
+ */
 @Options({
   components: {
     PopupOneTextInput,
@@ -45,6 +48,11 @@ export default class SaveSessionPlugin extends PopupPluginParent {
 
   filename = "";
 
+  /**
+   * Determine which into text to use.
+   * 
+   * @returns {string} The intro text to use.
+   */
   get introToUse(): string {
     let i = "";
     
@@ -77,6 +85,12 @@ export default class SaveSessionPlugin extends PopupPluginParent {
     return matchesFilename(this.filename);
   }
 
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
   checkUseAllowed(): string | null {
     if (this.$store.state.molecules.length === 0) {
       return "Nothing to save (empty project). Try adding molecules first.";
@@ -85,19 +99,28 @@ export default class SaveSessionPlugin extends PopupPluginParent {
     return null;
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.windowClosing = this.payload !== undefined;
     this.payload = undefined;
   }
 
   /**
-   * Runs when the popup closes.
+   * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
     this.closePopup();
     this.submitJobs([{ filename: this.filename }]);
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {any} parameters  Information about the file to save.
+   */
   runJob(parameters: any) {
     let filename = parameters.filename;
 

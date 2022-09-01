@@ -15,10 +15,11 @@ import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkAnyMolSelected } from "./Utils";
 
+/** ClearSelectionPlugin */
 @Options({
   components: {},
 })
-export default class ClearSelection extends PluginParent {
+export default class ClearSelectionPlugin extends PluginParent {
   menuPath = ["Edit", "Molecules", "[7] Clear Selection"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -29,14 +30,26 @@ export default class ClearSelection extends PluginParent {
   ];
   pluginId = "clearselection";
 
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
   checkUseAllowed(): string | null {
     return checkAnyMolSelected(this);
   }
 
+  /**
+   * Runs when the user first starts the plugin. 
+   */
   onPluginStart() {
     this.submitJobs();
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   */
   runJob() {
     const allNodes = getAllNodesFlattened(this.$store.state["molecules"]);
     allNodes.forEach((n) => {

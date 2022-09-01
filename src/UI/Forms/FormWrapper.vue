@@ -15,6 +15,9 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * FormWrapper component
+ */
 @Options({
   components: {},
 })

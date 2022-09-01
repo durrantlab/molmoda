@@ -27,6 +27,9 @@ import { IMenuItem } from "./Menu";
 let collapseHamburger: any;
 let hamburgerMenu: HTMLElement;
 
+/**
+ * MenuActionLink component
+ */
 @Options({
   components: {},
 })

@@ -10,13 +10,13 @@
     <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
     <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <SavePDBMol2Plugin @onPluginSetup="onPluginSetup"></SavePDBMol2Plugin>
-    <Undo @onPluginSetup="onPluginSetup"></Undo>
-    <Redo @onPluginSetup="onPluginSetup"></Redo>
-    <RenameMol @onPluginSetup="onPluginSetup"></RenameMol>
-    <CloneExtractMol @onPluginSetup="onPluginSetup"></CloneExtractMol>
-    <DeleteMol @onPluginSetup="onPluginSetup"></DeleteMol>
-    <ClearSelection @onPluginSetup="onPluginSetup"></ClearSelection>
-    <SimpleMsg @onPluginSetup="onPluginSetup"></SimpleMsg>
+    <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
+    <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
+    <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
+    <CloneExtractMolPlugin @onPluginSetup="onPluginSetup"></CloneExtractMolPlugin>
+    <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
+    <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
+    <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
     
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
   </div>
@@ -37,16 +37,19 @@ import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldP
 import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
 import LoadFilePlugin from "./Core/MolLoaderSaver/MolLoaders/LoadFilePlugin.vue";
 import SavePDBMol2Plugin from "./Core/MolLoaderSaver/MolSaver/SavePDBMol2Plugin.vue";
-import Undo from "./Core/UndoRedo/Undo.vue";
-import Redo from "./Core/UndoRedo/Redo.vue";
-import RenameMol from "./Core/EditBar/RenameMol.vue";
-import CloneExtractMol from "./Core/EditBar/CloneExtractMol.vue";
-import DeleteMol from "./Core/EditBar/DeleteMol.vue";
-import ClearSelection from "./Core/EditBar/ClearSelection.vue";
-import SimpleMsg from "./Core/SimpleMsg.vue";
+import UndoPlugin from "./Core/UndoRedo/Undo.vue";
+import RedoPlugin from "./Core/UndoRedo/Redo.vue";
+import RenameMolPlugin from "./Core/EditBar/RenameMol.vue";
+import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMol.vue";
+import DeleteMolPlugin from "./Core/EditBar/DeleteMol.vue";
+import ClearSelectionPlugin from "./Core/EditBar/ClearSelection.vue";
+import SimpleMsgPlugin from "./Core/SimpleMsg.vue";
 
 import TestPlugin from "./Optional/TestPlugin.vue";
 
+/**
+ * Component where all plugins are placed.
+ */
 @Options({
   components: {
     AboutPlugin,
@@ -59,13 +62,13 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     SavePNGPlugin,
     SaveVRMLPlugin,
     SavePDBMol2Plugin,
-    Undo,
-    Redo,
-    RenameMol,
-    CloneExtractMol,
-    DeleteMol,
-    ClearSelection,
-    SimpleMsg,
+    UndoPlugin,
+    RedoPlugin,
+    RenameMolPlugin,
+    CloneExtractMolPlugin,
+    DeleteMolPlugin,
+    ClearSelectionPlugin,
+    SimpleMsgPlugin,
 
     TestPlugin
   },

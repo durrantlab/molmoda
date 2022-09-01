@@ -15,6 +15,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import BSToolTip from "bootstrap/js/dist/tooltip";
 
+/**
+ * Tooltip component
+ */
 @Options({
   components: {},
 })
@@ -22,6 +25,7 @@ export default class Tooltip extends Vue {
   @Prop({ required: true }) title!: string;
   @Prop({ default: "top" }) placement!: string;
 
+  /** mounted function */
   mounted() {
     new BSToolTip(this.$refs["tooltip"] as Element);
   }

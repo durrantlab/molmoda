@@ -26,6 +26,9 @@ import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { jsonToState } from "@/Store/LoadAndSaveStore";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
+/**
+ * OpenSessionPlugin
+ */
 @Options({
   components: {
     Popup,
@@ -43,20 +46,37 @@ export default class OpenSessionPlugin extends PopupPluginParent {
   pluginId = "loadsession";
   intro = "";  // Not used
 
-  onFilesLoaded(files: IFileInfo[]): void {
+  /**
+   * Runs when the files are loaded.
+   * 
+   * @param {IFileInfo[]} files  The files that were loaded.
+   */
+  onFilesLoaded(files: IFileInfo[]) {
     this.filesToLoad = files;
   }
 
-  onPopupDone(): void {
+  /**
+   * Runs when the user presses the action button and the popup closes.
+   */
+  onPopupDone() {
     this.closePopup();
     this.submitJobs(this.filesToLoad);
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IFileInfo} parameters  Information about the molecules to save.
+   */
   runJob(parameters: IFileInfo) {
     jsonToState(parameters.contents)
     .then((state) => {

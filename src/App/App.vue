@@ -32,6 +32,10 @@ import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { IPluginSetupInfo } from "@/Plugins/PluginParent";
 import { dynamicImports } from "@/Core/DynamicImports";
 
+
+/**
+ * Main app component
+ */
 @Options({
   components: {
     GoldLayout,
@@ -106,6 +110,7 @@ export default class App extends Vue {
     );
   }
 
+  /** mounted function */
   mounted() {
     // Close enough to rendered, I think.
     // api.sys.loadStatus.vueRendered = true;

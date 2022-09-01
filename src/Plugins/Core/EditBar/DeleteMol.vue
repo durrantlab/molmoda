@@ -6,8 +6,8 @@
     actionBtnTxt="Delete"
     @onDone="onPopupDone"
     :isActionBtnEnabled="true"
-    :onShown="onPopupOpen"
   >
+    <!-- :onShown="onPopupOpen" -->
     <p v-if="intro !== ''" v-html="intro"></p>
   </Popup>
 </template>
@@ -26,12 +26,15 @@ import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
+/**
+ * DeleteMolPlugin
+ */
 @Options({
   components: {
     Popup,
   },
 })
-export default class DeleteMol extends EditBarPluginParent {
+export default class DeleteMolPlugin extends EditBarPluginParent {
   menuPath = ["Edit", "Molecules", "[3] Delete"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -43,14 +46,17 @@ export default class DeleteMol extends EditBarPluginParent {
   pluginId = "deletemol";
   intro = "Delete the selected molecule.";
 
+  /**
+   * Runs before the popup opens. Will almost always need this, so requiring
+   * children to define it.
+   */
   beforePopupOpen(): void {
-    return;
-  }
-
-  public onPopupOpen(): void {
     this.setNodeToActOn();
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   */
   runJob() {
     if (this.nodeToActOn) {
       // Get the parent node and remove this from it's nodes.

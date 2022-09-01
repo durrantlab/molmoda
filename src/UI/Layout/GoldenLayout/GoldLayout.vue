@@ -51,6 +51,9 @@ import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 import * as api from "@/Api";
 
+/**
+ * GoldLayout component
+ */
 @Options({
   components: {
     GoldenLayoutContainer,
@@ -61,8 +64,12 @@ import * as api from "@/Api";
   },
 })
 export default class GoldLayout extends Vue {
-  // msg!: string;
-
+  /**
+   * Extract data from the DOM.
+   * 
+   * @param {HTMLElement} dom  The DOM element to extract data from.
+   * @returns {any[]}  The data extracted from the DOM.
+   */
   private _convertDOMToData(dom: HTMLElement): any[] {
     let children = dom.children;
     let content = [];
@@ -101,6 +108,12 @@ export default class GoldLayout extends Vue {
     return content;
   }
 
+  /**
+   * Set up the Golden Layout.
+   * 
+   * @param {HTMLElement} dataDOM  The DOM.
+   * @param {any}         config   The Golden Layout configuration.
+   */
   private _setupGoldenLayout(dataDOM: HTMLElement, config: any) {
     const glContainer = document.getElementById("golden-layout") as HTMLElement;
     const myLayout = new GoldenLayout(glContainer);
@@ -142,11 +155,15 @@ export default class GoldLayout extends Vue {
     // this.makeGoldenLayoutBootstrapCompatible();
   }
 
+  /**
+   * Clears any selected molecules. This is called when the user clicks on the
+   * background of the tree view.
+   */
   clearSelection() {
     api.plugins.runPlugin("clearselection");
   }
 
-  // Mounted
+  /** mounted function */
   mounted() {
     let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
 

@@ -25,12 +25,14 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { getAllNodesFlattened, getNodeOfId } from "./TreeUtils";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
 import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
 
+/**
+ * TreeView component
+ */
 @Options({
   components: {
     IconSwitcher,
@@ -43,6 +45,12 @@ export default class TreeView extends Vue {
   @Prop({ default: undefined }) treeData!: Array<any>;
   @Prop({ default: undefined }) styleToUse!: string;
 
+  /**
+   * Get the style for a fixed-width element.
+   * 
+   * @param {number} width  The width of the element.
+   * @returns {string}  The style for the element.
+   */
   flexFixedWidth(width: number): string {
     return flexFixedWidthStyle(width);
   }
@@ -52,75 +60,34 @@ export default class TreeView extends Vue {
   //   alert("changed");
   // }
 
+  /**
+   * Get the indent style for the title bar.
+   * 
+   * @returns {string} The indent style for the title bar.
+   */
   get indentStyle(): string {
     return `margin-left:${8 * this.depth}px`;
   }
 
+  /**
+   * Get the molecules from the vuex store.
+   * 
+   * @returns {any} The molecules from the vuex store.
+   */
   get storeMolecules(): any {
     return this.$store.state["molecules"];
   }
 
+  /**
+   * Get the local tree data.
+   * 
+   * @returns {any} The local tree data.
+   */
   get getLocalTreeData(): any {
     if (!this.treeData) {
       return this.storeMolecules;
     }
     return this.treeData;
-  }
-
-  getNode(id: string): any {
-    return getNodeOfId(id, this.getLocalTreeData);
-  }
-
-  toggleExpand(id: string) {
-    let node = this.getNode(id);
-    if (node !== null) {
-      node.treeExpanded = !node.treeExpanded;
-    }
-  }
-
-  toggleVisible(id: string) {
-    let node = this.getNode(id);
-    if (node !== null) {
-      let newVisible = !node.visible;
-      node.visible = newVisible;
-      node.viewerDirty = true;
-      if (node.nodes) {
-        for (let node2 of getAllNodesFlattened(node.nodes)) {
-          node2.visible = newVisible;
-          node2.viewerDirty = true;
-        }
-      }
-    }
-  }
-
-  toggleFocused(id: string) {
-    let allData = this.storeMolecules;
-    if (this.getNode(id).focused) {
-      // If the one you're clicking is already focused, then unfocus all.
-      this.$store.commit("clearFocusedMolecule");
-    } else {
-      // Otherwise, focus on the one you clicked.
-      for (let node of getAllNodesFlattened(allData)) {
-        node.focused = node.id === id;
-      }
-    }
-  }
-
-  titleClick(id: string) {
-    let node = this.getNode(id);
-    if (node != null) {
-      node.styles = [
-        {
-          selection: {},
-          style: {
-            line: {
-              color: "red",
-            },
-          },
-        },
-      ];
-      node.viewerDirty = true;
-    }
   }
 }
 </script>

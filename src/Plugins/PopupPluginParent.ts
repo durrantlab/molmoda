@@ -1,5 +1,8 @@
 import { PluginParent } from "./PluginParent";
 
+/**
+ * PopupPluginParent
+ */
 export abstract class PopupPluginParent extends PluginParent {
     abstract intro: string;
     public open = false;
@@ -40,24 +43,43 @@ export abstract class PopupPluginParent extends PluginParent {
      */
     abstract onPopupDone(userInput?: any): void;
 
-    protected closePopup(): void {
+    /**
+     * Closes the popup.
+     */
+    protected closePopup() {
         this.open = false;
     }
 
+    /**
+     * Opens the popup.
+     */
     protected openPopup(): void {
         this.open = true;
     }
 
-    // Runs before the popup opens. Good for initializing/resenting variables
-    // (e.g., clear inputs from previous open). Will almost always need this, so
-    // requiring children to define it.
+    /**
+     * Runs before the popup opens. Good for initializing/resenting variables
+     * (e.g., clear inputs from previous open). Will almost always need this, so
+     * requiring children to define it.
+     */
     abstract beforePopupOpen(): void;
 
-    protected onPopupOpen(): void {
+    /**
+     * Runs after the popup opens. Good for setting focus in text elements.
+     */
+    protected onPopupOpen() {
         // can be optionally overridden.
         return;
     }
 
+    /**
+     * Runs when the user first starts the plugin. For example, if the plugin is
+     * in a popup, this function would open the popup. 
+     *
+     * @param {any} [payload]  Included if you want to pass extra data to the
+     *                         plugin. Probably only useful if not using the
+     *                         menu system. Optional.
+     */
     onPluginStart(payload?: any): void {
         // Children should not overwrite this function! Use onPopupOpen instead.
         this.payload = payload;

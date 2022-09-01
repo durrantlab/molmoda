@@ -40,6 +40,9 @@ import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";
 
+/**
+ * MenuLevel3 component
+ */
 @Options({
   components: {
     MenuActionLink,

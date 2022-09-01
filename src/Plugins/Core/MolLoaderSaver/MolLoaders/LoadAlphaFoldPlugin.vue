@@ -25,6 +25,9 @@ import {
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
 
+/**
+ * LoadAlphaFoldPlugin
+ */
 @Options({
   components: {
     PopupOneTextInput,
@@ -84,12 +87,16 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
     return this.uniprot.match(r) !== null;
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.uniprot = "";
   }
 
   /**
-   * Runs when the popup closes.
+   * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
     this.closePopup();
@@ -116,6 +123,11 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParent {
       });
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IFileInfo} parameters  Information about the molecule to load.
+   */
   runJob(parameters: IFileInfo) {
     loadMoleculeFile(parameters);
   }

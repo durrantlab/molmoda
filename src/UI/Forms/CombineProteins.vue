@@ -36,6 +36,9 @@ import { IMolContainer, MolType } from "../Navigation/TreeView/TreeInterfaces";
 import { getRootNodesOfType, getTerminalNodes } from "../Navigation/TreeView/TreeUtils";
 import FormSelect, { IFromOption } from "./FormSelect.vue";
 
+/**
+ * CombineProteins component
+ */
 @Options({
   components: {
     FormElementDescription,

@@ -64,20 +64,24 @@ All classes that inherit PopupPluginParent should not use @beforePopupOpen and
 verify everythign documented correctly too.
 
 
-https://github.com/xjamundx/eslint-plugin-promise
-https://github.com/brettz9/eslint-plugin
-https://github.com/mysticatea/eslint-plugin
-https://github.com/sindresorhus/eslint-plugin-unicorn
-https://github.com/SonarSource/eslint-plugin-sonarjs
-https://github.com/github/eslint-plugin-github
-https://github.com/KidkArolis/healthier
-https://github.com/sheerun/prettier-standard
-https://github.com/davidjbradshaw/eslint-config-adjunct
-https://github.com/AlloyTeam/eslint-config-alloy
 
+https://github.com/davidjbradshaw/eslint-config-adjunct (see list)
+
+install typedoc
+
+Plugin class names must end in "Plugin" ... mke eslint plugin
 
 # DONE
 
+https://github.com/AlloyTeam/eslint-config-alloy
+https://github.com/sheerun/prettier-standard
+https://github.com/KidkArolis/healthier
+https://github.com/github/eslint-plugin-github
+https://github.com/SonarSource/eslint-plugin-sonarjs
+https://github.com/sindresorhus/eslint-plugin-unicorn
+https://github.com/mysticatea/eslint-plugin
+https://github.com/brettz9/eslint-plugin
+https://github.com/xjamundx/eslint-plugin-promise
 https://github.com/RunDevelopment/eslint-plugin-clean-regex
 https://github.com/kantord/eslint-plugin-write-good-comments
 https://www.npmjs.com/package/eslint-plugin-jsdoc

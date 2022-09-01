@@ -33,6 +33,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 
+/**
+ * FormInput component
+ */
 @Options({
   components: {
     FormElementDescription,

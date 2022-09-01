@@ -110,6 +110,33 @@ function _alignAtomName(atomName: string, element?: string): string {
 }
 
 /**
+ * Create a single line of PDB text.
+ * 
+ * @param  {boolean} isProt  Whether the line is for a protein.
+ * @param  {IAtom}   atom    The atom to create the line for.
+ * @returns {string}  The PDB line.
+ */
+function _createPDBLine(isProt: boolean, atom: IAtom): string {
+    let pdbLine = _ljust(isProt ? "ATOM" : "HETATM", 6);
+    pdbLine += _rjust((atom.serial as number).toString(), 5);
+    pdbLine += " ";
+    pdbLine += _alignAtomName(atom.atom as string, atom.elem);
+    pdbLine += atom.altLoc; // altloc
+    pdbLine += _rjust(atom.resn, 3);
+    pdbLine += _rjust(atom.chain, 2);
+    pdbLine += _rjust(atom.resi.toString(), 4);
+    pdbLine += " "; // atom.ins?
+    pdbLine += _rjust((atom.x as number).toFixed(3), 11);
+    pdbLine += _rjust((atom.y as number).toFixed(3), 8);
+    pdbLine += _rjust((atom.z as number).toFixed(3), 8);
+    pdbLine += _rjust("1.00", 6); // occupancy
+    pdbLine += _rjust((atom.b as number).toFixed(2), 6);
+    pdbLine += _rjust(" ", 10); // Segment identifier is obsolete
+    pdbLine += _rjust(atom.elem?.toUpperCase() as string, 2);
+    return pdbLine;
+}
+
+/**
  * Given a list of 3dmol models, convert them to PDB format.
  *
  * @param  {GLModel[]} mols         The list of 3dmol models.
@@ -139,22 +166,7 @@ export function convertToPDB(mols: GLModel[], merge = false): string[] {
                 curSerial++;
             }
 
-            let pdbLine = _ljust(isProt ? "ATOM" : "HETATM", 6);
-            pdbLine += _rjust((atom.serial as number).toString(), 5);
-            pdbLine += " ";
-            pdbLine += _alignAtomName(atom.atom as string, atom.elem);
-            pdbLine += atom.altLoc; // altloc
-            pdbLine += _rjust(atom.resn, 3);
-            pdbLine += _rjust(atom.chain, 2);
-            pdbLine += _rjust(atom.resi.toString(), 4);
-            pdbLine += " "; // atom.ins?
-            pdbLine += _rjust((atom.x as number).toFixed(3), 11);
-            pdbLine += _rjust((atom.y as number).toFixed(3), 8);
-            pdbLine += _rjust((atom.z as number).toFixed(3), 8);
-            pdbLine += _rjust("1.00", 6); // occupancy
-            pdbLine += _rjust((atom.b as number).toFixed(2), 6);
-            pdbLine += _rjust(" ", 10); // Segment identifier is obsolete
-            pdbLine += _rjust(atom.elem?.toUpperCase() as string, 2);
+            const pdbLine = _createPDBLine(isProt, atom);
 
             if (
                 !isProt &&

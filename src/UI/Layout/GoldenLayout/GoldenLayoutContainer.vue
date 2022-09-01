@@ -9,6 +9,9 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * GoldenLayoutContainer component
+ */
 @Options({})
 export default class GoldenLayoutContainer extends Vue {
   @Prop() name!: string;
@@ -17,7 +20,7 @@ export default class GoldenLayoutContainer extends Vue {
   @Prop() width!: number;
   @Prop() height!: number;
 
-  // mounted
+  /** mounted function */
   mounted() {
     // Type must be 'row', 'column', or 'stack'.
     if (["row", "column", "stack"].indexOf(this.type) === -1) {

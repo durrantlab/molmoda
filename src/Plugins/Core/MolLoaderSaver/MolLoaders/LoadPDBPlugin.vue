@@ -22,6 +22,9 @@ import { loadRemote } from "./Utils";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
 
+/**
+ * LoadFilePlugin
+ */
 @Options({
   components: {
     PopupOneTextInput,
@@ -49,11 +52,21 @@ export default class LoadFilePlugin extends PopupPluginParent {
 
   pdbId = "";
 
+  /**
+   * If the user data is a properly formatted, enable the button. Otherwise,
+   * disabled.
+   *
+   * @returns {boolean} A boolean value, whether to disable the button.
+   */
   isBtnEnabled(): boolean {
     return this.pdbId.length === 4;
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.pdbId = "";
   }
 
@@ -74,7 +87,7 @@ export default class LoadFilePlugin extends PopupPluginParent {
   }
 
   /**
-   * Runs when the popup closes.
+   * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
     this.closePopup();
@@ -90,6 +103,11 @@ export default class LoadFilePlugin extends PopupPluginParent {
       });
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IFileInfo} parameters  Information about the molecule to load.
+   */
   runJob(parameters: IFileInfo) {
     loadMoleculeFile(parameters);
   }

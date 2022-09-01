@@ -52,6 +52,9 @@ import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import Section from "@/UI/Layout/Section.vue";
 import Styles from "./Styles/Styles.vue";
 
+/**
+ * StylesPanel component
+ */
 @Options({
   components: {
     FormWrapper,

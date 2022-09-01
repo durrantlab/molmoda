@@ -56,6 +56,7 @@ import {
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
 
+/** CloneExtractMolPlugin */
 @Options({
   components: {
     FormInput,
@@ -64,7 +65,7 @@ const extractDescription = `The selected molecule will be extracted (moved) from
     Popup,
   },
 })
-export default class CloneExtractMol extends EditBarPluginParent {
+export default class CloneExtractMolPlugin extends EditBarPluginParent {
   menuPath = ["Edit", "Molecules", "Clone/Extract"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -78,33 +79,49 @@ export default class CloneExtractMol extends EditBarPluginParent {
   newTitle = "";
   doExtract = false;
 
+  /**
+   * Returns text appropriate for the mode.
+   * 
+   * @returns {string} The text, either "Extract" or "Clone".
+   */
   get extractOrCloneTxt(): string {
     return this.doExtract ? "Extract" : "Clone";
   }
 
+  /**
+   * Whether to allow the user to select extract instead of clone (default).
+   *
+   * @returns {boolean} True if the user can select extract, false otherwise.
+   */
   get allowExtract(): boolean {
     if (this.nodeToActOn === undefined || this.nodeToActOn === null) {
       return false;
     }
-    if (this.nodeToActOn.parentId) {
-      return true;
-    }
-    return false;
+    return this.nodeToActOn.parentId !== undefined;
   }
 
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
   public beforePopupOpen(): void {
-    debugger;
     this.setNodeToActOn();
     this.doExtract = false;
     this.newTitle = this.nodeToActOn?.title + " (cloned)";
   }
 
-  public onPopupOpen(): void {
+  /**
+   * Runs after the popup opens. Good for setting focus in text elements.
+   */
+  onPopupOpen(): void {
     let focusTarget = (this.$refs.formInput as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
   }
 
+  /**
+   * Runs when the mode changes (between clone and extract).
+   */
   onModeChange() {
     if (this.doExtract) {
       this.intro = extractDescription;
@@ -117,6 +134,9 @@ export default class CloneExtractMol extends EditBarPluginParent {
     }
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   */
   runJob() {
     if (this.nodeToActOn) {
       let newerNode: IMolContainer;

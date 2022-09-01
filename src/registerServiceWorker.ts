@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable jsdoc/require-jsdoc */
 
 import { register } from 'register-service-worker'
 

@@ -21,6 +21,9 @@ import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";
 import MenuLevel3 from "./MenuLevel3.vue";
 
+/**
+ * MenuLevel2 component
+ */
 @Options({
   components: {
     MenuActionLink,

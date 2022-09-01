@@ -18,6 +18,9 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * Radio component
+ */
 @Options({
   components: {},
   emits: {onclick}

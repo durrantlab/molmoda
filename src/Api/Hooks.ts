@@ -19,7 +19,12 @@ export const hooksApi = {
         registerJobType(command, func);
     },
 
-    onMoleculesChanged(func: Function): void {
+    /**
+     * Adds a function to the onMoleculesChanged hook.
+     * 
+     * @param  {Function} func  The function to add.
+     */
+    onMoleculesChanged(func: Function) {
         allHooks.onMoleculesChanged.push(func);
     }
 }

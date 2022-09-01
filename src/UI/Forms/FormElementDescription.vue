@@ -10,6 +10,9 @@ import { Options, Vue } from "vue-class-component";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * FormElementDescription component
+ */
 @Options({
   components: {
     Alert,

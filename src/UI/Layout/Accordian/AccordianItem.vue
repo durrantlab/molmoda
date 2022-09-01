@@ -30,6 +30,9 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * AccordianItem component
+ */
 @Options({
   components: {},
 })
@@ -40,6 +43,7 @@ export default class AccordianItem extends Vue {
 
   show = false;
 
+  /** mounted function */
   mounted() {
     this.show = this.showInitially;
   }

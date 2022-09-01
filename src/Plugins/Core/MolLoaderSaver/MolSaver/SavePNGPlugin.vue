@@ -20,6 +20,9 @@ import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 
+/**
+ * SavePNGPlugin
+ */
 @Options({
   components: {
     PopupOneTextInput
@@ -61,18 +64,27 @@ export default class SavePNGPlugin extends PopupPluginParent {
     return matchesFilename(this.filename);
   }
 
-  beforePopupOpen(): void {
+  /**
+   * Runs before the popup opens. Good for initializing/resenting variables
+   * (e.g., clear inputs from previous open).
+   */
+  beforePopupOpen() {
     this.filename = "";
   }
 
   /**
-   * Runs when the popup closes.
+   * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
     this.closePopup();
     this.submitJobs([{ filename: this.filename }]);
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {any} parameters  Information about the PNG file to save.
+   */
   runJob(parameters: any) {
     let filename = parameters.filename;
 

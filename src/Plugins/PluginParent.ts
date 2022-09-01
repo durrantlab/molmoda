@@ -13,8 +13,11 @@ export interface IPluginSetupInfo {
 
 // Keep track of all loaded plugins. Useful for loading a plugin independent of
 // the menu system.
-export const loadedPlugins: {[key: string]: PluginParent} = {};
+export const loadedPlugins: { [key: string]: PluginParent } = {};
 
+/**
+ * PluginParent
+ */
 export abstract class PluginParent extends Vue {
     // The menu path. The vast majority of plugins should be accessible from the
     // menu. But set to null if you don't want it to be.
@@ -27,35 +30,55 @@ export abstract class PluginParent extends Vue {
     // A unique id defines the plugin.
     abstract pluginId: string;
 
-    // The start function runs when the user first begins using the plugin. For
-    // example, if the plugin is in a popup, this function would open the popup.
-    // The variable payload is included if you want to pass extra data to the
-    // plugin. Probably only useful if not using the menu system.
+    /**
+     * Runs when the user first starts the plugin. For example, if the plugin is
+     * in a popup, this function would open the popup. 
+     *
+     * @param {any} [payload]  Included if you want to pass extra data to the
+     *                         plugin. Probably only useful if not using the
+     *                         menu system. Optional.
+     */
     abstract onPluginStart(payload?: any): void;
 
-    // Every plugin runs some calculation. This is the function that does the
-    // calculating. It receives the same parameterSets submitted via the
-    // submitJobs function (see below), but one at a time.
-    abstract runJob(parameters: any): void;
+    /**
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @param {any} [parameters]  The same parameterSets submitted via the
+     *                            submitJobs function, but one at a time.
+     *                            Optional.
+     */
+    abstract runJob(parameters?: any): void;
 
-    // This function is called when the plugin is mounted.
+    /**
+     * Called when the plugin is mounted.
+     */
     protected onMounted() {
         // can be optionally overridden.
         return;
     }
 
+    /**
+     * Check if this plugin can currently be used.  This can be optionally
+     * overwritten.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
     protected checkUseAllowed(): string | null {
-        // This can be optionally overwritten. If it returns a string, show that
-        // as an error message. If null, proceed to run the plugin.
         return null;
     }
 
-    // This function submits jobs to the job queue system. Note that it is jobs
-    // plural. The function variable `parameterSets` is a list of parameters,
-    // one per job.
+    /**
+     * This function submits jobs to the job queue system. Note that it is
+     * "jobs" plural.
+     *
+     * @param {any[]} [parameterSets]  A list of parameters, one per job.
+     *                                 Optional.
+     */
     protected submitJobs(parameterSets?: any[]) {
         if (parameterSets === undefined) {
-            parameterSets = [undefined]
+            parameterSets = [undefined];
         }
         if (parameterSets.length === undefined) {
             throw new Error(
@@ -63,7 +86,7 @@ export abstract class PluginParent extends Vue {
             );
         }
         if (parameterSets.length === 0) {
-            parameterSets = [undefined]
+            parameterSets = [undefined];
         }
 
         const jobs: JobQueue.JobInfo[] = parameterSets.map(
@@ -77,6 +100,7 @@ export abstract class PluginParent extends Vue {
         JobQueue.submitJobs(jobs);
     }
 
+    /** mounted function */
     mounted() {
         // Do some quick validation
         if (this.pluginId !== this.pluginId.toLowerCase()) {
@@ -100,7 +124,7 @@ export abstract class PluginParent extends Vue {
                     } else {
                         api.plugins.runPlugin(this.pluginId);
                     }
-                }
+                },
             } as IMenuItem,
             pluginId: this.pluginId,
         } as IPluginSetupInfo);

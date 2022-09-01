@@ -61,6 +61,7 @@ import { Prop } from "vue-property-decorator";
 import { appName } from "@/main";
 import { PopupPluginParent } from "../PopupPluginParent";
 
+/** AboutPlugin */
 @Options({
   components: {
     Popup,
@@ -81,6 +82,11 @@ export default class AboutPlugin extends PopupPluginParent {
   pluginId = "about";
   intro = `TODO: Info about ${appName} here.`;
 
+  /**
+   * Get the software credits to show in order.
+   *
+   * @returns {ISoftwareCredit[]} The software credits to show, in order.
+   */
   get softwareCreditsToShowInOrder(): ISoftwareCredit[] {
     // Sort by name.
     return this.softwareCreditsToShow.sort((a, b) => {
@@ -92,6 +98,11 @@ export default class AboutPlugin extends PopupPluginParent {
     });
   }
 
+  /**
+   * Get the contributor credits to show in order.
+   *
+   * @returns {IContributorCredit[]} The contributor credits to show, in order.
+   */
   get contributorCreditsToShowInOrder(): IContributorCredit[] {
     // Sort by last name in name
     return this.contributorCreditsToShow.sort((a, b) => {
@@ -103,22 +114,35 @@ export default class AboutPlugin extends PopupPluginParent {
     });
   }
 
+  /**
+   * Get the name of the app.
+   * 
+   * @returns {string} The name of the app.
+   */
   get appName(): string {
     return appName;
   }
 
+  /**
+   * Runs before the popup opens. Will almost always need this, so requiring
+   * children to define it.
+   */
   beforePopupOpen(): void {
     return;
   }
 
-  onPopupDone(): void {
-    // Does nothing
+  /**
+   * Runs when the popup closes via done button. Here, does nothing.
+   */
+  onPopupDone() {
     return;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  runJob(_parameters: any) {
-    // About plugin does not have a job.
+  /**
+   * Every plugin runs some job. This is the function that does the
+   * job running. About plugin does not have a job.
+   */
+  runJob() {
     return;
   }
 }

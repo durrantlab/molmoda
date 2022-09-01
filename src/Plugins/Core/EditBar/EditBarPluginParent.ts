@@ -9,6 +9,9 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { checkAnyMolSelected } from "./Utils";
 
+/**
+ * EditBarPluginParent
+ */
 export default abstract class EditBarPluginParent extends PopupPluginParent {
     nodeToActOn: IMolContainer = {
         title: "",
@@ -19,11 +22,20 @@ export default abstract class EditBarPluginParent extends PopupPluginParent {
         viewerDirty: false,
     };
 
+    /**
+     * Check if this plugin can currently be used.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
     checkUseAllowed(): string | null {
         return checkAnyMolSelected(this);
     }
 
-    protected setNodeToActOn(): void {
+    /**
+     * Determine which node to act on. Mostly likely the selected molecule.
+     */
+    protected setNodeToActOn() {
         if (this.payload) {
             // this.payload is the node id.
             const id = this.payload;
@@ -46,12 +58,19 @@ export default abstract class EditBarPluginParent extends PopupPluginParent {
         }
     }
 
+    /**
+     * If the user data is a properly formatted, enable the button. Otherwise,
+     * disabled.
+     * 
+     * @param {string} val  The user input to assess.
+     * @returns {boolean} A boolean value, whether to disable the button.
+     */
     isBtnEnabled(val: string): boolean {
         return val.length > 0;
     }
 
     /**
-     * Runs when the popup closes.
+     * Runs when the user presses the action button and the popup closes.
      * 
      * @param {string} newName  The text entered into the popup.
      */

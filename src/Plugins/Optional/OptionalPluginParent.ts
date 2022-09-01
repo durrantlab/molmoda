@@ -4,13 +4,16 @@ import {
 } from "@/UI/Forms/FormFull/FormFullUtils";
 import { PopupPluginParent } from "../PopupPluginParent";
 
+/**
+ * OptionalPluginParent
+ */
 export abstract class OptionalPluginParent extends PopupPluginParent {
     // Note that this isn't reactive (shouldn't be).
     abstract userInputs: FormElement[];
 
     
     /**
-     * Runs when the popup closes.
+     * Runs when the user presses the action button and the popup closes.
      *
      * @param  {IUserArg[]} userParams A list of (name, val), the user-specified
      *                                 arguments.

@@ -10,6 +10,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { flexFixedWidthStyle } from "./IconBarUtils";
 
+/**
+ * IconBar component
+ */
 @Options({
   components: {},
 })
@@ -17,6 +20,12 @@ export default class IconBar extends Vue {
   @Prop({ required: true }) width!: number;
   @Prop({ default: "" }) class!: string;
 
+  /**
+   * Get the style for a fixed-width element.
+   * 
+   * @param {number} width  The width of the element.
+   * @returns {string}  The style for the element.
+   */
   flexFixedWidth(width: number): string {
     return flexFixedWidthStyle(width);
   }

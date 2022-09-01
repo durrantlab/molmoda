@@ -17,6 +17,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 
+/**
+ * IconSwitcher component
+ */
 @Options({
   components: {
     Tooltip,
@@ -32,6 +35,11 @@ export default class IconSwitcher extends Vue {
   @Prop({ default: "" }) title!: string;
   @Prop({ default: "top" }) tipPlacement!: string;
 
+  /**
+   * Get the style for a fixed-width element.
+   * 
+   * @returns {string}  The style for the element.
+   */
   get flexFixedWidth(): string {
     return `flex:0; max-width:${this.width}px; min-width:${this.width}px;`;
   }

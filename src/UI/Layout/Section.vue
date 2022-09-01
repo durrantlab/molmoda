@@ -17,6 +17,9 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
+/**
+ * Section component
+ */
 @Options({
   components: {},
 })
