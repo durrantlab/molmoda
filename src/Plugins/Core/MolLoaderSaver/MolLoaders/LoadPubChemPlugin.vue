@@ -140,7 +140,6 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
     )
       .then((fileInfo: IFileInfo) => {
         let json = JSON.parse(fileInfo.contents);
-        // debugger;
         let cid = json.InformationList.Information[0].CID;
         this.cid = cid;
 

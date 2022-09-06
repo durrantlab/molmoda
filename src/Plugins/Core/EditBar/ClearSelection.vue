@@ -13,7 +13,7 @@ import {
 import { PluginParent } from "@/Plugins/PluginParent";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { checkAnyMolSelected } from "./Utils";
+import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 
 /** ClearSelectionPlugin */
 @Options({

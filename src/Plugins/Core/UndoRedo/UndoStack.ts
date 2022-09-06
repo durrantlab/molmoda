@@ -6,7 +6,7 @@ import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 // @ts-ignore
 import cloneDeep from "lodash.clonedeep";
 
-export const undoStack: IMolContainer[][] = [];
+export const undoStack: IMolContainer[][] = [[]];
 export let redoStack: IMolContainer[][] = [];
 let timeoutId: number;
 const maxItemsOnUndoStack = 10;
@@ -23,12 +23,11 @@ function addItemToUndoStack(item: IMolContainer[]) {
     undoStack.push(item);
 }
 
-// Add something to the stack after delay, to prevent adding excessive changes
-// in rapid succession.
-
 /**
  * Adds an item to the undo stack after the user has't done anything in a bit.
- * 
+ * By adding to the stack only after a delay, you prevent adding excessive
+ * changes in rapid succession.
+ *
  * @param  {IMolContainer[]} molecules The item to push.
  */
 export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
@@ -48,7 +47,6 @@ export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
         // Move new molecules to the stack
         addItemToUndoStack(moleculesObjToAddToStack);
         console.log("added");
-        console.log(undoStack);
     }, 1000);
 }
 
@@ -57,7 +55,7 @@ export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
  * 
  * @param  {any} store The Vuex store.
  */
-export function undo(store: any) {   
+export function undo(store: any) {
     let lastItemOnUndoStack = undoStack.pop();
     if (lastItemOnUndoStack) {
         // Move current last one to redo.

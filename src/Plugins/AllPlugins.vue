@@ -17,6 +17,7 @@
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
+    <NewSessionPlugin @onPluginSetup="onPluginSetup"></NewSessionPlugin>
     
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
   </div>
@@ -37,13 +38,14 @@ import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldP
 import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
 import LoadFilePlugin from "./Core/MolLoaderSaver/MolLoaders/LoadFilePlugin.vue";
 import SavePDBMol2Plugin from "./Core/MolLoaderSaver/MolSaver/SavePDBMol2Plugin.vue";
-import UndoPlugin from "./Core/UndoRedo/Undo.vue";
-import RedoPlugin from "./Core/UndoRedo/Redo.vue";
+import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
+import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMol.vue";
 import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMol.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMol.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelection.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsg.vue";
+import NewSessionPlugin from "./Core/SessionLoaderSaver/NewSessionPlugin.vue";
 
 import TestPlugin from "./Optional/TestPlugin.vue";
 
@@ -69,6 +71,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     DeleteMolPlugin,
     ClearSelectionPlugin,
     SimpleMsgPlugin,
+    NewSessionPlugin,
 
     TestPlugin
   },

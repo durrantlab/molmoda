@@ -1,7 +1,7 @@
 <template>
   <PopupOptionalPlugin
     :userInputs="userInputs"
-    :open="open"
+    v-model="open"
     title="Load Molecule from PubChem"
     :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
@@ -22,9 +22,14 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { OptionalPluginParent } from "./OptionalPluginParent";
 import { Options } from "vue-class-component";
+import {
+  runOpenBabel,
+  writeFile,
+  readDir,
+  readFile,
+} from "@/FileSystem/OpenBabel";
 
 /**
  * TestPlugin
@@ -89,26 +94,33 @@ export default class TestPlugin extends OptionalPluginParent {
    *
    * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
    */
-   runJob(_args: IUserArg[]) {
-    console.log(_args);
-    // dynamicImports.browserfs.module
-    // .then((browserfs: any) => {
-    //   const BFS = new browserfs.EmscriptenFS();
-    //   debugger;
-    // });
+  runJob(_args: IUserArg[]) {
+    // console.log(_args);
 
-    dynamicImports.memfs.module
-    .then((memfs: any) => {
-      // debugger;
-      memfs.writeFileSync("test.txt", "Hello World");
-      console.log(memfs.readFileSync("test.txt", "utf8"));
-      // api.messages.popupMessage("My title", "My message");
-      // api.messages.popupError("My message");
-      return;
-    })
-    .catch((err: any) => {
-      console.log(err);
-    });
+    // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
+    // let args: string[] = ['-H'];
+
+    let beforeOBFunc = (obabel: any) => {
+      writeFile(obabel, "testfile.txt", "test text");
+    };
+
+    let afterOBFunc = (obabel: any) => {
+      console.log(readDir(obabel, "."));
+      console.log(readFile(obabel, "testfile.txt"));
+    };
+
+    runOpenBabel(
+      ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
+      beforeOBFunc,
+      afterOBFunc
+    )
+      .then((res) => {
+        console.log(res);
+        return;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 }
 </script>

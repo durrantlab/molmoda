@@ -1,7 +1,22 @@
-# Ongoing
+# Ongoing: Low Priority
 
 https://doc.babylonjs.com/divingDeeper/mesh/simplifyingMeshes
 https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Meshes/meshSimplification.ts
+
+vue-chartjs (or V Chart Plugin better?)
+
+Make ViewerPanel library agnostic (not just 3dmoljs). Is this worth it?
+
+Allow user to select themes from option menu?
+
+https://github.com/davidjbradshaw/eslint-config-adjunct (see list)
+
+install typedoc (such a mess you've made...)
+
+Settings panel to control things like fog, whether outline:
+viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
+
+# Ongoing: Important
 
 When change colors and things, shouldn't refocus.
 
@@ -13,8 +28,6 @@ Messaging. Need toast, log, system alert, etc. You started working on toast.
     go to next one (if present).
     https://getbootstrap.com/docs/5.0/components/toasts/
 
-vue-chartjs (or V Chart Plugin better?)
-
 https://github.com/pulsardev/vue-tour
 https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
 Table component?
@@ -22,15 +35,29 @@ Table component?
 Would be good to be able to use multiple processors for queue. Give some thought
 to how. Likely needs webworker?
 
-Also, popup to just show text (info). Already have it somewhere but good to move
-to Popup directory.
-
-Make ViewerPanel library agnostic (not just 3dmoljs). Is this worth it?
-
-Settings panel to control things like fog, whether outline:
-viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
-
 Need functions to output pdb and mol2. (use open babel for mol2).
+
+Idea to consider: Ability to select molecule. Rename/extract/etc only appears
+when selected. Menu items too. And then widget to select protein/ligand allows
+you to choose between all visible and all selected.
+Vue component to specify whether to combine PDBs (receptors) or not. Basically
+combine everything but something designated ligand.
+    CombineProteins should be integrated into FormFull
+
+All classes that inherit PopupPluginParent should not use @beforePopupOpen and
+@onPopupOpen. Need some way to enforce this. Really, whole validation system to
+verify everythign documented correctly too.
+
+Plugin class names must end in "Plugin" ... mke eslint plugin
+
+Logging everything. Need to add log to more things. Also, seems to make app
+bigger than window (can scroll down). Also, need to be able to specify log
+messages explicitly in plugin (override). Generally more work do be done here.
+
+# DONE
+
+In new session popup, also make "Save Session" option as second button, not just
+link.
 
 New session, but with ability to detect if saved or not. This is almost done.
     When then try to close, catches it, opens savesession plugin. But need to
@@ -40,38 +67,19 @@ New session, but with ability to detect if saved or not. This is almost done.
 On optional plugin, can you reopen it once closed? Only if cancel. If run, can
 rerun later.
 
-Idea to consider: Ability to select molecule. Rename/extract/etc only appears
-when selected. Menu items too. And then widget to select protein/ligand allows
-you to choose between all visible and all selected.
-Vue component to specify whether to combine PDBs (receptors) or not. Basically
-combine everything but something designated ligand.
-    CombineProteins should be integrated into FormFull
+Implement checkUseAllowed for export menu options.
 
-If you rename too quickly, value not recorded. Might be problem with other
-plugins too with only one text input.
-
-Allow user to select themes from option menu?
+Can you undo the initial loading of the molecule? Good to investigate. (You
+can't undo it...need to fix)
 
 When loading molecule, cursor indicates as much. Good to standardize that
 (api-level).
 
-Implement checkUseAllowed for export menu options.
+Also, popup to just show text (info). Already have it somewhere but good to move
+to Popup directory.
 
-Can you undo the initial loading of the molecule? Good to investigate.
-
-All classes that inherit PopupPluginParent should not use @beforePopupOpen and
-@onPopupOpen. Need some way to enforce this. Really, whole validation system to
-verify everythign documented correctly too.
-
-
-
-https://github.com/davidjbradshaw/eslint-config-adjunct (see list)
-
-install typedoc
-
-Plugin class names must end in "Plugin" ... mke eslint plugin
-
-# DONE
+If you rename too quickly, value not recorded. Might be problem with other
+plugins too with only one text input.
 
 https://github.com/AlloyTeam/eslint-config-alloy
 https://github.com/sheerun/prettier-standard

@@ -62,8 +62,6 @@ export default class Styles extends Vue {
     let allStylesAndCounts: {[key: string]: IStyleCount[]} = {};
     for (let type in allStylesAndSels) {
       let styles = allStylesAndSels[type];
-
-      // if (styles.length === 0) { debugger; }
       
       let stylesAndCounts = this._convertStyleToStyleCount([styles[0]]);
       for (let i = 1; i < styles.length; i++) {

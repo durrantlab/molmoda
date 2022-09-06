@@ -23,6 +23,7 @@ import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { ISaveTxt } from "@/Core/FS";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**
  * SaveVRMLPlugin
@@ -66,6 +67,16 @@ export default class SaveVRMLPlugin extends PopupPluginParent {
    */
   isBtnEnabled(): boolean {
     return matchesFilename(this.filename);
+  }
+
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+  checkUseAllowed(): string | null {
+    return checkanyMolLoaded(this);
   }
 
   /**

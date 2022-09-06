@@ -16,4 +16,5 @@ export interface ISimpleMsg {
     message: string;
     variant?: PopupVariant;
     callBack?: Function;
+    neverClose?: boolean;
 }

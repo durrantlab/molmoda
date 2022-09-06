@@ -43,7 +43,7 @@ export default class Radios extends Vue {
   /**
    * Let the parent component know of any changes.
    *
-   * @param {string} e  The new value.
+   * @param {any} e  The value.
    */
   handleInput(e: string) {
     this.$emit("update:modelValue", e);

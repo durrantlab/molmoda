@@ -69,7 +69,7 @@ export const dynamicImports = {
                 /* webpackChunkName: "3dmol" */
                 /* webpackMode: "lazy" */
                 // @ts-ignore
-                "@/UI/Panels/Viewer/3Dmol-nojquery.JDD"
+                "@/libs/ToImport/3Dmol-nojquery.JDD"
             ).then(($3Dmol) => {
                 return $3Dmol;
             });

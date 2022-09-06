@@ -68,6 +68,7 @@ export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
             molecules: [],
+            log: [],
             updateZoom: true,
         },
         getters: {},
@@ -101,7 +102,6 @@ export function setupVueXStore(): Store<any> {
         },
         // Run this callback
         (molecules: any) => {
-            // saveState(state);
             allHooks.onMoleculesChanged.forEach((func) => {
                 func(molecules);
             });
@@ -113,7 +113,7 @@ export function setupVueXStore(): Store<any> {
         function (state: any) {
             return state;
         },
-        (_state: any) => {
+        (/* _state: any */) => {
             setStoreIsDirty(true);
         },
         { deep: true }
@@ -126,7 +126,10 @@ export function setupVueXStore(): Store<any> {
     return store;
 }
 
-// export function setVar(name: string, value: any) {
-//   // @ts-ignore
-//     store.state[name] = value;
-// }
+export function setStoreVar(name: string, value: any) {
+    store.commit("setVar", { name: name, val: value } as NameValPair);
+}
+
+export function pushToStoreList(name: string, value: any) {
+    store.commit("pushToList", { name: name, val: value } as NameValPair);
+}

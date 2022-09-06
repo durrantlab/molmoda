@@ -34,6 +34,11 @@ export default class FormCheckBox extends Vue {
   @Prop({ default: false }) disabled!: boolean;
   @Prop({ default: false }) toggle!: boolean;
 
+  /**
+   * Let the parent component know of any changes.
+   *
+   * @param {any} e  The value.
+   */
   handleInput(e: any) {
     this.$emit("update:modelValue", e.target.checked);
 

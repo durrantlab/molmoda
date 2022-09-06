@@ -7,7 +7,7 @@ import {
     getAllNodesFlattened,
     getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
-import { checkAnyMolSelected } from "./Utils";
+import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 
 /**
  * EditBarPluginParent

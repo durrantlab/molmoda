@@ -31,6 +31,7 @@ import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
 import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**
  * SavePDBMol2Plugin
@@ -75,6 +76,16 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
    */
   isBtnEnabled(): boolean {
     return matchesFilename(this.filename);
+  }
+
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+  checkUseAllowed(): string | null {
+    return checkanyMolLoaded(this);
   }
 
   /**

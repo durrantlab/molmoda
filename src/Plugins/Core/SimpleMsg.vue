@@ -1,5 +1,11 @@
 <template>
-  <Popup :title="title" v-model="open" cancelBtnTxt="Ok" @onClosed="onClosed" :variant="variant">
+  <Popup
+    :title="title"
+    v-model="open"
+    :cancelBtnTxt="neverClose ? '' : 'Ok'"
+    @onClosed="onClosed"
+    :variant="variant"
+  >
     <p style="overflow: hidden; text-overflow: ellipsis">{{ message }}</p>
   </Popup>
 </template>
@@ -11,7 +17,10 @@ import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { PluginParent } from "@/Plugins/PluginParent";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-import { ISimpleMsg, PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import {
+  ISimpleMsg,
+  PopupVariant,
+} from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 /**
  * SimpleMsgPlugin
@@ -40,10 +49,11 @@ export default class SimpleMsgPlugin extends PluginParent {
   message = "";
   variant = PopupVariant.PRIMARY;
   callBack: any = undefined;
+  neverClose = false;
 
   /**
    * Runs when the user first starts the plugin. For example, if the plugin is
-   * in a popup, this function would open the popup. 
+   * in a popup, this function would open the popup.
    *
    * @param {ISimpleMsg} [payload]  Information about the message to display.
    */
@@ -51,9 +61,10 @@ export default class SimpleMsgPlugin extends PluginParent {
     this.title = payload.title;
     this.message = payload.message;
     this.callBack = payload.callBack;
-    if (payload.variant !== undefined) {
-      this.variant = payload.variant;
-    }
+    this.variant =
+      payload.variant === undefined ? PopupVariant.PRIMARY : payload.variant;
+    this.neverClose =
+      payload.neverClose === undefined ? false : payload.neverClose;
     this.open = true;
   }
 

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
+import * as api from "@/Api";
+
 const registeredJobTypes: { [key: string]: Function } = {};
 const jobQueue: JobInfo[] = [];
 let jobCurrentlyRunning = false;
@@ -24,6 +26,8 @@ function _runNextJob(): number {
 
     // Run a job if there's one available in the queue.
     if (jobQueue.length > 0) {
+        api.messages.waitSpinner(true);
+
         const job = jobQueue.shift() as JobInfo;
         const func = registeredJobTypes[job.commandName];
         jobCurrentlyRunning = true;
@@ -31,6 +35,8 @@ function _runNextJob(): number {
         func(job.params);
         console.log("Done running job.");
         jobCurrentlyRunning = false;
+
+        api.messages.waitSpinner(false);
 
         // If delay not defined or 0, run next one in queue.
         if (job.delayAfterRun === undefined || job.delayAfterRun === 0) {

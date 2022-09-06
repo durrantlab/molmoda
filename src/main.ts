@@ -23,15 +23,3 @@ createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)
     .use(store)
     .mount("#app");
-
-// loadMolecularModelFromText("molText", "mol2");
-
-// const worker = new Worker(new URL('./worker', import.meta.url));
-// runWorker(
-//     worker,
-//     'The Answer to the Ultimate Question of Life, The Universe, and Everything.'
-// ).then(resp => {
-//     debugger
-// });
-
-// test();

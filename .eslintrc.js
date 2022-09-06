@@ -36,5 +36,6 @@ module.exports = {
             ClassExpression: true,
             MethodDefinition: true
         }}],
+
     },
 };

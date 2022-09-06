@@ -53,6 +53,11 @@ export default class FormSelect extends Vue {
     });
   }
 
+  /**
+   * Let the parent component know of any changes.
+   *
+   * @param {any} e  The value.
+   */
   handleInput(e: any) {
     this.$emit("update:modelValue", e.target.value);
 

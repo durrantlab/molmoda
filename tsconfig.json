@@ -1,41 +1,41 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "esnext",
-    "strict": true,
-    "jsx": "preserve",
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "useDefineForClassFields": true,
-    "sourceMap": false,
-    "baseUrl": ".",
-    "types": [
-      "webpack-env"
-    ],
-    "paths": {
-      "@/*": [
-        "src/*"
-      ]
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "strict": true,
+        "jsx": "preserve",
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "forceConsistentCasingInFileNames": true,
+        "useDefineForClassFields": true,
+        "sourceMap": false,
+        "baseUrl": ".",
+        "types": ["webpack-env"],
+        "paths": {
+            "@/*": ["src/*"]
+        },
+        "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+        // "removeComments": false
     },
-    "lib": [
-      "esnext",
-      "dom",
-      "dom.iterable",
-      "scripthost"
-    ]
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "tests/**/*.ts",
-    "tests/**/*.tsx"
-, "src/worker.js", "src/UI/Panels/Viewer/3Dmol-nojquery.JDD.js"  ],
-  "exclude": [
-    "node_modules"
-  ]
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "tests/**/*.ts",
+        "tests/**/*.tsx",
+        "src/worker.js",
+        "src/UI/Panels/Viewer/3Dmol-nojquery.JDD.js"
+    ],
+    "exclude": ["node_modules"],
+    // "typedocOptions": {
+    //     "entryPoints": ["src/main.ts"],
+    //     // "entryPointStrategy": "resolve", // ["resolve", "./src"],
+    //     // Resolve, Expand, Packages
+    //     // entryPointStrategy expand ./src
+    //     // typedoc --entryPointStrategy expand ./src
+    //     "out": "docs"
+    // }
 }

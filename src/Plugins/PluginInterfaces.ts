@@ -14,6 +14,7 @@ export const Licenses = {
         url: "https://opensource.org/licenses/Apache-2.0",
     } as ILicense,
     GPL3: {
+        // NOTE: Viral license! Avoid if possible.
         name: "GPL-3.0",
         // name: "GNU General Public License, Version 3",
         url: "https://opensource.org/licenses/GPL-3.0",
@@ -46,7 +47,7 @@ export const Licenses = {
     PUBLICDOMAIN: {
         name: "Public Domain",
         url: "https://creativecommons.org/publicdomain/zero/1.0/",
-    }
+    } as ILicense,
 };
 
 export type Credits = (ISoftwareCredit | IContributorCredit)[];

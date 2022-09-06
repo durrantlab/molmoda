@@ -21,3 +21,18 @@ export function checkAnyMolSelected(This: PluginParent): string | null {
 
     return null;
 }
+
+/**
+ * Checks whether the user has loaded any molecule.
+ *
+ * @param  {PluginParent} This  The associated EditBarPlugin.
+ * @returns {string | null}  An error if the user hasn't selected any molecules,
+ *     null otherwise.
+ */
+export function checkanyMolLoaded(This: PluginParent): string | null {
+    if (This.$store.state.molecules.length === 0) {
+        return "Nothing to save or export (empty project). Try adding molecules first.";
+    }
+
+    return null;
+}

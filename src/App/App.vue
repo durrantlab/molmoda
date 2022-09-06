@@ -1,9 +1,10 @@
 <template>
   <div class="full-screen" style="display: flex; flex-direction: column">
-    <div style="flex-grow: 5">
+    <div style="flex-grow: 5; max-height: 56px; min-height: 56px; height: 56px;">
       <Menu :menuData="menuData" />
     </div>
     <div style="flex-grow: 5">
+      <!-- <div style="width: 100%; height: 100%; padding: 15px;"></div> -->
       <GoldLayout />
     </div>
     <AllPlugins
@@ -140,5 +141,9 @@ export default class App extends Vue {
   position: absolute;
   width: 100%;
   height: 100%;
+}
+
+body.waiting * {
+  cursor: wait !important;
 }
 </style>

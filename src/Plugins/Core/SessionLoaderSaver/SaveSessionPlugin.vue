@@ -21,6 +21,8 @@ import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
+import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 /**
  * SaveSessionPlugin
@@ -50,12 +52,12 @@ export default class SaveSessionPlugin extends PopupPluginParent {
 
   /**
    * Determine which into text to use.
-   * 
+   *
    * @returns {string} The intro text to use.
    */
   get introToUse(): string {
     let i = "";
-    
+
     if (this.windowClosing) {
       i += "Be sure to save your work before closing!</p><p>";
     }
@@ -67,7 +69,7 @@ export default class SaveSessionPlugin extends PopupPluginParent {
 
   /**
    * Filters text to match desired format.
-   * 
+   *
    * @param {string} filename  The text to assess.
    * @returns {string} The filtered text.
    */
@@ -78,7 +80,7 @@ export default class SaveSessionPlugin extends PopupPluginParent {
   /**
    * If text is a properly formatted UniProt accession, enable the button.
    * Otherwise, disabled.
-   * 
+   *
    * @returns {boolean} Whether to disable the button.
    */
   isBtnEnabled(): boolean {
@@ -92,11 +94,7 @@ export default class SaveSessionPlugin extends PopupPluginParent {
    *     message. If null, proceed to run the plugin.
    */
   checkUseAllowed(): string | null {
-    if (this.$store.state.molecules.length === 0) {
-      return "Nothing to save (empty project). Try adding molecules first.";
-    }
-
-    return null;
+    return checkanyMolLoaded(this);
   }
 
   /**
@@ -130,16 +128,24 @@ export default class SaveSessionPlugin extends PopupPluginParent {
     }
 
     saveState(filename, this.$store.state)
-    .then(() => {
-      setStoreIsDirty(false);
-      if (this.windowClosing) {
-        api.messages.popupMessage("Session Ended", "Your file has been saved. You may now close this tab/window.");
-      }
-      return;
-    })
-    .catch((err: any) => {
-      console.log(err);
-    });
+      .then(() => {
+        setStoreIsDirty(false);
+        if (this.windowClosing) {
+          api.messages.popupMessage(
+            "Session Ended",
+            "Your file has been saved. You may now close/reload this tab/window.",
+            PopupVariant.INFO,
+            () => {
+              // Reload the page
+              window.location.reload();
+            }
+          );
+        }
+        return;
+      })
+      .catch((err: any) => {
+        console.log(err);
+      });
   }
 }
 </script>

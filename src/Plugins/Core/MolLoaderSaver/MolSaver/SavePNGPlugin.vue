@@ -19,6 +19,7 @@ import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**
  * SavePNGPlugin
@@ -62,6 +63,16 @@ export default class SavePNGPlugin extends PopupPluginParent {
    */
   isBtnEnabled(): boolean {
     return matchesFilename(this.filename);
+  }
+
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+  checkUseAllowed(): string | null {
+    return checkanyMolLoaded(this);
   }
 
   /**

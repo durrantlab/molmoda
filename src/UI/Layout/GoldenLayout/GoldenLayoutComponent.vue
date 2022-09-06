@@ -6,10 +6,16 @@
     :data-width="width"
     :data-height="height"
   >
+    x
     <div
       :id="slugID"
       :style="style + '; height:100%; cursor:pointer;'"
-      :class="'tab-pane fade show active container-fluid p-3 ' + extraClass"
+      :class="
+        'tab-pane fade show active container-fluid p-' +
+        paddingSize.toString() +
+        ' ' +
+        extraClass
+      "
     >
       <slot></slot>
     </div>
@@ -32,6 +38,7 @@ export default class GoldenLayoutComponent extends Vue {
   @Prop() height!: number;
   @Prop() style!: string;
   @Prop({ default: "" }) extraClass!: string;
+  @Prop({ default: 3 }) paddingSize!: number;
 
   // computed slugID
   get slugID() {

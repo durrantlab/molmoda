@@ -329,16 +329,9 @@ export default class ColorStyle extends Vue {
       return v.varName === "color";
     })[0]?.val;
 
-    // console.log("color:", color);
-    // debugger;
-
     this.colorStyles.color =
       color === undefined ? this.colorStyles.defaultColor : color;
     resp[this.repName] = this.colorStyles.indexToStyle(colorschemeIdx);
-
-    // console.log("IN:", this.modelValue);
-    // console.log("OUT:", resp);
-    // debugger;
 
     console.log("from color style:", resp);
     this.$emit("update:modelValue", resp);

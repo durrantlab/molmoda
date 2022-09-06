@@ -207,7 +207,6 @@
 //     let mol2 = $3Dmol.Parsers.MOL2(mol2Txt, {
 //         keepHs: true,
 //     });
-//     debugger;
 //     // var viewer = new molstar.Viewer('app2', {
 //     //     layoutIsExpanded: false,
 //     //     layoutShowControls: false,

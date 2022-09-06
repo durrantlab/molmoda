@@ -5,7 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "docs": "vue-cli-service build --mode docs; jsdoc dist/js/app.js",
+    "docs2": "jsdoc -r -c jsdoc.json src/"
   },
   "dependencies": {
     "@babel/polyfill": "^7.11.5",
@@ -57,6 +59,7 @@
     "@vue/cli-service": "~5.0.0",
     "@vue/eslint-config-typescript": "^9.1.0",
     "autoprefixer": "^10.4.8",
+    "better-docs": "^2.7.2",
     "copy-webpack-plugin": "^9.1.0",
     "css-loader": "^6.7.1",
     "eslint": "^7.32.0",
@@ -67,8 +70,6 @@
     "eslint-plugin-vue": "^8.0.3",
     "eslint-plugin-write-good-comments": "^0.1.4",
     "expose-loader": "^4.0.0",
-    "jsdoc": "^3.6.11",
-    "jsdoc-vuejs": "^4.0.0",
     "postcss-loader": "^6.2.1",
     "sass": "^1.54.5",
     "sass-loader": "^12.6.0",

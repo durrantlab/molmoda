@@ -11,7 +11,6 @@ export abstract class OptionalPluginParent extends PopupPluginParent {
     // Note that this isn't reactive (shouldn't be).
     abstract userInputs: FormElement[];
 
-    
     /**
      * Runs when the user presses the action button and the popup closes.
      *

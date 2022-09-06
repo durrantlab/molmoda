@@ -10,6 +10,8 @@ export function runWorker(worker: Worker, data: any): Promise<any> {
     // Promise to wait for webworker to return data.
     const returnPromise = new Promise((resolve) => {
         worker.onmessage = (resp: MessageEvent) => {
+          // terminate the worker after use.
+          worker.terminate();
           resolve(resp.data);
         };
     });

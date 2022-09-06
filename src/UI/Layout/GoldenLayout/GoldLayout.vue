@@ -1,14 +1,14 @@
 <template>
   <div ref="golden-layout-data" id="golden-layout-data">
     <GoldenLayoutContainer type="column">
-      <GoldenLayoutContainer type="row" :height="90">
+      <GoldenLayoutContainer type="row" :height="80">
         <GoldenLayoutComponent
           name="Molecules"
           extraClass="sortable-group"
           state="{}"
           :width="20"
         >
-          <div @click.self="clearSelection" style="height:100%;">
+          <div @click.self="clearSelection" style="height: 100%">
             <TreeView />
           </div>
         </GoldenLayoutComponent>
@@ -26,10 +26,10 @@
           <StylesPanel />
         </GoldenLayoutComponent>
       </GoldenLayoutContainer>
-      <GoldenLayoutContainer type="row" :height="10">
-        <GoldenLayoutComponent name="Information" state="{}"
-          >CCC</GoldenLayoutComponent
-        >
+      <GoldenLayoutContainer type="row" :height="20">
+        <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
+          <LogPanel></LogPanel>
+        </GoldenLayoutComponent>
       </GoldenLayoutContainer>
     </GoldenLayoutContainer>
   </div>
@@ -49,6 +49,7 @@ import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
+import LogPanel from "@/UI/Panels/LogPanel.vue";
 import * as api from "@/Api";
 
 /**
@@ -61,12 +62,13 @@ import * as api from "@/Api";
     ViewerPanel,
     StylesPanel,
     TreeView,
+    LogPanel,
   },
 })
 export default class GoldLayout extends Vue {
   /**
    * Extract data from the DOM.
-   * 
+   *
    * @param {HTMLElement} dom  The DOM element to extract data from.
    * @returns {any[]}  The data extracted from the DOM.
    */
@@ -110,7 +112,7 @@ export default class GoldLayout extends Vue {
 
   /**
    * Set up the Golden Layout.
-   * 
+   *
    * @param {HTMLElement} dataDOM  The DOM.
    * @param {any}         config   The Golden Layout configuration.
    */
@@ -169,7 +171,7 @@ export default class GoldLayout extends Vue {
 
     let config = {
       settings: {
-        showPopoutIcon: false,
+        showPopoutIcon: false
         // showCloseIcon: false
       },
       content: this._convertDOMToData(dataDOM),
@@ -195,6 +197,7 @@ export default class GoldLayout extends Vue {
 
 #golden-layout {
   /* Takes up whole screen */
+  display: block;
   width: 100%;
   height: 100%;
 }

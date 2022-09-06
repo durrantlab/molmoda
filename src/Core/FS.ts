@@ -51,8 +51,7 @@ export function saveTxt(params: ISaveTxt): Promise<any> {
     }
 
     // Don't compress the output
-    return dynamicImports.fileSaver.module
-    .then((fileSaver: any) => {
+    return dynamicImports.fileSaver.module.then((fileSaver: any) => {
         const blob = new Blob([params.content as string], {
             type: "text/plain;charset=utf-8",
         });
@@ -81,17 +80,8 @@ export function saveZipWithTxtFiles(
     zipParams = _addExt(zipParams, ".zip");
     files = files.map((file) => _addExt(file, ".txt"));
 
-    const promises: Promise<any>[] = [
-        dynamicImports.fileSaver.module,
-        dynamicImports.jsZip.module,
-    ];
-
-    return Promise.all(promises)
-    .then((payload) => {
-        const fileSaver = payload[0];
-
+    const makeZipPromise = dynamicImports.jsZip.module.then((JSZip: any) => {
         // Compress the output
-        const JSZip = payload[1];
         const zip = new JSZip();
         files.forEach((file) => {
             zip.file(file.fileName, file.content, {
@@ -103,18 +93,27 @@ export function saveZipWithTxtFiles(
                 // }
             });
         });
-        return [zip.generateAsync({ type: "blob" }), fileSaver];
-    })
+        return zip.generateAsync({ type: "blob" });
+    });
+
+    const promises: Promise<any>[] = [
+        dynamicImports.fileSaver.module,
+        makeZipPromise,
+    ];
+
+    return Promise.all(promises)
     .then((payload: any[]) => {
-        const [content, fileSaver] = payload;
-        fileSaver.saveAs(content, zipParams.fileName);
+        const fileSaver = payload[0];
+        const zipBlob = payload[1];
+        fileSaver.saveAs(zipBlob, zipParams.fileName);
         return;
+
     });
 }
 
 /**
  * Converts a dataURI to a Blob.
- * 
+ *
  * @param  {string} dataURI The dataURI to convert.
  * @returns {Blob} The Blob representing the dataURI.
  */
@@ -151,14 +150,14 @@ function _dataURIToBlob(dataURI: string): Blob {
  */
 export function savePngUri(fileName: string, pngUri: string) {
     dynamicImports.fileSaver.module
-    .then((fileSaver) => {
-        const blob = _dataURIToBlob(pngUri);
-        fileSaver.saveAs(blob, fileName);
-        return;
-    })
-    .catch((err: any) => {
-        console.error(err);
-    });
+        .then((fileSaver) => {
+            const blob = _dataURIToBlob(pngUri);
+            fileSaver.saveAs(blob, fileName);
+            return;
+        })
+        .catch((err: any) => {
+            console.error(err);
+        });
 }
 
 /**
@@ -171,10 +170,11 @@ export function savePngUri(fileName: string, pngUri: string) {
  *     file.
  */
 export function uncompress(s: string, fileName: string): Promise<string> {
-    return dynamicImports.jsZip.module.then((JSZip) => {
-        return JSZip.loadAsync(s)
-    })
-    .then((zip: any) => {
-        return zip.file(fileName).async("string");
-    });
+    return dynamicImports.jsZip.module
+        .then((JSZip) => {
+            return JSZip.loadAsync(s);
+        })
+        .then((zip: any) => {
+            return zip.file(fileName).async("string");
+        });
 }

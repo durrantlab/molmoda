@@ -62,6 +62,7 @@ import { Prop, Watch } from "vue-property-decorator";
 import Modal from "bootstrap/js/dist/modal";
 import { randomID } from "@/Core/Utils";
 import { PopupVariant } from "./InterfacesAndEnums";
+import { FORM_INPUT_DELAY_UPDATE_DEFAULT } from "@/UI/Forms/FormInput.vue";
 
 /**
  * Popup component
@@ -121,16 +122,20 @@ export default class Popup extends Vue {
    * Runs when the action button is pressed.
    */
   actionBtn() {
-    this.$emit("onDone");
-    this.$emit("update:modelValue", false);
+    setTimeout(() => {
+      this.$emit("onDone");
+      this.$emit("update:modelValue", false);
+    }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
   }
 
   /**
    * Runs when a secondary action button is pressed.
    */
   actionBtn2() {
-    this.$emit("onDone2");
-    this.$emit("update:modelValue2", false);
+    setTimeout(() => {
+      this.$emit("onDone2");
+      this.$emit("update:modelValue", false);
+    }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
   }
 
   /**

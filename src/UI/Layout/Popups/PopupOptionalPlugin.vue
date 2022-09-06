@@ -6,6 +6,7 @@
     actionBtnTxt="Run"
     @onDone="onPopupDone"
     :isActionBtnEnabled="isActionBtnEnabled"
+    @onClosed="onClosed"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormFull v-model="userInputsToUse"></FormFull>
@@ -38,8 +39,8 @@ import CombineProteins from "@/UI/Forms/CombineProteins.vue";
   },
 })
 export default class PopupOptionalPlugin extends Vue {
+  @Prop({ required: true }) modelValue!: any;  // open
   @Prop({ required: true }) userInputs!: FormElement[];
-  @Prop({ required: true }) open!: boolean;
   @Prop({ required: true }) title!: string;
   @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: "" }) intro!: string;
@@ -48,13 +49,20 @@ export default class PopupOptionalPlugin extends Vue {
   userInputsToUse: FormElement[] = [];
 
   /**
-   * Watches the open variable.
+   * Watches the modelValue variable.
    * 
    * @param {boolean} newValue  The new value of the open variable.
    */
-  @Watch("open")
-  onOpenChange(newValue: boolean) {
+  @Watch("modelValue")
+  onModelValueChange(newValue: boolean) {
     this.openToUse = newValue;
+  }
+
+  /**
+   * Runs when the user closes the simple message popup.
+   */
+  onClosed() {
+    this.$emit("update:modelValue", false);
   }
 
   /**
@@ -62,6 +70,7 @@ export default class PopupOptionalPlugin extends Vue {
    */
   onPopupDone() {
     const userParams: IUserArg[] = collapseFormElementArray(this.userInputs);
+    // this.$emit("update:modelValue", false);
     this.$emit("onPopupDone", userParams);
   }
 

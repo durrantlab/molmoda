@@ -1,3 +1,4 @@
+const TerserPlugin = require("terser-webpack-plugin");
 const { defineConfig } = require("@vue/cli-service");
 const CopyPlugin = require("copy-webpack-plugin");
 
@@ -21,7 +22,7 @@ module.exports = defineConfig({
             fs: false,
             tls: false,
             net: false,
-            path: require.resolve('path-browserify'),
+            path: require.resolve("path-browserify"),
             zlib: false,
             http: false,
             https: false,
@@ -31,10 +32,26 @@ module.exports = defineConfig({
         config.plugins.push(
             new CopyPlugin({
                 patterns: [
-                    { from: "src/libs/jquery-3.6.0.min.js", to: "js/" },
+                    { from: "src/libs/ToCopy/jquery-3.6.0.min.js", to: "js/" },
+                    { from: "src/libs/ToCopy/obabel-wasm", to: "js/obabel-wasm" },
                 ],
             })
         );
+        
+        if (process.env.NODE_ENV === "docs") {
+            config.optimization.minimize = false;
+        }
+        // config.optimization.minimizer = [
+        //     new TerserPlugin({
+        //         terserOptions: {
+        //             format: {
+        //                 comments: true,
+        //                 // beautify: true,
+        //             },
+        //         },
+        //         extractComments: false,
+        //     }),
+        // ];
     },
     pluginOptions: {
         webpackBundleAnalyzer: {

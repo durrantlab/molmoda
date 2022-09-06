@@ -33,6 +33,8 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 
+export const FORM_INPUT_DELAY_UPDATE_DEFAULT = 500;
+
 /**
  * FormInput component
  */
@@ -49,7 +51,7 @@ export default class FormInput extends Vue {
   @Prop({ default: false }) disabled!: boolean;
   @Prop({ required: false }) filterFunc!: Function;
   @Prop({}) description!: string;
-  @Prop({default: 500}) delayBetweenChangesDetected!: number;
+  @Prop({default: FORM_INPUT_DELAY_UPDATE_DEFAULT}) delayBetweenChangesDetected!: number;
 
   // Below used for range.
   @Prop({ default: undefined }) min!: number;
@@ -59,11 +61,22 @@ export default class FormInput extends Vue {
   lastHandleInputTimeStamp = 0;
   timeOutLastHandleInput: any = null;
 
+  /**
+   * Runs when user presses a key.
+   * 
+   * @param {KeyboardEvent} _e  The key event. Not used.
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onKeyDown(_e: KeyboardEvent) {
     this.$emit("onKeyDown");
   }
 
+  /**
+   * Let the parent component know of any changes, after user has not interacted
+   * for a bit (to prevent rapid updates).
+   *
+   * @param {any} e  The value.
+   */
   handleInput(e: any): void {
     if (this.filterFunc) {
       // If there's a filter funciton, update everything.

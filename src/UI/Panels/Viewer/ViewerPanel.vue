@@ -69,8 +69,10 @@ export default class ViewerPanel extends Vue {
    * Update the styles and zoom of the molecules.
    */
   private _updateStylesAndZoom() {
+    api.messages.waitSpinner(true);
     let visibleTerminalNodeModels = this._updateStyleChanges();
     this._zoomPerFocus(visibleTerminalNodeModels);
+    api.messages.waitSpinner(false);
   }
 
   /** 
@@ -187,7 +189,6 @@ export default class ViewerPanel extends Vue {
           for (const styleSel of mol.stylesSels) {
             if (!styleSel.style["surface"]) {
               // It's a style, not a surface.
-              // console.log("style right before adding to 3dmoljs:", styleSel.style);
               (mol.model as any).setStyle(
                 styleSel.selection,
                 styleSel.style,

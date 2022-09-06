@@ -3,6 +3,7 @@
 
 import { IFileInfo } from "./Interfaces";
 import { loadMolecularModelFromText } from "./LoadSaveMolModels/LoadMolecularModels";
+import * as api from "@/Api";
 
 // (list here is not complete).
 export const filetypesMolsWith3DMol = [
@@ -49,19 +50,30 @@ export const fileTypesAccepts = _allAcceptableFileTypes
  * @param  {IFileInfo} fileInfo The file info object.
  */
 export function loadMoleculeFile(fileInfo: IFileInfo) {
+    api.messages.waitSpinner(true);
+
     // Can3dmoljs load it directly?
     if (filetypesMolsWith3DMol.includes(fileInfo.type)) {
         let type = fileInfo.type.toLowerCase();
         if (type === "ent") {
             type = "pdb";
         }
-        loadMolecularModelFromText(fileInfo.contents, type, fileInfo.name);
+        loadMolecularModelFromText(fileInfo.contents, type, fileInfo.name)
+        .then(() => {
+            api.messages.waitSpinner(false);
+            return;
+        })
+        .catch((err) => {
+            console.warn(err);
+        });
     } else if (fileTypesToConvertWithBabel.includes(fileInfo.type)) {
         // Load it by converting to PDB or SDF.
         // TODO: Openbabel here
         alert("need to convert!");
+        api.messages.waitSpinner(false);
     } else {
         // TODO: Any loading functions registered by plugins (to support other
         // formats like charts).
+        api.messages.waitSpinner(false);
     }
 }
