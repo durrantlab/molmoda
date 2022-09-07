@@ -50,11 +50,13 @@ verify everythign documented correctly too.
 
 Plugin class names must end in "Plugin" ... mke eslint plugin
 
-Logging everything. Need to add log to more things. Also, seems to make app
-bigger than window (can scroll down). Also, need to be able to specify log
-messages explicitly in plugin (override). Generally more work do be done here.
+Logging everything. Need to add log to more things. Also, need to be able to
+specify log messages explicitly in plugin (override). Generally more work do be
+done here.
 
 # DONE
+
+Also, seems to make app bigger than window (can scroll down). 
 
 In new session popup, also make "Save Session" option as second button, not just
 link.

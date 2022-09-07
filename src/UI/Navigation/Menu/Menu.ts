@@ -39,14 +39,32 @@ export interface IMenuItem {
  * MenuLevelParent component
  */
 export class MenuLevelParent extends Vue {
+    /**
+     * Determines if a menu item is an action.
+     * 
+     * @param {IMenuEntry | IMenuSeparator} item  The menu item to check.
+     * @returns {boolean} True if the item is an action.
+     */
     isAction(item: IMenuEntry | IMenuSeparator): boolean {
         return item.type === MenuItemType.ACTION;
     }
 
+    /**
+     * Determines if a menu item is a separator.
+     *
+     * @param {IMenuEntry | IMenuSeparator} item  The menu item to check.
+     * @returns {boolean} True if the item is a separator.
+     */
     isSeparator(item: IMenuEntry | IMenuSeparator): boolean {
         return item.type === MenuItemType.SEPARATOR;
     }
 
+    /**
+     * Gets the submenu items for a menu item. They are sorted.
+     *
+     * @param {IMenuEntry} item  The menu item.
+     * @returns {IMenuEntry[]}  The submenu items.
+     */
     getItems(item: IMenuEntry): IMenuEntry[] {
         const items = (item as IMenuSubmenu).items;
         menuDataSorted(items);

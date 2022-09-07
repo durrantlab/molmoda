@@ -121,7 +121,12 @@ export default class Style extends Vue {
   backboneOption = "backbone-hidden";
   surfaceOption = "surface-hidden";
 
-  get atomsStyleOptions(): any {
+  /**
+   * Get the atom styles to use as options in the select.
+   *
+   * @returns {any[]} Array of option objects.
+   */
+  get atomsStyleOptions(): any[] {
     let options = [{ description: "Atoms: Hidden", val: "atoms-hidden" }];
 
     if (this.styleName.name !== "metal") {
@@ -138,6 +143,11 @@ export default class Style extends Vue {
     return options;
   }
 
+  /**
+   * Toggle the visibility of a molecule.
+   *
+   * @param {MolType} type  The type of molecule to toggle.
+   */
   toggleVisible(type: MolType) {
     this.isVisible = !this.isVisible;
     let nodesOfThisType = getNodesOfType(
@@ -151,6 +161,11 @@ export default class Style extends Vue {
     }
   }
 
+  /**
+   * Set the initial values to use in the select.
+   * 
+   * @param {IStyleAndSel} styleInfo  The style name to selectino to use.
+   */
   private _setInitialSelectVals(styleInfo: IStyleAndSel) {
     if (styleInfo.style === undefined) {
       // Happens when used has hidden all styles.
@@ -180,7 +195,13 @@ export default class Style extends Vue {
     }
   }
 
-  updateMolecules(repName: string): void {
+  /**
+   * Update the style of a molecule.
+   *
+   * @param {string} repName  The name of the representation. For example,
+   *                          "atoms-hidden".
+   */
+  updateMolecules(repName: string) {
     // TODO: Seems like this should happen in Styles.vue
     let style = this.styleName.styleAndSel
       ? this.styleName.styleAndSel.style
@@ -297,10 +318,19 @@ export default class Style extends Vue {
     // this.$emit("update:styleName", e.target.value);
   }
 
+  /**
+   * Capitalize the first letter of a string.
+   * 
+   * @param {string} str  The string to capitalize.
+   * @returns {string} The capitalized string.
+   */
   capitalize(str: string): string {
     return capitalize(str);
   }
 
+  /**
+   * Runs when the Vue component is mounted.
+   */
   mounted() {
     // Start by selecting defaults TODO: Actually, not sure this is necessary.
     // All components will always have SOME style (assigned at load).

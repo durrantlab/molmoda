@@ -13,6 +13,7 @@ function stopPreviousTimeout() {
 
 /**
  * Start or stop the wait spinner.
+ * 
  * @param  {boolean} show             Whether to show the spinner.
  * @param  {number}  [timeOut=30000]  The time to wait before hiding the
  *                                    spinner automtically.

@@ -80,6 +80,11 @@ export default class AllPlugins extends Vue {
   @Prop({ required: true }) softwareCredits!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCredits!: IContributorCredit[];
 
+  /**
+   * Runs when the plugin is setup.
+   * 
+   * @param {IPluginSetupInfo} pluginSetupInfo  The plugin-setup parameters.
+   */
   onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
     // Relay up the chain (from individual plugins to app).
     this.$emit("onPluginSetup", pluginSetupInfo);

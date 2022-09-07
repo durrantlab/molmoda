@@ -58,10 +58,20 @@ import { slugify } from "@/Core/Utils";
 export default class MenuLevel1 extends MenuLevelParent {
   @Prop() menuData!: IMenuEntry;
 
+  /**
+   * Gets a slug for the menu text.
+   * 
+   * @returns {string}  The slug.
+   */
   get idSlug(): string {
     return slugify(this.menuData._text as string);
   }
 
+  /**
+   * Gets the menu items with separators added.
+   *
+   * @returns {(IMenuEntry | IMenuSeparator)[]}  The menu items with separators.
+   */
   get menuItemsWithSeparators(): (IMenuEntry | IMenuSeparator)[] {
     // Adds separators
     let newMenuItemsWithSeparator: (IMenuEntry | IMenuSeparator)[] = [];

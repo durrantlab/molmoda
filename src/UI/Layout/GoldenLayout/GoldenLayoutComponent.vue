@@ -40,12 +40,21 @@ export default class GoldenLayoutComponent extends Vue {
   @Prop({ default: "" }) extraClass!: string;
   @Prop({ default: 3 }) paddingSize!: number;
 
-  // computed slugID
-  get slugID() {
+  /**
+   * get the computed slugID.
+   * 
+   * @returns {string} The slugID.
+   */
+  get slugID(): string {
     return slugify(this.name);
   }
 
-  get processedState() {
+  /**
+   * Get the processed state.
+   *
+   * @returns {string} The processed state as a JSON string.
+   */
+  get processedState(): any {
     let obj = JSON.parse(this.state);
     return JSON.stringify({
       ...obj,

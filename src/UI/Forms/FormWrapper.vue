@@ -26,6 +26,11 @@ export default class FormWrapper extends Vue {
   @Prop({ default: false }) smallLabel!: boolean;
   @Prop({ default: "mb-2" }) cls!: string;
 
+  /**
+   * Get a random ID.
+   * 
+   * @returns {string} The random ID.
+   */
   get randomID(): string {
     return (
       "a" +

@@ -37,9 +37,11 @@ export default class MenuActionLink extends Vue {
   @Prop() menuData!: IMenuItem;
   @Prop({ default: false }) isTopLevel!: boolean;
 
+  /**
+   * Hide all toggles. This is good for regular menu (not hamburger, bigger
+   * screens).
+   */
   private closeRegularMenu() {
-    // Hide all toggles. This is good for regular menu (not hamburger, bigger
-    // screens).
     const dropdownElementList = document.querySelectorAll(
       ".top-level-menu-item"
     );
@@ -48,8 +50,10 @@ export default class MenuActionLink extends Vue {
     );
   }
 
+  /**
+   * Close the menu. Effective if using hamburger menu (smaller screens).
+   */
   private closeHamburgerMenu() {
-    // Below is effective if using hamburger menu (smaller screens).
     if (!hamburgerMenu) {
       hamburgerMenu = document.getElementById(
         "hamburger-button"
@@ -68,7 +72,12 @@ export default class MenuActionLink extends Vue {
     }
   }
 
-  runFunction(item: IMenuItem): void {
+  /**
+   * Run the function of the menu item.
+   * 
+   * @param {IMenuItem} item  The menu item.
+   */
+  runFunction(item: IMenuItem) {
     if (item.function) {
       this.closeRegularMenu();
       this.closeHamburgerMenu();

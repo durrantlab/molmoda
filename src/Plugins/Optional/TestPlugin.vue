@@ -95,7 +95,7 @@ export default class TestPlugin extends OptionalPluginParent {
    * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
    */
   runJob(_args: IUserArg[]) {
-    // console.log(_args);
+    console.log(_args);
 
     // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
     // let args: string[] = ['-H'];

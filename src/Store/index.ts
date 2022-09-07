@@ -12,9 +12,22 @@ interface NameValPair {
 }
 
 const _commonMutations = {
+    /**
+     * Sets a state variable.
+     * 
+     * @param {any}         state    The state.
+     * @param {NameValPair} payload  The name and value to set.
+     */
     setVar(state: any, payload: NameValPair) {
         state[payload.name] = payload.val;
     },
+
+    /**
+     * Adds a value to a list in the state.
+     * 
+     * @param {any}         state    The state.
+     * @param {NameValPair} payload  The name and value to push to the list.
+     */
     pushToList(state: any, payload: NameValPair) {
         if (Array.isArray(payload.val)) {
             state[payload.name].push(...payload.val);
@@ -22,12 +35,26 @@ const _commonMutations = {
             state[payload.name].push(payload.val);
         }
     },
+
+    /**
+     * Adds a property (value) to an object in the state.
+     * 
+     * @param {any}         state    The state.
+     * @param {NameValPair} payload  The name and property (value) to add.
+     */
     addToObj(state: any, payload: NameValPair) {
         state[payload.name] = {
             ...state[payload.name],
             ...payload.val,
         };
     },
+
+    /**
+     * Updates the molecules in the state.
+     * 
+     * @param {any}             state  The state.
+     * @param {IMolContainer[]} mols   The updated molecules.
+     */
     updateMolecules(state: any, mols: IMolContainer[]) {
         // state.molecules = mols;
 
@@ -74,6 +101,13 @@ export function setupVueXStore(): Store<any> {
         getters: {},
         mutations: {
             ..._commonMutations,
+
+            /**
+             * Clear the molecule that's the focus of the viewer.
+             *
+             * @param {any}     state         The state.
+             * @param {boolean} [updateZoom]  Whether to also update the zoom.
+             */
             clearFocusedMolecule(state: any, updateZoom = true) {
                 if (!updateZoom) {
                     state["updateZoom"] = false;
@@ -126,10 +160,22 @@ export function setupVueXStore(): Store<any> {
     return store;
 }
 
+/**
+ * Sets a state variable.
+ * 
+ * @param  {string} name   The name of the variable to set.
+ * @param  {any}    value  The value to set.
+ */
 export function setStoreVar(name: string, value: any) {
     store.commit("setVar", { name: name, val: value } as NameValPair);
 }
 
+/**
+ * Adds a value to a list in the state.
+ * 
+ * @param  {string} name   The name of the list to add to.
+ * @param  {any}    value  The value to push to the list.
+ */
 export function pushToStoreList(name: string, value: any) {
     store.commit("pushToList", { name: name, val: value } as NameValPair);
 }

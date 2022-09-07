@@ -28,7 +28,7 @@
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options, Vue } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
-import { Prop, Watch } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 
 /**
  * Teturns the input string, without any filtering.
@@ -63,18 +63,34 @@ export default class PopupOneTextInput extends Vue {
 
   textVal = "";
 
+  /**
+   * Get the open state of the popup.
+   * 
+   * @returns {boolean} The open state of the popup.
+   */
   get open(): boolean {
     return this.openValue;
   }
 
+  /**
+   * Set the open state of the popup.
+   *
+   * @param {boolean} val The new open state of the popup.
+   */
   set open(val: boolean) {
     this.$emit("update:openValue", val);
   }
 
+  /**
+   * Runs when the text changes.
+   */
   onTextChange() {
     this.$emit("update:text", this.textVal);
   }
 
+  /**
+   * Runs when the popup is done (action button clicked).
+   */
   onDone(): void {
     if (this.textVal === undefined) {
       return;
@@ -83,19 +99,20 @@ export default class PopupOneTextInput extends Vue {
     this.$emit("onTextDone", this.textVal);
   }
 
+  /**
+   * Runs right before the popup is shown.
+   */
   beforePopupShown() {
     this.textVal = this.text;
   }
 
+  /**
+   * Runs right after the popup is shown.
+   */
   onPopupShown() {
     let focusTarget = (this.$refs.formInput as any).$refs
       .inputElem as HTMLInputElement;
     focusTarget.focus();
-  }
-
-  @Watch("defaultVal")
-  onDefaultValChange(newVal: string) {
-    this.textVal = newVal;
   }
 }
 </script>

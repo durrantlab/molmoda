@@ -38,6 +38,11 @@ interface IStyleCount {
   },
 })
 export default class Styles extends Vue {
+  /**
+   * Get the styles and names
+   * 
+   * @returns {IStyleName[]}  The styles and names
+   */
   get stylesAndNames(): IStyleName[] {
     let allStylesAndSels: { [key: string]: IStyleAndSel[] } = {};
     let molecules = this.$store.state["molecules"];
@@ -89,15 +94,28 @@ export default class Styles extends Vue {
     return allStylesAndCountsInfo;
   }
 
+  /**
+   * Convert a list of styles to a list of style counts.
+   * 
+   * @param   {IStyleAndSel[]}  styles  The styles
+   * @returns {IStyleCount[]}           The style counts
+   */
   private _convertStyleToStyleCount(styles: IStyleAndSel[]): IStyleCount[] {
     return styles.map((s: IStyleAndSel): IStyleCount => {
       return { styleAndSel: s, count: 1 };
     });
   }
 
+  /**
+   * Tally the styles. Assuming stylesAndCounts and newStyleCounts don't contain
+   * duplicates.
+   *
+   * @param   {IStyleCount[]}  stylesAndCounts  The existing styles and counts.
+   * @param   {IStyleCount[]}  newStyleCounts   The new styles and counts to add.
+   * @returns {IStyleCount[]} The styles and counts after tallying.
+   */
   private _tallyStyles(stylesAndCounts: IStyleCount[], newStyleCounts: IStyleCount[]): IStyleCount[] {
     // TODO: Move to Utils.ts?
-    // Assuming stylesAndCounts and newStyleCounts don't contain duplicates.
 
     for (let newStyleCount of newStyleCounts) {
       let styleExistsInStylesAndCounts = false;

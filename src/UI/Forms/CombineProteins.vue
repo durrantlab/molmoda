@@ -71,10 +71,20 @@ export default class CombineProteins extends Vue {
   ]
   val = "merge_all"
 
+  /**
+   * Gets the molecules from the store.
+   * 
+   * @returns {IMolContainer[]}  The molecules from the store.
+   */
   get molecules(): IMolContainer[] {
     return this.$store.state.molecules;
   }
 
+  /**
+   * Gets a description of the visible protein chains.
+   * 
+   * @returns {string}  The description.
+   */
   get visibleProteinElements(): string {
     const protTxt = this.visibleProteins.length > 1 ? "proteins" : "protein";
     const chainTxt = this.visibleProteinChains.length > 1 ? "chains" : "chain";
@@ -82,6 +92,11 @@ export default class CombineProteins extends Vue {
     return `Detected ${this.visibleProteinChains.length} visible protein ${chainTxt} present in ${this.visibleProteins.length} ${protTxt}.`;
   }
 
+  /**
+   * Gets the visible proteins.
+   * 
+   * @returns {IMolContainer[]}  The visible proteins.
+   */
   get visibleProteins(): IMolContainer[] {
     // Get number of visible proteins (top-level menu items).
     let proteins = getRootNodesOfType(this.molecules, MolType.PROTEIN);
@@ -89,6 +104,11 @@ export default class CombineProteins extends Vue {
     return proteins;
   }
 
+  /**
+   * Gets the visible protein chains.
+   * 
+   * @returns {IMolContainer[]}  The visible protein chains.
+   */
   get visibleProteinChains(): IMolContainer[] {
     // Get the number of chains (terminal nodes).
     let terminalNodes = getTerminalNodes(this.molecules);

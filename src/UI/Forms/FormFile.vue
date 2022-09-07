@@ -9,7 +9,7 @@
       class="form-control"
       :id="id"
       :multiple="multiple"
-      @change="fileChanged"
+      @change="onFileChanged"
       :accept="accept"
     />
     <FormElementDescription>
@@ -45,16 +45,32 @@ export default class FormFile extends Vue {
 
   errorMsg = "";
 
+  /**
+   * Gets text describing the acceptable file types.
+   * 
+   * @returns {string} Text describing the acceptable file types.
+   */
   get acceptableFileTypesMsg(): string {
     return (
       "Acceptable file types: " + this.accept.toUpperCase().replace(/,/g, ", ")
     );
   }
 
+  /**
+   * Gets all the acceptable file types.
+   *
+   * @returns {string[]} All the acceptable file types.
+   */
   get allAcceptableFileTypes(): string[] {
     return this.accept.split(",").map((a) => a.toUpperCase().substring(1));
   }
 
+  /**
+   * Given a filename, determine the type.
+   *
+   * @param {string} filename  The filename to determine the type of.
+   * @returns {string} The type of the file.
+   */
   getType(filename: string): string {
     // Type is file extension, uppercase.
     let filePrts = filename.split(".");
@@ -69,6 +85,13 @@ export default class FormFile extends Vue {
     return type;
   }
 
+  /**
+   * Convert an object of type File to type IFileInfo.
+   *
+   * @param {File} file  The file to convert.
+   * @returns {Promise<IFileInfo>} A promise that resolves to the converted
+   *     file.
+   */
   fileToFileInfo(file: File): Promise<IFileInfo> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -123,8 +146,10 @@ export default class FormFile extends Vue {
     });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  fileChanged(_e: Event) {
+  /**
+   * Runs when the file changes.
+   */
+  onFileChanged(/* _e: Event*/ ) {
     let input = this.$refs.fileinput as HTMLInputElement;
     let files = input.files;
 
@@ -152,7 +177,10 @@ export default class FormFile extends Vue {
       });
   }
 
-  clearFile(): void {
+  /**
+   * Clears the file input.
+   */
+  clearFile() {
     // @ts-ignore
     (this.$refs.fileinput as HTMLInputElement).value = null;
   }

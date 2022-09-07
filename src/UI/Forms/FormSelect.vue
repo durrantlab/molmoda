@@ -40,6 +40,11 @@ export default class FormSelect extends Vue {
   @Prop({ default: false }) disabled!: boolean;
   @Prop({ required: true }) options!: (string | IFromOption)[];
 
+  /**
+   * Get the options to use in the select.
+   * 
+   * @returns {IFromOption[]} The options to use.
+   */
   get optionsToUse(): IFromOption[] {
     return this.options.map((o: string | IFromOption) => {
       if (typeof o === "string") {

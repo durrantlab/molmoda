@@ -31,6 +31,9 @@ export default class Radio extends Vue {
   @Prop({ required: true }) name!: string;
   @Prop({ required: true }) id!: string;
 
+  /**
+   * Emit the onclick event.
+   */
   onclick() {
     this.$emit("onclick");
   }
