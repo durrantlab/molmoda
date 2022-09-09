@@ -18,6 +18,8 @@
             "@/*": ["src/*"]
         },
         "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
+        "resolveJsonModule": true,
+
         // "removeComments": false
     },
     "include": [

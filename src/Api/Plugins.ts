@@ -1,5 +1,4 @@
 import { loadedPlugins } from "@/Plugins/PluginParent";
-import * as api from "@/Api";
 
 export const pluginsApi = {
     /**
@@ -9,12 +8,8 @@ export const pluginsApi = {
      * @param  {any}    [params]    The parameters to pass to the plugin
      *                              (optional).
      */
-    runPlugin: function(pluginName: string, params?: any) {
-        let log = "Starting plugin: " + pluginName;
-        if (params) {
-            log += "; parameters: " + JSON.stringify(params);
-        }
-        api.messages.log(log);
-        loadedPlugins[pluginName].onPluginStart(params);
-    }
-}
+    runPlugin: function (pluginName: string, params?: any) {
+        const plugin = loadedPlugins[pluginName];
+        plugin.onPluginStart(params);
+    },
+};

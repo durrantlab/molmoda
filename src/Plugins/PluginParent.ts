@@ -3,6 +3,7 @@ import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { Vue } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "./PluginInterfaces";
 import * as api from "@/Api";
+import { randomID, removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
 
 export interface IPluginSetupInfo {
     softwareCredits: ISoftwareCredit[];
@@ -10,6 +11,12 @@ export interface IPluginSetupInfo {
     menuData: IMenuItem;
     pluginId: string;
 }
+
+export type RunJobReturn =
+    | Promise<string | undefined>
+    | string
+    | void
+    | undefined;
 
 // Keep track of all loaded plugins. Useful for loading a plugin independent of
 // the menu system.
@@ -32,11 +39,11 @@ export abstract class PluginParent extends Vue {
 
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
-     * in a popup, this function would open the popup. 
+     * in a popup, this function would open the popup.
      *
-     * @param {any} [payload]  Included if you want to pass extra data to the
-     *                         plugin. Probably only useful if not using the
-     *                         menu system. Optional.
+     * @param {any}    [payload]  Passes extra data to the plugin. Useful when
+     *                            running plugin outside of the menu system.
+     *                            Optional
      */
     abstract onPluginStart(payload?: any): void;
 
@@ -47,8 +54,12 @@ export abstract class PluginParent extends Vue {
      * @param {any} [parameters]  The same parameterSets submitted via the
      *                            submitJobs function, but one at a time.
      *                            Optional.
+     * @returns {RunJobReturn}  A promise that resolves when the job is done,
+     *     with the result (string), or a string itself (if the job is
+     *     synchronous), or undefined if there's nothing to return (so user not
+     *     required to use).
      */
-    abstract runJob(parameters?: any): void;
+    abstract runJob(parameters?: any): RunJobReturn;
 
     /**
      * Called when the plugin is mounted.
@@ -71,10 +82,10 @@ export abstract class PluginParent extends Vue {
 
     /**
      * This function submits jobs to the job queue system. Note that it is
-     * "jobs" plural.
+     * "jobs" plural. Also assigns jobIds.
      *
-     * @param {any[]} [parameterSets]  A list of parameters, one per job.
-     *                                 Optional.
+     * @param {any[]}  [parameterSets]  A list of parameters, one per job.
+     *                                  Optional.
      */
     protected submitJobs(parameterSets?: any[]) {
         if (parameterSets === undefined) {
@@ -89,15 +100,100 @@ export abstract class PluginParent extends Vue {
             parameterSets = [undefined];
         }
 
-        const jobs: JobQueue.JobInfo[] = parameterSets.map(
-            (p: JobQueue.JobInfo) => {
+        const jobs: JobQueue.IJobInfo[] = parameterSets.map(
+            (p: JobQueue.IJobInfo) => {
                 return {
                     commandName: this.pluginId,
                     params: p,
-                } as JobQueue.JobInfo;
+                    id: randomID(5),
+                } as JobQueue.IJobInfo;
             }
         );
+
+        for (const job of jobs) {
+            let logTxt = this.onSubmitJobLogMsg();
+            logTxt = removeTerminalPunctuation(logTxt);
+            api.messages.log(logTxt, undefined, job.id);
+        }
+
         JobQueue.submitJobs(jobs);
+    }
+
+    /**
+     * The message to log when the plugin job is submitted. Children can
+     * overwrite this function. Return "" if you want to hide this step.
+     *
+     * @returns {string}  The message to log.
+     */
+    onSubmitJobLogMsg(): string {
+        return `Job ${this.pluginId} submitted`;
+    }
+
+    /**
+     * The message to log when the plugin job starts. The parameters will be
+     * automatically added if given. Children can overwrite this function.
+     * Return "" if you want to hide this step.
+     *
+     * @returns {string}  The message to log.
+     */
+    onStartJobLogMsg(): string {
+        return `Job ${this.pluginId} started`;
+    }
+
+    /**
+     * The message to log when the plugin job finishes. Total run time will be
+     * appended. Children can overwrite this function.  Return "" if you want to
+     * hide this step.
+     *
+     * @returns {string}  The message to log.
+     */
+    onEndJobLogMsg(): string {
+        return `Job ${this.pluginId} ended`;
+    }
+
+    /**
+     * This function wraps around runJob to log start/end messages. It is called
+     * by the job queue system.
+     *
+     * @param {string} [jobId]       The job id to use (optional).
+     * @param {any}    [parameters]  The same parameterSets submitted via the
+     *                               submitJobs function, but one at a time.
+     *                               Optional.
+     * @returns {RunJobReturn}  A promise that resolves when the job is done,
+     *     with the result (string), or a string itself (if the job is
+     *     synchronous), or undefined if there's nothing to return (so user not
+     *     required to use).
+     */
+    private _runJob(jobId?: string, parameters?: any): RunJobReturn {
+        let logTxt = this.onStartJobLogMsg();
+        logTxt = removeTerminalPunctuation(logTxt);
+        api.messages.log(logTxt, parameters, jobId);
+        const startTime = new Date().getTime();
+
+        const jobResult = this.runJob(parameters);
+
+        logTxt = this.onEndJobLogMsg();
+        logTxt = removeTerminalPunctuation(logTxt);
+
+        // It's a promise
+        if (jobResult instanceof Promise) {
+            return jobResult
+                .then((result: string | undefined) => {
+                    logTxt +=
+                        " " +
+                        timeDiffDescription(new Date().getTime(), startTime);
+                    api.messages.log(logTxt, undefined, jobId);
+                    return result;
+                })
+                .catch((error: Error) => {
+                    throw error;
+                });
+        }
+
+        // It's a string or undefined
+        logTxt += " " + timeDiffDescription(new Date().getTime(), startTime);
+        api.messages.log(logTxt, undefined, jobId);
+        return jobResult;
     }
 
     /** mounted function */
@@ -130,7 +226,7 @@ export abstract class PluginParent extends Vue {
         } as IPluginSetupInfo);
 
         // Register with job queue system
-        api.hooks.onJobQueueCommand(this.pluginId, this.runJob.bind(this));
+        api.hooks.onJobQueueCommand(this.pluginId, this._runJob.bind(this));
 
         loadedPlugins[this.pluginId] = this;
 

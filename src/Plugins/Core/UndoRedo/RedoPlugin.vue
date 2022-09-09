@@ -30,7 +30,7 @@ export default class RedoPlugin extends PluginParent {
   pluginId = "redo";
 
   /**
-   * Runs when the user first starts the plugin. 
+   * Runs when the user first starts the plugin.
    */
   onPluginStart() {
     this.submitJobs();

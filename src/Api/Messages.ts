@@ -5,6 +5,7 @@ import {
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { waitSpinner } from "@/UI/MessageAlerts/WaitSpinner";
+import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
 export const messagesApi = {
     /**
@@ -49,7 +50,7 @@ export const messagesApi = {
 
     /**
      * Show or hide the mouse spinner to indicate waiting.
-     * 
+     *
      * @param  {boolean} show             Whether to show the spinner.
      * @param  {number}  [timeOut=30000]  The time to wait before hiding the
      *                                    spinner automtically.
@@ -60,23 +61,33 @@ export const messagesApi = {
 
     /**
      * Logs a message. Appears in the log at the bottom of the screen.
-     * 
-     * @param {string} msg  The message to log.
+     *
+     * @param {string} message       The message to log.
+     * @param {any}    [parameters]  The parameters associated with this log, if
+     *                               any.
+     * @param {string} [jobId]       The job ID associated with this log, if
+     *                               any.
      */
-    log: function(msg: string) {
-        // Get current local time as string.
+    log: function (message: string, parameters?: any, jobId?: string) {
+        // Get current local time as string. Like "2020-01-01 12:00"
         const now = new Date();
-        // Like "2020-01-01 12:00"
-        const timeStr = now.toLocaleString("en-US", {
-            hour12: false,
+        const timestamp = now.toLocaleString("en-US", {
+            hour12: true,
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
         });
-        
+
+        const paramDesc = describeParameters(parameters);
+
         // Add the message to the log
-        pushToStoreList("log", {timestamp: timeStr, message: msg});
-    }
+        pushToStoreList("log", {
+            timestamp,
+            message,
+            parameters: paramDesc,
+            jobId: jobId
+        } as ILog);
+    },
 };

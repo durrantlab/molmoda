@@ -17,7 +17,7 @@ export function slugify(text: string, lowerCase = true): string {
 
 /**
  * Create a random id.
- * 
+ *
  * @param  {number} [l=13] The length of the id.
  * @returns {string} The random id.
  */
@@ -32,10 +32,43 @@ export function randomID(l = 13): string {
 }
 /**
  * Capitalizes the first letter of a string.
- * 
+ *
  * @param  {string} s The string to capitalize.
  * @returns {string} The capitalized string.
  */
 export function capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Given a string, keep removing everything but letters and numbers from end of
+ * string. This is useful for removing terminal punctuation.
+ *
+ * @param  {string} s  The string to remove punctuation from.
+ * @returns {string}  The string without punctuation.
+ */
+export function removeTerminalPunctuation(s: string): string {
+    // eslint-disable-next-line regexp/no-dupe-characters-character-class
+    while (s.length > 0 && !s[s.length - 1].match(/[a-zA-Z\d]/i)) {
+        s = s.slice(0, -1);
+    }
+    return s;
+}
+
+/**
+ * Given to timestamps, produces a string that describes the time between the
+ * two in seconds.
+ *
+ * @param {number} timestamp1  The first timestamp.
+ * @param {number} timestamp2  The second timestamp.
+ * @returns {string}  The time between the two timestamps.
+ */
+export function timeDiffDescription(
+    timestamp1: number,
+    timestamp2: number
+): string {
+    const diffSecs = (timestamp2 - timestamp1) / 1000;
+    const roundedSecs = Math.round(diffSecs * 10) / 10;
+    const secs = (roundedSecs == 1) ? "sec" : "secs";
+    return ` (${roundedSecs.toFixed(1)} ${secs})`;
 }

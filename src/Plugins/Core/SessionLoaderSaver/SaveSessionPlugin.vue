@@ -118,8 +118,10 @@ export default class SaveSessionPlugin extends PopupPluginParent {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {any} parameters  Information about the file to save.
+   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   *     done.
    */
-  runJob(parameters: any) {
+  runJob(parameters: any): Promise<undefined> {
     let filename = parameters.filename;
 
     // Add .biotite to end if not already there
@@ -127,7 +129,7 @@ export default class SaveSessionPlugin extends PopupPluginParent {
       filename += ".biotite";
     }
 
-    saveState(filename, this.$store.state)
+    return saveState(filename, this.$store.state)
       .then(() => {
         setStoreIsDirty(false);
         if (this.windowClosing) {
@@ -141,10 +143,11 @@ export default class SaveSessionPlugin extends PopupPluginParent {
             }
           );
         }
-        return;
+        return undefined;
       })
       .catch((err: any) => {
         console.log(err);
+        return undefined;
       });
   }
 }

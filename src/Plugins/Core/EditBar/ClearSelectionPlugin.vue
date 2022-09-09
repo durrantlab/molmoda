@@ -41,7 +41,7 @@ export default class ClearSelectionPlugin extends PluginParent {
   }
 
   /**
-   * Runs when the user first starts the plugin. 
+   * Runs when the user first starts the plugin.
    */
   onPluginStart() {
     this.submitJobs();

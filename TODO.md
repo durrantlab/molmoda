@@ -16,45 +16,57 @@ install typedoc (such a mess you've made...)
 Settings panel to control things like fog, whether outline:
 viewer.setViewStyle({style:"outline"}) . Note also color, width on outline.
 
+https://github.com/pulsardev/vue-tour
+https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
+Table component?
+
 # Ongoing: Important
 
 When change colors and things, shouldn't refocus.
 
 When you load multi-frame pdb or mol2, need to deal with that still.
 
-Messaging. Need toast, log, system alert, etc. You started working on toast.
+Messaging. Need toast? You started working on toast.
     Rather than bind to a boolean to show or not, populate a list of messages.
     After certain amount of time (specified in data structure), close toast and
     go to next one (if present).
     https://getbootstrap.com/docs/5.0/components/toasts/
-
-https://github.com/pulsardev/vue-tour
-https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
-Table component?
 
 Would be good to be able to use multiple processors for queue. Give some thought
 to how. Likely needs webworker?
 
 Need functions to output pdb and mol2. (use open babel for mol2).
 
-Idea to consider: Ability to select molecule. Rename/extract/etc only appears
-when selected. Menu items too. And then widget to select protein/ligand allows
-you to choose between all visible and all selected.
-Vue component to specify whether to combine PDBs (receptors) or not. Basically
-combine everything but something designated ligand.
-    CombineProteins should be integrated into FormFull
+Idea to consider: Ability to select molecule. And then widget to select
+protein/ligand allows you to choose between all visible and all selected. Vue
+component to specify whether to combine PDBs (receptors) or not. Basically
+combine everything but something designated ligand. CombineProteins should be
+    integrated into FormFull
+
+Hamburger menu broken
+
+Certain functions should only be called through API. Enforce that.
+
+2D images show on click.
+
+# DONE
+
+Rename/extract/etc only appears when selected. Menu items too. 
+
+Plugin class names must end in "Plugin" ... mke eslint plugin
 
 All classes that inherit PopupPluginParent should not use @beforePopupOpen and
 @onPopupOpen. Need some way to enforce this. Really, whole validation system to
 verify everythign documented correctly too.
 
-Plugin class names must end in "Plugin" ... mke eslint plugin
+Log should automatically scroll to bottom when item added.
+
+Some plugins are very fast, always happen quickly. Can skip log submitted to
+queue on thee (override function with "").
 
 Logging everything. Need to add log to more things. Also, need to be able to
 specify log messages explicitly in plugin (override). Generally more work do be
 done here.
-
-# DONE
 
 Also, seems to make app bigger than window (can scroll down). 
 

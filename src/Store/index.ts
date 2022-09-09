@@ -5,6 +5,7 @@ import { createStore, Store } from "vuex";
 import { allHooks } from "@/Api/Hooks";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { setStoreIsDirty } from "./LoadAndSaveStore";
+import { ILog } from "@/UI/Panels/Log/LogUtils";
 
 interface NameValPair {
     name: string;
@@ -94,8 +95,8 @@ export let store: any;
 export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
-            molecules: [],
-            log: [],
+            molecules: [] as IMolContainer[],
+            log: [] as ILog[],
             updateZoom: true,
         },
         getters: {},

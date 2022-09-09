@@ -3,12 +3,13 @@
 import * as api from "@/Api";
 
 const registeredJobTypes: { [key: string]: Function } = {};
-const jobQueue: JobInfo[] = [];
+const jobQueue: IJobInfo[] = [];
 let jobCurrentlyRunning = false;
 
-export interface JobInfo {
+export interface IJobInfo {
     commandName: string;
     params: any;
+    id: string;
     delayAfterRun?: number;  // MS
 }
 
@@ -28,11 +29,11 @@ function _runNextJob(): number {
     if (jobQueue.length > 0) {
         api.messages.waitSpinner(true);
 
-        const job = jobQueue.shift() as JobInfo;
+        const job = jobQueue.shift() as IJobInfo;
         const func = registeredJobTypes[job.commandName];
         jobCurrentlyRunning = true;
         console.log("Running job.");
-        func(job.params);
+        func(job.id, job.params);
         console.log("Done running job.");
         jobCurrentlyRunning = false;
 
@@ -89,9 +90,9 @@ export function registerJobType(commandName: string, func: Function) {
 /**
  * Submit a job to the queue.
  * 
- * @param  {JobInfo[]} jobs  The job to submit.
+ * @param  {IJobInfo[]} jobs  The job to submit.
  */
-export function submitJobs(jobs: JobInfo[]) {
+export function submitJobs(jobs: IJobInfo[]) {
     jobQueue.push(...jobs);
     _runNextJob();
 }

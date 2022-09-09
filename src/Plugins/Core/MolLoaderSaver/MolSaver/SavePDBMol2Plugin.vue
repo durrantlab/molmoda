@@ -132,8 +132,9 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {any} parameters  Information about the molecules to save.
+   * @returns {Promise<undefined>}  A promise that resolves when the job is done.
    */
-  runJob(parameters: any) {
+  runJob(parameters: any): Promise<undefined> {
     let filename = parameters.filename;
 
     // Get all the visible molecules.
@@ -181,7 +182,7 @@ export default class SavePDBMol2Plugin extends PopupPluginParent {
       })
     );
 
-    api.fs.saveZipWithTxtFiles(
+    return api.fs.saveZipWithTxtFiles(
       {
         fileName: filename,
       } as ISaveTxt,

@@ -76,15 +76,18 @@ export default class OpenSessionPlugin extends PopupPluginParent {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IFileInfo} parameters  Information about the molecules to save.
+   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   *     done.
    */
-  runJob(parameters: IFileInfo) {
-    jsonToState(parameters.contents)
+  runJob(parameters: IFileInfo): Promise<undefined> {
+    return jsonToState(parameters.contents)
     .then((state) => {
       this.$store.replaceState(state);
-      return;
+      return undefined;
     })
     .catch((err: any) => {
       console.error(err);
+      return undefined;
     });
   }
 }

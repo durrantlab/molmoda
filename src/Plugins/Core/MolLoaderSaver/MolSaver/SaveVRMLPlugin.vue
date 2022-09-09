@@ -99,16 +99,19 @@ export default class SaveVRMLPlugin extends PopupPluginParent {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {any} parameters  Information about the VRML file to save.
+   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   *     done.
    */
-  runJob(parameters: any) {
+  runJob(parameters: any): Promise<undefined> {
     let filename = parameters.filename;
     let vrmlTxt = api.visualization.viewer.exportVRML();
-    api.fs.saveTxt({
+    api.visualization.viewer.render();
+    
+    return api.fs.saveTxt({
       fileName: filename,
       content: vrmlTxt,
       ext: ".vrml",
     } as ISaveTxt);
-    api.visualization.viewer.render();
   }
 }
 </script>

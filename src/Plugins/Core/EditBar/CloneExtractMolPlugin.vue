@@ -52,6 +52,7 @@ import {
   atomsToModels,
   modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
+import { RunJobReturn } from "@/Plugins/PluginParent";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -136,8 +137,10 @@ export default class CloneExtractMolPlugin extends EditBarPluginParent {
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @returns {RunJobReturn}  A promise that resolves when the job is done.
    */
-  runJob() {
+  runJob(): RunJobReturn {
     if (this.nodeToActOn) {
       let newerNode: IMolContainer;
       let convertedNode: Promise<IMolContainer>;
@@ -169,7 +172,7 @@ export default class CloneExtractMolPlugin extends EditBarPluginParent {
         });
       }
 
-      convertedNode
+      return convertedNode
         .then((node) => {
           node.title = this.newTitle;
 
@@ -188,12 +191,15 @@ export default class CloneExtractMolPlugin extends EditBarPluginParent {
             val: node,
           });
 
-          return;
+          return undefined;
         })
         .catch((err: any) => {
           console.log(err);
+          return undefined;
         });
     }
+
+    return Promise.resolve(undefined);
   }
 }
 </script>

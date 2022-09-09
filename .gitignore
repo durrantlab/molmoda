@@ -23,3 +23,6 @@ pnpm-debug.log*
 *.sw?
 *.old
 docs/*
+*.bak
+*.old
+*.orig

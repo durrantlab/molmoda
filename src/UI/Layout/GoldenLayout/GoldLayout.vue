@@ -49,7 +49,7 @@ import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
-import LogPanel from "@/UI/Panels/LogPanel.vue";
+import LogPanel from "@/UI/Panels/Log/LogPanel.vue";
 import * as api from "@/Api";
 
 /**

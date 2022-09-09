@@ -93,8 +93,10 @@ export default class TestPlugin extends OptionalPluginParent {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
+   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   *     done.
    */
-  runJob(_args: IUserArg[]) {
+  runJob(_args: IUserArg[]): Promise<undefined> {
     console.log(_args);
 
     // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
@@ -109,17 +111,18 @@ export default class TestPlugin extends OptionalPluginParent {
       console.log(readFile(obabel, "testfile.txt"));
     };
 
-    runOpenBabel(
+    return runOpenBabel(
       ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
       beforeOBFunc,
       afterOBFunc
     )
       .then((res) => {
         console.log(res);
-        return;
+        return undefined;
       })
       .catch((err) => {
         console.log(err);
+        return undefined;
       });
   }
 }

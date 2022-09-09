@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "docs": "vue-cli-service build --mode docs; jsdoc dist/js/app.js",
@@ -59,7 +59,6 @@
     "@vue/cli-service": "~5.0.0",
     "@vue/eslint-config-typescript": "^9.1.0",
     "autoprefixer": "^10.4.8",
-    "better-docs": "^2.7.2",
     "copy-webpack-plugin": "^9.1.0",
     "css-loader": "^6.7.1",
     "eslint": "^7.32.0",

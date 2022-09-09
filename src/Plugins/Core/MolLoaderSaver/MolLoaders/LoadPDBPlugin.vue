@@ -23,14 +23,14 @@ import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
 
 /**
- * LoadFilePlugin
+ * LoadPDBPlugin
  */
 @Options({
   components: {
     PopupOneTextInput,
   },
 })
-export default class LoadFilePlugin extends PopupPluginParent {
+export default class LoadPDBPlugin extends PopupPluginParent {
   menuPath = "File/Molecules/Import/[2] Protein Data Bank";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

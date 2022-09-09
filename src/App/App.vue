@@ -32,7 +32,9 @@ import {
 import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { IPluginSetupInfo } from "@/Plugins/PluginParent";
 import { dynamicImports } from "@/Core/DynamicImports";
-
+import * as api from "@/Api";
+import { appName } from "@/main";
+import * as compileErrors from "../compile_errors.json";
 
 /**
  * Main app component
@@ -113,8 +115,14 @@ export default class App extends Vue {
 
   /** mounted function */
   mounted() {
-    // Close enough to rendered, I think.
-    // api.sys.loadStatus.vueRendered = true;
+    api.messages.log(`${appName} suite started`);
+
+    if (compileErrors.length > 0) {
+      // There are compile errors
+      api.messages.popupError(
+        "<p>The following compile errors were found:</p><ul><li>" + compileErrors.join("</li><li>") + "</li></ul>"
+      )
+    }
   }
 }
 </script>

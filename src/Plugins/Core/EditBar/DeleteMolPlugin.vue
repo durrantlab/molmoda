@@ -95,6 +95,7 @@ export default class DeleteMolPlugin extends EditBarPluginParent {
       //   name: "molecules",
       //   val: newNode,
       // });
+
     }
   }
 }

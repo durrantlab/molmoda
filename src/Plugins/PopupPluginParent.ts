@@ -76,9 +76,9 @@ export abstract class PopupPluginParent extends PluginParent {
      * Runs when the user first starts the plugin. For example, if the plugin is
      * in a popup, this function would open the popup. 
      *
-     * @param {any} [payload]  Included if you want to pass extra data to the
-     *                         plugin. Probably only useful if not using the
-     *                         menu system. Optional.
+     * @param {any} [payload]   Included if you want to pass extra data to the
+     *                          plugin. Probably only useful if not using the
+     *                          menu system. Optional.
      */
     onPluginStart(payload?: any): void {
         // Children should not overwrite this function! Use onPopupOpen instead.

@@ -6,7 +6,7 @@
     @onClosed="onClosed"
     :variant="variant"
   >
-    <p style="overflow: hidden; text-overflow: ellipsis">{{ message }}</p>
+    <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
   </Popup>
 </template>
 
