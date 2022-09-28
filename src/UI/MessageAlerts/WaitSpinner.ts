@@ -1,4 +1,5 @@
-const body = document.getElementsByTagName("body")[0];
+let body: any;
+
 let timeoutId: any = undefined;
 
 /**
@@ -19,6 +20,10 @@ function stopPreviousTimeout() {
  *                                    spinner automtically.
  */
 export function waitSpinner(show: boolean, timeOut = 30000) {
+    if (body === undefined) {
+        body = document.getElementsByTagName("body")[0];
+    }
+
     if (show) {
         body.classList.add("waiting");
         stopPreviousTimeout();

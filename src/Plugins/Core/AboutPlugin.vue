@@ -58,8 +58,8 @@ import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { appName } from "@/main";
 import { PopupPluginParent } from "../PopupPluginParent";
+import { appName } from "@/Core/AppName";
 
 /** AboutPlugin */
 @Options({

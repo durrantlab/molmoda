@@ -12,14 +12,14 @@
       class="nav-link top-level-menu-item"
       data-bs-auto-close="outside"
       href="#"
-      :id="'navbarDropdown-' + idSlug"
+      :id="'menu1-' + idSlug"
       role="button"
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
       {{ menuData._text }}
     </a>
-    <ul class="dropdown-menu" :aria-labelledby="'navbarDropdown-' + idSlug">
+    <ul class="dropdown-menu" :aria-labelledby="'menu1-' + idSlug">
       <span v-for="(item, idx) in menuItemsWithSeparators" v-bind:key="idx">
         <li v-if="isSeparator(item)"><hr class="dropdown-divider" /></li>
         <MenuLevel2 v-else :menuData="item" />

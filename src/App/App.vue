@@ -1,6 +1,15 @@
 <template>
   <div class="full-screen" style="display: flex; flex-direction: column">
-    <div style="flex-grow: 5; max-height: 56px; min-height: 56px; height: 56px;">
+    <TestInstructions instructions="moose dog face"></TestInstructions>
+    <div
+      style="
+        z-index: 1;
+        flex-grow: 5;
+        max-height: 56px;
+        min-height: 56px;
+        height: 56px;
+      "
+    >
       <Menu :menuData="menuData" />
     </div>
     <div style="flex-grow: 5">
@@ -20,10 +29,7 @@ import { Options, Vue } from "vue-class-component";
 import GoldLayout from "@/UI/Layout/GoldenLayout/GoldLayout.vue";
 import Menu from "@/UI/Navigation/Menu/Menu.vue";
 import AllPlugins from "../Plugins/AllPlugins.vue";
-import {
-  addMenuItem,
-  IMenuEntry,
-} from "../UI/Navigation/Menu/Menu";
+import { addMenuItem, IMenuEntry } from "../UI/Navigation/Menu/Menu";
 import {
   Credits,
   IContributorCredit,
@@ -33,8 +39,9 @@ import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { IPluginSetupInfo } from "@/Plugins/PluginParent";
 import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
-import { appName } from "@/main";
 import * as compileErrors from "../compile_errors.json";
+import { appName } from "@/Core/AppName";
+import TestInstructions from "@/Testing/TestInstructions.vue";
 
 /**
  * Main app component
@@ -44,6 +51,7 @@ import * as compileErrors from "../compile_errors.json";
     GoldLayout,
     Menu,
     AllPlugins,
+    TestInstructions,
   },
 })
 export default class App extends Vue {
@@ -70,7 +78,7 @@ export default class App extends Vue {
    * @param {Credits} credits  Credits to consider.
    * @returns {Credits} The list of credits, with ones that have duplicate names
    *     removed.
-   */   
+   */
   private _removeDuplicateNames(credits: Credits): Credits {
     return credits.filter(
       (v: any, i: any, a: any) =>
@@ -81,7 +89,7 @@ export default class App extends Vue {
   /**
    * Called when a plugin has finished setting up. Collects the menu and credits
    * data.
-   * 
+   *
    * @param {IPluginSetupInfo} pluginSetupInfo  Information about the plugin
    *                                            that has finished setting up.
    */
@@ -120,8 +128,10 @@ export default class App extends Vue {
     if (compileErrors.length > 0) {
       // There are compile errors
       api.messages.popupError(
-        "<p>The following compile errors were found:</p><ul><li>" + compileErrors.join("</li><li>") + "</li></ul>"
-      )
+        "<p>The following compile errors were found:</p><ul><li>" +
+          compileErrors.join("</li><li>") +
+          "</li></ul>"
+      );
     }
   }
 }

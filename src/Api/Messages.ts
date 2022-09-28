@@ -1,5 +1,5 @@
-import * as api from "@/Api";
-import { pushToStoreList } from "@/Store";
+import { pluginsApi } from "@/Api/Plugins";
+import { pushToStoreList } from "@/Store/StoreExternalAccess";
 import {
     ISimpleMsg,
     PopupVariant,
@@ -30,7 +30,7 @@ export const messagesApi = {
         callBack: Function | undefined = undefined,
         neverClose = false
     ) {
-        api.plugins.runPlugin("simplemsg", {
+        pluginsApi.runPlugin("simplemsg", {
             title,
             message,
             variant,
@@ -79,15 +79,17 @@ export const messagesApi = {
             hour: "2-digit",
             minute: "2-digit",
         });
+        const timestampInt = Math.round(now.getTime() / 1000);
 
         const paramDesc = describeParameters(parameters);
 
         // Add the message to the log
         pushToStoreList("log", {
             timestamp,
+            timestampSecs: timestampInt,
             message,
             parameters: paramDesc,
-            jobId: jobId
+            jobId: jobId,
         } as ILog);
     },
 };

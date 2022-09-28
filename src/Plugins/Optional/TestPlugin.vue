@@ -18,18 +18,15 @@ import {
   FormElement,
   FormElemType,
   IFormGroup,
+  IFormMoleculeInputParams,
   IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
 import { OptionalPluginParent } from "./OptionalPluginParent";
 import { Options } from "vue-class-component";
-import {
-  runOpenBabel,
-  writeFile,
-  readDir,
-  readFile,
-} from "@/FileSystem/OpenBabel";
+import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
+import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
 
 /**
  * TestPlugin
@@ -59,6 +56,11 @@ export default class TestPlugin extends OptionalPluginParent {
       label: "Moose",
       val: 0,
     } as IFormNumber,
+    {
+      type: FormElemType.MoleculeInputParams,
+      id: "makemolinputparams",
+      val: defaultMoleculeInputParams()
+    } as IFormMoleculeInputParams,
     {
       id: "group",
       type: FormElemType.Group,
@@ -98,32 +100,34 @@ export default class TestPlugin extends OptionalPluginParent {
    */
   runJob(_args: IUserArg[]): Promise<undefined> {
     console.log(_args);
+    debugger
+    return Promise.resolve(undefined);
 
-    // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
-    // let args: string[] = ['-H'];
+    // // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
+    // // let args: string[] = ['-H'];
 
-    let beforeOBFunc = (obabel: any) => {
-      writeFile(obabel, "testfile.txt", "test text");
-    };
+    // let beforeOBFunc = (obabel: any) => {
+    //   writeFile(obabel, "testfile.txt", "test text");
+    // };
 
-    let afterOBFunc = (obabel: any) => {
-      console.log(readDir(obabel, "."));
-      console.log(readFile(obabel, "testfile.txt"));
-    };
+    // let afterOBFunc = (obabel: any) => {
+    //   console.log(readDir(obabel, "."));
+    //   console.log(readFile(obabel, "testfile.txt"));
+    // };
 
-    return runOpenBabel(
-      ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
-      beforeOBFunc,
-      afterOBFunc
-    )
-      .then((res) => {
-        console.log(res);
-        return undefined;
-      })
-      .catch((err) => {
-        console.log(err);
-        return undefined;
-      });
+    // return runOpenBabel(
+    //   ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
+    //   beforeOBFunc,
+    //   afterOBFunc
+    // )
+    //   .then((res) => {
+    //     console.log(res);
+    //     return undefined;
+    //   })
+    //   .catch((err) => {
+    //     console.log(err);
+    //     return undefined;
+    //   });
   }
 }
 </script>

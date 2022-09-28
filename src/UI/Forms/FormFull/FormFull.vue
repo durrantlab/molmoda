@@ -48,6 +48,12 @@
         :step="getRangeMinMaxStep(formElem).step"
         @onChange="onDataUpdated"
       />
+      <MoleculeInputParams
+        v-else-if="formElem.type === FormElementType.MoleculeInputParams"
+        v-model="allowVal(formElem).val"
+        @onChange="onDataUpdated"
+      >
+      </MoleculeInputParams>
     </FormWrapper>
   </span>
 </template>
@@ -62,12 +68,14 @@ import {
   FormElement,
   FormElemType,
   IFormGroup,
+  IFormMoleculeInputParams,
   IFormRange,
   IFormSelect,
   IFormTextOrColor,
 } from "./FormFullInterfaces";
 import Accordian from "@/UI/Layout/Accordian/Accordian.vue";
 import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
+import MoleculeInputParams from "../MoleculeInputParams/MoleculeInputParams.vue";
 
 /**
  * FormFull
@@ -79,6 +87,7 @@ import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
     FormSelect,
     Accordian,
     AccordianItem,
+    MoleculeInputParams,
   },
 })
 export default class FormFull extends Vue {
@@ -88,7 +97,7 @@ export default class FormFull extends Vue {
 
   /**
    * Get the options for a select element.
-   * 
+   *
    * @param {any} val  The form element.
    * @returns {string[]}  The options.
    */
@@ -120,6 +129,17 @@ export default class FormFull extends Vue {
    */
   allowVal(val: FormElement): IFormTextOrColor {
     return val as IFormTextOrColor;
+  }
+
+  /**
+   * Cast the form element to an IFormMoleculeInputParams. Just to make typing work
+   * in template...
+   *
+   * @param {any} val  The form element.
+   * @returns {IFormGroup}  The IFormMoleculeInputParams.
+   */
+  allowConsiderCompounds(val: FormElement): IFormMoleculeInputParams {
+    return val as IFormMoleculeInputParams;
   }
 
   /**

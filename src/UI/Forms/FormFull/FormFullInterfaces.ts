@@ -1,3 +1,5 @@
+import { IMoleculeInputParams } from "../MoleculeInputParams/MoleculeInputParamsTypes";
+
 export enum FormElemType {
     Text,
     Number,
@@ -5,6 +7,7 @@ export enum FormElemType {
     Select,
     Range,
     Group,
+    MoleculeInputParams,
 }
 
 export type FormElement =
@@ -12,7 +15,8 @@ export type FormElement =
     | IFormNumber
     | IFormSelect
     | IFormRange
-    | IFormGroup;
+    | IFormGroup
+    | IFormMoleculeInputParams;
 
 export interface IFormElement {
     id: string;
@@ -41,6 +45,10 @@ export interface IFormSelect extends IFormElement {
 
 export interface IFormGroup extends IFormElement {
     // Use label as title.
-    childElements: FormElement[]
+    childElements: FormElement[];
     startOpened?: boolean;
+}
+
+export interface IFormMoleculeInputParams extends IFormElement {
+    val: IMoleculeInputParams;
 }

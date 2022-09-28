@@ -4,6 +4,8 @@ import { Vue } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "./PluginInterfaces";
 import * as api from "@/Api";
 import { randomID, removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
+import { loadedPlugins } from "./LoadedPlugins";
+import { runTestIfSpecified } from "@/Testing/ParentPluginTestFuncs";
 
 export interface IPluginSetupInfo {
     softwareCredits: ISoftwareCredit[];
@@ -17,10 +19,6 @@ export type RunJobReturn =
     | string
     | void
     | undefined;
-
-// Keep track of all loaded plugins. Useful for loading a plugin independent of
-// the menu system.
-export const loadedPlugins: { [key: string]: PluginParent } = {};
 
 /**
  * PluginParent
@@ -196,6 +194,11 @@ export abstract class PluginParent extends Vue {
         return jobResult;
     }
 
+    onRunTest(): string[] {
+        // TODO: In future, this should be abstract (required for children).
+        return [];
+    }
+
     /** mounted function */
     mounted() {
         // Do some quick validation
@@ -231,5 +234,7 @@ export abstract class PluginParent extends Vue {
         loadedPlugins[this.pluginId] = this;
 
         this.onMounted();
+
+        runTestIfSpecified(this);
     }
 }

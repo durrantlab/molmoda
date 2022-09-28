@@ -38,7 +38,6 @@ import { Options } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { slugify } from "@/Core/Utils";
-import { appName } from "@/main";
 import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
 import {
   IContributorCredit,
@@ -48,6 +47,7 @@ import { loadRemote } from "./Utils";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
 import * as api from "@/Api";
+import { appName } from "@/Core/AppName";
 
 /**
  * LoadPubChemPlugin

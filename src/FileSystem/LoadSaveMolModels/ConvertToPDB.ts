@@ -33,9 +33,38 @@ const _twoLetterElems = [
     "ZN",
 ];
 
+const chainOptions = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+];
+
 /**
  * Aligns a string to the right.
- * 
+ *
  * @param  {string} str   The string to align.
  * @param  {number} width The width to align to.
  * @returns {string} The aligned string.
@@ -49,7 +78,7 @@ function _rjust(str: string, width: number): string {
 }
 /**
  * Aligns a string to the left.
- * 
+ *
  * @param  {string} str   The string to align.
  * @param  {number} width The width to align to.
  * @returns {string} The aligned string.
@@ -64,7 +93,7 @@ function _ljust(str: string, width: number): string {
 
 /**
  * Gets an atom name suitable for use in a PDB line.
- * 
+ *
  * @param  {string} atomName  The atom name.
  * @param  {string} [element] The element, optional.
  * @returns {string} The PDB atom name.
@@ -111,7 +140,7 @@ function _alignAtomName(atomName: string, element?: string): string {
 
 /**
  * Create a single line of PDB text.
- * 
+ *
  * @param  {boolean} isProt  Whether the line is for a protein.
  * @param  {IAtom}   atom    The atom to create the line for.
  * @returns {string}  The PDB line.
@@ -137,35 +166,102 @@ function _createPDBLine(isProt: boolean, atom: IAtom): string {
 }
 
 /**
+ * Gets a list of atoms from GLModel or atom list.
+ * 
+ * @param  {GLModel|IAtom[]} mol  The GLModel or atom list.
+ * @returns {IAtom[]}  The list of atoms.
+ */
+function _getAtoms(mol: GLModel | IAtom[]): IAtom[] {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    if (mol.selectedAtoms) {
+        // It's GLModel
+        return (mol as GLModel).selectedAtoms({});
+    }
+
+    return mol as IAtom[];
+}
+
+/**
+ * Merges multiple molecules into one, reindexing the atoms, making sure chains
+ * are unique, etc.
+ * 
+ * @param  {GLModel[]|IAtom[][]} mols  The molecules to merge.
+ * @returns {IAtom[]}  The list of atoms.
+ */
+function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
+    let curIdx = 0;
+    let curSerial = 1;
+    const chainsAvailable: Set<string> = new Set(chainOptions);
+    const allAtoms: IAtom[] = [];
+
+    for (const mol of mols) {
+        // Get the atomselection of the model.
+        const atoms = _getAtoms(mol);
+
+        // Get the chain to use.
+        let curChain: string;
+        if (chainsAvailable.has(atoms[0].chain)) {
+            // The current chain is one that's availble. So use that.
+            curChain = atoms[0].chain;
+        } else {
+            // Current chain has already been used (by different molecule). So
+            // pick another one from the chainsAvailable set.
+            curChain = chainsAvailable.values().next().value;
+        }
+        chainsAvailable.delete(curChain);
+
+        const firstIndex = curIdx;
+
+        for (const atom of atoms) {
+            const atomCopy: IAtom = { ...atom };
+            atomCopy.chain = curChain;
+            atomCopy.serial = curSerial;
+            atomCopy.index = curIdx;
+            // atomCopy.bondOrder = [];
+            atomCopy.bonds = atomCopy.bonds?.map(idx => idx + firstIndex);
+            curSerial += 1;
+            curIdx += 1;
+            allAtoms.push(atomCopy);
+        }
+    }
+
+    return allAtoms;
+}
+
+/**
  * Given a list of 3dmol models, convert them to PDB format.
  *
- * @param  {GLModel[]} mols         The list of 3dmol models.
- * @param  {boolean} [merge=false]  Whether to merge the models into a single
- *                                  PDB string.
+ * @param  {GLModel[] | IAtom[]} mols  The list of 3dmol models. Or a list of
+ *                                     atoms.
+ * @param  {boolean} [merge=false]     Whether to merge the models into a single
+ *                                     PDB string.
  * @returns {string} The PDB string.
  */
-export function convertToPDB(mols: GLModel[], merge = false): string[] {
+export function convertToPDB(
+    mols: GLModel[] | IAtom[][],
+    merge = false
+): string[] {
     // mol is 3dmoljs molecule object.
 
     const pdbTxts: string[] = [];
     const conectTxts: string[] = [];
 
-    let curSerial = 1;
+    if (merge) {
+        mols = [_mergeMols(mols)];
+    }
 
-    mols.forEach((mol: GLModel) => {
-        const atoms: IAtom[] = mol.selectedAtoms({});
+    // let curSerial = 1;
+
+    for (const mol of mols) {
+        const atoms: IAtom[] = _getAtoms(mol);
         const atomsToConect: IAtom[] = [];
         const pdbLines: string[] = [];
 
-        atoms.forEach((atom: IAtom) => {
+        for (const atom of atoms) {
             // See https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
 
             const isProt = standardProteinResidues.indexOf(atom.resn) !== -1;
-            if (merge) {
-                atom.serial = curSerial;
-                curSerial++;
-            }
-
             const pdbLine = _createPDBLine(isProt, atom);
 
             if (
@@ -179,7 +275,7 @@ export function convertToPDB(mols: GLModel[], merge = false): string[] {
             // Note: SSBOND not implemented
 
             pdbLines.push(pdbLine);
-        });
+        }
         pdbTxts.push(pdbLines.join("\n"));
 
         const conects: string[] = [];
@@ -193,7 +289,7 @@ export function convertToPDB(mols: GLModel[], merge = false): string[] {
             conects.push(conect);
         }
         conectTxts.push(conects.join("\n"));
-    });
+    }
 
     if (!merge) {
         // Zip the pdb and conect files together.

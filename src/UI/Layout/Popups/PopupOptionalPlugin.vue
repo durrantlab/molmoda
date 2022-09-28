@@ -10,7 +10,6 @@
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormFull v-model="userInputsToUse"></FormFull>
-    <CombineProteins></CombineProteins>
   </Popup>
 </template>
 
@@ -26,7 +25,6 @@ import {
 } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
-import CombineProteins from "@/UI/Forms/CombineProteins.vue";
 
 /**
  * PopupOptionalPlugin component
@@ -34,8 +32,7 @@ import CombineProteins from "@/UI/Forms/CombineProteins.vue";
 @Options({
   components: {
     Popup,
-    FormFull,
-    CombineProteins
+    FormFull
   },
 })
 export default class PopupOptionalPlugin extends Vue {

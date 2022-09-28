@@ -17,7 +17,7 @@ export function fileNameFilter(filename: string): string {
 
 /**
  * Make sure a given filename is acceptable and valid.
- * 
+ *
  * @param  {string} filename The filename to check.
  * @returns {boolean} Whether the filename is acceptable.
  */
@@ -36,6 +36,13 @@ export function matchesFilename(filename: string): boolean {
  * @returns {IFileParts} The basename and extension of the filename.
  */
 export function getFileNameParts(filename: string): IFileParts {
+    if (filename.indexOf(".") === -1) {
+        return {
+            basename: filename,
+            ext: "",
+        };
+    }
+
     // Split filename into parts
     const parts = filename.split(".");
 

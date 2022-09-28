@@ -1,4 +1,6 @@
-import { IMolContainer, MolType } from "./TreeInterfaces";
+import { getFileNameParts } from "@/FileSystem/Utils";
+import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
+import { IMolContainer, MolType, SelectedType } from "./TreeInterfaces";
 
 /**
  * Get all the nodes that are terminal (have a model, not sub-molecules).
@@ -59,7 +61,7 @@ export function getAllNodesFlattened(mols: IMolContainer[]): IMolContainer[] {
 
 /**
  * Find a node with a given id.
- * 
+ *
  * @param  {string}          id    The id of the node to find.
  * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
  * @returns {IMolContainer | null}  The node with the given id, or null if not
@@ -124,7 +126,7 @@ export function getNodesOfType(
 
 /**
  * Remove a node of given id.
- * 
+ *
  * @param  {string}          id    The id of the node to remove.
  * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
  */
@@ -184,7 +186,10 @@ export function addNodeAfter(
  * @param  {MolType}         type  The nodes type to find.
  * @returns {IMolContainer[]}  The array of root nodes of the given type.
  */
-export function getRootNodesOfType(mols: IMolContainer[], type: MolType): IMolContainer[] {
+export function getRootNodesOfType(
+    mols: IMolContainer[],
+    type: MolType
+): IMolContainer[] {
     // Think of this as the opposite of getTerminalNodes. Instead of getting the
     // nodes with no more children, you're getting the nodes whose parent type
     // is different.
@@ -201,4 +206,142 @@ export function getRootNodesOfType(mols: IMolContainer[], type: MolType): IMolCo
         }
         return true;
     });
+}
+
+/**
+ * Filters molecules by "to-use" property.
+ *
+ * @param  {IMolContainer[]} molecules  The array of IMolContainer to filter.
+ * @param  {MolsToUse}       molsToUse  The "to-use" property to filter by.
+ * @returns {IMolContainer[]}  The filtered array of IMolContainer.
+ */
+function _filterMolsByUseProperty(
+    molecules: IMolContainer[],
+    molsToUse: MolsToUse
+): IMolContainer[] {
+    switch (molsToUse) {
+        case MolsToUse.ALL:
+            break;
+        case MolsToUse.VISIBLE:
+            molecules = molecules.filter((m) => m.visible);
+            break;
+        case MolsToUse.SELECTED:
+            molecules = molecules.filter(
+                (m) => m.selected !== SelectedType.FALSE
+            );
+            break;
+        case MolsToUse.VISIBLE_OR_SELECTED:
+            molecules = molecules.filter((m) => m.visible || m.selected);
+            break;
+        default:
+            throw new Error("Invalid MoleculesToConsider value.");
+    }
+
+    return molecules;
+}
+
+/**
+ * Gets the visible proteins. (Each protein may have multiple chains.)
+ *
+ * @param  {MolsToUse}        molsToUse  The kinds of molecule properties to
+ *                                       filter by.
+ * @param  {IMolContainer[]}  molecules  The list of molecules to consider.
+ * @returns {IMolContainer[]}  The visible proteins.
+ */
+export function getProteinsToUse(
+    molsToUse: MolsToUse,
+    molecules: IMolContainer[]
+): IMolContainer[] {
+    // Get number of visible proteins (top-level menu items).
+
+    const proteins = getRootNodesOfType(molecules, MolType.PROTEIN);
+
+    return _filterMolsByUseProperty(proteins, molsToUse);
+}
+
+/**
+ * Gets the visible protein chains.
+ *
+ * @param  {MolsToUse}        molsToUse  The kinds of molecule properties to
+ *                                       filter by.
+ * @param  {IMolContainer[]}  molecules  The list of molecules to consider.
+ * @returns {IMolContainer[]}  The visible protein chains.
+ */
+export function getProteinChainsToUse(
+    molsToUse: MolsToUse,
+    molecules: IMolContainer[]
+): IMolContainer[] {
+    // Get the number of chains (terminal nodes).
+
+    const terminalNodes = getTerminalNodes(molecules);
+    const proteinChains: IMolContainer[] = terminalNodes.filter(
+        (m) => m.type === MolType.PROTEIN
+    );
+
+    return _filterMolsByUseProperty(proteinChains, molsToUse);
+}
+
+/**
+ * Gets the visible compounds.
+ *
+ * @param  {MolsToUse}       molsToUse  The kinds of molecule properties to
+ *                                      filter by.
+ * @param  {IMolContainer[]} molecules  The list of molecules to consider.
+ * @returns {IMolContainer[]}  The visible compounds.
+ */
+export function getCompoundsToUse(
+    molsToUse: MolsToUse,
+    molecules: IMolContainer[]
+): IMolContainer[] {
+    const terminalNodes = getTerminalNodes(molecules);
+    const compounds: IMolContainer[] = terminalNodes.filter(
+        (m) => m.type === MolType.COMPOUND
+    );
+
+    return _filterMolsByUseProperty(compounds, molsToUse);
+}
+
+/**
+ * Gets a description of a molecule. Useful when you want to refer to a molecule
+ * in text (not the heirarchical tree). If slugified, could be used as a
+ * filename.
+ *
+ * @param  {IMolContainer}    mol                          The molecule to
+ *                                                         describe.
+ * @param  {IMolContainer[]}  molContainers                The list of all
+ *                                                         molecules.
+ * @param  {boolean}          [noCategoryComponent=false]  Whether to include
+ *                                                         the category
+ *                                                         component of the
+ *                                                         description
+ *                                                         ("protein",
+ *                                                         "compound", "metal",
+ *                                                         etc.).
+ * @returns {string}  The description.
+ */
+export function getMolDescription(
+    mol: IMolContainer,
+    molContainers: IMolContainer[],
+    noCategoryComponent = false
+): string {
+    // If it has no parent, just return it's title.
+    let curMol: IMolContainer | null = mol;
+    const titles = [getFileNameParts(curMol.title as string).basename];
+
+    while (curMol.parentId) {
+        curMol = getNodeOfId(curMol.parentId, molContainers);
+        if (curMol) {
+            // Add to top of list
+            titles.unshift(getFileNameParts(curMol.title as string).basename);
+            continue;
+        }
+        break;
+    }
+
+    if (noCategoryComponent && (titles.length > 2 || titles[1] === "Protein")) {
+        // Remove one in position 1 ("protein", "compound", "metal", etc.)
+        titles.splice(1, 1);
+    }
+
+    return titles.join(":");
 }

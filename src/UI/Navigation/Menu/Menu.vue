@@ -19,6 +19,7 @@
       <!-- here is the menu itself -->
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
           <!-- iterate over menuData -->
           <MenuLevel1
             v-for="menuDatum in menuDataSorted"

@@ -30,6 +30,18 @@ system uses these to autopopulate with plugins. -->
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
   </div>
 </template>
 
@@ -68,6 +80,18 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * Component where all plugins are placed.
  */
@@ -96,6 +120,18 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     TestPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 export interface ILog {
     timestamp: string;
+    timestampSecs?: number;
     message: string;
     parameters: string;
     jobId: string;
@@ -37,7 +38,8 @@ export function describeParameters(params: any): string {
             for (let i = 0; i < params.length; i++) {
                 txt += describeParameters(params[i]);
                 if (i < params.length - 1) {
-                    txt += "<br />";
+                    // txt += "<br />";
+                    txt += " ";
                 }
             }
             return txt;

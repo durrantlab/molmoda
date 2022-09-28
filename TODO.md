@@ -37,19 +37,46 @@ to how. Likely needs webworker?
 
 Need functions to output pdb and mol2. (use open babel for mol2).
 
-Idea to consider: Ability to select molecule. And then widget to select
-protein/ligand allows you to choose between all visible and all selected. Vue
-component to specify whether to combine PDBs (receptors) or not. Basically
-combine everything but something designated ligand. CombineProteins should be
-    integrated into FormFull
+Idea to consider: MolCombine. You should be able to specify the formats. Also, search
+for "This doesn't account for ligands!"
 
-Hamburger menu broken
+2D images show on click. Will require babel.
+
+Every plugin must have code for running a test. Implement that whole thing.
+
+How to specify only one plugin?
+
+# DONE
+
+Run test plugin and notice <br> in log. Why?
+
+Also, if log entries close to each other and have same id, merge them into one.
+
+Should return actual protein IFileInfo objects to runJob.
+
+Ability to select molecule. And then widget to select protein/ligand allows you
+to choose between all visible and all selected. Vue component to specify whether
+to combine PDBs (receptors) or not. Basically combine everything but something
+designated ligand. CombineProteins should be integrated into FormFull. It's now
+integrated. 
+
+Add names of proteins in list (up to 3). 
+Need standardized way of refering to this (string). Search for // MOOMOO
+
+And it should tell you how many combinations there will be as you change it.
+Also, still need protein x ligand. Why when no protein loaded, it says 1 protein
+and 1 compound? 
+
+Selected vs. visible doesn't seem to work. 
+
+But it should really provide all combinations of proteins + ligands, not just
+the proteins.
+
+Relevant counting functions probably need to be made more global.
 
 Certain functions should only be called through API. Enforce that.
 
-2D images show on click.
-
-# DONE
+Hamburger menu broken
 
 Rename/extract/etc only appears when selected. Menu items too. 
 

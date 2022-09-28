@@ -6,11 +6,8 @@ import { allHooks } from "@/Api/Hooks";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { setStoreIsDirty } from "./LoadAndSaveStore";
 import { ILog } from "@/UI/Panels/Log/LogUtils";
-
-interface NameValPair {
-    name: string;
-    val: any;
-}
+import { setupExternalStoreAccess } from "./StoreExternalAccess";
+import { NameValPair } from "./StoreInterfaces";
 
 const _commonMutations = {
     /**
@@ -20,7 +17,11 @@ const _commonMutations = {
      * @param {NameValPair} payload  The name and value to set.
      */
     setVar(state: any, payload: NameValPair) {
-        state[payload.name] = payload.val;
+        if (payload.module) {
+            state[payload.module][payload.name] = payload.val;
+        } else {
+            state[payload.name] = payload.val;
+        }
     },
 
     /**
@@ -154,29 +155,11 @@ export function setupVueXStore(): Store<any> {
         { deep: true }
     );
 
+    setupExternalStoreAccess(store);
+
     // For debugging
     // @ts-ignore
     window.store = store;
 
     return store;
-}
-
-/**
- * Sets a state variable.
- * 
- * @param  {string} name   The name of the variable to set.
- * @param  {any}    value  The value to set.
- */
-export function setStoreVar(name: string, value: any) {
-    store.commit("setVar", { name: name, val: value } as NameValPair);
-}
-
-/**
- * Adds a value to a list in the state.
- * 
- * @param  {string} name   The name of the list to add to.
- * @param  {any}    value  The value to push to the list.
- */
-export function pushToStoreList(name: string, value: any) {
-    store.commit("pushToList", { name: name, val: value } as NameValPair);
 }

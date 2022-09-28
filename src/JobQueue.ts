@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import * as api from "@/Api";
+import { messagesApi } from "@/Api/Messages";
 
 const registeredJobTypes: { [key: string]: Function } = {};
 const jobQueue: IJobInfo[] = [];
@@ -10,12 +10,12 @@ export interface IJobInfo {
     commandName: string;
     params: any;
     id: string;
-    delayAfterRun?: number;  // MS
+    delayAfterRun?: number; // MS
 }
 
 /**
  * Run the next job in the queue.
- * 
+ *
  * @returns {number}  The number milliseconds to wait after running the job.
  */
 function _runNextJob(): number {
@@ -27,7 +27,7 @@ function _runNextJob(): number {
 
     // Run a job if there's one available in the queue.
     if (jobQueue.length > 0) {
-        api.messages.waitSpinner(true);
+        messagesApi.waitSpinner(true);
 
         const job = jobQueue.shift() as IJobInfo;
         const func = registeredJobTypes[job.commandName];
@@ -37,7 +37,7 @@ function _runNextJob(): number {
         console.log("Done running job.");
         jobCurrentlyRunning = false;
 
-        api.messages.waitSpinner(false);
+        messagesApi.waitSpinner(false);
 
         // If delay not defined or 0, run next one in queue.
         if (job.delayAfterRun === undefined || job.delayAfterRun === 0) {
@@ -74,7 +74,6 @@ export function jobQueueSetup() {
     checkJobAndRun();
 }
 
-
 /**
  * Register a class of job/command. Don't call this function directly! Do it
  * through the api!
@@ -89,7 +88,7 @@ export function registerJobType(commandName: string, func: Function) {
 
 /**
  * Submit a job to the queue.
- * 
+ *
  * @param  {IJobInfo[]} jobs  The job to submit.
  */
 export function submitJobs(jobs: IJobInfo[]) {

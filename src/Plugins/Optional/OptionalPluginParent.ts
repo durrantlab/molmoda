@@ -2,6 +2,7 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IUserArg,
 } from "@/UI/Forms/FormFull/FormFullUtils";
+import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
 import { PopupPluginParent } from "../PopupPluginParent";
 
 /**
@@ -20,8 +21,15 @@ export abstract class OptionalPluginParent extends PopupPluginParent {
     public onPopupDone(userParams: IUserArg[]) {
         this.closePopup();
 
-        // TODO: Note that below doesn't consider > 1 proteins/ligands. There
-        // still work to do here.
+        // If one of the user parameters is of type MoleculeInputParams, replace
+        // it with IFileInfo objects.
+        for (const idx in userParams) {
+            const param = userParams[idx];
+            if (param.val.combineProteinType) {
+                userParams[idx].val = makeMoleculeInput(param.val, this.$store.state["molecules"]);
+            }
+        }
+
         this.submitJobs([userParams]);
     }
 }

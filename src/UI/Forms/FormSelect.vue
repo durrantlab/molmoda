@@ -23,7 +23,7 @@ import { randomID, slugify } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
-export interface IFromOption {
+export interface IFormOption {
   description: string;
   val: any;
 }
@@ -38,15 +38,15 @@ export default class FormSelect extends Vue {
   @Prop({ required: true }) modelValue!: string;
   @Prop({ default: randomID() }) id!: string;
   @Prop({ default: false }) disabled!: boolean;
-  @Prop({ required: true }) options!: (string | IFromOption)[];
+  @Prop({ required: true }) options!: (string | IFormOption)[];
 
   /**
    * Get the options to use in the select.
    * 
-   * @returns {IFromOption[]} The options to use.
+   * @returns {IFormOption[]} The options to use.
    */
-  get optionsToUse(): IFromOption[] {
-    return this.options.map((o: string | IFromOption) => {
+  get optionsToUse(): IFormOption[] {
+    return this.options.map((o: string | IFormOption) => {
       if (typeof o === "string") {
         return {
           description: o,

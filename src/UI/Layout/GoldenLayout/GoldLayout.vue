@@ -222,6 +222,11 @@ export default class GoldLayout extends Vue {
 .lm_close {
   display: none;
 }
+
+// Need to make hamburger menu look good.
+.lm_header {
+  z-index: 0;
+}
 </style>
 
 <!-- <style lang="scss">

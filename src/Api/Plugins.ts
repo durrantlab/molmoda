@@ -1,4 +1,4 @@
-import { loadedPlugins } from "@/Plugins/PluginParent";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 
 export const pluginsApi = {
     /**

@@ -5,9 +5,13 @@
     }}</a>
   </li>
   <li v-else>
-    <a class="dropdown-item" @click="runFunction(menuData)" href="#">{{
-      menuData._text
-    }}</a>
+    <a
+      class="dropdown-item"
+      @click="runFunction(menuData)"
+      href="#"
+      :id="'menu-plugin-' + idSlug"
+      >{{ menuData._text }}</a
+    >
   </li>
 </template>
 
@@ -23,6 +27,7 @@ import Collapse from "bootstrap/js/dist/collapse";
 
 import "bootstrap/js/dist/collapse";
 import { IMenuItem } from "./Menu";
+import { slugify } from "@/Core/Utils";
 
 let collapseHamburger: any;
 let hamburgerMenu: HTMLElement;
@@ -37,6 +42,15 @@ export default class MenuActionLink extends Vue {
   @Prop() menuData!: IMenuItem;
   @Prop({ default: false }) isTopLevel!: boolean;
 
+  /**
+   * Gets a slug for the menu text.
+   * 
+   * @returns {string}  The slug.
+   */
+   get idSlug(): string {
+    return slugify(this.menuData._text as string);
+  }
+  
   /**
    * Hide all toggles. This is good for regular menu (not hamburger, bigger
    * screens).
@@ -74,7 +88,7 @@ export default class MenuActionLink extends Vue {
 
   /**
    * Run the function of the menu item.
-   * 
+   *
    * @param {IMenuItem} item  The menu item.
    */
   runFunction(item: IMenuItem) {

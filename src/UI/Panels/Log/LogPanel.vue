@@ -13,13 +13,13 @@
             <small>{{ log.timestamp }}</small>
           </td>
           <td>
-            <small>{{ log.message }}</small>
+            <small>{{ getMessage(log) }}</small>
           </td>
-          <td>
+          <!-- <td>
             <small>{{ log.jobId }}</small>
-          </td>
+          </td> -->
           <td style="max-width:50%">
-            <small>{{ log.parameters }}</small>
+            <small v-html="log.parameters"></small>
           </td>
         </tr>
       </tbody>
@@ -62,6 +62,79 @@ export default class LogPanel extends Vue {
         logPanel.scrollTop = logPanel.scrollHeight;
       }
     });
+
+    // this.simplifyRapidlyAddedLogItems();
+  }
+
+  /**
+   * Adds the jobid to the message.
+   * 
+   * @param {ILog} log  The log to get the message for.
+   * @returns {string}  The message.
+   */
+  getMessage(log: ILog): string {
+    if (log.jobId === undefined) {
+      return log.message;
+    }
+
+    const jobPrts = log.message.split(" ");
+    jobPrts[1] = `"${jobPrts[1]}:${log.jobId.replace(/^id_/g, "")}"`;
+    return jobPrts.join(" ");
+  }
+
+  /**
+   * Simplify the log items that are rapidly added. Leave only the "ended" log
+   * entry if many entires added rapidly.
+   */
+  simplifyRapidlyAddedLogItems() {
+    // If multiple log entries have been added in rapid succession, merge them.
+    const logEntries = this.logsToShow;
+    const lastLogEntry = logEntries[logEntries.length - 1];
+    const lastJobId = lastLogEntry.jobId;
+
+    if (lastJobId === undefined) {
+      // Some entries don't have job IDs, so we can't merge them.
+      return;
+    }
+
+    // Keep only logs with same id
+    const logEntriesWithLastId = logEntries.filter((log: ILog) => {
+      return log.jobId === lastJobId;
+    });
+
+    if (logEntriesWithLastId.length <= 1) {
+      // There's only one log entry with the same ID, so we can't merge
+      // anything.
+      return;
+    }
+
+    const timestampSecs = logEntriesWithLastId.map((log: ILog) => {
+      return log.timestampSecs as number;
+    }).sort();
+
+    // If span is less than two seconds, merge them
+    if (timestampSecs[timestampSecs.length - 1] - timestampSecs[0] < 2) {
+      let newEntry = {
+        jobId: lastJobId,
+        message: lastLogEntry.message,
+        parameters: logEntriesWithLastId.map((log: ILog) => {
+          return log.parameters;
+        }).join(" "),
+        timestamp: lastLogEntry.timestamp,
+        timestampSecs: lastLogEntry.timestampSecs
+      } as ILog;
+
+      // Remove ones with same id
+      const logEntriesWithoutLastId = logEntries.filter((logEntry: ILog) => {
+        return logEntry.jobId !== lastJobId;
+      });
+
+      // commit to store
+      this.$store.commit("setVar", {
+        name: "log",
+        val: [...logEntriesWithoutLastId, newEntry]
+      });
+    }
   }
 }
 </script>

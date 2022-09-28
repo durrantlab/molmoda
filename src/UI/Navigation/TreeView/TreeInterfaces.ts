@@ -19,6 +19,8 @@ export interface IAtom {
     b?: number;
     elem?: string;
     bonds?: number[];
+    index?: number;
+    bondOrder: number[];
 }
 
 export enum MolType {
@@ -42,7 +44,7 @@ export interface IMolContainer {
     model?: IAtom[] | GLModel;    // IAtom in worker, GLMoldel in main thread
     treeExpanded: boolean;
     visible: boolean;
-    selected: SelectedType;
+    selected: SelectedType;       // Not bool (string enum). "false" vs. false.
     focused: boolean;
     viewerDirty: boolean;         // triggers 3dmoljs viewer
     id?: string;                  // random id for terminal nodes

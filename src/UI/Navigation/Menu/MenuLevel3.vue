@@ -14,6 +14,7 @@
           data-bs-toggle="dropdown"
           aria-expanded="false"
           style="cursor: pointer"
+          :id="'menu2-' + idSlug"
         >
           <!-- <div style="width:100px; float:left;">{{menuData.text}}</div> -->
           {{ menuData._text }}&nbsp;
@@ -39,6 +40,7 @@ import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";
+import { slugify } from "@/Core/Utils";
 
 /**
  * MenuLevel3 component
@@ -50,6 +52,15 @@ import { IMenuEntry, MenuLevelParent } from "./Menu";
 })
 export default class MenuLevel3 extends MenuLevelParent {
   @Prop() menuData!: IMenuEntry;
+
+  /**
+   * Gets a slug for the menu text.
+   * 
+   * @returns {string}  The slug.
+   */
+   get idSlug(): string {
+    return slugify(this.menuData._text as string);
+  }
 }
 </script>
 

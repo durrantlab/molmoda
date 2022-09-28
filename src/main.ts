@@ -6,10 +6,10 @@ import { setupVueXStore } from "./Store";
 import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { jobQueueSetup } from "./JobQueue";
+import { setupTests } from "./Testing/SetupTests";
 
 // api.sys.loadStatus.started = true;
 
-export const appName = "Biotite";
 loadFontAwesomeFonts();
 jobQueueSetup();
 
@@ -17,7 +17,7 @@ jobQueueSetup();
 
 // console.warn("Below now meaningless?");
 // api.sys.loadStatus.menuFinalized = true;
-
+setupTests();
 const store = setupVueXStore();
 createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)
