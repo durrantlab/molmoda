@@ -5,7 +5,7 @@ import { IContributorCredit, ISoftwareCredit } from "./PluginInterfaces";
 import * as api from "@/Api";
 import { randomID, removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
 import { loadedPlugins } from "./LoadedPlugins";
-import { runTestIfSpecified } from "@/Testing/ParentPluginTestFuncs";
+import { createTestCmdsIfTestSpecified, ITestCommand } from "@/Testing/ParentPluginTestFuncs";
 
 export interface IPluginSetupInfo {
     softwareCredits: ISoftwareCredit[];
@@ -194,7 +194,13 @@ export abstract class PluginParent extends Vue {
         return jobResult;
     }
 
-    onRunTest(): string[] {
+    /**
+     * Adds commands to run when testing the plugin. Assume the popup is open,
+     * and no need to click the action button.
+     *
+     * @returns {ITestCommand[]}  The commands to run.
+     */
+    onRunTest(): ITestCommand[] {
         // TODO: In future, this should be abstract (required for children).
         return [];
     }
@@ -235,6 +241,6 @@ export abstract class PluginParent extends Vue {
 
         this.onMounted();
 
-        runTestIfSpecified(this);
+        createTestCmdsIfTestSpecified(this);
     }
 }

@@ -1,6 +1,6 @@
 <template>
   <div class="full-screen" style="display: flex; flex-direction: column">
-    <TestInstructions instructions="moose dog face"></TestInstructions>
+    <TestData></TestData>
     <div
       style="
         z-index: 1;
@@ -41,7 +41,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
 import * as compileErrors from "../compile_errors.json";
 import { appName } from "@/Core/AppName";
-import TestInstructions from "@/Testing/TestInstructions.vue";
+import TestData from "@/Testing/TestData.vue";
 
 /**
  * Main app component
@@ -51,7 +51,7 @@ import TestInstructions from "@/Testing/TestInstructions.vue";
     GoldLayout,
     Menu,
     AllPlugins,
-    TestInstructions,
+    TestData
   },
 })
 export default class App extends Vue {

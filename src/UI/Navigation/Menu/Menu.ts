@@ -35,13 +35,18 @@ export interface IMenuItem {
     _text?: string;
 }
 
+export interface IMenuPathInfo {
+    rank: number | undefined;
+    text: string;
+}
+
 /**
  * MenuLevelParent component
  */
 export class MenuLevelParent extends Vue {
     /**
      * Determines if a menu item is an action.
-     * 
+     *
      * @param {IMenuEntry | IMenuSeparator} item  The menu item to check.
      * @returns {boolean} True if the item is an action.
      */
@@ -96,35 +101,30 @@ function _getSubMenu(menuDat: IMenuEntry[], name: string): IMenuSubmenu {
     ) as IMenuSubmenu;
 }
 
-/**
- * Given menu item, update the ._text and ._pathNames entries. Convert
- * newMenuItem.path to newMenuItem._text and newMenuItem._pathNames. Done in
- * place, so no need to return anything.
- * 
- * @param  {IMenuItem} newMenuItem  Menu item to update.
- */
-function _convertPathToTextAndPathNames(newMenuItem: IMenuItem) {
-    if (typeof newMenuItem.path === "string") {
-        // If newMenuItem.path is string, divide by "/"
-        const prts = newMenuItem.path.split("/");
-        newMenuItem._text = prts.pop();
-        newMenuItem._pathNames = prts;
-    } else {
-        // Already a list of paths, ending in text label.
-        const path = newMenuItem.path as string[];
-        newMenuItem._text = path.pop();
-        newMenuItem._pathNames = path;
+export function processMenuPath(
+    menuPath: string[] | string | null | undefined
+): IMenuPathInfo[] | null {
+    if (menuPath === null || menuPath === undefined) {
+        return null;
     }
-    newMenuItem.path = undefined;
+
+    if (typeof menuPath === "string") {
+        menuPath = menuPath.split("/");
+    }
+
+    // If you get here, it's an array of strings.
+
+    // Extract the rank, if any.
+    return menuPath.map((m) => _extractRankFromText(m));
 }
 
 /**
  * Extract the rank in menu text, if any.
  *
  * @param  {string} text  Text to extract rank from.
- * @returns {any} Contains both the rank and the text with ranked removed.
+ * @returns {IMenuPathInfo} Contains both the rank and the text with ranked removed.
  */
-function _getRankFromText(text: string): any {
+function _extractRankFromText(text: string): IMenuPathInfo {
     const rankInfo = text.match(/^\[(\d+)\]/);
     let rank: number | undefined = undefined;
     if (rankInfo) {
@@ -138,19 +138,6 @@ function _getRankFromText(text: string): any {
     }
 
     return { rank, text };
-}
-
-/**
- * Extract the rank in menu text, if any, and updates the ._rank and ._text
- * fields.
- *
- * @param  {IMenuItem} newMenuItem  Menu item to update.
- */
-function _extractRankFromText(newMenuItem: IMenuItem) {
-    // Extract [#] from begining of IMenuItem._text
-    const { rank, text } = _getRankFromText(newMenuItem._text as string);
-    newMenuItem._rank = rank;
-    newMenuItem._text = text;
 }
 
 /**
@@ -198,14 +185,24 @@ export function addMenuItem(
         return existingMenuItems;
     }
 
-    _convertPathToTextAndPathNames(newMenuItem);
-    _extractRankFromText(newMenuItem);
+    const menuPathInfo = processMenuPath(newMenuItem.path);
+    const actionItem = menuPathInfo?.pop()
+    
+    // Separate path data to _text and _pathNames rather than path.
+    newMenuItem._text = actionItem?.text;
+    newMenuItem._pathNames = menuPathInfo?.map((m) => m.text);
+    newMenuItem.path = undefined;
+
+    // Add rank too
+    newMenuItem._rank = actionItem?.rank;
+
     _setNewMenuItemDefaults(newMenuItem);
 
     let existingMenuItemsPlaceholder = existingMenuItems;
-    for (const pathName of newMenuItem._pathNames as string[]) {
+    for (let i = 0; i < (menuPathInfo as IMenuPathInfo[]).length; i++) {
         // Get rank and pathName from text.
-        const { rank, text: pathNameWithoutRank } = _getRankFromText(pathName);
+        const pathNameWithoutRank = (menuPathInfo as IMenuPathInfo[])[i].text;
+        const rank = (menuPathInfo as IMenuPathInfo[])[i].rank;
 
         if (
             !_isNameInMenuData(
@@ -249,10 +246,10 @@ export function addMenuItem(
     return existingMenuItems;
 }
 
-/** 
+/**
  * Sort menu data by rank, then by text if rank equal. In place, so no need to
  * return anything.
- * 
+ *
  * @param  {IMenuEntry[]} menuData  Menu data to sort.
  */
 export function menuDataSorted(menuData: IMenuEntry[]) {

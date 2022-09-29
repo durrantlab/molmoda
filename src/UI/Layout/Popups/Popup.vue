@@ -25,7 +25,7 @@
           <button
             v-if="cancelBtnTxt && !prohibitCancel"
             type="button"
-            class="btn btn-secondary"
+            class="btn btn-secondary cancel-btn"
             data-bs-dismiss="modal"
           >
             {{ cancelBtnTxt }}
@@ -34,7 +34,7 @@
             v-if="actionBtnTxt"
             type="button"
             :disabled="!isActionBtnEnabled"
-            class="btn btn-primary"
+            class="btn btn-primary action-btn"
             @click="actionBtn"
           >
             {{ actionBtnTxt }}
@@ -43,7 +43,7 @@
           <button
             v-if="actionBtnTxt2"
             type="button"
-            class="btn btn-primary"
+            class="btn btn-primary action-btn2"
             @click="actionBtn2"
           >
             {{ actionBtnTxt2 }}
