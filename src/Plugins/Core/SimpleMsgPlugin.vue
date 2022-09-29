@@ -15,7 +15,7 @@
 
 import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { PluginParent } from "@/Plugins/PluginParent";
+import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleMsg,

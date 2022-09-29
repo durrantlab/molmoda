@@ -1,18 +1,11 @@
 import * as JobQueue from "@/JobQueue";
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { Vue } from "vue-class-component";
-import { IContributorCredit, ISoftwareCredit } from "./PluginInterfaces";
+import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "../../PluginInterfaces";
 import * as api from "@/Api";
 import { randomID, removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
-import { loadedPlugins } from "./LoadedPlugins";
+import { loadedPlugins } from "../../LoadedPlugins";
 import { createTestCmdsIfTestSpecified, ITestCommand } from "@/Testing/ParentPluginTestFuncs";
-
-export interface IPluginSetupInfo {
-    softwareCredits: ISoftwareCredit[];
-    contributorCredits: IContributorCredit[];
-    menuData: IMenuItem;
-    pluginId: string;
-}
 
 export type RunJobReturn =
     | Promise<string | undefined>

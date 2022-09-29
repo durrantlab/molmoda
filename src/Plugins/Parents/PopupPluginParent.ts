@@ -1,4 +1,4 @@
-import { PluginParent } from "./PluginParent";
+import { PluginParent } from "./PluginParent/PluginParent";
 
 /**
  * PopupPluginParent

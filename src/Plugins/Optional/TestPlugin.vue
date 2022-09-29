@@ -23,7 +23,7 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
-import { OptionalPluginParent } from "./OptionalPluginParent";
+import { OptionalPluginParent } from "@/Plugins/Parents/OptionalPluginParent";
 import { Options } from "vue-class-component";
 import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
 import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";

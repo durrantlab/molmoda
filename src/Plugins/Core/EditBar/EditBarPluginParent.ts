@@ -1,4 +1,4 @@
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import {
     IMolContainer,
     SelectedType,

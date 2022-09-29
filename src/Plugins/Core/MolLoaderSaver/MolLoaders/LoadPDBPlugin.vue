@@ -19,7 +19,7 @@ import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import * as api from "@/Api";
 
 /**

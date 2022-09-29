@@ -1,4 +1,4 @@
-import { PluginParent } from "@/Plugins/PluginParent";
+import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 

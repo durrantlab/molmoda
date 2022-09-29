@@ -19,7 +19,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { saveState, setStoreIsDirty } from "@/Store/LoadAndSaveStore";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import * as api from "@/Api";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";

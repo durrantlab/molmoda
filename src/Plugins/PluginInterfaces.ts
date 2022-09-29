@@ -1,3 +1,5 @@
+import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
+
 export interface ILicense {
     name: string;
     url: string;
@@ -61,4 +63,11 @@ export interface ISoftwareCredit {
 export interface IContributorCredit {
     name: string;
     url?: string;
+}
+
+export interface IPluginSetupInfo {
+    softwareCredits: ISoftwareCredit[];
+    contributorCredits: IContributorCredit[];
+    menuData: IMenuItem;
+    pluginId: string;
 }

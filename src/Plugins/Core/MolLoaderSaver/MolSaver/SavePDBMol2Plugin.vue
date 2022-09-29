@@ -30,7 +30,7 @@ import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
 import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**

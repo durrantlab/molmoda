@@ -18,7 +18,7 @@ import FormFile from "@/UI/Forms/FormFile.vue";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 
 /**
  * LoadFilePlugin

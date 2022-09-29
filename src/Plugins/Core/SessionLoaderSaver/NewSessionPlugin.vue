@@ -21,7 +21,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import * as api from "@/Api";
 
 /**

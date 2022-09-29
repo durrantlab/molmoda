@@ -10,7 +10,7 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { PluginParent } from "@/Plugins/PluginParent";
+import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";

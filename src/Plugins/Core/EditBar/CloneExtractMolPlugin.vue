@@ -52,7 +52,7 @@ import {
   atomsToModels,
   modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
-import { RunJobReturn } from "@/Plugins/PluginParent";
+import { RunJobReturn } from "@/Plugins/Parents/PluginParent/PluginParent";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;

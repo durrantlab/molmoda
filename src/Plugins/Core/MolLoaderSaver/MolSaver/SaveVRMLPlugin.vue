@@ -22,7 +22,7 @@ import {
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { ISaveTxt } from "@/Core/FS";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**

@@ -3,7 +3,7 @@ import {
     IUserArg,
 } from "@/UI/Forms/FormFull/FormFullUtils";
 import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
-import { PopupPluginParent } from "../PopupPluginParent";
+import { PopupPluginParent } from "./PopupPluginParent";
 
 /**
  * OptionalPluginParent

@@ -45,7 +45,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { PopupPluginParent } from "@/Plugins/PopupPluginParent";
+import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
 import * as api from "@/Api";
 import { appName } from "@/Core/AppName";
 

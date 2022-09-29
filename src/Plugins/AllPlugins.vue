@@ -43,14 +43,15 @@ system uses these to autopopulate with plugins. -->
 
 
 
+
+
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { IContributorCredit, ISoftwareCredit } from "./PluginInterfaces";
-import { IPluginSetupInfo } from "./PluginParent";
+import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
 
 import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 
@@ -75,6 +76,8 @@ import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 
 import TestPlugin from "./Optional/TestPlugin.vue";
 // TEMPLATE2 END
+
+
 
 
 
@@ -122,6 +125,8 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     TestPlugin,
     // TEMPLATE3 END
+
+
 
 
 

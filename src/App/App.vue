@@ -33,10 +33,10 @@ import { addMenuItem, IMenuEntry } from "../UI/Navigation/Menu/Menu";
 import {
   Credits,
   IContributorCredit,
+  IPluginSetupInfo,
   ISoftwareCredit,
 } from "../Plugins/PluginInterfaces";
 import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
-import { IPluginSetupInfo } from "@/Plugins/PluginParent";
 import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
 import * as compileErrors from "../compile_errors.json";
