@@ -19,7 +19,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { saveState, setStoreIsDirty } from "@/Store/LoadAndSaveStore";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
@@ -32,7 +32,7 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
     PopupOneTextInput,
   },
 })
-export default class SaveSessionPlugin extends PopupPluginParent {
+export default class SaveSessionPlugin extends PopupPluginParentRenderless {
   menuPath = "File/Session/[1] Save As";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

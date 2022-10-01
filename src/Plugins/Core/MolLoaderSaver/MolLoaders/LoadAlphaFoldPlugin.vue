@@ -22,7 +22,7 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
 
 /**
@@ -33,7 +33,7 @@ import * as api from "@/Api";
     PopupOneTextInput,
   },
 })
-export default class LoadAlphaFoldPlugin extends PopupPluginParent {
+export default class LoadAlphaFoldPlugin extends PopupPluginParentRenderless {
   menuPath = "File/Molecules/Import/[4] AlphaFold";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

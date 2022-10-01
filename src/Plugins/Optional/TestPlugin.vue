@@ -1,12 +1,12 @@
 <template>
-  <PopupOptionalPlugin
+  <OptionalPluginParent
     :userInputs="userInputs"
     v-model="open"
     title="Load Molecule from PubChem"
     :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
     @onPopupDone="onPopupDone"
-  ></PopupOptionalPlugin>
+  ></OptionalPluginParent>
 </template>
 
 <script lang="ts">
@@ -22,8 +22,8 @@ import {
   IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import PopupOptionalPlugin from "@/UI/Layout/Popups/PopupOptionalPlugin.vue";
-import { OptionalPluginParent } from "@/Plugins/Parents/OptionalPluginParent";
+import OptionalPluginParent from "@/Plugins/Parents/OptionalPluginParent/OptionalPluginParent.vue";
+import { OptionalPluginParentRenderless } from "@/Plugins/Parents/OptionalPluginParent/OptionalPluginParentRenderless";
 import { Options } from "vue-class-component";
 import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
 import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
@@ -33,10 +33,10 @@ import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeIn
  */
 @Options({
   components: {
-    PopupOptionalPlugin,
+    OptionalPluginParent,
   },
 })
-export default class TestPlugin extends OptionalPluginParent {
+export default class TestPlugin extends OptionalPluginParentRenderless {
   menuPath = "Test/Test Component";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -89,6 +89,10 @@ export default class TestPlugin extends OptionalPluginParent {
    */
   beforePopupOpen() {
     return;
+  }
+
+  onPopupDone(userInputs: IUserArg[]) {
+    this.submitJobs([userInputs]);
   }
 
   /**

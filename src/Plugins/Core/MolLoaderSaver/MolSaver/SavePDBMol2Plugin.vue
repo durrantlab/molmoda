@@ -30,7 +30,7 @@ import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
 import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**
@@ -41,7 +41,7 @@ import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
     PopupOneTextInput,
   },
 })
-export default class SavePDBMol2Plugin extends PopupPluginParent {
+export default class SavePDBMol2Plugin extends PopupPluginParentRenderless {
   menuPath = "File/Molecules/[6] Export/PDB & Mol2";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [

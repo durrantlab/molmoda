@@ -1,5 +1,5 @@
 <template>
-  <Popup
+  <PopupPluginParent
     title="Load a File"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -8,43 +8,51 @@
     :isActionBtnEnabled="filesToLoad.length > 0"
   >
     <FormFile ref="formFile" @onFilesLoaded="onFilesLoaded" :accept="accept" />
-  </Popup>
+  </PopupPluginParent>
 </template>
 
 <script lang="ts">
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import FormFile from "@/UI/Forms/FormFile.vue";
-import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
-import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
+import {
+  IContributorCredit,
+  ISoftwareCredit,
+} from "@/Plugins/PluginInterfaces";
+import {
+  fileTypesAccepts,
+  loadMoleculeFile,
+} from "@/FileSystem/LoadMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
+import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
 
 /**
  * LoadFilePlugin
  */
 @Options({
   components: {
-    Popup,
+    PopupPluginParent,
     FormFile,
   },
 })
-export default class LoadFilePlugin extends PopupPluginParent {
+export default class LoadFilePlugin extends PopupPluginParentRenderless {
   menuPath = "[4] File/Molecules/Import/[0] Local File";
   softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [{
-    name: "Jacob D. Durrant",
-    url: "http://durrantlab.com/",
-  }];
+  contributorCredits: IContributorCredit[] = [
+    {
+      name: "Jacob D. Durrant",
+      url: "http://durrantlab.com/",
+    },
+  ];
   accept = fileTypesAccepts;
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadfile";
 
-  intro = "";  // Not used.
+  intro = ""; // Not used.
 
   /**
    * Runs when the files are loaded.
-   * 
+   *
    * @param {IFileInfo[]} files  The files that were loaded.
    */
   onFilesLoaded(files: IFileInfo[]) {

@@ -1,5 +1,5 @@
 <template>
-  <Popup
+  <PopupPluginParent
     title="Delete Molecule"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -9,7 +9,7 @@
   >
     <!-- :onShown="onPopupOpen" -->
     <p v-if="intro !== ''" v-html="intro"></p>
-  </Popup>
+  </PopupPluginParent>
 </template>
 
 <script lang="ts">
@@ -20,21 +20,21 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import EditBarPluginParent from "./EditBarPluginParent";
 
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
+import { EditBarPluginParentRenderless } from "@/Plugins/Parents/EditBarPluginParentRenderless";
 
 /**
  * DeleteMolPlugin
  */
 @Options({
   components: {
-    Popup,
+    PopupPluginParent,
   },
 })
-export default class DeleteMolPlugin extends EditBarPluginParent {
+export default class DeleteMolPlugin extends EditBarPluginParentRenderless {
   menuPath = ["Edit", "Molecules", "[3] Delete"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

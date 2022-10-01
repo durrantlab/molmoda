@@ -1,13 +1,15 @@
 <template>
-  <Popup
-    :title="title"
-    v-model="open"
-    :cancelBtnTxt="neverClose ? '' : 'Ok'"
-    @onClosed="onClosed"
-    :variant="variant"
-  >
-    <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
-  </Popup>
+  <PluginParent>
+    <Popup
+      :title="title"
+      v-model="open"
+      :cancelBtnTxt="neverClose ? '' : 'Ok'"
+      @onClosed="onClosed"
+      :variant="variant"
+    >
+      <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
+    </Popup>
+  </PluginParent>
 </template>
 
 <script lang="ts">
@@ -15,12 +17,13 @@
 
 import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
+import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleMsg,
   PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import PluginParent from "../Parents/PluginParent/PluginParent.vue";
 
 /**
  * SimpleMsgPlugin
@@ -28,9 +31,10 @@ import {
 @Options({
   components: {
     Popup,
+    PluginParent,
   },
 })
-export default class SimpleMsgPlugin extends PluginParent {
+export default class SimpleMsgPlugin extends PluginParentRenderless {
   // @Prop({ required: true }) title!: string;
   // @Prop({ required: true }) message!: string;
 

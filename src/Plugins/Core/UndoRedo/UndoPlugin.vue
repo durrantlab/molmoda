@@ -1,22 +1,22 @@
-<template><span></span></template>
+<template><PluginParent></PluginParent></template>
 
 <script lang="ts">
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
+import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
 import * as api from "@/Api";
 import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
+import PluginParent from "@/Plugins/Parents/PluginParent/PluginParent.vue";
 
 /**
  * UndoPlugin
  */
 @Options({
   components: {
-    Popup,
+    PluginParent,
   },
 })
-export default class UndoPlugin extends PluginParent {
+export default class UndoPlugin extends PluginParentRenderless {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 

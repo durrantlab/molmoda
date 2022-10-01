@@ -1,16 +1,17 @@
 <template>
-  <Popup
+  <PopupPluginParent
     :title="title"
     v-model="openToUse"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Run"
-    @onDone="onPopupDone"
+    @onDone="_onPopupDone"
     :isActionBtnEnabled="isActionBtnEnabled"
     @onClosed="onClosed"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormFull v-model="userInputsToUse"></FormFull>
-  </Popup>
+  </PopupPluginParent>
+  <!-- <Popup> </Popup> -->
 </template>
 
 <script lang="ts">
@@ -18,57 +19,55 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import {
   collapseFormElementArray,
   IUserArg,
 } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
+import PopupPluginParent from "../PopupPluginParent/PopupPluginParent.vue";
+import { OptionalPluginParentRenderless } from "./OptionalPluginParentRenderless";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import { RunJobReturn } from "../PluginParent/PluginParentRenderless";
 
 /**
  * PopupOptionalPlugin component
  */
 @Options({
   components: {
-    Popup,
-    FormFull
+    PopupPluginParent,
+    FormFull,
   },
 })
-export default class PopupOptionalPlugin extends Vue {
-  @Prop({ required: true }) modelValue!: any;  // open
-  @Prop({ required: true }) userInputs!: FormElement[];
+export default class OptionalPluginParent extends OptionalPluginParentRenderless {
+  // @Prop({ required: true }) modelValue!: any; // open
   @Prop({ required: true }) title!: string;
   @Prop({ default: true }) isActionBtnEnabled!: boolean;
-  @Prop({ default: "" }) intro!: string;
+  @Prop({ required: true }) userInputs!: FormElement[];
+  // @Prop({ default: "" }) intro!: string;
 
-  openToUse = false;
-  userInputsToUse: FormElement[] = [];
+  // Per PluginParentRenderless, must define. Children should redefine.
+  menuPath: string[] | string | null  = "";
+  softwareCredits: ISoftwareCredit[] = [];
+  contributorCredits: IContributorCredit[] = [];
+  pluginId = "";
+  onPluginStart(payload: any) { return; }
+  runJob(parameters: any): RunJobReturn { return undefined; }
+
+  // Per PopupPluginParentRenderless, must define. Children should redefine.
+  intro = "";
+  beforePopupOpen() { return; }
+  onPopupDone(userInput?: any) { return; }
+
 
   /**
    * Watches the modelValue variable.
-   * 
+   *
    * @param {boolean} newValue  The new value of the open variable.
    */
   @Watch("modelValue")
   onModelValueChange(newValue: boolean) {
     this.openToUse = newValue;
-  }
-
-  /**
-   * Runs when the user closes the simple message popup.
-   */
-  onClosed() {
-    this.$emit("update:modelValue", false);
-  }
-
-  /**
-   * Runs when the popup is done because used pressed action button.
-   */
-  onPopupDone() {
-    const userParams: IUserArg[] = collapseFormElementArray(this.userInputs);
-    // this.$emit("update:modelValue", false);
-    this.$emit("onPopupDone", userParams);
   }
 
   /** mounted function */

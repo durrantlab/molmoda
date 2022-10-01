@@ -22,7 +22,7 @@ import {
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { ISaveTxt } from "@/Core/FS";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**
@@ -33,7 +33,7 @@ import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
     PopupOneTextInput,
   },
 })
-export default class SaveVRMLPlugin extends PopupPluginParent {
+export default class SaveVRMLPlugin extends PopupPluginParentRenderless {
   menuPath = "File/Molecules/[6] Export/VRML";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [

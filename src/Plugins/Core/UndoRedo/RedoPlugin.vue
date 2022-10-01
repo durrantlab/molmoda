@@ -1,21 +1,21 @@
-<template><span></span></template>
+<template><PluginParent></PluginParent></template>
 
 <script lang="ts">
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
+import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
 import { redo, redoStack } from "./UndoStack";
+import PluginParent from "@/Plugins/Parents/PluginParent/PluginParent.vue";
 
 /**
  * RedoPlugin
  */
 @Options({
   components: {
-    Popup,
+    PluginParent
   },
 })
-export default class RedoPlugin extends PluginParent {
+export default class RedoPlugin extends PluginParentRenderless {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 

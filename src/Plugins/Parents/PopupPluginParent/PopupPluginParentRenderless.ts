@@ -1,10 +1,11 @@
-import { PluginParent } from "./PluginParent/PluginParent";
+import { PluginParentRenderless } from "../PluginParent/PluginParentRenderless";
+import { Prop, Watch } from "vue-property-decorator";
 
 /**
  * PopupPluginParent
  */
-export abstract class PopupPluginParent extends PluginParent {
-    abstract intro: string;
+export abstract class PopupPluginParentRenderless extends PluginParentRenderless {
+    abstract intro: string; //  = "";
     public open = false;
 
     // In some cases, must pass information to the plugin when it opens.
@@ -13,7 +14,7 @@ export abstract class PopupPluginParent extends PluginParent {
 
     /**
      * Filters user input to match desired format.
-     * 
+     *
      * @param {any} userInput  The text to assess.
      * @returns {any} The filtered value.
      */
@@ -25,7 +26,7 @@ export abstract class PopupPluginParent extends PluginParent {
     /**
      * If the user data is a properly formatted, enable the button. Otherwise,
      * disabled.
-     * 
+     *
      * @param {any} _userInput  The user input to assess.
      * @returns {boolean} A boolean value, whether to disable the button.
      */
@@ -36,10 +37,9 @@ export abstract class PopupPluginParent extends PluginParent {
     }
 
     /**
-     * Runs when the popup closes via done button.
-     * 
+     * Runs when the popup closes via done button. Children must overwrite this.
+     *
      * @param {any} userInput  The user input entered into the popup.
-     * @returns void
      */
     abstract onPopupDone(userInput?: any): void;
 
@@ -72,21 +72,33 @@ export abstract class PopupPluginParent extends PluginParent {
         return;
     }
 
+    // onPopupDone() {
+    //     this.$emit("onDone");
+    // }
+
+    onPopupDone2() {
+        this.$emit("onDone2");
+    }
+
+    onClosed() {
+        this.$emit("onClosed");
+    }
+
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
-     * in a popup, this function would open the popup. 
+     * in a popup, this function would open the popup.
      *
      * @param {any} [payload]   Included if you want to pass extra data to the
      *                          plugin. Probably only useful if not using the
      *                          menu system. Optional.
      */
-    onPluginStart(payload?: any): void {
+    onPluginStart(payload?: any) {
         // Children should not overwrite this function! Use onPopupOpen instead.
         this.payload = payload;
         this.beforePopupOpen();
         this.openPopup();
         setTimeout(() => {
             this.onPopupOpen();
-        }, 1000)
+        }, 1000);
     }
 }

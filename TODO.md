@@ -46,7 +46,26 @@ Every plugin must have code for running a test. Implement that whole thing.
 
 How to specify only one plugin?
 
+Validate.py needs to make sure all plugins define 
+menuPath
+softwareCredits
+contributorCredits
+pluginId
+onPluginStart
+runJob
+These are no longer required by typescript or validated.
+
+Validaion should also force all plugins to extend a Renderless class and
+implement the same component in the template.
+
+Can you refactor EditBarPluginParent so not really parent? Same for one-input
+popup? These are different than the others, and I worry it will confuse things.
+
 # DONE
+
+Continue converting plugin parents to vue-based system, using Renderless
+
+Currently working on the Optional plugins. They must define onPopupDone.
 
 Run test plugin and notice <br> in log. Why?
 

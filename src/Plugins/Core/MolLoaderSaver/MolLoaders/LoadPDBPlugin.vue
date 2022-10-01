@@ -19,7 +19,7 @@ import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
 
 /**
@@ -30,7 +30,7 @@ import * as api from "@/Api";
     PopupOneTextInput,
   },
 })
-export default class LoadPDBPlugin extends PopupPluginParent {
+export default class LoadPDBPlugin extends PopupPluginParentRenderless {
   menuPath = "File/Molecules/Import/[2] Protein Data Bank";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

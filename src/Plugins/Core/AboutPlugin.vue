@@ -1,5 +1,5 @@
 <template>
-  <Popup title="About" v-model="open" cancelBtnTxt="Done">
+  <PopupPluginParent title="About" v-model="open" cancelBtnTxt="Done">
     <p v-html="intro"></p>
 
     <p>
@@ -36,38 +36,26 @@
         >)
       </li>
     </ul>
-
-    <!-- <span
-      v-for="credit in softwareCreditsToShowInOrder"
-      v-bind:key="credit.name"
-      class="badge bg-primary rounded-pill"
-      style="margin-right: 4px"
-    >
-      <a :href="credit.url" target="_blank" class="text-white">
-        {{ credit.name }}
-      </a>
-      |&nbsp;<a :href="credit.license.url" target="_blank" class="text-white">
-        {{ credit.license.name }}
-      </a>
-    </span> -->
-  </Popup>
+  </PopupPluginParent>
+  <!-- <Popup title="About" v-model="open" cancelBtnTxt="Done">
+  </Popup> -->
 </template>
 
 <script lang="ts">
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import { appName } from "@/Core/AppName";
+import PopupPluginParent from "../Parents/PopupPluginParent/PopupPluginParent.vue";
 
 /** AboutPlugin */
 @Options({
   components: {
-    Popup,
+    PopupPluginParent,
   },
 })
-export default class AboutPlugin extends PopupPluginParent {
+export default class AboutPlugin extends PopupPluginParentRenderless {
   @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
@@ -116,7 +104,7 @@ export default class AboutPlugin extends PopupPluginParent {
 
   /**
    * Get the name of the app.
-   * 
+   *
    * @returns {string} The name of the app.
    */
   get appName(): string {

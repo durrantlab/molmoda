@@ -78,7 +78,7 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
  * @param  {any} plugin  The plugin to test.
  */
 export function createTestCmdsIfTestSpecified(plugin: any) {
-    if (SetupTests.pluginToTest === plugin.pluginId) {
+    if ((SetupTests.pluginToTest === plugin.pluginId) && (plugin.pluginId !== "")) {
         // It is this plugin that should be tested.
         const cmds = [
             ..._openPluginCmds(plugin),

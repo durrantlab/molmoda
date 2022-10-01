@@ -19,7 +19,7 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import EditBarPluginParent from "./EditBarPluginParent";
+import { EditBarPluginParentRenderless } from "@/Plugins/Parents/EditBarPluginParentRenderless";
 
 /**
  * RenameMolPlugin
@@ -29,7 +29,7 @@ import EditBarPluginParent from "./EditBarPluginParent";
     PopupOneTextInput,
   },
 })
-export default class RenameMolPlugin extends EditBarPluginParent {
+export default class RenameMolPlugin extends EditBarPluginParentRenderless {
   menuPath = "Edit/Molecules/[1] Rename";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

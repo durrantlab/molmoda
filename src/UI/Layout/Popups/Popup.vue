@@ -85,11 +85,10 @@ export default class Popup extends Vue {
 
   id: string = "modal-" + randomID();
   modal: any;
-  
+
   // 0 or 1, depending on how you want to set the style. TODO: Good to settle on
   // one or the other.
-  styling = 1;  
-
+  styling = 1;
 
   /**
    * Watch for changes to the modelValue property. Show the popup accordingly.
@@ -107,15 +106,15 @@ export default class Popup extends Vue {
 
   /**
    * Get the classes to add to the popup header.
-   * 
+   *
    * @returns {string} The classes to add to the popup header.
    */
   get headerClasses(): string {
     let styles = "modal-header ";
     if (this.styling === 0) {
-      return styles + 'bg-' + this.variant + ' text-white';
+      return styles + "bg-" + this.variant + " text-white";
     }
-    return styles + 'alert alert-' + this.variant;
+    return styles + "alert alert-" + this.variant;
   }
 
   /**

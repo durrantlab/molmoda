@@ -18,7 +18,7 @@ import * as api from "@/Api";
 import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 
 /**
@@ -29,7 +29,7 @@ import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
     PopupOneTextInput
   },
 })
-export default class SavePNGPlugin extends PopupPluginParent {
+export default class SavePNGPlugin extends PopupPluginParentRenderless {
   menuPath = "File/Molecules/[6] Export/PNG";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [

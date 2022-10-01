@@ -1,5 +1,5 @@
 <template>
-  <Popup
+  <PopupPluginParent
     :title="extractOrCloneTxt + ' Molecule'"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -24,7 +24,7 @@
         @onChange="onModeChange"
       ></FormCheckBox>
     </FormWrapper>
-  </Popup>
+  </PopupPluginParent>
 </template>
 
 <script lang="ts">
@@ -33,7 +33,6 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import EditBarPluginParent from "./EditBarPluginParent";
 
 import {
   IMolContainer,
@@ -43,7 +42,6 @@ import { randomID } from "@/Core/Utils";
 import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import {
   getAllNodesFlattened,
   getNodeOfId,
@@ -52,7 +50,9 @@ import {
   atomsToModels,
   modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
-import { RunJobReturn } from "@/Plugins/Parents/PluginParent/PluginParent";
+import { RunJobReturn } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
+import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
+import { EditBarPluginParentRenderless } from "@/Plugins/Parents/EditBarPluginParentRenderless";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -63,10 +63,10 @@ const extractDescription = `The selected molecule will be extracted (moved) from
     FormInput,
     FormCheckBox,
     FormWrapper,
-    Popup,
+    PopupPluginParent,
   },
 })
-export default class CloneExtractMolPlugin extends EditBarPluginParent {
+export default class CloneExtractMolPlugin extends EditBarPluginParentRenderless {
   menuPath = ["Edit", "Molecules", "Clone/Extract"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

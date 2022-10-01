@@ -10,6 +10,8 @@ export const pluginsApi = {
      */
     runPlugin: function (pluginName: string, params?: any) {
         const plugin = loadedPlugins[pluginName];
-        plugin.onPluginStart(params);
+        if (plugin.onPluginStart !== null) {
+            plugin.onPluginStart(params);
+        }
     },
 };

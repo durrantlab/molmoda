@@ -1,4 +1,4 @@
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import {
     IMolContainer,
     SelectedType,
@@ -7,12 +7,13 @@ import {
     getAllNodesFlattened,
     getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { checkAnyMolSelected } from "../Core/CheckUseAllowedUtils";
 
 /**
- * EditBarPluginParent
+ * EditBarPluginParentRenderless. Note that this has no associated vue component
+ * because it just uses PopupPluginParent.
  */
-export default abstract class EditBarPluginParent extends PopupPluginParent {
+export abstract class EditBarPluginParentRenderless extends PopupPluginParentRenderless {
     nodeToActOn: IMolContainer = {
         title: "",
         treeExpanded: false,

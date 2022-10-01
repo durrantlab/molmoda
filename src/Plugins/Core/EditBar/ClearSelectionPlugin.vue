@@ -1,5 +1,5 @@
 <template>
-  <span></span>
+  <PluginParent></PluginParent>
 </template>
 
 <script lang="ts">
@@ -10,16 +10,19 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { PluginParent } from "@/Plugins/Parents/PluginParent/PluginParent";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
+import PluginParent from "@/Plugins/Parents/PluginParent/PluginParent.vue";
 
 /** ClearSelectionPlugin */
 @Options({
-  components: {},
+  components: {
+    PluginParent
+  },
 })
-export default class ClearSelectionPlugin extends PluginParent {
+export default class ClearSelectionPlugin extends PluginParentRenderless {
   menuPath = ["Edit", "Molecules", "[7] Clear Selection"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

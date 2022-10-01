@@ -1,5 +1,5 @@
 <template>
-  <Popup
+  <PopupPluginParent
     title="Load a Session"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -14,41 +14,43 @@
       accept=".biotite"
       :isZip="true"
     />
-  </Popup>
+  </PopupPluginParent>
 </template>
 
 <script lang="ts">
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { jsonToState } from "@/Store/LoadAndSaveStore";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
+import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
 
 /**
  * OpenSessionPlugin
  */
 @Options({
   components: {
-    Popup,
+    PopupPluginParent,
     FormFile,
   },
 })
-export default class OpenSessionPlugin extends PopupPluginParent {
+export default class OpenSessionPlugin extends PopupPluginParentRenderless {
   menuPath = "File/[1] Session/[0] Open";
   softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [{
-    name: "Jacob D. Durrant",
-    url: "http://durrantlab.com/",
-  }];
+  contributorCredits: IContributorCredit[] = [
+    {
+      name: "Jacob D. Durrant",
+      url: "http://durrantlab.com/",
+    },
+  ];
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadsession";
-  intro = "";  // Not used
+  intro = ""; // Not used
 
   /**
    * Runs when the files are loaded.
-   * 
+   *
    * @param {IFileInfo[]} files  The files that were loaded.
    */
   onFilesLoaded(files: IFileInfo[]) {
@@ -81,14 +83,14 @@ export default class OpenSessionPlugin extends PopupPluginParent {
    */
   runJob(parameters: IFileInfo): Promise<undefined> {
     return jsonToState(parameters.contents)
-    .then((state) => {
-      this.$store.replaceState(state);
-      return undefined;
-    })
-    .catch((err: any) => {
-      console.error(err);
-      return undefined;
-    });
+      .then((state) => {
+        this.$store.replaceState(state);
+        return undefined;
+      })
+      .catch((err: any) => {
+        console.error(err);
+        return undefined;
+      });
   }
 }
 </script>

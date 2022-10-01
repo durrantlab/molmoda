@@ -1,5 +1,5 @@
 <template>
-  <Popup
+  <PopupPluginParent
     title="New Session"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -8,32 +8,34 @@
     actionBtnTxt2="Save Session First"
     @onDone2="saveSession"
     :isActionBtnEnabled="true"
-
   >
-    <p>If you start a new session, your current session will be lost. Would you like to <a href="#" @click="saveSession">save the session first</a>?</p>
-  </Popup>
+    <p>
+      If you start a new session, your current session will be lost. Would you
+      like to <a href="#" @click="saveSession">save the session first</a>?
+    </p>
+  </PopupPluginParent>
 </template>
 
 <script lang="ts">
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
+import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
 
 /**
  * NewSessionPlugin
  */
 @Options({
   components: {
-    Popup,
+    PopupPluginParent,
     FormFile,
   },
 })
-export default class NewSessionPlugin extends PopupPluginParent {
+export default class NewSessionPlugin extends PopupPluginParentRenderless {
   menuPath = "File/[1] Session/[0] New";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

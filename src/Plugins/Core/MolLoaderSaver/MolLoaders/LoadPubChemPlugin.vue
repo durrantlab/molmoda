@@ -1,5 +1,5 @@
 <template>
-  <Popup
+  <PopupPluginParent
     title="Load Molecule from PubChem"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -27,13 +27,12 @@
         @onKeyDown="onCIDKeyDown"
       ></FormInput>
     </FormWrapper>
-  </Popup>
+  </PopupPluginParent>
 </template>
 
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-this-alias */
 
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
@@ -45,21 +44,22 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { PopupPluginParent } from "@/Plugins/Parents/PopupPluginParent";
+import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
 import { appName } from "@/Core/AppName";
+import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
 
 /**
  * LoadPubChemPlugin
  */
 @Options({
   components: {
-    Popup,
+    PopupPluginParent,
     FormInput,
     FormWrapper,
   },
 })
-export default class LoadPubChemPlugin extends PopupPluginParent {
+export default class LoadPubChemPlugin extends PopupPluginParentRenderless {
   menuPath = "File/Molecules/Import/[6] PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -159,7 +159,7 @@ export default class LoadPubChemPlugin extends PopupPluginParent {
 
   /**
    * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
-   * 
+   *
    * @param {string} filename  The filename to use.
    * @returns {Promise<any>} A promise that resolves when it is loaded.
    */
