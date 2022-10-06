@@ -1,39 +1,38 @@
 <template>
-  <PopupOneTextInput
-    v-model:openValue="open"
+  <PluginComponent
+    :userInputs="userInputs"
+    v-model="open"
     title="Load AlphaFold Structure"
-    :intro="intro"
-    placeHolder="Enter UniProt Accession (e.g., P86927)"
-    :isActionBtnEnabled="isBtnEnabled()"
-    :filterFunc="filterUserData"
     actionBtnTxt="Load"
-    v-model:text="uniprot"
-    @onTextDone="onPopupDone"
-  ></PopupOneTextInput>
+    :intro="intro"
+    @onPopupDone="onPopupDone"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
-import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { IFileInfo } from "@/FileSystem/Interfaces";
 import { loadRemote } from "./Utils";
 import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 
 /**
  * LoadAlphaFoldPlugin
  */
 @Options({
   components: {
-    PopupOneTextInput,
+    PluginComponent,
   },
 })
-export default class LoadAlphaFoldPlugin extends PopupPluginParentRenderless {
+export default class LoadAlphaFoldPlugin extends PluginParentClass {
   menuPath = "File/Molecules/Import/[4] AlphaFold";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -53,56 +52,35 @@ export default class LoadAlphaFoldPlugin extends PopupPluginParentRenderless {
         >AlphaFold Protein Structure Database</a
       >, a database of predicted protein structures, if you're uncertain.`;
 
-  uniprot = "";
-
-  /**
-   * Filters text to match desired format.
-   *
-   * @param {string} uniprot  The text to assess.
-   * @returns {string} The filtered text.
-   */
-  filterUserData(uniprot: string): string {
-    // https://www.uniprot.org/help/accession_numbers
-
-    uniprot = uniprot.toUpperCase();
-
-    // Keep numbers and letters
-    uniprot = uniprot.replace(/[^A-Z\d]/g, "");
-
-    uniprot = uniprot.substring(0, 10);
-    return uniprot;
-  }
-
-  /**
-   * If text is a properly formatted UniProt accession, enable the button.
-   * Otherwise, disabled.
-   *
-   * @returns {boolean} Whether to disable the button.
-   */
-  isBtnEnabled(): boolean {
-    // // https://www.uniprot.org/help/accession_numbers
-    let r = /[OPQ]\d[A-Z\d]{3}\d|[A-NR-Z]\d([A-Z][A-Z\d]{2}\d){1,2}/;
-
-    // Return bool whether text matches regex
-    return this.uniprot.match(r) !== null;
-  }
-
-  /**
-   * Runs before the popup opens. Good for initializing/resenting variables
-   * (e.g., clear inputs from previous open).
-   */
-  beforePopupOpen() {
-    this.uniprot = "";
-  }
+  userInputs: FormElement[] = [
+    {
+      id: "uniprot",
+      label: "",
+      val: "",
+      placeHolder: "Enter UniProt Accession (e.g., P86927)",
+      filterFunc: (uniprot: string): string => {
+        // https://www.uniprot.org/help/accession_numbers
+        uniprot = uniprot.toUpperCase();
+        uniprot = uniprot.replace(/[^A-Z\d]/g, "");
+        uniprot = uniprot.substring(0, 10);
+        return uniprot;
+      },
+      validateFunc: (uniprot: string): boolean => {
+        // https://www.uniprot.org/help/accession_numbers
+        let r = /[OPQ]\d[A-Z\d]{3}\d|[A-NR-Z]\d([A-Z][A-Z\d]{2}\d){1,2}/;
+        return uniprot.match(r) !== null;
+      },
+    } as IFormText,
+  ];
 
   /**
    * Runs when the user presses the action button and the popup closes.
+   *
+   * @param {IUserArg[]} userParams  The user arguments.
    */
-  onPopupDone() {
-    this.closePopup();
-
+  onPopupDone(userParams: IUserArg[]) {
     loadRemote(
-      `https://alphafold.ebi.ac.uk/api/prediction/${this.uniprot.toUpperCase()}`
+      `https://alphafold.ebi.ac.uk/api/prediction/${userParams[0].val.toUpperCase()}`
     )
       .then((fileInfo: IFileInfo) => {
         let json = JSON.parse(fileInfo.contents);

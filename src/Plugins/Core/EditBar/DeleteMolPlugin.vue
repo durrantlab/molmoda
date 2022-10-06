@@ -1,15 +1,13 @@
 <template>
-  <PopupPluginParent
+  <PluginComponent
+    ref="pluginComponent"
+    v-model:modelValue="open"
     title="Delete Molecule"
-    v-model="open"
-    cancelBtnTxt="Cancel"
+    :intro="intro"
     actionBtnTxt="Delete"
-    @onDone="onPopupDone"
-    :isActionBtnEnabled="true"
-  >
-    <!-- :onShown="onPopupOpen" -->
-    <p v-if="intro !== ''" v-html="intro"></p>
-  </PopupPluginParent>
+    :userInputs="userInputs"
+    @onPopupDone="onPopupDone"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -23,18 +21,21 @@ import {
 
 import { getNodeOfId } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
-import { EditBarPluginParentRenderless } from "@/Plugins/Parents/EditBarPluginParentRenderless";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
+import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * DeleteMolPlugin
  */
 @Options({
   components: {
-    PopupPluginParent,
+    PluginComponent,
   },
 })
-export default class DeleteMolPlugin extends EditBarPluginParentRenderless {
+export default class DeleteMolPlugin extends PluginParentClass {
   menuPath = ["Edit", "Molecules", "[3] Delete"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -44,20 +45,36 @@ export default class DeleteMolPlugin extends EditBarPluginParentRenderless {
     },
   ];
   pluginId = "deletemol";
-  intro = "Delete the selected molecule.";
+  intro = "Delete the selected molecule?";
+  userInputs: FormElement[] = [];
+  
+  nodeToActOn: IMolContainer = getDefaultNodeToActOn();
 
   /**
    * Runs before the popup opens. Will almost always need this, so requiring
    * children to define it.
    */
   beforePopupOpen(): void {
-    this.setNodeToActOn();
+    setNodeToActOn(this);
+  }
+
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+  checkUseAllowed(): string | null {
+    return checkAnyMolSelected(this as any);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   *     done.
    */
-  runJob() {
+  runJob(): Promise<undefined> {
     if (this.nodeToActOn) {
       // Get the parent node and remove this from it's nodes.
       if (this.nodeToActOn.parentId) {
@@ -79,7 +96,9 @@ export default class DeleteMolPlugin extends EditBarPluginParentRenderless {
       } else {
         // It's a root node, without a parent id.
         let molecules = this.$store.state.molecules;
-        molecules = molecules.filter((n: IMolContainer) => n.id !== this.nodeToActOn?.id);
+        molecules = molecules.filter(
+          (n: IMolContainer) => n.id !== this.nodeToActOn?.id
+        );
         this.$store.commit("updateMolecules", molecules);
       }
 
@@ -95,8 +114,9 @@ export default class DeleteMolPlugin extends EditBarPluginParentRenderless {
       //   name: "molecules",
       //   val: newNode,
       // });
-
     }
+
+    return Promise.resolve(undefined);
   }
 }
 </script>

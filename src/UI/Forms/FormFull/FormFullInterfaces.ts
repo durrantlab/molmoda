@@ -8,28 +8,58 @@ export enum FormElemType {
     Range,
     Group,
     MoleculeInputParams,
+    Checkbox
 }
 
 export type FormElement =
-    | IFormTextOrColor
+    | IFormText
     | IFormNumber
     | IFormSelect
     | IFormRange
     | IFormGroup
-    | IFormMoleculeInputParams;
+    | IFormMoleculeInputParams
+    | IFormColor
+    | IFormCheckbox;
 
 export interface IFormElement {
     id: string;
-    type: FormElemType;
+
+    // `type` inferred if not given, but in some cases must specify (e.g.,
+    // FormElemType.Number and FormElemType.Range both deal with numbers)
+    type?: FormElemType;
+
     label?: string;
+
+    validateFunc?: (val: any) => boolean;
 }
 
-export interface IFormTextOrColor extends IFormElement {
+// Below interface just to help with typescript.
+export interface IGenericFormElement extends IFormElement {
+    val?: any;
+    min?: any;
+    options?: any;
+    childElements?: any;
+    placeHolder?: any;
+    filterFunc?: any;
+}
+
+export interface IFormText extends IFormElement {
+    val: string;
+    placeHolder?: string;
+    filterFunc?: (val: any) => any;
+}
+
+export interface IFormColor extends IFormElement {
     val: string;
 }
-
 export interface IFormNumber extends IFormElement {
     val: number;
+    placeHolder?: string;
+    filterFunc?: (val: any) => any;
+}
+
+export interface IFormCheckbox extends IFormElement {
+    val: boolean;
 }
 
 export interface IFormRange extends IFormNumber {

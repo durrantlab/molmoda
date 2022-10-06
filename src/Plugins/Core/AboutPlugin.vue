@@ -1,5 +1,13 @@
 <template>
-  <PopupPluginParent title="About" v-model="open" cancelBtnTxt="Done">
+  <PluginComponent
+    :userInputs="userInputs"
+    v-model="open"
+    title="About"
+    cancelBtnTxt="Done"
+    actionBtnTxt=""
+    intro=""
+    @onPopupDone="onPopupDone"
+  >
     <p v-html="intro"></p>
 
     <p>
@@ -36,26 +44,25 @@
         >)
       </li>
     </ul>
-  </PopupPluginParent>
-  <!-- <Popup title="About" v-model="open" cancelBtnTxt="Done">
-  </Popup> -->
+  </PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import { appName } from "@/Core/AppName";
-import PopupPluginParent from "../Parents/PopupPluginParent/PopupPluginParent.vue";
+import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /** AboutPlugin */
 @Options({
   components: {
-    PopupPluginParent,
+    PluginComponent,
   },
 })
-export default class AboutPlugin extends PopupPluginParentRenderless {
+export default class AboutPlugin extends PluginParentClass {
   @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
@@ -69,6 +76,8 @@ export default class AboutPlugin extends PopupPluginParentRenderless {
   ];
   pluginId = "about";
   intro = `TODO: Info about ${appName} here.`;
+
+  userInputs: FormElement[] = [];
 
   /**
    * Get the software credits to show in order.
@@ -109,14 +118,6 @@ export default class AboutPlugin extends PopupPluginParentRenderless {
    */
   get appName(): string {
     return appName;
-  }
-
-  /**
-   * Runs before the popup opens. Will almost always need this, so requiring
-   * children to define it.
-   */
-  beforePopupOpen(): void {
-    return;
   }
 
   /**

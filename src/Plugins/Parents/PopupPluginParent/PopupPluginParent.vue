@@ -23,7 +23,7 @@ import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces"
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { Options } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { RunJobReturn } from "../PluginParent/PluginParentRenderless";
+import { RunJobReturn } from "../PluginParentClass/PluginParentClass";
 import { PopupPluginParentRenderless } from "./PopupPluginParentRenderless";
 
 /**

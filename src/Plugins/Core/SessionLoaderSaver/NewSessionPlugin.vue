@@ -1,5 +1,6 @@
 <template>
-  <PopupPluginParent
+  <PluginComponent
+    :userInputs="userInputs"
     title="New Session"
     v-model="open"
     cancelBtnTxt="Cancel"
@@ -8,12 +9,13 @@
     actionBtnTxt2="Save Session First"
     @onDone2="saveSession"
     :isActionBtnEnabled="true"
+    :intro="intro"
   >
     <p>
       If you start a new session, your current session will be lost. Would you
       like to <a href="#" @click="saveSession">save the session first</a>?
     </p>
-  </PopupPluginParent>
+  </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -22,20 +24,21 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
-import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * NewSessionPlugin
  */
 @Options({
   components: {
-    PopupPluginParent,
+    PluginComponent,
     FormFile,
   },
 })
-export default class NewSessionPlugin extends PopupPluginParentRenderless {
+export default class NewSessionPlugin extends PluginParentClass {
   menuPath = "File/[1] Session/[0] New";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -47,6 +50,8 @@ export default class NewSessionPlugin extends PopupPluginParentRenderless {
   filesToLoad: IFileInfo[] = [];
   pluginId = "newsession";
   intro = ""; // Not used
+
+  userInputs: FormElement[] = [];
 
   /**
    * Runs when the user presses the action button and the popup closes.

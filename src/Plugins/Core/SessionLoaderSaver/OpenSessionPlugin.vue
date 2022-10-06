@@ -1,11 +1,13 @@
 <template>
-  <PopupPluginParent
+  <PluginComponent
+    :userInputs="userInputs"
     title="Load a Session"
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
     @onDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
+    :intro="intro"
   >
     <FormFile
       ref="formFile"
@@ -14,7 +16,7 @@
       accept=".biotite"
       :isZip="true"
     />
-  </PopupPluginParent>
+  </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -23,19 +25,20 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { jsonToState } from "@/Store/LoadAndSaveStore";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
-import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * OpenSessionPlugin
  */
 @Options({
   components: {
-    PopupPluginParent,
+    PluginComponent,
     FormFile,
   },
 })
-export default class OpenSessionPlugin extends PopupPluginParentRenderless {
+export default class OpenSessionPlugin extends PluginParentClass {
   menuPath = "File/[1] Session/[0] Open";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -47,6 +50,8 @@ export default class OpenSessionPlugin extends PopupPluginParentRenderless {
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadsession";
   intro = ""; // Not used
+
+  userInputs: FormElement[] = [];
 
   /**
    * Runs when the files are loaded.

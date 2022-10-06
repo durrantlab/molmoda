@@ -1,15 +1,12 @@
 <template>
-  <PopupOneTextInput
-    v-model:openValue="open"
+  <PluginComponent
+    :userInputs="userInputs"
+    v-model="open"
     title="Save a VRML Model"
-    :intro="intro"
-    placeHolder="Enter Filename (e.g., my_model.vrml)"
-    :isActionBtnEnabled="isBtnEnabled()"
-    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    v-model:text="filename"
-    @onTextDone="onPopupDone"
-  ></PopupOneTextInput>
+    :intro="intro"
+    @onPopupDone="onPopupDone"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -20,20 +17,22 @@ import {
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
-import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { ISaveTxt } from "@/Core/FS";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * SaveVRMLPlugin
  */
 @Options({
   components: {
-    PopupOneTextInput,
+    PluginComponent,
   },
 })
-export default class SaveVRMLPlugin extends PopupPluginParentRenderless {
+export default class SaveVRMLPlugin extends PluginParentClass {
   menuPath = "File/Molecules/[6] Export/VRML";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
@@ -47,27 +46,20 @@ export default class SaveVRMLPlugin extends PopupPluginParentRenderless {
   intro = `Please provide the name of the VRML file to save. Note that the
       extension ".vrml" will be automatically appended.`;
 
-  filename = "";
-
-  /**
-   * Filters text to match desired format.
-   * 
-   * @param {string} filename  The text to assess.
-   * @returns {string} The filtered text.
-   */
-  filterUserData(filename: string): string {
-    return fileNameFilter(filename);
-  }
-
-  /**
-   * If text is a properly formatted UniProt accession, enable the button.
-   * Otherwise, disabled.
-   * 
-   * @returns {boolean} Whether to disable the button.
-   */
-  isBtnEnabled(): boolean {
-    return matchesFilename(this.filename);
-  }
+  userInputs: FormElement[] = [
+    {
+      id: "filename",
+      label: "",
+      val: "",
+      placeHolder: "Enter Filename (e.g., my_model.vrml)",
+      filterFunc: (filename: string): string => {
+        return fileNameFilter(filename);
+      },
+      validateFunc: (filename: string): boolean => {
+        return matchesFilename(filename);
+      },
+    } as IFormText,
+  ];
 
   /**
    * Check if this plugin can currently be used.
@@ -80,19 +72,12 @@ export default class SaveVRMLPlugin extends PopupPluginParentRenderless {
   }
 
   /**
-   * Runs before the popup opens. Good for initializing/resenting variables
-   * (e.g., clear inputs from previous open).
-   */
-  beforePopupOpen() {
-    this.filename = "";
-  }
-
-  /**
    * Runs when the user presses the action button and the popup closes.
+   *
+   * @param {IUserArg[]} userParams  The user arguments.
    */
-  onPopupDone() {
-    this.closePopup();
-    this.submitJobs([{ filename: this.filename }]);
+  onPopupDone(userParams: IUserArg[]) {
+    this.submitJobs([{ filename: userParams[0].val }]);
   }
 
   /**
@@ -106,7 +91,7 @@ export default class SaveVRMLPlugin extends PopupPluginParentRenderless {
     let filename = parameters.filename;
     let vrmlTxt = api.visualization.viewer.exportVRML();
     api.visualization.viewer.render();
-    
+
     return api.fs.saveTxt({
       fileName: filename,
       content: vrmlTxt,

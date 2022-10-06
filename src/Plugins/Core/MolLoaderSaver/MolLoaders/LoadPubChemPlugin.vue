@@ -1,13 +1,14 @@
 <template>
-  <PopupPluginParent
+  <PluginComponent
+    :userInputs="userInputs"
     title="Load Molecule from PubChem"
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
     @onDone="onPopupDone"
     :isActionBtnEnabled="isBtnEnabled()"
+    :intro="intro"
   >
-    <p v-html="intro"></p>
     <FormWrapper
       ><FormInput
         ref="formMolName"
@@ -27,7 +28,7 @@
         @onKeyDown="onCIDKeyDown"
       ></FormInput>
     </FormWrapper>
-  </PopupPluginParent>
+  </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -44,22 +45,23 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
 import { appName } from "@/Core/AppName";
-import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * LoadPubChemPlugin
  */
 @Options({
   components: {
-    PopupPluginParent,
+    PluginComponent,
     FormInput,
     FormWrapper,
   },
 })
-export default class LoadPubChemPlugin extends PopupPluginParentRenderless {
+export default class LoadPubChemPlugin extends PluginParentClass {
   menuPath = "File/Molecules/Import/[6] PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -81,6 +83,8 @@ export default class LoadPubChemPlugin extends PopupPluginParentRenderless {
       ${appName} will look up the CID if you enter the name. Search the
       <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem
       Database</a>, a database of small molecules, to find the CID on your own.`;
+
+  userInputs: FormElement[] = [];
 
   /**
    * Filters text to match desired format.

@@ -1,22 +1,30 @@
-<template><PluginParent></PluginParent></template>
+<template>
+  <PluginComponent
+    v-model="open"
+    title=""
+    :userInputs="userInputs"
+    :intro="intro"
+  ></PluginComponent>
+</template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
 import * as api from "@/Api";
 import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
-import PluginParent from "@/Plugins/Parents/PluginParent/PluginParent.vue";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * UndoPlugin
  */
 @Options({
   components: {
-    PluginParent,
+    PluginComponent,
   },
 })
-export default class UndoPlugin extends PluginParentRenderless {
+export default class UndoPlugin extends PluginParentClass {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
@@ -29,13 +37,9 @@ export default class UndoPlugin extends PluginParentRenderless {
     },
   ];
   pluginId = "undo";
-
-  /**
-   * Runs when the user first starts the plugin. 
-   */
-  onPluginStart() {
-    this.submitJobs();
-  }
+  intro = ""; // Not used
+  noPopup = true;
+  userInputs: FormElement[] = [];
 
   /**
    * Check if this plugin can currently be used.

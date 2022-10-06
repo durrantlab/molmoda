@@ -1,60 +1,87 @@
 <template>
-  <span v-for="formElem of modelValue" v-bind:key="formElem.id">
-    <FormWrapper
-      v-if="formElem.type === FormElementType.Group"
-      cls="border-0 mt-3"
-    >
-      <Accordian :id="formElem.id">
-        <AccordianItem
-          :id="formElem.id + '-item'"
-          :title="formElem.label"
-          :showInitially="asGroup(formElem).startOpened"
-        >
-          <FormFull v-model="asGroup(formElem).childElements"></FormFull>
-        </AccordianItem>
-      </Accordian>
-    </FormWrapper>
-    <FormWrapper v-else :label="formElem.label" cls="border-0">
-      <FormInput
-        v-if="formElem.type === FormElementType.Text"
-        type="text"
-        v-model="allowVal(formElem).val"
-        @onChange="onDataUpdated"
-      />
-      <FormInput
-        v-else-if="formElem.type === FormElementType.Number"
-        type="number"
-        v-model.number="allowVal(formElem).val"
-        @onChange="onDataUpdated"
-      />
-      <FormInput
-        v-else-if="formElem.type === FormElementType.Color"
-        type="color"
-        v-model.number="allowVal(formElem).val"
-        @onChange="onDataUpdated"
-      />
-      <FormSelect
-        v-else-if="formElem.type === FormElementType.Select"
-        v-model="allowVal(formElem).val"
-        :options="getSelectOptions(formElem)"
-        @onChange="onDataUpdated"
-      />
-      <FormInput
-        v-else-if="formElem.type === FormElementType.Range"
-        v-model.number="allowVal(formElem).val"
-        type="range"
-        :min="getRangeMinMaxStep(formElem).min"
-        :max="getRangeMinMaxStep(formElem).max"
-        :step="getRangeMinMaxStep(formElem).step"
-        @onChange="onDataUpdated"
-      />
-      <MoleculeInputParams
-        v-else-if="formElem.type === FormElementType.MoleculeInputParams"
-        v-model="allowVal(formElem).val"
-        @onChange="onDataUpdated"
+  <span>
+    <span v-for="formElem of modelValue" v-bind:key="formElem.id">
+      <FormWrapper
+        v-if="formElem.type === FormElementType.Group"
+        cls="border-0 mt-3"
       >
-      </MoleculeInputParams>
-    </FormWrapper>
+        <Accordian :id="formElem.id">
+          <AccordianItem
+            :id="formElem.id + '-item'"
+            :title="formElem.label"
+            :showInitially="asGroup(formElem).startOpened"
+          >
+            <FormFull v-model="asGroup(formElem).childElements"></FormFull>
+          </AccordianItem>
+        </Accordian>
+      </FormWrapper>
+      <FormWrapper
+        v-else
+        :label="
+          formElem.type === FormElementType.Checkbox ? '' : formElem.label
+        "
+        cls="border-0"
+      >
+        <FormInput
+          v-if="formElem.type === FormElementType.Text"
+          type="text"
+          v-model="makeGeneric(formElem).val"
+          :placeHolder="makeGeneric(formElem).placeHolder"
+          :filterFunc="makeGeneric(formElem).filterFunc"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        />
+        <FormInput
+          v-else-if="formElem.type === FormElementType.Number"
+          type="number"
+          v-model.number="makeGeneric(formElem).val"
+          :placeHolder="makeGeneric(formElem).placeHolder"
+          :filterFunc="makeGeneric(formElem).filterFunc"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        />
+        <FormInput
+          v-else-if="formElem.type === FormElementType.Color"
+          type="color"
+          v-model.number="makeGeneric(formElem).val"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        />
+        <FormSelect
+          v-else-if="formElem.type === FormElementType.Select"
+          v-model="makeGeneric(formElem).val"
+          :options="getSelectOptions(formElem)"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        />
+        <FormInput
+          v-else-if="formElem.type === FormElementType.Range"
+          v-model.number="makeGeneric(formElem).val"
+          type="range"
+          :min="getRangeMinMaxStep(formElem).min"
+          :max="getRangeMinMaxStep(formElem).max"
+          :step="getRangeMinMaxStep(formElem).step"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        />
+        <FormCheckBox
+          v-else-if="formElem.type === FormElementType.Checkbox"
+          v-model.boolean="makeGeneric(formElem).val"
+          :text="makeGeneric(formElem).label"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        />
+        <!-- :placeHolder="makeGeneric(formElem).placeHolder" -->
+        <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->
+        <MoleculeInputParams
+          v-else-if="formElem.type === FormElementType.MoleculeInputParams"
+          v-model="makeGeneric(formElem).val"
+          @onChange="onDataUpdated"
+          :id="formElem.id + '-item'"
+        >
+        </MoleculeInputParams>
+      </FormWrapper>
+    </span>
   </span>
 </template>
 
@@ -71,11 +98,12 @@ import {
   IFormMoleculeInputParams,
   IFormRange,
   IFormSelect,
-  IFormTextOrColor,
+  IGenericFormElement,
 } from "./FormFullInterfaces";
 import Accordian from "@/UI/Layout/Accordian/Accordian.vue";
 import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
 import MoleculeInputParams from "../MoleculeInputParams/MoleculeInputParams.vue";
+import FormCheckBox from "../FormCheckBox.vue";
 
 /**
  * FormFull
@@ -88,6 +116,7 @@ import MoleculeInputParams from "../MoleculeInputParams/MoleculeInputParams.vue"
     Accordian,
     AccordianItem,
     MoleculeInputParams,
+    FormCheckBox,
   },
 })
 export default class FormFull extends Vue {
@@ -127,8 +156,8 @@ export default class FormFull extends Vue {
    * @param {any} val  The form element.
    * @returns {IFormGroup}  The IFormTextOrColor.
    */
-  allowVal(val: FormElement): IFormTextOrColor {
-    return val as IFormTextOrColor;
+  makeGeneric(val: FormElement): IGenericFormElement {
+    return val as IGenericFormElement;
   }
 
   /**

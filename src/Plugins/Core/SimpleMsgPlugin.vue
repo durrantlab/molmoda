@@ -17,13 +17,13 @@
 
 import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
+import { PluginParentRenderless } from "@/Plugins/Parents/PluginParentComponent/PluginParentRenderless";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleMsg,
   PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import PluginParent from "../Parents/PluginParent/PluginParent.vue";
+import PluginParent from "../Parents/PluginParentComponent/PluginParent.vue";
 
 /**
  * SimpleMsgPlugin

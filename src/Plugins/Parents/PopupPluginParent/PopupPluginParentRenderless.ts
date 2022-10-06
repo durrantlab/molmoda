@@ -1,4 +1,4 @@
-import { PluginParentRenderless } from "../PluginParent/PluginParentRenderless";
+import { PluginParentRenderless } from "../PluginParentComponent/PluginParentRenderless";
 import { Prop, Watch } from "vue-property-decorator";
 
 /**
@@ -12,6 +12,7 @@ export abstract class PopupPluginParentRenderless extends PluginParentRenderless
     // Typicaly when using the plugin outside the menu system.
     protected payload: any = undefined;
 
+/* A function that is called when the user enters data into the popup. */
     /**
      * Filters user input to match desired format.
      *

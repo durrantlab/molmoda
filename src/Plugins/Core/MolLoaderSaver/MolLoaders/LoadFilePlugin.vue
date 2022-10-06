@@ -1,14 +1,16 @@
 <template>
-  <PopupPluginParent
-    title="Load a File"
+  <PluginComponent
+    :userInputs="userInputs"
     v-model="open"
-    cancelBtnTxt="Cancel"
+    title="Load a File"
     actionBtnTxt="Load"
-    @onDone="onPopupDone"
+    cancelBtnTxt="Cancel"
+    :intro="intro"
+    @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
   >
     <FormFile ref="formFile" @onFilesLoaded="onFilesLoaded" :accept="accept" />
-  </PopupPluginParent>
+  </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -23,19 +25,20 @@ import {
   loadMoleculeFile,
 } from "@/FileSystem/LoadMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
-import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * LoadFilePlugin
  */
 @Options({
   components: {
-    PopupPluginParent,
+    PluginComponent,
     FormFile,
   },
 })
-export default class LoadFilePlugin extends PopupPluginParentRenderless {
+export default class LoadFilePlugin extends PluginParentClass {
   menuPath = "[4] File/Molecules/Import/[0] Local File";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -50,6 +53,8 @@ export default class LoadFilePlugin extends PopupPluginParentRenderless {
 
   intro = ""; // Not used.
 
+  userInputs: FormElement[] = [];
+
   /**
    * Runs when the files are loaded.
    *
@@ -63,7 +68,6 @@ export default class LoadFilePlugin extends PopupPluginParentRenderless {
    * Runs when the popup closes via done button.
    */
   onPopupDone() {
-    this.closePopup();
     this.submitJobs(this.filesToLoad);
   }
 
@@ -74,6 +78,7 @@ export default class LoadFilePlugin extends PopupPluginParentRenderless {
   beforePopupOpen() {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
+    this.filesToLoad = [];
   }
 
   /**

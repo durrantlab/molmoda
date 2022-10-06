@@ -1,35 +1,41 @@
 <template>
-  <PopupOneTextInput
-    v-model:openValue="open"
+  <PluginComponent
+    ref="pluginComponent"
+    v-model:modelValue="open"
     title="Rename Molecule"
     :intro="intro"
-    placeHolder="New molecule name"
-    :isActionBtnEnabled="isBtnEnabled(title)"
-    :filterFunc="filterUserData"
     actionBtnTxt="Rename"
-    @onTextDone="onPopupDone"
-    v-model:text="title"
-  ></PopupOneTextInput>
+    :userInputs="userInputs"
+    @onPopupDone="onPopupDone"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { EditBarPluginParentRenderless } from "@/Plugins/Parents/EditBarPluginParentRenderless";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import {
+  FormElement,
+  IFormText,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
+import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * RenameMolPlugin
  */
 @Options({
   components: {
-    PopupOneTextInput,
+    PluginComponent,
   },
 })
-export default class RenameMolPlugin extends EditBarPluginParentRenderless {
+export default class RenameMolPlugin extends PluginParentClass {
   menuPath = "Edit/Molecules/[1] Rename";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -40,26 +46,57 @@ export default class RenameMolPlugin extends EditBarPluginParentRenderless {
   ];
   pluginId = "renamemol";
   intro = `Enter the new name for this molecule.`;
-  title = "";
+
+  userInputs: FormElement[] = [
+    {
+      id: "newName",
+      label: "",
+      val: "",
+      placeHolder: "New molecule name",
+      validateFunc: (newName: string): boolean => {
+        return newName.length > 0;
+      },
+    } as IFormText,
+  ];
+
+  nodeToActOn: IMolContainer = getDefaultNodeToActOn();
+
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+  checkUseAllowed(): string | null {
+    return checkAnyMolSelected(this as any);
+  }
 
   /**
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
   beforePopupOpen() {
-    this.setNodeToActOn();
-    this.title = this.nodeToActOn?.title;
+    setNodeToActOn(this);
+    this.updateUserVars([
+      {
+        name: "newName",
+        val: this.nodeToActOn?.title,
+      } as IUserArg,
+    ]);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {string} newName  The new name of the renamed molecule.
-   */ 
-  runJob(newName: string) {
+   * @param {IUserArg[]} parameters  The user parameters.
+   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   *     done.
+   */
+  runJob(parameters: IUserArg[]): Promise<undefined> {
     if (this.nodeToActOn) {
-      this.nodeToActOn.title = newName;
+      this.nodeToActOn.title = parameters[0].val;
     }
+    return Promise.resolve(undefined);
   }
 }
 </script>

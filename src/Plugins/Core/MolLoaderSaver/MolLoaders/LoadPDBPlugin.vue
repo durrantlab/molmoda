@@ -1,36 +1,38 @@
 <template>
-  <PopupOneTextInput
-    v-model:openValue="open"
+  <PluginComponent
+    :userInputs="userInputs"
+    v-model="open"
     title="Load PDB ID"
-    :intro="intro"
-    placeHolder="Enter PDB ID (e.g., 1XDN)"
-    :isActionBtnEnabled="isBtnEnabled()"
-    :filterFunc="filterUserData"
     actionBtnTxt="Load"
-    v-model:text="pdbId"
-    @onTextDone="onPopupDone"
-  ></PopupOneTextInput>
+    :intro="intro"
+    @onPopupDone="onPopupDone"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
-import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { IFileInfo } from "@/FileSystem/Interfaces";
-import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import {
+  IContributorCredit,
+  ISoftwareCredit,
+} from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * LoadPDBPlugin
  */
 @Options({
   components: {
-    PopupOneTextInput,
+    PluginComponent,
   },
 })
-export default class LoadPDBPlugin extends PopupPluginParentRenderless {
+export default class LoadPDBPlugin extends PluginParentClass {
   menuPath = "File/Molecules/Import/[2] Protein Data Bank";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -50,49 +52,33 @@ export default class LoadPDBPlugin extends PopupPluginParentRenderless {
       database of biological molecules (e.g., proteins and nucleic acids), if
       you're uncertain.`;
 
-  pdbId = "";
-
-  /**
-   * If the user data is a properly formatted, enable the button. Otherwise,
-   * disabled.
-   *
-   * @returns {boolean} A boolean value, whether to disable the button.
-   */
-  isBtnEnabled(): boolean {
-    return this.pdbId.length === 4;
-  }
-
-  /**
-   * Runs before the popup opens. Good for initializing/resenting variables
-   * (e.g., clear inputs from previous open).
-   */
-  beforePopupOpen() {
-    this.pdbId = "";
-  }
-
-  /**
-   * Filters text to match desired format.
-   * 
-   * @param {string} pdb  The text to assess.
-   * @returns {string} The filtered text.
-   */
-  filterUserData(pdb: string): string {
-    pdb = pdb.toUpperCase();
-
-    // Keep numbers and letters
-    pdb = pdb.replace(/[^A-Z\d]/g, "");
-
-    pdb = pdb.substring(0, 4);
-    return pdb;
-  }
+  userInputs: FormElement[] = [
+    {
+      id: "pdbId",
+      label: "",
+      val: "",
+      placeHolder: "Enter PDB ID (e.g., 1XDN)",
+      filterFunc: (pdb: string): string => {
+        pdb = pdb.toUpperCase();
+        pdb = pdb.replace(/[^A-Z\d]/g, ""); // Only nums and lets
+        pdb = pdb.substring(0, 4);
+        return pdb;
+      },
+      validateFunc: (pdb: string): boolean => {
+        return pdb.length === 4;
+      },
+    } as IFormText,
+  ];
 
   /**
    * Runs when the user presses the action button and the popup closes.
+   *
+   * @param {IUserArg[]} userParams  The user arguments.
    */
-  onPopupDone() {
-    this.closePopup();
-
-    loadRemote(`https://files.rcsb.org/view/${this.pdbId.toUpperCase()}.pdb`)
+  onPopupDone(userParams: IUserArg[]) {
+    loadRemote(
+      `https://files.rcsb.org/view/${userParams[0].val.toUpperCase()}.pdb`
+    )
       .then((fileInfo: IFileInfo) => {
         this.submitJobs([fileInfo]);
         return;

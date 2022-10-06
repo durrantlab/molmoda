@@ -61,7 +61,26 @@ implement the same component in the template.
 Can you refactor EditBarPluginParent so not really parent? Same for one-input
 popup? These are different than the others, and I worry it will confuse things.
 
+Load session after saving without restarting, duplicate keys in log. Good to
+clear log on load session.
+
+I think both undo and redo should warn one item sooner on stack.
+
+You stopped working mid way on CloneExtract. Used watch to make userParams
+reactive. Just getting too complicated.
+
 # DONE
+
+New plugin system: Automatically focus on first input.
+
+Uggg, this has gotten intractibly complicated. Why different kinds of components
+for different plugins? Just make a single Vue component to rule them all. No
+extends hierarchy.
+
+New plugin system: Look for other things in pdb loading that can be moved to
+    generic class. For example, onPopupDone should always run this.closePopup(),
+    shouldn't it? Etc. Also, why not pass "sanitized/simplified" user parameters
+    to onPopupDone? I think you already have a function for that.
 
 Continue converting plugin parents to vue-based system, using Renderless
 

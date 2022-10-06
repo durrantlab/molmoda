@@ -1,11 +1,16 @@
 <template>
-  <PopupPluginParent
+  <PluginComponent
+    ref="pluginComponent"
+    v-model:modelValue="open"
     :title="extractOrCloneTxt + ' Molecule'"
-    v-model="open"
-    cancelBtnTxt="Cancel"
+    :intro="intro"
     :actionBtnTxt="extractOrCloneTxt"
-    @onDone="onPopupDone"
-    :isActionBtnEnabled="isBtnEnabled(newTitle)"
+    :userInputs="userInputs"
+    @onPopupDone="onPopupDone"
+    @onDataChanged="onDataChanged"
+  ></PluginComponent>
+
+  <!-- <PopupPluginParent
     :onShown="onPopupOpen"
     :beforeShown="beforePopupOpen"
   >
@@ -24,7 +29,7 @@
         @onChange="onModeChange"
       ></FormCheckBox>
     </FormWrapper>
-  </PopupPluginParent>
+  </PopupPluginParent> -->
 </template>
 
 <script lang="ts">
@@ -50,9 +55,18 @@ import {
   atomsToModels,
   modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
-import { RunJobReturn } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
-import PopupPluginParent from "@/Plugins/Parents/PopupPluginParent/PopupPluginParent.vue";
-import { EditBarPluginParentRenderless } from "@/Plugins/Parents/EditBarPluginParentRenderless";
+import { RunJobReturn } from "@/Plugins/Parents/PluginParentComponent/PluginParentRenderless";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import {
+  FormElement,
+  FormElemType,
+  IFormCheckbox,
+  IFormText,
+IGenericFormElement,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -63,10 +77,10 @@ const extractDescription = `The selected molecule will be extracted (moved) from
     FormInput,
     FormCheckBox,
     FormWrapper,
-    PopupPluginParent,
+    PluginComponent,
   },
 })
-export default class CloneExtractMolPlugin extends EditBarPluginParentRenderless {
+export default class CloneExtractMolPlugin extends PluginParentClass {
   menuPath = ["Edit", "Molecules", "Clone/Extract"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -77,12 +91,36 @@ export default class CloneExtractMolPlugin extends EditBarPluginParentRenderless
   ];
   pluginId = "cloneextractmol";
   intro = cloneDescription;
-  newTitle = "";
-  doExtract = false;
+
+  userInputs: FormElement[] = [
+    {
+      id: "newName",
+      label: "",
+      val: "",
+      placeHolder: "Name of new molecule",
+      validateFunc: (newName: string): boolean => {
+        return newName.length > 0;
+      },
+    } as IFormText,
+    {
+      type: FormElemType.Checkbox,
+      id: "doExtract",
+      label: "Delete original molecule (extract rather than clone)",
+      val: false,
+    } as IFormCheckbox,
+  ];
+
+  nodeToActOn: IMolContainer = getDefaultNodeToActOn();
+
+  get doExtract(): boolean {
+    return (this.userInputs[1] as IGenericFormElement).val as boolean;
+  }
+
+  
 
   /**
    * Returns text appropriate for the mode.
-   * 
+   *
    * @returns {string} The text, either "Extract" or "Clone".
    */
   get extractOrCloneTxt(): string {
@@ -106,41 +144,47 @@ export default class CloneExtractMolPlugin extends EditBarPluginParentRenderless
    * (e.g., clear inputs from previous open).
    */
   public beforePopupOpen(): void {
-    this.setNodeToActOn();
-    this.doExtract = false;
-    this.newTitle = this.nodeToActOn?.title + " (cloned)";
-  }
-
-  /**
-   * Runs after the popup opens. Good for setting focus in text elements.
-   */
-  onPopupOpen(): void {
-    let focusTarget = (this.$refs.formInput as any).$refs
-      .inputElem as HTMLInputElement;
-    focusTarget.focus();
+    setNodeToActOn(this);
+    this.updateUserVars(
+      [
+        {
+          name: "newName",
+          val: this.nodeToActOn?.title + " (cloned)",
+        } as IUserArg,
+        {
+          name: "doExtract",
+          val: false,
+        } as IUserArg,
+      ]
+    );
   }
 
   /**
    * Runs when the mode changes (between clone and extract).
    */
-  onModeChange() {
-    if (this.doExtract) {
-      this.intro = extractDescription;
-      this.newTitle = this.newTitle.replace(/ \(cloned\)$/gm, "");
-    } else {
-      this.intro = cloneDescription;
-      if (!this.newTitle.includes(" (cloned)")) {
-        this.newTitle += " (cloned)";
-      }
-    }
+   onDataChanged(userVars: IUserArg[]): void {
+    const newName = userVars[0].val as string;
+
+    this.intro = this.doExtract ? extractDescription : cloneDescription;
+
+    // debugger;
+    // if (this.doExtract) {
+    //   this.newTitle = newName.replace(/ \(cloned\)$/gm, "");
+    // } else {
+    //   if (!newName.includes(" (cloned)")) {
+    //     this.newTitle += " (cloned)";
+    //   }
+    // }
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @returns {RunJobReturn}  A promise that resolves when the job is done.
+   * @param {IUserArg[]} parameters  The user parameters.
+   * @returns {RunJobReturn}  A promise that resolves when the job is
+   *     done.
    */
-  runJob(): RunJobReturn {
+  runJob(parameters: IUserArg[]): RunJobReturn {
     if (this.nodeToActOn) {
       let newerNode: IMolContainer;
       let convertedNode: Promise<IMolContainer>;

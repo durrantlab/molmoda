@@ -1,38 +1,37 @@
 <template>
-  <PopupOneTextInput
-    v-model:openValue="open"
+  <PluginComponent
+    :userInputs="userInputs"
+    v-model="open"
     title="Save a Session"
-    :intro="introToUse"
-    placeHolder="Enter Filename (e.g., my_session.biotite)"
-    :isActionBtnEnabled="isBtnEnabled()"
-    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    @onTextDone="onPopupDone"
-    v-model:text="filename"
+    :intro="introToUse"
+    @onPopupDone="onPopupDone"
     :prohibitCancel="windowClosing"
-  ></PopupOneTextInput>
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { saveState, setStoreIsDirty } from "@/Store/LoadAndSaveStore";
-import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
 import * as api from "@/Api";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * SaveSessionPlugin
  */
 @Options({
   components: {
-    PopupOneTextInput,
+    PluginComponent,
   },
 })
-export default class SaveSessionPlugin extends PopupPluginParentRenderless {
+export default class SaveSessionPlugin extends PluginParentClass {
   menuPath = "File/Session/[1] Save As";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -48,7 +47,20 @@ export default class SaveSessionPlugin extends PopupPluginParentRenderless {
 
   windowClosing = false;
 
-  filename = "";
+  userInputs: FormElement[] = [
+    {
+      id: "filename",
+      label: "",
+      val: "",
+      placeHolder: "Enter Filename (e.g., my_session.biotite)",
+      filterFunc: (filename: string): string => {
+        return fileNameFilter(filename);
+      },
+      validateFunc: (filename: string): boolean => {
+        return matchesFilename(filename);
+      },
+    } as IFormText,
+  ];
 
   /**
    * Determine which into text to use.
@@ -65,26 +77,6 @@ export default class SaveSessionPlugin extends PopupPluginParentRenderless {
     i += this.intro;
 
     return i;
-  }
-
-  /**
-   * Filters text to match desired format.
-   *
-   * @param {string} filename  The text to assess.
-   * @returns {string} The filtered text.
-   */
-  filterUserData(filename: string): string {
-    return fileNameFilter(filename);
-  }
-
-  /**
-   * If text is a properly formatted UniProt accession, enable the button.
-   * Otherwise, disabled.
-   *
-   * @returns {boolean} Whether to disable the button.
-   */
-  isBtnEnabled(): boolean {
-    return matchesFilename(this.filename);
   }
 
   /**
@@ -108,10 +100,11 @@ export default class SaveSessionPlugin extends PopupPluginParentRenderless {
 
   /**
    * Runs when the user presses the action button and the popup closes.
+   *
+   * @param {IUserArg[]} userParams  The user arguments.
    */
-  onPopupDone() {
-    this.closePopup();
-    this.submitJobs([{ filename: this.filename }]);
+  onPopupDone(userParams: IUserArg[]) {
+    this.submitJobs([{ filename: userParams[0].val }]);
   }
 
   /**

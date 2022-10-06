@@ -1,12 +1,11 @@
 <template>
-  <OptionalPluginParent
+  <PluginComponent
     :userInputs="userInputs"
     v-model="open"
     title="Load Molecule from PubChem"
-    :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
     @onPopupDone="onPopupDone"
-  ></OptionalPluginParent>
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -16,27 +15,26 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
   FormElement,
-  FormElemType,
   IFormGroup,
   IFormMoleculeInputParams,
   IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import OptionalPluginParent from "@/Plugins/Parents/OptionalPluginParent/OptionalPluginParent.vue";
-import { OptionalPluginParentRenderless } from "@/Plugins/Parents/OptionalPluginParent/OptionalPluginParentRenderless";
 import { Options } from "vue-class-component";
 import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
-import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
+import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+// import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
 
 /**
  * TestPlugin
  */
 @Options({
   components: {
-    OptionalPluginParent,
+    PluginComponent,
   },
 })
-export default class TestPlugin extends OptionalPluginParentRenderless {
+export default class TestPlugin extends PluginParentClass {
   menuPath = "Test/Test Component";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -51,29 +49,29 @@ export default class TestPlugin extends OptionalPluginParentRenderless {
 
   userInputs: FormElement[] = [
     {
-      type: FormElemType.Number,
+      // type: FormElemType.Number,
       id: "moose",
       label: "Moose",
       val: 0,
     } as IFormNumber,
     {
-      type: FormElemType.MoleculeInputParams,
+      // type: FormElemType.MoleculeInputParams,
       id: "makemolinputparams",
-      val: defaultMoleculeInputParams()
+      val: defaultMoleculeInputParams(),
     } as IFormMoleculeInputParams,
     {
       id: "group",
-      type: FormElemType.Group,
+      // type: FormElemType.Group,
       label: "Labelme",
       childElements: [
         {
-          type: FormElemType.Number,
+          // type: FormElemType.Number,
           id: "moose2",
           label: "Moose2",
           val: 0,
         },
         {
-          type: FormElemType.Text,
+          // type: FormElemType.Text,
           id: "moose3",
           label: "Moose3",
           val: "face",
@@ -84,15 +82,12 @@ export default class TestPlugin extends OptionalPluginParentRenderless {
   ];
 
   /**
-   * Runs before the popup opens. Good for initializing/resenting variables
-   * (e.g., clear inputs from previous open).
+   * Runs when the user presses the action button and the popup closes.
+   *
+   * @param {IUserArg[]} userParams  The user arguments.
    */
-  beforePopupOpen() {
-    return;
-  }
-
-  onPopupDone(userInputs: IUserArg[]) {
-    this.submitJobs([userInputs]);
+  onPopupDone(userParams: IUserArg[]) {
+    this.submitJobs([userParams]);
   }
 
   /**
@@ -104,7 +99,7 @@ export default class TestPlugin extends OptionalPluginParentRenderless {
    */
   runJob(_args: IUserArg[]): Promise<undefined> {
     console.log(_args);
-    debugger
+    debugger;
     return Promise.resolve(undefined);
 
     // // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];

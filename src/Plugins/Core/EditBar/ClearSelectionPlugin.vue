@@ -13,8 +13,8 @@ import {
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
-import { PluginParentRenderless } from "@/Plugins/Parents/PluginParent/PluginParentRenderless";
-import PluginParent from "@/Plugins/Parents/PluginParent/PluginParent.vue";
+import { PluginParentRenderless } from "@/Plugins/Parents/PluginParentComponent/PluginParentRenderless";
+import PluginParent from "@/Plugins/Parents/PluginParentComponent/PluginParent.vue";
 
 /** ClearSelectionPlugin */
 @Options({

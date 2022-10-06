@@ -1,6 +1,7 @@
+// Evey plugin component class must inherit this one.
 import * as JobQueue from "@/JobQueue";
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
-import { Vue } from "vue-class-component";
+import { mixins } from "vue-class-component";
 import {
     IContributorCredit,
     IPluginSetupInfo,
@@ -15,8 +16,14 @@ import {
 import { loadedPlugins } from "../../LoadedPlugins";
 import {
     createTestCmdsIfTestSpecified,
-    ITestCommand,
+    // ITestCommand,
 } from "@/Testing/ParentPluginTestFuncs";
+import { HooksMixin } from "./Mixins/HooksMixin";
+import { PopupMixin } from "./Mixins/PopupMixin";
+import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
+import { ValidationMixin } from "./Mixins/ValidationMixin";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 export type RunJobReturn =
     | Promise<string | undefined>
@@ -27,7 +34,12 @@ export type RunJobReturn =
 /**
  * PluginParent
  */
-export abstract class PluginParentRenderless extends Vue {
+export abstract class PluginParentClass extends mixins(
+    HooksMixin,
+    PopupMixin,
+    JobMsgsMixin,
+    ValidationMixin
+) {
     // The menu path. The vast majority of plugins should be accessible from the
     // menu. But set to null if you don't want it to be. Children must
     // overwrite.
@@ -40,47 +52,42 @@ export abstract class PluginParentRenderless extends Vue {
     // A unique id defines the plugin. Children must overwrite.
     abstract pluginId: string;
 
+    abstract intro: string;
+
+    abstract userInputs: FormElement[];
+
+    // In some cases, must pass information to the plugin when it opens.
+    // Typicaly when using the plugin outside the menu system.
+    protected payload: any = undefined;
+
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
-     * in a popup, this function would open the popup. Children must overwrite.
+     * in a popup, this function would open the popup.
      *
-     * @param {any}    [payload]  Passes extra data to the plugin. Useful when
-     *                            running plugin outside of the menu system.
-     *                            Optional
+     * @param {any} [payload]   Included if you want to pass extra data to the
+     *                          plugin. Probably only useful if not using the
+     *                          menu system. Optional.
      */
-    abstract onPluginStart(payload: any): void;
-
-    /**
-     * Every plugin runs some job. This is the function that does the job
-     * running. Children must overwrite this function.
-     *
-     * @param {any} [parameters]  The same parameterSets submitted via the
-     *                            submitJobs function, but one at a time.
-     *                            Optional.
-     * @returns {RunJobReturn}  A promise that resolves when the job is done,
-     *     with the result (string), or a string itself (if the job is
-     *     synchronous), or undefined if there's nothing to return (so user not
-     *     required to use).
-     */
-    abstract runJob(parameters: any): RunJobReturn;
-
-    /**
-     * Called when the plugin is mounted.
-     */
-    protected onMounted() {
-        // can be optionally overridden.
-        return;
+    public onPluginStart(payload?: any) {
+        // Children should not overwrite this function! Use onPopupOpen instead.
+        this.payload = payload;
+        this.beforePopupOpen();
+        this.openPopup();
+        setTimeout(() => {
+            this.onPopupOpen();
+        }, 1000);
     }
 
     /**
-     * Check if this plugin can currently be used.  This can be optionally
-     * overwritten.
+     * Automatically submit the jobs once the popup is done. This can be
+     * overridden by children plugins. The default version below just submits the
+     * user inputs as a single job, but in some situations you might want to
+     * launch multiple jobs.
      *
-     * @returns {string | null}  If it returns a string, show that as an error
-     *     message. If null, proceed to run the plugin.
+     * @param {IUserArg[]} userInputs  The user arguments.
      */
-    protected checkUseAllowed(): string | null {
-        return null;
+    protected onPopupDone(userInputs: IUserArg[]) {
+        this.submitJobs([userInputs]);
     }
 
     /**
@@ -114,7 +121,7 @@ export abstract class PluginParentRenderless extends Vue {
         );
 
         for (const job of jobs) {
-            let logTxt = this.onSubmitJobLogMsg();
+            let logTxt = this.onSubmitJobLogMsg(this.pluginId);
             logTxt = removeTerminalPunctuation(logTxt);
             api.messages.log(logTxt, undefined, job.id);
         }
@@ -123,36 +130,18 @@ export abstract class PluginParentRenderless extends Vue {
     }
 
     /**
-     * The message to log when the plugin job is submitted. Children can
-     * overwrite this function. Return "" if you want to hide this step.
+     * Every plugin runs some job. This is the function that does the job
+     * running. Children must overwrite this function.
      *
-     * @returns {string}  The message to log.
+     * @param {any} [parameters]  The same parameterSets submitted via the
+     *                            submitJobs function, but one at a time.
+     *                            Optional.
+     * @returns {RunJobReturn}  A promise that resolves when the job is done,
+     *     with the result (string), or a string itself (if the job is
+     *     synchronous), or undefined if there's nothing to return (so user not
+     *     required to use).
      */
-    onSubmitJobLogMsg(): string {
-        return `Job ${this.pluginId} submitted`;
-    }
-
-    /**
-     * The message to log when the plugin job starts. The parameters will be
-     * automatically added if given. Children can overwrite this function.
-     * Return "" if you want to hide this step.
-     *
-     * @returns {string}  The message to log.
-     */
-    onStartJobLogMsg(): string {
-        return `Job ${this.pluginId} started`;
-    }
-
-    /**
-     * The message to log when the plugin job finishes. Total run time will be
-     * appended. Children can overwrite this function.  Return "" if you want to
-     * hide this step.
-     *
-     * @returns {string}  The message to log.
-     */
-    onEndJobLogMsg(): string {
-        return `Job ${this.pluginId} ended`;
-    }
+    abstract runJob(parameters: any): RunJobReturn;
 
     /**
      * This function wraps around runJob to log start/end messages. It is called
@@ -174,14 +163,14 @@ export abstract class PluginParentRenderless extends Vue {
             throw new Error(`Plugin ${this.pluginId} has no runJob function.`);
         }
 
-        let logTxt = this.onStartJobLogMsg();
+        let logTxt = this.onStartJobLogMsg(this.pluginId);
         logTxt = removeTerminalPunctuation(logTxt);
         api.messages.log(logTxt, parameters, jobId);
         const startTime = new Date().getTime();
 
         const jobResult = this.runJob(parameters) as RunJobReturn;
 
-        logTxt = this.onEndJobLogMsg();
+        logTxt = this.onEndJobLogMsg(this.pluginId);
         logTxt = removeTerminalPunctuation(logTxt);
 
         // It's a promise
@@ -206,65 +195,20 @@ export abstract class PluginParentRenderless extends Vue {
     }
 
     /**
-     * Adds commands to run when testing the plugin. Assume the popup is open,
-     * and no need to click the action button.
-     *
-     * @returns {ITestCommand[]}  The commands to run.
+     * Called when the plugin is mounted.
      */
-    onRunTest(): ITestCommand[] {
-        // TODO: In future, this should be abstract (required for children).
-        return [];
-    }
-
-    /**
-     * Validates the plugin to make sure all children define what they should,
-     * etc.
-     */
-    private validatePlugin() {
-        if (this.pluginId !== this.pluginId.toLowerCase()) {
-            throw new Error(
-                "Plugin id must be lowercase. Plugin id: " + this.pluginId
-            );
-        }
-
-        // if (this.menuPath === "") {
-        //     throw new Error(`Plugin ${this.pluginId} does not define menuPath`);
-        // }
-
-        // if (this.softwareCredits === undefined) {
-        //     throw new Error(
-        //         `Plugin ${this.pluginId} does not define softwareCredits`
-        //     );
-        // }
-
-        // if (this.contributorCredits === undefined) {
-        //     throw new Error(
-        //         `Plugin ${this.pluginId} does not define contributorCredits`
-        //     );
-        // }
-
-        // if (this.pluginId === "") {
-        //     throw new Error("pluginId cannot be empty.");
-        // }
-
-        // if (this.onPluginStart === null) {
-        //     throw new Error(
-        //         `Plugin ${this.pluginId} does not define onPluginStart()`
-        //     );
-        // }
-
-        // if (this.runJob === null) {
-        //     throw new Error(`Plugin ${this.pluginId} does not define runJob()`);
-        // }
+    onMounted() {
+        // can be optionally overridden.
+        return;
     }
 
     /** mounted function */
     mounted() {
         // Do some quick validation
-        this.validatePlugin();
+        this._validatePlugin(this.pluginId);
 
         if (this.menuPath === "") {
-            debugger;
+            // debugger;
             console.log(">>", this.pluginId);
         }
 
@@ -297,4 +241,52 @@ export abstract class PluginParentRenderless extends Vue {
 
         createTestCmdsIfTestSpecified(this);
     }
+
+    /**
+     * Occasionally, you might want to update a user variable from the plugin's
+     * context. For example, when renaming a molecule, it's helpful to
+     * prepopulate the new name field with the existing name. For this to work,
+     * the <PluginComponent> must have ref "pluginComponent".
+     *
+     * @param {IUserArg[]} userArgs  The user variables to update.
+     */
+    protected updateUserVars(userArgs: IUserArg[]) {
+        const pluginComponent = this.$refs["pluginComponent"] as any;
+        if (pluginComponent === undefined) {
+            console.warn(
+                'To use the updateUserVars() function, the PluginComponent must have ref "pluginComponent".'
+            );
+            return;
+        }
+        const existingNames: string[] = pluginComponent.userInputsToUse.map(
+            (i: FormElement): string => {
+                return i.id;
+            }
+        );
+        for (const userArg of userArgs) {
+            const name = userArg.name;
+            const idx = existingNames.indexOf(name);
+            if (idx === -1) {
+                // Asking to update a user var that doesn't exist.
+                console.warn(
+                    `Plugin ${this.pluginId} is trying to update user var ${name}, but it doesn't exist.`
+                );
+                return;
+            }
+
+            // Update the value
+            pluginComponent.userInputsToUse[idx].val = userArg.val;
+        }
+    }
+
+    // /**
+    //  * Adds commands to run when testing the plugin. Assume the popup is open,
+    //  * and no need to click the action button.
+    //  *
+    //  * @returns {ITestCommand[]}  The commands to run.
+    //  */
+    // onRunTest(): ITestCommand[] {
+    //     // TODO: In future, this should be abstract (required for children).
+    //     return [];
+    // }
 }

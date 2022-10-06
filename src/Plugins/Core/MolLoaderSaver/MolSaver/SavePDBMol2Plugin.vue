@@ -1,20 +1,16 @@
 <template>
-  <PopupOneTextInput
-    v-model:openValue="open"
+  <PluginComponent
+    :userInputs="userInputs"
+    v-model="open"
     title="Save PDB and Mol2 Files"
-    :intro="intro"
-    placeHolder="Enter Filename (e.g., my_molecules.zip)"
-    :isActionBtnEnabled="isBtnEnabled()"
-    :filterFunc="filterUserData"
     actionBtnTxt="Save"
-    v-model:text="filename"
-    @onTextDone="onPopupDone"
-  ></PopupOneTextInput>
+    :intro="intro"
+    @onPopupDone="onPopupDone"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import PopupOneTextInput from "@/UI/Layout/Popups/PopupOneTextInput.vue";
 import {
   fileNameFilter,
   getFileNameParts,
@@ -29,19 +25,26 @@ import { convertToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertToPDB";
 import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
-import { GLModel, IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { PopupPluginParentRenderless } from "@/Plugins/Parents/PopupPluginParent/PopupPluginParentRenderless";
+import {
+  GLModel,
+  IAtom,
+  IMolContainer,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 
 /**
  * SavePDBMol2Plugin
  */
 @Options({
   components: {
-    PopupOneTextInput,
+    PluginComponent,
   },
 })
-export default class SavePDBMol2Plugin extends PopupPluginParentRenderless {
+export default class SavePDBMol2Plugin extends PluginParentClass {
   menuPath = "File/Molecules/[6] Export/PDB & Mol2";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
@@ -56,27 +59,20 @@ export default class SavePDBMol2Plugin extends PopupPluginParentRenderless {
       extension ".zip" will be automatically appended. The ZIP file will
       contain the PDB and MOL2 files of all visible molecules.`;
 
-  filename = "";
-
-  /**
-   * Filters text to match desired format.
-   * 
-   * @param {string} filename  The text to assess.
-   * @returns {string} The filtered text.
-   */
-  filterUserData(filename: string): string {
-    return fileNameFilter(filename);
-  }
-
-  /**
-   * If text is a properly formatted UniProt accession, enable the button.
-   * Otherwise, disabled.
-   * 
-   * @returns {boolean} Whether to disable the button.
-   */
-  isBtnEnabled(): boolean {
-    return matchesFilename(this.filename);
-  }
+  userInputs: FormElement[] = [
+    {
+      id: "filename",
+      label: "",
+      val: "",
+      placeHolder: "Enter Filename (e.g., my_molecules.zip)",
+      filterFunc: (filename: string): string => {
+        return fileNameFilter(filename);
+      },
+      validateFunc: (filename: string): boolean => {
+        return matchesFilename(filename);
+      },
+    } as IFormText,
+  ];
 
   /**
    * Check if this plugin can currently be used.
@@ -89,24 +85,18 @@ export default class SavePDBMol2Plugin extends PopupPluginParentRenderless {
   }
 
   /**
-   * Runs before the popup opens. Good for initializing/resenting variables
-   * (e.g., clear inputs from previous open).
-   */
-  beforePopupOpen() {
-    this.filename = "";
-  }
-
-  /**
    * Runs when the user presses the action button and the popup closes.
+   *
+   * @param {IUserArg[]} userParams  The user arguments.
    */
-  onPopupDone() {
+  onPopupDone(userParams: IUserArg[]) {
     this.closePopup();
-    this.submitJobs([{ filename: this.filename }]);
+    this.submitJobs([{ filename: userParams[0].val }]);
   }
 
   /**
    * Get a filename appropriate for a given node (molecule).
-   * 
+   *
    * @param {IMolContainer} molContainer  The molecule.
    * @param {string} ext  The extension to use.
    * @returns {string} The filename.
