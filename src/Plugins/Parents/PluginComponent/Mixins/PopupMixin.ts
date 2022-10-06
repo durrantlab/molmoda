@@ -15,7 +15,7 @@ export class PopupMixin extends Vue {
     onClosed() {
         this.$emit("update:modelValue", false);
         // this.closePopup();
-        this.$emit("onClosed");
+        // this.$emit("onClosed");
 
         // Reset for next time. Note that (this as any) is ugly!
         (this as any).setUserInputsToUse((this as any).userInputs);

@@ -8,6 +8,7 @@
     :isActionBtnEnabled="validateUserInputs"
     @onClosed="onClosed"
     :prohibitCancel="prohibitCancel"
+    :variant="variant"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <slot></slot>
@@ -37,6 +38,7 @@ import {
 import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { UserInputsMixin } from "./Mixins/UserInputsMixin";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 /**
  * PopupOptionalPlugin component
@@ -58,6 +60,7 @@ export default class PluginComponent extends mixins(
   @Prop({ default: "Load" }) actionBtnTxt!: string;
   @Prop({ default: false }) prohibitCancel!: boolean;
   @Prop({ default: "Cancel" }) cancelBtnTxt!: string;
+  @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
 
   /**
    * Determine whether the userData validates (each datum). Children shouldn't

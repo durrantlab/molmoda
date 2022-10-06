@@ -1,15 +1,16 @@
 <template>
-  <PluginParent>
-    <Popup
-      :title="title"
-      v-model="open"
-      :cancelBtnTxt="neverClose ? '' : 'Ok'"
-      @onClosed="onClosed"
-      :variant="variant"
-    >
-      <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
-    </Popup>
-  </PluginParent>
+  <PluginComponent
+    :title="title"
+    v-model="open"
+    :cancelBtnTxt="neverClose ? '' : 'Ok'"
+    actionBtnTxt=""
+    @onClosed="onClosed"
+    :variant="variant"
+    :userInputs="userInputs"
+    :intro="intro"
+  >
+    <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
+  </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -17,13 +18,14 @@
 
 import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { PluginParentRenderless } from "@/Plugins/Parents/PluginParentComponent/PluginParentRenderless";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleMsg,
   PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import PluginParent from "../Parents/PluginParentComponent/PluginParent.vue";
+import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * SimpleMsgPlugin
@@ -31,10 +33,10 @@ import PluginParent from "../Parents/PluginParentComponent/PluginParent.vue";
 @Options({
   components: {
     Popup,
-    PluginParent,
+    PluginComponent,
   },
 })
-export default class SimpleMsgPlugin extends PluginParentRenderless {
+export default class SimpleMsgPlugin extends PluginParentClass {
   // @Prop({ required: true }) title!: string;
   // @Prop({ required: true }) message!: string;
 
@@ -47,13 +49,16 @@ export default class SimpleMsgPlugin extends PluginParentRenderless {
     },
   ];
   pluginId = "simplemsg";
+  intro = "";  // Not used
 
-  open = false;
+  // Below set via onPluginStart.
   title = "";
   message = "";
   variant = PopupVariant.PRIMARY;
   callBack: any = undefined;
   neverClose = false;
+
+  userInputs: FormElement[] = [];
 
   /**
    * Runs when the user first starts the plugin. For example, if the plugin is
@@ -83,7 +88,6 @@ export default class SimpleMsgPlugin extends PluginParentRenderless {
    * Every plugin runs some job. This is the function that does the job running.
    */
   runJob() {
-    this.open = false;
     if (this.callBack) {
       this.callBack();
     }

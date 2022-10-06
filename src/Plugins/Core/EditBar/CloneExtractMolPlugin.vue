@@ -55,9 +55,8 @@ import {
   atomsToModels,
   modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
-import { RunJobReturn } from "@/Plugins/Parents/PluginParentComponent/PluginParentRenderless";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import {
@@ -116,7 +115,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
     return (this.userInputs[1] as IGenericFormElement).val as boolean;
   }
 
-  
+
 
   /**
    * Returns text appropriate for the mode.

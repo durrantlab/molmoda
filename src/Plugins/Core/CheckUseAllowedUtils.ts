@@ -1,4 +1,3 @@
-import { PluginParentRenderless } from "@/Plugins/Parents/PluginParentComponent/PluginParentRenderless";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
@@ -6,11 +5,11 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 /**
  * Checks whether the user has selected a molecule.
  *
- * @param  {PluginParentRenderless} This  The associated EditBarPlugin.
+ * @param  {PluginParentClass} This  The associated EditBarPlugin.
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
-export function checkAnyMolSelected(This: PluginParentRenderless): string | null {
+export function checkAnyMolSelected(This: PluginParentClass): string | null {
     // Check if user has selected anything
     const selectedNodes = getAllNodesFlattened(
         This.$store.state.molecules
@@ -24,14 +23,13 @@ export function checkAnyMolSelected(This: PluginParentRenderless): string | null
 }
 
 /**
- * Checks whether the user has loaded any molecule. // TODO: Once all plugins
- * converted to new system, no need for This to ever be PluginParentRenderless.
+ * Checks whether the user has loaded any molecule.
  *
- * @param  {PluginParentRenderless} This  The associated EditBarPlugin.
+ * @param  {PluginParentClass} This  The associated EditBarPlugin.
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
-export function checkanyMolLoaded(This: PluginParentRenderless | PluginParentClass): string | null {
+export function checkanyMolLoaded(This: PluginParentClass): string | null {
     if (This.$store.state.molecules.length === 0) {
         return "Nothing to save or export (empty project). Try adding molecules first.";
     }

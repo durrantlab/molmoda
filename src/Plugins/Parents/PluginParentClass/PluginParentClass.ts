@@ -32,7 +32,7 @@ export type RunJobReturn =
     | undefined;
 
 /**
- * PluginParent
+ * PluginParentClass
  */
 export abstract class PluginParentClass extends mixins(
     HooksMixin,
