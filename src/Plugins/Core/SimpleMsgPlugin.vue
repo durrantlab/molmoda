@@ -59,6 +59,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
   neverClose = false;
 
   userInputs: FormElement[] = [];
+  alwaysEnabled = true;
 
   /**
    * Runs when the user first starts the plugin. For example, if the plugin is

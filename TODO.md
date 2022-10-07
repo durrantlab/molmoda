@@ -44,6 +44,21 @@ for "This doesn't account for ligands!"
 
 Every plugin must have code for running a test. Implement that whole thing.
 
+Would be good to have general instructions for how to make a plugin. Maybe take
+from docstrings.
+
+Load session after saving without restarting, duplicate keys in log. Good to
+clear log on load session.
+
+I think both undo and redo should warn one item sooner on stack.
+
+You stopped working mid way on CloneExtract. Used watch to make userParams
+reactive. Just getting too complicated.
+
+# DONE
+
+Waits too long to focus
+
 How to specify only one plugin?
 
 Validate.py needs to make sure all plugins define 
@@ -56,20 +71,11 @@ runJob
 These are no longer required by typescript or validated.
 
 Validaion should also force all plugins to extend a Renderless class and
-implement the same component in the template.
+implement the same component in the template. NEED TO UPDATE VALIDATION IN
+GENERAL FOR NEW PLUGIN SYSTEM.
 
 Can you refactor EditBarPluginParent so not really parent? Same for one-input
 popup? These are different than the others, and I worry it will confuse things.
-
-Load session after saving without restarting, duplicate keys in log. Good to
-clear log on load session.
-
-I think both undo and redo should warn one item sooner on stack.
-
-You stopped working mid way on CloneExtract. Used watch to make userParams
-reactive. Just getting too complicated.
-
-# DONE
 
 New plugin system: Automatically focus on first input.
 

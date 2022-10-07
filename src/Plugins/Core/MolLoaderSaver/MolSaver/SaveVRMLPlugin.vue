@@ -61,6 +61,8 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     } as IFormText,
   ];
 
+  alwaysEnabled = true;
+
   /**
    * Check if this plugin can currently be used.
    *

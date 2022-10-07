@@ -110,6 +110,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
   ];
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
+  alwaysEnabled = true;
 
   get doExtract(): boolean {
     return (this.userInputs[1] as IGenericFormElement).val as boolean;

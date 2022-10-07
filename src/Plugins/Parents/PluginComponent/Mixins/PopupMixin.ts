@@ -45,7 +45,7 @@ export class PopupMixin extends Vue {
                if (firstInput !== null) {
                    firstInput.focus();
                }
-           }, 1000);
+           }, 750);
        }
     }
 

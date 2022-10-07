@@ -54,7 +54,8 @@ export default class LoadFilePlugin extends PluginParentClass {
   intro = ""; // Not used.
 
   userInputs: FormElement[] = [];
-
+  alwaysEnabled = true;
+  
   /**
    * Runs when the files are loaded.
    *

@@ -73,6 +73,8 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     } as IFormText,
   ];
 
+  alwaysEnabled = true;
+
   /**
    * Runs when the user presses the action button and the popup closes.
    *

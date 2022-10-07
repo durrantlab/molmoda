@@ -62,6 +62,8 @@ export default class SaveSessionPlugin extends PluginParentClass {
     } as IFormText,
   ];
 
+  alwaysEnabled = true;
+
   /**
    * Determine which into text to use.
    *

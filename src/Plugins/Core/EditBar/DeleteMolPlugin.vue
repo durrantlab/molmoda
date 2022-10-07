@@ -49,6 +49,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
   userInputs: FormElement[] = [];
   
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
+  alwaysEnabled = true;
 
   /**
    * Runs before the popup opens. Will almost always need this, so requiring

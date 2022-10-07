@@ -25,31 +25,6 @@ system uses these to autopopulate with plugins. -->
 
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <!-- TEMPLATE1 END -->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   </div>
 </template>
 
@@ -81,31 +56,6 @@ import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 
 import TestPlugin from "./Optional/TestPlugin.vue";
 // TEMPLATE2 END
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Component where all plugins are placed.

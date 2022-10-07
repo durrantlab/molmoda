@@ -78,6 +78,7 @@ export default class AboutPlugin extends PluginParentClass {
   intro = `TODO: Info about ${appName} here.`;
 
   userInputs: FormElement[] = [];
+  alwaysEnabled = true;
 
   /**
    * Get the software credits to show in order.

@@ -4,3 +4,4 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
 
 // the menu system.
 export const loadedPlugins: { [key: string]: PluginParentClass } = {};
+export const alwaysEnabledPlugins: string[] = [];

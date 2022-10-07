@@ -7,9 +7,11 @@ import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { jobQueueSetup } from "./JobQueue";
 import { setupTests } from "./Testing/SetupTests";
+import { setOnePlugin } from "./Core/OnePlugin";
 
 // api.sys.loadStatus.started = true;
 
+setOnePlugin();
 loadFontAwesomeFonts();
 jobQueueSetup();
 

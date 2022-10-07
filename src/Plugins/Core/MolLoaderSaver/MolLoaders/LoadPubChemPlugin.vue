@@ -85,6 +85,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
       Database</a>, a database of small molecules, to find the CID on your own.`;
 
   userInputs: FormElement[] = [];
+  alwaysEnabled = true;
 
   /**
    * Filters text to match desired format.

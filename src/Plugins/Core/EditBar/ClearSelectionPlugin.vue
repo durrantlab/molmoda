@@ -42,7 +42,8 @@ export default class ClearSelectionPlugin extends PluginParentClass {
   intro = ""; // Not used
   noPopup = true;
   userInputs: FormElement[] = [];
-
+  alwaysEnabled = true;
+  
   /**
    * Check if this plugin can currently be used.
    *

@@ -37,7 +37,7 @@ for optional_plugin in optional_plugins:
         os.path.basename(optional_plugin).replace(".vue", "").replace(".ts", "")
     )
     template1 += f'    <{plugin_name} @onPluginSetup="onPluginSetup"></{plugin_name}>\n'
-template1 += "    <!-- TEMPLATE1 END -->\n"
+template1 += "    <!-- TEMPLATE1 END -->"
 # print(template1)
 
 template2 = "// TEMPLATE2 START\n"
@@ -52,7 +52,7 @@ for optional_plugin in optional_plugins:
     )
     plugin_path = optional_plugin.replace("../src/Plugins/", "./")
     template2 += f'import {plugin_name} from "{plugin_path}";\n'
-template2 += "// TEMPLATE2 END\n"
+template2 += "// TEMPLATE2 END"
 
 template3 = "// TEMPLATE3 START\n"
 for core_plugin in core_plugins:

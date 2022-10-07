@@ -60,6 +60,7 @@ export default class RenameMolPlugin extends PluginParentClass {
   ];
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
+  alwaysEnabled = true;
 
   /**
    * Check if this plugin can currently be used.

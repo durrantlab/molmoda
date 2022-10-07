@@ -52,6 +52,7 @@ export default class NewSessionPlugin extends PluginParentClass {
   intro = ""; // Not used
 
   userInputs: FormElement[] = [];
+  alwaysEnabled = true;
 
   /**
    * Runs when the user presses the action button and the popup closes.

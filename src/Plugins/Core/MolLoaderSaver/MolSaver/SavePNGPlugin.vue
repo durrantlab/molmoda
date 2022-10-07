@@ -60,6 +60,8 @@ export default class SavePNGPlugin extends PluginParentClass {
     } as IFormText,
   ];
 
+  alwaysEnabled = true;
+
   /**
    * Check if this plugin can currently be used.
    *

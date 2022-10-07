@@ -74,6 +74,8 @@ export default class SavePDBMol2Plugin extends PluginParentClass {
     } as IFormText,
   ];
 
+  alwaysEnabled = true;
+
   /**
    * Check if this plugin can currently be used.
    *

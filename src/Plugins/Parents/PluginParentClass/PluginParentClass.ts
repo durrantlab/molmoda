@@ -13,7 +13,7 @@ import {
     removeTerminalPunctuation,
     timeDiffDescription,
 } from "@/Core/Utils";
-import { loadedPlugins } from "../../LoadedPlugins";
+import { alwaysEnabledPlugins, loadedPlugins } from "../../LoadedPlugins";
 import {
     createTestCmdsIfTestSpecified,
     // ITestCommand,
@@ -59,6 +59,11 @@ export abstract class PluginParentClass extends mixins(
     // In some cases, must pass information to the plugin when it opens.
     // Typicaly when using the plugin outside the menu system.
     protected payload: any = undefined;
+
+    // If set to true, this plugin will always load, even if the user specifies
+    // one plugin using the "plugin" url parameter. Set to true for core plugins
+    // that are not optional.
+    protected alwaysEnabled = false;
 
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
@@ -212,6 +217,11 @@ export abstract class PluginParentClass extends mixins(
             console.log(">>", this.pluginId);
         }
 
+        loadedPlugins[this.pluginId] = this;
+        if (this.alwaysEnabled) {
+            alwaysEnabledPlugins.push(this.pluginId);
+        }
+
         // Add to menu and credits.
         this.$emit("onPluginSetup", {
             softwareCredits: this.softwareCredits,
@@ -234,8 +244,6 @@ export abstract class PluginParentClass extends mixins(
 
         // Register with job queue system
         api.hooks.onJobQueueCommand(this.pluginId, this._runJob.bind(this));
-
-        loadedPlugins[this.pluginId] = this;
 
         this.onMounted();
 
