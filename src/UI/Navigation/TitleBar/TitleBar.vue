@@ -6,7 +6,7 @@
     <!-- expand icon -->
     <IconSwitcher
       v-if="treeDatum.nodes"
-      class="title-element clickable"
+      class="title-element clickable expand-icon"
       :useFirst="treeDatum.treeExpanded"
       :iconID1="['fa', 'angle-down']"
       :iconID2="['fa', 'angle-right']"
@@ -28,6 +28,7 @@
     <!-- title text -->
     <div
       class="title-text clickable"
+      :data-label="treeDatum.title"
       @click="titleClick(treeDatumID)"
       :style="treeDatum.visible ? '' : 'color: lightgray;'"
     >

@@ -4,17 +4,19 @@
     v-model="openToUse"
     :cancelBtnTxt="cancelBtnTxt"
     :actionBtnTxt="actionBtnTxt"
-    @onPopupDone="onPopupDone"
     :isActionBtnEnabled="validateUserInputs"
-    @onClosed="onClosed"
     :prohibitCancel="prohibitCancel"
     :variant="variant"
+    @onDone="onPopupDone"
+    @onDone2="onPopupDone2"
+    @onClosed="onClosed"
+    :id="'modal-' + pluginId"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <slot></slot>
     <FormFull
       ref="formfull"
-      v-model="userInputsToUse"
+      v-model="userArgsToUse"
       @onChange="onChange"
     ></FormFull>
   </Popup>
@@ -56,11 +58,14 @@ export default class PluginComponent extends mixins(
   /** Title of the popup. */
   @Prop({ required: true }) title!: string;
 
+  /** The user arguments (plugin parameters) that the end user can specify. */
+  @Prop({ required: true }) userArgs!: FormElement[];
+  
+  /** A unique id that defines the plugin. Must be lower case. */
+  @Prop({ required: true }) pluginId!: string;
+  
   /** Whether the action button (e.g., "Load") is enabled. */
   @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
-
-  /** The inputs (plugin parameters) the end user can specify. */
-  @Prop({ required: true }) userInputs!: FormElement[];
 
   /**
    * Introductory text that appears at the top of the plugin (above the user
@@ -99,8 +104,8 @@ export default class PluginComponent extends mixins(
     }
 
     // Using default validation because not specified.
-    for (const userInput of this.userInputsToUse) {
-      const _userInput = userInput as IGenericFormElement;
+    for (const userArg of this.userArgsToUse) {
+      const _userInput = userArg as IGenericFormElement;
       if (
         _userInput.validateFunc !== undefined &&
         !_userInput.validateFunc(_userInput.val)
@@ -117,18 +122,18 @@ export default class PluginComponent extends mixins(
    * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
-    const userParams: IUserArg[] = collapseFormElementArray(
-      this.userInputsToUse
+    const userArgs: IUserArg[] = collapseFormElementArray(
+      this.userArgsToUse
     );
     this.$emit("update:modelValue", false);
     // this.closePopup();
 
-    // If one of the user parameters is of type MoleculeInputParams, replace
+    // If one of the user arguments is of type MoleculeInputParams, replace
     // it with IFileInfo objects.
-    for (const idx in userParams) {
-      const param = userParams[idx];
+    for (const idx in userArgs) {
+      const param = userArgs[idx];
       if (param.val.combineProteinType) {
-        userParams[idx].val = makeMoleculeInput(
+        userArgs[idx].val = makeMoleculeInput(
           param.val,
           this.$store.state["molecules"]
         );
@@ -138,11 +143,11 @@ export default class PluginComponent extends mixins(
     /**
      * Runs when the primary action button is pressed, after the popup closes.
      *
-     * @param {IUserArg[]} userParams  The specified user parameters.
+     * @param {IUserArg[]} userArgs  The specified user arguments.
      */
-    this.$emit("onPopupDone", userParams);
+    this.$emit("onPopupDone", userArgs);
 
-    // this.submitJobs([userParams]);
+    // this.submitJobs([userArgs]);
   }
 
   /**
@@ -163,21 +168,21 @@ export default class PluginComponent extends mixins(
    * @param {FormElement[]} vals  The updated values.
    */
   onChange(vals: FormElement[]) {
-    const userParams: IUserArg[] = collapseFormElementArray(vals);
+    const userArgs: IUserArg[] = collapseFormElementArray(vals);
 
     /**
-     * Runs when the user changes any user inputs (plugin parameters).
+     * Runs when the user changes any user arguments (plugin parameters).
      *
-     * @param {IUserArg[]} userParams  The updated user parameters.
+     * @param {IUserArg[]} userArgs  The updated user arguments.
      */
-    this.$emit("onDataChanged", userParams);
+    this.$emit("onDataChanged", userArgs);
   }
 
   /**
    * Plugins mounted function.
    */
   mounted() {
-    this.setUserInputsToUse(this.userInputs);
+    this.setUserInputsToUse(this.userArgs);
     this.openToUse = this.modelValue;
   }
 }

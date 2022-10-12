@@ -1,11 +1,18 @@
 import { slugify } from "@/Core/Utils";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
-import * as SetupTests from "./SetupTests";
+import * as PluginToTest from "./PluginToTest";
+
+export enum TEST_COMMAND {
+    CLICK = "click",
+    TEXT = "text",
+    WAIT = "wait",
+    WAIT_UNTIL_REGEX = "waitUntilRegex",
+}
 
 export interface ITestCommand {
-    selector: string;
-    cmd: string;
-    data: any;
+    selector?: string;
+    cmd: TEST_COMMAND;
+    data?: any;
 }
 
 /**
@@ -23,7 +30,8 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
 
     const lastMenuData = menuData.pop();
 
-    const lastSel = ".navbar #menu-plugin-" + slugify(lastMenuData?.text as string);
+    const lastSel =
+        ".navbar #menu-plugin-" + slugify(lastMenuData?.text as string);
 
     // If there are more than two items remaining in menuData, the second one is
     // a separator (not triggering an actual submenu that would require a
@@ -51,7 +59,7 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
     if (hamburgerButtonVisible) {
         cmds.push({
             selector: "#hamburger-button",
-            cmd: "click",
+            cmd: TEST_COMMAND.CLICK,
         } as ITestCommand);
     }
 
@@ -59,13 +67,17 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
         ...sels.map((sel) => {
             return {
                 selector: `${sel}`,
-                cmd: "click",
+                cmd: TEST_COMMAND.CLICK,
             } as ITestCommand;
         }),
         {
-        selector: `${lastSel}`,
-        cmd: "click",
-    } as ITestCommand
+            selector: `${lastSel}`,
+            cmd: TEST_COMMAND.CLICK,
+        } as ITestCommand,
+        {
+            cmd: TEST_COMMAND.WAIT,
+            data: 1,
+        } as ITestCommand
     );
 
     return cmds;
@@ -73,21 +85,24 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
 
 /**
  * If running a selenium test, this function will generate the commands for the
- * test.
+ * test. Opens plugin, runs plugin-specific test, presses action button.
  *
  * @param  {any} plugin  The plugin to test.
  */
 export function createTestCmdsIfTestSpecified(plugin: any) {
-    if ((SetupTests.pluginToTest === plugin.pluginId) && (plugin.pluginId !== "")) {
+    if (PluginToTest.pluginToTest === plugin.pluginId && plugin.pluginId !== "") {
         // It is this plugin that should be tested.
         const cmds = [
+            ...plugin.testCmdsBeforePopupOpens(), // Defined in each plugin
             ..._openPluginCmds(plugin),
-            ...plugin.onRunTest(),  // Defined in each plugin
+            ...plugin.testCmdsToPopulateUserArgs(), // Defined in each plugin
             {
-                "cmd": "click",
-                "selector": ".action-btn",
-            } as ITestCommand,
-        ];
+                cmd: TEST_COMMAND.WAIT,
+                data: 1,
+            },
+            ...plugin.testCmdsToClosePlugin(), // Defined in each plugin
+            ...plugin.testCmdsAfterPopupClosed(), // Defined in each plugin
+        ] as ITestCommand[];
 
         plugin.$store.commit("setVar", {
             name: "cmds",

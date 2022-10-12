@@ -7,7 +7,7 @@
   
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { pluginToTest } from "./SetupTests";
+import { pluginToTest } from "./PluginToTest";
 //   import { Prop } from "vue-property-decorator";
 
 /**

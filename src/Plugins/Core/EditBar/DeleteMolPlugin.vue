@@ -5,7 +5,8 @@
     title="Delete Molecule"
     :intro="intro"
     actionBtnTxt="Delete"
-    :userInputs="userInputs"
+    :userArgs="userArgs"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
   ></PluginComponent>
 </template>
@@ -46,7 +47,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
   ];
   pluginId = "deletemol";
   intro = "Delete the selected molecule?";
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;

@@ -5,7 +5,8 @@
     title="Rename Molecule"
     :intro="intro"
     actionBtnTxt="Rename"
-    :userInputs="userInputs"
+    :userArgs="userArgs"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
   ></PluginComponent>
 </template>
@@ -47,7 +48,7 @@ export default class RenameMolPlugin extends PluginParentClass {
   pluginId = "renamemol";
   intro = `Enter the new name for this molecule.`;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       id: "newName",
       label: "",
@@ -78,7 +79,7 @@ export default class RenameMolPlugin extends PluginParentClass {
    */
   onBeforePopupOpen() {
     setNodeToActOn(this);
-    this.updateUserInputs([
+    this.updateUserArgs([
       {
         name: "newName",
         val: this.nodeToActOn?.title,
@@ -89,13 +90,13 @@ export default class RenameMolPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IUserArg[]} parameters  The user parameters.
+   * @param {IUserArg[]} userArgs  The user arguments.
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(parameters: IUserArg[]): Promise<undefined> {
+  runJob(userArgs: IUserArg[]): Promise<undefined> {
     if (this.nodeToActOn) {
-      this.nodeToActOn.title = parameters[0].val;
+      this.nodeToActOn.title = userArgs[0].val;
     }
     return Promise.resolve(undefined);
   }

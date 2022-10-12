@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="Load PDB ID"
     actionBtnTxt="Load"
     :intro="intro"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
   ></PluginComponent>
 </template>
@@ -23,6 +24,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { ITestCommand } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * LoadPDBPlugin
@@ -52,7 +54,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
       database of biological molecules (e.g., proteins and nucleic acids), if
       you're uncertain.`;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       id: "pdbId",
       label: "",
@@ -75,11 +77,11 @@ export default class LoadPDBPlugin extends PluginParentClass {
   /**
    * Runs when the user presses the action button and the popup closes.
    *
-   * @param {IUserArg[]} userParams  The user arguments.
+   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userParams: IUserArg[]) {
+  onPopupDone(userArgs: IUserArg[]) {
     loadRemote(
-      `https://files.rcsb.org/view/${userParams[0].val.toUpperCase()}.pdb`
+      `https://files.rcsb.org/view/${userArgs[0].val.toUpperCase()}.pdb`
     )
       .then((fileInfo: IFileInfo) => {
         this.submitJobs([fileInfo]);
@@ -94,10 +96,21 @@ export default class LoadPDBPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} parameters  Information about the molecule to load.
+   * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
-  runJob(parameters: IFileInfo) {
-    loadMoleculeFile(parameters);
+  runJob(fileInfo: IFileInfo) {
+    loadMoleculeFile(fileInfo);
+  }
+
+  testCmdsToPopulateUserArgs(): ITestCommand[] {
+    return [this.testUserArg("pdbId", "1XDN")];
+  }
+
+  testCmdsAfterPopupClosed(): ITestCommand[] {
+    return [
+      this.testWaitForRegex("#styles", "Protein"),
+      this.testWaitForRegex("#log", 'Job "loadpdb:.+?" ended'),
+    ];
   }
 }
 </script>

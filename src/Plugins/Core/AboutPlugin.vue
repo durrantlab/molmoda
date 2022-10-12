@@ -1,12 +1,13 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="About"
     cancelBtnTxt="Done"
     actionBtnTxt=""
     :intro="intro"
     @onPopupDone="onPopupDone"
+    :pluginId="pluginId"
   >
     <p v-html="intro"></p>
 
@@ -55,6 +56,7 @@ import { appName } from "@/Core/AppName";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITestCommand } from "@/Testing/ParentPluginTestFuncs";
 
 /** AboutPlugin */
 @Options({
@@ -77,7 +79,7 @@ export default class AboutPlugin extends PluginParentClass {
   pluginId = "about";
   intro = `TODO: Info about ${appName} here.`;
 
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**
@@ -134,6 +136,14 @@ export default class AboutPlugin extends PluginParentClass {
    */
   runJob() {
     return;
+  }
+
+  testCmdsToClosePlugin(): ITestCommand[] {
+    return [this.testPressButton(".cancel-btn")];
+  }
+
+  testCmdsAfterPopupClosed(): ITestCommand[] {
+    return [];
   }
 }
 </script>

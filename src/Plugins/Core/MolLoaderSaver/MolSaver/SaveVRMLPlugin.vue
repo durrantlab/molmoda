@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="Save a VRML Model"
     actionBtnTxt="Save"
     :intro="intro"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
   ></PluginComponent>
 </template>
@@ -46,7 +47,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   intro = `Please provide the name of the VRML file to save. Note that the
       extension ".vrml" will be automatically appended.`;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       id: "filename",
       label: "",
@@ -76,10 +77,10 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   /**
    * Runs when the user presses the action button and the popup closes.
    *
-   * @param {IUserArg[]} userParams  The user arguments.
+   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userParams: IUserArg[]) {
-    this.submitJobs([{ filename: userParams[0].val }]);
+  onPopupDone(userArgs: IUserArg[]) {
+    this.submitJobs([{ filename: userArgs[0].val }]);
   }
 
   /**

@@ -8,18 +8,20 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { jobQueueSetup } from "./JobQueue";
 import { setupTests } from "./Testing/SetupTests";
 import { setOnePlugin } from "./Core/OnePlugin";
+import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 
 // api.sys.loadStatus.started = true;
 
 setOnePlugin();
 loadFontAwesomeFonts();
 jobQueueSetup();
+setupTests();
+setupWarnSaveOnClose();
 
 // api.sys.loadStatus.pluginsLoaded = true;
 
 // console.warn("Below now meaningless?");
 // api.sys.loadStatus.menuFinalized = true;
-setupTests();
 const store = setupVueXStore();
 createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)

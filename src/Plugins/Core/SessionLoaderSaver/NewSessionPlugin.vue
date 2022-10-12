@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     title="New Session"
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="New Session"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
     actionBtnTxt2="Save Session First"
     @onPopupDone2="saveSession"
@@ -49,7 +50,7 @@ export default class NewSessionPlugin extends PluginParentClass {
   filesToLoad: IFileInfo[] = [];
   pluginId = "newsession";
 
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**
@@ -91,7 +92,7 @@ export default class NewSessionPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    */
-  runJob(/* parameters: IFileInfo */) {
+  runJob(/* fileInfo: IFileInfo */) {
     setStoreIsDirty(false);
     window.location.reload();
   }

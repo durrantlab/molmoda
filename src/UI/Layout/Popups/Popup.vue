@@ -1,7 +1,7 @@
 <template>
   <div
     class="modal fade"
-    :id="id"
+    :id="getId"
     tabindex="-1"
     @keypress="onKeypress"
     data-bs-backdrop="static"
@@ -80,10 +80,12 @@ export default class Popup extends Vue {
   @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: false }) prohibitCancel!: boolean;
   @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
+  @Prop({ default: "" }) id!: string;
   @Prop({}) onShown!: Function;
   @Prop({}) beforeShown!: Function;
 
-  id: string = "modal-" + randomID();
+  idToUse = ""
+
   modal: any;
 
   // 0 or 1, depending on how you want to set the style. TODO: Good to settle on
@@ -102,6 +104,28 @@ export default class Popup extends Vue {
     } else {
       this.modal.hide();
     }
+  }
+
+  /**
+   * Gets the id to use on the modal.
+   * 
+   * @returns {string} The id to use on the modal.
+   */
+  get getId(): string {
+    if (this.idToUse !== "") {
+      // Already set, so use it.
+      return this.idToUse;
+    }
+
+    if (this.id !== "") {
+      // Not set, but id set. So use that.
+      this.idToUse = this.id;
+      return this.idToUse;
+    }
+
+    // Nether _idToUse nor id set, so set _idToUse to a random value.
+    this.idToUse = "modal-" + randomID();
+    return this.idToUse;
   }
 
   /**
@@ -150,7 +174,7 @@ export default class Popup extends Vue {
 
   /** mounted function */
   mounted() {
-    let modalElem = document.getElementById(this.id) as HTMLElement;
+    let modalElem = document.getElementById(this.getId) as HTMLElement;
     this.modal = new Modal(modalElem, {});
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

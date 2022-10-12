@@ -1,11 +1,12 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     title="Load Molecule from PubChem"
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
     @onPopupDone="onPopupDone"
+    :pluginId="pluginId"
     :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
   >
@@ -84,7 +85,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
       <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem
       Database</a>, a database of small molecules, to find the CID on your own.`;
 
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**
@@ -232,10 +233,10 @@ export default class LoadPubChemPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} parameters  Information about the molecule to load.
+   * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
-  runJob(parameters: IFileInfo) {
-    loadMoleculeFile(parameters);
+  runJob(fileInfo: IFileInfo) {
+    loadMoleculeFile(fileInfo);
   }
 }
 </script>

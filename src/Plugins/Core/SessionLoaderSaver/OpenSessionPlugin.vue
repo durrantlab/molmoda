@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     title="Load a Session"
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
   >
@@ -49,7 +50,7 @@ export default class OpenSessionPlugin extends PluginParentClass {
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadsession";
 
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**
@@ -81,12 +82,12 @@ export default class OpenSessionPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} parameters  Information about the molecules to save.
+   * @param {IFileInfo} fileInfo  Information about the molecules to save.
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(parameters: IFileInfo): Promise<undefined> {
-    return jsonToState(parameters.contents)
+  runJob(fileInfo: IFileInfo): Promise<undefined> {
+    return jsonToState(fileInfo.contents)
       .then((state) => {
         this.$store.replaceState(state);
         return undefined;

@@ -5,7 +5,8 @@
     :title="extractOrCloneTxt + ' Molecule'"
     :intro="intro"
     :actionBtnTxt="extractOrCloneTxt"
-    :userInputs="userInputs"
+    :userArgs="userArgs"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
     @onDataChanged="onDataChanged"
   ></PluginComponent>
@@ -94,7 +95,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
   pluginId = "cloneextractmol";
   intro = cloneDescription;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       id: "newName",
       label: "",
@@ -114,7 +115,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;
-  doExtract = false; // shadows userInputs for reactivity
+  doExtract = false; // shadows userArgs for reactivity
 
   /**
    * Returns text appropriate for the mode.
@@ -143,7 +144,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    */
   public onBeforePopupOpen(): void {
     setNodeToActOn(this);
-    this.updateUserInputs([
+    this.updateUserArgs([
       {
         name: "newName",
         val: this.nodeToActOn?.title + " (cloned)",
@@ -169,11 +170,11 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
   /**
    * Runs when the mode changes (between clone and extract).
    * 
-   * @param {IUserArg[]} userInputs  The updated user variables.
+   * @param {IUserArg[]} userArgs  The updated user variables.
    */
-  onDataChanged(userInputs: IUserArg[]): void {
-    let newName = userInputs[0].val as string;
-    this.doExtract = userInputs[1].val as boolean;
+  onDataChanged(userArgs: IUserArg[]): void {
+    let newName = userArgs[0].val as string;
+    this.doExtract = userArgs[1].val as boolean;
     this.intro = this.doExtract ? extractDescription : cloneDescription;
 
     if (this.doExtract) {
@@ -184,7 +185,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
       }
     }
 
-    this.updateUserInputs([
+    this.updateUserArgs([
       {
         name: "newName",
         val: newName,
@@ -195,11 +196,11 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IUserArg[]} parameters  The user parameters.
+   * @param {IUserArg[]} userArgs  The user arguments.
    * @returns {RunJobReturn}  A promise that resolves when the job is
    *     done.
    */
-  runJob(parameters: IUserArg[]): RunJobReturn {
+  runJob(userArgs: IUserArg[]): RunJobReturn {
     if (this.nodeToActOn) {
       let newerNode: IMolContainer;
       let convertedNode: Promise<IMolContainer>;
@@ -233,7 +234,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
       return convertedNode
         .then((node) => {
-          node.title = parameters[0].val;
+          node.title = userArgs[0].val;
 
           let subNodes = getAllNodesFlattened([node]);
           subNodes.forEach((n) => {

@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="Save PDB and Mol2 Files"
     actionBtnTxt="Save"
     :intro="intro"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
   ></PluginComponent>
 </template>
@@ -59,7 +60,7 @@ export default class SavePDBMol2Plugin extends PluginParentClass {
       extension ".zip" will be automatically appended. The ZIP file will
       contain the PDB and MOL2 files of all visible molecules.`;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       id: "filename",
       label: "",
@@ -89,11 +90,11 @@ export default class SavePDBMol2Plugin extends PluginParentClass {
   /**
    * Runs when the user presses the action button and the popup closes.
    *
-   * @param {IUserArg[]} userParams  The user arguments.
+   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userParams: IUserArg[]) {
+  onPopupDone(userArgs: IUserArg[]) {
     this.closePopup();
-    this.submitJobs([{ filename: userParams[0].val }]);
+    this.submitJobs([{ filename: userArgs[0].val }]);
   }
 
   /**

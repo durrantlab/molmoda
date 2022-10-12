@@ -1,7 +1,6 @@
 import { addVueXStoreModule } from "@/Store";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
-
-export let pluginToTest = "";
+import { setPluginToTest } from "./PluginToTest";
 
 /**
  * If running a selenium test, this function will set things up.
@@ -15,10 +14,8 @@ export function setupTests() {
         return;
     }
 
-    pluginToTest = name;
+    setPluginToTest(name);
 
-    
-    
     /**
      * Detects any javascript errors and logs them. Selenium can read these. See
      * https://www.tutorialspoint.com/How-to-catch-all-JavaScript-errors
@@ -27,7 +24,11 @@ export function setupTests() {
      * @param  {string | undefined} url   The url of the error.
      * @param  {number | undefined} line  The line number of the error.
      */
-    window.onerror = function (msg: string | Event, url: string | undefined, line: number | undefined) {
+    window.onerror = function (
+        msg: string | Event,
+        url: string | undefined,
+        line: number | undefined
+    ) {
         const e = msg + "\n" + url + "\n" + "Line " + line?.toString();
         setStoreVar("error", e, "test");
     };

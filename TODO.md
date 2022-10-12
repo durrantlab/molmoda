@@ -51,12 +51,24 @@ I think both undo and redo should warn one item sooner on stack.
 
 Shouldn't be able to extract when top-level molecule.
 
+Rename molecule. No autofocs on name.
+
+Create demo (minimal) plugin to illustrate. Once API settles.
+
+# DONE
+
+validate:
+    :userArgs="userArgs"
+    v-model="open"
+    title="Load PDB ID"
+    @onPopupDone="onPopupDone"
+    :pluginId="pluginId"
+    Other?
+
 Still need to do component too (props and emits).
 
 User params, user inputs, user arguments. Just use user arguments everywhere
 (standardize nomenclature).
-
-# DONE
 
 Would be good to have general instructions for how to make a plugin. Maybe take
 from docstrings.

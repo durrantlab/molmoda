@@ -43,19 +43,61 @@ for ts_file in ts_files:
                 'All files containing plugins must end in "Plugin.vue"',
             )
 
-        # All plugins must extend PluginParentClass
-        if "extends PluginParentClass" not in content:
-            add_error(
-                ts_file,
+        required_substrs = [
+            (
+                ':userArgs="userArgs"',
+                'The PluginComponent must define a userArgs prop like this: :userArgs="userArgs"',
+                None,
+            ),
+            (
+                'v-model="open"',
+                'The PluginComponent must define a v-model like this: v-model="open"',
+                [
+                    "RenameMolPlugin.vue",
+                    "DeleteMolPlugin.vue",
+                    "CloneExtractMolPlugin.vue",
+                ],
+            ),
+            (
+                'title="',
+                'The PluginComponent must define a title like this: title="My Plugin"',
+                None,
+            ),
+            (
+                '@onPopupDone="onPopupDone"',
+                'The PluginComponent must define an onPopupDone event like this: @onPopupDone="onPopupDone"',
+                [
+                    "SimpleMsgPlugin.vue",
+                    "RedoPlugin.vue",
+                    "UndoPlugin.vue",
+                    "ClearSelectionPlugin.vue",
+                ],
+            ),
+            (
+                ':pluginId="pluginId"',
+                'The PluginComponent must define a pluginId prop like this: :pluginId="pluginId"',
+                None,
+            ),
+            (
+                "extends PluginParentClass",
                 "All plugins must extend PluginParentClass",
-            )
-
-        # All plugins must use the PluginComponent component
-        if "<PluginComponent" not in content:
-            add_error(
-                ts_file,
+                None,
+            ),
+            (
+                "<PluginComponent",
                 "All plugins must use the PluginComponent component",
-            )
+                None,
+            ),
+        ]
+
+        for strng, msg, exceptions in required_substrs:
+            if strng not in content:
+                # Substring not in content, but is this an exception?
+                is_exception = False
+                if exceptions is not None:
+                    is_exception = any(exception in ts_file for exception in exceptions)
+                if not is_exception:
+                    add_error(ts_file, msg)
 
         # The filename must match the class name
         for word in re.findall(r"(\w+) extends PluginParentClass", content):
@@ -71,6 +113,7 @@ for ts_file in ts_files:
                 ts_file,
                 "Plugins should not define a mounted() function. Use onMounted() instead.",
             )
+
 
 # Save errors to ../src/compile_errors.json
 with open("../src/compile_errors.json", "w") as file:

@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="Load Molecule from PubChem"
     :intro="intro"
     @onPopupDone="onPopupDone"
+    :pluginId="pluginId"
   ></PluginComponent>
 </template>
 
@@ -47,7 +48,7 @@ export default class TestPlugin extends PluginParentClass {
 
   intro = `This is a <b>test</b> component.`;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       // type: FormElemType.Number,
       id: "moose",
@@ -84,10 +85,10 @@ export default class TestPlugin extends PluginParentClass {
   /**
    * Runs when the user presses the action button and the popup closes.
    *
-   * @param {IUserArg[]} userParams  The user arguments.
+   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userParams: IUserArg[]) {
-    this.submitJobs([userParams]);
+  onPopupDone(userArgs: IUserArg[]) {
+    this.submitJobs([userArgs]);
   }
 
   /**

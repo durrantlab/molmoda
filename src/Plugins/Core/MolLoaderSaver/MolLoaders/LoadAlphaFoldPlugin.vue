@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="Load AlphaFold Structure"
     actionBtnTxt="Load"
     :intro="intro"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
   ></PluginComponent>
 </template>
@@ -52,7 +53,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         >AlphaFold Protein Structure Database</a
       >, a database of predicted protein structures, if you're uncertain.`;
 
-  userInputs: FormElement[] = [
+  userArgs: FormElement[] = [
     {
       id: "uniprot",
       label: "",
@@ -78,11 +79,11 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
   /**
    * Runs when the user presses the action button and the popup closes.
    *
-   * @param {IUserArg[]} userParams  The user arguments.
+   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userParams: IUserArg[]) {
+  onPopupDone(userArgs: IUserArg[]) {
     loadRemote(
-      `https://alphafold.ebi.ac.uk/api/prediction/${userParams[0].val.toUpperCase()}`
+      `https://alphafold.ebi.ac.uk/api/prediction/${userArgs[0].val.toUpperCase()}`
     )
       .then((fileInfo: IFileInfo) => {
         let json = JSON.parse(fileInfo.contents);
@@ -106,10 +107,10 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} parameters  Information about the molecule to load.
+   * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
-  runJob(parameters: IFileInfo) {
-    loadMoleculeFile(parameters);
+  runJob(fileInfo: IFileInfo) {
+    loadMoleculeFile(fileInfo);
   }
 }
 </script>

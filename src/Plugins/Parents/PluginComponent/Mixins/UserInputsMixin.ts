@@ -9,66 +9,66 @@ import { Vue } from "vue-class-component";
  * UserInputsMixin
  */
 export class UserInputsMixin extends Vue {
-    public userInputsToUse: FormElement[] = [];
+    public userArgsToUse: FormElement[] = [];
 
     /**
-     * Check if the user hasn't defined types for any inputs, and guess at the
-     * types if not. I suspect users will not generally define types, so this
-     * must be robust. Note that modifies the user input in place, so no need to
-     * return anything.
+     * Check if the user hasn't defined types for any arguments, and guess at
+     * the types if not. I suspect users will not generally define types, so
+     * this must be robust. Note that modifies the user argument in place, so no
+     * need to return anything.
      *
-     * @param  {FormElement[]} userInputs  The user inputs.
+     * @param  {FormElement[]} userArgs  The user arguments.
      */
-    inferUserInputTypes(userInputs: FormElement[]) {
+    inferUserInputTypes(userArgs: FormElement[]) {
         // Infer the type if it is not given.
-        for (const userInput of userInputs) {
-            if (userInput.type !== undefined) {
+        for (const userArg of userArgs) {
+            if (userArg.type !== undefined) {
                 // type explicitly defined. No need to guess.
                 continue;
             }
 
-            const _userInput = userInput as IGenericFormElement;
-            if (_userInput.val !== undefined) {
-                // User input has property val
-                switch (typeof _userInput.val) {
+            const _userArg = userArg as IGenericFormElement;
+            if (_userArg.val !== undefined) {
+                // User arg has property val
+                switch (typeof _userArg.val) {
                     case "number":
-                        userInput.type =
-                            _userInput.min === undefined
+                        userArg.type =
+                            _userArg.min === undefined
                                 ? FormElemType.Number
                                 : FormElemType.Range;
                         break;
                     case "string":
                         // If starts with #, assume color.
-                        if (_userInput.val.startsWith("#")) {
-                            userInput.type = FormElemType.Color;
-                        } else if (_userInput.options !== undefined) {
-                            userInput.type = FormElemType.Select;
+                        if (_userArg.val.startsWith("#")) {
+                            userArg.type = FormElemType.Color;
+                        } else if (_userArg.options !== undefined) {
+                            userArg.type = FormElemType.Select;
                         } else {
-                            userInput.type = FormElemType.Text;
+                            userArg.type = FormElemType.Text;
                         }
                         break;
                     case "object":
-                        userInput.type = FormElemType.MoleculeInputParams;
+                        userArg.type = FormElemType.MoleculeInputParams;
                         break;
                     case "boolean":
-                        userInput.type = FormElemType.Checkbox;
+                        userArg.type = FormElemType.Checkbox;
                         break;
                     default:
                         throw new Error(
-                            "Could not infer type of user input: " +
-                                JSON.stringify(userInput)
+                            "Could not infer type of user argument: " +
+                                JSON.stringify(userArg)
                         );
                 }
             } else {
                 // The only one that doesn't define val is
                 // IFormMoleculeInputParams. Do sanity check just the same.
-                if (_userInput.childElements !== undefined) {
-                    userInput.type = FormElemType.Group;
-                    this.inferUserInputTypes(_userInput.childElements); // Recurse
+                if (_userArg.childElements !== undefined) {
+                    userArg.type = FormElemType.Group;
+                    this.inferUserInputTypes(_userArg.childElements); // Recurse
                 } else {
                     throw new Error(
-                        "Could not infer type of user input: " +
-                            JSON.stringify(userInput)
+                        "Could not infer type of user argument: " +
+                            JSON.stringify(userArg)
                     );
                 }
             }
@@ -76,59 +76,59 @@ export class UserInputsMixin extends Vue {
     }
 
     /**
-     * Add in some of the userInput values that might be missing (e.g., default
+     * Add in some of the userArg values that might be missing (e.g., default
      * filter and validation functions). Doens't add in type if missing, because
      * that is determined elsewhere. This is done in place, so returns nothing.
      *
-     * @param {FormElement[]} userInputs  The user inputs.
+     * @param {FormElement[]} userArgs  The user arguments.
      */
-    addDefaultUserInputsIfNeeded(userInputs: FormElement[]) {
-        for (const userInput of userInputs) {
+    addDefaultUserInputsIfNeeded(userArgs: FormElement[]) {
+        for (const userArg of userArgs) {
             // Add filter function if necessary
-            const _userInput = userInput as IGenericFormElement;
+            const _userInput = userArg as IGenericFormElement;
             if (
                 [FormElemType.Text, FormElemType.Number].includes(
                     _userInput.type as FormElemType
                 ) &&
                 _userInput.filterFunc === undefined
             ) {
-                (userInput as IGenericFormElement).filterFunc = (val: any) =>
+                (userArg as IGenericFormElement).filterFunc = (val: any) =>
                     val;
             }
 
             // Add validation function if necessary
-            if (userInput.validateFunc === undefined) {
-                userInput.validateFunc = () => true;
+            if (userArg.validateFunc === undefined) {
+                userArg.validateFunc = () => true;
             }
         }
     }
 
     /**
-     * Sets the user inputs to use. Modifies the ones provided.
+     * Sets the user arguments to use. Modifies the ones provided.
      *
-     * @param  {FormElement[]} origUserInputs  The provided user inputs.
+     * @param  {FormElement[]} origUserArgs  The provided user arguments.
      */
-    setUserInputsToUse(origUserInputs: FormElement[]) {
-        // Make a copy of the user inputs so we don't modify the original.
-        const userInputs = JSON.parse(JSON.stringify(origUserInputs));
+    setUserInputsToUse(origUserArgs: FormElement[]) {
+        // Make a copy of the user arguments so we don't modify the original.
+        const userArgs = JSON.parse(JSON.stringify(origUserArgs));
 
         // Restore functions too.
-        for (let i=0; i<origUserInputs.length; i++) {
-            const origUserInput = origUserInputs[i] as IGenericFormElement;
-            const userInput = userInputs[i] as IGenericFormElement;
+        for (let i=0; i<origUserArgs.length; i++) {
+            const origUserInput = origUserArgs[i] as IGenericFormElement;
+            const userArg = userArgs[i] as IGenericFormElement;
             if (origUserInput.filterFunc !== undefined) {
-                userInput.filterFunc = origUserInput.filterFunc;
+                userArg.filterFunc = origUserInput.filterFunc;
             }
             if (origUserInput.validateFunc !== undefined) {
-                userInput.validateFunc = origUserInput.validateFunc;
+                userArg.validateFunc = origUserInput.validateFunc;
             }
         }
 
-        this.inferUserInputTypes(userInputs);
-        this.addDefaultUserInputsIfNeeded(userInputs);
+        this.inferUserInputTypes(userArgs);
+        this.addDefaultUserInputsIfNeeded(userArgs);
 
-        // Make a copy of user inputs so you can use with v-model. So not reactive
-        // in parent.
-        this.userInputsToUse = userInputs;
+        // Make a copy of user arguments so you can use with v-model. So not
+        // reactive in parent.
+        this.userArgsToUse = userArgs;
     }
 }

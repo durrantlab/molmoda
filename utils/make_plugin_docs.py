@@ -3,7 +3,6 @@ import glob
 import os
 import json
 
-
 class Param:
     def __init__(self):
         self.name = None
@@ -459,6 +458,8 @@ optional_props_mrkdown = make_markdown(
 emits_mrkdown = make_markdown(emits, all_funcs_names, interfaces_and_enums)
 
 mrkdown = f"""# How to Make a Plugin
+
+TODO: Create demo (minimal) plugin to illustrate. Once API settles.
 
 ## \<PluginComponent>
 

@@ -38,6 +38,10 @@ module.exports = defineConfig({
                         from: "src/libs/ToCopy/obabel-wasm",
                         to: "js/obabel-wasm",
                     },
+                    {
+                        from: "src/Testing/4WP4.pdb",
+                        to: "4WP4.pdb",
+                    }
                 ],
             })
         );

@@ -2,7 +2,8 @@
   <PluginComponent
     v-model="open"
     title=""
-    :userInputs="userInputs"
+    :pluginId="pluginId"
+    :userArgs="userArgs"
   ></PluginComponent>
 </template>
 
@@ -36,7 +37,7 @@ export default class RedoPlugin extends PluginParentClass {
   ];
   pluginId = "redo";
   noPopup = true;
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**

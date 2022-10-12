@@ -6,7 +6,8 @@
     actionBtnTxt=""
     @onClosed="onClosed"
     :variant="variant"
-    :userInputs="userInputs"
+    :userArgs="userArgs"
+    :pluginId="pluginId"
   >
     <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
   </PluginComponent>
@@ -56,7 +57,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
   callBack: any = undefined;
   neverClose = false;
 
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**

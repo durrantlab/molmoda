@@ -44,17 +44,17 @@ export function collapseFormElementArray(
 /**
  * Converts a list of user-specified arguments into a command-line string.
  *
- * @param  {IUserArg[]} userParams        The user-specified arguments.
+ * @param  {IUserArg[]} userArgs        The user-specified arguments.
  * @param  {string}     [namePrefix="--"] The prefix for each argument name.
  * @returns {string} The command-line string.
  */
 export function userParamsToCommandLineString(
-    userParams: IUserArg[],
+    userArgs: IUserArg[],
     namePrefix = "--"
 ): string {
     // Converts the data structure used to render forms into a flat command line
     // string.
-    const cmdLine = userParams.map((param) => {
+    const cmdLine = userArgs.map((param) => {
         const val =
             typeof param.val === "string" ? `"${param.val}"` : param.val;
         return `${namePrefix}${param.name} ${val}`;

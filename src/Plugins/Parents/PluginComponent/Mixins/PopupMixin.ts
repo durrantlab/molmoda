@@ -18,7 +18,7 @@ export class PopupMixin extends Vue {
         // this.$emit("onClosed");
 
         // Reset for next time. Note that (this as any) is ugly!
-        (this as any).setUserInputsToUse((this as any).userInputs);
+        (this as any).setUserInputsToUse((this as any).userArgs);
     }
 
     /**
@@ -31,13 +31,13 @@ export class PopupMixin extends Vue {
         this.openToUse = newValue;
         this.$emit("update:modelValue", newValue);
 
-        // Just opened. If we have user inputs, set focus to first onev after
+        // Just opened. If we have user arguments, set focus to first onev after
         // waiting a bit.
-        if (newValue && (this as any).userInputsToUse.length > 0) {
+        if (newValue && (this as any).userArgsToUse.length > 0) {
            setTimeout(() => {
                // Note that (this as any) is ugly!
                const itemId =
-                   (this as any).userInputsToUse[0].id + "-item";
+                   (this as any).userArgsToUse[0].id + "-item";
 
                const firstInput = document.querySelector(
                    "#" + itemId

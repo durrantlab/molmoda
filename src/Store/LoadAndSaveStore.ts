@@ -4,6 +4,7 @@ import {
     atomsToModels,
     modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
+import * as PluginToTest from "@/Testing/PluginToTest";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export let storeIsDirty = false;
@@ -17,19 +18,25 @@ export function setStoreIsDirty(val: boolean) {
     storeIsDirty = val;
 }
 
-window.addEventListener(
-    "beforeunload",
-    function (e) {
-        if (storeIsDirty) {
-            e.preventDefault();
-            e.returnValue = "";
-            setTimeout(() => {
-                api.plugins.runPlugin("savesession", true);
-            }, 0);
-        }
-    },
-    true
-);
+export function setupWarnSaveOnClose() {
+    if (PluginToTest.pluginToTest === "") {
+        // If testing a plugin, don't prompt to save the state on close.
+    
+        window.addEventListener(
+            "beforeunload",
+            function (e) {
+                if (storeIsDirty) {
+                    e.preventDefault();
+                    e.returnValue = "";
+                    setTimeout(() => {
+                        api.plugins.runPlugin("savesession", true);
+                    }, 0);
+                }
+            },
+            true
+        );
+    }
+}
 
 /**
  * Converts a json representation of the state to a state. object

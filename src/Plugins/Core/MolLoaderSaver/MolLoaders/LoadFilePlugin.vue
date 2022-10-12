@@ -1,10 +1,11 @@
 <template>
   <PluginComponent
-    :userInputs="userInputs"
+    :userArgs="userArgs"
     v-model="open"
     title="Load a File"
     actionBtnTxt="Load"
     cancelBtnTxt="Cancel"
+    :pluginId="pluginId"
     @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
   >
@@ -50,7 +51,7 @@ export default class LoadFilePlugin extends PluginParentClass {
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadfile";
 
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
   
   /**
@@ -82,10 +83,10 @@ export default class LoadFilePlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} parameters  Information about the molecule to load.
+   * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
-  runJob(parameters: IFileInfo) {
-    loadMoleculeFile(parameters);
+  runJob(fileInfo: IFileInfo) {
+    loadMoleculeFile(fileInfo);
   }
 }
 </script>

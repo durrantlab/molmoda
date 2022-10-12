@@ -4,15 +4,20 @@ import * as api from "@/Api";
 /**
  * Loads a remote file and sends it to the relevant Vue component.
  *
- * @param {string} url      The URL of the remote file to load.
+ * @param {string}  url           The URL of the remote file to load.
+ * @param {string} [validateUrl]  Whether to validate the url. Defaults to true.
  * @returns {Promise<IFileInfo>} A promise that resolves the file info (name,
  *     contents, type).
  */
-export function loadRemote(url: string): Promise<IFileInfo> {
+export function loadRemote(
+    url: string,
+    validateUrl = true
+): Promise<IFileInfo> {
     api.messages.waitSpinner(true);
     return new Promise((resolve, reject) => {
         const urlUpper = url.toUpperCase();
         if (
+            validateUrl &&
             urlUpper.slice(0, 7) !== "HTTP://" &&
             urlUpper.slice(0, 8) !== "HTTPS://"
         ) {

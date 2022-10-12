@@ -2,7 +2,8 @@
   <PluginComponent
     v-model="open"
     title=""
-    :userInputs="userInputs"
+    :userArgs="userArgs"
+    :pluginId="pluginId"
   ></PluginComponent>
 </template>
 
@@ -37,7 +38,7 @@ export default class UndoPlugin extends PluginParentClass {
   ];
   pluginId = "undo";
   noPopup = true;
-  userInputs: FormElement[] = [];
+  userArgs: FormElement[] = [];
   alwaysEnabled = true;
 
   /**

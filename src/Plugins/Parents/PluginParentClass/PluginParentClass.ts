@@ -17,7 +17,6 @@ import {
 import { alwaysEnabledPlugins, loadedPlugins } from "../../LoadedPlugins";
 import {
     createTestCmdsIfTestSpecified,
-    // ITestCommand,
 } from "@/Testing/ParentPluginTestFuncs";
 import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
@@ -25,6 +24,8 @@ import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
 import { ValidationMixin } from "./Mixins/ValidationMixin";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { TestingMixin } from "./Mixins/TestingMixin";
+
 
 export type RunJobReturn =
     | Promise<string | undefined>
@@ -39,7 +40,8 @@ export abstract class PluginParentClass extends mixins(
     HooksMixin,
     PopupMixin,
     JobMsgsMixin,
-    ValidationMixin
+    ValidationMixin,
+    TestingMixin
 ) {
     /**
      * The menu path for this plugin (e.g., `["[3] Biotite", "[1] About"]` or
@@ -77,23 +79,13 @@ export abstract class PluginParentClass extends mixins(
     abstract pluginId: string;
 
     /**
-     * An introductory sentence or paragraph describing the plugin. Appears at
-     * the top of the popup.
-     *
-     * @document
-     * @type {string}
-     */
-    intro = "";
-
-    /**
-     * A list of user inputs. Note that `userInputs` defines the user
-     * arguments/parameters, but it is not reactive. See it as an unchangable
-     * template. Use `updateUserInputs` to programmatically change actual
-     * user-specified inputs.
+     * A list of user arguments. Note that `userArgs` defines the user
+     * arguments, but it is not reactive. See it as an unchangable template. Use
+     * `updateUserArgs` to programmatically change actual user-specified inputs.
      *
      * @type {FormElement[]}
      */
-    abstract userInputs: FormElement[];
+    abstract userArgs: FormElement[];
 
     // In some cases, must pass information to the plugin when it opens.
     // Typicaly when using the plugin outside the menu system.
@@ -130,16 +122,16 @@ export abstract class PluginParentClass extends mixins(
      * likely want to call the `submitJobs` function from `onPopupDone` to
      * submit job(s) to the queue system.
      *
-     * The default version submits the user inputs as a single job. Override it
-     * if you want to modify those parameters before submitting to the queue, or
-     * if you want to submit multiple jobs to the queue.
+     * The default version submits the user arguments as a single job. Override
+     * it if you want to modify those arguments before submitting to the queue,
+     * or if you want to submit multiple jobs to the queue.
      *
-     * @param {IUserArg[]} userInputs  The user arguments.
+     * @param {IUserArg[]} userArgs  The user arguments.
      * @gooddefault
      * @document
      */
-    protected onPopupDone(userInputs: IUserArg[]): void {
-        this.submitJobs([userInputs]);
+    protected onPopupDone(userArgs: IUserArg[]): void {
+        this.submitJobs([userArgs]);
     }
 
     /**
@@ -203,16 +195,16 @@ export abstract class PluginParentClass extends mixins(
      * Wraps around runJob to log start/end messages. It is called by the job
      * queue system.
      *
-     * @param {string} [jobId]       The job id to use (optional).
-     * @param {any}    [parameters]  The same parameterSets submitted via the
-     *                               submitJobs function, but one at a time.
-     *                               Optional.
+     * @param {string} [jobId]         The job id to use (optional).
+     * @param {any}    [parameterSet]  The same parameterSets submitted via the
+     *                                 submitJobs function, but one at a time.
+     *                                 Optional.
      * @returns {RunJobReturn}  A promise that resolves when the job is done,
      *     with the result (string), or a string itself (if the job is
      *     synchronous), or undefined if there's nothing to return (so user not
      *     required to use).
      */
-    private _runJob(jobId?: string, parameters?: any): RunJobReturn {
+    private _runJob(jobId?: string, parameterSet?: any): RunJobReturn {
         if (this.runJob === null) {
             // Below won't ever happen (wouldn't pass validation), but makes it
             // easy to avoid typescript error.
@@ -221,10 +213,10 @@ export abstract class PluginParentClass extends mixins(
 
         let logTxt = this.onStartJobLogMsg(this.pluginId);
         logTxt = removeTerminalPunctuation(logTxt);
-        api.messages.log(logTxt, parameters, jobId);
+        api.messages.log(logTxt, parameterSet, jobId);
         const startTime = new Date().getTime();
 
-        const jobResult = this.runJob(parameters) as RunJobReturn;
+        const jobResult = this.runJob(parameterSet) as RunJobReturn;
 
         logTxt = this.onEndJobLogMsg(this.pluginId);
         logTxt = removeTerminalPunctuation(logTxt);
@@ -305,18 +297,18 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /**
-     * Programmatically update a user variable. Necessary because `userInputs`
-     * is NOT reactive. Useful to do things like (1) prepopulate a `userInputs`
-     * value or (2) modify one `userInputs` value based on the value of another
+     * Programmatically update a user variable. Necessary because `userArgs`
+     * is NOT reactive. Useful to do things like (1) prepopulate a `userArgs`
+     * value or (2) modify one `userArgs` value based on the value of another
      * (see also `<PluginComponent>`'s `onDataChanged` function). For
-     * `updateUserInputs` to work, the plugin's `<PluginComponent>` must have
+     * `updateUserArgs` to work, the plugin's `<PluginComponent>` must have
      * `ref="pluginComponent"`.
      *
-     * @param {IUserArg[]} userInputs  The user variables to update.
+     * @param {IUserArg[]} userArgs  The user variables to update.
      * @helper
      * @document
      */
-    protected updateUserInputs(userInputs: IUserArg[]) {
+    protected updateUserArgs(userArgs: IUserArg[]) {
         const pluginComponent = this.$refs["pluginComponent"] as any;
         if (pluginComponent === undefined) {
             console.warn(
@@ -324,12 +316,12 @@ export abstract class PluginParentClass extends mixins(
             );
             return;
         }
-        const existingNames: string[] = pluginComponent.userInputsToUse.map(
+        const existingNames: string[] = pluginComponent.userArgsToUse.map(
             (i: FormElement): string => {
                 return i.id;
             }
         );
-        for (const userArg of userInputs) {
+        for (const userArg of userArgs) {
             const name = userArg.name;
             const idx = existingNames.indexOf(name);
             if (idx === -1) {
@@ -341,18 +333,7 @@ export abstract class PluginParentClass extends mixins(
             }
 
             // Update the value
-            pluginComponent.userInputsToUse[idx].val = userArg.val;
+            pluginComponent.userArgsToUse[idx].val = userArg.val;
         }
     }
-
-    // /**
-    //  * Adds commands to run when testing the plugin. Assume the popup is open,
-    //  * and no need to click the action button.
-    //  *
-    //  * @returns {ITestCommand[]}  The commands to run.
-    //  */
-    // onRunTest(): ITestCommand[] {
-    //     // TODO: In future, this should be abstract (required for children).
-    //     return [];
-    // }
 }
