@@ -68,7 +68,7 @@ export default class RenameMolPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  checkUseAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     return checkAnyMolSelected(this as any);
   }
 
@@ -76,9 +76,9 @@ export default class RenameMolPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  beforePopupOpen() {
+  onBeforePopupOpen() {
     setNodeToActOn(this);
-    this.updateUserVars([
+    this.updateUserInputs([
       {
         name: "newName",
         val: this.nodeToActOn?.title,

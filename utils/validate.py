@@ -65,6 +65,13 @@ for ts_file in ts_files:
                     f"Plugin class {word} is a plugin. Its filename must be {word}.vue.",
                 )
 
+        # No plugin should define mounted(
+        if "mounted(" in content:
+            add_error(
+                ts_file,
+                "Plugins should not define a mounted() function. Use onMounted() instead.",
+            )
+
 # Save errors to ../src/compile_errors.json
 with open("../src/compile_errors.json", "w") as file:
     json.dump(errors, file)

@@ -12,7 +12,7 @@
 
   <!-- <PopupPluginParent
     :onShown="onPopupOpen"
-    :beforeShown="beforePopupOpen"
+    :beforeShown="onBeforePopupOpen"
   >
     <p v-if="intro !== ''" v-html="intro"></p>
     <FormInput
@@ -56,7 +56,10 @@ import {
   modelsToAtoms,
 } from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import {
+  PluginParentClass,
+  RunJobReturn,
+} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import {
@@ -64,8 +67,8 @@ import {
   FormElemType,
   IFormCheckbox,
   IFormText,
-IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -111,12 +114,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;
-
-  get doExtract(): boolean {
-    return (this.userInputs[1] as IGenericFormElement).val as boolean;
-  }
-
-
+  doExtract = false; // shadows userInputs for reactivity
 
   /**
    * Returns text appropriate for the mode.
@@ -143,38 +141,55 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  public beforePopupOpen(): void {
+  public onBeforePopupOpen(): void {
     setNodeToActOn(this);
-    this.updateUserVars(
-      [
-        {
-          name: "newName",
-          val: this.nodeToActOn?.title + " (cloned)",
-        } as IUserArg,
-        {
-          name: "doExtract",
-          val: false,
-        } as IUserArg,
-      ]
-    );
+    this.updateUserInputs([
+      {
+        name: "newName",
+        val: this.nodeToActOn?.title + " (cloned)",
+      } as IUserArg,
+      {
+        name: "doExtract",
+        val: false,
+      } as IUserArg,
+    ]);
+    this.doExtract = false;
+  }
+
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+   checkPluginAllowed(): string | null {
+    return checkAnyMolSelected(this as any);
   }
 
   /**
    * Runs when the mode changes (between clone and extract).
+   * 
+   * @param {IUserArg[]} userInputs  The updated user variables.
    */
-   onDataChanged(userVars: IUserArg[]): void {
-    const newName = userVars[0].val as string;
-
+  onDataChanged(userInputs: IUserArg[]): void {
+    let newName = userInputs[0].val as string;
+    this.doExtract = userInputs[1].val as boolean;
     this.intro = this.doExtract ? extractDescription : cloneDescription;
 
-    // debugger;
-    // if (this.doExtract) {
-    //   this.newTitle = newName.replace(/ \(cloned\)$/gm, "");
-    // } else {
-    //   if (!newName.includes(" (cloned)")) {
-    //     this.newTitle += " (cloned)";
-    //   }
-    // }
+    if (this.doExtract) {
+      newName = newName.replace(/ \(cloned\)$/gm, "");
+    } else {
+      if (!newName.includes(" (cloned)")) {
+        newName += " (cloned)";
+      }
+    }
+
+    this.updateUserInputs([
+      {
+        name: "newName",
+        val: newName,
+      } as IUserArg,
+    ]);
   }
 
   /**
@@ -218,7 +233,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
       return convertedNode
         .then((node) => {
-          node.title = this.newTitle;
+          node.title = parameters[0].val;
 
           let subNodes = getAllNodesFlattened([node]);
           subNodes.forEach((n) => {

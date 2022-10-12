@@ -18,6 +18,11 @@ export interface IMoleculeInputParams {
     considerCompounds: boolean;
 }
 
+/**
+ * Gets default molecule input parameters that can be modified/refined elsewhere.
+ * 
+ * @returns {IMoleculeInputParams}  The default molecule input parameters.
+ */
 export function defaultMoleculeInputParams(): IMoleculeInputParams {
     return {
         combineProteinType: CombineProteinType.MERGE_ALL,

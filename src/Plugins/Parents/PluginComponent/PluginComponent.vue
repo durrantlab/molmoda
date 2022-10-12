@@ -4,7 +4,7 @@
     v-model="openToUse"
     :cancelBtnTxt="cancelBtnTxt"
     :actionBtnTxt="actionBtnTxt"
-    @onDone="onPopupDone"
+    @onPopupDone="onPopupDone"
     :isActionBtnEnabled="validateUserInputs"
     @onClosed="onClosed"
     :prohibitCancel="prohibitCancel"
@@ -53,13 +53,37 @@ export default class PluginComponent extends mixins(
   PopupMixin,
   UserInputsMixin
 ) {
+  /** Title of the popup. */
   @Prop({ required: true }) title!: string;
+
+  /** Whether the action button (e.g., "Load") is enabled. */
   @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
+
+  /** The inputs (plugin parameters) the end user can specify. */
   @Prop({ required: true }) userInputs!: FormElement[];
-  @Prop({ required: true }) intro!: string;
+
+  /**
+   * Introductory text that appears at the top of the plugin (above the user
+   * inputs).
+   */
+  @Prop({ default: "" }) intro!: string;
+
+  /** The text that appears on the action button (e.g., "Load"). */
   @Prop({ default: "Load" }) actionBtnTxt!: string;
+
+  /**
+   * Whether the user can cancel the plugin. Some rare plugins are not
+   * cancelable.
+   */
   @Prop({ default: false }) prohibitCancel!: boolean;
+
+  /** The text that appears on the cancel button (e.g., "Cancel"). */
   @Prop({ default: "Cancel" }) cancelBtnTxt!: string;
+
+  /** 
+   * The popup variant (i.e., whether to style the popup as primary, secondary,
+   * success, danger, etc.). 
+   */
   @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
 
   /**
@@ -111,20 +135,41 @@ export default class PluginComponent extends mixins(
       }
     }
 
+    /**
+     * Runs when the primary action button is pressed, after the popup closes.
+     *
+     * @param {IUserArg[]} userParams  The specified user parameters.
+     */
     this.$emit("onPopupDone", userParams);
 
     // this.submitJobs([userParams]);
   }
 
   /**
-   * Runs when the user presses the second action button.
+   * Runs when the user presses the second action button and the popup closes.
    */
   onPopupDone2() {
-    this.$emit("onDone2");
+    this.$emit("update:modelValue", false);
+
+    /**
+     * Runs when the secondary action button is pressed, after the popup closes.
+     */
+    this.$emit("onPopupDone2");
   }
 
+  /**
+   * Runs when the user data changes.
+   *
+   * @param {FormElement[]} vals  The updated values.
+   */
   onChange(vals: FormElement[]) {
     const userParams: IUserArg[] = collapseFormElementArray(vals);
+
+    /**
+     * Runs when the user changes any user inputs (plugin parameters).
+     *
+     * @param {IUserArg[]} userParams  The updated user parameters.
+     */
     this.$emit("onDataChanged", userParams);
   }
 

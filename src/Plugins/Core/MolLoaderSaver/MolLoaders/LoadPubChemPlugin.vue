@@ -5,7 +5,7 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
-    @onDone="onPopupDone"
+    @onPopupDone="onPopupDone"
     :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
   >
@@ -224,7 +224,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  beforePopupOpen() {
+  onBeforePopupOpen() {
     this.cid = "";
     this.molName = "";
   }

@@ -49,13 +49,15 @@ export class ValidationMixin extends Vue {
     }
 
     /**
-     * Check if this plugin can currently be used.  This can be optionally
-     * overwritten.
+     * Checks if the plugin can currently run. This function allows plugins to
+     * provide a warning message when the user has not yet loaded the data
+     * necessary to run the plugin successfully.
      *
-     * @returns {string | null}  If it returns a string, show that as an error
-     *     message. If null, proceed to run the plugin.
+     * @document
+     * @returns {string | null}  If a string, the error message to show instead
+     *     of running the plugin. If null, proceeds to run the plugin.
      */
-    checkUseAllowed(): string | null {
+    checkPluginAllowed(): string | null {
         return null;
     }
 }

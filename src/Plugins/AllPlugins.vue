@@ -6,7 +6,7 @@ system uses these to autopopulate with plugins. -->
 
     <!-- TEMPLATE1 START -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
-    <!-- <CloneExtractMolPlugin @onPluginSetup="onPluginSetup"></CloneExtractMolPlugin> -->
+    <CloneExtractMolPlugin @onPluginSetup="onPluginSetup"></CloneExtractMolPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
     <LoadFilePlugin @onPluginSetup="onPluginSetup"></LoadFilePlugin>
@@ -37,7 +37,7 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 
 // TEMPLATE2 START
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
-// import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMolPlugin.vue";
+import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMolPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldPlugin.vue";
 import LoadFilePlugin from "./Core/MolLoaderSaver/MolLoaders/LoadFilePlugin.vue";
@@ -66,7 +66,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     // TEMPLATE3 START
     ClearSelectionPlugin,
-    // CloneExtractMolPlugin,
+    CloneExtractMolPlugin,
     DeleteMolPlugin,
     LoadAlphaFoldPlugin,
     LoadFilePlugin,
@@ -85,6 +85,8 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     TestPlugin,
     // TEMPLATE3 END
+
+
 
 
 

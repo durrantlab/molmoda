@@ -5,7 +5,7 @@
     title="About"
     cancelBtnTxt="Done"
     actionBtnTxt=""
-    intro=""
+    :intro="intro"
     @onPopupDone="onPopupDone"
   >
     <p v-html="intro"></p>

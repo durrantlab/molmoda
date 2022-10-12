@@ -3,7 +3,6 @@
     v-model="open"
     title=""
     :userInputs="userInputs"
-    :intro="intro"
   ></PluginComponent>
 </template>
 
@@ -21,7 +20,6 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /** ClearSelectionPlugin */
 @Options({
@@ -39,7 +37,6 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     },
   ];
   pluginId = "clearselection";
-  intro = ""; // Not used
   noPopup = true;
   userInputs: FormElement[] = [];
   alwaysEnabled = true;
@@ -50,18 +47,17 @@ export default class ClearSelectionPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  checkUseAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     return checkAnyMolSelected(this as any);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IUserArg[]} parameters  The user parameters.
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-   runJob(parameters: IUserArg[]): Promise<undefined> {
+   runJob(): Promise<undefined> {
     const allNodes = getAllNodesFlattened(this.$store.state["molecules"]);
     allNodes.forEach((n) => {
       if (n.selected !== SelectedType.FALSE) {

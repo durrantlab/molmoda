@@ -7,7 +7,6 @@
     @onClosed="onClosed"
     :variant="variant"
     :userInputs="userInputs"
-    :intro="intro"
   >
     <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
   </PluginComponent>
@@ -49,7 +48,6 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     },
   ];
   pluginId = "simplemsg";
-  intro = "";  // Not used
 
   // Below set via onPluginStart.
   title = "";

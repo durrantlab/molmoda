@@ -2,6 +2,11 @@ import { NameValPair } from "./StoreInterfaces";
 
 let store: any;
 
+/**
+ * Sets up external access to the vuex store.
+ * 
+ * @param  {any} _store  The vuex store.
+ */
 export function setupExternalStoreAccess(_store: any) {
     store = _store;
 }

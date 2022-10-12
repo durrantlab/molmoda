@@ -69,7 +69,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  checkUseAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     return checkanyMolLoaded(this);
   }
 

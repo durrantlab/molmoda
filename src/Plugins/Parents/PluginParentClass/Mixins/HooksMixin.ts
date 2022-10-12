@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/check-tag-names */
 import { Vue } from "vue-class-component";
 
 /**
@@ -5,17 +6,20 @@ import { Vue } from "vue-class-component";
  */
 export class HooksMixin extends Vue {
     /**
-     * Runs before the popup opens. Children can optionally override.
+     * Called right before the plugin popup opens.
+     *
+     * @document
      */
-    beforePopupOpen() {
+    protected onBeforePopupOpen(): void {
         return;
     }
 
     /**
-     * Runs after the popup opens. Good for setting focus in text elements.
-     * Children can optionally override.
+     * Called right after the plugin popup opens.
+     *
+     * @document
      */
-    onPopupOpen() {
+    protected onPopupOpen(): void {
         // can be optionally overridden.
         return;
     }

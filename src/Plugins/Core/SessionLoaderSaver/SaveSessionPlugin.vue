@@ -87,7 +87,7 @@ export default class SaveSessionPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  checkUseAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     return checkanyMolLoaded(this);
   }
 
@@ -95,7 +95,7 @@ export default class SaveSessionPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  beforePopupOpen() {
+  onBeforePopupOpen() {
     this.windowClosing = this.payload !== undefined;
     this.payload = undefined;
   }

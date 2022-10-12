@@ -5,9 +5,8 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Load"
-    @onDone="onPopupDone"
+    @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
-    :intro="intro"
   >
     <FormFile
       ref="formFile"
@@ -49,7 +48,6 @@ export default class OpenSessionPlugin extends PluginParentClass {
   ];
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadsession";
-  intro = ""; // Not used
 
   userInputs: FormElement[] = [];
   alwaysEnabled = true;
@@ -75,7 +73,7 @@ export default class OpenSessionPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  beforePopupOpen() {
+  onBeforePopupOpen() {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
   }

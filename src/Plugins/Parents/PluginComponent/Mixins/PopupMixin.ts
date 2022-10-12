@@ -48,20 +48,4 @@ export class PopupMixin extends Vue {
            }, 750);
        }
     }
-
-    // /**
-    //  * Closes the popup.
-    //  */
-    // closePopup() {
-    //     this.openToUse = false;
-    //     this.$emit("update:modelValue", false);
-    // }
-
-    // /**
-    //  * Opens the popup.
-    //  */
-    // openPopup(): void {
-    //     this.openToUse = true;
-    //     this.$emit("update:modelValue", true);
-    // }
 }

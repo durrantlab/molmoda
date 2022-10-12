@@ -5,7 +5,6 @@
     title="Load a File"
     actionBtnTxt="Load"
     cancelBtnTxt="Cancel"
-    :intro="intro"
     @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
   >
@@ -51,8 +50,6 @@ export default class LoadFilePlugin extends PluginParentClass {
   filesToLoad: IFileInfo[] = [];
   pluginId = "loadfile";
 
-  intro = ""; // Not used.
-
   userInputs: FormElement[] = [];
   alwaysEnabled = true;
   
@@ -76,7 +73,7 @@ export default class LoadFilePlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  beforePopupOpen() {
+  onBeforePopupOpen() {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
     this.filesToLoad = [];

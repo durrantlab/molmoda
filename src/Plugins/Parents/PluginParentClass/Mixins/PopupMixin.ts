@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/check-tag-names */
 import { Vue } from "vue-class-component";
 
 /**
@@ -6,24 +7,28 @@ import { Vue } from "vue-class-component";
 export class PopupMixin extends Vue {
     open = false;
 
-    /**
-     * Occasionally, you might need a plugin that doesn't require a popup (e.g.,
-     * undo/redo). In that case, set this to true.
-     */
+    // Occasionally, you might need a plugin that doesn't require a popup (e.g.,
+    // undo/redo). In that case, set this to true.
     protected noPopup = false;
 
     /**
      * Closes the popup.
+     * 
+     * @helper
+     * @document
      */
-    closePopup() {
+    protected closePopup(): void {
         this.open = false;
         // this.$emit("update:modelValue", false);
     }
 
     /**
      * Opens the popup.
+     * 
+     * @helper
+     * @document
      */
-    openPopup(): void {
+    protected openPopup(): void {
         this.open = true;
 
         // If no popup, don't change open and just submit jobs automatically.

@@ -3,7 +3,6 @@
     v-model="open"
     title=""
     :userInputs="userInputs"
-    :intro="intro"
   ></PluginComponent>
 </template>
 
@@ -37,7 +36,6 @@ export default class UndoPlugin extends PluginParentClass {
     },
   ];
   pluginId = "undo";
-  intro = ""; // Not used
   noPopup = true;
   userInputs: FormElement[] = [];
   alwaysEnabled = true;
@@ -48,7 +46,7 @@ export default class UndoPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  checkUseAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     if (undoStack.length === 0) {
       return "No additional undo is available.";
     }

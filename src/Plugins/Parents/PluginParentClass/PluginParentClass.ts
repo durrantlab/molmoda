@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/check-tag-names */
 // Evey plugin component class must inherit this one.
 import * as JobQueue from "@/JobQueue";
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
@@ -40,20 +41,58 @@ export abstract class PluginParentClass extends mixins(
     JobMsgsMixin,
     ValidationMixin
 ) {
-    // The menu path. The vast majority of plugins should be accessible from the
-    // menu. But set to null if you don't want it to be. Children must
-    // overwrite.
+    /**
+     * The menu path for this plugin (e.g., `["[3] Biotite", "[1] About"]` or
+     * `"File/Molecules/Import/[4] AlphaFold"`). Note that you can include a
+     * priority (number) in brackets. The priority is stripped from the text,
+     * but its value is used to order the menu item relative to others.
+     *
+     * The vast majority of plugins should be accessible from the menu, but set
+     * `menuPath` to null if you want to create a menu-inaccessible plugin.
+     *
+     * @type {string[] | string | null}
+     */
     abstract menuPath: string[] | string | null;
 
-    // Be sure to credit authors (with license). Children must overwrite both.
+    /**
+     * A list of software credits. If the plugin uses no third-party packages,
+     * set this to `[]`.
+     *
+     * @type {ISoftwareCredit[]}
+     */
     abstract softwareCredits: ISoftwareCredit[];
+
+    /**
+     * A list of people to credit.
+     *
+     * @type {IContributorCredit[]}
+     */
     abstract contributorCredits: IContributorCredit[];
 
-    // A unique id defines the plugin. Children must overwrite.
+    /**
+     * A unique id that defines the plugin. Must be lower case.
+     *
+     * @type {string}
+     */
     abstract pluginId: string;
 
-    abstract intro: string;
+    /**
+     * An introductory sentence or paragraph describing the plugin. Appears at
+     * the top of the popup.
+     *
+     * @document
+     * @type {string}
+     */
+    intro = "";
 
+    /**
+     * A list of user inputs. Note that `userInputs` defines the user
+     * arguments/parameters, but it is not reactive. See it as an unchangable
+     * template. Use `updateUserInputs` to programmatically change actual
+     * user-specified inputs.
+     *
+     * @type {FormElement[]}
+     */
     abstract userInputs: FormElement[];
 
     // In some cases, must pass information to the plugin when it opens.
@@ -66,17 +105,20 @@ export abstract class PluginParentClass extends mixins(
     protected alwaysEnabled = false;
 
     /**
-     * Runs when the user first starts the plugin. For example, if the plugin is
-     * in a popup, this function would open the popup.
+     * Runs when the user first starts the plugin. Called when the user clicks
+     * the plugin from the menu. Can also be called directly using the api
+     * (advanced/rare use).
      *
-     * @param {any} [payload]   Included if you want to pass extra data to the
-     *                          plugin. Probably only useful if not using the
-     *                          menu system. Optional.
+     * @param {any} [payload]   Data to pass to the plugin. Probably only useful
+     *                          when programmatically starting the plugin
+     *                          without using the menu system. Optional.
+     * @gooddefault
+     * @document
      */
-    public onPluginStart(payload?: any) {
-        // Children should not overwrite this function! Use onPopupOpen instead.
+    public onPluginStart(payload?: any): void {
+        // Children should not override this function! Use onPopupOpen instead.
         this.payload = payload;
-        this.beforePopupOpen();
+        this.onBeforePopupOpen();
         this.openPopup();
         setTimeout(() => {
             this.onPopupOpen();
@@ -84,23 +126,33 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /**
-     * Automatically submit the jobs once the popup is done. This can be
-     * overridden by children plugins. The default version below just submits the
-     * user inputs as a single job, but in some situations you might want to
-     * launch multiple jobs.
+     * Runs when the user clicks the plugin action button (e.g., "Load"). You
+     * likely want to call the `submitJobs` function from `onPopupDone` to
+     * submit job(s) to the queue system.
+     *
+     * The default version submits the user inputs as a single job. Override it
+     * if you want to modify those parameters before submitting to the queue, or
+     * if you want to submit multiple jobs to the queue.
      *
      * @param {IUserArg[]} userInputs  The user arguments.
+     * @gooddefault
+     * @document
      */
-    protected onPopupDone(userInputs: IUserArg[]) {
+    protected onPopupDone(userInputs: IUserArg[]): void {
         this.submitJobs([userInputs]);
     }
 
     /**
-     * This function submits jobs to the job queue system. Note that it is
-     * "jobs" plural. Also assigns jobIds.
+     * Submits multiple jobs to the queue system. `submitJobs` is typically
+     * called from the `onPopupDone` function (after the user presses the
+     * popup's action button).
      *
-     * @param {any[]}  [parameterSets]  A list of parameters, one per job.
-     *                                  Optional.
+     * @param {any[]}  [parameterSets]  A list of parameters, one per job. Even
+     *                                  if your plugin submits only one job
+     *                                  (most common case), you must still wrap
+     *                                  the parameters in an array. Optional.
+     * @helper
+     * @document
      */
     protected submitJobs(parameterSets?: any[]) {
         if (parameterSets === undefined) {
@@ -135,22 +187,21 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job
-     * running. Children must overwrite this function.
+     * Each plugin is associated with specific jobs (calculations). This
+     * function runs a single job (or calls the JavaScript/WASM libraries to run
+     * the job). The job-queue system calls `runJob` directly.
      *
-     * @param {any} [parameters]  The same parameterSets submitted via the
-     *                            submitJobs function, but one at a time.
-     *                            Optional.
-     * @returns {RunJobReturn}  A promise that resolves when the job is done,
-     *     with the result (string), or a string itself (if the job is
-     *     synchronous), or undefined if there's nothing to return (so user not
-     *     required to use).
+     * @param {any} [parameterSet]  One of the parameterSets items submitted via
+     *                              the `submitJobs` function. Optional.
+     * @returns {RunJobReturn}  A promise that resolves the result (a string)
+     *     when the job is done, or a string itself (if the job is synchronous),
+     *     or undefined if there's nothing to return.
      */
-    abstract runJob(parameters: any): RunJobReturn;
+    abstract runJob(parameterSet: any): RunJobReturn;
 
     /**
-     * This function wraps around runJob to log start/end messages. It is called
-     * by the job queue system.
+     * Wraps around runJob to log start/end messages. It is called by the job
+     * queue system.
      *
      * @param {string} [jobId]       The job id to use (optional).
      * @param {any}    [parameters]  The same parameterSets submitted via the
@@ -200,9 +251,12 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /**
-     * Called when the plugin is mounted.
+     * Called when the plugin is mounted. No plugin should define its own
+     * `mounted()` function. Use `onMounted` instead.
+     *
+     * @document
      */
-    onMounted() {
+    protected onMounted(): void {
         // can be optionally overridden.
         return;
     }
@@ -231,7 +285,7 @@ export abstract class PluginParentClass extends mixins(
                 function: () => {
                     // Could use this, but use api for consistency's sake.
                     // this.onPluginStart();
-                    const msg = this.checkUseAllowed();
+                    const msg = this.checkPluginAllowed();
                     if (msg !== null) {
                         api.messages.popupError(msg);
                     } else {
@@ -251,14 +305,18 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /**
-     * Occasionally, you might want to update a user variable from the plugin's
-     * context. For example, when renaming a molecule, it's helpful to
-     * prepopulate the new name field with the existing name. For this to work,
-     * the <PluginComponent> must have ref "pluginComponent".
+     * Programmatically update a user variable. Necessary because `userInputs`
+     * is NOT reactive. Useful to do things like (1) prepopulate a `userInputs`
+     * value or (2) modify one `userInputs` value based on the value of another
+     * (see also `<PluginComponent>`'s `onDataChanged` function). For
+     * `updateUserInputs` to work, the plugin's `<PluginComponent>` must have
+     * `ref="pluginComponent"`.
      *
-     * @param {IUserArg[]} userArgs  The user variables to update.
+     * @param {IUserArg[]} userInputs  The user variables to update.
+     * @helper
+     * @document
      */
-    protected updateUserVars(userArgs: IUserArg[]) {
+    protected updateUserInputs(userInputs: IUserArg[]) {
         const pluginComponent = this.$refs["pluginComponent"] as any;
         if (pluginComponent === undefined) {
             console.warn(
@@ -271,7 +329,7 @@ export abstract class PluginParentClass extends mixins(
                 return i.id;
             }
         );
-        for (const userArg of userArgs) {
+        for (const userArg of userInputs) {
             const name = userArg.name;
             const idx = existingNames.indexOf(name);
             if (idx === -1) {

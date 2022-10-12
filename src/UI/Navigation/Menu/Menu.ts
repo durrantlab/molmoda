@@ -103,6 +103,13 @@ function _getSubMenu(menuDat: IMenuEntry[], name: string): IMenuSubmenu {
     ) as IMenuSubmenu;
 }
 
+/**
+ * Given any kind of menu path (string[], string, etc.), returns the menu path
+ * info.
+ *
+ * @param  {string[]|string|null|undefined} menuPath  Menu path.
+ * @returns {IMenuPathInfo}  Menu path info.
+ */
 export function processMenuPath(
     menuPath: string[] | string | null | undefined
 ): IMenuPathInfo[] | null {

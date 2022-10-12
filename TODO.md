@@ -42,20 +42,37 @@ for "This doesn't account for ligands!"
 
 2D images show on click. Will require babel.
 
-Every plugin must have code for running a test. Implement that whole thing.
-
-Would be good to have general instructions for how to make a plugin. Maybe take
-from docstrings.
+*** Every plugin must have code for running a test. Implement that whole thing.
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
 I think both undo and redo should warn one item sooner on stack.
 
+Shouldn't be able to extract when top-level molecule.
+
+Still need to do component too (props and emits).
+
+User params, user inputs, user arguments. Just use user arguments everywhere
+(standardize nomenclature).
+
+# DONE
+
+Would be good to have general instructions for how to make a plugin. Maybe take
+from docstrings.
+
+validate: no plugin defines mounted() function. Use onMounted() instead.
+
+Also, spider out and get all interfaces and enums.
+
+Separate out helper functions for documentation. 
+
 You stopped working mid way on CloneExtract. Used watch to make userParams
 reactive. Just getting too complicated.
 
-# DONE
+Userparams reactive so change directly
+ 
+Inform when userparamstouse changes (clone/extract)
 
 Waits too long to focus
 

@@ -5,11 +5,10 @@
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="New Session"
-    @onDone="onPopupDone"
+    @onPopupDone="onPopupDone"
     actionBtnTxt2="Save Session First"
-    @onDone2="saveSession"
+    @onPopupDone2="saveSession"
     :isActionBtnEnabled="true"
-    :intro="intro"
   >
     <p>
       If you start a new session, your current session will be lost. Would you
@@ -49,7 +48,6 @@ export default class NewSessionPlugin extends PluginParentClass {
   ];
   filesToLoad: IFileInfo[] = [];
   pluginId = "newsession";
-  intro = ""; // Not used
 
   userInputs: FormElement[] = [];
   alwaysEnabled = true;
@@ -66,7 +64,7 @@ export default class NewSessionPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    */
-  beforePopupOpen() {
+  onBeforePopupOpen() {
     if (!storeIsDirty) {
       // Since store is not dirty, just reload page.
       window.location.reload();

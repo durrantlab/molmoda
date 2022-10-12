@@ -55,7 +55,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
    * Runs before the popup opens. Will almost always need this, so requiring
    * children to define it.
    */
-  beforePopupOpen(): void {
+  onBeforePopupOpen(): void {
     setNodeToActOn(this);
   }
 
@@ -65,7 +65,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  checkUseAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     return checkAnyMolSelected(this as any);
   }
 

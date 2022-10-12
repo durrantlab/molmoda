@@ -21,6 +21,9 @@ export default class TestData extends Vue {
 
   testSpecified = false;
 
+  /**
+   * Runs when the component is mounted.
+   */
   mounted() {
     if (pluginToTest !== "") {
       this.testSpecified = true;
