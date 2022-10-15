@@ -43,7 +43,7 @@ import * as api from "@/Api";
   },
 })
 export default class OpenSessionPlugin extends PluginParentClass {
-  menuPath = "File/[1] Session/[0] Open";
+  menuPath = "[3] File/[1] Session/[0] Open";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

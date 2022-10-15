@@ -9,7 +9,6 @@ system uses these to autopopulate with plugins. -->
     <CloneExtractMolPlugin @onPluginSetup="onPluginSetup"></CloneExtractMolPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
-    <LoadFilePlugin @onPluginSetup="onPluginSetup"></LoadFilePlugin>
     <LoadPDBPlugin @onPluginSetup="onPluginSetup"></LoadPDBPlugin>
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
     <NewSessionPlugin @onPluginSetup="onPluginSetup"></NewSessionPlugin>
@@ -40,7 +39,6 @@ import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMolPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldPlugin.vue";
-import LoadFilePlugin from "./Core/MolLoaderSaver/MolLoaders/LoadFilePlugin.vue";
 import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
 import LoadPubChemPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPubChemPlugin.vue";
 import NewSessionPlugin from "./Core/SessionLoaderSaver/NewSessionPlugin.vue";
@@ -69,7 +67,6 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     CloneExtractMolPlugin,
     DeleteMolPlugin,
     LoadAlphaFoldPlugin,
-    LoadFilePlugin,
     LoadPDBPlugin,
     LoadPubChemPlugin,
     NewSessionPlugin,
@@ -85,6 +82,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     TestPlugin,
     // TEMPLATE3 END
+
 
 
 
