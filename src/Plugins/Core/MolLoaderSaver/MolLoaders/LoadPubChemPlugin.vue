@@ -65,7 +65,7 @@ import { IFileInfo } from "@/FileSystem/Definitions";
   },
 })
 export default class LoadPubChemPlugin extends PluginParentClass {
-  menuPath = "File/Molecules/Import/[6] PubChem";
+  menuPath = "File/Remote Import/[6] PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

@@ -3,7 +3,7 @@
     ref="pluginComponent"
     :userArgs="userArgs"
     v-model="open"
-    title="Save a Session"
+    title="Save Molecule Files"
     actionBtnTxt="Save"
     :intro="introToUse"
     :pluginId="pluginId"
@@ -47,15 +47,15 @@ import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { slugify } from "@/Core/Utils";
 
 /**
- * SaveSessionPlugin
+ * SaveMoleculesPlugin
  */
 @Options({
   components: {
     PluginComponent,
   },
 })
-export default class SaveSessionPlugin extends PluginParentClass {
-  menuPath = "File/Session/[1] Save As";
+export default class SaveMoleculesPlugin extends PluginParentClass {
+  menuPath = "File/Project/[1] Save...";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -63,10 +63,10 @@ export default class SaveSessionPlugin extends PluginParentClass {
       url: "http://durrantlab.com/",
     },
   ];
-  pluginId = "savesession";
+  pluginId = "savemolecules";
 
-  intro = `Please provide the name of the session file to save. Note that the
-      extension ".biotite" will be automatically appended.`;
+  intro = `Please provide the name of the molecule file to save. Note that the
+      file extension will be automatically appended.`;
 
   windowClosing = false;
 
@@ -75,7 +75,7 @@ export default class SaveSessionPlugin extends PluginParentClass {
       id: "filename",
       label: "",
       val: "",
-      placeHolder: "Enter Filename (e.g., my_session.biotite)",
+      placeHolder: "Enter Filename (e.g., my_project.biotite)",
       filterFunc: (filename: string): string => {
         return fileNameFilter(filename);
       },
@@ -85,7 +85,7 @@ export default class SaveSessionPlugin extends PluginParentClass {
     } as IFormText,
     {
       id: "useBiotiteFormat",
-      label: "Use .biotite format to save entire session?",
+      label: "Use .biotite format to save entire project?",
       val: true,
     } as IFormCheckbox,
     {
@@ -307,7 +307,7 @@ export default class SaveSessionPlugin extends PluginParentClass {
       beforePluginOpens: [this.testLoadExampleProtein()],
       populateUserArgs: [this.testUserArg("filename", "test")],
       afterPluginCloses: [
-        this.testWaitForRegex("#log", 'Job "savesession:.+?" ended'),
+        this.testWaitForRegex("#log", 'Job "savemolecules:.+?" ended'),
         this.testWait(3),
       ],
     };

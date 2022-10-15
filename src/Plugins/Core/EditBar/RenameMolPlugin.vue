@@ -38,7 +38,7 @@ import { ITest } from "@/Testing/ParentPluginTestFuncs";
   },
 })
 export default class RenameMolPlugin extends PluginParentClass {
-  menuPath = "Edit/Molecules/[1] Rename";
+  menuPath = "Edit/Molecules/[1] Rename...";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

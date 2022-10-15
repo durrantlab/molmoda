@@ -11,13 +11,12 @@ system uses these to autopopulate with plugins. -->
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
     <LoadPDBPlugin @onPluginSetup="onPluginSetup"></LoadPDBPlugin>
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
-    <NewSessionPlugin @onPluginSetup="onPluginSetup"></NewSessionPlugin>
-    <OpenSessionPlugin @onPluginSetup="onPluginSetup"></OpenSessionPlugin>
+    <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
+    <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
     <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
-    <SavePDBMol2Plugin @onPluginSetup="onPluginSetup"></SavePDBMol2Plugin>
+    <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
     <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
-    <SaveSessionPlugin @onPluginSetup="onPluginSetup"></SaveSessionPlugin>
     <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
@@ -41,13 +40,12 @@ import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldPlugin.vue";
 import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
 import LoadPubChemPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPubChemPlugin.vue";
-import NewSessionPlugin from "./Core/SessionLoaderSaver/NewSessionPlugin.vue";
-import OpenSessionPlugin from "./Core/SessionLoaderSaver/OpenSessionPlugin.vue";
+import NewProjectPlugin from "./Core/SessionLoaderSaver/NewProjectPlugin.vue";
+import OpenMoleculesPlugin from "./Core/SessionLoaderSaver/OpenMoleculesPlugin.vue";
 import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
-import SavePDBMol2Plugin from "./Core/MolLoaderSaver/MolSaver/SavePDBMol2Plugin.vue";
+import SaveMoleculesPlugin from "./Core/SessionLoaderSaver/SaveMoleculesPlugin.vue";
 import SavePNGPlugin from "./Core/MolLoaderSaver/MolSaver/SavePNGPlugin.vue";
-import SaveSessionPlugin from "./Core/SessionLoaderSaver/SaveSessionPlugin.vue";
 import SaveVRMLPlugin from "./Core/MolLoaderSaver/MolSaver/SaveVRMLPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
@@ -69,19 +67,20 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     LoadAlphaFoldPlugin,
     LoadPDBPlugin,
     LoadPubChemPlugin,
-    NewSessionPlugin,
-    OpenSessionPlugin,
+    NewProjectPlugin,
+    OpenMoleculesPlugin,
     RedoPlugin,
     RenameMolPlugin,
-    SavePDBMol2Plugin,
+    SaveMoleculesPlugin,
     SavePNGPlugin,
-    SaveSessionPlugin,
     SaveVRMLPlugin,
     SimpleMsgPlugin,
     UndoPlugin,
 
     TestPlugin,
     // TEMPLATE3 END
+
+
 
 
 

@@ -35,7 +35,7 @@ import { IFileInfo } from "@/FileSystem/Definitions";
   },
 })
 export default class LoadAlphaFoldPlugin extends PluginParentClass {
-  menuPath = "File/Molecules/Import/[4] AlphaFold";
+  menuPath = "File/Remote Import/[4] AlphaFold";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

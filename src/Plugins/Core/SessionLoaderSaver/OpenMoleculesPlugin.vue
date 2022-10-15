@@ -1,7 +1,7 @@
 <template>
   <PluginComponent
     :userArgs="userArgs"
-    title="Open a File"
+    title="Open Molecule Files"
     v-model="open"
     cancelBtnTxt="Cancel"
     actionBtnTxt="Open"
@@ -14,7 +14,7 @@
       :multiple="false"
       @onFilesLoaded="onFilesLoaded"
       :accept="accept"
-      id="formFile-loadsession-item"
+      id="formFile-openmolecules-item"
     />
     <!-- :isZip="true" -->
   </PluginComponent>
@@ -31,10 +31,9 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { IFileInfo } from "@/FileSystem/Definitions";
 import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
-import * as api from "@/Api";
 
 /**
- * OpenSessionPlugin
+ * OpenMoleculesPlugin
  */
 @Options({
   components: {
@@ -42,8 +41,8 @@ import * as api from "@/Api";
     FormFile,
   },
 })
-export default class OpenSessionPlugin extends PluginParentClass {
-  menuPath = "[3] File/[1] Session/[0] Open";
+export default class OpenMoleculesPlugin extends PluginParentClass {
+  menuPath = "[3] File/[1] Project/[0] Open...";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -52,7 +51,7 @@ export default class OpenSessionPlugin extends PluginParentClass {
     },
   ];
   filesToLoad: IFileInfo[] = [];
-  pluginId = "loadsession";
+  pluginId = "openmolecules";
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
@@ -116,7 +115,7 @@ export default class OpenSessionPlugin extends PluginParentClass {
       ],
       afterPluginCloses: [
         this.testWaitForRegex("#styles", "Protein"),
-        this.testWaitForRegex("#log", 'Job "loadsession:.+?" ended'),
+        this.testWaitForRegex("#log", 'Job "openmolecules:.+?" ended'),
       ],
     };
   }

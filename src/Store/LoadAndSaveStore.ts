@@ -29,7 +29,7 @@ export function setupWarnSaveOnClose() {
                     e.preventDefault();
                     e.returnValue = "";
                     setTimeout(() => {
-                        api.plugins.runPlugin("savesession", true);
+                        api.plugins.runPlugin("savemolecules", true);
                     }, 0);
                 }
             },

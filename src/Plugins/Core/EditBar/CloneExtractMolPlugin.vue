@@ -85,7 +85,7 @@ const extractDescription = `The selected molecule will be extracted (moved) from
   },
 })
 export default class CloneExtractMolPlugin extends PluginParentClass {
-  menuPath = ["Edit", "Molecules", "Clone/Extract"];
+  menuPath = ["Edit", "Molecules", "Clone/Extract..."];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

@@ -6,7 +6,8 @@
   </li>
   <li v-else>
     <a
-      class="dropdown-item"
+      class="dropdown-item pt-0"
+      style="padding-bottom:2px;"
       @click="runFunction(menuData)"
       href="#"
       :id="'menu-plugin-' + idSlug"

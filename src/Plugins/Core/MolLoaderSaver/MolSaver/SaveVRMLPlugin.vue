@@ -35,7 +35,7 @@ import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
   },
 })
 export default class SaveVRMLPlugin extends PluginParentClass {
-  menuPath = "File/Molecules/[6] Export/VRML";
+  menuPath = "File/Graphics/VRML";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
     {

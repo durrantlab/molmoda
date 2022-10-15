@@ -10,10 +10,10 @@
     <li>
       <div class="dropend">
         <a
-          class="dropdown-item dropdown-toggle"
+          class="dropdown-item dropdown-toggle pt-0"
           data-bs-toggle="dropdown"
           aria-expanded="false"
-          style="cursor: pointer"
+          style="cursor: pointer; padding-bottom:2px;"
           :id="'menu2-' + idSlug"
         >
           <!-- <div style="width:100px; float:left;">{{menuData.text}}</div> -->

@@ -38,7 +38,7 @@ import { ITest } from "@/Testing/ParentPluginTestFuncs";
   },
 })
 export default class DeleteMolPlugin extends PluginParentClass {
-  menuPath = ["Edit", "Molecules", "[3] Delete"];
+  menuPath = ["Edit", "Molecules", "[3] Delete..."];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

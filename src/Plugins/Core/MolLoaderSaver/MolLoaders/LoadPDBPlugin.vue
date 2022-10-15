@@ -35,7 +35,7 @@ import { IFileInfo } from "@/FileSystem/Definitions";
   },
 })
 export default class LoadPDBPlugin extends PluginParentClass {
-  menuPath = "File/Molecules/Import/[2] Protein Data Bank";
+  menuPath = "File/[1] Remote Import/[2] Protein Data Bank";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

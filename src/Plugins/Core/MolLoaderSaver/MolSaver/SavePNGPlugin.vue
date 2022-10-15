@@ -34,7 +34,7 @@ import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
   },
 })
 export default class SavePNGPlugin extends PluginParentClass {
-  menuPath = "File/Molecules/[6] Export/PNG";
+  menuPath = "File/Graphics/PNG";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
     {

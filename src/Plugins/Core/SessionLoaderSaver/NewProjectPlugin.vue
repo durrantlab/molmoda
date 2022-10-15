@@ -1,19 +1,19 @@
 <template>
   <PluginComponent
     :userArgs="userArgs"
-    title="New Session"
+    title="New Project"
     v-model="open"
     cancelBtnTxt="Cancel"
-    actionBtnTxt="New Session"
+    actionBtnTxt="New Project"
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
-    actionBtnTxt2="Save Session First"
-    @onPopupDone2="saveSession"
+    actionBtnTxt2="Save Project First"
+    @onPopupDone2="saveProject"
     :isActionBtnEnabled="true"
   >
     <p>
-      If you start a new session, your current session will be lost. Would you
-      like to <a href="#" @click="saveSession">save the session first</a>?
+      If you start a new project, your current project will be lost. Would you
+      like to <a href="#" @click="saveProject">save the project first</a>?
     </p>
   </PluginComponent>
 </template>
@@ -31,7 +31,7 @@ import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
 import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
- * NewSessionPlugin
+ * NewProjectPlugin
  */
 @Options({
   components: {
@@ -39,8 +39,8 @@ import { IFileInfo } from "@/FileSystem/Definitions";
     FormFile,
   },
 })
-export default class NewSessionPlugin extends PluginParentClass {
-  menuPath = "File/[1] Session/[0] New";
+export default class NewProjectPlugin extends PluginParentClass {
+  menuPath = "File/[1] Project/[0] New...";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -49,7 +49,7 @@ export default class NewSessionPlugin extends PluginParentClass {
     },
   ];
   filesToLoad: IFileInfo[] = [];
-  pluginId = "newsession";
+  pluginId = "newproject";
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
@@ -75,18 +75,18 @@ export default class NewSessionPlugin extends PluginParentClass {
   }
 
   /**
-   * Runs when the user presses the save session link.
+   * Runs when the user presses the save project link.
    *
    * @param {Event | undefined} e  The event (if any) that triggered this
    *                               function.
    */
-  saveSession(e: Event | undefined) {
+  saveProject(e: Event | undefined) {
     if (e !== undefined) {
       e.preventDefault();
     }
     this.closePopup();
     setTimeout(() => {
-      api.plugins.runPlugin("savesession", true);
+      api.plugins.runPlugin("saveProject", true);
     }, 1000);
   }
 
@@ -115,19 +115,19 @@ export default class NewSessionPlugin extends PluginParentClass {
         closePlugin: [
           {
             cmd: TEST_COMMAND.CLICK,
-            selector: "#modal-newsession .action-btn2",
+            selector: "#modal-newproject .action-btn2",
           },
           this.testWait(3)
         ],
         afterPluginCloses: [
           {
             cmd: TEST_COMMAND.TEXT,
-            selector: "#modal-savesession #filename-savesession-item",
+            selector: "#modal-saveProject #filename-saveProject-item",
             data: "test",
           },
           {
             cmd: TEST_COMMAND.CLICK,
-            selector: "#modal-savesession .action-btn",
+            selector: "#modal-saveProject .action-btn",
           },
           this.testWait(5),
           {
