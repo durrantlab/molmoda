@@ -60,6 +60,8 @@ you could put it in a web worker using import (rather than adding to head).
 
 Loading biotite should append (not replace) current workspace.
 
+When saving molecules, should be able to choose All, Visible, Selected
+
 # DONE
 
 Tmp open babel (some progress, but need to keep working on it).

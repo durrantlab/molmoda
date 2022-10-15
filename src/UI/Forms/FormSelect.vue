@@ -22,11 +22,7 @@
 import { randomID, slugify } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-
-export interface IFormOption {
-  description: string;
-  val: any;
-}
+import { IFormOption } from "./FormFull/FormFullInterfaces";
 
 /**
  * FormSelect component

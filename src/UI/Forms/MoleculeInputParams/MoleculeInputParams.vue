@@ -35,7 +35,6 @@ import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
-import FormSelect, { IFormOption } from "../FormSelect.vue";
 import FormWrapper from "../FormWrapper.vue";
 import {
   CombineProteinType,
@@ -46,6 +45,8 @@ import {
 import * as api from "@/Api";
 import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import Alert from "@/UI/Layout/Alert.vue";
+import FormSelect from "../FormSelect.vue";
+import { IFormOption } from "../FormFull/FormFullInterfaces";
 
 /**
  * CombineProteins component

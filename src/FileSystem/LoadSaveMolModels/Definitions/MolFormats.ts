@@ -1,3 +1,5 @@
+import { IFormOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
+
 export enum MolLoader {
     Mol3D, // 3dmoljs. Always prefer over open babel when available.
     OpenBabel,
@@ -83,6 +85,26 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.Mol3D,
     },
 };
+
+export function getFormatDescriptions(
+    hasbondOrders: boolean | undefined
+): IFormOption[] {
+    let keys = Object.keys(molFormatInformation);
+
+    if (hasbondOrders !== undefined) {
+        keys = keys.filter(
+            (key) => molFormatInformation[key].hasBondOrders === hasbondOrders
+        );
+    }
+
+    return keys.map((key) => {
+        const info = molFormatInformation[key];
+        return {
+            val: info.primaryExt,
+            description: `${info.description} (.${info.primaryExt})`,
+        } as IFormOption;
+    });
+}
 
 export function getFormatInfoGivenExt(ext: string): IFormatInfo | undefined {
     const extUpper = ext.toLowerCase();

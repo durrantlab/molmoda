@@ -1,6 +1,6 @@
 <template>
   <div :class="cls">
-    <label v-if="label !== ''" :for="randomID" class="form-label mb-0">
+    <label v-if="label !== ''" :for="randomID" :class="'form-label mb-0' + (disabled ? ' disabled-txt' : '')">
       <small v-if="smallLabel">{{ label }}</small>
       <span v-else>{{ label }}</span>
     </label>
@@ -25,6 +25,7 @@ export default class FormWrapper extends Vue {
   @Prop({ default: "" }) label!: string;
   @Prop({ default: false }) smallLabel!: boolean;
   @Prop({ default: "mb-2" }) cls!: string;
+  @Prop({ default: false }) disabled!: boolean;
 
   /**
    * Get a random ID.
@@ -42,4 +43,8 @@ export default class FormWrapper extends Vue {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss"></style>
+<style lang="scss" scoped>
+  .disabled-txt {
+    opacity: 0.5;
+  }
+</style>

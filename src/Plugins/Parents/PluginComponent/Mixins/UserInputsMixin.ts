@@ -100,6 +100,11 @@ export class UserInputsMixin extends Vue {
             if (userArg.validateFunc === undefined) {
                 userArg.validateFunc = () => true;
             }
+
+            // Enabled by default
+            if (userArg.enabled === undefined) {
+                userArg.enabled = true;
+            }
         }
     }
 

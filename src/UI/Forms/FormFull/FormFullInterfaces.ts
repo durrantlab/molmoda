@@ -31,6 +31,8 @@ export interface IFormElement {
     label?: string;
 
     validateFunc?: (val: any) => boolean;
+
+    enabled?: boolean;
 }
 
 // Below interface just to help with typescript.
@@ -41,6 +43,7 @@ export interface IGenericFormElement extends IFormElement {
     childElements?: any;
     placeHolder?: any;
     filterFunc?: any;
+    enabled?: any;
 }
 
 export interface IFormText extends IFormElement {
@@ -68,9 +71,14 @@ export interface IFormRange extends IFormNumber {
     step: number;
 }
 
+export interface IFormOption {
+    description: string;
+    val: any;
+}
+
 export interface IFormSelect extends IFormElement {
     val: string;
-    options: string[];
+    options: (string | IFormOption)[];
 }
 
 export interface IFormGroup extends IFormElement {

@@ -295,6 +295,31 @@ export abstract class PluginParentClass extends mixins(
         createTestCmdsIfTestSpecified(this);
     }
 
+    private isPluginComponentRefSet(): any {
+        const pluginComponent = this.$refs["pluginComponent"] as any;
+        if (pluginComponent === undefined) {
+            console.warn(
+                'To use the updateUserVars() function, the PluginComponent must have ref "pluginComponent".'
+            );
+            return false;
+        }
+        return pluginComponent;
+    }
+
+    protected updateUserArgEnabled(argId: string, val: boolean) {
+        const pluginComponent = this.isPluginComponentRefSet();
+        if (pluginComponent === false) {
+            return;
+        }
+
+        for (const arg of pluginComponent.userArgsToUse) {
+            if (arg.id === argId) {
+                arg.enabled = val;
+                return;
+            }
+        }
+    }
+
     /**
      * Programmatically update a user variable. Necessary because `userArgs`
      * is NOT reactive. Useful to do things like (1) prepopulate a `userArgs`
@@ -308,13 +333,11 @@ export abstract class PluginParentClass extends mixins(
      * @document
      */
     protected updateUserArgs(userArgs: IUserArg[]) {
-        const pluginComponent = this.$refs["pluginComponent"] as any;
-        if (pluginComponent === undefined) {
-            console.warn(
-                'To use the updateUserVars() function, the PluginComponent must have ref "pluginComponent".'
-            );
+        const pluginComponent = this.isPluginComponentRefSet();
+        if (pluginComponent === false) {
             return;
         }
+
         const existingNames: string[] = pluginComponent.userArgsToUse.map(
             (i: FormElement): string => {
                 return i.id;
