@@ -47,7 +47,7 @@ export function getFileNameParts(filename: string): IFileParts {
     const parts = filename.split(".");
 
     let ext = parts.pop();
-    while (parts[parts.length - 1].length <= 3) {
+    while (parts.length > 1 && parts[parts.length - 1].length <= 3) {
         ext = parts.pop() + "." + ext;
     }
 

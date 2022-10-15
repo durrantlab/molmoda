@@ -14,6 +14,7 @@ import { redo, redoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * RedoPlugin
@@ -58,6 +59,28 @@ export default class RedoPlugin extends PluginParentClass {
    */
   runJob() {
     redo(this.$store);
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [
+        this.testLoadExampleProtein(),
+        {
+          cmd: TEST_COMMAND.CLICK,
+          selector: "#menu1-edit",
+        },
+        {
+          cmd: TEST_COMMAND.CLICK,
+          selector: "#menu-plugin-undo",
+        },
+        this.testWait(3)
+      ],
+      closePlugin: [],
+      afterPluginCloses: [
+        this.testWaitForRegex("#log", 'Job "redo:.+?" ended'),
+        this.testWait(3)
+      ],
+    };
   }
 }
 </script>

@@ -13,6 +13,7 @@
     <FormWrapper
       ><FormInput
         ref="formMolName"
+        id="formMolName"
         v-model="molName"
         placeHolder="(Optional) Enter the Chemical Name (e.g., Aspirin)"
         @onChange="searchByName"
@@ -39,18 +40,19 @@ import { Options } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { slugify } from "@/Core/Utils";
-import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
 import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
-import { IFileInfo } from "@/FileSystem/Interfaces";
 import * as api from "@/Api";
 import { appName } from "@/Core/AppName";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import { loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * LoadPubChemPlugin
@@ -237,6 +239,25 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    */
   runJob(fileInfo: IFileInfo) {
     loadMoleculeFile(fileInfo);
+  }
+
+  getTests(): ITest {
+    return {
+      populateUserArgs: [
+        {
+          selector: "#modal-loadpubchem #formMolName",
+          cmd: TEST_COMMAND.TEXT,
+          data: "Aspirin",
+        },
+        // TODO: Below could wait until value populated. Hoping it will take
+        // less than 3 secs is hackish.
+        this.testWait(5)
+      ],
+      afterPluginCloses: [
+        this.testWaitForRegex("#styles", "Compound"),
+        this.testWaitForRegex("#log", 'Job "loadpubchem:.+?" ended'),
+      ],
+    };
   }
 }
 </script>

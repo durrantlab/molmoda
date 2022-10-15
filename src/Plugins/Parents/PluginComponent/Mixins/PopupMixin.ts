@@ -37,7 +37,7 @@ export class PopupMixin extends Vue {
            setTimeout(() => {
                // Note that (this as any) is ugly!
                const itemId =
-                   (this as any).userArgsToUse[0].id + "-item";
+                   (this as any).userArgsToUse[0].id + "-" + (this as any).pluginId + "-item";
 
                const firstInput = document.querySelector(
                    "#" + itemId

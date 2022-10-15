@@ -2,7 +2,11 @@
 <script src="dist/sl-vue-tree.js"></script> -->
 
 <template>
-  <div class="title" :style="indentStyle + selectedStyle(treeDatumID)">
+  <div
+    class="title"
+    :style="indentStyle + selectedStyle(treeDatumID)"
+    :data-label="treeDatum.title"
+  >
     <!-- expand icon -->
     <IconSwitcher
       v-if="treeDatum.nodes"
@@ -28,7 +32,6 @@
     <!-- title text -->
     <div
       class="title-text clickable"
-      :data-label="treeDatum.title"
       @click="titleClick(treeDatumID)"
       :style="treeDatum.visible ? '' : 'color: lightgray;'"
     >
@@ -136,7 +139,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Get the id of the molecule (node).
-   * 
+   *
    * @returns {string} The id of the molecule (node).
    */
   get treeDatumID(): MolType {
@@ -145,7 +148,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Get the indent style for the title bar.
-   * 
+   *
    * @returns {string} The indent style for the title bar.
    */
   get indentStyle(): string {
@@ -154,7 +157,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Get the data associated with this.treeData.
-   * 
+   *
    * @returns {any}  The data associated with this.treeData.
    */
   get getLocalTreeData(): any {
@@ -192,7 +195,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Get the style for a fixed-width element.
-   * 
+   *
    * @param {number} width  The width of the element.
    * @returns {string}  The style for the element.
    */
@@ -233,7 +236,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Get the node with the given id.
-   * 
+   *
    * @param {string} id  The id of the node.
    * @returns {any}  The node with the given id.
    */
@@ -243,7 +246,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Expand or collapse a molecule (node).
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   toggleExpand(id: string) {
@@ -255,7 +258,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Toggle whether a molecule is visible.
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   toggleVisible(id: string) {
@@ -276,7 +279,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Toggle whether a molecule is focused.
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   toggleFocused(id: string) {
@@ -294,7 +297,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Rename a molecule.
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   renameMol(id: string) {
@@ -303,7 +306,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Clone a molecule.
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   cloneExtractMol(id: string) {
@@ -312,7 +315,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Delete a molecule.
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   deleteMol(id: string) {
@@ -321,7 +324,7 @@ export default class TitleBar extends Vue {
 
   /**
    * Runs when the user clicks the title.
-   * 
+   *
    * @param {string} id  The id of the molecule (node).
    */
   titleClick(id: string) {

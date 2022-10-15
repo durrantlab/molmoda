@@ -23,6 +23,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * SavePNGPlugin
@@ -92,6 +93,17 @@ export default class SavePNGPlugin extends PluginParentClass {
 
     let pngUri = api.visualization.viewer.pngURI();
     api.fs.savePngUri(filename, pngUri);
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [this.testLoadExampleProtein()],
+      populateUserArgs: [this.testUserArg("filename", "test")],
+      afterPluginCloses: [
+        this.testWaitForRegex("#log", 'Job "savepng:.+?" ended'),
+        this.testWait(3)
+      ],
+    };
   }
 }
 </script>

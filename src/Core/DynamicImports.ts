@@ -7,6 +7,29 @@ export interface IDynamicImport {
     module: Promise<any>;
 }
 
+const modulesAlreadyAddedToHeader: { [key: string]: any } = {};
+
+/**
+ * Adds a js file to the header. This is useful when you can't do a legitimate
+ * dynamic import.
+ *
+ * @param  {string} url  The url of the js file to add to the header.
+ * @returns {Promise<undefined>}  A promise that resolves when the script is
+ *     loaded.
+ */
+function addJsToHeader(url: string): Promise<undefined> {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.onload = () => {
+            setTimeout(() => {
+                resolve(undefined);
+            }, 5000);
+        };
+        document.head.appendChild(script);
+    });
+}
+
 export const dynamicImports = {
     jsZip: {
         credit: {
@@ -17,7 +40,7 @@ export const dynamicImports = {
 
         /**
          * Gets the module.
-         * 
+         *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
@@ -39,7 +62,7 @@ export const dynamicImports = {
 
         /**
          * Gets the module.
-         * 
+         *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
@@ -61,7 +84,7 @@ export const dynamicImports = {
 
         /**
          * Gets the module.
-         * 
+         *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
@@ -84,7 +107,7 @@ export const dynamicImports = {
 
         /**
          * Gets the module.
-         * 
+         *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
@@ -117,6 +140,54 @@ export const dynamicImports = {
             ).then((browserfs) => {
                 return browserfs;
             });
+        },
+    },
+    openbabeljs: {
+        credit: {
+            name: "openbabeljs",
+            url: "https://github.com/partridgejiang/cheminfo-to-web/tree/master/OpenBabel3",
+            license: Licenses.GPL2,
+        },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            // NOTE: Unfortunately, the only way I could get this to work was by
+            // attaching it to the main window. A promise that resolves the
+            // module is not effective for some reason.
+
+            if (modulesAlreadyAddedToHeader["openbabeljs"] !== undefined) {
+                // Already loaded;
+                (window as any)["OpenBabel"] = modulesAlreadyAddedToHeader["openbabeljs"]
+                return Promise.resolve(undefined);
+            }    
+
+            return addJsToHeader("js/openbabeljs/openbabel.js")
+                .then(() => {
+                    const OpenBabel = (window as any)["OpenBabelModule"]();
+                    const prom1 = new Promise((resolve) => {
+                        OpenBabel.onRuntimeInitialized = () => {
+                            resolve(undefined);
+                        }
+                    })
+                    const prom2 = new Promise(function (resolve) {
+                        const checkReady = () => {
+                            console.log("checking");
+                            if (OpenBabel.ObConversionWrapper) {
+                                (window as any)["OpenBabel"] = OpenBabel;
+                                modulesAlreadyAddedToHeader["openbabeljs"] = OpenBabel;
+                                resolve(undefined);
+                            } else {
+                                setTimeout(checkReady, 500);
+                            }
+                        };
+                        checkReady();
+                    });
+                    return Promise.all([prom1, prom2]);
+                });
         },
     },
 };

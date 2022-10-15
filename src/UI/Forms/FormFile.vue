@@ -25,9 +25,9 @@
 import { randomID } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { IFileInfo } from "@/FileSystem/Interfaces";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import * as api from "@/Api/";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * FormFile component
@@ -93,13 +93,15 @@ export default class FormFile extends Vue {
    *     file.
    */
   fileToFileInfo(file: File): Promise<IFileInfo> {
+    // Type is file extension, uppercase.
+    const type = this.getType(file.name);
+
+    const treatAsZip = this.isZip || type == "BIOTITE";
+
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
       reader.onload = (e: ProgressEvent) => {
-        // Type is file extension, uppercase.
-        const type = this.getType(file.name);
-
         // If it's not an acceptable file type, abort effort.
         if (this.allAcceptableFileTypes.indexOf(type) === -1) {
           reject(`Cannot load files of type ${type}`);
@@ -108,13 +110,13 @@ export default class FormFile extends Vue {
         let fileReader = e.target as FileReader;
         let txt = fileReader.result as string;
         let txtPromise: Promise<string>;
-        if (!this.isZip) {
+        if (!treatAsZip) {
           txtPromise = new Promise((resolve) => {
             txt = txt.replace(/\r\n/g, "\n");
             resolve(txt);
           });
         } else {
-          // It's a zip file
+          // It's a zip file (or a biotite file).
           txtPromise = api.fs.uncompress(txt, "file.json");
         }
 
@@ -137,7 +139,7 @@ export default class FormFile extends Vue {
         reject(e);
       };
 
-      if (!this.isZip) {
+      if (!treatAsZip) {
         reader.readAsText(file);
       } else {
         // It's a zip file.
@@ -149,7 +151,7 @@ export default class FormFile extends Vue {
   /**
    * Runs when the file changes.
    */
-  onFileChanged(/* _e: Event*/ ) {
+  onFileChanged(/* _e: Event */ ) {
     let input = this.$refs.fileinput as HTMLInputElement;
     let files = input.files;
 

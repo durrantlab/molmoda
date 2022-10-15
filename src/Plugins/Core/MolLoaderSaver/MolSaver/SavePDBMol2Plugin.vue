@@ -22,20 +22,17 @@ import {
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { convertToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertToPDB";
 import { ISaveTxt } from "@/Core/FS";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
-import {
-  GLModel,
-  IAtom,
-  IMolContainer,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { convertMolContainer } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
 
 /**
  * SavePDBMol2Plugin
@@ -144,43 +141,60 @@ export default class SavePDBMol2Plugin extends PluginParentClass {
 
     const mergeNonCompounds = false;
 
-    let compoundTxts = convertToPDB(
-      compoundNodes.map((node) => node.model) as GLModel[],
+    let compoundTxtsPromises = convertMolContainer(
+      compoundNodes, // TODO: Should be mol2
+      "mol2",
       false // Never merge compounds
-    );
+    ).then((compoundTxts: string[]) => {
+      return compoundTxts.map((txt, idx) => {
+        // Prepend the chain
+        let molEntry = compoundNodes[idx];
 
-    let nonCompoundTxts = convertToPDB(
-      nonCompoundNodes.map((node) => node.model) as GLModel[],
-      mergeNonCompounds
-    );
-
-    let files = compoundTxts.map((txt, idx) => {
-      // Prepend the chain
-      let molEntry = compoundNodes[idx];
-
-      return {
-        fileName: this._getFilename(molEntry, "pdb"),
-        content: txt,
-        ext: ".pdb",
-      } as ISaveTxt;
+        return {
+          fileName: this._getFilename(molEntry, "mol2"),
+          content: txt,
+          ext: ".mol2",
+        } as ISaveTxt;
+      });
     });
 
-    files.push(
-      ...nonCompoundTxts.map((txt, idx) => {
+    let nonCompoundTxtsPromises = convertMolContainer(
+      nonCompoundNodes,
+      "pdb",
+      mergeNonCompounds
+    ).then((nonCompoundTxts: string[]) => {
+      return nonCompoundTxts.map((txt, idx) => {
         return {
           fileName: this._getFilename(nonCompoundNodes[idx], "pdb"),
           content: txt,
           ext: ".pdb",
         } as ISaveTxt;
-      })
-    );
+      });
+    });
 
-    return api.fs.saveZipWithTxtFiles(
-      {
-        fileName: filename,
-      } as ISaveTxt,
-      files
-    );
+    return Promise.all([compoundTxtsPromises, nonCompoundTxtsPromises])
+      .then((txts: ISaveTxt[][]) => {
+        return txts[0].concat(txts[1]);
+      })
+      .then((files: ISaveTxt[]) => {
+        return api.fs.saveZipWithTxtFiles(
+          {
+            fileName: filename,
+          } as ISaveTxt,
+          files
+        );
+      });
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [this.testLoadExampleProtein()],
+      populateUserArgs: [this.testUserArg("filename", "test")],
+      afterPluginCloses: [
+        this.testWaitForRegex("#log", 'Job "savepdbmol2:.+?" ended'),
+        this.testWait(3),
+      ],
+    };
   }
 }
 </script>

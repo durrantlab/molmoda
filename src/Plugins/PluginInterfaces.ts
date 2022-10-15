@@ -21,6 +21,12 @@ export const Licenses = {
         // name: "GNU General Public License, Version 3",
         url: "https://opensource.org/licenses/GPL-3.0",
     } as ILicense,
+    GPL2: {
+        // NOTE: Viral license! Avoid if possible.
+        name: "GPL-2.0",
+        // name: "GNU General Public License, Version 2",
+        url: "https://opensource.org/licenses/GPL-2.0",
+    } as ILicense,
     BSD3: {
         name: "BSD-3-Clause",
         // name: "BSD 3-Clause License",

@@ -27,6 +27,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * DeleteMolPlugin
@@ -119,6 +120,18 @@ export default class DeleteMolPlugin extends PluginParentClass {
     }
 
     return Promise.resolve(undefined);
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [
+        this.testLoadExampleProtein(),
+        ...this.testExpandMoleculesTree("4WP4.pdb"),
+        this.testSelectMoleculeInTree("Protein")
+      ],
+      // closePlugin: [],
+      afterPluginCloses: [],
+    };
   }
 }
 </script>

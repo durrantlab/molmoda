@@ -106,7 +106,7 @@ Every plugin class must define the following functions and variables.
 #### `contributorCredits` (variable) <a id="contributorCredits"></a>
 
 A list of people to credit.
- Type: `IContributorCredit[]`.  `IContributorCredit` is defined in [PluginInterfaces.ts, line 63](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L63).
+ Type: `IContributorCredit[]`.  `IContributorCredit` is defined in [PluginInterfaces.ts, line 69](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L69).
 
 #### `menuPath` (variable) <a id="menuPath"></a>
 
@@ -125,12 +125,12 @@ Each plugin is associated with specific jobs (calculations). This function runs 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves the result (a string) when the job is done, or a string itself (if the job is synchronous), or undefined if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 36](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L36).
+| `(returns)` | `RunJobReturn` | A promise that resolves the result (any) when the job is done, or a string itself (if the job is synchronous), or undefined if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 30](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L30).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 
 A list of software credits. If the plugin uses no third-party packages, set this to `[]`.
- Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 57](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L57).
+ Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 63](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L63).
 
 #### `userArgs` (variable) <a id="userArgs"></a>
 
@@ -194,7 +194,7 @@ Adds a selenium test command to load a sample molecule (small protein and ligand
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITestCommand` | The command to wait for the molecule to load. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
+| `(returns)` | `ITestCommand` | The command to wait for the molecule to load. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 14](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L14).
 
 #### `testPressButton` (function) <a id="testPressButton"></a>
 
@@ -203,7 +203,7 @@ Adds a selenium test command to press a plugin (popup) button.
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `selector` | `string` | The css selector of the button.
-| `(returns)` | `ITestCommand` | The command to run. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
+| `(returns)` | `ITestCommand` | The command to run. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 14](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L14).
 
 #### `testUserArg` (function) <a id="testUserArg"></a>
 
@@ -213,7 +213,7 @@ If running a selenium test, this function will generate the command to test a sp
 | --------- | ---- | -----------
 | `argName` | `string` | The name of the specific user argument.
 | `argVal` | `any` | The value of the specific user argument.
-| `(returns)` | `ITestCommand` | The command to test the specific user argument. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
+| `(returns)` | `ITestCommand` | The command to test the specific user argument. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 14](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L14).
 
 #### `testWaitForRegex` (function) <a id="testWaitForRegex"></a>
 
@@ -223,7 +223,7 @@ If running a selenium test, this function will generate the command to wait unti
 | --------- | ---- | -----------
 | `selector` | `string` | The selector of the DOM element.
 | `regex` | `string` | The regex to wait for, as a string.
-| `(returns)` | `ITestCommand` | The command to wait until the DOM element contains the specified text. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
+| `(returns)` | `ITestCommand` | The command to wait until the DOM element contains the specified text. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 14](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L14).
 
 #### `updateUserArgs` (function) <a id="updateUserArgs"></a>
 
@@ -240,6 +240,14 @@ The following functions and variables have good default implementations, so most
 plugin classes should not define them. But they can be defined if needed
 (advanced use, rare cases).
 
+
+#### `getTests` (function) <a id="getTests"></a>
+
+Gets the selenium test commands for the plugin. For advanced use.
+
+| Parameter | Type | Description
+| --------- | ---- | -----------
+| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [ParentPluginTestFuncs.ts, line 20](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L20). `ITest` is defined in [ParentPluginTestFuncs.ts, line 20](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L20).
 
 #### `onEndJobLogMsg` (function) <a id="onEndJobLogMsg"></a>
 
@@ -283,37 +291,5 @@ Provides the message to log when the plugin job is submitted. Return "" if you w
 | --------- | ---- | -----------
 | `pluginId` | `string` | The plugin ID.
 | `(returns)` | `string` | The message to log.
-
-#### `testCmdsAfterPopupClosed` (function) <a id="testCmdsAfterPopupClosed"></a>
-
-Adds selenium test commands to run when testing the plugin. These commands run after the plugin popup is closed, and the job is running.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `ITestCommand[]` | The commands to run. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
-
-#### `testCmdsBeforePopupOpens` (function) <a id="testCmdsBeforePopupOpens"></a>
-
-Adds selenium test commands to run when testing the plugin. These commands run before the popup opens (and before menu clicking).
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `ITestCommand[]` | The commands to run. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
-
-#### `testCmdsToClosePlugin` (function) <a id="testCmdsToClosePlugin"></a>
-
-Adds a selenium test command to run when testing the plugin. This command clicks the popup button to close the plugin.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `ITestCommand[]` | The commands to run (probably only one, to press the button). `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
-
-#### `testCmdsToPopulateUserArgs` (function) <a id="testCmdsToPopulateUserArgs"></a>
-
-Adds selenium test commands to run when testing the plugin. These commands populate the user arguments. Do not include the command to click the plugin action button.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `ITestCommand[]` | The commands to run. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 12](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L12).
 
 

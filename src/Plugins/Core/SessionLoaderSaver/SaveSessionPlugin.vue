@@ -23,6 +23,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * SaveSessionPlugin
@@ -145,6 +146,17 @@ export default class SaveSessionPlugin extends PluginParentClass {
         console.log(err);
         return undefined;
       });
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [this.testLoadExampleProtein()],
+      populateUserArgs: [this.testUserArg("filename", "test")],
+      afterPluginCloses: [
+        this.testWaitForRegex("#log", 'Job "savesession:.+?" ended'),
+        this.testWait(3)
+      ],
+    };
   }
 }
 </script>

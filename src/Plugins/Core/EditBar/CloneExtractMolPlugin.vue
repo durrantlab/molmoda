@@ -70,6 +70,7 @@ import {
   IFormText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -163,13 +164,13 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-   checkPluginAllowed(): string | null {
+  checkPluginAllowed(): string | null {
     return checkAnyMolSelected(this as any);
   }
 
   /**
    * Runs when the mode changes (between clone and extract).
-   * 
+   *
    * @param {IUserArg[]} userArgs  The updated user variables.
    */
   onDataChanged(userArgs: IUserArg[]): void {
@@ -260,6 +261,39 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
     }
 
     return Promise.resolve(undefined);
+  }
+
+  getTests(): ITest[] {
+    return [
+      // First test cloning
+      {
+        beforePluginOpens: [
+          this.testLoadExampleProtein(),
+          ...this.testExpandMoleculesTree("4WP4.pdb"),
+          this.testSelectMoleculeInTree("Protein"),
+        ],
+        afterPluginCloses: [
+          this.testWaitForRegex("#molecules", "Protein .cloned."),
+        ],
+      },
+
+      // Second test extracting
+      {
+        beforePluginOpens: [
+          this.testWaitForRegex("#styles", "Protein"),
+          ...this.testExpandMoleculesTree("4WP4.pdb"),
+          this.testSelectMoleculeInTree("Protein"),
+        ],
+        populateUserArgs: [
+          {
+            cmd: TEST_COMMAND.CLICK,
+            selector: "#modal-cloneextractmol #doExtract-cloneextractmol-item",
+          },
+          this.testUserArg("newName", "2"),
+        ],
+        afterPluginCloses: [this.testWaitForRegex("#molecules", "Protein2")],
+      },
+    ];
   }
 }
 </script>

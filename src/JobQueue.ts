@@ -33,11 +33,25 @@ function _runNextJob(): number {
         const func = registeredJobTypes[job.commandName];
         jobCurrentlyRunning = true;
         console.log("Running job.");
-        func(job.id, job.params);
-        console.log("Done running job.");
-        jobCurrentlyRunning = false;
-
-        messagesApi.waitSpinner(false);
+        const resp = func(job.id, job.params);
+        if (resp instanceof Promise) {
+            resp.then(() => {
+                console.log("Done running job.");
+                jobCurrentlyRunning = false;
+                messagesApi.waitSpinner(false);
+                return;
+            })
+            .catch(() => {
+                console.log("Done running job.");
+                console.warn("error");
+                jobCurrentlyRunning = false;
+                messagesApi.waitSpinner(false);
+            });
+        } else {
+            console.log("Done running job.");
+            jobCurrentlyRunning = false;
+            messagesApi.waitSpinner(false);
+        }
 
         // If delay not defined or 0, run next one in queue.
         if (job.delayAfterRun === undefined || job.delayAfterRun === 0) {

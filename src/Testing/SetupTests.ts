@@ -14,7 +14,9 @@ export function setupTests() {
         return;
     }
 
-    setPluginToTest(name);
+    const idx = urlParams.get("index");
+
+    setPluginToTest(name, idx === null ? undefined : parseInt(idx, 10));
 
     /**
      * Detects any javascript errors and logs them. Selenium can read these. See

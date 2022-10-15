@@ -27,6 +27,7 @@ import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * RenameMolPlugin
@@ -99,6 +100,21 @@ export default class RenameMolPlugin extends PluginParentClass {
       this.nodeToActOn.title = userArgs[0].val;
     }
     return Promise.resolve(undefined);
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [
+        this.testLoadExampleProtein(),
+        ...this.testExpandMoleculesTree("4WP4.pdb"),
+        this.testSelectMoleculeInTree("Protein")
+      ],
+      populateUserArgs: [
+        this.testUserArg("newName", "2"),
+      ],
+      // closePlugin: [],
+      // afterPluginCloses: [],
+    };
   }
 }
 </script>

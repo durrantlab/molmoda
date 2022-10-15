@@ -28,7 +28,7 @@ import { TestingMixin } from "./Mixins/TestingMixin";
 
 
 export type RunJobReturn =
-    | Promise<string | undefined>
+    | Promise<any>
     | string
     | void
     | undefined;
@@ -185,9 +185,9 @@ export abstract class PluginParentClass extends mixins(
      *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
-     * @returns {RunJobReturn}  A promise that resolves the result (a string)
-     *     when the job is done, or a string itself (if the job is synchronous),
-     *     or undefined if there's nothing to return.
+     * @returns {RunJobReturn}  A promise that resolves the result (any) when
+     *     the job is done, or a string itself (if the job is synchronous), or
+     *     undefined if there's nothing to return.
      */
     abstract runJob(parameterSet: any): RunJobReturn;
 
@@ -259,7 +259,6 @@ export abstract class PluginParentClass extends mixins(
         this._validatePlugin(this.pluginId);
 
         if (this.menuPath === "") {
-            // debugger;
             console.log(">>", this.pluginId);
         }
 

@@ -16,6 +16,7 @@
     <slot></slot>
     <FormFull
       ref="formfull"
+      :id="pluginId"
       v-model="userArgsToUse"
       @onChange="onChange"
     ></FormFull>
@@ -41,6 +42,7 @@ import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeIn
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { UserInputsMixin } from "./Mixins/UserInputsMixin";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * PopupOptionalPlugin component
@@ -60,10 +62,10 @@ export default class PluginComponent extends mixins(
 
   /** The user arguments (plugin parameters) that the end user can specify. */
   @Prop({ required: true }) userArgs!: FormElement[];
-  
+
   /** A unique id that defines the plugin. Must be lower case. */
   @Prop({ required: true }) pluginId!: string;
-  
+
   /** Whether the action button (e.g., "Load") is enabled. */
   @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
 
@@ -85,9 +87,9 @@ export default class PluginComponent extends mixins(
   /** The text that appears on the cancel button (e.g., "Cancel"). */
   @Prop({ default: "Cancel" }) cancelBtnTxt!: string;
 
-  /** 
+  /**
    * The popup variant (i.e., whether to style the popup as primary, secondary,
-   * success, danger, etc.). 
+   * success, danger, etc.).
    */
   @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
 
@@ -122,32 +124,44 @@ export default class PluginComponent extends mixins(
    * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
-    const userArgs: IUserArg[] = collapseFormElementArray(
-      this.userArgsToUse
-    );
+    const userArgs: IUserArg[] = collapseFormElementArray(this.userArgsToUse);
     this.$emit("update:modelValue", false);
     // this.closePopup();
 
     // If one of the user arguments is of type MoleculeInputParams, replace
     // it with IFileInfo objects.
+    let combineIdxs: number[] = [];
+    let combinePromises: Promise<IFileInfo[][]>[] = [];
     for (const idx in userArgs) {
       const param = userArgs[idx];
       if (param.val.combineProteinType) {
-        userArgs[idx].val = makeMoleculeInput(
-          param.val,
-          this.$store.state["molecules"]
+        combineIdxs.push(parseInt(idx));
+        combinePromises.push(
+          makeMoleculeInput(param.val, this.$store.state["molecules"])
         );
       }
     }
 
-    /**
-     * Runs when the primary action button is pressed, after the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The specified user arguments.
-     */
-    this.$emit("onPopupDone", userArgs);
+    Promise.all(combinePromises)
+      .then((combinedMols: IFileInfo[][][]) => {
+        for (let idx = 0; idx < combineIdxs.length; idx++) {
+          let i = combineIdxs[idx];
+          userArgs[i].val = combinedMols[idx];
+        }
 
-    // this.submitJobs([userArgs]);
+        /**
+         * Runs when the primary action button is pressed, after the popup closes.
+         *
+         * @param {IUserArg[]} userArgs  The specified user arguments.
+         */
+        this.$emit("onPopupDone", userArgs);
+
+        return;
+      })
+      .catch((err) => {
+        console.error(err);
+        return;
+      });
   }
 
   /**

@@ -1,4 +1,4 @@
-import { IFileInfo } from "@/FileSystem/Interfaces";
+import { IFileInfo } from "@/FileSystem/Definitions";
 import * as api from "@/Api";
 
 /**

@@ -24,6 +24,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * SaveVRMLPlugin
@@ -100,6 +101,17 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       content: vrmlTxt,
       ext: ".vrml",
     } as ISaveTxt);
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [this.testLoadExampleProtein()],
+      populateUserArgs: [this.testUserArg("filename", "test")],
+      afterPluginCloses: [
+        this.testWaitForRegex("#log", 'Job "savevrml:.+?" ended'),
+        this.testWait(3)
+      ],
+    };
   }
 }
 </script>

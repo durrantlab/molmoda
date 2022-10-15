@@ -10,7 +10,7 @@ import {
     nucleicSel,
     proteinSel,
     solventSel,
-} from "./Lookups/ComponentSelections";
+} from "../Definitions/ComponentSelections";
 import {
     ionsStyle,
     ligandsStyle,
@@ -19,7 +19,7 @@ import {
     nucleicStyle,
     proteinStyle,
     solventStyle,
-} from "./Lookups/DefaultStyles";
+} from "../Definitions/DefaultStyles";
 import {
     GLModel,
     IAtom,
@@ -27,7 +27,7 @@ import {
     IStyleAndSel,
     MolType,
     SelectedType,
-} from "../../UI/Navigation/TreeView/TreeInterfaces";
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     getAllNodesFlattened,
     getTerminalNodes,

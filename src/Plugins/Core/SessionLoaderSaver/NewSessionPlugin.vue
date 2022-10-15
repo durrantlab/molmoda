@@ -22,12 +22,13 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
-import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
 import * as api from "@/Api";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * NewSessionPlugin
@@ -95,6 +96,48 @@ export default class NewSessionPlugin extends PluginParentClass {
   runJob(/* fileInfo: IFileInfo */) {
     setStoreIsDirty(false);
     window.location.reload();
+  }
+
+  getTests(): ITest[] {
+    return [
+      // First test without saving first
+      {
+        beforePluginOpens: [this.testLoadExampleProtein()],
+        // populateUserArgs: [],
+        // closePlugin: [],
+        afterPluginCloses: [this.testWait(1)],
+      },
+
+      // Test with saving first (secondary button)
+      {
+        beforePluginOpens: [this.testWaitForRegex("#styles", "Protein")],
+        // populateUserArgs: [],
+        closePlugin: [
+          {
+            cmd: TEST_COMMAND.CLICK,
+            selector: "#modal-newsession .action-btn2",
+          },
+          this.testWait(3)
+        ],
+        afterPluginCloses: [
+          {
+            cmd: TEST_COMMAND.TEXT,
+            selector: "#modal-savesession #filename-savesession-item",
+            data: "test",
+          },
+          {
+            cmd: TEST_COMMAND.CLICK,
+            selector: "#modal-savesession .action-btn",
+          },
+          this.testWait(5),
+          {
+            cmd: TEST_COMMAND.CLICK,
+            selector: "#modal-simplemsg .cancel-btn",
+          },
+          this.testWait(1),
+        ],
+      },
+    ];
   }
 }
 </script>

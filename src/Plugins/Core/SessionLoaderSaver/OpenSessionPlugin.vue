@@ -1,10 +1,10 @@
 <template>
   <PluginComponent
     :userArgs="userArgs"
-    title="Load a Session"
+    title="Open a File"
     v-model="open"
     cancelBtnTxt="Cancel"
-    actionBtnTxt="Load"
+    actionBtnTxt="Open"
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
@@ -13,9 +13,10 @@
       ref="formFile"
       :multiple="false"
       @onFilesLoaded="onFilesLoaded"
-      accept=".biotite"
-      :isZip="true"
+      :accept="accept"
+      id="formFile-loadsession-item"
     />
+    <!-- :isZip="true" -->
   </PluginComponent>
 </template>
 
@@ -23,11 +24,14 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
-import { IFileInfo } from "../../../FileSystem/Interfaces";
 import { jsonToState } from "@/Store/LoadAndSaveStore";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { IFileInfo } from "@/FileSystem/Definitions";
+import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import * as api from "@/Api";
 
 /**
  * OpenSessionPlugin
@@ -52,6 +56,7 @@ export default class OpenSessionPlugin extends PluginParentClass {
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
+  accept = `.biotite,${fileTypesAccepts}`;
 
   /**
    * Runs when the files are loaded.
@@ -86,16 +91,34 @@ export default class OpenSessionPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(fileInfo: IFileInfo): Promise<undefined> {
-    return jsonToState(fileInfo.contents)
-      .then((state) => {
-        this.$store.replaceState(state);
-        return undefined;
-      })
-      .catch((err: any) => {
-        console.error(err);
-        return undefined;
-      });
+  runJob(fileInfo: IFileInfo): Promise<any> {
+    if (fileInfo.type === "BIOTITE") {
+      // It's a biotite file.
+      return jsonToState(fileInfo.contents)
+        .then((state) => {
+          this.$store.replaceState(state);
+          return undefined;
+        })
+        .catch((err: any) => {
+          console.error(err);
+          return undefined;
+        });
+    }
+
+    // It's not a biotite file (e.g., a PDB file).
+    return loadMoleculeFile(fileInfo);  // promise
+  }
+
+  getTests(): ITest {
+    return {
+      populateUserArgs: [
+        this.testUserArg("formFile", "file://./src/Testing/test.biotite"),
+      ],
+      afterPluginCloses: [
+        this.testWaitForRegex("#styles", "Protein"),
+        this.testWaitForRegex("#log", 'Job "loadsession:.+?" ended'),
+      ],
+    };
   }
 }
 </script>

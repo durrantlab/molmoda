@@ -9,7 +9,12 @@
     @onPopupDone="onPopupDone"
     :isActionBtnEnabled="filesToLoad.length > 0"
   >
-    <FormFile ref="formFile" @onFilesLoaded="onFilesLoaded" :accept="accept" />
+    <FormFile
+      ref="formFile"
+      @onFilesLoaded="onFilesLoaded"
+      :accept="accept"
+      id="formFile-loadfile-item"
+    />
   </PluginComponent>
 </template>
 
@@ -20,14 +25,13 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import {
-  fileTypesAccepts,
-  loadMoleculeFile,
-} from "@/FileSystem/LoadMoleculeFiles";
-import { IFileInfo } from "@/FileSystem/Interfaces";
+
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * LoadFilePlugin
@@ -53,7 +57,7 @@ export default class LoadFilePlugin extends PluginParentClass {
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
-  
+
   /**
    * Runs when the files are loaded.
    *
@@ -84,9 +88,23 @@ export default class LoadFilePlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IFileInfo} fileInfo  Information about the molecule to load.
+   * @returns {RunJobReturn}  The return object. A promise that resolves the
+   *     molecule container.
    */
-  runJob(fileInfo: IFileInfo) {
-    loadMoleculeFile(fileInfo);
+  runJob(fileInfo: IFileInfo): RunJobReturn {
+    return loadMoleculeFile(fileInfo);  // promise
+  }
+
+  getTests(): ITest {
+    return {
+      populateUserArgs: [
+        this.testUserArg("formFile", "file://./src/Testing/4WP4.pdb"),
+      ],
+      afterPluginCloses: [
+        this.testWaitForRegex("#styles", "Protein"),
+        this.testWaitForRegex("#log", 'Job "loadfile:.+?" ended'),
+      ],
+    };
   }
 }
 </script>

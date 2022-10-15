@@ -15,6 +15,7 @@ import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * UndoPlugin
@@ -66,6 +67,18 @@ export default class UndoPlugin extends PluginParentClass {
    */
   runJob() {
     undo(this.$store);
+  }
+
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [this.testLoadExampleProtein()],
+      // populateUserArgs: [this.testUserArg("filename", "test")],
+      closePlugin: [],
+      afterPluginCloses: [
+        this.testWaitForRegex("#log", 'Job "undo:.+?" ended'),
+        this.testWait(3)
+      ],
+    };
   }
 }
 </script>

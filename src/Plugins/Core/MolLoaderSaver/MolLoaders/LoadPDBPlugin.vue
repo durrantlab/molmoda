@@ -12,8 +12,6 @@
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
-import { IFileInfo } from "@/FileSystem/Interfaces";
 import {
   IContributorCredit,
   ISoftwareCredit,
@@ -24,7 +22,9 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, ITestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * LoadPDBPlugin
@@ -102,15 +102,14 @@ export default class LoadPDBPlugin extends PluginParentClass {
     loadMoleculeFile(fileInfo);
   }
 
-  testCmdsToPopulateUserArgs(): ITestCommand[] {
-    return [this.testUserArg("pdbId", "1XDN")];
-  }
-
-  testCmdsAfterPopupClosed(): ITestCommand[] {
-    return [
-      this.testWaitForRegex("#styles", "Protein"),
-      this.testWaitForRegex("#log", 'Job "loadpdb:.+?" ended'),
-    ];
+  getTests(): ITest {
+    return {
+      populateUserArgs: [this.testUserArg("pdbId", "1XDN")],
+      afterPluginCloses: [
+        this.testWaitForRegex("#styles", "Protein"),
+        this.testWaitForRegex("#log", 'Job "loadpdb:.+?" ended'),
+      ],
+    };
   }
 }
 </script>

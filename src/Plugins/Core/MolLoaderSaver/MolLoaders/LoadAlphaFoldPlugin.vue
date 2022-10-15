@@ -12,8 +12,6 @@
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import { loadMoleculeFile } from "@/FileSystem/LoadMoleculeFiles";
-import { IFileInfo } from "@/FileSystem/Interfaces";
 import { loadRemote } from "./Utils";
 import {
   IContributorCredit,
@@ -24,6 +22,9 @@ import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
  * LoadAlphaFoldPlugin
@@ -111,6 +112,16 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    */
   runJob(fileInfo: IFileInfo) {
     loadMoleculeFile(fileInfo);
+  }
+
+  getTests(): ITest {
+    return {
+      populateUserArgs: [this.testUserArg("uniprot", "P86927")],
+      afterPluginCloses: [
+        this.testWaitForRegex("#styles", "Protein"),
+        this.testWaitForRegex("#log", 'Job "loadalphafold:.+?" ended'),
+      ],
+    };
   }
 }
 </script>

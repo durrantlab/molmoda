@@ -56,7 +56,7 @@ import { appName } from "@/Core/AppName";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, ITestCommand } from "@/Testing/ParentPluginTestFuncs";
 
 /** AboutPlugin */
 @Options({
@@ -138,12 +138,11 @@ export default class AboutPlugin extends PluginParentClass {
     return;
   }
 
-  testCmdsToClosePlugin(): ITestCommand[] {
-    return [this.testPressButton(".cancel-btn")];
-  }
-
-  testCmdsAfterPopupClosed(): ITestCommand[] {
-    return [];
+  getTests(): ITest {
+    return {
+      closePlugin: [this.testPressButton(".cancel-btn")],
+      afterPluginCloses: []
+    }
   }
 }
 </script>

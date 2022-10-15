@@ -7,11 +7,14 @@
       >
         <Accordian :id="formElem.id">
           <AccordianItem
-            :id="formElem.id + '-item'"
+            :id="itemId(formElem)"
             :title="formElem.label"
             :showInitially="asGroup(formElem).startOpened"
           >
-            <FormFull v-model="asGroup(formElem).childElements"></FormFull>
+            <FormFull
+              v-model="asGroup(formElem).childElements"
+              :id="id"
+            ></FormFull>
           </AccordianItem>
         </Accordian>
       </FormWrapper>
@@ -29,7 +32,7 @@
           :placeHolder="makeGeneric(formElem).placeHolder"
           :filterFunc="makeGeneric(formElem).filterFunc"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         />
         <FormInput
           v-else-if="formElem.type === FormElementType.Number"
@@ -38,21 +41,21 @@
           :placeHolder="makeGeneric(formElem).placeHolder"
           :filterFunc="makeGeneric(formElem).filterFunc"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         />
         <FormInput
           v-else-if="formElem.type === FormElementType.Color"
           type="color"
           v-model.number="makeGeneric(formElem).val"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         />
         <FormSelect
           v-else-if="formElem.type === FormElementType.Select"
           v-model="makeGeneric(formElem).val"
           :options="getSelectOptions(formElem)"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         />
         <FormInput
           v-else-if="formElem.type === FormElementType.Range"
@@ -62,14 +65,14 @@
           :max="getRangeMinMaxStep(formElem).max"
           :step="getRangeMinMaxStep(formElem).step"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         />
         <FormCheckBox
           v-else-if="formElem.type === FormElementType.Checkbox"
           v-model.boolean="makeGeneric(formElem).val"
           :text="makeGeneric(formElem).label"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         />
         <!-- :placeHolder="makeGeneric(formElem).placeHolder" -->
         <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->
@@ -77,7 +80,7 @@
           v-else-if="formElem.type === FormElementType.MoleculeInputParams"
           v-model="makeGeneric(formElem).val"
           @onChange="onDataUpdated"
-          :id="formElem.id + '-item'"
+          :id="itemId(formElem)"
         >
         </MoleculeInputParams>
       </FormWrapper>
@@ -121,6 +124,7 @@ import FormCheckBox from "../FormCheckBox.vue";
 })
 export default class FormFull extends Vue {
   @Prop({ required: true }) modelValue!: FormElement[];
+  @Prop({ required: true }) id!: FormElement[];
 
   FormElementType = FormElemType; // So accessible in template
 
@@ -147,6 +151,10 @@ export default class FormFull extends Vue {
       max: val2.max,
       step: val2.step,
     };
+  }
+
+  itemId(formElem: FormElement): string {
+    return `${formElem.id}-${this.id}-item`;
   }
 
   /**

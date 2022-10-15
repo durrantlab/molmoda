@@ -7,12 +7,29 @@ export enum TEST_COMMAND {
     TEXT = "text",
     WAIT = "wait",
     WAIT_UNTIL_REGEX = "waitUntilRegex",
+    UPLOAD = "upload",
+    ADD_TESTS = "addTests",
 }
 
 export interface ITestCommand {
     selector?: string;
     cmd: TEST_COMMAND;
     data?: any;
+}
+
+export interface ITest {
+    // Run before the popup opens (and before menu clicking).
+    beforePluginOpens?: ITestCommand[];
+
+    // Populate the user arguments. Do not include the command to click the
+    // plugin action button.
+    populateUserArgs?: ITestCommand[];
+
+    // Clicks the popup button to close the plugin.
+    closePlugin?: ITestCommand[];
+
+    // Run after the plugin popup is closed, and the job is running.
+    afterPluginCloses?: ITestCommand[];
 }
 
 /**
@@ -84,24 +101,87 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
 }
 
 /**
+ * If running selenium tests, this function will add any unspecified (default)
+ * test commands.
+ *
+ * @param  {ITest | ITest[]} tests     The existing test definition(s).
+ * @param  {string}        pluginId  The plugin id.
+ * @returns {ITest[]}  The test definitions.
+ */
+function addTestDefaults(tests: ITest | ITest[], pluginId: string): ITest[] {
+    // If tests is ITest, wrap it in an array.
+    if (!Array.isArray(tests)) {
+        tests = [tests];
+    }
+
+    // If any elements of each test are undefined, replace with defaults.
+    for (const test of tests) {
+        test.beforePluginOpens = test.beforePluginOpens || [];
+        test.populateUserArgs = test.populateUserArgs || [];
+        test.closePlugin = test.closePlugin || [
+            {
+                cmd: TEST_COMMAND.CLICK,
+                selector: `#modal-${pluginId} .action-btn`,
+            },
+        ];
+        test.afterPluginCloses = test.afterPluginCloses || [
+            {
+                cmd: TEST_COMMAND.WAIT_UNTIL_REGEX,
+                selector: "#log",
+                data: 'Job "' + pluginId + ':.+?" ended',
+            },
+        ];
+    }
+
+    return tests;
+}
+
+/**
  * If running a selenium test, this function will generate the commands for the
  * test. Opens plugin, runs plugin-specific test, presses action button.
  *
  * @param  {any} plugin  The plugin to test.
  */
 export function createTestCmdsIfTestSpecified(plugin: any) {
-    if (PluginToTest.pluginToTest === plugin.pluginId && plugin.pluginId !== "") {
+    if (
+        PluginToTest.pluginToTest === plugin.pluginId &&
+        plugin.pluginId !== ""
+    ) {
+        const tests = addTestDefaults(plugin.getTests(), plugin.pluginId); // Defined in each plugin
+
+        // If there is more than one test but pluginTestIndex is undefined, send
+        // back command to add tests.
+        if (tests.length > 1 && PluginToTest.pluginTestIndex === undefined) {
+            plugin.$store.commit("setVar", {
+                name: "cmds",
+                val: JSON.stringify([
+                    {
+                        cmd: TEST_COMMAND.ADD_TESTS,
+                        data: tests.length
+                    },
+                ]),
+                module: "test",
+            });
+            return;
+        }
+
+        const test = tests[PluginToTest.pluginTestIndex || 0];
+
         // It is this plugin that should be tested.
         const cmds = [
-            ...plugin.testCmdsBeforePopupOpens(), // Defined in each plugin
+            ...(test.beforePluginOpens as ITestCommand[]), // Defined in each plugin
             ..._openPluginCmds(plugin),
-            ...plugin.testCmdsToPopulateUserArgs(), // Defined in each plugin
+            ...(test.populateUserArgs as ITestCommand[]), // Defined in each plugin
             {
                 cmd: TEST_COMMAND.WAIT,
                 data: 1,
             },
-            ...plugin.testCmdsToClosePlugin(), // Defined in each plugin
-            ...plugin.testCmdsAfterPopupClosed(), // Defined in each plugin
+            ...(test.closePlugin as ITestCommand[]), // Defined in each plugin
+            ...(test.afterPluginCloses as ITestCommand[]), // Defined in each plugin
+            {
+                cmd: TEST_COMMAND.WAIT,
+                data: 0.5,
+            },
         ] as ITestCommand[];
 
         plugin.$store.commit("setVar", {

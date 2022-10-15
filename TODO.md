@@ -42,8 +42,6 @@ for "This doesn't account for ligands!"
 
 2D images show on click. Will require babel.
 
-*** Every plugin must have code for running a test. Implement that whole thing.
-
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
@@ -51,11 +49,39 @@ I think both undo and redo should warn one item sooner on stack.
 
 Shouldn't be able to extract when top-level molecule.
 
-Rename molecule. No autofocs on name.
-
 Create demo (minimal) plugin to illustrate. Once API settles.
 
+Merge load/export and new session/etc.
+
+Drag and drop files.
+
+Once Yuri version of Open Babel ready, get rid of old version. Would be good if
+you could put it in a web worker using import (rather than adding to head).
+
+Loading biotite should append (not replace) current workspace.
+
 # DONE
+
+Tmp open babel (some progress, but need to keep working on it).
+
+loadMoleculeFiles needs overhall. Code scattered there and in OpenBabelTmp.ts.
+Merge into noe system. Load any file: Load directly via 3dmoljs if possible,
+otherwise convert to pdb or sdf (based on input format) and load that. When
+saving, save the pdb or sdf, then convert if needed. But all in one
+function/module.
+
+// TODO: makeMoleculeInput is a promise
+
+Every plugin must have code for running a test. Implement that whole thing.
+
+Rename molecule. No autofocs on name.
+
+Id's on inputs should include pluginid to be unique
+
+redo test...
+
+// TODO: Test with saving first (secondary button)
+// Second test extracting
 
 validate:
     :userArgs="userArgs"

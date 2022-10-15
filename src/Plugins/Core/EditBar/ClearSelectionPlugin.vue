@@ -21,7 +21,11 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITestCommand, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import {
+  ITest,
+  ITestCommand,
+  TEST_COMMAND,
+} from "@/Testing/ParentPluginTestFuncs";
 
 /** ClearSelectionPlugin */
 @Options({
@@ -69,26 +73,16 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     return Promise.resolve(undefined);
   }
 
-  testCmdsBeforePopupOpens(): ITestCommand[] {
-    return [
-      this.testLoadExampleProtein(),
-      {
-        cmd: TEST_COMMAND.CLICK,
-        selector: ".expand-icon",
-      },
-      {
-        cmd: TEST_COMMAND.CLICK,
-        selector: '.title-text[data-label="Protein"]',
-      },
-    ];
-  }
-
-  testCmdsToClosePlugin(): ITestCommand[] {
-    return [];
-  }
-
-  testCmdsAfterPopupClosed(): ITestCommand[] {
-    return [];
+  getTests(): ITest {
+    return {
+      beforePluginOpens: [
+        this.testLoadExampleProtein(),
+        ...this.testExpandMoleculesTree("4WP4.pdb"),
+        this.testSelectMoleculeInTree("Protein")
+      ],
+      closePlugin: [],
+      afterPluginCloses: [],
+    };
   }
 }
 </script>

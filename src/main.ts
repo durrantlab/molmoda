@@ -1,4 +1,4 @@
-import "mutationobserver-shim";
+// import "mutationobserver-shim";
 import { createApp } from "vue";
 import App from "./App/App.vue";
 import "./registerServiceWorker";
@@ -27,3 +27,19 @@ createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)
     .use(store)
     .mount("#app");
+
+// // eslint-disable-next-line promise/catch-or-return
+// dynamicImports.openbabeljs.module.then(() => {
+//     const OpenBabel = (window as any)["OpenBabel"];
+//     const conv = new OpenBabel.ObConversionWrapper();
+//     // list all supported input/output formats, use '\n' to separate between each format string
+//     const sInputFormats = conv.getSupportedInputFormatsStr("\n");
+//     const sOutputFormats = conv.getSupportedInputFormatsStr("\n");
+//     console.log(sInputFormats);
+//     console.log(sOutputFormats);
+//     conv.delete(); // free ObConversionWrapper instance
+//     console.log(conv);
+//     return undefined;
+// });
+
+// console.log(formatInf);

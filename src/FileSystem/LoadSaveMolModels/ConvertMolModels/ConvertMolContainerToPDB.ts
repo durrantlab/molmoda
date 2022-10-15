@@ -1,8 +1,12 @@
-import { GLModel, IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import {
+    GLModel,
+    IAtom,
+    IMolContainer,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     solventSel,
     standardProteinResidues,
-} from "./Lookups/ComponentSelections";
+} from "../Definitions/ComponentSelections";
 
 // Inspired by
 // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L576
@@ -167,11 +171,11 @@ function _createPDBLine(isProt: boolean, atom: IAtom): string {
 
 /**
  * Gets a list of atoms from GLModel or atom list.
- * 
+ *
  * @param  {GLModel|IAtom[]} mol  The GLModel or atom list.
  * @returns {IAtom[]}  The list of atoms.
  */
-function _getAtoms(mol: GLModel | IAtom[]): IAtom[] {
+function _getAtomsOfModel(mol: GLModel | IAtom[]): IAtom[] {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     if (mol.selectedAtoms) {
@@ -185,7 +189,7 @@ function _getAtoms(mol: GLModel | IAtom[]): IAtom[] {
 /**
  * Merges multiple molecules into one, reindexing the atoms, making sure chains
  * are unique, etc.
- * 
+ *
  * @param  {GLModel[]|IAtom[][]} mols  The molecules to merge.
  * @returns {IAtom[]}  The list of atoms.
  */
@@ -197,7 +201,7 @@ function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
 
     for (const mol of mols) {
         // Get the atomselection of the model.
-        const atoms = _getAtoms(mol);
+        const atoms = _getAtomsOfModel(mol);
 
         // Get the chain to use.
         let curChain: string;
@@ -219,7 +223,7 @@ function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
             atomCopy.serial = curSerial;
             atomCopy.index = curIdx;
             // atomCopy.bondOrder = [];
-            atomCopy.bonds = atomCopy.bonds?.map(idx => idx + firstIndex);
+            atomCopy.bonds = atomCopy.bonds?.map((idx) => idx + firstIndex);
             curSerial += 1;
             curIdx += 1;
             allAtoms.push(atomCopy);
@@ -230,18 +234,22 @@ function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
 }
 
 /**
- * Given a list of 3dmol models, convert them to PDB format.
+ * Given a list of mol containers, convert them to PDB format. Prefer the
+ * convertMolContainer() to this one. Probably should not call this function
+ * directly.
  *
- * @param  {GLModel[] | IAtom[]} mols  The list of 3dmol models. Or a list of
- *                                     atoms.
- * @param  {boolean} [merge=false]     Whether to merge the models into a single
- *                                     PDB string.
- * @returns {string} The PDB string.
+ * @param  {IMolContainer[]} molContainers  The list of mol containers.
+ * @param  {boolean}         [merge=false]  Whether to merge the models into a
+ *                                          single PDB string.
+ * @returns {string[]} The PDB strings.
  */
-export function convertToPDB(
-    mols: GLModel[] | IAtom[][],
+export function convertMolContainersToPDB(
+    molContainers: IMolContainer[],
     merge = false
 ): string[] {
+    let mols = molContainers.map((molContainer) => molContainer.model) as
+        | GLModel[]
+        | IAtom[][];
     // mol is 3dmoljs molecule object.
 
     const pdbTxts: string[] = [];
@@ -254,7 +262,7 @@ export function convertToPDB(
     // let curSerial = 1;
 
     for (const mol of mols) {
-        const atoms: IAtom[] = _getAtoms(mol);
+        const atoms: IAtom[] = _getAtomsOfModel(mol);
         const atomsToConect: IAtom[] = [];
         const pdbLines: string[] = [];
 
@@ -302,6 +310,133 @@ export function convertToPDB(
     return [pdbTxts.join("\nTER\n") + "\n" + conectTxts.join("\n")];
 }
 
-// export function convertToMol2(mol: any): string {
-//     // NOTE: Let's use openbabel to generate mol2 files. It's easier.
+// NOTE: Let's use openbabel to generate mol2 files. It's easier. Below ALMOST
+// works. But doesn't detect aromatic bonds. Also, charges not implemented,
+// though that is stored in GLModel. But Open Babel will just be better.
+
+// function getSyblType(atom: IAtom): string {
+//     const elem = atom.elem?.toUpperCase() as string;
+
+//     // Note: You can't determine hybridization based on number of bonds because
+//     // I don't know if you'll have hydrogen atoms added. Below is imperfect, but
+//     // close enough I think.
+
+//     switch (elem) {
+//         case "C":
+//             if (atom.bondOrder.indexOf(3) !== -1) {
+//                 return "C.1";
+//             } else if (atom.bondOrder.indexOf(2) !== -1) {
+//                 return "C.2";
+//             }
+//             return "C.3";
+//         case "N":
+//             if (atom.bondOrder.indexOf(3) !== -1) {
+//                 return "N.1";
+//             } else if (atom.bondOrder.indexOf(2) !== -1) {
+//                 return "N.2";
+//             }
+//             return "N.3";
+//         case "O":
+//             if (atom.bondOrder.indexOf(2) !== -1) {
+//                 return "O.2";
+//             }
+//             return "O.3";
+//         case "S":
+//             if (atom.bondOrder.indexOf(2) !== -1) {
+//                 return "S.2";
+//             }
+//             return "S.3";
+//         case "P":
+//             // The only one for P?
+//             // https://tccc.iesl.forth.gr/education/local/quantum/molecular_modeling/guide_documents/SYBYL_data_document.html
+//             return "P.3";
+//         default:
+//             return elem.toUpperCase();
+//     }
+// }
+
+// /**
+//  * Given a list of mol containers, convert them to MOL2 format. Prefer the
+//  * convertMolContainer() to this one. Probably should not call this function
+//  * directly.
+//  *
+//  * @param  {IMolContainer[]} molContainers  The list of mol containers.
+//  * @param  {boolean}         [merge=false]  Whether to merge the models into a
+//  *                                          single PDB string.
+//  * @returns {string[]} The Mol2 strings.
+//  */
+// export function convertMolContainersToMol2(
+//     molContainers: IMolContainer[],
+//     merge = false // TODO:
+// ): string[] {
+//     let mols = molContainers.map((molContainer) => molContainer.model) as
+//         | GLModel[]
+//         | IAtom[][];
+//     // mol is 3dmoljs molecule object.
+
+//     const mol2Txts: string[] = [];
+
+//     if (merge) {
+//         mols = [_mergeMols(mols)];
+//     }
+
+//     // let curSerial = 1;
+
+//     for (const mol of mols) {
+//         const atoms: IAtom[] = getAtomsOfModel(mol);
+
+//         const resname = (atoms[0].resn === undefined) ? "MOL" : atoms[0].resn;
+
+//         let mol2Txt = "@<TRIPOS>MOLECULE\n";
+//         mol2Txt += `${resname}\n`; // TODO: Get better name
+
+//         const numAtoms = atoms.length;
+//         const uniqBonds: Set<string> = new Set();
+//         for (const atom of atoms) {
+//             const bonds = atom.bonds as number[];
+//             for (let bondIdx = 0; bondIdx < bonds.length; bondIdx++) {
+//                 const bondedAtomIdx = bonds[bondIdx];
+//                 const bondOrder = atom.bondOrder[bondIdx];
+//                 const data = [atom.index, bondedAtomIdx].sort();
+//                 data.push(bondOrder);
+//                 uniqBonds.add(data.join("-"));
+//             }
+//         }
+
+//         mol2Txt += ` ${numAtoms} ${uniqBonds.size} 0 0 0\n`;
+//         mol2Txt += "SMALL\n";
+//         mol2Txt += "USER_CHARGES\n";
+//         mol2Txt += "****\n";
+//         mol2Txt += "COMMENT\n\n"; // TODO: Implement
+//         mol2Txt += "@<TRIPOS>ATOM\n";
+
+//         for (const atom of atoms) {
+//             const idxStr = _rjust(((atom.index as number) + 1).toString(), 7);
+//             const elemStr = _ljust(atom.elem?.toUpperCase() as string, 8);
+//             const xStr = _rjust(atom.x?.toFixed(4) as string, 9);
+//             const yStr = _rjust(atom.y?.toFixed(4) as string, 9);
+//             const zStr = _rjust(atom.z?.toFixed(4) as string, 9);
+//             const typeStr = _ljust(getSyblType(atom) as string, 7);
+//             const chargeStr = "0.0000"; // TODO: implement
+//             mol2Txt += `${idxStr} ${elemStr} ${xStr} ${yStr} ${zStr} ${typeStr} 1  ${_ljust(resname, 11)} ${chargeStr}\n`;
+//         }
+
+//         mol2Txt += "@<TRIPOS>BOND\n";
+//         let bondIdx = 1;
+//         for (const bond of uniqBonds) {
+//             const [atom1Idx, atom2Idx, bondOrder] = bond
+//                 .split("-")
+//                 .map((x) => parseInt(x));
+//             const idxStr = _rjust(bondIdx.toString(), 6);
+//             const atom1IdxStr = _rjust((atom1Idx + 1).toString(), 5);
+//             const atom2IdxStr = _rjust((atom2Idx + 1).toString(), 5);
+//             const bondOrderStr = _rjust(bondOrder.toString(), 4);
+//             mol2Txt += `${idxStr} ${atom1IdxStr} ${atom2IdxStr} ${bondOrderStr}\n`;
+//             bondIdx += 1;
+//         }
+
+//         mol2Txts.push(mol2Txt);
+//     }
+
+//     return mol2Txts;
 // }

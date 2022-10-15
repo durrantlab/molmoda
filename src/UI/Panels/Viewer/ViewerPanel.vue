@@ -16,7 +16,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
 import { GLModel, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Lookups/DefaultStyles";
+import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Definitions/DefaultStyles";
 import { dynamicImports } from "@/Core/DynamicImports";
 
 /**

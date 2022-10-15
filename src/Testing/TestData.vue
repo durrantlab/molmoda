@@ -1,8 +1,8 @@
 <template>
-  <span v-if="testSpecified" style="display: block">
+  <div v-if="testSpecified" style="height:0; opacity:0;">
     <span id="test-cmds">{{ $store.state.test.cmds }}</span>
     <span id="test-error">{{ $store.state.test.error }}</span>
-  </span>
+  </div>
 </template>
   
 <script lang="ts">
