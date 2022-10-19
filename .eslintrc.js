@@ -36,6 +36,7 @@ module.exports = {
             ClassExpression: true,
             MethodDefinition: true
         }}],
+        "jsdoc/check-tag-names": "off",
 
     },
 };

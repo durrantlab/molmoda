@@ -19,10 +19,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import {
-  FormElement,
-  IFormText,
-} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
@@ -97,21 +94,26 @@ export default class RenameMolPlugin extends PluginParentClass {
    */
   runJob(userArgs: IUserArg[]): Promise<undefined> {
     if (this.nodeToActOn) {
-      this.nodeToActOn.title = userArgs[0].val;
+      this.nodeToActOn.title = this.userArgsLookup(userArgs, "newName");
     }
     return Promise.resolve(undefined);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
         ...this.testExpandMoleculesTree("4WP4.pdb"),
-        this.testSelectMoleculeInTree("Protein")
+        this.testSelectMoleculeInTree("Protein"),
       ],
-      populateUserArgs: [
-        this.testUserArg("newName", "2"),
-      ],
+      populateUserArgs: [this.testUserArg("newName", "2")],
       // closePlugin: [],
       // afterPluginCloses: [],
     };

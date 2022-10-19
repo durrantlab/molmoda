@@ -23,7 +23,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
@@ -83,8 +83,9 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
+    let uniprot = this.userArgsLookup(userArgs, "uniprot");
     loadRemote(
-      `https://alphafold.ebi.ac.uk/api/prediction/${userArgs[0].val.toUpperCase()}`
+      `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
     )
       .then((fileInfo: IFileInfo) => {
         let json = JSON.parse(fileInfo.contents);
@@ -111,9 +112,16 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
   runJob(fileInfo: IFileInfo) {
-    loadMoleculeFile(fileInfo);
+    parseMoleculeFile(fileInfo);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       populateUserArgs: [this.testUserArg("uniprot", "P86927")],

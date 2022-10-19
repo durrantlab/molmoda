@@ -26,8 +26,8 @@ import { randomID } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
-import * as api from "@/Api/";
 import { IFileInfo } from "@/FileSystem/Definitions";
+import { filesToFileInfos } from "@/FileSystem/Utils";
 
 /**
  * FormFile component
@@ -47,7 +47,7 @@ export default class FormFile extends Vue {
 
   /**
    * Gets text describing the acceptable file types.
-   * 
+   *
    * @returns {string} Text describing the acceptable file types.
    */
   get acceptableFileTypesMsg(): string {
@@ -66,92 +66,9 @@ export default class FormFile extends Vue {
   }
 
   /**
-   * Given a filename, determine the type.
-   *
-   * @param {string} filename  The filename to determine the type of.
-   * @returns {string} The type of the file.
-   */
-  getType(filename: string): string {
-    // Type is file extension, uppercase.
-    let filePrts = filename.split(".");
-    let type = filePrts.pop()?.toUpperCase() as string;
-
-    // If extension is TXT, get next extension. Because Windows often
-    // appends .txt to ends of files.
-    if (type === "TXT") {
-      type = filePrts.pop()?.toUpperCase() as string;
-    }
-
-    return type;
-  }
-
-  /**
-   * Convert an object of type File to type IFileInfo.
-   *
-   * @param {File} file  The file to convert.
-   * @returns {Promise<IFileInfo>} A promise that resolves to the converted
-   *     file.
-   */
-  fileToFileInfo(file: File): Promise<IFileInfo> {
-    // Type is file extension, uppercase.
-    const type = this.getType(file.name);
-
-    const treatAsZip = this.isZip || type == "BIOTITE";
-
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (e: ProgressEvent) => {
-        // If it's not an acceptable file type, abort effort.
-        if (this.allAcceptableFileTypes.indexOf(type) === -1) {
-          reject(`Cannot load files of type ${type}`);
-        }
-
-        let fileReader = e.target as FileReader;
-        let txt = fileReader.result as string;
-        let txtPromise: Promise<string>;
-        if (!treatAsZip) {
-          txtPromise = new Promise((resolve) => {
-            txt = txt.replace(/\r\n/g, "\n");
-            resolve(txt);
-          });
-        } else {
-          // It's a zip file (or a biotite file).
-          txtPromise = api.fs.uncompress(txt, "file.json");
-        }
-
-        txtPromise
-          .then((txt) => {
-            resolve({
-              name: file.name,
-              size: file.size,
-              contents: txt,
-              type: type,
-            } as IFileInfo);
-            return;
-          })
-          .catch((err: any) => {
-            console.log(err);
-          });
-      };
-
-      reader.onerror = (e: any) => {
-        reject(e);
-      };
-
-      if (!treatAsZip) {
-        reader.readAsText(file);
-      } else {
-        // It's a zip file.
-        reader.readAsBinaryString(file);
-      }
-    });
-  }
-
-  /**
    * Runs when the file changes.
    */
-  onFileChanged(/* _e: Event */ ) {
+  onFileChanged(/* _e: Event */) {
     let input = this.$refs.fileinput as HTMLInputElement;
     let files = input.files;
 
@@ -162,14 +79,21 @@ export default class FormFile extends Vue {
     // Make it as an array
     let fileList = Array.from(files);
 
-    const filePromises = fileList.map((file: File) => {
-      return this.fileToFileInfo(file);
-    });
+    filesToFileInfos(fileList, this.isZip, this.allAcceptableFileTypes)
+      .then((filesLoaded: (IFileInfo | string)[]) => {
+        const errorMsgs = filesLoaded.filter((a) => typeof a === "string");
+        const toLoad = filesLoaded.filter(
+          (a) => typeof a !== "string"
+        ) as IFileInfo[];
 
-    Promise.all(filePromises)
-      .then((filesLoaded: IFileInfo[]) => {
-        this.$emit("onFilesLoaded", filesLoaded);
-        this.errorMsg = "";
+        this.$emit("onFilesLoaded", toLoad);
+
+        if (errorMsgs.length > 0) {
+          this.clearFile();
+          this.errorMsg = errorMsgs.join(", ");
+        } else {
+          this.errorMsg = "";
+        }
         // this.clearFile();
         return;
       })

@@ -2,18 +2,18 @@ import { slugify } from "@/Core/Utils";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import * as PluginToTest from "./PluginToTest";
 
-export enum TEST_COMMAND {
-    CLICK = "click",
-    TEXT = "text",
-    WAIT = "wait",
-    WAIT_UNTIL_REGEX = "waitUntilRegex",
-    UPLOAD = "upload",
-    ADD_TESTS = "addTests",
+export enum TestCommand {
+    Click = "click",
+    Text = "text",
+    Wait = "wait",
+    WaitUntilRegex = "waitUntilRegex",
+    Upload = "upload",
+    AddTests = "addTests",
 }
 
 export interface ITestCommand {
     selector?: string;
-    cmd: TEST_COMMAND;
+    cmd: TestCommand;
     data?: any;
 }
 
@@ -76,7 +76,7 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
     if (hamburgerButtonVisible) {
         cmds.push({
             selector: "#hamburger-button",
-            cmd: TEST_COMMAND.CLICK,
+            cmd: TestCommand.Click,
         } as ITestCommand);
     }
 
@@ -84,15 +84,15 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
         ...sels.map((sel) => {
             return {
                 selector: `${sel}`,
-                cmd: TEST_COMMAND.CLICK,
+                cmd: TestCommand.Click,
             } as ITestCommand;
         }),
         {
             selector: `${lastSel}`,
-            cmd: TEST_COMMAND.CLICK,
+            cmd: TestCommand.Click,
         } as ITestCommand,
         {
-            cmd: TEST_COMMAND.WAIT,
+            cmd: TestCommand.Wait,
             data: 1,
         } as ITestCommand
     );
@@ -120,13 +120,13 @@ function addTestDefaults(tests: ITest | ITest[], pluginId: string): ITest[] {
         test.populateUserArgs = test.populateUserArgs || [];
         test.closePlugin = test.closePlugin || [
             {
-                cmd: TEST_COMMAND.CLICK,
+                cmd: TestCommand.Click,
                 selector: `#modal-${pluginId} .action-btn`,
             },
         ];
         test.afterPluginCloses = test.afterPluginCloses || [
             {
-                cmd: TEST_COMMAND.WAIT_UNTIL_REGEX,
+                cmd: TestCommand.WaitUntilRegex,
                 selector: "#log",
                 data: 'Job "' + pluginId + ':.+?" ended',
             },
@@ -156,7 +156,7 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
                 name: "cmds",
                 val: JSON.stringify([
                     {
-                        cmd: TEST_COMMAND.ADD_TESTS,
+                        cmd: TestCommand.AddTests,
                         data: tests.length
                     },
                 ]),
@@ -173,13 +173,13 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
             ..._openPluginCmds(plugin),
             ...(test.populateUserArgs as ITestCommand[]), // Defined in each plugin
             {
-                cmd: TEST_COMMAND.WAIT,
+                cmd: TestCommand.Wait,
                 data: 1,
             },
             ...(test.closePlugin as ITestCommand[]), // Defined in each plugin
             ...(test.afterPluginCloses as ITestCommand[]), // Defined in each plugin
             {
-                cmd: TEST_COMMAND.WAIT,
+                cmd: TestCommand.Wait,
                 data: 0.5,
             },
         ] as ITestCommand[];

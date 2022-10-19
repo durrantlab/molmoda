@@ -69,6 +69,13 @@ export default class UndoPlugin extends PluginParentClass {
     undo(this.$store);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       beforePluginOpens: [this.testLoadExampleProtein()],
@@ -76,7 +83,7 @@ export default class UndoPlugin extends PluginParentClass {
       closePlugin: [],
       afterPluginCloses: [
         this.testWaitForRegex("#log", 'Job "undo:.+?" ended'),
-        this.testWait(3)
+        this.testWait(3),
       ],
     };
   }

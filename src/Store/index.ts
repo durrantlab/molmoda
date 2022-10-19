@@ -96,9 +96,9 @@ export let store: any;
 export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
-            molecules: [] as IMolContainer[],
-            log: [] as ILog[],
-            updateZoom: true,
+            "molecules": [] as IMolContainer[],
+            "log": [] as ILog[],
+            "updateZoom": true,
         },
         getters: {},
         mutations: {

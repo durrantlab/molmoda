@@ -11,7 +11,7 @@
   >
     <FormFile
       ref="formFile"
-      :multiple="false"
+      :multiple="true"
       @onFilesLoaded="onFilesLoaded"
       :accept="accept"
       id="formFile-openmolecules-item"
@@ -24,13 +24,17 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
-import { jsonToState } from "@/Store/LoadAndSaveStore";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { IFileInfo } from "@/FileSystem/Definitions";
-import { fileTypesAccepts, loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import {
+  fileTypesAccepts,
+  parseMoleculeFile,
+} from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { filesToFileInfos } from "@/FileSystem/Utils";
+import * as api from "@/Api";
 
 /**
  * OpenMoleculesPlugin
@@ -55,7 +59,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
-  accept = `.biotite,${fileTypesAccepts}`;
+  accept = fileTypesAccepts;
 
   /**
    * Runs when the files are loaded.
@@ -71,16 +75,52 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    */
   onPopupDone() {
     this.closePopup();
-    this.submitJobs(this.filesToLoad);
+    if (this.filesToLoad.length > 0) {
+      this.submitJobs(this.filesToLoad);
+    }
   }
 
   /**
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
+   *
+   * @returns {boolean | Promise<boolean>}  Whether to open the popup.
    */
-  onBeforePopupOpen() {
+  onBeforePopupOpen(): boolean | Promise<boolean> {
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
+
+    if (this.payload !== undefined) {
+      let fileList = this.payload as File[];
+      this.payload = undefined;
+
+      return filesToFileInfos(
+        fileList,
+        false,
+        this.accept.split(",").map((a) => a.toUpperCase().substring(1))
+      )
+        .then((fileInfos: (IFileInfo | string)[]) => {
+          const errorMsgs = fileInfos.filter((a) => typeof a === "string");
+
+          if (errorMsgs.length > 0) {
+            api.messages.popupError("<p>" + errorMsgs.join("</p><p>") + "</p>");
+          }
+
+          const toLoad = fileInfos.filter(
+            (a) => typeof a !== "string"
+          ) as IFileInfo[];
+
+          this.filesToLoad = toLoad;
+          this.onPopupDone();
+          return false;
+        })
+        .catch((err) => {
+          console.error(err);
+          return false;
+        });
+    }
+    return true;
+    // this.windowClosing = this.payload !== undefined;
   }
 
   /**
@@ -91,23 +131,17 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    *     done.
    */
   runJob(fileInfo: IFileInfo): Promise<any> {
-    if (fileInfo.type === "BIOTITE") {
-      // It's a biotite file.
-      return jsonToState(fileInfo.contents)
-        .then((state) => {
-          this.$store.replaceState(state);
-          return undefined;
-        })
-        .catch((err: any) => {
-          console.error(err);
-          return undefined;
-        });
-    }
-
     // It's not a biotite file (e.g., a PDB file).
-    return loadMoleculeFile(fileInfo);  // promise
+    return parseMoleculeFile(fileInfo); // promise
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       populateUserArgs: [

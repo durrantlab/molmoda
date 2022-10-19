@@ -1,6 +1,10 @@
 <template>
   <div class="ms-2">
-    <FormFull v-model="constructedColorForm" id="color-style"></FormFull>
+    <FormFull
+      v-model="constructedColorForm"
+      id="color-style"
+      ></FormFull>
+      <!-- :hideIfDisabled="true" -->
   </div>
 </template>
 
@@ -63,7 +67,7 @@ class ColorStyleOptions {
 
   /**
    * Converts a name to an index in _colorStyles.
-   * 
+   *
    * @param {string} name  The name.
    * @returns {number} The index.
    */
@@ -75,7 +79,7 @@ class ColorStyleOptions {
 
   /**
    * Converts a style to an index in the _colorStyles array.
-   * 
+   *
    * @param {IColorStyle} style  The style.
    * @returns {number} The index.
    */
@@ -101,7 +105,7 @@ class ColorStyleOptions {
 
   /**
    * Converts an index in the _colorStyles array to a name.
-   * 
+   *
    * @param {number} index  The index.
    * @returns {string} The name.
    */
@@ -111,7 +115,7 @@ class ColorStyleOptions {
 
   /**
    * Adds a color to the style
-   * 
+   *
    * @param {IColorStyle} colorStyle  The color style.
    * @returns {IColorStyle}  The color style with the color added.
    */
@@ -136,7 +140,7 @@ class ColorStyleOptions {
 
   /**
    * Given an index in the _colorStyles array, returns the color style.
-   * 
+   *
    * @param {number} index  The index.
    * @returns {IColorStyle}  The color style.
    */
@@ -148,7 +152,7 @@ class ColorStyleOptions {
 
   /**
    * Given a name, returns the color style.
-   * 
+   *
    * @param {string} name  The name.
    * @returns {IColorStyle}  The color style.
    */
@@ -160,7 +164,7 @@ class ColorStyleOptions {
 
   /**
    * Given a color style, get the hex colors.
-   * 
+   *
    * @param {IStyle} style  The style.
    * @returns {string[]}  The hex colors.
    */
@@ -213,7 +217,7 @@ export default class ColorStyle extends Vue {
 
   /**
    * Gets the color form.
-   * 
+   *
    * @returns {any[]}  The color form.
    */
   get constructedColorForm(): any[] {
@@ -242,7 +246,7 @@ export default class ColorStyle extends Vue {
     if (this.allowColorByElement) {
       colorFormOptions.push({
         description: "Color by Element",
-        val: this.colorStyles.nameToIndex("Element"),
+        val: this.colorStyles.nameToIndex("Element")
       });
     }
 
@@ -310,7 +314,7 @@ export default class ColorStyle extends Vue {
 
   /**
    * Get the constructed color form.
-   * 
+   *
    * @param {any} val  The color form.
    */
   set constructedColorForm(val: any) {

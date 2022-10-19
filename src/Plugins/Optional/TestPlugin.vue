@@ -21,8 +21,8 @@ import {
   IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/Definitions";
 import { Options } from "vue-class-component";
-import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 // import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";

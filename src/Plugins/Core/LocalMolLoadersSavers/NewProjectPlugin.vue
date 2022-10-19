@@ -27,7 +27,7 @@ import * as api from "@/Api";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
 import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
@@ -98,6 +98,13 @@ export default class NewProjectPlugin extends PluginParentClass {
     window.location.reload();
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest[]}  The selenium test commandss.
+   */
   getTests(): ITest[] {
     return [
       // First test without saving first
@@ -114,24 +121,24 @@ export default class NewProjectPlugin extends PluginParentClass {
         // populateUserArgs: [],
         closePlugin: [
           {
-            cmd: TEST_COMMAND.CLICK,
+            cmd: TestCommand.Click,
             selector: "#modal-newproject .action-btn2",
           },
-          this.testWait(3)
+          this.testWait(3),
         ],
         afterPluginCloses: [
           {
-            cmd: TEST_COMMAND.TEXT,
+            cmd: TestCommand.Text,
             selector: "#modal-saveProject #filename-saveProject-item",
             data: "test",
           },
           {
-            cmd: TEST_COMMAND.CLICK,
+            cmd: TestCommand.Click,
             selector: "#modal-saveProject .action-btn",
           },
           this.testWait(5),
           {
-            cmd: TEST_COMMAND.CLICK,
+            cmd: TestCommand.Click,
             selector: "#modal-simplemsg .cancel-btn",
           },
           this.testWait(1),

@@ -150,6 +150,19 @@ function _alignAtomName(atomName: string, element?: string): string {
  * @returns {string}  The PDB line.
  */
 function _createPDBLine(isProt: boolean, atom: IAtom): string {
+    // Add defaults to atom
+    atom.serial = atom.serial === undefined ? 0 : atom.serial;
+    atom.atom = atom.atom === undefined ? "C" : atom.atom;
+    atom.elem = atom.elem === undefined ? "C" : atom.elem;
+    atom.altLoc = atom.altLoc === undefined ? " " : atom.altLoc;
+    atom.resn = atom.resn === undefined ? "MOL" : atom.resn;
+    atom.chain = atom.chain === undefined ? "A" : atom.chain;
+    atom.resi = atom.resi === undefined ? 1 : atom.resi;
+    atom.x = atom.x === undefined ? 0 : atom.x;
+    atom.y = atom.y === undefined ? 0 : atom.y;
+    atom.z = atom.z === undefined ? 0 : atom.z;
+    atom.b = atom.b === undefined ? 0 : atom.b;
+
     let pdbLine = _ljust(isProt ? "ATOM" : "HETATM", 6);
     pdbLine += _rjust((atom.serial as number).toString(), 5);
     pdbLine += " ";

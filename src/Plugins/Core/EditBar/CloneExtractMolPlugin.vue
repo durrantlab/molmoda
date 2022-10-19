@@ -52,10 +52,6 @@ import {
   getAllNodesFlattened,
   getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
-import {
-  atomsToModels,
-  modelsToAtoms,
-} from "@/FileSystem/LoadSaveMolModels/MolsToFromJSON";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   PluginParentClass,
@@ -70,7 +66,9 @@ import {
   IFormText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
-import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { atomsToModels } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Utils";
+import { modelsToAtoms } from "@/FileSystem/LoadSaveMolModels/Utils";
 
 const cloneDescription = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 const extractDescription = `The selected molecule will be extracted (moved) from its parent. Enter the new name of the extracted molecule.`;
@@ -174,8 +172,8 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The updated user variables.
    */
   onDataChanged(userArgs: IUserArg[]): void {
-    let newName = userArgs[0].val as string;
-    this.doExtract = userArgs[1].val as boolean;
+    let newName = this.userArgsLookup(userArgs, "newName") as string;
+    this.doExtract = this.userArgsLookup(userArgs, "doExtract") as boolean;
     this.intro = this.doExtract ? extractDescription : cloneDescription;
 
     if (this.doExtract) {
@@ -235,12 +233,12 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
       return convertedNode
         .then((node) => {
-          node.title = userArgs[0].val;
+          node.title = this.userArgsLookup(userArgs, "newName");
 
           let subNodes = getAllNodesFlattened([node]);
           subNodes.forEach((n) => {
             n.id = randomID();
-            n.selected = SelectedType.FALSE;
+            n.selected = SelectedType.False;
             n.viewerDirty = true;
             n.focused = false;
           });
@@ -263,6 +261,13 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
     return Promise.resolve(undefined);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest[]}  The selenium test commandss.
+   */
   getTests(): ITest[] {
     return [
       // First test cloning
@@ -286,7 +291,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
         ],
         populateUserArgs: [
           {
-            cmd: TEST_COMMAND.CLICK,
+            cmd: TestCommand.Click,
             selector: "#modal-cloneextractmol #doExtract-cloneextractmol-item",
           },
           this.testUserArg("newName", "2"),

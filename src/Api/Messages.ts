@@ -15,7 +15,7 @@ export const messagesApi = {
      *                                                     popup.
      * @param  {string}       message                      The message to
      *                                                     display.
-     * @param  {PopupVariant} [variant=PopupVariant.INFO]  The type of message.
+     * @param  {PopupVariant} [variant=PopupVariant.Info]  The type of message.
      * @param  {Function}     [callBack]                   A function to call
      *                                                     when the popup is
      *                                                     closed.
@@ -25,7 +25,7 @@ export const messagesApi = {
     popupMessage: function (
         title: string,
         message: string,
-        variant = PopupVariant.INFO,
+        variant = PopupVariant.Info,
         // eslint-disable-next-line @typescript-eslint/ban-types
         callBack: Function | undefined = undefined,
         neverClose = false
@@ -45,7 +45,7 @@ export const messagesApi = {
      * @param  {string} message  The error message.
      */
     popupError: function (message: string) {
-        this.popupMessage("Error", message, PopupVariant.DANGER);
+        this.popupMessage("Error", message, PopupVariant.Danger);
     },
 
     /**

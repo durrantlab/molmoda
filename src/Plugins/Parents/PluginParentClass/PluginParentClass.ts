@@ -15,9 +15,7 @@ import {
     timeDiffDescription,
 } from "@/Core/Utils";
 import { alwaysEnabledPlugins, loadedPlugins } from "../../LoadedPlugins";
-import {
-    createTestCmdsIfTestSpecified,
-} from "@/Testing/ParentPluginTestFuncs";
+import { createTestCmdsIfTestSpecified } from "@/Testing/ParentPluginTestFuncs";
 import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
@@ -25,13 +23,9 @@ import { ValidationMixin } from "./Mixins/ValidationMixin";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
+import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 
-
-export type RunJobReturn =
-    | Promise<any>
-    | string
-    | void
-    | undefined;
+export type RunJobReturn = Promise<any> | string | void | undefined;
 
 /**
  * PluginParentClass
@@ -41,7 +35,8 @@ export abstract class PluginParentClass extends mixins(
     PopupMixin,
     JobMsgsMixin,
     ValidationMixin,
-    TestingMixin
+    TestingMixin,
+    UserArgsMixin
 ) {
     /**
      * The menu path for this plugin (e.g., `["[3] Biotite", "[1] About"]` or
@@ -110,11 +105,39 @@ export abstract class PluginParentClass extends mixins(
     public onPluginStart(payload?: any): void {
         // Children should not override this function! Use onPopupOpen instead.
         this.payload = payload;
-        this.onBeforePopupOpen();
-        this.openPopup();
-        setTimeout(() => {
-            this.onPopupOpen();
-        }, 1000);
+
+        // Check if the plugin opening should be cancelled based on what the
+        // onBeforePopupOpen hook returns.
+        let continueOpen = this.onBeforePopupOpen() as
+            | boolean
+            | Promise<boolean>
+            | undefined;
+        if (continueOpen === undefined) {
+            // Return must have been void.
+            continueOpen = true;
+        }
+
+        // If a boolean, convert it to Promise<boolean>
+        const continuePromise =
+            typeof continueOpen === "boolean"
+                ? Promise.resolve(continueOpen)
+                : continueOpen; // Already a promise
+
+        // Continue to open plugin only if promise resolves true.
+        continuePromise
+            .then((continueOpen: boolean) => {
+                if (continueOpen === false) {
+                    return;
+                }
+                this.openPopup();
+                setTimeout(() => {
+                    this.onPopupOpen();
+                }, 1000);
+                return;
+            })
+            .catch((err: any) => {
+                console.error(err);
+            });
     }
 
     /**
@@ -293,69 +316,5 @@ export abstract class PluginParentClass extends mixins(
         this.onMounted();
 
         createTestCmdsIfTestSpecified(this);
-    }
-
-    private isPluginComponentRefSet(): any {
-        const pluginComponent = this.$refs["pluginComponent"] as any;
-        if (pluginComponent === undefined) {
-            console.warn(
-                'To use the updateUserVars() function, the PluginComponent must have ref "pluginComponent".'
-            );
-            return false;
-        }
-        return pluginComponent;
-    }
-
-    protected updateUserArgEnabled(argId: string, val: boolean) {
-        const pluginComponent = this.isPluginComponentRefSet();
-        if (pluginComponent === false) {
-            return;
-        }
-
-        for (const arg of pluginComponent.userArgsToUse) {
-            if (arg.id === argId) {
-                arg.enabled = val;
-                return;
-            }
-        }
-    }
-
-    /**
-     * Programmatically update a user variable. Necessary because `userArgs`
-     * is NOT reactive. Useful to do things like (1) prepopulate a `userArgs`
-     * value or (2) modify one `userArgs` value based on the value of another
-     * (see also `<PluginComponent>`'s `onDataChanged` function). For
-     * `updateUserArgs` to work, the plugin's `<PluginComponent>` must have
-     * `ref="pluginComponent"`.
-     *
-     * @param {IUserArg[]} userArgs  The user variables to update.
-     * @helper
-     * @document
-     */
-    protected updateUserArgs(userArgs: IUserArg[]) {
-        const pluginComponent = this.isPluginComponentRefSet();
-        if (pluginComponent === false) {
-            return;
-        }
-
-        const existingNames: string[] = pluginComponent.userArgsToUse.map(
-            (i: FormElement): string => {
-                return i.id;
-            }
-        );
-        for (const userArg of userArgs) {
-            const name = userArg.name;
-            const idx = existingNames.indexOf(name);
-            if (idx === -1) {
-                // Asking to update a user var that doesn't exist.
-                console.warn(
-                    `Plugin ${this.pluginId} is trying to update user var ${name}, but it doesn't exist.`
-                );
-                return;
-            }
-
-            // Update the value
-            pluginComponent.userArgsToUse[idx].val = userArg.val;
-        }
     }
 }

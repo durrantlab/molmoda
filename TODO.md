@@ -35,34 +35,72 @@ Messaging. Need toast? You started working on toast.
 Would be good to be able to use multiple processors for queue. Give some thought
 to how. Likely needs webworker?
 
-Need functions to output pdb and mol2. (use open babel for mol2).
-
 Idea to consider: MolCombine. You should be able to specify the formats. Also, search
 for "This doesn't account for ligands!"
-
-2D images show on click. Will require babel.
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-I think both undo and redo should warn one item sooner on stack.
+2D images show on click. Will require babel.
 
 Shouldn't be able to extract when top-level molecule.
 
+Selects are strange when disabled on color scheme selection. Spacing, but other
+problems. Play around with them to see.
+
+I think both undo and redo should warn one item sooner on stack.
+
+Need to update tests for all revised plugins.
+
 Create demo (minimal) plugin to illustrate. Once API settles.
 
-Merge load/export and new session/etc.
-
-Drag and drop files.
+Would be nice to warn user when saving to format that looses information (e.g.,
+SMILES).
 
 Once Yuri version of Open Babel ready, get rid of old version. Would be good if
 you could put it in a web worker using import (rather than adding to head).
 
+Viewer2D: Canvas dimensions calculated from javascript measure of actual size on
+screen, * resolution factor. Style determined by prop.
+
+You reall yneed to get SVG working on smiles draw. Canvas is bad (low res).
+
+# DONE
+
+Can't select compounds. Once that's ready, continue working on 2D vis.
+
+Should be able to load zip
+
+Drag multiple files wher one is biotite file. Doesn't work.
+
+Necessary to store both timestampSec and timestamp string in ILog? Could
+calculate string. (Good to make log more readable when viewed separate.)
+
+When saving a single file (nonbiotite), no need to compress.
+
+Saving: Option to save chains or proteins. Also, option to save all to single
+file (PDB). See runJob. Still updating.
+
 Loading biotite should append (not replace) current workspace.
+
+Also, MolsToFromJSON.ts is not an intuitive place to put these functions.
+"Biotite" should be in file name.
+
+Need functions to output pdb and mol2. (use open babel for mol2).
 
 When saving molecules, should be able to choose All, Visible, Selected
 
-# DONE
+Throw better error when can't load file. Also, if drag multiple files and only
+one can't work, should still load the others.
+
+Appending .biotite to lots of accept. Just load that as you would the others. So
+Loader.OpenBabel, Loader.Mol3D, and Loader.Biotite. Better for organization.
+
+Should be able to load multiple files.
+
+Drag and drop files. https://code-boxx.com/simple-drag-and-drop-file-upload/
+
+Merge load/export and new session/etc.
 
 Tmp open babel (some progress, but need to keep working on it).
 

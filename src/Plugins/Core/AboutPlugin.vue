@@ -56,7 +56,7 @@ import { appName } from "@/Core/AppName";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, ITestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /** AboutPlugin */
 @Options({
@@ -138,11 +138,18 @@ export default class AboutPlugin extends PluginParentClass {
     return;
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       closePlugin: [this.testPressButton(".cancel-btn")],
-      afterPluginCloses: []
-    }
+      afterPluginCloses: [],
+    };
   }
 }
 </script>

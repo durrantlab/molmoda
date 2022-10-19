@@ -10,7 +10,7 @@ export function slugify(text: string, lowerCase = true): string {
         text = text.toLowerCase();
     }
     return text
-        .replace(/:/g, "-")
+        .replace(/[:.]/g, "-")
         .replace(/[^\w -]+/g, "")
         .replace(/ +/g, "-");
 }

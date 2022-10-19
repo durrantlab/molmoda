@@ -1,5 +1,13 @@
 <template>
-  <div id="mol-viewer"></div>
+  <span>
+    <div id="mol-viewer"></div>
+    <Viewer2D
+      :smiles="smiles"
+      width="250px"
+      height="250px"
+      extraStyles="position: absolute; left: 0; bottom: 0; background-color:rgba(255, 255, 255, 0.95)"
+    />
+  </span>
 </template>
 
 <script lang="ts">
@@ -7,7 +15,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 
 import * as api from "@/Api/";
 import {
@@ -15,14 +23,25 @@ import {
   getTerminalNodes,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 
-import { GLModel, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import {
+  GLModel,
+  IMolContainer,
+  MolType,
+  SelectedType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Definitions/DefaultStyles";
 import { dynamicImports } from "@/Core/DynamicImports";
+import Viewer2D from "./Viewer2D.vue";
+import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
 
 /**
  * ViewerPanel component
  */
-@Options({})
+@Options({
+  components: {
+    Viewer2D,
+  },
+})
 export default class ViewerPanel extends Vue {
   molCache: { [id: string]: any } = {};
 
@@ -30,9 +49,11 @@ export default class ViewerPanel extends Vue {
   surfaces: { [id: string]: number[] } = {};
   surfaceType = 2;
 
+  smiles = "";
+
   /**
    * Get the molecules from the store
-   * 
+   *
    * @returns {any} the molecules.
    */
   get treeview(): any {
@@ -41,18 +62,44 @@ export default class ViewerPanel extends Vue {
 
   /**
    * Checks if the treeview has changed.
-   * 
+   *
    * @param {IMolContainer[]} allMolecules  The new molecules.
    */
   @Watch("treeview", { immediate: false, deep: true })
-  onTreeviewChanged(
-    allMolecules: IMolContainer[]
-  ) {
+  onTreeviewChanged(allMolecules: IMolContainer[]) {
     if (allMolecules.length === 0) {
+      // No molecules present
       this._clearCache();
       return;
     }
+
+    // Update and zoom
     this._updateStylesAndZoom();
+
+    // Get any terminal node that is selected and a compound
+    const terminalNodes = getTerminalNodes(allMolecules);
+    const selectedTerminalNodes = terminalNodes.filter(
+      (node) =>
+        node.selected === SelectedType.True && node.type === MolType.Compound
+    );
+    if (selectedTerminalNodes.length > 0) {
+      // Just consider the first one
+      const terminalNode = selectedTerminalNodes[0];
+
+      // Get it as a smiles string
+      convertMolContainers([terminalNode], "can", false).then(
+        (cans: string[]) => {
+          this.smiles = cans[0];
+          return;
+        }
+      )
+      .catch((error) => {
+        console.error(error);
+      });
+
+    } else {
+      this.smiles = "";
+    }
   }
 
   /**
@@ -75,7 +122,7 @@ export default class ViewerPanel extends Vue {
     api.messages.waitSpinner(false);
   }
 
-  /** 
+  /**
    * Clear the surface associated with a molecule or molecule id.
    *
    * @param {IMolContainer | string} mol  The molecule or molecule id.
@@ -92,7 +139,7 @@ export default class ViewerPanel extends Vue {
 
   /**
    * Remove a model.
-   * 
+   *
    * @param {string} id The id of the model to remove.
    */
   private _removeModel(id: string) {
@@ -246,7 +293,7 @@ export default class ViewerPanel extends Vue {
 
   /**
    * Zoom in on the visible molecules.
-   * 
+   *
    * @param {GLModel[]} visibleTerminalNodeModels  The visible models.
    */
   private _zoomPerFocus(visibleTerminalNodeModels: GLModel[]) {
@@ -278,7 +325,7 @@ export default class ViewerPanel extends Vue {
 
   /**
    * Make the atoms mouseover hoverable and clickable.
-   * 
+   *
    * @param {any} sel  The selection of the atoms to use.
    */
   private _makeAtomsHoverableAndClickable(sel: any) {
@@ -390,5 +437,10 @@ export default class ViewerPanel extends Vue {
 #mol-viewer {
   width: 100%;
   height: 100%;
+  position: relative;
 }
+
+// #mol-viewer canvas {
+//   padding: 0 !important;
+// }
 </style>

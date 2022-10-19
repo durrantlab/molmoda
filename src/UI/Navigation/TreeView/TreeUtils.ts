@@ -1,5 +1,5 @@
 import { getFileNameParts } from "@/FileSystem/Utils";
-import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
+import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Definitions";
 import { IMolContainer, MolType, SelectedType } from "./TreeInterfaces";
 
 /**
@@ -220,17 +220,17 @@ function _filterMolsByUseProperty(
     molsToUse: MolsToUse
 ): IMolContainer[] {
     switch (molsToUse) {
-        case MolsToUse.ALL:
+        case MolsToUse.All:
             break;
-        case MolsToUse.VISIBLE:
+        case MolsToUse.Visible:
             molecules = molecules.filter((m) => m.visible);
             break;
-        case MolsToUse.SELECTED:
+        case MolsToUse.Selected:
             molecules = molecules.filter(
-                (m) => m.selected !== SelectedType.FALSE
+                (m) => m.selected !== SelectedType.False
             );
             break;
-        case MolsToUse.VISIBLE_OR_SELECTED:
+        case MolsToUse.VisibleOrSelected:
             molecules = molecules.filter((m) => m.visible || m.selected);
             break;
         default:
@@ -254,7 +254,7 @@ export function getProteinsToUse(
 ): IMolContainer[] {
     // Get number of visible proteins (top-level menu items).
 
-    const proteins = getRootNodesOfType(molecules, MolType.PROTEIN);
+    const proteins = getRootNodesOfType(molecules, MolType.Protein);
 
     return _filterMolsByUseProperty(proteins, molsToUse);
 }
@@ -275,7 +275,7 @@ export function getProteinChainsToUse(
 
     const terminalNodes = getTerminalNodes(molecules);
     const proteinChains: IMolContainer[] = terminalNodes.filter(
-        (m) => m.type === MolType.PROTEIN
+        (m) => m.type === MolType.Protein
     );
 
     return _filterMolsByUseProperty(proteinChains, molsToUse);
@@ -295,7 +295,7 @@ export function getCompoundsToUse(
 ): IMolContainer[] {
     const terminalNodes = getTerminalNodes(molecules);
     const compounds: IMolContainer[] = terminalNodes.filter(
-        (m) => m.type === MolType.COMPOUND
+        (m) => m.type === MolType.Compound
     );
 
     return _filterMolsByUseProperty(compounds, molsToUse);

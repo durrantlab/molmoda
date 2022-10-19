@@ -49,7 +49,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
   pluginId = "deletemol";
   intro = "Delete the selected molecule?";
   userArgs: FormElement[] = [];
-  
+
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;
 
@@ -122,12 +122,19 @@ export default class DeleteMolPlugin extends PluginParentClass {
     return Promise.resolve(undefined);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
         ...this.testExpandMoleculesTree("4WP4.pdb"),
-        this.testSelectMoleculeInTree("Protein")
+        this.testSelectMoleculeInTree("Protein"),
       ],
       // closePlugin: [],
       afterPluginCloses: [],

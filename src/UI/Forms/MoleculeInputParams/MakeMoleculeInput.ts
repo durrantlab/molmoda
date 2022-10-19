@@ -1,14 +1,10 @@
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    CombineProteinType,
-    IMoleculeInputParams,
-    MolsToUse,
-} from "./MoleculeInputParamsTypes";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
 import { IFileInfo } from "@/FileSystem/Definitions";
 import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
-import { convertMolContainer } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
+import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
+import { CombineProteinType, IMoleculeInputParams, MolsToUse } from "./Definitions";
 
 // function _getNameOfParent(
 //     mol: IMolContainer,
@@ -77,12 +73,11 @@ function _mergeAllProteins(
     );
 
     // Make PDB strings for each molecule (one molecule in this case).
-    return convertMolContainer(
+    return convertMolContainers(
         proteinChains,
         "pdb",
         true // merge
-    )
-    .then((pdbTxts: string[]) => {
+    ).then((pdbTxts: string[]) => {
         // One molecule in this case.
         const pdbTxt = pdbTxts[0];
         const filename = "all_proteins.pdb";
@@ -209,7 +204,7 @@ function _perChain(
 
     for (const chain of proteinChains) {
         filenames.push(_makeTmpFilename(chain, molContainers));
-        filePromises.push(convertMolContainer([chain], "pdb", true));
+        filePromises.push(convertMolContainers([chain], "pdb", true));
     }
 
     return Promise.all(filePromises).then((pdbTxts: string[][]) => {
@@ -224,7 +219,6 @@ function _perChain(
         }
         return files;
     });
-
 
     // Make PDB strings for each molecule (one molecule in this case).
     // for (const chain of proteinChains) {
@@ -265,20 +259,23 @@ export function makeMoleculeInput(
 
     if (molInputParams.considerProteins) {
         switch (molInputParams.combineProteinType) {
-            case CombineProteinType.MERGE_ALL:
+            case CombineProteinType.MergeAll:
                 proteinsPromise = _mergeAllProteins(
                     molInputParams.molsToUse,
                     molContainers
                 );
                 break;
-            case CombineProteinType.PER_PROTEIN:
+            case CombineProteinType.PerProtein:
                 proteinsPromise = _mergePerProtein(
                     molInputParams.molsToUse,
                     molContainers
                 );
                 break;
-            case CombineProteinType.PER_CHAIN:
-                proteinsPromise = _perChain(molInputParams.molsToUse, molContainers);
+            case CombineProteinType.PerChain:
+                proteinsPromise = _perChain(
+                    molInputParams.molsToUse,
+                    molContainers
+                );
                 break;
         }
     }
@@ -294,24 +291,26 @@ export function makeMoleculeInput(
 
         for (const compound of compoundMols) {
             filenames.push(_makeTmpFilename(compound, molContainers));
-            compoundConvertedPromises.push(convertMolContainer([compound], "pdb", false));
+            compoundConvertedPromises.push(
+                convertMolContainers([compound], "pdb", false)
+            );
         }
 
-        compoundPromises = Promise.all(compoundConvertedPromises)
-        .then((pdbTxts: string[][]) => {
-            const compounds = [];
-            for (let idx = 0; idx < pdbTxts.length; idx++) {
-                const pdbTxt = pdbTxts[idx][0];
-                compounds.push({
-                    name: filenames[idx],
-                    contents: pdbTxt,
-                    type: "PDB",
-                });
+        compoundPromises = Promise.all(compoundConvertedPromises).then(
+            (pdbTxts: string[][]) => {
+                const compounds = [];
+                for (let idx = 0; idx < pdbTxts.length; idx++) {
+                    const pdbTxt = pdbTxts[idx][0];
+                    compounds.push({
+                        name: filenames[idx],
+                        contents: pdbTxt,
+                        type: "PDB",
+                    });
+                }
+                return compounds;
             }
-            return compounds;
-        });
+        );
 
-        
         // for (const compound of compoundMols) {
         //     const pdbTxt = convertMolContainer([compound], "pdb", false)[0];
 
@@ -327,20 +326,20 @@ export function makeMoleculeInput(
     }
 
     return Promise.all([proteinsPromise, compoundPromises])
-    .then((results: IFileInfo[][]) => {
-        const proteinCompoundPairs: IFileInfo[][] = [];
-        const proteins = results[0];
-        const compounds = results[1];
-        for (const protein of proteins) {
-            for (const compound of compounds) {
-                proteinCompoundPairs.push([protein, compound]);
+        .then((results: IFileInfo[][]) => {
+            const proteinCompoundPairs: IFileInfo[][] = [];
+            const proteins = results[0];
+            const compounds = results[1];
+            for (const protein of proteins) {
+                for (const compound of compounds) {
+                    proteinCompoundPairs.push([protein, compound]);
+                }
             }
-        }
-    
-        return proteinCompoundPairs;
-    })
-    .catch((err) => {
-        console.error(err);
-        throw err;
-    });
+
+            return proteinCompoundPairs;
+        })
+        .catch((err) => {
+            console.error(err);
+            throw err;
+        });
 }

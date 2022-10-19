@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
 
 export interface IDynamicImport {
@@ -91,6 +89,7 @@ export const dynamicImports = {
             return import(
                 /* webpackChunkName: "3dmol" */
                 /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 "@/libs/ToImport/3Dmol-nojquery.JDD"
             ).then(($3Dmol) => {
@@ -161,33 +160,52 @@ export const dynamicImports = {
 
             if (modulesAlreadyAddedToHeader["openbabeljs"] !== undefined) {
                 // Already loaded;
-                (window as any)["OpenBabel"] = modulesAlreadyAddedToHeader["openbabeljs"]
+                (window as any)["OpenBabel"] =
+                    modulesAlreadyAddedToHeader["openbabeljs"];
                 return Promise.resolve(undefined);
-            }    
+            }
 
-            return addJsToHeader("js/openbabeljs/openbabel.js")
-                .then(() => {
-                    const OpenBabel = (window as any)["OpenBabelModule"]();
-                    const prom1 = new Promise((resolve) => {
-                        OpenBabel.onRuntimeInitialized = () => {
-                            resolve(undefined);
-                        }
-                    })
-                    const prom2 = new Promise(function (resolve) {
-                        const checkReady = () => {
-                            console.log("checking");
-                            if (OpenBabel.ObConversionWrapper) {
-                                (window as any)["OpenBabel"] = OpenBabel;
-                                modulesAlreadyAddedToHeader["openbabeljs"] = OpenBabel;
-                                resolve(undefined);
-                            } else {
-                                setTimeout(checkReady, 500);
-                            }
-                        };
-                        checkReady();
-                    });
-                    return Promise.all([prom1, prom2]);
+            return addJsToHeader("js/openbabeljs/openbabel.js").then(() => {
+                const OpenBabel = (window as any)["OpenBabelModule"]();
+                const prom1 = new Promise((resolve) => {
+                    OpenBabel.onRuntimeInitialized = () => {
+                        resolve(undefined);
+                    };
                 });
+                const prom2 = new Promise(function (resolve) {
+                    const checkReady = () => {
+                        console.log("checking");
+                        if (OpenBabel.ObConversionWrapper) {
+                            (window as any)["OpenBabel"] = OpenBabel;
+                            modulesAlreadyAddedToHeader["openbabeljs"] =
+                                OpenBabel;
+                            resolve(undefined);
+                        } else {
+                            setTimeout(checkReady, 500);
+                        }
+                    };
+                    checkReady();
+                });
+                return Promise.all([prom1, prom2]);
+            });
+        },
+    },
+    smilesdrawer: {
+        credit: {
+            name: "smilesdrawer",
+            url: "https://github.com/reymond-group/smilesDrawer",
+            license: Licenses.MIT,
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "smilesdrawer" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "smiles-drawer"
+            ).then((SmilesDrawer) => {
+                return SmilesDrawer;
+            });
         },
     },
 };

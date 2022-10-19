@@ -19,6 +19,7 @@
       :id="pluginId"
       v-model="userArgsToUse"
       @onChange="onChange"
+      :hideIfDisabled="hideIfDisabled"
     ></FormFull>
   </Popup>
 </template>
@@ -69,6 +70,12 @@ export default class PluginComponent extends mixins(
   /** Whether the action button (e.g., "Load") is enabled. */
   @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
 
+  /** 
+   * Whether to hide user parameters that are disabled or to show them in a
+   * disabled state. 
+   */
+  @Prop({ default: false }) hideIfDisabled!: boolean;
+
   /**
    * Introductory text that appears at the top of the plugin (above the user
    * inputs).
@@ -91,7 +98,7 @@ export default class PluginComponent extends mixins(
    * The popup variant (i.e., whether to style the popup as primary, secondary,
    * success, danger, etc.).
    */
-  @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
+  @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
 
   /**
    * Determine whether the userData validates (each datum). Children shouldn't

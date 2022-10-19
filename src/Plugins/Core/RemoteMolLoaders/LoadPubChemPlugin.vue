@@ -50,8 +50,8 @@ import { appName } from "@/Core/AppName";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
-import { loadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/LoadMolModels/LoadMoleculeFiles";
+import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Definitions";
 
 /**
@@ -238,20 +238,27 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
   runJob(fileInfo: IFileInfo) {
-    loadMoleculeFile(fileInfo);
+    parseMoleculeFile(fileInfo);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       populateUserArgs: [
         {
           selector: "#modal-loadpubchem #formMolName",
-          cmd: TEST_COMMAND.TEXT,
+          cmd: TestCommand.Text,
           data: "Aspirin",
         },
         // TODO: Below could wait until value populated. Hoping it will take
         // less than 3 secs is hackish.
-        this.testWait(5)
+        this.testWait(5),
       ],
       afterPluginCloses: [
         this.testWaitForRegex("#styles", "Compound"),

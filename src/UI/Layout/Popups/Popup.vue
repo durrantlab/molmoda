@@ -79,7 +79,7 @@ export default class Popup extends Vue {
   @Prop({ default: true }) cancelXBtn!: boolean;
   @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: false }) prohibitCancel!: boolean;
-  @Prop({ default: PopupVariant.PRIMARY }) variant!: PopupVariant;
+  @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
   @Prop({ default: "" }) id!: string;
   @Prop({}) onShown!: Function;
   @Prop({}) beforeShown!: Function;

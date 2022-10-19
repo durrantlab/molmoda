@@ -13,7 +13,7 @@ export function checkAnyMolSelected(This: PluginParentClass): string | null {
     // Check if user has selected anything
     const selectedNodes = getAllNodesFlattened(
         This.$store.state.molecules
-    ).filter((n) => n.selected === SelectedType.TRUE);
+    ).filter((n) => n.selected === SelectedType.True);
 
     if (selectedNodes.length === 0) {
         return "No molecules are currently selected. First select a molecule by clicking on its name in the Molecules panel.";

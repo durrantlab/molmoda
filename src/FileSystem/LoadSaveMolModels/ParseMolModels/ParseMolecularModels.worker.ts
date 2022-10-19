@@ -38,8 +38,8 @@ import { dynamicImports } from "@/Core/DynamicImports";
 let glviewer: any;
 
 enum NodesOrModel {
-    NODES,
-    MODEL,
+    Nodes,
+    Model,
 }
 
 /**
@@ -53,7 +53,7 @@ enum NodesOrModel {
  */
 function _getDefaultMolContainer(
     molName: string,
-    nodesOrModel = NodesOrModel.NODES
+    nodesOrModel = NodesOrModel.Nodes
 ): IMolContainer {
     let obj = {
         title: molName,
@@ -61,12 +61,12 @@ function _getDefaultMolContainer(
         treeExpanded: false,
         visible: true,
         focused: false,
-        selected: SelectedType.FALSE,
+        selected: SelectedType.False,
     };
 
     obj = {
         ...obj,
-        ...(nodesOrModel === NodesOrModel.MODEL
+        ...(nodesOrModel === NodesOrModel.Model
             ? { model: [] }
             : { nodes: [] }),
     };
@@ -111,7 +111,7 @@ function organizeSelByChain(
                 viewerDirty: true,
                 treeExpanded: false,
                 visible: true,
-                selected: SelectedType.FALSE,
+                selected: SelectedType.False,
                 focused: false,
             });
             lastChainID = atom.chain;
@@ -137,7 +137,7 @@ function flattenChains(molContainer: IMolContainer): IMolContainer {
     }
     const flattened: IMolContainer = _getDefaultMolContainer(
         molContainer.title,
-        NodesOrModel.MODEL
+        NodesOrModel.Model
     );
 
     molContainer.nodes.forEach((chain: IMolContainer) => {
@@ -203,7 +203,7 @@ function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
             const newKey = residueID(atom);
             if (newKey !== lastResidueID) {
                 residues.push(
-                    _getDefaultMolContainer(newKey, NodesOrModel.MODEL)
+                    _getDefaultMolContainer(newKey, NodesOrModel.Model)
                 );
                 lastResidueID = newKey;
             }
@@ -359,13 +359,13 @@ function divideAtomsIntoDistinctComponents(data: {
         metalAtomsByChain = collapseSingles(metalAtomsByChain);
         lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
 
-        proteinAtomsByChain.type = MolType.PROTEIN;
-        nucleicAtomsByChain.type = MolType.NUCLEIC;
-        compoundsByChain.type = MolType.COMPOUND;
-        metalAtomsByChain.type = MolType.METAL;
-        lipidAtomsByChain.type = MolType.LIPID;
-        ionAtomsNoChain.type = MolType.IONS;
-        solventAtomsNoChain.type = MolType.SOLVENT;
+        proteinAtomsByChain.type = MolType.Protein;
+        nucleicAtomsByChain.type = MolType.Nucleic;
+        compoundsByChain.type = MolType.Compound;
+        metalAtomsByChain.type = MolType.Metal;
+        lipidAtomsByChain.type = MolType.Lipid;
+        ionAtomsNoChain.type = MolType.Ions;
+        solventAtomsNoChain.type = MolType.Solvent;
 
         // // add in default styles
         // proteinAtomsByChain.style = proteinStyle;
@@ -378,7 +378,7 @@ function divideAtomsIntoDistinctComponents(data: {
             treeExpanded: false,
             visible: true,
             focused: false,
-            selected: SelectedType.FALSE,
+            selected: SelectedType.False,
             nodes: [
                 proteinAtomsByChain,
                 nucleicAtomsByChain,
@@ -466,25 +466,25 @@ waitForDataFromMainThread()
 
         for (const node of nodesToConsider) {
             switch (node.type) {
-                case MolType.PROTEIN:
+                case MolType.Protein:
                     addMolTypeAndStyle(node, proteinStyle);
                     break;
-                case MolType.NUCLEIC:
+                case MolType.Nucleic:
                     addMolTypeAndStyle(node, nucleicStyle);
                     break;
-                case MolType.COMPOUND:
+                case MolType.Compound:
                     addMolTypeAndStyle(node, ligandsStyle);
                     break;
-                case MolType.METAL:
+                case MolType.Metal:
                     addMolTypeAndStyle(node, metalsStyle);
                     break;
-                case MolType.LIPID:
+                case MolType.Lipid:
                     addMolTypeAndStyle(node, lipidStyle);
                     break;
-                case MolType.IONS:
+                case MolType.Ions:
                     addMolTypeAndStyle(node, ionsStyle);
                     break;
-                case MolType.SOLVENT:
+                case MolType.Solvent:
                     addMolTypeAndStyle(node, solventStyle);
                     break;
             }

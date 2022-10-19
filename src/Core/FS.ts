@@ -1,3 +1,5 @@
+import { IFileInfo } from "@/FileSystem/Definitions";
+import { getType } from "@/FileSystem/Utils2";
 import { dynamicImports } from "./DynamicImports";
 
 export interface ISaveTxt {
@@ -101,13 +103,11 @@ export function saveZipWithTxtFiles(
         makeZipPromise,
     ];
 
-    return Promise.all(promises)
-    .then((payload: any[]) => {
+    return Promise.all(promises).then((payload: any[]) => {
         const fileSaver = payload[0];
         const zipBlob = payload[1];
         fileSaver.saveAs(zipBlob, zipParams.fileName);
         return;
-
     });
 }
 
@@ -164,17 +164,56 @@ export function savePngUri(fileName: string, pngUri: string) {
  * Given a string of compressed data (representing a zip file), get the contents
  * of a text file in it.
  *
- * @param  {string} s        The compressed data.
- * @param  {string} fileName The name of the file to get.
- * @returns {Promise<string>} A promise that resolves to the contents of the
- *     file.
+ * @param  {string} s          The compressed data.
+ * @param  {string} [fileName] The name of the file within the zip to get. If
+ *                             unspecified, gets all the files.
+ * @returns {Promise<string[]>} A promise that resolves to the contents of the
+ *     file(s). Always an array, even if only one file is returned.
  */
-export function uncompress(s: string, fileName: string): Promise<string> {
-    return dynamicImports.jsZip.module
-        .then((JSZip) => {
-            return JSZip.loadAsync(s);
-        })
+export function uncompress(s: string, fileName?: string): Promise<IFileInfo[]> {
+    const getZipObjPromise = dynamicImports.jsZip.module.then((JSZip) => {
+        return JSZip.loadAsync(s);
+    });
+
+    // if (fileName !== undefined) {
+    //     return getZipObjPromise.then((zip: any) => {
+    //         return [zip.file(fileName).async("string")];
+    //     });
+    // } else {
+    let fileNames: string[];
+    // let fileSizes: number[];
+    return getZipObjPromise
         .then((zip: any) => {
-            return zip.file(fileName).async("string");
+            fileNames = Object.keys(zip.files);
+            // fileSizes = zip.files.map((file: any) => file.size);
+            // debugger
+            const promises = fileNames.map((f) => zip.files[f].async("string"));
+            return Promise.all(promises);
+        })
+        .then((fileContents: string[]) => {
+            const fileInfos: IFileInfo[] = [];
+            for (let i = 0; i < fileNames.length; i++) {
+                const fileName = fileNames[i];
+                if (fileName.startsWith("__MACOSX")) {
+                    continue;
+                }
+                if (fileName.startsWith(".")) {
+                    continue;
+                }
+
+                const contents = fileContents[i];
+                const type = getType(fileName);
+
+                fileInfos.push({
+                    name: fileName.split("/").pop(),  // basename
+                    // Getting file size not supported with zip. You could
+                    // implement, though.
+                    size: 0,  
+                    contents: contents,
+                    type: type,
+                } as IFileInfo);
+            }
+            return fileInfos;
         });
+    // }
 }

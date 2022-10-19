@@ -1,15 +1,11 @@
 <template>
   <span>
-    MOO {{isSelectWhichMolToConsidervisible}}
-    <FormWrapper
+    <!-- <WhichMols
       v-if="isSelectWhichMolToConsidervisible"
-      label="Which workspace molecules to consider?"
-      cls="border-0"
-    >
-      <FormSelect
-        v-model="val.molsToUse"
-        :options="molsToUseOptions"
-      ></FormSelect>
+      v-model="val.molsToUse"
+    ></WhichMols> -->
+    <FormWrapper label="Which project molecules to consider?" cls="border-0">
+      <FormSelect v-model="val.molsToUse" :options="molsToUseOpts"></FormSelect>
     </FormWrapper>
 
     <FormWrapper
@@ -36,17 +32,13 @@ import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
 import FormWrapper from "../FormWrapper.vue";
-import {
-  CombineProteinType,
-  defaultMoleculeInputParams,
-  IMoleculeInputParams,
-  MolsToUse,
-} from "./MoleculeInputParamsTypes";
 import * as api from "@/Api";
 import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
 import { IFormOption } from "../FormFull/FormFullInterfaces";
+import { CombineProteinType, defaultMoleculeInputParams, IMoleculeInputParams, MolsToUse, molsToUseOptions } from "./Definitions";
+// import WhichMols from "../WhichMols/WhichMols.vue";
 
 /**
  * CombineProteins component
@@ -56,46 +48,30 @@ import { IFormOption } from "../FormFull/FormFullInterfaces";
     FormElementDescription,
     FormSelect,
     FormWrapper,
-    Alert
+    Alert,
+    // WhichMols,
   },
 })
 export default class MoleculeInputParams extends Vue {
   @Prop({ default: { ...defaultMoleculeInputParams() } })
   modelValue!: IMoleculeInputParams;
 
-  val: IMoleculeInputParams = { ...defaultMoleculeInputParams() };
+  molsToUseOpts = molsToUseOptions;
 
-  molsToUseOptions: IFormOption[] = [
-    {
-      description: "All Molecules (Visible, Hidden, Selected)",
-      val: MolsToUse.ALL,
-    },
-    {
-      description: "Visible Molecules",
-      val: MolsToUse.VISIBLE,
-    },
-    {
-      description: "Selected Molecules",
-      val: MolsToUse.SELECTED,
-    },
-    {
-      description: "Visible and/or Selected Molecules",
-      val: MolsToUse.VISIBLE_OR_SELECTED,
-    },
-  ];
+  val: IMoleculeInputParams = { ...defaultMoleculeInputParams() };
 
   mergeProtein: IFormOption[] = [
     {
       description: "Each Protein (Group Associated Chains)",
-      val: CombineProteinType.PER_PROTEIN,
+      val: CombineProteinType.PerProtein,
     },
     {
       description: "All Proteins Together (Group All Proteins into One)",
-      val: CombineProteinType.MERGE_ALL,
+      val: CombineProteinType.MergeAll,
     },
     {
       description: "Each Protein Chain Separately (Group Nothing)",
-      val: CombineProteinType.PER_CHAIN,
+      val: CombineProteinType.PerChain,
     },
   ];
 
@@ -126,16 +102,16 @@ export default class MoleculeInputParams extends Vue {
     }
 
     switch (this.val.molsToUse) {
-      case MolsToUse.ALL:
+      case MolsToUse.All:
         txt += "Among all molecules, I found ";
         break;
-      case MolsToUse.VISIBLE:
+      case MolsToUse.Visible:
         txt += "Among the visible molecules, I found ";
         break;
-      case MolsToUse.SELECTED:
+      case MolsToUse.Selected:
         txt += "Among the selected molecules, I found ";
         break;
-      case MolsToUse.VISIBLE_OR_SELECTED:
+      case MolsToUse.VisibleOrSelected:
         txt += "Among the visible and/or selected molecules, I found ";
         break;
     }
@@ -145,21 +121,21 @@ export default class MoleculeInputParams extends Vue {
     let protPrtsCount = -1;
     if (this.val.considerProteins) {
       switch (this.val.combineProteinType) {
-        case CombineProteinType.PER_PROTEIN:
+        case CombineProteinType.PerProtein:
           protPrtsCount = this.proteinsToUse.length;
           prts.push(
             (protPrtsCount !== 1 ? `${protPrtsCount} proteins` : "1 protein") +
               ` (${this.listMols(this.proteinsToUse)})`
           );
           break;
-        case CombineProteinType.MERGE_ALL:
+        case CombineProteinType.MergeAll:
           if (this.proteinChainsToUse.length === 0) {
             prts.push("0 (merged) proteins");
           } else {
             prts.push("1 (merged) protein");
           }
           break;
-        case CombineProteinType.PER_CHAIN:
+        case CombineProteinType.PerChain:
           protPrtsCount = this.proteinChainsToUse.length;
           prts.push(
             (protPrtsCount !== 1
@@ -251,7 +227,7 @@ export default class MoleculeInputParams extends Vue {
    */
   get isSelectWhichMolToConsidervisible(): boolean {
     return (
-      api.visualization.getProteinChainsToUse(MolsToUse.ALL, this.molecules)
+      api.visualization.getProteinChainsToUse(MolsToUse.All, this.molecules)
         .length > 1
     );
   }

@@ -14,7 +14,7 @@ import { redo, redoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
 
 /**
  * RedoPlugin
@@ -61,24 +61,31 @@ export default class RedoPlugin extends PluginParentClass {
     redo(this.$store);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
         {
-          cmd: TEST_COMMAND.CLICK,
+          cmd: TestCommand.Click,
           selector: "#menu1-edit",
         },
         {
-          cmd: TEST_COMMAND.CLICK,
+          cmd: TestCommand.Click,
           selector: "#menu-plugin-undo",
         },
-        this.testWait(3)
+        this.testWait(3),
       ],
       closePlugin: [],
       afterPluginCloses: [
         this.testWaitForRegex("#log", 'Job "redo:.+?" ended'),
-        this.testWait(3)
+        this.testWait(3),
       ],
     };
   }

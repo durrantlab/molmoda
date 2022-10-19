@@ -24,19 +24,19 @@ export interface IAtom {
 }
 
 export enum MolType {
-    PROTEIN = "protein",
-    NUCLEIC = "nucleic",
-    COMPOUND = "compound",
-    METAL = "metal",
-    LIPID = "lipid",
-    IONS = "ions",
-    SOLVENT = "solvent",
+    Protein = "protein",
+    Nucleic = "nucleic",
+    Compound = "compound",
+    Metal = "metal",
+    Lipid = "lipid",
+    Ions = "ions",
+    Solvent = "solvent",
 }
 
 export enum SelectedType {
-    FALSE = "false",
-    TRUE = "true",
-    CHILD_OF_TRUE = "child_of_true",
+    False = "false",
+    True = "true",
+    ChildOfTrue = "child_of_true",
 }
 
 export interface IMolContainer {

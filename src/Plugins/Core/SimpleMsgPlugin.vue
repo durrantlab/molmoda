@@ -53,7 +53,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
   // Below set via onPluginStart.
   title = "";
   message = "";
-  variant = PopupVariant.PRIMARY;
+  variant = PopupVariant.Primary;
   callBack: any = undefined;
   neverClose = false;
 
@@ -71,7 +71,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     this.message = payload.message;
     this.callBack = payload.callBack;
     this.variant =
-      payload.variant === undefined ? PopupVariant.PRIMARY : payload.variant;
+      payload.variant === undefined ? PopupVariant.Primary : payload.variant;
     this.neverClose =
       payload.neverClose === undefined ? false : payload.neverClose;
     this.open = true;

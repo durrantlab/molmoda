@@ -13,7 +13,6 @@
       <Menu :menuData="menuData" />
     </div>
     <div style="flex-grow: 5">
-      <!-- <div style="width: 100%; height: 100%; padding: 15px;"></div> -->
       <GoldLayout />
     </div>
     <AllPlugins
@@ -21,6 +20,7 @@
       :softwareCredits="softwareCredits"
       :contributorCredits="contributorCredits"
     />
+    <DragDropFileLoad />
   </div>
 </template>
 
@@ -42,6 +42,8 @@ import * as api from "@/Api";
 import * as compileErrors from "../compile_errors.json";
 import { appName } from "@/Core/AppName";
 import TestData from "@/Testing/TestData.vue";
+import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
+import Viewer2D from "@/UI/Panels/Viewer/Viewer2D.vue";
 
 /**
  * Main app component
@@ -51,7 +53,9 @@ import TestData from "@/Testing/TestData.vue";
     GoldLayout,
     Menu,
     AllPlugins,
-    TestData
+    TestData,
+    DragDropFileLoad,
+    Viewer2D
   },
 })
 export default class App extends Vue {

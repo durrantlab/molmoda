@@ -211,7 +211,7 @@ export default class TitleBar extends Vue {
    */
   selectedStyle(id: string): string {
     let node = this.getNode(id);
-    return node.selected !== SelectedType.FALSE
+    return node.selected !== SelectedType.False
       ? "background-color: #f0f0f0;"
       : "";
   }
@@ -231,7 +231,7 @@ export default class TitleBar extends Vue {
    */
   isSelected(id: string): boolean {
     let node = this.getNode(id);
-    return node.selected === SelectedType.TRUE;
+    return node.selected === SelectedType.True;
   }
 
   /**
@@ -329,23 +329,23 @@ export default class TitleBar extends Vue {
    */
   titleClick(id: string) {
     let node = this.getNode(id);
-    let deselectOnly = node.selected === SelectedType.TRUE;
+    let deselectOnly = node.selected === SelectedType.True;
 
     // System should unselect all nodes.
     for (let nd of getAllNodesFlattened(this.$store.state.molecules)) {
-      nd.selected = SelectedType.FALSE;
+      nd.selected = SelectedType.False;
     }
 
     if (deselectOnly) {
       return;
     }
 
-    node.selected = SelectedType.TRUE;
+    node.selected = SelectedType.True;
 
     // Children too
     if (node.nodes) {
       for (let nd of getAllNodesFlattened(node.nodes)) {
-        nd.selected = SelectedType.CHILD_OF_TRUE;
+        nd.selected = SelectedType.ChildOfTrue;
       }
     }
   }

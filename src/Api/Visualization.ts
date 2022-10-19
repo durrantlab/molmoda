@@ -1,4 +1,4 @@
-import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/MoleculeInputParamsTypes";
+import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Definitions";
 import {
     IMolContainer,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";

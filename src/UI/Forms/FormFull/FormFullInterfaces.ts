@@ -1,4 +1,4 @@
-import { IMoleculeInputParams } from "../MoleculeInputParams/MoleculeInputParamsTypes";
+import { IMoleculeInputParams } from "../MoleculeInputParams/Definitions";
 
 export enum FormElemType {
     Text,

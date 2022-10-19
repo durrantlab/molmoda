@@ -21,11 +21,7 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import {
-  ITest,
-  ITestCommand,
-  TEST_COMMAND,
-} from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /** ClearSelectionPlugin */
 @Options({
@@ -66,19 +62,26 @@ export default class ClearSelectionPlugin extends PluginParentClass {
   runJob(): Promise<undefined> {
     const allNodes = getAllNodesFlattened(this.$store.state["molecules"]);
     allNodes.forEach((n) => {
-      if (n.selected !== SelectedType.FALSE) {
-        n.selected = SelectedType.FALSE;
+      if (n.selected !== SelectedType.False) {
+        n.selected = SelectedType.False;
       }
     });
     return Promise.resolve(undefined);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
         ...this.testExpandMoleculesTree("4WP4.pdb"),
-        this.testSelectMoleculeInTree("Protein")
+        this.testSelectMoleculeInTree("Protein"),
       ],
       closePlugin: [],
       afterPluginCloses: [],

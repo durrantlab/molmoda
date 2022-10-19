@@ -16,7 +16,7 @@ export function getDefaultNodeToActOn(): IMolContainer {
     return {
         title: "",
         treeExpanded: false,
-        selected: SelectedType.FALSE,
+        selected: SelectedType.False,
         visible: false,
         focused: false,
         viewerDirty: false,
@@ -40,7 +40,7 @@ export function setNodeToActOn(This: any) {
         // Find the selected molecule instead.
         const nodes = getAllNodesFlattened(This.$store.state.molecules);
         This.nodeToActOn = nodes.find(
-            (n) => n.selected === SelectedType.TRUE
+            (n) => n.selected === SelectedType.True
         ) as IMolContainer;
     }
 

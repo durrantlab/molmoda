@@ -92,15 +92,15 @@ export default class MenuLevel1 extends MenuLevelParent {
 
       // Consider adding separator
       if (
-        item.type === MenuItemType.SUBMENU ||
+        item.type === MenuItemType.Submenu ||
         (nextItem &&
-          item.type === MenuItemType.ACTION &&
-          nextItem.type === MenuItemType.SUBMENU)
+          item.type === MenuItemType.Action &&
+          nextItem.type === MenuItemType.Submenu)
       ) {
         // Always add separator after submenu.
         // Also after action if next item is submenu.
         newMenuItemsWithSeparator.push({
-          type: MenuItemType.SEPARATOR,
+          type: MenuItemType.Separator,
         } as IMenuSeparator);
       }
     }
@@ -109,7 +109,7 @@ export default class MenuLevel1 extends MenuLevelParent {
     if (newMenuItemsWithSeparator.length > 0) {
       let lastItem =
         newMenuItemsWithSeparator[newMenuItemsWithSeparator.length - 1];
-      if (lastItem.type === MenuItemType.SEPARATOR) {
+      if (lastItem.type === MenuItemType.Separator) {
         newMenuItemsWithSeparator.pop();
       }
     }

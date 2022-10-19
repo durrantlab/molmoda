@@ -17,7 +17,7 @@
           name="Viewer"
           state="{}"
           :width="60"
-          :style="'height:100%;'"
+          :style="'height:100%; padding:0 !important;'"
         >
           <ViewerPanel />
         </GoldenLayoutComponent>

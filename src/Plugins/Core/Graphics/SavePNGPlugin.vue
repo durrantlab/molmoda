@@ -2,7 +2,7 @@
   <PluginComponent
     :userArgs="userArgs"
     v-model="open"
-    title="Save a VRML Model"
+    title="Save a PNG Image"
     actionBtnTxt="Save"
     :intro="intro"
     :pluginId="pluginId"
@@ -13,29 +13,28 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import * as api from "@/Api";
+import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
-import { ISaveTxt } from "@/Core/FS";
-import { checkanyMolLoaded } from "../../CheckUseAllowedUtils";
+import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest, TEST_COMMAND } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /**
- * SaveVRMLPlugin
+ * SavePNGPlugin
  */
 @Options({
   components: {
     PluginComponent,
   },
 })
-export default class SaveVRMLPlugin extends PluginParentClass {
-  menuPath = "File/Graphics/VRML";
+export default class SavePNGPlugin extends PluginParentClass {
+  menuPath = "File/Graphics/PNG";
   softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
   contributorCredits: IContributorCredit[] = [
     {
@@ -43,17 +42,17 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       url: "http://durrantlab.com/",
     },
   ];
-  pluginId = "savevrml";
+  pluginId = "savepng";
 
-  intro = `Please provide the name of the VRML file to save. Note that the
-      extension ".vrml" will be automatically appended.`;
+  intro = `Please provide the name of the PNG file to save. The
+    extension ".png" will be automatically appended.`;
 
   userArgs: FormElement[] = [
     {
       id: "filename",
       label: "",
       val: "",
-      placeHolder: "Enter Filename (e.g., my_model.vrml)",
+      placeHolder: "Enter Filename (e.g., my_image.png)",
       filterFunc: (filename: string): string => {
         return fileNameFilter(filename);
       },
@@ -81,35 +80,35 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
-    this.submitJobs([{ filename: userArgs[0].val }]);
+    this.submitJobs([{ filename: this.userArgsLookup(userArgs, "filename") }]);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {any} parameters  Information about the VRML file to save.
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
+   * @param {any} parameters  Information about the PNG file to save.
    */
-  runJob(parameters: any): Promise<undefined> {
+  runJob(parameters: any) {
     let filename = parameters.filename;
-    let vrmlTxt = api.visualization.viewer.exportVRML();
-    api.visualization.viewer.render();
 
-    return api.fs.saveTxt({
-      fileName: filename,
-      content: vrmlTxt,
-      ext: ".vrml",
-    } as ISaveTxt);
+    let pngUri = api.visualization.viewer.pngURI();
+    api.fs.savePngUri(filename, pngUri);
   }
 
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
   getTests(): ITest {
     return {
       beforePluginOpens: [this.testLoadExampleProtein()],
       populateUserArgs: [this.testUserArg("filename", "test")],
       afterPluginCloses: [
-        this.testWaitForRegex("#log", 'Job "savevrml:.+?" ended'),
-        this.testWait(3)
+        this.testWaitForRegex("#log", 'Job "savepng:.+?" ended'),
+        this.testWait(3),
       ],
     };
   }

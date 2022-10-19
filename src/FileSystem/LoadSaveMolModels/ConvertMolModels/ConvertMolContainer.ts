@@ -1,12 +1,7 @@
 import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
-import {
-    GLModel,
-    IMolContainer,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getFormatInfoGivenExt, IFormatInfo } from "../Definitions/MolFormats";
-import {
-    convertMolContainersToPDB
-} from "./ConvertMolContainerToPDB";
+import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
 
 // function bondOrdersAssigned(molContainers: IMolContainer[]): boolean {
 //     const bondOrders: Set<number> = new Set();
@@ -32,7 +27,7 @@ import {
  *                                          single PDB string.
  * @returns {string[]} The PDB strings.
  */
-export function convertMolContainer(
+export function convertMolContainers(
     molContainers: IMolContainer[],
     ext: string,
     merge = true

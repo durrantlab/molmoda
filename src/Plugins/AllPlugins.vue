@@ -37,16 +37,16 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMolPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
-import LoadAlphaFoldPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadAlphaFoldPlugin.vue";
-import LoadPDBPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPDBPlugin.vue";
-import LoadPubChemPlugin from "./Core/MolLoaderSaver/MolLoaders/LoadPubChemPlugin.vue";
-import NewProjectPlugin from "./Core/SessionLoaderSaver/NewProjectPlugin.vue";
-import OpenMoleculesPlugin from "./Core/SessionLoaderSaver/OpenMoleculesPlugin.vue";
+import LoadAlphaFoldPlugin from "./Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue";
+import LoadPDBPlugin from "./Core/RemoteMolLoaders/LoadPDBPlugin.vue";
+import LoadPubChemPlugin from "./Core/RemoteMolLoaders/LoadPubChemPlugin.vue";
+import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
+import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
 import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
-import SaveMoleculesPlugin from "./Core/SessionLoaderSaver/SaveMoleculesPlugin.vue";
-import SavePNGPlugin from "./Core/MolLoaderSaver/MolSaver/SavePNGPlugin.vue";
-import SaveVRMLPlugin from "./Core/MolLoaderSaver/MolSaver/SaveVRMLPlugin.vue";
+import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
+import SavePNGPlugin from "./Core/Graphics/SavePNGPlugin.vue";
+import SaveVRMLPlugin from "./Core/Graphics/SaveVRMLPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 
@@ -79,6 +79,12 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     TestPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
 
 
 

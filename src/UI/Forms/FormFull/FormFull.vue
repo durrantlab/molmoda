@@ -19,12 +19,12 @@
         </Accordian>
       </FormWrapper>
       <FormWrapper
-        v-else
+        v-else-if="!hideIfDisabled || makeGeneric(formElem).enabled"
         :label="
           formElem.type === FormElementType.Checkbox ? '' : formElem.label
         "
         cls="border-0 mt-2"
-        :disabled="!makeGeneric(formElem).enabled"
+        :disabled="disabled(formElem)"
       >
         <FormInput
           v-if="formElem.type === FormElementType.Text"
@@ -34,7 +34,7 @@
           :filterFunc="makeGeneric(formElem).filterFunc"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         />
         <FormInput
           v-else-if="formElem.type === FormElementType.Number"
@@ -44,7 +44,7 @@
           :filterFunc="makeGeneric(formElem).filterFunc"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         />
         <FormInput
           v-else-if="formElem.type === FormElementType.Color"
@@ -52,7 +52,7 @@
           v-model.number="makeGeneric(formElem).val"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         />
         <FormInput
           v-else-if="formElem.type === FormElementType.Range"
@@ -63,7 +63,7 @@
           :step="getRangeMinMaxStep(formElem).step"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         />
         <FormSelect
           v-else-if="formElem.type === FormElementType.Select"
@@ -71,7 +71,7 @@
           :options="getSelectOptions(formElem)"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         />
         <FormCheckBox
           v-else-if="formElem.type === FormElementType.Checkbox"
@@ -79,7 +79,7 @@
           :text="makeGeneric(formElem).label"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         />
         <!-- :placeHolder="makeGeneric(formElem).placeHolder" -->
         <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->
@@ -88,7 +88,7 @@
           v-model="makeGeneric(formElem).val"
           @onChange="onDataUpdated"
           :id="itemId(formElem)"
-          :disabled="!makeGeneric(formElem).enabled"
+          :disabled="disabled(formElem)"
         >
         </MoleculeInputParams>
       </FormWrapper>
@@ -134,6 +134,7 @@ import FormCheckBox from "../FormCheckBox.vue";
 export default class FormFull extends Vue {
   @Prop({ required: true }) modelValue!: FormElement[];
   @Prop({ required: true }) id!: FormElement[];
+  @Prop({ default: false }) hideIfDisabled!: boolean;
 
   FormElementType = FormElemType; // So accessible in template
 
@@ -162,8 +163,24 @@ export default class FormFull extends Vue {
     };
   }
 
+  /**
+   * Get the DOM id for a form element.
+   * 
+   * @param {FormElement} formElem  The form element.
+   * @returns {string}              The DOM id.
+   */
   itemId(formElem: FormElement): string {
     return `${formElem.id}-${this.id}-item`;
+  }
+
+  /**
+   * Determine if a given form element is currently disabled.
+   *
+   * @param {FormElement} formElem  The form element.
+   * @returns {boolean}  True if disabled, false otherwise.
+   */
+  disabled(formElem: FormElement): boolean {
+    return this.makeGeneric(formElem).enabled === false;
   }
 
   /**

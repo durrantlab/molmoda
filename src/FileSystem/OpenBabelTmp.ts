@@ -36,11 +36,3 @@ export function convertMolFormatOpenBabel(
         return outData;
     });
 }
-
-// export function convertFromPDB(pdbTxt: string, ext: string): Promise<string> {
-//     return convertMolFormat(pdbTxt, "pdb", ext);
-// }
-
-// export function convertToPDB(content: string, ext: string): Promise<string> {
-//     return convertMolFormat(content, ext, "pdb");
-// }

@@ -5,9 +5,9 @@ import { Vue } from "vue-class-component";
 export type IMenuEntry = IMenuItem | IMenuSubmenu;
 
 export enum MenuItemType {
-    ACTION,
-    SUBMENU,
-    SEPARATOR,
+    Action,
+    Submenu,
+    Separator,
 }
 
 export interface IMenuSeparator {
@@ -53,7 +53,7 @@ export class MenuLevelParent extends Vue {
      * @returns {boolean} True if the item is an action.
      */
     isAction(item: IMenuEntry | IMenuSeparator): boolean {
-        return item.type === MenuItemType.ACTION;
+        return item.type === MenuItemType.Action;
     }
 
     /**
@@ -63,7 +63,7 @@ export class MenuLevelParent extends Vue {
      * @returns {boolean} True if the item is a separator.
      */
     isSeparator(item: IMenuEntry | IMenuSeparator): boolean {
-        return item.type === MenuItemType.SEPARATOR;
+        return item.type === MenuItemType.Separator;
     }
 
     /**
@@ -158,7 +158,7 @@ function _extractRankFromText(text: string): IMenuPathInfo {
 function _setNewMenuItemDefaults(newMenuItem: IMenuItem) {
     // If type is not set, default to MenuItemType.ACTION.
     if (newMenuItem.type === undefined) {
-        newMenuItem.type = MenuItemType.ACTION;
+        newMenuItem.type = MenuItemType.Action;
     }
 
     // If rank is not set, default to 5.
@@ -231,7 +231,7 @@ export function addMenuItem(
         ) {
             // This level doesn't exist, so add it.
             existingMenuItemsPlaceholder.push({
-                type: MenuItemType.SUBMENU,
+                type: MenuItemType.Submenu,
                 _text: pathNameWithoutRank,
                 items: [],
                 _rank: rank,
