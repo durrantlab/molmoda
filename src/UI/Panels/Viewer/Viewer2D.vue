@@ -1,18 +1,20 @@
 <template>
-    <div ref="smiles-container" :style="`width:${width}; height:${height}; ${extraStyles};`">
-        <canvas
+  <div ref="smiles-container" :style="containerStyles">
+    <!-- <canvas
           id="smiles-canvas"
           ref="smiles-canvas"
           :width="resolutionFactor * containerWidth"
           :height="resolutionFactor * containerHeight"
           :style="`width: 100%; height: 100%;`"
-        ></canvas>
-        <!-- <svg
-            id="output-svg"
-            viewbox="0 0 500 500"
-            xmlns="http://www.w3.org/2000/svg"
-          ></svg> -->
-    </div>
+        ></canvas> -->
+    <svg
+      :style="svgStyles"
+      id="output-svg"
+      ref="output-svg"
+      viewbox="0 0 0 0"
+      xmlns="http://www.w3.org/2000/svg"
+    ></svg>
+  </div>
 </template>
   
 <script lang="ts">
@@ -27,45 +29,14 @@ import { Prop, Watch } from "vue-property-decorator";
 export default class Viewer2D extends Vue {
   @Prop({ default: "" }) smiles!: string;
   @Prop({ default: "100%" }) width!: string;
-  @Prop({ default: "100%" }) height!: string;
-  @Prop({ default: 10 }) resolutionFactor!: number;
+//   @Prop({ default: "100%" }) height!: string;  // Should not specify height
   @Prop({ default: "" }) extraStyles!: string;
 
   smilesContainer: HTMLDivElement | undefined = undefined;
   interval: any = undefined;
-//   offsetWidth = 0;
-//   offsetHeight = 0;
 
   containerWidth = 0;
-  containerHeight = 0;
-
-  /**
-   * The actual width to use when styling the canvas. This is a string because
-   * it can be a percentage.
-   *
-   * @returns {string}  The width to use.
-   */
-//   get widthToUse(): string {
-//     if (typeof this.width === "string") {
-//       return this.width;
-//     } else {
-//       return this.width.toString() + "px";
-//     }
-//   }
-
-  /**
-   * The actual height to use when styling the canvas. This is a string because
-   * it can be a percentage.
-   *
-   * @returns {string}  The height to use.
-   */
-//   get heightToUse(): string {
-//     if (typeof this.height === "string") {
-//       return this.height;
-//     } else {
-//       return this.height.toString() + "px";
-//     }
-//   }
+//   containerHeight = 0;
 
   /**
    * Watcher for the smiles prop. Draws the molecule if smiles changes.
@@ -73,6 +44,29 @@ export default class Viewer2D extends Vue {
   @Watch("smilesToUse")
   onSmilesToUse() {
     this.draw();
+  }
+
+  @Watch("containerWidth")
+  onContainerWidth() {
+    this.draw();
+  }
+
+//   @Watch("containerHeight")
+//   onContainerHeight() {
+//     this.draw();
+//   }
+
+  get containerStyles(): string {
+    const width = this.smiles === "" ? "0" : this.width;
+    // const height = this.smiles === "" ? "0" : this.height;
+
+    // return `width:${width}; height:${this.containerHeight.toFixed(0)}px; ${this.extraStyles};`;
+    return `width:${width}; height:0; ${this.extraStyles};`;
+  }
+
+  get svgStyles(): string {
+    const height = this.smiles === "" ? "height: 0;" : "";
+    return `position: absolute; ${height} bottom: 0; background-color:rgba(255, 255, 255, 0.95);`;
   }
 
   get readyToUse(): boolean {
@@ -86,19 +80,6 @@ export default class Viewer2D extends Vue {
 
   get smilesToUse(): string {
     return this.smiles.trim();
-  }
-
-  get stylesToUse(): string {
-    return "";
-    // let styles = "";
-    // const hidden = this.smilesToUse === "";
-    // styles += `opacity: ${(hidden ? "0" : "1")};`;
-    // styles += `${this.extraStyles};`;
-    // styles += `${hidden ? "width:0;height:0;" : ""}`;
-    // // const scale = 1.0 / this.resolutionFactor;
-    // // styles += `transform: scale(${scale}, ${scale}); transform-origin: bottom left;`;
-    // return styles;
-    // // return `${styles} width: ${width}; height: ${height}; opacity: ${opacity}; ${this.extraStyles}`;
   }
 
   /**
@@ -121,16 +102,36 @@ export default class Viewer2D extends Vue {
             //   debug: false,
             //   atomVisualization: "default",
             width: this.containerWidth,
-            height: this.containerHeight,
+            height: this.containerWidth, // this.containerHeight,
+            bondThickness: 1,
+            // compactDrawing: false
           };
 
-          const smilesDrawer = new SmilesDrawer.Drawer(options);
+          //   const smilesDrawer = new SmilesDrawer.Drawer(options);
+          const svgDrawer = new SmilesDrawer.SvgDrawer(options);
 
-          // const svgDrawer = new SmilesDrawer.SvgDrawer(options);
           SmilesDrawer.parse(this.smilesToUse, (atomTree: any) => {
-            smilesDrawer.draw(atomTree, "smiles-canvas", "light", false);
+            // smilesDrawer.draw(atomTree, "smiles-canvas", "light", false);
             // Draw to SVG:
-            // svgDrawer.draw(atomTree, "output-svg", "dark", false);
+            svgDrawer.draw(atomTree, "output-svg", "light", false);
+
+            const svgElement = this.$refs["output-svg"] as SVGAElement;
+
+            const margin = 20;
+
+            const { x, y, width, height } = svgElement.getBBox();
+            const newWidth = width + 2 * margin;
+            const newHeight = height + 2 * margin;
+            const viewBoxValue = [x - margin, y - margin, newWidth, newHeight].join(
+              " "
+            );
+            svgElement.setAttribute("viewBox", viewBoxValue);
+            
+            // Also adjust height on container
+            // if (this.containerWidth !== 0) {
+            //     // debugger;
+            //     this.containerHeight = Math.round(this.containerWidth * newHeight / newWidth);
+            // }
           });
         });
 
@@ -157,12 +158,12 @@ export default class Viewer2D extends Vue {
     // Monitor the actual dimensions of the canvas constantly
     this.interval = setInterval(() => {
       if (
-        this.containerWidth !== this.smilesContainer?.offsetWidth ||
-        this.containerHeight !== this.smilesContainer?.offsetHeight
+        this.containerWidth !== this.smilesContainer?.offsetWidth // ||
+        // this.containerHeight !== this.smilesContainer?.offsetHeight
       ) {
         this.containerWidth = this.smilesContainer?.offsetWidth as number;
-        this.containerHeight = this.smilesContainer?.offsetHeight as number;
-        console.log("Updated actualWidth")
+        // this.containerHeight = this.smilesContainer?.offsetHeight as number;
+        // console.log("Updated actualWidth");
       }
     }, 1000);
 

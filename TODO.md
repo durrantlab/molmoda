@@ -60,12 +60,14 @@ SMILES).
 Once Yuri version of Open Babel ready, get rid of old version. Would be good if
 you could put it in a web worker using import (rather than adding to head).
 
+2D imag eshould not be visible when no compoudn selected
+
+# DONE
+
 Viewer2D: Canvas dimensions calculated from javascript measure of actual size on
 screen, * resolution factor. Style determined by prop.
 
 You reall yneed to get SVG working on smiles draw. Canvas is bad (low res).
-
-# DONE
 
 Can't select compounds. Once that's ready, continue working on 2D vis.
 

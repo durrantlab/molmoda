@@ -3,9 +3,8 @@
     <div id="mol-viewer"></div>
     <Viewer2D
       :smiles="smiles"
-      width="250px"
-      height="250px"
-      extraStyles="position: absolute; left: 0; bottom: 0; background-color:rgba(255, 255, 255, 0.95)"
+      width="50%"
+      extraStyles="position: absolute; left: 0; bottom: 0;"
     />
   </span>
 </template>
