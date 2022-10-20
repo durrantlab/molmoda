@@ -41,28 +41,33 @@ for "This doesn't account for ligands!"
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-2D images show on click. Will require babel.
-
-Shouldn't be able to extract when top-level molecule.
-
-Selects are strange when disabled on color scheme selection. Spacing, but other
-problems. Play around with them to see.
+**** Selects are strange when disabled on color scheme selection. Spacing, but
+other problems. Play around with them to see.
 
 I think both undo and redo should warn one item sooner on stack.
 
-Need to update tests for all revised plugins.
+**** Need to update tests for all revised plugins.
 
 Create demo (minimal) plugin to illustrate. Once API settles.
-
-Would be nice to warn user when saving to format that looses information (e.g.,
-SMILES).
 
 Once Yuri version of Open Babel ready, get rid of old version. Would be good if
 you could put it in a web worker using import (rather than adding to head).
 
-2D imag eshould not be visible when no compoudn selected
+**** What about info panel? Could include imag ein case of compound, molecular
+weight, etc. Better than overlaying image of molecule of 3D view.
 
 # DONE
+
+Shouldn't be able to extract when top-level molecule.
+
+Would be nice to warn user when saving to format that looses information (e.g.,
+SMILES).
+
+Load biotite. No spinner?
+
+2D images show on click. Will require babel.
+
+2D imag eshould not be visible when no compoudn selected
 
 Viewer2D: Canvas dimensions calculated from javascript measure of actual size on
 screen, * resolution factor. Style determined by prop.

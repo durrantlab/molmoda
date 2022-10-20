@@ -1,76 +1,77 @@
 <template>
   <Section
-    v-bind:key="styleName.name"
+    v-bind:key="styleAndSelForMolType.molType"
     :level="2"
-    :title="capitalize(styleName.name)"
+    :title="capitalize(styleAndSelForMolType.molType)"
   >
+  {{styleAndSelForMolType}}
     <template v-slot:afterTitle>
+      <!-- First, the icon switcher to hide this mol type. -->
       <IconSwitcher
         :useFirst="isVisible"
         :iconID1="['far', 'eye']"
         :iconID2="['far', 'eye-slash']"
         :icon2Style="{ color: 'lightgray' }"
         :width="24"
-        @click="toggleVisible(styleName.name)"
+        @click="toggleVisible(styleAndSelForMolType.molType)"
         :clickable="true"
         title="Visible"
         tipPlacement="left"
       />
     </template>
-    <!-- <span style="color: red">{{ atomsOption }}</span> -->
+
+    <!-- The atoms styling section for this moltype, with optional colorselect
+    -->
     <FormSelect
-      :id="'atoms-' + styleName.name"
+      :id="'atoms-' + styleAndSelForMolType.molType"
       v-model="atomsOption"
       :options="atomsStyleOptions"
       @onChange="updateMolecules(atomsOption)"
     ></FormSelect>
-    <ColorStyle
+    <ColorSelect
       v-if="atomsOption !== 'atoms-hidden'"
-      v-model="styleName.styleAndSel.style"
+      v-model="styleAndSelForMolType.styleAndSel.style"
       :repName="atomsOption"
       @onChange="updateMolecules(atomsOption)"
-      :allowColorCarbons="styleName.name !== 'metal'"
+      :allowColorCarbons="styleAndSelForMolType.molType !== 'metal'"
       :allowSpectrum="false"
-      :allowSecondaryStructure="styleName.name === 'protein'"
+      :allowSecondaryStructure="styleAndSelForMolType.molType === 'protein'"
     />
 
+    <!-- The protein (backbone) styling section for this moltype, with optional
+    colorselect -->
     <FormSelect
-      v-if="styleName.name === 'protein'"
-      :id="'protein-' + styleName.name"
+      v-if="styleAndSelForMolType.molType === 'protein'"
+      :id="'protein-' + styleAndSelForMolType.molType"
       v-model="backboneOption"
-      :options="[
-        { description: 'Backbone: Hidden', val: 'backbone-hidden' },
-        { description: 'Backbone: Cartoon', val: 'cartoon' },
-        // {description: 'Protein: Tubes', val: 'tubes'},
-      ]"
+      :options="proteinStyleOptions"
       @onChange="updateMolecules(backboneOption)"
     ></FormSelect>
-    <ColorStyle
+    <ColorSelect
       v-if="backboneOption !== 'backbone-hidden'"
-      v-model="styleName.styleAndSel.style"
+      v-model="styleAndSelForMolType.styleAndSel.style"
       :repName="backboneOption"
       @onChange="updateMolecules(backboneOption)"
       :allowColorByElement="false"
       :allowColorCarbons="false"
     />
 
+    <!-- The surface styling section for this moltype, with optional colorselect
+    -->
     <FormSelect
-      v-if="styleName.name !== 'metal'"
-      :id="'surface-' + styleName.name"
+      v-if="styleAndSelForMolType.molType !== 'metal'"
+      :id="'surface-' + styleAndSelForMolType.molType"
       v-model="surfaceOption"
-      :options="[
-        { description: 'Surface: Hidden', val: 'surface-hidden' },
-        { description: 'Surface', val: 'surface' },
-      ]"
+      :options="metalStyleOptions"
       @onChange="updateMolecules(surfaceOption)"
     ></FormSelect>
-    <ColorStyle
+    <ColorSelect
       v-if="surfaceOption !== 'surface-hidden'"
-      v-model="styleName.styleAndSel.style"
+      v-model="styleAndSelForMolType.styleAndSel.style"
       :repName="surfaceOption"
       @onChange="updateMolecules(surfaceOption)"
       :allowSpectrum="false"
-      :allowSecondaryStructure="styleName.name === 'protein'"
+      :allowSecondaryStructure="styleAndSelForMolType.molType === 'protein'"
     />
   </Section>
 </template>
@@ -94,15 +95,16 @@ import isEqual from "lodash.isequal";
 import { IStyleAndSel, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
-import ColorStyle from "./ColorStyle/ColorStyle.vue";
+import ColorSelect from "./ColorSelect/ColorSelect.vue";
+import { IFormOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
-export interface IStyleName {
+export interface IStyleAndSelForMolType {
   styleAndSel: IStyleAndSel;
-  name: MolType;
+  molType: MolType;
 }
 
 /**
- * Style component
+ * StylesForMolType component
  */
 @Options({
   components: {
@@ -110,35 +112,52 @@ export interface IStyleName {
     FormSelect,
     IconSwitcher,
     FormFull,
-    ColorStyle,
+    ColorSelect,
   },
 })
-export default class Style extends Vue {
-  @Prop({ required: true }) styleName!: IStyleName;
+export default class StylesForMolType extends Vue {
+  @Prop({ required: true }) styleAndSelForMolType!: IStyleAndSelForMolType;
 
   isVisible = true;
   atomsOption = "atoms-hidden";
   backboneOption = "backbone-hidden";
   surfaceOption = "surface-hidden";
 
-  /**
-   * Get the atom styles to use as options in the select.
-   *
-   * @returns {any[]} Array of option objects.
-   */
-  get atomsStyleOptions(): any[] {
-    let options = [{ description: "Atoms: Hidden", val: "atoms-hidden" }];
+  proteinStyleOptions = [
+    { description: "Backbone: Hidden", val: "backbone-hidden" },
+    { description: "Backbone: Cartoon", val: "cartoon" },
+    // {description: 'Protein: Tubes', val: 'tubes'},
+  ] as IFormOption[];
 
-    if (this.styleName.name !== "metal") {
+  metalStyleOptions = [
+    { description: "Surface: Hidden", val: "surface-hidden" },
+    { description: "Surface", val: "surface" },
+  ] as IFormOption[];
+
+  /**
+   * Get the atom styles to use as options in the select. This is a computed
+   * rather than data variable because it changes depending on other variables.
+   *
+   * @returns {IFormOption[]}  Array of option objects.
+   */
+  get atomsStyleOptions(): IFormOption[] {
+    let options = [
+      { description: "Atoms: Hidden", val: "atoms-hidden" },
+    ] as IFormOption[];
+
+    if (this.styleAndSelForMolType.molType !== "metal") {
       options.push(
-        ...[
+        ...([
           { description: "Atoms: Lines", val: "line" },
           { description: "Atoms: Sticks", val: "stick" },
-        ]
+        ] as IFormOption[])
       );
     }
 
-    options.push({ description: "Atoms: Spheres", val: "sphere" });
+    options.push({
+      description: "Atoms: Spheres",
+      val: "sphere",
+    } as IFormOption);
 
     return options;
   }
@@ -163,7 +182,7 @@ export default class Style extends Vue {
 
   /**
    * Set the initial values to use in the select.
-   * 
+   *
    * @param {IStyleAndSel} styleInfo  The style name to selectino to use.
    */
   private _setInitialSelectVals(styleInfo: IStyleAndSel) {
@@ -203,8 +222,8 @@ export default class Style extends Vue {
    */
   updateMolecules(repName: string) {
     // TODO: Seems like this should happen in Styles.vue
-    let style = this.styleName.styleAndSel
-      ? this.styleName.styleAndSel.style
+    let style = this.styleAndSelForMolType.styleAndSel
+      ? this.styleAndSelForMolType.styleAndSel.style
       : {};
 
     // Deal items with hidden visualizations. Delete entries that are
@@ -236,15 +255,15 @@ export default class Style extends Vue {
 
         // This required to deal with restoring a viz after everything set to
         // hidden.
-        if (this.styleName.styleAndSel === undefined) {
-          this.styleName.styleAndSel = {
+        if (this.styleAndSelForMolType.styleAndSel === undefined) {
+          this.styleAndSelForMolType.styleAndSel = {
             selection: {},
             style: {},
           };
         }
 
         // @ts-ignore
-        let val = this.styleName.styleAndSel.style[repName];
+        let val = this.styleAndSelForMolType.styleAndSel.style[repName];
         if (val === undefined) {
           val = {};
         }
@@ -294,7 +313,7 @@ export default class Style extends Vue {
       }
 
       // Check if the node type matches this style
-      if (node.type === this.styleName.name) {
+      if (node.type === this.styleAndSelForMolType.molType) {
         // Add the styles to the node list if it's not empty ({}).
         node.stylesSels = [];
         if (!isEqual(style, {})) {
@@ -320,7 +339,7 @@ export default class Style extends Vue {
 
   /**
    * Capitalize the first letter of a string.
-   * 
+   *
    * @param {string} str  The string to capitalize.
    * @returns {string} The capitalized string.
    */
@@ -336,7 +355,7 @@ export default class Style extends Vue {
     // All components will always have SOME style (assigned at load).
 
     // this.translateStyleToComponent(this.styleName.style);
-    this._setInitialSelectVals(this.styleName.styleAndSel);
+    this._setInitialSelectVals(this.styleAndSelForMolType.styleAndSel);
   }
 }
 </script>

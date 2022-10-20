@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <nav class="navbar navbar-expand-md navbar-light bg-light">
     <div class="container-fluid">
       <!-- <a class="navbar-brand" href="#">Navbar</a> -->
       <!-- below is hamburger icon for small screens -->
@@ -66,5 +66,8 @@ export default class Menu extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+.navbar-expand-md {
+  padding-bottom:0;
+}
 </style>
 

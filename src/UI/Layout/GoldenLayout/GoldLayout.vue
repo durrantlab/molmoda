@@ -8,7 +8,7 @@
           state="{}"
           :width="20"
         >
-          <div @click.self="clearSelection" style="height: 100%">
+          <div @click.self="clearSelection" style="height: 100%; overflow-x: clip;">
             <TreeView />
           </div>
         </GoldenLayoutComponent>

@@ -1,13 +1,7 @@
 <template>
   <div ref="smiles-container" :style="containerStyles">
-    <!-- <canvas
-          id="smiles-canvas"
-          ref="smiles-canvas"
-          :width="resolutionFactor * containerWidth"
-          :height="resolutionFactor * containerHeight"
-          :style="`width: 100%; height: 100%;`"
-        ></canvas> -->
     <svg
+      class="mb-2 ms-2"
       :style="svgStyles"
       id="output-svg"
       ref="output-svg"
@@ -29,14 +23,14 @@ import { Prop, Watch } from "vue-property-decorator";
 export default class Viewer2D extends Vue {
   @Prop({ default: "" }) smiles!: string;
   @Prop({ default: "100%" }) width!: string;
-//   @Prop({ default: "100%" }) height!: string;  // Should not specify height
+  // Should not specify height
   @Prop({ default: "" }) extraStyles!: string;
 
   smilesContainer: HTMLDivElement | undefined = undefined;
   interval: any = undefined;
 
-  containerWidth = 0;
-//   containerHeight = 0;
+  measuredContainerWidth = 0;
+  svgScaleStyle = "";
 
   /**
    * Watcher for the smiles prop. Draws the molecule if smiles changes.
@@ -46,29 +40,45 @@ export default class Viewer2D extends Vue {
     this.draw();
   }
 
+  /**
+   * Watcher for the width prop. Draws the molecule if width changes.
+   */
   @Watch("containerWidth")
   onContainerWidth() {
     this.draw();
   }
 
-//   @Watch("containerHeight")
-//   onContainerHeight() {
-//     this.draw();
-//   }
-
+  /**
+   * Gets the css styles for the container div.
+   *
+   * @returns {string} The css styles.
+   */
   get containerStyles(): string {
+    // Note that height of the container div is always 0. We are only using it
+    // to detect resizes, and that only in the width. Height is determined by
+    // the dimensions of the molecule.
     const width = this.smiles === "" ? "0" : this.width;
-    // const height = this.smiles === "" ? "0" : this.height;
-
-    // return `width:${width}; height:${this.containerHeight.toFixed(0)}px; ${this.extraStyles};`;
     return `width:${width}; height:0; ${this.extraStyles};`;
   }
 
+  /**
+   * Gets the css styles for the svg.
+   *
+   * @returns {string} The css styles.
+   */
   get svgStyles(): string {
     const height = this.smiles === "" ? "height: 0;" : "";
-    return `position: absolute; ${height} bottom: 0; background-color:rgba(255, 255, 255, 0.95);`;
+    let styles = `position: absolute; ${height} bottom: 0;`;
+    styles += "border: 1px solid rgb(235, 235, 235); border-radius:15px;";
+    return `${styles} background-color:rgba(255, 255, 255, 0.95); ${this.svgScaleStyle}`;
   }
 
+  /**
+   * Whether component is ready.
+   *
+   * @returns {boolean} Whether the smilesdrawer library is loaded and ready to
+   *     use.
+   */
   get readyToUse(): boolean {
     if (this.smilesToUse === "") {
       // Not needed yet
@@ -78,6 +88,11 @@ export default class Viewer2D extends Vue {
     return !(this.smilesContainer === undefined);
   }
 
+  /**
+   * The smiles to use.
+   *
+   * @returns {string} The smiles to use.
+   */
   get smilesToUse(): string {
     return this.smiles.trim();
   }
@@ -90,48 +105,49 @@ export default class Viewer2D extends Vue {
       return;
     }
 
-    // let canvas = this.canvas as HTMLCanvasElement; // For local use.
-    // this.offsetHeight = canvas.offsetHeight;
-    // this.offsetWidth = canvas.offsetWidth;
-
     dynamicImports.smilesdrawer.module
       .then((SmilesDrawer) => {
         // Give time for canvas to be resized.
         this.$nextTick(() => {
           const options = {
-            //   debug: false,
-            //   atomVisualization: "default",
-            width: this.containerWidth,
-            height: this.containerWidth, // this.containerHeight,
+            width: this.measuredContainerWidth,
+            height: this.measuredContainerWidth, // this.containerHeight,
             bondThickness: 1,
-            // compactDrawing: false
           };
 
-          //   const smilesDrawer = new SmilesDrawer.Drawer(options);
           const svgDrawer = new SmilesDrawer.SvgDrawer(options);
 
           SmilesDrawer.parse(this.smilesToUse, (atomTree: any) => {
-            // smilesDrawer.draw(atomTree, "smiles-canvas", "light", false);
-            // Draw to SVG:
             svgDrawer.draw(atomTree, "output-svg", "light", false);
 
             const svgElement = this.$refs["output-svg"] as SVGAElement;
 
-            const margin = 20;
+            // Crop the SVG image. See
+            // https://gist.github.com/bignimbus/56b13326c1ffd54cff84f78fda6197b3
+            const margin = 15;
 
             const { x, y, width, height } = svgElement.getBBox();
             const newWidth = width + 2 * margin;
             const newHeight = height + 2 * margin;
-            const viewBoxValue = [x - margin, y - margin, newWidth, newHeight].join(
-              " "
+            svgElement.setAttribute(
+              "viewBox",
+              [x - margin, y - margin, newWidth, newHeight].join(" ")
             );
-            svgElement.setAttribute("viewBox", viewBoxValue);
-            
-            // Also adjust height on container
-            // if (this.containerWidth !== 0) {
-            //     // debugger;
-            //     this.containerHeight = Math.round(this.containerWidth * newHeight / newWidth);
-            // }
+
+            const svgClientHeight = svgElement.clientHeight;
+
+            if (
+              this.measuredContainerWidth !== 0 &&
+              svgClientHeight > this.measuredContainerWidth
+            ) {
+              // It's too tall. Need to scale down.
+              this.svgScaleStyle =
+                "transform: scale(" +
+                (this.measuredContainerWidth / svgClientHeight).toFixed(3) +
+                "); transform-origin: bottom left;";
+            } else {
+              this.svgScaleStyle = "";
+            }
           });
         });
 
@@ -157,36 +173,11 @@ export default class Viewer2D extends Vue {
 
     // Monitor the actual dimensions of the canvas constantly
     this.interval = setInterval(() => {
-      if (
-        this.containerWidth !== this.smilesContainer?.offsetWidth // ||
-        // this.containerHeight !== this.smilesContainer?.offsetHeight
-      ) {
-        this.containerWidth = this.smilesContainer?.offsetWidth as number;
-        // this.containerHeight = this.smilesContainer?.offsetHeight as number;
-        // console.log("Updated actualWidth");
+      if (this.measuredContainerWidth !== this.smilesContainer?.offsetWidth) {
+        this.measuredContainerWidth = this.smilesContainer
+          ?.offsetWidth as number;
       }
     }, 1000);
-
-    // // Detect when the component is resized. See
-    // // https://stackoverflow.com/questions/5825447/javascript-event-for-canvas-resize
-    // // Get actual width and height of canvas.
-    // let canvasHeight = 0;
-    // let canvasWidth = 0;
-    // this.interval = setInterval(() => {
-    //   let canvas = this.canvas as HTMLCanvasElement; // For local use.
-
-    //   this.offsetHeight = canvas.offsetHeight;
-    //   this.offsetWidth = canvas.offsetWidth;
-
-    //   if (
-    //     this.offsetHeight !== canvasHeight ||
-    //     this.offsetWidth !== canvasWidth
-    //   ) {
-    //     canvasHeight = this.offsetHeight;
-    //     canvasWidth = this.offsetWidth;
-    //     this.draw();
-    //   }
-    // }, 1000);
   }
 }
 </script>

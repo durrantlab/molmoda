@@ -66,7 +66,8 @@ export default class TreeView extends Vue {
    * @returns {string} The indent style for the title bar.
    */
   get indentStyle(): string {
-    return `margin-left:${8 * this.depth}px`;
+    // return `margin-left:${8 * this.depth}px`;
+    return '';
   }
 
   /**

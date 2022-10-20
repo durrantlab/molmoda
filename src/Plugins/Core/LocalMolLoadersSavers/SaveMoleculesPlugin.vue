@@ -111,14 +111,18 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       label: "File format",
       id: "singleFileFormat",
       val: "pdb",
-      options: getFormatDescriptions(false),
+      options: getFormatDescriptions(false).filter(
+        (option) => option.val !== "biotite"
+      ),
       enabled: false,
     } as IFormSelect,
     {
       label: "File format for compounds (e.g., small molecules)",
       id: "compoundFormat",
       val: "mol2",
-      options: getFormatDescriptions(true),
+      options: getFormatDescriptions(true).filter(
+        (option) => option.val !== "biotite"
+      ),
       enabled: false,
     } as IFormSelect,
     {

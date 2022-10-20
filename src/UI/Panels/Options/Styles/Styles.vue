@@ -1,12 +1,12 @@
 <template>
   <Section title="Styles">
     <span
-      v-for="styleAndName, idx in stylesAndNames"
-      v-bind:key="styleAndName.name"
+      v-for="(styleAndSelForMolType, idx) in stylesAndSelsForMolTypes"
+      v-bind:key="styleAndSelForMolType.molType"
     >
-      <Style :styleName="stylesAndNames[idx]"></Style>
+      <StylesForMolType :styleAndSelForMolType="stylesAndSelsForMolTypes[idx]"></StylesForMolType>
     </span>
-    </Section>
+  </Section>
 </template>
 
 <script lang="ts">
@@ -16,15 +16,15 @@ import { Options, Vue } from "vue-class-component";
 import Section from "@/UI/Layout/Section.vue";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
-import Style, { IStyleName } from "./Style.vue";
 
 // @ts-ignore
-import isEqual from 'lodash.isequal';
+import isEqual from "lodash.isequal";
 import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import StylesForMolType, { IStyleAndSelForMolType } from "./StylesForMolType.vue";
 
 interface IStyleCount {
-  styleAndSel: IStyleAndSel,
-  count: number,
+  styleAndSel: IStyleAndSel;
+  count: number;
 }
 
 /**
@@ -34,25 +34,31 @@ interface IStyleCount {
   components: {
     Section,
     FormSelect,
-    Style
+    StylesForMolType,
   },
 })
 export default class Styles extends Vue {
   /**
    * Get the styles and names
-   * 
-   * @returns {IStyleName[]}  The styles and names
+   *
+   * @returns {IStyleAndSelForMolType[]}  The styles and names
    */
-  get stylesAndNames(): IStyleName[] {
+  get stylesAndSelsForMolTypes(): IStyleAndSelForMolType[] {
     let allStylesAndSels: { [key: string]: IStyleAndSel[] } = {};
     let molecules = this.$store.state["molecules"];
 
     // Get the styles for all visible components, organized by molecule type.
     for (let node of getTerminalNodes(molecules)) {
-      if (!node.type) { continue; }
+      if (!node.type) {
+        continue;
+      }
       // if (node.type === "metal") { continue; }  // Can't change metal style
-      if (!node.stylesSels) { continue; }
-      if (!node.visible) { continue; }
+      if (!node.stylesSels) {
+        continue;
+      }
+      if (!node.visible) {
+        continue;
+      }
 
       if (allStylesAndSels[node.type] === undefined) {
         allStylesAndSels[node.type] = [];
@@ -64,10 +70,10 @@ export default class Styles extends Vue {
     // For each type, get the styles that all molecules have in common. Note
     // that a given type may have no styles in common, in which case it will be
     // associated with an empty list.
-    let allStylesAndCounts: {[key: string]: IStyleCount[]} = {};
+    let allStylesAndCounts: { [key: string]: IStyleCount[] } = {};
     for (let type in allStylesAndSels) {
       let styles = allStylesAndSels[type];
-      
+
       let stylesAndCounts = this._convertStyleToStyleCount([styles[0]]);
       for (let i = 1; i < styles.length; i++) {
         let newStyleCounts = this._convertStyleToStyleCount([styles[i]]);
@@ -80,23 +86,24 @@ export default class Styles extends Vue {
       allStylesAndCounts[type] = stylesAndCounts;
     }
 
-    let allStylesAndCountsInfo: IStyleName[] = Object.keys(allStylesAndCounts).map(
-      (k: string) => {
-        return { 
-          name: k, 
-          styleAndSel: allStylesAndCounts[k].length > 0 
-            ? allStylesAndCounts[k][0].styleAndSel  // First one is the most common.
-            : {}  // No styles for this type.
-        } as IStyleName;
-      }
-    );
+    let allStylesAndCountsInfo: IStyleAndSelForMolType[] = Object.keys(
+      allStylesAndCounts
+    ).map((k: string) => {
+      return {
+        molType: k,
+        styleAndSel:
+          allStylesAndCounts[k].length > 0
+            ? allStylesAndCounts[k][0].styleAndSel // First one is the most common.
+            : {}, // No styles for this type.
+      } as IStyleAndSelForMolType;
+    });
 
     return allStylesAndCountsInfo;
   }
 
   /**
    * Convert a list of styles to a list of style counts.
-   * 
+   *
    * @param   {IStyleAndSel[]}  styles  The styles
    * @returns {IStyleCount[]}           The style counts
    */
@@ -114,7 +121,10 @@ export default class Styles extends Vue {
    * @param   {IStyleCount[]}  newStyleCounts   The new styles and counts to add.
    * @returns {IStyleCount[]} The styles and counts after tallying.
    */
-  private _tallyStyles(stylesAndCounts: IStyleCount[], newStyleCounts: IStyleCount[]): IStyleCount[] {
+  private _tallyStyles(
+    stylesAndCounts: IStyleCount[],
+    newStyleCounts: IStyleCount[]
+  ): IStyleCount[] {
     // TODO: Move to Utils.ts?
 
     for (let newStyleCount of newStyleCounts) {

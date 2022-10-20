@@ -3,7 +3,7 @@
     <div id="mol-viewer"></div>
     <Viewer2D
       :smiles="smiles"
-      width="50%"
+      width="250px"
       extraStyles="position: absolute; left: 0; bottom: 0;"
     />
   </span>

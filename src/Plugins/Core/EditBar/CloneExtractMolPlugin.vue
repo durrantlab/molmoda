@@ -9,6 +9,7 @@
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
     @onDataChanged="onDataChanged"
+    :hideIfDisabled="true"
   ></PluginComponent>
 
   <!-- <PopupPluginParent
@@ -109,6 +110,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
       id: "doExtract",
       label: "Delete original molecule (extract rather than clone)",
       val: false,
+      enabled: true
     } as IFormCheckbox,
   ];
 
@@ -154,6 +156,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
       } as IUserArg,
     ]);
     this.doExtract = false;
+    this.updateUserArgEnabled("doExtract", this.allowExtract);
   }
 
   /**

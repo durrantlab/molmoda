@@ -17,7 +17,7 @@
       :width="15"
       @click="toggleExpand(treeDatumID)"
     />
-    <div v-else :style="flexFixedWidth(15)"></div>
+    <div v-else :style="flexFixedWidth(7)"></div>
 
     <!-- item icon -->
     <!-- <IconSwitcher
