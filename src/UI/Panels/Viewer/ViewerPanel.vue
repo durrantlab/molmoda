@@ -1,11 +1,12 @@
 <template>
-  <span>
+  <span style="cursor:grab;">
     <div id="mol-viewer"></div>
-    <Viewer2D
-      :smiles="smiles"
+    <!-- smiles="CCCCOC" -->
+    <!-- <Viewer2D
+      :getSmilesFromSelected="true"
       width="250px"
       extraStyles="position: absolute; left: 0; bottom: 0;"
-    />
+    /> -->
   </span>
 </template>
 
@@ -14,7 +15,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Watch } from "vue-property-decorator";
 
 import * as api from "@/Api/";
 import {
@@ -25,20 +26,17 @@ import {
 import {
   GLModel,
   IMolContainer,
-  MolType,
-  SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Definitions/DefaultStyles";
 import { dynamicImports } from "@/Core/DynamicImports";
-import Viewer2D from "./Viewer2D.vue";
-import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
+// import Viewer2D from "./Viewer2D.vue";
 
 /**
  * ViewerPanel component
  */
 @Options({
   components: {
-    Viewer2D,
+    // Viewer2D,
   },
 })
 export default class ViewerPanel extends Vue {
@@ -47,8 +45,6 @@ export default class ViewerPanel extends Vue {
   // Need to keep track of surfaces, associating them with molecule ids.
   surfaces: { [id: string]: number[] } = {};
   surfaceType = 2;
-
-  smiles = "";
 
   /**
    * Get the molecules from the store
@@ -66,39 +62,30 @@ export default class ViewerPanel extends Vue {
    */
   @Watch("treeview", { immediate: false, deep: true })
   onTreeviewChanged(allMolecules: IMolContainer[]) {
-    if (allMolecules.length === 0) {
-      // No molecules present
-      this._clearCache();
-      return;
+    let promise: Promise<any>;
+    if (api.visualization.viewer !== undefined) {
+      // 3dmoljs already loaded
+      promise = Promise.resolve();
+    } else {
+      promise = this.load3DMolJs();
     }
-
-    // Update and zoom
-    this._updateStylesAndZoom();
-
-    // Get any terminal node that is selected and a compound
-    const terminalNodes = getTerminalNodes(allMolecules);
-    const selectedTerminalNodes = terminalNodes.filter(
-      (node) =>
-        node.selected === SelectedType.True && node.type === MolType.Compound
-    );
-    if (selectedTerminalNodes.length > 0) {
-      // Just consider the first one
-      const terminalNode = selectedTerminalNodes[0];
-
-      // Get it as a smiles string
-      convertMolContainers([terminalNode], "can", false).then(
-        (cans: string[]) => {
-          this.smiles = cans[0];
+    
+    promise
+      .then(() => {
+        if (allMolecules.length === 0) {
+          // No molecules present
+          this._clearCache();
           return;
         }
-      )
-      .catch((error) => {
-        console.error(error);
-      });
 
-    } else {
-      this.smiles = "";
-    }
+        // Update and zoom
+        this._updateStylesAndZoom();
+        return;
+      })
+      .catch((err) => {
+        console.log(err);
+        return;
+      });
   }
 
   /**
@@ -206,7 +193,6 @@ export default class ViewerPanel extends Vue {
       // If it's not in the cache, the system has probably not yet loaded the
       // molecule. Always load it.
       if (!this.molCache[id]) {
-        console.log("Loading: " + id);
         let visMol = api.visualization.viewer.addRawModel_JDD(mol.model);
         this.molCache[id] = visMol;
         this._makeAtomsHoverableAndClickable({ model: visMol });
@@ -220,7 +206,7 @@ export default class ViewerPanel extends Vue {
 
           // Clear any surfaces associated with this molecule.
           this._clearSurface(mol);
-        } else if (mol.stylesSels) {
+        } else if (mol.styles) {
           // Styles to apply, so make sure it's visible.
           (mol.model as any).show();
 
@@ -232,15 +218,11 @@ export default class ViewerPanel extends Vue {
 
           // Add new styles
           let spheresUsed = false;
-          for (const styleSel of mol.stylesSels) {
-            if (!styleSel.style["surface"]) {
+          for (const style of mol.styles) {
+            if (!style["surface"]) {
               // It's a style, not a surface.
-              (mol.model as any).setStyle(
-                styleSel.selection,
-                styleSel.style,
-                true
-              );
-              if (styleSel.style.sphere) {
+              (mol.model as any).setStyle({}, style, true);
+              if (style.sphere) {
                 spheresUsed = true;
               }
             } else {
@@ -250,7 +232,7 @@ export default class ViewerPanel extends Vue {
                   // $3Dmol.SurfaceType.VDW,
                   // $3Dmol.SurfaceType.MS,
                   this.surfaceType,
-                  styleSel.style.surface, // style
+                  style.surface, // style
                   { model: mol.model as any } // selection
                 )
                 .then((surface: any) => {
@@ -268,14 +250,10 @@ export default class ViewerPanel extends Vue {
 
           // Regardless of specified style, anything not bound to other molecule
           // should be visible.
-          if (mol.stylesSels.length > 0 && !spheresUsed) {
+          if (mol.styles.length > 0 && !spheresUsed) {
             // If there's any style, no style is spheres, make sure unbonded
             // atoms are visible.
-            (mol.model as any).setStyle(
-              unbondedAtomsStyle.selection,
-              unbondedAtomsStyle.style,
-              true
-            );
+            (mol.model as any).setStyle({ bonds: 0 }, unbondedAtomsStyle, true);
           }
         } else {
           // Visible, but no style specified. This should never happen.
@@ -394,9 +372,13 @@ export default class ViewerPanel extends Vue {
     );
   }
 
-  /** mounted function */
-  mounted() {
-    dynamicImports.mol3d.module
+  /**
+   * Load 3dmol.js dynamically, set the viewer object, etc.
+   * 
+   * @returns {Promise<any>}  A promise that resolves when 3dmol.js is loaded.
+   */
+  load3DMolJs(): Promise<any> {
+    return dynamicImports.mol3d.module
       .then(($3Dmol: any) => {
         this.surfaceType = $3Dmol.SurfaceType.MS;
 
@@ -416,7 +398,10 @@ export default class ViewerPanel extends Vue {
       .catch((err: any) => {
         console.log(err);
       });
+  }
 
+  /** mounted function */
+  mounted() {
     // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
     //   // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
     //   // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic

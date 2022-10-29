@@ -20,43 +20,65 @@ https://github.com/pulsardev/vue-tour
 https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
 Table component?
 
-# Ongoing: Important
-
-When change colors and things, shouldn't refocus.
-
-When you load multi-frame pdb or mol2, need to deal with that still.
-
 Messaging. Need toast? You started working on toast.
     Rather than bind to a boolean to show or not, populate a list of messages.
     After certain amount of time (specified in data structure), close toast and
     go to next one (if present).
     https://getbootstrap.com/docs/5.0/components/toasts/
 
-Would be good to be able to use multiple processors for queue. Give some thought
-to how. Likely needs webworker?
-
-Idea to consider: MolCombine. You should be able to specify the formats. Also, search
-for "This doesn't account for ligands!"
-
-Load session after saving without restarting, duplicate keys in log. Good to
-clear log on load session.
-
-**** Selects are strange when disabled on color scheme selection. Spacing, but
-other problems. Play around with them to see.
-
-I think both undo and redo should warn one item sooner on stack.
-
-**** Need to update tests for all revised plugins.
-
 Create demo (minimal) plugin to illustrate. Once API settles.
 
 Once Yuri version of Open Babel ready, get rid of old version. Would be good if
 you could put it in a web worker using import (rather than adding to head).
 
-**** What about info panel? Could include imag ein case of compound, molecular
-weight, etc. Better than overlaying image of molecule of 3D view.
+https://github.com/rdkit/rdkit-js can also draw from smiles. Maybe get rid of
+smiles drawer?
+
+Current versiono of openbabel (tmp version) converts only first fframe of file
+(e.g., PDBQT). Make sure Yuri's converts all, and test that.
+
+# Ongoing: Important
+
+When change colors and things, shouldn't refocus.
+
+*** Idea to consider: MolCombine. You should be able to specify the formats.
+Also, search for "This doesn't account for ligands!"
+
+Load session after saving without restarting, duplicate keys in log. Good to
+clear log on load session.
+
+I think both undo and redo should warn one item sooner on stack.
+
+**** Need to update tests for all revised plugins.
+
+Evually, need login system. Wordpress powered?
+    https://medevel.com/iam-systems-10-identity/ ? Keycloak?
+
+Redo queue system. An object with total number of processors, items in queue,
+status for each (waiting, running, error, finished), etc. Also InServerBrowser
+class that mimics remote RESP API.
+    https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
+
+Would be good to be able to use multiple processors for queue. Give some thought
+to how. Likely needs webworker?
+
+Get multi-frame example files of every acceptable format. That should be a test.
 
 # DONE
+
+When you load multi-frame pdb or mol2, need to deal with that still.
+
+For file types that have compound names, good to get that into the viewer name
+(title) too. If loading multiple files from PDB, append index if no internal
+name. Does the KOES parser save the name somewhere?
+
+If you click on SVG file, open it in a popup (bigger).
+
+What about info panel? Could include imag ein case of compound, molecular
+weight, etc. Better than overlaying image of molecule of 3D view.
+
+Selects are strange when disabled on color scheme selection. Spacing, but other
+problems. Play around with them to see.
 
 Shouldn't be able to extract when top-level molecule.
 

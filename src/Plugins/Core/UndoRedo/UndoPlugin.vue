@@ -65,7 +65,7 @@ export default class UndoPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    */
-  runJob() {
+  runJobInBrowser() {
     undo(this.$store);
   }
 

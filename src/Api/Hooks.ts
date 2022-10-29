@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { registerJobType } from "@/JobQueue"
+import { registerInBrowserJobFunc } from "@/Queue/JobQueue"
 
 // Arrays of functions to call.
 export const allHooks = {
@@ -16,7 +16,7 @@ export const hooksApi = {
      *                            encountered in the queue system.
      */
     onJobQueueCommand(command: string, func: Function): void {
-        registerJobType(command, func);
+        registerInBrowserJobFunc(command, func);
     },
 
     /**

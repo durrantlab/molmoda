@@ -88,7 +88,7 @@ export default class SavePNGPlugin extends PluginParentClass {
    *
    * @param {any} parameters  Information about the PNG file to save.
    */
-  runJob(parameters: any) {
+  runJobInBrowser(parameters: any) {
     let filename = parameters.filename;
 
     let pngUri = api.visualization.viewer.pngURI();

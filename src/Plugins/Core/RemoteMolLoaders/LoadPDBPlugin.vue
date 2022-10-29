@@ -99,7 +99,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
    *
    * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
-  runJob(fileInfo: IFileInfo) {
+  runJobInBrowser(fileInfo: IFileInfo) {
     parseMoleculeFile(fileInfo);
   }
 

@@ -130,7 +130,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(fileInfo: IFileInfo): Promise<any> {
+  runJobInBrowser(fileInfo: IFileInfo): Promise<any> {
     // It's not a biotite file (e.g., a PDB file).
     return parseMoleculeFile(fileInfo); // promise
   }

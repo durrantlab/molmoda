@@ -207,7 +207,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(userArgs: IUserArg[]): Promise<undefined> {
+  runJobInBrowser(userArgs: IUserArg[]): Promise<undefined> {
     const filename = this.userArgsLookup(userArgs, "filename");
     const saveFormat = this.userArgsLookup(userArgs, "saveFormat");
     const molsToSave = parseInt(

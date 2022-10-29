@@ -33,7 +33,7 @@ import { Watch } from "vue-property-decorator";
 import { ILog } from "./LogUtils";
 
 /**
- * StylesPanel component
+ * LogPanel component
  */
 @Options({
   components: {},
@@ -142,7 +142,7 @@ export default class LogPanel extends Vue {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
   .log-container {
-    overflow-y: scroll; 
+    overflow-y: auto; 
     height: 100%;
     scroll-behavior: smooth;
   }

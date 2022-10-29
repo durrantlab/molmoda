@@ -1,45 +1,45 @@
-import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyle, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
-export const unbondedAtomsStyle: IStyleAndSel = {
-    selection: { bonds: 0 },
-    style: { sphere: {
-        radius: 0.5
-    } },
-};
-
-const _sphereStyle: IStyleAndSel = {
-    selection: {},
-    style: {
-        sphere: {},
+export const unbondedAtomsStyle: IStyle = {
+    sphere: {
+        radius: 0.5,
     },
 };
 
-const _stickStyle: IStyleAndSel = {
-    selection: {},
-    style: {
-        stick: {},
-    },
+const _sphereStyle: IStyle = {
+    sphere: {},
 };
 
-export const proteinStyle: IStyleAndSel[] = [
+const _stickStyle: IStyle = {
+    stick: {},
+};
+
+export const proteinStyle: IStyle[] = [
     {
-        selection: {},
-        style: {
-            cartoon: {
-                color: "spectrum",
-            }
+        cartoon: {
+            color: "spectrum",
         },
     },
 ];
 
-export const nucleicStyle: IStyleAndSel[] = [_stickStyle];
+export const nucleicStyle: IStyle[] = [_stickStyle];
 
-export const ligandsStyle: IStyleAndSel[] = [_stickStyle];
+export const ligandsStyle: IStyle[] = [_stickStyle];
 
-export const metalsStyle: IStyleAndSel[] = [_sphereStyle];
+export const metalsStyle: IStyle[] = [_sphereStyle];
 
-export const lipidStyle: IStyleAndSel[] = [_stickStyle];
+export const lipidStyle: IStyle[] = [_stickStyle];
 
-export const ionsStyle: IStyleAndSel[] = [_sphereStyle];
+export const ionsStyle: IStyle[] = [_sphereStyle];
 
-export const solventStyle: IStyleAndSel[] = [_stickStyle];
+export const solventStyle: IStyle[] = [_stickStyle];
+
+export const defaultStyles: { [key in MolType]: IStyle[] } = {
+    [MolType.Protein]: proteinStyle,
+    [MolType.Nucleic]: nucleicStyle,
+    [MolType.Compound]: ligandsStyle,
+    [MolType.Metal]: metalsStyle,
+    [MolType.Lipid]: lipidStyle,
+    [MolType.Ions]: ionsStyle,
+    [MolType.Solvent]: solventStyle,
+};

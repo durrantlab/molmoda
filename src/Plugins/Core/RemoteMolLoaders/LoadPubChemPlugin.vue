@@ -10,8 +10,8 @@
     :isActionBtnEnabled="isBtnEnabled()"
     :intro="intro"
   >
-    <FormWrapper
-      ><FormInput
+    <FormWrapper>
+      <FormInput
         ref="formMolName"
         id="formMolName"
         v-model="molName"
@@ -237,7 +237,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    *
    * @param {IFileInfo} fileInfo  Information about the molecule to load.
    */
-  runJob(fileInfo: IFileInfo) {
+  runJobInBrowser(fileInfo: IFileInfo) {
     parseMoleculeFile(fileInfo);
   }
 

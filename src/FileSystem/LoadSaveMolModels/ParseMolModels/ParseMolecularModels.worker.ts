@@ -1,4 +1,5 @@
 import {
+    IMolData,
     sendResponseToMainThread,
     waitForDataFromMainThread,
 } from "@/Core/WebWorkers/WorkerHelper";
@@ -24,7 +25,7 @@ import {
     GLModel,
     IAtom,
     IMolContainer,
-    IStyleAndSel,
+    IStyle,
     MolType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -34,6 +35,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { getFormatInfoGivenExt, IFormatInfo } from "../Definitions/MolFormats";
 
 let glviewer: any;
 
@@ -280,21 +282,22 @@ function collapseSingles(
 
     return molContainer;
 }
+
 /**
  * Adds the molecule type, style, and selections.
  *
  * @param  {IMolContainer}  molContainer  The molecule to add the type and style
  *                                        to.
- * @param  {IStyleAndSel[]} stylesAndSels The styles and selections to add.
+ * @param  {IStyle[]} stylesAndSels The styles and selections to add.
  */
 function addMolTypeAndStyle(
     molContainer: IMolContainer,
-    stylesAndSels: IStyleAndSel[]
+    stylesAndSels: IStyle[]
 ) {
     const molType = molContainer.type;
     for (const mol of getTerminalNodes([molContainer])) {
         mol.type = molType;
-        mol.stylesSels = stylesAndSels;
+        mol.styles = stylesAndSels;
     }
     for (const mol of getAllNodesFlattened([molContainer])) {
         mol.id = randomID();
@@ -305,94 +308,222 @@ function addMolTypeAndStyle(
 }
 
 /**
+ * Given molecular data, returns information about the format.
+ * 
+ * @param  {IMolData} data  The molecular data.
+ * @returns {IFormatInfo}  Information about the format.
+ */
+function getFormatInfo(data: IMolData): IFormatInfo {
+    const molFormat = data.format;
+    return getFormatInfoGivenExt(molFormat) as IFormatInfo;
+}
+
+/**
+ * Given molecular text, divides the text by frames.
+ * 
+ * @param  {string} molText  The molecular text.
+ * @param  {IFormatInfo} molFormatInfo  Information about the format.
+ * @returns {string[]}  The frames.
+ */
+function divideMolTxtIntoFrames(
+    molText: string,
+    molFormatInfo: IFormatInfo
+): string[] {
+    let frames: string[] = [molText];
+
+    if (molFormatInfo && molFormatInfo.frameSeparators) {
+        for (const frameSeparator of molFormatInfo.frameSeparators) {
+            // const txt = frameSeparator.text.replace(/\$/g, "\\$");
+            if (frameSeparator.isAtEndOfFrame) {
+                // Add string "<<DIVIDE>>" after every occurance of
+                // molInfo.frameSeparators.text
+                // const srch = new RegExp(txt + "$", "gm");
+                // const rpl = frameSeparator.text + "<<DIVIDE>>";
+                molText = molText.replaceAll(
+                    frameSeparator.text,
+                    // Strange exception required for SDF files
+                    (frameSeparator.text !== "\n$$$$\n"
+                        ? frameSeparator.text
+                        : "\n$$$$$$$$\n") + "<<DIVIDE>>"
+                );
+
+                // Every time "\n$$$$\n" appears in string, replace with "MOOSE\n$$$$\n". Don't use regex / RegExp
+            } else {
+                // Add string "<<DIVIDE>>" before every occurance of
+                // molInfo.frameSeparators.text
+                molText = molText.replaceAll(
+                    frameSeparator.text,
+                    "<<DIVIDE>>" + frameSeparator.text
+                );
+            }
+        }
+
+        frames = molText.split("<<DIVIDE>>");
+        frames = frames.map((f) => f.trim()).filter((f) => f.length > 0);
+    }
+
+    return frames;
+}
+
+/**
+ * Given molecular text, tries to detect the name from the text itself.
+ *
+ * @param  {string} molText  The molecular text.
+ * @param  {IFormatInfo} molFormatInfo  Information about the format.
+ * @returns {string}  The name. Returns "" if no name found.
+ */
+function getNameFromContent(
+    molText: string,
+    molFormatInfo: IFormatInfo
+): string {
+    const regexps = molFormatInfo.namesRegex;
+    let firstMatch = "";
+    if (regexps) {
+        for (const regexp of regexps) {
+            // Must reset regex for repeated use. Interesting. See
+            // https://stackoverflow.com/questions/4724701/regexp-exec-returns-null-sporadically
+            regexp.lastIndex = 0;
+
+            const match = regexp.exec(molText);
+            if (match) {
+                firstMatch = match[1];
+                break;
+
+                // below prevents multiple matches
+                // molText = molText.replaceAll(match[1], "");
+            }
+        }
+    }
+
+    // Remove terminal ; from match
+    if (firstMatch.endsWith(";")) {
+        firstMatch = firstMatch.substring(0, firstMatch.length - 1);
+    }
+
+    // Keep only unique
+    // allMatches = allMatches.filter((v, i, a) => a.indexOf(v) === i);
+
+    // Keep only at most first 10 letters. Append ... if more than 10
+    // letters.
+    if (firstMatch.length > 20) {
+        firstMatch = firstMatch.substring(0, 20) + "...";
+    }
+
+    // Compile into single string. Separate by ;
+    return firstMatch.replaceAll(":", "");
+}
+
+/**
  * Given molecular data from the main thread, convert it into a IMolContainer
  * object divided by component (protien, compound, solvent, etc.).
  *
- * @param  {any} data The molecular data.
+ * @param  {IMolData} data The molecular data.
  * @returns {Promise<IMolContainer>} The divided molecule.
  */
-function divideAtomsIntoDistinctComponents(data: {
-    [key: string]: any;
-}): Promise<IMolContainer> {
+function divideAtomsIntoDistinctComponents(data: IMolData): Promise<IMolContainer[]> {
     // Any molecules that share bonds are the same component.
+
+    // Get the format
+    const molFormatInfo = getFormatInfo(data);
+    const frames = divideMolTxtIntoFrames(data.molText, molFormatInfo);
 
     // glviewer for use in webworker.
     return dynamicImports.mol3d.module.then(($3Dmol: any) => {
         if (!glviewer) {
             glviewer = $3Dmol.createViewer("", {});
         }
-        const mol = glviewer.makeGLModel_JDD(data.molText, data.format);
 
-        let proteinAtomsByChain = organizeSelByChain(
-            proteinSel,
-            mol,
-            "Protein"
-        );
-        let nucleicAtomsByChain = organizeSelByChain(
-            nucleicSel,
-            mol,
-            "Nucleic"
-        );
-        const solventAtomsByChain = organizeSelByChain(
-            solventSel,
-            mol,
-            "Solvent"
-        );
-        let metalAtomsByChain = organizeSelByChain(metalSel, mol, "Metal");
-        const ionAtomsByChain = organizeSelByChain(ionSel, mol, "Ion");
-        let lipidAtomsByChain = organizeSelByChain(lipidSel, mol, "Lipid");
-        let compoundsByChain = organizeSelByChain({}, mol, "Compound"); // Everything else is ligands
+        const fileContentsAllFrames: IMolContainer[] = [];
 
-        // Further divide by residue (since each ligand is on its own residue,
-        // not bound to any other).
-        compoundsByChain = divideChainsIntoResidues(compoundsByChain);
+        for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
+            const frame = frames[frameIdx];
+            const mol = glviewer.makeGLModel_JDD(frame, data.format);
 
-        // You don't need to divide solvent and ions by chain.
-        const solventAtomsNoChain: IMolContainer =
-            flattenChains(solventAtomsByChain);
-        const ionAtomsNoChain: IMolContainer = flattenChains(ionAtomsByChain);
+            // Check if 3dmol GLModel has multiple frames
 
-        // For everything else, if given chain has one item, collapse it.
-        compoundsByChain = collapseSingles(compoundsByChain, true);
-        proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
-        nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
-        metalAtomsByChain = collapseSingles(metalAtomsByChain);
-        lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
+            let proteinAtomsByChain = organizeSelByChain(
+                proteinSel,
+                mol,
+                "Protein"
+            );
+            let nucleicAtomsByChain = organizeSelByChain(
+                nucleicSel,
+                mol,
+                "Nucleic"
+            );
+            const solventAtomsByChain = organizeSelByChain(
+                solventSel,
+                mol,
+                "Solvent"
+            );
+            let metalAtomsByChain = organizeSelByChain(metalSel, mol, "Metal");
+            const ionAtomsByChain = organizeSelByChain(ionSel, mol, "Ion");
+            let lipidAtomsByChain = organizeSelByChain(lipidSel, mol, "Lipid");
+            let compoundsByChain = organizeSelByChain({}, mol, "Compound"); // Everything else is ligands
 
-        proteinAtomsByChain.type = MolType.Protein;
-        nucleicAtomsByChain.type = MolType.Nucleic;
-        compoundsByChain.type = MolType.Compound;
-        metalAtomsByChain.type = MolType.Metal;
-        lipidAtomsByChain.type = MolType.Lipid;
-        ionAtomsNoChain.type = MolType.Ions;
-        solventAtomsNoChain.type = MolType.Solvent;
+            // Further divide by residue (since each ligand is on its own residue,
+            // not bound to any other).
+            compoundsByChain = divideChainsIntoResidues(compoundsByChain);
 
-        // // add in default styles
-        // proteinAtomsByChain.style = proteinStyle;
-        // nucleicAtomsByChain.style = nucleicStyle;
+            // You don't need to divide solvent and ions by chain.
+            const solventAtomsNoChain: IMolContainer =
+                flattenChains(solventAtomsByChain);
+            const ionAtomsNoChain: IMolContainer =
+                flattenChains(ionAtomsByChain);
 
-        // Page into single object
-        let fileContents: IMolContainer = {
-            title: data.molName,
-            viewerDirty: true,
-            treeExpanded: false,
-            visible: true,
-            focused: false,
-            selected: SelectedType.False,
-            nodes: [
-                proteinAtomsByChain,
-                nucleicAtomsByChain,
-                compoundsByChain,
-                metalAtomsByChain,
-                lipidAtomsByChain,
-                ionAtomsNoChain,
-                solventAtomsNoChain,
-            ],
-        };
+            // For everything else, if given chain has one item, collapse it.
+            compoundsByChain = collapseSingles(compoundsByChain, true);
+            proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
+            nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
+            metalAtomsByChain = collapseSingles(metalAtomsByChain);
+            lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
 
-        fileContents = cleanUpFileContents(fileContents);
+            proteinAtomsByChain.type = MolType.Protein;
+            nucleicAtomsByChain.type = MolType.Nucleic;
+            compoundsByChain.type = MolType.Compound;
+            metalAtomsByChain.type = MolType.Metal;
+            lipidAtomsByChain.type = MolType.Lipid;
+            ionAtomsNoChain.type = MolType.Ions;
+            solventAtomsNoChain.type = MolType.Solvent;
 
-        return fileContents;
+            // // add in default styles
+            // proteinAtomsByChain.style = proteinStyle;
+            // nucleicAtomsByChain.style = nucleicStyle;
+
+            let molName =
+                data.molName +
+                (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
+            const molNameFromContent = getNameFromContent(frame, molFormatInfo);
+
+            if (molNameFromContent !== "") {
+                molName = `${molNameFromContent} (${molName})`;
+            }
+
+            // Page into single object
+            let fileContents: IMolContainer = {
+                title: molName,
+                viewerDirty: true,
+                treeExpanded: false,
+                visible: true,
+                focused: false,
+                selected: SelectedType.False,
+                nodes: [
+                    proteinAtomsByChain,
+                    nucleicAtomsByChain,
+                    compoundsByChain,
+                    metalAtomsByChain,
+                    lipidAtomsByChain,
+                    ionAtomsNoChain,
+                    solventAtomsNoChain,
+                ],
+            };
+
+            fileContents = cleanUpFileContents(fileContents);
+
+            fileContentsAllFrames.push(fileContents);
+        }
+
+        return fileContentsAllFrames;
     });
 }
 
@@ -455,44 +586,55 @@ function addParentIds(molContainer: IMolContainer) {
 }
 
 waitForDataFromMainThread()
-    .then((data) => divideAtomsIntoDistinctComponents(data))
-    .then((organizedAtoms: IMolContainer) => {
-        organizedAtoms.id = randomID();
+    .then((data: IMolData) => divideAtomsIntoDistinctComponents(data))
+    .then((organizedAtomsFrames: IMolContainer[]) => {
+        let organizedAtomsFramesFixed: IMolContainer[] = [];
+        for (const organizedAtoms of organizedAtomsFrames) {
+            organizedAtoms.id = randomID();
 
-        const nodesToConsider: IMolContainer[] = [organizedAtoms];
-        if (organizedAtoms.nodes) {
-            nodesToConsider.push(...organizedAtoms.nodes);
-        }
-
-        for (const node of nodesToConsider) {
-            switch (node.type) {
-                case MolType.Protein:
-                    addMolTypeAndStyle(node, proteinStyle);
-                    break;
-                case MolType.Nucleic:
-                    addMolTypeAndStyle(node, nucleicStyle);
-                    break;
-                case MolType.Compound:
-                    addMolTypeAndStyle(node, ligandsStyle);
-                    break;
-                case MolType.Metal:
-                    addMolTypeAndStyle(node, metalsStyle);
-                    break;
-                case MolType.Lipid:
-                    addMolTypeAndStyle(node, lipidStyle);
-                    break;
-                case MolType.Ions:
-                    addMolTypeAndStyle(node, ionsStyle);
-                    break;
-                case MolType.Solvent:
-                    addMolTypeAndStyle(node, solventStyle);
-                    break;
+            const nodesToConsider: IMolContainer[] = [organizedAtoms];
+            if (organizedAtoms.nodes) {
+                nodesToConsider.push(...organizedAtoms.nodes);
             }
+
+            for (const node of nodesToConsider) {
+                switch (node.type) {
+                    case MolType.Protein:
+                        addMolTypeAndStyle(node, proteinStyle);
+                        break;
+                    case MolType.Nucleic:
+                        addMolTypeAndStyle(node, nucleicStyle);
+                        break;
+                    case MolType.Compound:
+                        addMolTypeAndStyle(node, ligandsStyle);
+                        break;
+                    case MolType.Metal:
+                        addMolTypeAndStyle(node, metalsStyle);
+                        break;
+                    case MolType.Lipid:
+                        addMolTypeAndStyle(node, lipidStyle);
+                        break;
+                    case MolType.Ions:
+                        addMolTypeAndStyle(node, ionsStyle);
+                        break;
+                    case MolType.Solvent:
+                        addMolTypeAndStyle(node, solventStyle);
+                        break;
+                }
+            }
+
+            addParentIds(organizedAtoms);
+
+            organizedAtomsFramesFixed.push(organizedAtoms);
         }
 
-        addParentIds(organizedAtoms);
+        organizedAtomsFramesFixed = organizedAtomsFramesFixed.filter(
+            (o) =>
+                (o.nodes && o.nodes.length > 0) ||
+                (o.model && (o.model as IAtom[]).length > 0)
+        );
 
-        sendResponseToMainThread(organizedAtoms);
+        sendResponseToMainThread(organizedAtomsFramesFixed);
 
         return;
     })

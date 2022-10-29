@@ -4,7 +4,7 @@
 .lm_content {
   /* background: #e1e1e1; */
   border: 1px solid #cccccc;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .lm_dragProxy .lm_content {
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);

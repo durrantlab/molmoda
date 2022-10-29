@@ -77,7 +77,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(): Promise<undefined> {
+  runJobInBrowser(): Promise<undefined> {
     if (this.nodeToActOn) {
       // Get the parent node and remove this from it's nodes.
       if (this.nodeToActOn.parentId) {

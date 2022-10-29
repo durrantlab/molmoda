@@ -43,7 +43,7 @@ import * as compileErrors from "../compile_errors.json";
 import { appName } from "@/Core/AppName";
 import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
-import Viewer2D from "@/UI/Panels/Viewer/Viewer2D.vue";
+import Viewer2D from "@/UI/Components/Viewer2D.vue";
 
 /**
  * Main app component

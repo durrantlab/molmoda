@@ -45,7 +45,11 @@ module.exports = defineConfig({
                     {
                         from: "src/Testing/4WP4.pdb",
                         to: "4WP4.pdb",
-                    }
+                    },
+                    {
+                        from: "node_modules/@rdkit/rdkit/dist",
+                        to: "js/rdkitjs",
+                    },
                 ],
             })
         );
@@ -68,6 +72,16 @@ module.exports = defineConfig({
         if (process.env.NODE_ENV === "docs") {
             config.optimization.minimize = false;
         }
+
+        config.optimization.splitChunks = {
+            minSize: 10000,
+            maxSize: 250000,
+        };
+
+        // Only build source maps if in development
+        config.devtool =
+            process.env.NODE_ENV === "development" ? "eval-source-map" : false;
+
         // config.optimization.minimizer = [
         //     new TerserPlugin({
         //         terserOptions: {

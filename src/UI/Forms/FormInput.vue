@@ -8,6 +8,7 @@
         (type === 'color' ? ' form-control-color' : '') +
         (type === 'range' ? ' form-range border-0 shadow-none' : '')
       "
+      :readonly="readonly"
       :id="id"
       :placeholder="placeHolder"
       :disabled="disabled"
@@ -52,6 +53,7 @@ export default class FormInput extends Vue {
   @Prop({ required: false }) filterFunc!: Function;
   @Prop({}) description!: string;
   @Prop({default: FORM_INPUT_DELAY_UPDATE_DEFAULT}) delayBetweenChangesDetected!: number;
+  @Prop({default: false}) readonly!: boolean;
 
   // Below used for range.
   @Prop({ default: undefined }) min!: number;

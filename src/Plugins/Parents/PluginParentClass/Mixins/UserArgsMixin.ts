@@ -88,6 +88,14 @@ export class UserArgsMixin extends Vue {
         return pluginComponent;
     }
 
+    /**
+     * Given a list of user arguments, find the one with the specified name and
+     * return its value.
+     *
+     * @param  {IUserArg[]} userArgs  The list of user arguments.
+     * @param  {string}     name      The name of the user argument to find.
+     * @returns {any}  The value of the user argument with the specified name.
+     */
     protected userArgsLookup(userArgs: IUserArg[], name: string): any {
         for (const userArg of userArgs) {
             if (userArg.name === name) {

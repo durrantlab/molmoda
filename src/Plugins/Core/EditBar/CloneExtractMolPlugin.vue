@@ -202,7 +202,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    * @returns {RunJobReturn}  A promise that resolves when the job is
    *     done.
    */
-  runJob(userArgs: IUserArg[]): RunJobReturn {
+  runJobInBrowser(userArgs: IUserArg[]): RunJobReturn {
     if (this.nodeToActOn) {
       let newerNode: IMolContainer;
       let convertedNode: Promise<IMolContainer>;

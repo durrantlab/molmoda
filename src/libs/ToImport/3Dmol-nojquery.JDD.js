@@ -31536,7 +31536,7 @@ $3Dmol.GLViewer = (function() {
             models.length, 
             {defaultcolors:defaultcolors, cartoonQuality:config.cartoonQuality}
           );
-          mol.addMolData(txt, format, { keepH: true });
+          mol.addMolData(txt, format, { keepH: true, multimodel: true });  // Assume always multimodel.
           return mol;
         }
 

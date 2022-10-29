@@ -6,9 +6,17 @@ import { ILog } from "@/UI/Panels/Log/LogUtils";
 import { biotiteStateKeysToRetain } from "../Utils";
 import { atomsToModels } from "./Utils";
 
+/**
+ * Uses biotite to parse the a molecular-model file. For biotite-native files.
+ *
+ * @param  {IFileInfo} fileInfo  The file to parse.
+ * @returns {Promise<void | IMolContainer[]>}  A promise that resolves when the
+ *    file is parsed. The promise resolves to an array of IMolContainer objects,
+ *    one for each frame. Can also resolve void.
+ */
 export function parseUsingBiotite(
     fileInfo: IFileInfo
-): Promise<void | IMolContainer> {
+): Promise<void | IMolContainer[]> {
     return jsonStrToState(fileInfo.contents)
         .then((stateFromJson) => {
             // Update vueX store

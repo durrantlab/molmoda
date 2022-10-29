@@ -87,7 +87,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    */
-  runJob() {
+  runJobInBrowser() {
     if (this.callBack) {
       this.callBack();
     }

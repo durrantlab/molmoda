@@ -53,7 +53,7 @@ export interface IMolContainer {
     nodes?: IMolContainer[];      // Next level down in menu. So if molecule,
                                   // then chain. If chain, then residue. Etc.
     type?: MolType;
-    stylesSels?: IStyleAndSel[];  // styles and selections for this node
+    styles?: IStyle[];  // styles and selections for this node
 }
 
 export interface IResidue extends IMolContainer { }
@@ -70,9 +70,4 @@ export interface IStyle {
     line?: IColorStyle;
     cartoon?: IColorStyle;
     surface?: IColorStyle;  // NOTE: Not how 3dmoljs handles surface.
-}
-
-export interface IStyleAndSel {
-    selection: any;
-    style: IStyle;
 }

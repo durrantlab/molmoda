@@ -5,27 +5,50 @@ export interface IDynamicImport {
     module: Promise<any>;
 }
 
-const modulesAlreadyAddedToHeader: { [key: string]: any } = {};
+const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
 
 /**
  * Adds a js file to the header. This is useful when you can't do a legitimate
  * dynamic import.
  *
- * @param  {string} url  The url of the js file to add to the header.
+ * @param  {string} id          The id of the library.
+ * @param  {string} url         The url of the js file to add to the header.
+ * @param  {Function} callback  The callback to call when the library is loaded.
  * @returns {Promise<undefined>}  A promise that resolves when the script is
  *     loaded.
  */
-function addJsToHeader(url: string): Promise<undefined> {
-    return new Promise((resolve) => {
+function addJsToHeader(
+    id: string,
+    url: string,
+    callback: () => Promise<any>
+): Promise<undefined> {
+    if (modulesAlreadyAddedToHeader[id] !== undefined) {
+        // Already loaded;
+        // (window as any)["OpenBabel"] =
+        //     modulesAlreadyAddedToHeader[id];
+        return Promise.resolve(modulesAlreadyAddedToHeader[id]);
+    }
+
+    modulesAlreadyAddedToHeader[id] = new Promise((resolve) => {
         const script = document.createElement("script");
         script.src = url;
         script.onload = () => {
             setTimeout(() => {
-                resolve(undefined);
+                callback() // custom callback returns a promise
+                    .then((module) => {
+                        resolve(module);
+                        return;
+                    })
+                    .catch(() => {
+                        console.warn("error");
+                        return;
+                    });
             }, 5000);
         };
         document.head.appendChild(script);
     });
+
+    return modulesAlreadyAddedToHeader[id];
 }
 
 export const dynamicImports = {
@@ -158,36 +181,62 @@ export const dynamicImports = {
             // attaching it to the main window. A promise that resolves the
             // module is not effective for some reason.
 
-            if (modulesAlreadyAddedToHeader["openbabeljs"] !== undefined) {
-                // Already loaded;
-                (window as any)["OpenBabel"] =
-                    modulesAlreadyAddedToHeader["openbabeljs"];
-                return Promise.resolve(undefined);
-            }
-
-            return addJsToHeader("js/openbabeljs/openbabel.js").then(() => {
-                const OpenBabel = (window as any)["OpenBabelModule"]();
-                const prom1 = new Promise((resolve) => {
-                    OpenBabel.onRuntimeInitialized = () => {
-                        resolve(undefined);
-                    };
-                });
-                const prom2 = new Promise(function (resolve) {
-                    const checkReady = () => {
-                        console.log("checking");
-                        if (OpenBabel.ObConversionWrapper) {
-                            (window as any)["OpenBabel"] = OpenBabel;
-                            modulesAlreadyAddedToHeader["openbabeljs"] =
-                                OpenBabel;
+            return addJsToHeader(
+                "openbabeljs",
+                "js/openbabeljs/openbabel.js",
+                () => {
+                    const OpenBabel = (window as any)["OpenBabelModule"]();
+                    const prom1 = new Promise((resolve) => {
+                        OpenBabel.onRuntimeInitialized = () => {
                             resolve(undefined);
-                        } else {
-                            setTimeout(checkReady, 500);
-                        }
-                    };
-                    checkReady();
-                });
-                return Promise.all([prom1, prom2]);
-            });
+                        };
+                    });
+                    const prom2 = new Promise(function (resolve) {
+                        const checkReady = () => {
+                            console.log("checking");
+                            if (OpenBabel.ObConversionWrapper) {
+                                (window as any)["OpenBabel"] = OpenBabel;
+                                resolve(undefined);
+                            } else {
+                                setTimeout(checkReady, 500);
+                            }
+                        };
+                        checkReady();
+                    });
+                    return Promise.all([prom1, prom2]);
+                }
+            );
+
+            // if (modulesAlreadyAddedToHeader["openbabeljs"] !== undefined) {
+            //     // Already loaded;
+            //     (window as any)["OpenBabel"] =
+            //         modulesAlreadyAddedToHeader["openbabeljs"];
+            //     return Promise.resolve(undefined);
+            // }
+
+            // return addJsToHeader("js/openbabeljs/openbabel.js").then(() => {
+            //     const OpenBabel = (window as any)["OpenBabelModule"]();
+            //     const prom1 = new Promise((resolve) => {
+            //         OpenBabel.onRuntimeInitialized = () => {
+            //             resolve(undefined);
+            //         };
+            //     });
+            //     const prom2 = new Promise(function (resolve) {
+            //         const checkReady = () => {
+            //             console.log("checking");
+            //             if (OpenBabel.ObConversionWrapper) {
+            //                 (window as any)["OpenBabel"] = OpenBabel;
+            //                 modulesAlreadyAddedToHeader["openbabeljs"] =
+            //                     OpenBabel;
+            //                 resolve(undefined);
+            //             } else {
+            //                 setTimeout(checkReady, 500);
+            //             }
+            //         };
+            //         checkReady();
+            //     });
+            //     return Promise.all([prom1, prom2]);
+            // });
         },
     },
     smilesdrawer: {
@@ -196,6 +245,11 @@ export const dynamicImports = {
             url: "https://github.com/reymond-group/smilesDrawer",
             license: Licenses.MIT,
         },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "smilesdrawer" */
@@ -206,6 +260,29 @@ export const dynamicImports = {
             ).then((SmilesDrawer) => {
                 return SmilesDrawer;
             });
+        },
+    },
+    rdkitjs: {
+        credit: {
+            name: "rdkitjs",
+            url: "https://github.com/rdkit/rdkit-js",
+            license: Licenses.BSD3,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return addJsToHeader(
+                "rdkitjs",
+                "js/rdkitjs/RDKit_minimal.js",
+                () => {
+                    return (window as any).initRDKitModule().catch(() => {
+                        // handle loading errors here...
+                    });
+                }
+            );
         },
     },
 };

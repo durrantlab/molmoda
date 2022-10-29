@@ -3,6 +3,7 @@ import glob
 import os
 import json
 
+
 class Param:
     def __init__(self):
         self.name = None
@@ -263,7 +264,8 @@ def add_type_def_info(type_name, interfaces_and_enums):
     return "".join(
         f" `{name}` is defined in [{os.path.basename(interfaces_and_enums[name][0])}, line {interfaces_and_enums[name][1]}]({interfaces_and_enums[name][2]})."
         for name in type_names
-        if name not in ["string", "number", "any", "null", "boolean", "undefined"]
+        if name not in ["string", "number", "any", "null", "boolean", "undefined", "void"]
+        and name[:7] != "Promise"
     )
 
 

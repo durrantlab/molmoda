@@ -44,7 +44,7 @@ export class ValidationMixin extends Vue {
         // }
 
         // if (this.runJob === null) {
-        //     throw new Error(`Plugin ${this.pluginId} does not define runJob()`);
+        //     throw new Error(`Plugin ${this.pluginId} does not define runJobInBrowser()`);
         // }
     }
 

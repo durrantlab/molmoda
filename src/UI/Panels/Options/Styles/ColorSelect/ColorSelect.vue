@@ -1,13 +1,10 @@
 <template>
   <div class="ms-2" style="margin-top: -8px">
     <FormFull v-model="constructedColorForm" id="color-style"></FormFull>
-    <!-- :hideIfDisabled="true" -->
   </div>
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import Section from "@/UI/Layout/Section.vue";
@@ -21,15 +18,16 @@ import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import isEqual from "lodash.isequal";
 
 import {
-FormElement,
+  FormElement,
   FormElemType,
   IFormOption,
   IFormSelect,
+  IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ColorOptions } from "./ColorOptions";
 
 /**
- * ColorStyle component
+ * ColorSelect component
  */
 @Options({
   components: {
@@ -42,6 +40,7 @@ import { ColorOptions } from "./ColorOptions";
 export default class ColorSelect extends Vue {
   // Looks like this: { "cartoon": { "color": "spectrum" } }
   @Prop({ required: true }) modelValue!: IStyle;
+
   @Prop({ required: true }) repName!: string;
   @Prop({ default: true }) allowColorByElement!: boolean;
   @Prop({ default: true }) allowColorCarbons!: boolean;
@@ -51,13 +50,94 @@ export default class ColorSelect extends Vue {
   colorStyles = new ColorOptions();
 
   /**
+   * Gets the color form.
+   *
+   * @returns {any[]}  The color form.
+   */
+  get constructedColorForm(): any[] {
+    let style: IStyle = this.modelValue;
+    // `style` looks like {"cartoon":{"color":"spectrum"}}
+
+    this._setColorStyleDefaultsIfMissing(style);
+
+    // Get the available color-form options.
+    const colorFormOptionsForSelect = this._getColorOptionsForSelect();
+
+    // Make the select
+    let colorStyleIdx = this.colorStyles.styleToIndex(
+      (style as any)[this.repName]
+    );
+
+    const colorFormSelect = {
+      type: FormElemType.Select,
+      id: "colorscheme",
+      val: colorStyleIdx.toString(),
+      options: colorFormOptionsForSelect,
+    } as IFormSelect;
+
+    // Make the form
+    let colorForm: FormElement[] = [colorFormSelect];
+
+    // If the color scheme is color carbons or solid, add the color option to
+    // the color form.
+    if (
+      [
+        this.colorStyles.nameToIndex("ColorCarbons"),
+        this.colorStyles.nameToIndex("Solid"),
+      ].indexOf(colorStyleIdx) > -1
+    ) {
+      colorForm.push({
+        type: FormElemType.Color,
+        id: "color",
+        val: this.colorStyles.extractHexColorsFromStyle(style)[0],
+      });
+    }
+
+    return colorForm;
+  }
+
+  /**
+   * Get the constructed color form.
+   *
+   * @param {FormElement[]} val  The color form.
+   */
+  set constructedColorForm(val: FormElement[]) {
+    // Emit something that looks like this:
+    // { "cartoon": '{ "color": "spectrum" }' }
+
+    // Copy the representations from the component.
+    let style: IStyle = { ...this.modelValue };
+
+    // Make sure the colorStyles color is set.
+    let color = (
+      val.filter((v: any) => {
+        return v.id === "color";
+      })[0] as IGenericFormElement
+    )?.val;
+    this.colorStyles.color =
+      color === undefined ? this.colorStyles.defaultColor : color;
+
+    // Replace the color style with an appropriate one given the color.
+    let colorschemeIdx = (
+      val.filter((v: any) => {
+        return v.id === "colorscheme";
+      })[0] as IGenericFormElement
+    )?.val;
+    (style as any)[this.repName] = this.colorStyles.indexToStyle(colorschemeIdx);
+
+    // console.log("from color style:", reps);
+    this.$emit("update:modelValue", style);
+    this.$emit("onChange");
+  }
+
+  /**
    * Add default values to the style object if it is missing. Acts in place, so
    * returns nothing.
    *
    * @param {IStyle} style  The style. Looks something like
    *                        {"cartoon":{"color":"spectrum"}}.
    */
-  private _setColorStyleDefaults(style: IStyle) {
+  private _setColorStyleDefaultsIfMissing(style: IStyle) {
     // If the value (IColorStyle) of style is {}, set to default color scheme.
     let styleAsObjForRef = style as { [key: string]: IColorStyle };
 
@@ -68,11 +148,17 @@ export default class ColorSelect extends Vue {
       const colorStyleName =
         this.repName === "cartoon" ? "Spectrum" : "Element";
 
-      // @ts-ignore
-      style[this.repName] = this.colorStyles.nameToStyle(colorStyleName);
+      (style as any)[this.repName] =
+        this.colorStyles.nameToStyle(colorStyleName);
     }
   }
 
+  /**
+   * Color options (e.g., Color by Element) are presented as a select box. This
+   * gets the appropriate options for that box.
+   *
+   * @returns {IFormOption[]}  The options for the color-style select box.
+   */
   private _getColorOptionsForSelect(): IFormOption[] {
     let colorFormOptions: IFormOption[] = [];
 
@@ -118,90 +204,6 @@ export default class ColorSelect extends Vue {
     );
 
     return colorFormOptions;
-  }
-
-  /**
-   * Gets the color form.
-   *
-   * @returns {any[]}  The color form.
-   */
-  get constructedColorForm(): any[] {
-    let style: IStyle = this.modelValue;
-    // `style` looks like {"cartoon":{"color":"spectrum"}}
-
-    this._setColorStyleDefaults(style);
-
-    // Get the available color-form options.
-    const colorFormOptions = this._getColorOptionsForSelect();
-
-    // Make the select
-    let colorStyleIdx = this.colorStyles.styleToIndex(
-      // @ts-ignore
-      style[this.repName]
-    );
-
-    const colorFormSelect = {
-      type: FormElemType.Select,
-      id: "colorscheme",
-      val: colorStyleIdx.toString(),
-      options: colorFormOptions,
-    } as IFormSelect;
-
-    let colorForm: FormElement[] = [colorFormSelect];
-
-    // If the color scheme is color carbons or solid, add the color option to
-    // the color form.
-    if (
-      [
-        this.colorStyles.nameToIndex("ColorCarbons"),
-        this.colorStyles.nameToIndex("Solid"),
-      ].indexOf(colorStyleIdx) > -1
-    ) {
-      colorForm.push({
-        type: FormElemType.Color,
-        id: "color",
-        // TODO: Assuming one below. Ok?
-        val: this.colorStyles.extractHexColorsFromStyle(style)[0],
-      });
-    }
-
-    return colorForm;
-  }
-
-  /**
-   * Get the constructed color form.
-   *
-   * @param {any} val  The color form.
-   */
-  set constructedColorForm(val: any) {
-    // Emit something that looks like this:
-    // { "cartoon": '{ "color": "spectrum" }' }
-
-    // TODO: Note that below assumes one style [0].
-    // let resp: { [key: string]: IColorStyle } = {};
-
-    let resp: { [key: string]: IColorStyle } = { ...this.modelValue };
-
-    let colorschemeIdx = val.filter((v: any) => {
-      return v.varName === "colorscheme";
-    })[0]?.val;
-    let color = val.filter((v: any) => {
-      return v.varName === "color";
-    })[0]?.val;
-
-    this.colorStyles.color =
-      color === undefined ? this.colorStyles.defaultColor : color;
-    resp[this.repName] = this.colorStyles.indexToStyle(colorschemeIdx);
-
-    console.log("from color style:", resp);
-    this.$emit("update:modelValue", resp);
-    this.$emit("onChange");
-  }
-
-  /** mounted function */
-  mounted() {
-    // Start by selecting defaults TODO: Actually, not sure this is necessary.
-    // All components will always have SOME style (assigned at load).
   }
 }
 </script>

@@ -5,14 +5,14 @@ import "./registerServiceWorker";
 import { setupVueXStore } from "./Store";
 import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { jobQueueSetup } from "./JobQueue";
+import { jobQueueSetup } from "./Queue/JobQueue";
 import { setupTests } from "./Testing/SetupTests";
-import { setOnePlugin } from "./Core/OnePlugin";
+import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 
 // api.sys.loadStatus.started = true;
 
-setOnePlugin();
+setOnePluginMode();
 loadFontAwesomeFonts();
 jobQueueSetup();
 setupTests();
@@ -29,17 +29,15 @@ createApp(App)
     .mount("#app");
 
 // // eslint-disable-next-line promise/catch-or-return
-// dynamicImports.openbabeljs.module.then(() => {
-//     const OpenBabel = (window as any)["OpenBabel"];
-//     const conv = new OpenBabel.ObConversionWrapper();
-//     // list all supported input/output formats, use '\n' to separate between each format string
-//     const sInputFormats = conv.getSupportedInputFormatsStr("\n");
-//     const sOutputFormats = conv.getSupportedInputFormatsStr("\n");
-//     console.log(sInputFormats);
-//     console.log(sOutputFormats);
-//     conv.delete(); // free ObConversionWrapper instance
-//     console.log(conv);
-//     return undefined;
+// dynamicImports.rdkitjs.module.then((mod: any) => {
+//     debugger;
+//     return;
 // });
 
-// console.log(formatInf);
+// setTimeout(() => {
+//     // eslint-disable-next-line promise/catch-or-return
+//     dynamicImports.rdkitjs.module.then((mod: any) => {
+//         debugger;
+//         return;
+//     });
+// }, 15000);

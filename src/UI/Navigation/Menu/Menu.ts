@@ -1,4 +1,4 @@
-import { onePlugin } from "@/Core/OnePlugin";
+import { onePlugin } from "@/Core/OnePluginMode";
 import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
 import { Vue } from "vue-class-component";
 

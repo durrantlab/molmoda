@@ -1,5 +1,5 @@
 <template>
-  <Styles />
+  <StylesAllMolTypes />
 </template>
 
 <script lang="ts">
@@ -10,7 +10,7 @@ import FormInput from "@/UI/Forms/FormInput.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import Section from "@/UI/Layout/Section.vue";
-import Styles from "./Styles/Styles.vue";
+import StylesAllMolTypes from "./Styles/StylesAllMolTypes.vue";
 
 /**
  * StylesPanel component
@@ -22,7 +22,7 @@ import Styles from "./Styles/Styles.vue";
     FormSelect,
     FormCheckBox,
     Section,
-    Styles
+    StylesAllMolTypes
   },
 })
 export default class StylesPanel extends Vue {}

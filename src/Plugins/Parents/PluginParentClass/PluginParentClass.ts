@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/check-tag-names */
 // Evey plugin component class must inherit this one.
-import * as JobQueue from "@/JobQueue";
+import * as JobQueue from "@/Queue/JobQueue";
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { mixins } from "vue-class-component";
 import {
@@ -24,6 +24,7 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
+import { IJobInfo } from "@/Queue/Definitions";
 
 export type RunJobReturn = Promise<any> | string | void | undefined;
 
@@ -182,13 +183,13 @@ export abstract class PluginParentClass extends mixins(
             parameterSets = [undefined];
         }
 
-        const jobs: JobQueue.IJobInfo[] = parameterSets.map(
-            (p: JobQueue.IJobInfo) => {
+        const jobs: IJobInfo[] = parameterSets.map(
+            (p: IJobInfo) => {
                 return {
                     commandName: this.pluginId,
                     params: p,
                     id: randomID(5),
-                } as JobQueue.IJobInfo;
+                } as IJobInfo;
             }
         );
 
@@ -202,9 +203,11 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /**
-     * Each plugin is associated with specific jobs (calculations). This
-     * function runs a single job (or calls the JavaScript/WASM libraries to run
-     * the job). The job-queue system calls `runJob` directly.
+     * Each plugin is associated with specific jobs (calculations). Most of
+     * these will run in the browser itself, rather than on a remote computing
+     * resource. This function runs a single job in the browser (or calls the
+     * JavaScript/WASM libraries to run the job). The job-queue system calls
+     * `runJob` directly.
      *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
@@ -212,7 +215,7 @@ export abstract class PluginParentClass extends mixins(
      *     the job is done, or a string itself (if the job is synchronous), or
      *     undefined if there's nothing to return.
      */
-    abstract runJob(parameterSet: any): RunJobReturn;
+    abstract runJobInBrowser(parameterSet: any): RunJobReturn;
 
     /**
      * Wraps around runJob to log start/end messages. It is called by the job
@@ -227,8 +230,8 @@ export abstract class PluginParentClass extends mixins(
      *     synchronous), or undefined if there's nothing to return (so user not
      *     required to use).
      */
-    private _runJob(jobId?: string, parameterSet?: any): RunJobReturn {
-        if (this.runJob === null) {
+    private _runJobInBrowser(jobId?: string, parameterSet?: any): RunJobReturn {
+        if (this.runJobInBrowser === null) {
             // Below won't ever happen (wouldn't pass validation), but makes it
             // easy to avoid typescript error.
             throw new Error(`Plugin ${this.pluginId} has no runJob function.`);
@@ -239,7 +242,7 @@ export abstract class PluginParentClass extends mixins(
         api.messages.log(logTxt, parameterSet, jobId);
         const startTime = new Date().getTime();
 
-        const jobResult = this.runJob(parameterSet) as RunJobReturn;
+        const jobResult = this.runJobInBrowser(parameterSet) as RunJobReturn;
 
         logTxt = this.onEndJobLogMsg(this.pluginId);
         logTxt = removeTerminalPunctuation(logTxt);
@@ -281,10 +284,6 @@ export abstract class PluginParentClass extends mixins(
         // Do some quick validation
         this._validatePlugin(this.pluginId);
 
-        if (this.menuPath === "") {
-            console.log(">>", this.pluginId);
-        }
-
         loadedPlugins[this.pluginId] = this;
         if (this.alwaysEnabled) {
             alwaysEnabledPlugins.push(this.pluginId);
@@ -311,7 +310,7 @@ export abstract class PluginParentClass extends mixins(
         } as IPluginSetupInfo);
 
         // Register with job queue system
-        api.hooks.onJobQueueCommand(this.pluginId, this._runJob.bind(this));
+        api.hooks.onJobQueueCommand(this.pluginId, this._runJobInBrowser.bind(this));
 
         this.onMounted();
 

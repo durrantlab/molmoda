@@ -93,7 +93,7 @@ export default class NewProjectPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    */
-  runJob(/* fileInfo: IFileInfo */) {
+  runJobInBrowser(/* fileInfo: IFileInfo */) {
     setStoreIsDirty(false);
     window.location.reload();
   }

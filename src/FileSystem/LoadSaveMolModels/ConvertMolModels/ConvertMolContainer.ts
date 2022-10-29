@@ -21,7 +21,7 @@ import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
  * Given a list of mol containers, convert them to a specified molecular format.
  *
  * @param  {IMolContainer[]} molContainers  The list of mol containers.
- * @param  {string}          ext            The extension of the format to
+ * @param  {string}          targetExt            The extension of the format to
  *                                          convert to.
  * @param  {boolean}         [merge=false]  Whether to merge the models into a
  *                                          single PDB string.
@@ -29,11 +29,11 @@ import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
  */
 export function convertMolContainers(
     molContainers: IMolContainer[],
-    ext: string,
+    targetExt: string,
     merge = true
 ): Promise<string[]> {
-    ext = ext.toLowerCase();
-    const formatInf = getFormatInfoGivenExt(ext) as IFormatInfo;
+    targetExt = targetExt.toLowerCase();
+    const formatInf = getFormatInfoGivenExt(targetExt) as IFormatInfo;
     let molTxts: string[] = [];
     const intermediaryExt = "pdb";
 
@@ -72,7 +72,7 @@ export function convertMolContainers(
 
     // Since imtermediary is not the destination format, convert to the required format.
     const convertedTxtPromises = molTxts.map((molTxt) =>
-        convertMolFormatOpenBabel(molTxt, intermediaryExt, ext)
+        convertMolFormatOpenBabel(molTxt, intermediaryExt, targetExt)
     );
 
     return Promise.all(convertedTxtPromises).then((convertedTxts) => {

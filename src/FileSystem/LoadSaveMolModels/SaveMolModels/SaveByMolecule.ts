@@ -3,7 +3,6 @@ import { slugify } from "@/Core/Utils";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Definitions";
 import { getTerminalNodesToUse } from "@/UI/Forms/MoleculeInputParams/WhichMols";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     getSaveTxtPromises,
     getPrimaryExt,

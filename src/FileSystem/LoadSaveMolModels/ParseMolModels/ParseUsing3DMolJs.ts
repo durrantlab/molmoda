@@ -5,21 +5,30 @@ import { IFormatInfo } from "../Definitions/MolFormats";
 import { parseMolecularModelFromText } from "./Utils";
 import { store } from "@/Store";
 
-export function parseUsing3DMolJs(fileInfo: IFileInfo, formatInfo: IFormatInfo): Promise<void | IMolContainer> {
+/**
+ * Uses 3DMol.js to parse the a molecular-model file.
+ *
+ * @param  {IFileInfo}   fileInfo    The file to parse.
+ * @param  {IFormatInfo} formatInfo  The format of the file.
+ * @returns {Promise<void | IMolContainer[]>}  A promise that resolves when the
+ *    file is parsed. The promise resolves to an array of IMolContainer objects,
+ *    one for each frame. Can also resolve void.
+ */
+export function parseUsing3DMolJs(fileInfo: IFileInfo, formatInfo: IFormatInfo): Promise<void | IMolContainer[]> {
     return parseMolecularModelFromText(
         fileInfo.contents,
         formatInfo.primaryExt,
         fileInfo.name
     )
-        .then((molContainer: IMolContainer) => {
+        .then((molContainers: IMolContainer[]) => {
             // Update VueX store
             store.commit("pushToList", {
                 name: "molecules",
-                val: molContainer,
+                val: molContainers,
             });
                         
             api.messages.waitSpinner(false);
-            return molContainer;
+            return molContainers;
         })
         .catch((err) => {
             console.warn(err);

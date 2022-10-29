@@ -8,7 +8,10 @@
           state="{}"
           :width="20"
         >
-          <div @click.self="clearSelection" style="height: 100%; overflow-x: clip;">
+          <div
+            @click.self="clearSelection"
+            style="height: 100%; overflow-x: clip"
+          >
             <TreeView />
           </div>
         </GoldenLayoutComponent>
@@ -22,9 +25,15 @@
           <ViewerPanel />
         </GoldenLayoutComponent>
 
-        <GoldenLayoutComponent name="Styles" state="{}" :width="20">
-          <StylesPanel />
-        </GoldenLayoutComponent>
+        <GoldenLayoutContainer type="column" :width="20">
+          <GoldenLayoutComponent name="Styles" state="{}" :width="20">
+            <StylesPanel />
+          </GoldenLayoutComponent>
+
+          <GoldenLayoutComponent name="Information" state="{}" :width="20">
+            <InformationPanel />
+          </GoldenLayoutComponent>
+        </GoldenLayoutContainer>
       </GoldenLayoutContainer>
       <GoldenLayoutContainer type="row" :height="20">
         <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
@@ -51,6 +60,7 @@ import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 import LogPanel from "@/UI/Panels/Log/LogPanel.vue";
 import * as api from "@/Api";
+import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
 
 /**
  * GoldLayout component
@@ -63,6 +73,7 @@ import * as api from "@/Api";
     StylesPanel,
     TreeView,
     LogPanel,
+    InformationPanel
   },
 })
 export default class GoldLayout extends Vue {
@@ -171,7 +182,7 @@ export default class GoldLayout extends Vue {
 
     let config = {
       settings: {
-        showPopoutIcon: false
+        showPopoutIcon: false,
         // showCloseIcon: false
       },
       content: this._convertDOMToData(dataDOM),

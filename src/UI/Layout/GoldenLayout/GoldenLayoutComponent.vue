@@ -9,7 +9,7 @@
     x
     <div
       :id="slugID"
-      :style="style + '; height:100%; cursor:pointer;'"
+      :style="style + '; height:100%;'"
       :class="
         'tab-pane fade show active container-fluid p-' +
         paddingSize.toString() +

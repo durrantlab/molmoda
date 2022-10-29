@@ -21,7 +21,7 @@ import { getPrimaryExt, getSaveTxtPromises, saveTxtFiles } from "./Utils";
 ): Promise<undefined> {
     // Not using biotite format. Create ZIP file with protein and small
     // molecules.
-    const ext = getPrimaryExt(format);
+    const targetExt = getPrimaryExt(format);
 
     const mols = getStoreVar("molecules");
 
@@ -33,7 +33,7 @@ import { getPrimaryExt, getSaveTxtPromises, saveTxtFiles } from "./Utils";
 
     return getSaveTxtPromises(
         nodesToUse,
-        ext,
+        targetExt,
         true, // Merge everything
         filename
     ).then((files: ISaveTxt[]) => {

@@ -46,7 +46,7 @@ export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
 
         // Move new molecules to the stack
         addItemToUndoStack(moleculesObjToAddToStack);
-        console.log("added");
+        // console.log("added");
     }, 1000);
 }
 
@@ -77,7 +77,7 @@ export function undo(store: any) {
             }, 0);
         }
 
-        console.log("undo");
+        // console.log("undo");
     }
 }
 
@@ -103,6 +103,6 @@ export function redo(store: any) {
             window.clearTimeout(timeoutId);
         }, 0);
 
-        console.log("redo");
+        // console.log("redo");
     }
 }

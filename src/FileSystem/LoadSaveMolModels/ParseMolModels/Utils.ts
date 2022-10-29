@@ -18,24 +18,27 @@ export function parseMolecularModelFromText(
     molText: string,
     format: string,
     molName: string
-): Promise<IMolContainer> {
+): Promise<IMolContainer[]> {
     const worker = new Worker(
         new URL("./ParseMolecularModels.worker", import.meta.url)
     );
 
     return runWorker(worker, { molText, format, molName })
-        .then((molecularData: IMolContainer) => {
-            return atomsToModels(molecularData);
+        .then((molecularData: IMolContainer[]) => {
+            const promises = molecularData.map(molecularDatum => atomsToModels(molecularDatum));
+            return Promise.all(promises);
         })
-        .then((molecularData: IMolContainer) => {
-            // Set molName as src on all terminal nodes
-            molecularData.src = molName;
-            if (molecularData.nodes) {
-                getTerminalNodes(molecularData.nodes).forEach(
-                    (node: IMolContainer) => {
-                        node.src = molName;
-                    }
-                );
+        .then((molecularData: IMolContainer[]) => {
+            for (const molecularDatum of molecularData) {
+                // Set molName as src on all terminal nodes
+                molecularDatum.src = molName;
+                if (molecularDatum.nodes) {
+                    getTerminalNodes(molecularDatum.nodes).forEach(
+                        (node: IMolContainer) => {
+                            node.src = molName;
+                        }
+                    );
+                }
             }
 
             return molecularData;
@@ -52,9 +55,9 @@ export function parseMolecularModelFromText(
 export function atomsToModels(
     molContainer: IMolContainer
 ): Promise<IMolContainer> {
-    const recurseResult = copyObjRecursively({
-        obj: molContainer,
-        modelFunc: (
+    const recurseResult = copyObjRecursively(
+        molContainer,
+        (
             origNode: IMolContainer,
             newNode: IMolContainer
         ): Promise<void> => {
@@ -65,7 +68,7 @@ export function atomsToModels(
                 }
             );
         },
-    });
+    );
 
     return Promise.all(recurseResult.promises).then(() => {
         return recurseResult.newNode;

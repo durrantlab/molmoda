@@ -57,7 +57,7 @@ export default class RedoPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    */
-  runJob() {
+  runJobInBrowser() {
     redo(this.$store);
   }
 

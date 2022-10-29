@@ -6,6 +6,7 @@
     class="title"
     :style="indentStyle + selectedStyle(treeDatumID)"
     :data-label="treeDatum.title"
+    @click="titleBarClick"
   >
     <!-- expand icon -->
     <IconSwitcher
@@ -113,6 +114,7 @@ import { getNodeOfId, getAllNodesFlattened } from "../TreeView/TreeUtils";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as api from "@/Api";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 interface IIconsToDisplay {
   visible?: boolean;
@@ -242,6 +244,17 @@ export default class TitleBar extends Vue {
    */
   getNode(id: string): any {
     return getNodeOfId(id, this.getLocalTreeData);
+  }
+
+  /**
+   * Runs when the title part is clicked. Starts loading openbabel and rdkitjs.
+   * These take a while, so good to start the process now.
+   */
+  titleBarClick() {
+    // If they click on the title bar, start loading openbabel and rdkitjs. It's
+    // increasingly likely that these will be needed in a bit.
+    dynamicImports.openbabeljs.module;
+    dynamicImports.rdkitjs.module;
   }
 
   /**

@@ -98,7 +98,7 @@ export default class TestPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJob(_args: IUserArg[]): Promise<undefined> {
+  runJobInBrowser(_args: IUserArg[]): Promise<undefined> {
     console.log(_args);
     debugger;
     return Promise.resolve(undefined);

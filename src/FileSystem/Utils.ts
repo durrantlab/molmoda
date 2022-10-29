@@ -62,6 +62,15 @@ export function getFileNameParts(filename: string): IFileParts {
     } as IFileParts;
 }
 
+/**
+ * Checks if a given file type is acceptable.
+ *
+ * @param  {string[]} allAcceptableFileTypes  The file types to check against.
+ * @param  {string}   type                    The file type to check.
+ * @param  {string}   filename                The filename to check.
+ * @returns {string | undefined}  An error message if the file type is not
+ *     acceptable. If acceptable, undefined.
+ */
 function checkBadFileType(
     allAcceptableFileTypes: string[],
     type: string,

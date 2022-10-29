@@ -7,13 +7,68 @@ export enum MolLoader {
     // Zip
 }
 
+interface IFrameSeparator {
+    text: string;
+    isAtEndOfFrame: boolean;
+}
+
 export interface IFormatInfo {
     primaryExt: string;
     exts: string[];
     description: string;
     hasBondOrders: boolean; // So formats do, some don't.
     loader: MolLoader;
+    frameSeparators?: IFrameSeparator[];
+    // In some cases, you can extract a title from the file itself.
+    namesRegex?: RegExp[];
 }
+
+const pdbLikeSeparators = [
+    {
+        text: "\nENDMDL\n",
+        isAtEndOfFrame: true,
+    },
+
+    {
+        text: "\nEND\n",
+        isAtEndOfFrame: true,
+    },
+];
+
+const cifLikeSeparators = [
+    {
+        text: "\ndata_",
+        isAtEndOfFrame: false,
+    },
+];
+
+const smiLikeSeparators = [
+    {
+        text: "\n",
+        isAtEndOfFrame: true,
+    },
+];
+
+const pdbLikeNames = [
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    /^COMPND *2 MOLECULE: (.+?) *$/gm,
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    /^COMPND *(.+?) *$/gm,
+];
+
+const cifLikeNames = [
+    /^_chemical_name_common '(.+?)'$/gm,
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    /^_struct\.pdbx_descriptor\s*'(.+?)'\s*$/gm,
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    /^_entry.id\s*(.+?)\s*?$/gm,
+];
+
+const smiLikeNames = [
+    // Just second column
+    // eslint-disable-next-line regexp/no-super-linear-backtracking
+    /\s+(.+?)\s*$/gm,
+];
 
 export const molFormatInformation: { [key: string]: IFormatInfo } = {
     BIOTITE: {
@@ -29,6 +84,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "Crystallographic Information File",
         hasBondOrders: false,
         loader: MolLoader.Mol3D,
+        frameSeparators: cifLikeSeparators,
+        namesRegex: cifLikeNames,
     },
     PDB: {
         primaryExt: "pdb",
@@ -36,6 +93,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "Protein Data Bank",
         hasBondOrders: false,
         loader: MolLoader.Mol3D,
+        frameSeparators: pdbLikeSeparators,
+        namesRegex: pdbLikeNames,
     },
     MOL2: {
         primaryExt: "mol2",
@@ -43,6 +102,13 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "Sybyl Mol2",
         hasBondOrders: true,
         loader: MolLoader.Mol3D,
+        frameSeparators: [
+            {
+                text: "\n@<TRIPOS>MOLECULE\n",
+                isAtEndOfFrame: false,
+            },
+        ],
+        namesRegex: [/^@<TRIPOS>MOLECULE\n(.+)$/gm],
     },
     MCIF: {
         primaryExt: "mcif",
@@ -50,6 +116,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "Macromolecular Crystallographic Info",
         hasBondOrders: false, // Not sure
         loader: MolLoader.Mol3D,
+        frameSeparators: cifLikeSeparators,
+        namesRegex: cifLikeNames,
     },
     SDF: {
         primaryExt: "sdf",
@@ -57,6 +125,16 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "MDL MOL",
         hasBondOrders: true,
         loader: MolLoader.Mol3D,
+        frameSeparators: [
+            {
+                text: "\n$$$$\n",
+                isAtEndOfFrame: true,
+            },
+        ],
+        namesRegex: [
+            // NOTE: Leaving off g so will only match first line
+            /^(.+)$/m,
+        ],
     },
     PDBQT: {
         primaryExt: "pdbqt",
@@ -64,6 +142,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "AutoDock PDBQT",
         hasBondOrders: false,
         loader: MolLoader.OpenBabel,
+        frameSeparators: pdbLikeSeparators,
+        namesRegex: pdbLikeNames,
     },
     PQR: {
         primaryExt: "pqr",
@@ -71,6 +151,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "PQR",
         hasBondOrders: false,
         loader: MolLoader.Mol3D,
+        frameSeparators: pdbLikeSeparators,
+        namesRegex: pdbLikeNames,
     },
     SMI: {
         primaryExt: "smi",
@@ -78,6 +160,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "SMILES",
         hasBondOrders: true,
         loader: MolLoader.OpenBabel,
+        frameSeparators: smiLikeSeparators,
+        namesRegex: smiLikeNames,
     },
     CAN: {
         primaryExt: "can",
@@ -85,6 +169,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "Canonical SMILES",
         hasBondOrders: true,
         loader: MolLoader.OpenBabel,
+        frameSeparators: smiLikeSeparators,
+        namesRegex: smiLikeNames,
     },
     XYZ: {
         primaryExt: "xyz",
@@ -92,21 +178,18 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "XYZ cartesian coordinates",
         hasBondOrders: false,
         loader: MolLoader.Mol3D,
+        // technically separated by number on own line, but niche case
+        // frameSeparators: null
+        namesRegex: [/^\d+\n(.+)$/gm], // second line, after number-only line
     },
     MMTF: {
+        // NOTE: binary format
         primaryExt: "mmtf",
         exts: ["mmtf"],
         description: "Macromolecular transmission",
         hasBondOrders: false, // Not sure
         loader: MolLoader.Mol3D,
     },
-    // ZIP: {
-    //     primaryExt: "zip",
-    //     exts: ["zip"],
-    //     description: "Zip archive",
-    //     hasBondOrders: true,  // Not sure
-    //     loader: MolLoader.Zip,
-    // }
 };
 
 /**

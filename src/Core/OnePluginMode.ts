@@ -5,7 +5,7 @@ export let onePlugin: string | undefined = undefined;
  * globally accessible variable. That variable is in turn used to modify the
  * suite when running in one-plugin mode.
  */
-export function setOnePlugin() {
+export function setOnePluginMode() {
     // Search url for parameter "plugin". If found, set onePlugin to that value.
     // If not found, set onePlugin to undefined.
     

@@ -1,17 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { messagesApi } from "@/Api/Messages";
+import { IJobInfo } from "./Definitions";
 
-const registeredJobTypes: { [key: string]: Function } = {};
+export const registeredInBrowserJobFuncs: { [key: string]: Function } = {};
+
 const jobQueue: IJobInfo[] = [];
 let jobCurrentlyRunning = false;
-
-export interface IJobInfo {
-    commandName: string;
-    params: any;
-    id: string;
-    delayAfterRun?: number; // MS
-}
 
 /**
  * Run the next job in the queue.
@@ -30,12 +25,12 @@ function _runNextJob(): number {
         messagesApi.waitSpinner(true);
 
         const job = jobQueue.shift() as IJobInfo;
-        const func = registeredJobTypes[job.commandName];
+        const func = registeredInBrowserJobFuncs[job.commandName];
         jobCurrentlyRunning = true;
         console.log("Running job.");
-        const resp = func(job.id, job.params);
-        if (resp instanceof Promise) {
-            resp.then(() => {
+        const response = func(job.id, job.params);
+        if (response instanceof Promise) {
+            response.then(() => {
                 console.log("Done running job.");
                 jobCurrentlyRunning = false;
                 messagesApi.waitSpinner(false);
@@ -96,8 +91,8 @@ export function jobQueueSetup() {
  * @param  {Function} func         The function to run when the command is
  *                                 called.
  */
-export function registerJobType(commandName: string, func: Function) {
-    registeredJobTypes[commandName] = func;
+export function registerInBrowserJobFunc(commandName: string, func: Function) {
+    registeredInBrowserJobFuncs[commandName] = func;
 }
 
 /**

@@ -1,10 +1,13 @@
 <template>
-  <Section title="Styles">
+  <Section title="">
     <span
-      v-for="(styleAndSelForMolType, idx) in stylesAndSelsForMolTypes"
-      v-bind:key="styleAndSelForMolType.molType"
+      v-for="styleForMolType in stylesForMolTypes"
+      v-bind:key="styleForMolType.molType"
     >
-      <StylesForMolType :styleAndSelForMolType="stylesAndSelsForMolTypes[idx]"></StylesForMolType>
+      <StylesForMolType
+        :style="styleForMolType.style"
+        :molType="styleForMolType.molType"
+      ></StylesForMolType>
     </span>
   </Section>
 </template>
@@ -19,16 +22,16 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { IStyleAndSel } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import StylesForMolType, { IStyleAndSelForMolType } from "./StylesForMolType.vue";
+import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import StylesForMolType, { IStyleForMolType } from "./StylesForMolType.vue";
 
 interface IStyleCount {
-  styleAndSel: IStyleAndSel;
+  style: IStyle;
   count: number;
 }
 
 /**
- * Styles component
+ * StylesAllMolTypes component
  */
 @Options({
   components: {
@@ -37,46 +40,42 @@ interface IStyleCount {
     StylesForMolType,
   },
 })
-export default class Styles extends Vue {
+export default class StylesAllMolTypes extends Vue {
   /**
-   * Get the styles and names
+   * Get the styles and mol types for the visible molcules. It goes through all
+   * these molecules and finds the style elements that are most common, then
+   * picks that consensus style (for each mol type).
    *
-   * @returns {IStyleAndSelForMolType[]}  The styles and names
+   * @returns {IStyleForMolType[]}  The consensus styles, per mol type.
    */
-  get stylesAndSelsForMolTypes(): IStyleAndSelForMolType[] {
-    let allStylesAndSels: { [key: string]: IStyleAndSel[] } = {};
+  get stylesForMolTypes(): IStyleForMolType[] {
+    let allStyles: { [key: string]: IStyle[] } = {};
     let molecules = this.$store.state["molecules"];
 
     // Get the styles for all visible components, organized by molecule type.
     for (let node of getTerminalNodes(molecules)) {
-      if (!node.type) {
+      if (!node.type || !node.styles || !node.visible) {
         continue;
       }
       // if (node.type === "metal") { continue; }  // Can't change metal style
-      if (!node.stylesSels) {
-        continue;
-      }
-      if (!node.visible) {
-        continue;
+
+      if (allStyles[node.type] === undefined) {
+        allStyles[node.type] = [];
       }
 
-      if (allStylesAndSels[node.type] === undefined) {
-        allStylesAndSels[node.type] = [];
-      }
-
-      allStylesAndSels[node.type].push(...node.stylesSels);
+      allStyles[node.type].push(...node.styles);
     }
 
     // For each type, get the styles that all molecules have in common. Note
     // that a given type may have no styles in common, in which case it will be
     // associated with an empty list.
     let allStylesAndCounts: { [key: string]: IStyleCount[] } = {};
-    for (let type in allStylesAndSels) {
-      let styles = allStylesAndSels[type];
+    for (let type in allStyles) {
+      let styles = allStyles[type];
 
-      let stylesAndCounts = this._convertStyleToStyleCount([styles[0]]);
+      let stylesAndCounts = this._initStyleToStyleCount([styles[0]]);
       for (let i = 1; i < styles.length; i++) {
-        let newStyleCounts = this._convertStyleToStyleCount([styles[i]]);
+        let newStyleCounts = this._initStyleToStyleCount([styles[i]]);
         stylesAndCounts = this._tallyStyles(stylesAndCounts, newStyleCounts);
       }
 
@@ -86,51 +85,52 @@ export default class Styles extends Vue {
       allStylesAndCounts[type] = stylesAndCounts;
     }
 
-    let allStylesAndCountsInfo: IStyleAndSelForMolType[] = Object.keys(
+    let allStylesAndCountsInfo: IStyleForMolType[] = Object.keys(
       allStylesAndCounts
     ).map((k: string) => {
       return {
         molType: k,
-        styleAndSel:
+        style:
           allStylesAndCounts[k].length > 0
-            ? allStylesAndCounts[k][0].styleAndSel // First one is the most common.
+            ? allStylesAndCounts[k][0].style // First one is the most common.
             : {}, // No styles for this type.
-      } as IStyleAndSelForMolType;
+      } as IStyleForMolType;
     });
 
     return allStylesAndCountsInfo;
   }
 
   /**
-   * Convert a list of styles to a list of style counts.
+   * Convert a list of styles to a list of style counts. Counts are all 1
+   * because this serves to initialize the style count list.
    *
-   * @param   {IStyleAndSel[]}  styles  The styles
-   * @returns {IStyleCount[]}           The style counts
+   * @param   {IStyle[]}  styles  The styles
+   * @returns {IStyleCount[]}  The style counts
    */
-  private _convertStyleToStyleCount(styles: IStyleAndSel[]): IStyleCount[] {
-    return styles.map((s: IStyleAndSel): IStyleCount => {
-      return { styleAndSel: s, count: 1 };
+  private _initStyleToStyleCount(styles: IStyle[]): IStyleCount[] {
+    return styles.map((s: IStyle): IStyleCount => {
+      return { style: s, count: 1 };
     });
   }
 
   /**
    * Tally the styles. Assuming stylesAndCounts and newStyleCounts don't contain
-   * duplicates.
+   * duplicates. It adds the counts where the styles are the same, and otherwise
+   * merges the two counts lists.
    *
    * @param   {IStyleCount[]}  stylesAndCounts  The existing styles and counts.
-   * @param   {IStyleCount[]}  newStyleCounts   The new styles and counts to add.
+   * @param   {IStyleCount[]}  newStyleCounts   The new styles and counts to
+   *                                            add.
    * @returns {IStyleCount[]} The styles and counts after tallying.
    */
   private _tallyStyles(
     stylesAndCounts: IStyleCount[],
     newStyleCounts: IStyleCount[]
   ): IStyleCount[] {
-    // TODO: Move to Utils.ts?
-
     for (let newStyleCount of newStyleCounts) {
       let styleExistsInStylesAndCounts = false;
       for (let styleAndCount of stylesAndCounts) {
-        if (isEqual(styleAndCount.styleAndSel, newStyleCount.styleAndSel)) {
+        if (isEqual(styleAndCount.style, newStyleCount.style)) {
           styleAndCount.count++;
           styleExistsInStylesAndCounts = true;
           break;

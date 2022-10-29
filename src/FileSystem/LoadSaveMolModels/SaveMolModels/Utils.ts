@@ -11,9 +11,16 @@ import { getFormatInfoGivenExt, IFormatInfo } from "../Definitions/MolFormats";
 import * as api from "@/Api";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 
+/**
+ * Finds terminal nodes, and separates them into compounds and non-compounds.
+ *
+ * @param  {IMolContainer[]} molContainers  All compounds.
+ * @returns {any}  The terminal nodes, separated into
+ *     compounds and non-compounds.
+ */
 export function separateCompoundNonCompoundTerminalNodes(
     molContainers: IMolContainer[]
-) {
+): {[key: string]: IMolContainer[]} {
     const terminalNodes = getTerminalNodes(molContainers);
     const compoundNodes = terminalNodes.filter(
         (node) => node.type === MolType.Compound
@@ -24,13 +31,25 @@ export function separateCompoundNonCompoundTerminalNodes(
     return { compoundNodes, nonCompoundNodes };
 }
 
+/**
+ * Given a list of molecules, collect text for saving.
+ *
+ * @param  {IMolContainer[]} nodes       The molecules.
+ * @param  {string}          targetExt   The target extension (format).
+ * @param  {boolean}         merge       Whether to merge all molecules into
+ *                                       one.
+ * @param  {string}          [filename]  The fileame to use. Will be generated
+ *                                       if not given.
+ * @returns {Promise<ISaveTxt[]>}  A promise that resolves to a list of ISaveTxt
+ *     containing the texts for saving.
+ */
 export function getSaveTxtPromises(
     nodes: IMolContainer[],
-    ext: string,
+    targetExt: string,
     merge: boolean,
     filename?: string
 ): Promise<ISaveTxt[]> {
-    return convertMolContainers(nodes, ext, merge).then(
+    return convertMolContainers(nodes, targetExt, merge).then(
         (compoundTxts: string[]) => {
             return compoundTxts.map((txt, idx) => {
                 // Prepend the chain
@@ -39,16 +58,23 @@ export function getSaveTxtPromises(
                 return {
                     fileName:
                         filename === undefined
-                            ? getFilename(molEntry, ext)
-                            : `${filename}.${ext}`,
+                            ? getFilename(molEntry, targetExt)
+                            : `${filename}.${targetExt}`,
                     content: txt,
-                    ext: `.${ext}`,
+                    ext: `.${targetExt}`,
                 } as ISaveTxt;
             });
         }
     );
 }
 
+/**
+ * Gets a primary extension given an input extension. (So, for example, maps
+ * "ent" to "pdb".)
+ *
+ * @param  {string} format  The input format.
+ * @returns {string}  The primary extension.
+ */
 export function getPrimaryExt(format: string): string {
     const formatInfo = getFormatInfoGivenExt(format) as IFormatInfo;
     return formatInfo.primaryExt;
@@ -78,6 +104,14 @@ function getFilename(molContainer: IMolContainer, ext: string): string {
     return slugify(txtPrts.join("-"), false) + "." + ext;
 }
 
+/**
+ * Given a list of ISaveTxt objects (e.g., from getSaveTxtPromises), save them
+ * to the disk. Compress if necessary.
+ *
+ * @param  {ISaveTxt[]} files     The files to save.
+ * @param  {string}     filename  The filename to use.
+ * @returns {Promise<any>}  A promise that resolves when the files are saved.
+ */
 export function saveTxtFiles(
     files: ISaveTxt[],
     filename: string

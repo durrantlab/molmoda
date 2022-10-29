@@ -38,7 +38,7 @@ export const fileTypesAccepts = _allAcceptableFileTypes
  */
 export function parseMoleculeFile(
     fileInfo: IFileInfo
-): Promise<void | IMolContainer> {
+): Promise<void | IMolContainer[]> {
     api.messages.waitSpinner(true);
 
     const formatInfo = getFormatInfoGivenExt(fileInfo.type);

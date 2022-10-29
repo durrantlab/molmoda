@@ -1,10 +1,5 @@
 <template>
-  <Section
-    v-bind:key="styleAndSelForMolType.molType"
-    :level="2"
-    :title="capitalize(styleAndSelForMolType.molType)"
-  >
-  {{styleAndSelForMolType}}
+  <Section v-bind:key="molType" :level="2" :title="capitalize(molType)">
     <template v-slot:afterTitle>
       <!-- First, the icon switcher to hide this mol type. -->
       <IconSwitcher
@@ -13,7 +8,7 @@
         :iconID2="['far', 'eye-slash']"
         :icon2Style="{ color: 'lightgray' }"
         :width="24"
-        @click="toggleVisible(styleAndSelForMolType.molType)"
+        @click="toggleVisible(molType)"
         :clickable="true"
         title="Visible"
         tipPlacement="left"
@@ -23,33 +18,33 @@
     <!-- The atoms styling section for this moltype, with optional colorselect
     -->
     <FormSelect
-      :id="'atoms-' + styleAndSelForMolType.molType"
+      :id="'atoms-' + molType"
       v-model="atomsOption"
       :options="atomsStyleOptions"
       @onChange="updateMolecules(atomsOption)"
     ></FormSelect>
     <ColorSelect
       v-if="atomsOption !== 'atoms-hidden'"
-      v-model="styleAndSelForMolType.styleAndSel.style"
+      v-model="styleToUse"
       :repName="atomsOption"
       @onChange="updateMolecules(atomsOption)"
-      :allowColorCarbons="styleAndSelForMolType.molType !== 'metal'"
+      :allowColorCarbons="molType !== 'metal'"
       :allowSpectrum="false"
-      :allowSecondaryStructure="styleAndSelForMolType.molType === 'protein'"
+      :allowSecondaryStructure="molType === 'protein'"
     />
 
     <!-- The protein (backbone) styling section for this moltype, with optional
     colorselect -->
     <FormSelect
-      v-if="styleAndSelForMolType.molType === 'protein'"
-      :id="'protein-' + styleAndSelForMolType.molType"
+      v-if="molType === 'protein'"
+      :id="'protein-' + molType"
       v-model="backboneOption"
       :options="proteinStyleOptions"
       @onChange="updateMolecules(backboneOption)"
     ></FormSelect>
     <ColorSelect
       v-if="backboneOption !== 'backbone-hidden'"
-      v-model="styleAndSelForMolType.styleAndSel.style"
+      v-model="styleToUse"
       :repName="backboneOption"
       @onChange="updateMolecules(backboneOption)"
       :allowColorByElement="false"
@@ -59,19 +54,19 @@
     <!-- The surface styling section for this moltype, with optional colorselect
     -->
     <FormSelect
-      v-if="styleAndSelForMolType.molType !== 'metal'"
-      :id="'surface-' + styleAndSelForMolType.molType"
+      v-if="molType !== 'metal'"
+      :id="'surface-' + molType"
       v-model="surfaceOption"
       :options="metalStyleOptions"
       @onChange="updateMolecules(surfaceOption)"
     ></FormSelect>
     <ColorSelect
       v-if="surfaceOption !== 'surface-hidden'"
-      v-model="styleAndSelForMolType.styleAndSel.style"
+      v-model="styleToUse"
       :repName="surfaceOption"
       @onChange="updateMolecules(surfaceOption)"
       :allowSpectrum="false"
-      :allowSecondaryStructure="styleAndSelForMolType.molType === 'protein'"
+      :allowSecondaryStructure="molType === 'protein'"
     />
   </Section>
 </template>
@@ -80,7 +75,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment, no-case-declarations */
 
 import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import Section from "@/UI/Layout/Section.vue";
 import {
   getNodesOfType,
@@ -92,14 +87,15 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { IStyleAndSel, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyle, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorSelect from "./ColorSelect/ColorSelect.vue";
 import { IFormOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { defaultStyles } from "@/FileSystem/LoadSaveMolModels/Definitions/DefaultStyles";
 
-export interface IStyleAndSelForMolType {
-  styleAndSel: IStyleAndSel;
+export interface IStyleForMolType {
+  style: IStyle;
   molType: MolType;
 }
 
@@ -116,12 +112,23 @@ export interface IStyleAndSelForMolType {
   },
 })
 export default class StylesForMolType extends Vue {
-  @Prop({ required: true }) styleAndSelForMolType!: IStyleAndSelForMolType;
+  @Prop({ required: true }) style!: IStyle;
+  @Prop({ required: true }) molType!: MolType;
 
   isVisible = true;
   atomsOption = "atoms-hidden";
   backboneOption = "backbone-hidden";
   surfaceOption = "surface-hidden";
+
+  styleToUse: IStyle = {};
+
+  /**
+   * Watches the style prop and updates the styleToUse accordingly.
+   */
+  @Watch("style")
+  onStyleChange() {
+    this.styleToUse = this.style;
+  }
 
   proteinStyleOptions = [
     { description: "Backbone: Hidden", val: "backbone-hidden" },
@@ -145,7 +152,7 @@ export default class StylesForMolType extends Vue {
       { description: "Atoms: Hidden", val: "atoms-hidden" },
     ] as IFormOption[];
 
-    if (this.styleAndSelForMolType.molType !== "metal") {
+    if (this.molType !== "metal") {
       options.push(
         ...([
           { description: "Atoms: Lines", val: "line" },
@@ -181,40 +188,6 @@ export default class StylesForMolType extends Vue {
   }
 
   /**
-   * Set the initial values to use in the select.
-   *
-   * @param {IStyleAndSel} styleInfo  The style name to selectino to use.
-   */
-  private _setInitialSelectVals(styleInfo: IStyleAndSel) {
-    if (styleInfo.style === undefined) {
-      // Happens when used has hidden all styles.
-      styleInfo.style = {};
-    }
-
-    if (styleInfo.style.sphere) {
-      this.atomsOption = "sphere";
-    } else if (styleInfo.style.stick) {
-      this.atomsOption = "stick";
-    } else if (styleInfo.style.line) {
-      this.atomsOption = "line";
-    } else {
-      this.atomsOption = "atoms-hidden";
-    }
-
-    if (styleInfo.style.cartoon) {
-      this.backboneOption = "cartoon";
-    } else {
-      this.backboneOption = "backbone-hidden";
-    }
-
-    if (styleInfo.style.surface) {
-      this.surfaceOption = "surface";
-    } else {
-      this.surfaceOption = "surface-hidden";
-    }
-  }
-
-  /**
    * Update the style of a molecule.
    *
    * @param {string} repName  The name of the representation. For example,
@@ -222,9 +195,7 @@ export default class StylesForMolType extends Vue {
    */
   updateMolecules(repName: string) {
     // TODO: Seems like this should happen in Styles.vue
-    let style = this.styleAndSelForMolType.styleAndSel
-      ? this.styleAndSelForMolType.styleAndSel.style
-      : {};
+    let style = this.styleToUse ? { ...this.styleToUse } : {};
 
     // Deal items with hidden visualizations. Delete entries that are
     // incompatible with hidden.
@@ -255,17 +226,18 @@ export default class StylesForMolType extends Vue {
 
         // This required to deal with restoring a viz after everything set to
         // hidden.
-        if (this.styleAndSelForMolType.styleAndSel === undefined) {
-          this.styleAndSelForMolType.styleAndSel = {
-            selection: {},
-            style: {},
-          };
-        }
+        // let styleUpdated = this.style === undefined ? {} : { ...this.style };
 
         // @ts-ignore
-        let val = this.styleAndSelForMolType.styleAndSel.style[repName];
+        let val = style[repName];
         if (val === undefined) {
-          val = {};
+          val = (defaultStyles[this.molType] as any)[0][repName];          
+          // val should be like {color: 'spectrum'}.
+
+          if (val === undefined) {
+            // Happens when turning surface on for first time.
+            val = {};
+          }
         }
 
         (style as any)[repName] = val;
@@ -302,43 +274,35 @@ export default class StylesForMolType extends Vue {
     // iterate through terminal nodes
     let molecules = this.$store.state["molecules"];
     for (let node of getTerminalNodes(molecules)) {
-      if (!node.type) {
-        continue;
-      }
-      if (!node.stylesSels) {
-        continue;
-      }
-      if (!node.visible) {
+      if (!node.type || !node.styles || !node.visible) {
         continue;
       }
 
       // Check if the node type matches this style
-      if (node.type === this.styleAndSelForMolType.molType) {
+      if (node.type === this.molType) {
         // Add the styles to the node list if it's not empty ({}).
-        node.stylesSels = [];
+        node.styles = [];
         if (!isEqual(style, {})) {
-          node.stylesSels.push({
-            style: style,
-            selection: {},
-          });
+          node.styles.push(style);
         }
         // Mark this for rerendering in viewer.
         node.viewerDirty = true;
       }
     }
 
-    console.log("New molecules:", molecules);
+    // console.log("New molecules:", molecules);
 
     this.$store.commit("setVar", {
       name: "molecules",
       val: molecules,
     });
 
-    // this.$emit("update:styleName", e.target.value);
+    // NOTE: No need to emit up. Parent component detects changes in
+    // store.state.molecules.
   }
 
   /**
-   * Capitalize the first letter of a string.
+   * Capitalize the first letter of a string. Echos utility function.
    *
    * @param {string} str  The string to capitalize.
    * @returns {string} The capitalized string.
@@ -351,11 +315,42 @@ export default class StylesForMolType extends Vue {
    * Runs when the Vue component is mounted.
    */
   mounted() {
-    // Start by selecting defaults TODO: Actually, not sure this is necessary.
-    // All components will always have SOME style (assigned at load).
+    this._setInitialSelectVals(this.style);
+    this.styleToUse = this.style;
+  }
 
-    // this.translateStyleToComponent(this.styleName.style);
-    this._setInitialSelectVals(this.styleAndSelForMolType.styleAndSel);
+  /**
+   * Set the initial values to use in the select.
+   *
+   * @param {IStyle} style  The style name to selectino to use.
+   */
+  private _setInitialSelectVals(style: IStyle) {
+    if (style === undefined) {
+      // Happens when used has hidden all styles.
+      style = {};
+    }
+
+    if (style.sphere) {
+      this.atomsOption = "sphere";
+    } else if (style.stick) {
+      this.atomsOption = "stick";
+    } else if (style.line) {
+      this.atomsOption = "line";
+    } else {
+      this.atomsOption = "atoms-hidden";
+    }
+
+    if (style.cartoon) {
+      this.backboneOption = "cartoon";
+    } else {
+      this.backboneOption = "backbone-hidden";
+    }
+
+    if (style.surface) {
+      this.surfaceOption = "surface";
+    } else {
+      this.surfaceOption = "surface-hidden";
+    }
   }
 }
 </script>
