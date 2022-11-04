@@ -1,7 +1,7 @@
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
-import { IFormatInfo } from "../Definitions/MolFormats";
+import { IFormatInfo } from "../Types/MolFormats";
 import { parseMolecularModelFromText } from "./Utils";
 import { store } from "@/Store";
 

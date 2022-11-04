@@ -1,4 +1,4 @@
-// import { IFileInfo } from "@/FileSystem/Definitions";
+// import { IFileInfo } from "@/FileSystem/Types";
 // import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 // import * as api from "@/Api";
 

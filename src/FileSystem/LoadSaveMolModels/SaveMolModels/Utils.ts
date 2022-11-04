@@ -7,7 +7,7 @@ import {
     MolType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { convertMolContainers } from "../ConvertMolModels/ConvertMolContainer";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Definitions/MolFormats";
+import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
 import * as api from "@/Api";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 

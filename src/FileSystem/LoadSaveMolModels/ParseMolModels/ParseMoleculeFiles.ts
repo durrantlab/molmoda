@@ -1,14 +1,14 @@
 // You can load some molecule files using 3Dmol.js directly, without requiring
 // any conversion. See https://3dmol.csb.pitt.edu/doc/types.html#FileFormats
 
-import { IFileInfo } from "../../Definitions";
+import { IFileInfo } from "../../Types";
 import * as api from "@/Api";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     molFormatInformation,
     MolLoader,
     getFormatInfoGivenExt,
-} from "../Definitions/MolFormats";
+} from "../Types/MolFormats";
 import { parseUsing3DMolJs } from "./ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./ParseUsingOpenBabel";
 import { parseUsingBiotite } from "./ParseUsingBiotite";

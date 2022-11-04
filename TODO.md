@@ -53,18 +53,43 @@ I think both undo and redo should warn one item sooner on stack.
 
 Evually, need login system. Wordpress powered?
     https://medevel.com/iam-systems-10-identity/ ? Keycloak?
+    Or this? https://www.npmjs.com/package/passport
+
+Get multi-frame example files of every acceptable format. That should be a test.
+
+Need to implement onJobStatusChange. Search for that. Along these same lines,
+jobs should submit files and commands separately. And they should return files.
+Even in browser. Make like it will be when remote. Just auto populate response files based on type (no need for extra code there, really).
+
+Need to implement delay with inbrowser queue (for vina, for example). Could be
+optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
+
+# DONE
 
 Redo queue system. An object with total number of processors, items in queue,
 status for each (waiting, running, error, finished), etc. Also InServerBrowser
 class that mimics remote RESP API.
     https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
+Should be "Window" menu item to highlight (focus and flash) the various panels.
+Good as app gets more complicated.
+
 Would be good to be able to use multiple processors for queue. Give some thought
 to how. Likely needs webworker?
 
-Get multi-frame example files of every acceptable format. That should be a test.
+JobManager vue component: Also, given prop not defined for any jobs, hide that column.
 
-# DONE
+Add in more job properties. Sort by start time? Or end time? Not sure.
+
+Also, no jobs, show a message.
+
+InBrowserEndpoint.ts: Total sum of all queues should remain constant. (Jobs
+moved between queues, but not destroyed)
+
+Recommend using axios instead of fetch:
+https://www.geeksforgeeks.org/difference-between-fetch-and-axios-js-for-making-http-requests/#:~:text=Axios%20has%20the%20ability%20to,does%20not%20support%20upload%20progress.
+
+Can JobQueue.ts be merged into JobManagerForInBrowserEndpoint.ts? Or do you want to make JobQueue more generic?
 
 When you load multi-frame pdb or mol2, need to deal with that still.
 

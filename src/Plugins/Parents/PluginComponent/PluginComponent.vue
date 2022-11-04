@@ -43,7 +43,7 @@ import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeIn
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { UserInputsMixin } from "./Mixins/UserInputsMixin";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 
 /**
  * PopupOptionalPlugin component

@@ -41,6 +41,7 @@ export default class UndoPlugin extends PluginParentClass {
   noPopup = true;
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
+  logJob = false;
 
   /**
    * Check if this plugin can currently be used.

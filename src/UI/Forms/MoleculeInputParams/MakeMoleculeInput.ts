@@ -1,10 +1,10 @@
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
-import { CombineProteinType, IMoleculeInputParams, MolsToUse } from "./Definitions";
+import { CombineProteinType, IMoleculeInputParams, MolsToUse } from "./Types";
 
 // function _getNameOfParent(
 //     mol: IMolContainer,

@@ -6,7 +6,7 @@ import {
 import {
     solventSel,
     standardProteinResidues,
-} from "../Definitions/ComponentSelections";
+} from "../Types/ComponentSelections";
 
 // Inspired by
 // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L576

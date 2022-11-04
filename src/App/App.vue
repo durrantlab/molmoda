@@ -44,6 +44,7 @@ import { appName } from "@/Core/AppName";
 import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";
+import JobManager from "@/Queue/JobManagers/JobManager.vue";
 
 /**
  * Main app component
@@ -55,7 +56,8 @@ import Viewer2D from "@/UI/Components/Viewer2D.vue";
     AllPlugins,
     TestData,
     DragDropFileLoad,
-    Viewer2D
+    Viewer2D,
+    JobManager
   },
 })
 export default class App extends Vue {

@@ -1,8 +1,8 @@
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
 import { store } from "@/Store";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { IFormatInfo } from "../Definitions/MolFormats";
+import { IFormatInfo } from "../Types/MolFormats";
 import { parseMolecularModelFromText } from "./Utils";
 
 /**

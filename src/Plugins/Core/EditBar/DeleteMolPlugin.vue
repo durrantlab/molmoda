@@ -52,6 +52,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;
+  logJob = false;
 
   /**
    * Runs before the popup opens. Will almost always need this, so requiring
@@ -133,7 +134,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
-        ...this.testExpandMoleculesTree("4WP4.pdb"),
+        ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
         this.testSelectMoleculeInTree("Protein"),
       ],
       // closePlugin: [],

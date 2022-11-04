@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { registerInBrowserJobFunc } from "@/Queue/JobQueue"
+import { registerInBrowserJobFunc } from "@/Queue/InBrowserEndpoint/RegisteredInBrowserJobFuncs";
+
 
 // Arrays of functions to call.
 export const allHooks = {

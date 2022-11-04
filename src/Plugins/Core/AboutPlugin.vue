@@ -81,6 +81,7 @@ export default class AboutPlugin extends PluginParentClass {
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
+  logJob = false;
 
   /**
    * Get the software credits to show in order.

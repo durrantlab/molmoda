@@ -24,7 +24,7 @@ import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 
 /**
  * LoadAlphaFoldPlugin

@@ -92,7 +92,7 @@ import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorSelect from "./ColorSelect/ColorSelect.vue";
 import { IFormOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { defaultStyles } from "@/FileSystem/LoadSaveMolModels/Definitions/DefaultStyles";
+import { defaultStyles } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
 
 export interface IStyleForMolType {
   style: IStyle;

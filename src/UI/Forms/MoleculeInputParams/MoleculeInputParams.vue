@@ -37,7 +37,7 @@ import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
 import { IFormOption } from "../FormFull/FormFullInterfaces";
-import { CombineProteinType, defaultMoleculeInputParams, IMoleculeInputParams, MolsToUse, molsToUseOptions } from "./Definitions";
+import { CombineProteinType, defaultMoleculeInputParams, IMoleculeInputParams, MolsToUse, molsToUseOptions } from "./Types";
 // import WhichMols from "../WhichMols/WhichMols.vue";
 
 /**

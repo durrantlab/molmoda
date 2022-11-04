@@ -3,7 +3,7 @@
     <GoldenLayoutContainer type="column">
       <GoldenLayoutContainer type="row" :height="80">
         <GoldenLayoutComponent
-          name="Molecules"
+          name="Navigator"
           extraClass="sortable-group"
           state="{}"
           :width="20"
@@ -16,14 +16,18 @@
           </div>
         </GoldenLayoutComponent>
 
-        <GoldenLayoutComponent
-          name="Viewer"
-          state="{}"
-          :width="60"
-          :style="'height:100%; padding:0 !important;'"
-        >
-          <ViewerPanel />
-        </GoldenLayoutComponent>
+        <GoldenLayoutContainer type="stack" :width="60">
+          <GoldenLayoutComponent
+            name="Viewer"
+            state="{}"
+            :style="'height:100%; padding:0 !important;'"
+          >
+            <ViewerPanel />
+          </GoldenLayoutComponent>
+          <GoldenLayoutComponent name="Jobs" state="{}">
+            <QueuePanel />
+          </GoldenLayoutComponent>
+        </GoldenLayoutContainer>
 
         <GoldenLayoutContainer type="column" :width="20">
           <GoldenLayoutComponent name="Styles" state="{}" :width="20">
@@ -37,7 +41,7 @@
       </GoldenLayoutContainer>
       <GoldenLayoutContainer type="row" :height="20">
         <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
-          <LogPanel></LogPanel>
+          <LogPanel />
         </GoldenLayoutComponent>
       </GoldenLayoutContainer>
     </GoldenLayoutContainer>
@@ -61,6 +65,8 @@ import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 import LogPanel from "@/UI/Panels/Log/LogPanel.vue";
 import * as api from "@/Api";
 import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
+import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
+import { makeGoldenLayout } from "./GoldenLayoutCommon";
 
 /**
  * GoldLayout component
@@ -73,7 +79,8 @@ import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
     StylesPanel,
     TreeView,
     LogPanel,
-    InformationPanel
+    InformationPanel,
+    QueuePanel,
   },
 })
 export default class GoldLayout extends Vue {
@@ -129,7 +136,9 @@ export default class GoldLayout extends Vue {
    */
   private _setupGoldenLayout(dataDOM: HTMLElement, config: any) {
     const glContainer = document.getElementById("golden-layout") as HTMLElement;
-    const myLayout = new GoldenLayout(glContainer);
+
+    const myLayout = makeGoldenLayout(glContainer);
+    
     myLayout.registerComponentFactoryFunction(
       "component",
       (container: ComponentContainer, componentState: any) => {

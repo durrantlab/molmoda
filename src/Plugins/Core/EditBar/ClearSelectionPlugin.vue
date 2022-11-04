@@ -42,6 +42,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
   noPopup = true;
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
+  logJob = false;
 
   /**
    * Check if this plugin can currently be used.
@@ -80,7 +81,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
-        ...this.testExpandMoleculesTree("4WP4.pdb"),
+        ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
         this.testSelectMoleculeInTree("Protein"),
       ],
       closePlugin: [],

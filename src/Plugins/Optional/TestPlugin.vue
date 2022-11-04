@@ -21,7 +21,7 @@ import {
   IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/Definitions";
+import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/Types";
 import { Options } from "vue-class-component";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
@@ -88,7 +88,15 @@ export default class TestPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
-    this.submitJobs([userArgs]);
+    // this.submitJobs([userArgs]);
+    const jobParams = [];
+    for (let i = 0; i < 10; i++) {
+      const jobParam = {
+        delay: Math.random() * 10000,  // ms
+      }
+      jobParams.push(jobParam);
+    }
+    this.submitJobs(jobParams, Math.round(Math.random() * 5));  // , 500);
   }
 
   /**
@@ -98,10 +106,20 @@ export default class TestPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJobInBrowser(_args: IUserArg[]): Promise<undefined> {
-    console.log(_args);
-    debugger;
-    return Promise.resolve(undefined);
+  runJobInBrowser(_args: any): Promise<undefined> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(undefined);
+      }, _args.delay);
+    });
+    // console.log(_args);
+
+    // Submit some jobs that delay randomly.
+
+    
+
+    // debugger;
+    // return Promise.resolve(undefined);
 
     // // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
     // // let args: string[] = ['-H'];

@@ -21,10 +21,13 @@ export const messagesApi = {
      *                                                     closed.
      * @param  {boolean}      [neverClose=false]           If true, the modal
      *                                                     can never be closed.
+     * @param  {boolean}      [open=true]                  If false, the modal
+     *                                                     (if already open)
+     *                                                     will be closed.
      */
     popupMessage: function (
         title: string,
-        message: string,
+        message = "",
         variant = PopupVariant.Info,
         // eslint-disable-next-line @typescript-eslint/ban-types
         callBack: Function | undefined = undefined,
@@ -36,6 +39,15 @@ export const messagesApi = {
             variant,
             neverClose,
             callBack,
+            open: true // open
+        } as ISimpleMsg);
+    },
+
+    closePopupMessage: function () {
+        pluginsApi.runPlugin("simplemsg", {
+            title: "",
+            message: "",
+            open: false // close
         } as ISimpleMsg);
     },
 

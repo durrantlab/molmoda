@@ -4,7 +4,7 @@ import {
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { MolsToUse } from "./Definitions";
+import { MolsToUse } from "./Types";
 
 /**
  * Whether a given molsToUse variable includes visible molecules. (Basically,

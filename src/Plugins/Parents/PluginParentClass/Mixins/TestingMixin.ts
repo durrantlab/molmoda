@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/check-tag-names */
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { ITest, ITestCommand, TestCommand } from "@/Testing/ParentPluginTestFuncs";
 import { Vue } from "vue-class-component";
@@ -153,7 +153,7 @@ export class TestingMixin extends Vue {
         for (const treeTitle of treeTitles) {
             cmds.push({
                 cmd: TestCommand.Click,
-                selector: `#molecules div[data-label="${treeTitle}"] .expand-icon`,
+                selector: `#navigator div[data-label="${treeTitle}"] .expand-icon`,
             });
         }
 
@@ -172,7 +172,7 @@ export class TestingMixin extends Vue {
     testSelectMoleculeInTree(treeTitle: string): ITestCommand {
         return {
             cmd: TestCommand.Click,
-            selector: `#molecules div[data-label="${treeTitle}"] .title-text`,
+            selector: `#navigator div[data-label="${treeTitle}"] .title-text`,
         };
     }
 }

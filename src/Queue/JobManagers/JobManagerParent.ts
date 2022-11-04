@@ -2,14 +2,14 @@
 // commands to the EndPoint API (whether a remote url or the in-browser queue
 // system).
 
+import { EndpointResponseStatus, IEndpointResponse, IJobStatusInfo } from "../Types/TypesEndpointResponse";
 import {
-    IApiPayload,
-    IApiResponse,
-    IJobStatusInfo,
-    IJobInfo,
-    PayloadAction,
-    ResponseStatus,
-} from "../Definitions";
+    IToEndpointPayload,
+    IJobInfoToEndpoint,
+    EndpointAction,
+} from "../Types/TypesToEndpoint";
+
+export const jobManagers: JobManagerParent[] = [];
 
 /**
  * JobManagerParent
@@ -19,11 +19,11 @@ export abstract class JobManagerParent {
      * Sends an API request to the endpoint. Common function that all payloads
      * pass through before going to the end point.
      *
-     * @param  {IApiPayload} payload  The payload to send.
-     * @returns {Promise<IApiResponse>}  A promise that resolves with the
+     * @param  {IToEndpointPayload} payload  The payload to send.
+     * @returns {Promise<IEndpointResponse>}  A promise that resolves with the
      *     response.
      */
-    abstract sendApiRequest(payload: IApiPayload): Promise<IApiResponse>;
+    abstract sendRequest(payload: IToEndpointPayload): Promise<IEndpointResponse>;
 
     /**
      * Runs when the status of any job changes.
@@ -32,6 +32,9 @@ export abstract class JobManagerParent {
      * @param  {IJobStatusInfo} jobStatus  The job status.
      */
     abstract onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void;
+
+    // The name of the job manager (appears in the UI).
+    abstract jobManagerName: string;
 
     // Use to keep track of changes.
     private _jobStatuses: IJobStatusInfo[] = [];
@@ -44,10 +47,9 @@ export abstract class JobManagerParent {
      *                                        Approximate value. Defaults to 1.
      */
     constructor(maxNumProcessors = 1) {
-        this.updateMaxNumProcessors(maxNumProcessors);
         this.onCreated();
-
-        // TODO: Timer here to call getJobs every so often?
+        this.updateMaxNumProcessors(maxNumProcessors);
+        jobManagers.push(this);
     }
 
     /**
@@ -61,14 +63,13 @@ export abstract class JobManagerParent {
     /**
      * Submit a job to the queue system.
      *
-     * @param  {IJobInfo[]|IJobInfo} jobSubmitInfos  The job(s) to
-     *                                                           submit.
-     * @returns {Promise<ResponseStatus>}  A promise that resolves with the
+     * @param  {IJobInfoToEndpoint[]|IJobInfoToEndpoint} jobSubmitInfos  The job(s) to submit.
+     * @returns {Promise<EndpointResponseStatus>}  A promise that resolves with the
      *                                     response status.
      */
     public submitJobs(
-        jobSubmitInfos: IJobInfo[] | IJobInfo
-    ): Promise<ResponseStatus> {
+        jobSubmitInfos: IJobInfoToEndpoint[] | IJobInfoToEndpoint
+    ): Promise<EndpointResponseStatus> {
         jobSubmitInfos = this.makeArray(jobSubmitInfos);
 
         // If number of processors isn't specified on any job, use 1 as a
@@ -79,11 +80,11 @@ export abstract class JobManagerParent {
             }
         }
 
-        return this.sendApiRequest({
-            action: PayloadAction.SubmitJobs,
+        return this.sendRequest({
+            action: EndpointAction.SubmitJobs,
             jobInfos: jobSubmitInfos,
         })
-            .then((response: IApiResponse): ResponseStatus => {
+            .then((response: IEndpointResponse): EndpointResponseStatus => {
                 this.throwErrorIfNotSuccess(response);
                 return response.responseStatus;
             })
@@ -101,11 +102,13 @@ export abstract class JobManagerParent {
      *                                   statuses.
      */
     public getJobs(): Promise<IJobStatusInfo[]> {
-        return this.sendApiRequest({
-            action: PayloadAction.GetJobsInfo,
-        } as IApiPayload)
-            .then((response: IApiResponse): IJobStatusInfo[] => {
+        return this.sendRequest({
+            action: EndpointAction.GetJobsInfo,
+        } as IToEndpointPayload)
+            .then((response: IEndpointResponse): IJobStatusInfo[] => {
                 this.throwErrorIfNotSuccess(response);
+
+                // if (response.jobStatuses && response.jobStatuses.length > 0) debugger;
 
                 const jobStatuses = response.jobStatuses as IJobStatusInfo[];
 
@@ -152,17 +155,17 @@ export abstract class JobManagerParent {
      * Cancels a job or jobs.
      *
      * @param  {string[]|string} ids  The id(s) of the job(s) to cancel.
-     * @returns {Promise<ResponseStatus>}  A promise that resolves with the
+     * @returns {Promise<EndpointResponseStatus>}  A promise that resolves with the
      *     response status.
      */
-    public cancelJobs(ids: string[] | string): Promise<ResponseStatus> {
+    public cancelJobs(ids: string[] | string): Promise<EndpointResponseStatus> {
         ids = this.makeArray(ids);
 
-        return this.sendApiRequest({
-            action: PayloadAction.CancelJobs,
+        return this.sendRequest({
+            action: EndpointAction.CancelJobs,
             jobIds: ids,
         })
-            .then((response: IApiResponse): ResponseStatus => {
+            .then((response: IEndpointResponse): EndpointResponseStatus => {
                 this.throwErrorIfNotSuccess(response);
                 return response.responseStatus;
             })
@@ -177,19 +180,19 @@ export abstract class JobManagerParent {
      * deleted remotely if needed).
      *
      * @param  {string[]|string} jobIds  The id(s) of the job(s) to update.
-     * @returns {Promise<ResponseStatus>}  A promise that resolves with the
+     * @returns {Promise<EndpointResponseStatus>}  A promise that resolves with the
      *     response status.
      */
     public informJobsIncorporated(
         jobIds: string[] | string
-    ): Promise<ResponseStatus> {
+    ): Promise<EndpointResponseStatus> {
         jobIds = this.makeArray(jobIds);
 
-        return this.sendApiRequest({
-            action: PayloadAction.UpdateJobIncorporated,
+        return this.sendRequest({
+            action: EndpointAction.UpdateJobIncorporated,
             jobIds: jobIds,
         })
-            .then((response: IApiResponse): ResponseStatus => {
+            .then((response: IEndpointResponse): EndpointResponseStatus => {
                 this.throwErrorIfNotSuccess(response);
                 return response.responseStatus;
             })
@@ -204,17 +207,17 @@ export abstract class JobManagerParent {
      * jobs together. Approximate value (might be a little more or less).
      *
      * @param  {number} maxNumProcessors  The max number of processors to use.
-     * @returns {Promise<ResponseStatus>}  A promise that resolves with the
+     * @returns {Promise<EndpointResponseStatus>}  A promise that resolves with the
      *     response status.
      */
     public updateMaxNumProcessors(
         maxNumProcessors: number
-    ): Promise<ResponseStatus> {
-        return this.sendApiRequest({
-            action: PayloadAction.UpdateMaxNumProcessors,
+    ): Promise<EndpointResponseStatus> {
+        return this.sendRequest({
+            action: EndpointAction.UpdateMaxNumProcessors,
             maxNumProcessors: maxNumProcessors,
         })
-            .then((response: IApiResponse): ResponseStatus => {
+            .then((response: IEndpointResponse): EndpointResponseStatus => {
                 this.throwErrorIfNotSuccess(response);
                 return response.responseStatus;
             })
@@ -227,10 +230,10 @@ export abstract class JobManagerParent {
     /**
      * Throws an error if the response status is an error.
      *
-     * @param  {IApiResponse} response  The response to check.
+     * @param  {IEndpointResponse} response  The response to check.
      */
-    private throwErrorIfNotSuccess(response: IApiResponse) {
-        if (response.responseStatus === ResponseStatus.Error) {
+    private throwErrorIfNotSuccess(response: IEndpointResponse) {
+        if (response.responseStatus === EndpointResponseStatus.Error) {
             throw new Error(response.errorMsg);
         }
     }

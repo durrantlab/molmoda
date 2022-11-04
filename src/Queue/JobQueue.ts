@@ -1,106 +1,34 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { messagesApi } from "@/Api/Messages";
-import { IJobInfo } from "./Definitions";
+import { IJobInfoToEndpoint } from "./Types/TypesToEndpoint";
+import { JobManagerForInBrowserEndpoint } from "./JobManagers/JobManagerForInBrowserEndpoint";
 
-export const registeredInBrowserJobFuncs: { [key: string]: Function } = {};
+// Endpoints here
+let jobManagerForInBrowserEndpoint: JobManagerForInBrowserEndpoint;
+// TODO: local and remote server endpoints defined here too.
 
-const jobQueue: IJobInfo[] = [];
-let jobCurrentlyRunning = false;
-
-/**
- * Run the next job in the queue.
- *
- * @returns {number}  The number milliseconds to wait after running the job.
- */
-function _runNextJob(): number {
-    // If a job is running, don't run another.
-    if (jobCurrentlyRunning) {
-        console.log("job currently running");
-        return 1000;
-    }
-
-    // Run a job if there's one available in the queue.
-    if (jobQueue.length > 0) {
-        messagesApi.waitSpinner(true);
-
-        const job = jobQueue.shift() as IJobInfo;
-        const func = registeredInBrowserJobFuncs[job.commandName];
-        jobCurrentlyRunning = true;
-        console.log("Running job.");
-        const response = func(job.id, job.params);
-        if (response instanceof Promise) {
-            response.then(() => {
-                console.log("Done running job.");
-                jobCurrentlyRunning = false;
-                messagesApi.waitSpinner(false);
-                return;
-            })
-            .catch(() => {
-                console.log("Done running job.");
-                console.warn("error");
-                jobCurrentlyRunning = false;
-                messagesApi.waitSpinner(false);
-            });
-        } else {
-            console.log("Done running job.");
-            jobCurrentlyRunning = false;
-            messagesApi.waitSpinner(false);
-        }
-
-        // If delay not defined or 0, run next one in queue.
-        if (job.delayAfterRun === undefined || job.delayAfterRun === 0) {
-            return 0;
-        }
-
-        // If there's a delay, wait for it to expire.
-        return job.delayAfterRun;
-
-        // TODO: If delay is defined, needs to be hook to run something (e.g.,
-        // cancel now button).
-    }
-
-    return 1000;
-}
 
 /**
  * Setup the job queue system.
  */
 export function jobQueueSetup() {
-    const checkJobAndRun = () => {
-        console.log("Checking job queue.");
+    console.warn("jobQueueSetup");
+    // TODO: six procs shouldn't be hard-coded.
+    jobManagerForInBrowserEndpoint = new JobManagerForInBrowserEndpoint(6)
 
-        const delayTime = _runNextJob();
-
-        // Check back in a bit for any job updates.
-        if (delayTime === 0) {
-            checkJobAndRun();
-        } else {
-            setTimeout(checkJobAndRun, delayTime);
-        }
-    };
-
-    checkJobAndRun();
-}
-
-/**
- * Register a class of job/command. Don't call this function directly! Do it
- * through the api!
- *
- * @param  {string}   commandName  The name of the command.
- * @param  {Function} func         The function to run when the command is
- *                                 called.
- */
-export function registerInBrowserJobFunc(commandName: string, func: Function) {
-    registeredInBrowserJobFuncs[commandName] = func;
+    // TODO: Setup local and remote server endpoints here too.
 }
 
 /**
  * Submit a job to the queue.
  *
- * @param  {IJobInfo[]} jobs  The job to submit.
+ * @param  {IJobInfoToEndpoint[]} jobs  The job to submit.
  */
-export function submitJobs(jobs: IJobInfo[]) {
-    jobQueue.push(...jobs);
-    _runNextJob();
+export function submitJobs(jobs: IJobInfoToEndpoint[]) {
+    // TODO: Currently hard coded just in-browser endpoint. But eventually, make
+    // this compatible with all three endpoints (specific which in this
+    // function). Good to have separate ts file for interacting with all queues.
+    // Would be good to make it so can access public functions on all queues too
+    // (specifing which queue perhaps with an enum).
+    jobManagerForInBrowserEndpoint.submitJobs(jobs);
 }

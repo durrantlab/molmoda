@@ -1,4 +1,4 @@
-import { IFileInfo } from "./Definitions";
+import { IFileInfo } from "./Types";
 import { fsApi } from "@/Api/FS";
 import { getType } from "./Utils2";
 

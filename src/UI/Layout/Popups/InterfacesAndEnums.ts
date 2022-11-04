@@ -17,4 +17,5 @@ export interface ISimpleMsg {
     variant?: PopupVariant;
     callBack?: Function;
     neverClose?: boolean;
+    open?: boolean;  // Whether to open or close
 }

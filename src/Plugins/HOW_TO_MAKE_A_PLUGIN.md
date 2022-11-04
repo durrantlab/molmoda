@@ -123,9 +123,9 @@ The menu path for this plugin (e.g., `["[3] Biotite", "[1] About"]` or `"File/Mo
 A unique id that defines the plugin. Must be lower case.
  Type: `string`. 
 
-#### `runJob` (function) <a id="runJob"></a>
+#### `runJobInBrowser` (function) <a id="runJobInBrowser"></a>
 
-Each plugin is associated with specific jobs (calculations). This function runs a single job (or calls the JavaScript/WASM libraries to run the job). The job-queue system calls [`runJob`](#runJob) directly.
+Each plugin is associated with specific jobs (calculations). Most of these will run in the browser itself, rather than on a remote computing resource. This function runs a single job in the browser (or calls the JavaScript/WASM libraries to run the job). The job-queue system calls `runJob` directly.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
@@ -196,6 +196,8 @@ Submits multiple jobs to the queue system. [`submitJobs`](#submitJobs) is typica
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSets]` | `any[]` | A list of parameters, one per job. Even if your plugin submits only one job (most common case), you must still wrap the parameters in an array. Optional.
+| `[numProcessorsPerJob=1]` | `number` | The number of processors to use per job. Defaults to 1.
+| `[delayBetweenJobs]` | `number` | The number of milliseconds to wait between running jobs. A modal appears during this time giving the user the opportunity to cancel all jobs. Optional.
 
 #### `testLoadExampleProtein` (function) <a id="testLoadExampleProtein"></a>
 

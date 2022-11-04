@@ -24,7 +24,7 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
-import { IJobInfo } from "@/Queue/Definitions";
+import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
 
 export type RunJobReturn = Promise<any> | string | void | undefined;
 
@@ -82,6 +82,16 @@ export abstract class PluginParentClass extends mixins(
      * @type {FormElement[]}
      */
     abstract userArgs: FormElement[];
+
+    /**
+     * Some jobs are so trivial that there is no need to log them. These run in
+     * the browser (not remotely or in docker). They occur immediately on the
+     * main thread, without delay. Examples include undo/redo buttons. You must
+     * explicitly set this to "false" to disable logging.
+     *
+     * @type boolean}
+     */
+    logJob = true;
 
     // In some cases, must pass information to the plugin when it opens.
     // Typicaly when using the plugin outside the menu system.
@@ -163,14 +173,27 @@ export abstract class PluginParentClass extends mixins(
      * called from the `onPopupDone` function (after the user presses the
      * popup's action button).
      *
-     * @param {any[]}  [parameterSets]  A list of parameters, one per job. Even
-     *                                  if your plugin submits only one job
-     *                                  (most common case), you must still wrap
-     *                                  the parameters in an array. Optional.
+     * @param {any[]}  [parameterSets]          A list of parameters, one per
+     *                                          job. Even if your plugin submits
+     *                                          only one job (most common case),
+     *                                          you must still wrap the
+     *                                          parameters in an array.
+     *                                          Optional.
+     * @param {number} [numProcessorsPerJob=1]  The number of processors to use
+     *                                          per job. Defaults to 1.
+     * @param {number} [delayBetweenJobs]       The number of milliseconds to
+     *                                          wait between running jobs. A
+     *                                          modal appears during this time
+     *                                          giving the user the opportunity
+     *                                          to cancel all jobs. Optional.
      * @helper
      * @document
      */
-    protected submitJobs(parameterSets?: any[]) {
+    protected submitJobs(
+        parameterSets?: any[],
+        numProcessorsPerJob = 1,
+        delayBetweenJobs?: number
+    ) {
         if (parameterSets === undefined) {
             parameterSets = [undefined];
         }
@@ -183,20 +206,25 @@ export abstract class PluginParentClass extends mixins(
             parameterSets = [undefined];
         }
 
-        const jobs: IJobInfo[] = parameterSets.map(
-            (p: IJobInfo) => {
+        const jobs: IJobInfoToEndpoint[] = parameterSets.map(
+            (p: IJobInfoToEndpoint) => {
                 return {
                     commandName: this.pluginId,
                     params: p,
                     id: randomID(5),
-                } as IJobInfo;
+                    delayRun: delayBetweenJobs,
+                    numProcessors: numProcessorsPerJob,
+                    noResponse: !this.logJob
+                } as IJobInfoToEndpoint;
             }
         );
 
         for (const job of jobs) {
             let logTxt = this.onSubmitJobLogMsg(this.pluginId);
             logTxt = removeTerminalPunctuation(logTxt);
-            api.messages.log(logTxt, undefined, job.id);
+            if (this.logJob) {
+                api.messages.log(logTxt, undefined, job.id);
+            }
         }
 
         JobQueue.submitJobs(jobs);
@@ -234,27 +262,38 @@ export abstract class PluginParentClass extends mixins(
         if (this.runJobInBrowser === null) {
             // Below won't ever happen (wouldn't pass validation), but makes it
             // easy to avoid typescript error.
-            throw new Error(`Plugin ${this.pluginId} has no runJob function.`);
+            throw new Error(`Plugin ${this.pluginId} has no runJobInBrowser function.`);
         }
 
-        let logTxt = this.onStartJobLogMsg(this.pluginId);
-        logTxt = removeTerminalPunctuation(logTxt);
-        api.messages.log(logTxt, parameterSet, jobId);
+        if (this.logJob) {
+            let startLogTxt = this.onStartJobLogMsg(this.pluginId);
+            startLogTxt = removeTerminalPunctuation(startLogTxt);
+            api.messages.log(startLogTxt, parameterSet, jobId);
+        }
+
         const startTime = new Date().getTime();
 
         const jobResult = this.runJobInBrowser(parameterSet) as RunJobReturn;
 
-        logTxt = this.onEndJobLogMsg(this.pluginId);
-        logTxt = removeTerminalPunctuation(logTxt);
+        let endLogTxt = "";
+        if (this.logJob) {
+            endLogTxt = this.onEndJobLogMsg(this.pluginId);
+            endLogTxt = removeTerminalPunctuation(endLogTxt);
+        }
 
         // It's a promise
         if (jobResult instanceof Promise) {
             return jobResult
                 .then((result: string | undefined) => {
-                    logTxt +=
-                        " " +
-                        timeDiffDescription(new Date().getTime(), startTime);
-                    api.messages.log(logTxt, undefined, jobId);
+                    if (this.logJob) {
+                        endLogTxt +=
+                            " " +
+                            timeDiffDescription(
+                                new Date().getTime(),
+                                startTime
+                            );
+                        api.messages.log(endLogTxt, undefined, jobId);
+                    }
                     return result;
                 })
                 .catch((error: Error) => {
@@ -263,8 +302,11 @@ export abstract class PluginParentClass extends mixins(
         }
 
         // It's a string or undefined
-        logTxt += " " + timeDiffDescription(new Date().getTime(), startTime);
-        api.messages.log(logTxt, undefined, jobId);
+        if (this.logJob) {
+            endLogTxt +=
+                " " + timeDiffDescription(new Date().getTime(), startTime);
+            api.messages.log(endLogTxt, undefined, jobId);
+        }
         return jobResult;
     }
 
@@ -310,7 +352,10 @@ export abstract class PluginParentClass extends mixins(
         } as IPluginSetupInfo);
 
         // Register with job queue system
-        api.hooks.onJobQueueCommand(this.pluginId, this._runJobInBrowser.bind(this));
+        api.hooks.onJobQueueCommand(
+            this.pluginId,
+            this._runJobInBrowser.bind(this)
+        );
 
         this.onMounted();
 

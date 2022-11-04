@@ -1,5 +1,6 @@
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import * as api from "@/Api";
+import axios from 'axios';
 
 /**
  * Loads a remote file and sends it to the relevant Vue component.
@@ -26,27 +27,13 @@ export function loadRemote(
             return;
         }
 
-        fetch(url)
-            .then((response) => {
-                if (!response.ok) {
-                    api.messages.waitSpinner(false);
-                    reject(
-                        `Could not load the URL ${url}. Status ` +
-                            response.status.toString() +
-                            ": " +
-                            response.statusText
-                    );
-                    return;
-                } else {
-                    return response.text();
-                }
-            })
-            .then((text) => {
+        axios.get(url)
+            .then((resp) => {
                 const flnm = url.split("/").pop() as string;
                 api.messages.waitSpinner(false);
                 return resolve({
                     name: flnm,
-                    contents: text as string,
+                    contents: resp.data as string,
                     type: flnm.split(".").pop()?.toUpperCase() as string,
                 });
             })

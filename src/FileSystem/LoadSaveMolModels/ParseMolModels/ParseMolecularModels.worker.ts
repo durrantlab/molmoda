@@ -11,7 +11,7 @@ import {
     nucleicSel,
     proteinSel,
     solventSel,
-} from "../Definitions/ComponentSelections";
+} from "../Types/ComponentSelections";
 import {
     ionsStyle,
     ligandsStyle,
@@ -20,7 +20,7 @@ import {
     nucleicStyle,
     proteinStyle,
     solventStyle,
-} from "../Definitions/DefaultStyles";
+} from "../Types/DefaultStyles";
 import {
     GLModel,
     IAtom,
@@ -35,7 +35,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Definitions/MolFormats";
+import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
 
 let glviewer: any;
 

@@ -1,4 +1,4 @@
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import { store } from "@/Store";
 import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";

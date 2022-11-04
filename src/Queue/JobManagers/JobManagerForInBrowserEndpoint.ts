@@ -1,37 +1,46 @@
-import { IApiPayload, IApiResponse, IJobStatusInfo } from "../Definitions";
+/* eslint-disable @typescript-eslint/ban-types */
+
+import { IToEndpointPayload } from "../Types/TypesToEndpoint";
+import { InBrowserEndpoint } from "../InBrowserEndpoint/InBrowserEndpoint";
 import { JobManagerParent } from "./JobManagerParent";
+import { IEndpointResponse, IJobStatusInfo } from "../Types/TypesEndpointResponse";
+
+let inBrowserEndpoint: InBrowserEndpoint | undefined;
 
 /**
  * JobManagerForLocalQueue
  */
 export class JobManagerForInBrowserEndpoint extends JobManagerParent {
+    jobManagerName = "Local (In Browser) Queue";
+
     /**
      * Runs when job manager is created. Children can override. Use this instead
      * of the constructor.
      */
-     onCreated() {
+    onCreated() {
+        inBrowserEndpoint = new InBrowserEndpoint();
         return;
     }
 
     /**
      * Sends an API request to the endpoint.
      *
-     * @param  {IApiPayload} payload  The payload to send.
-     * @returns {Promise<IApiResponse>}  A promise that resolves with the
-     *     response.
+     * @param  {IToEndpointPayload} payload  The payload to send.
+     * @returns {Promise<IEndpointResponse>}  A promise that resolves
+     *     with the response.
      */
-    sendApiRequest(payload: IApiPayload): Promise<IApiResponse> {
-        throw new Error("Method not implemented.");
+    sendRequest(payload: IToEndpointPayload): Promise<IEndpointResponse> {
+        const endPt = inBrowserEndpoint as InBrowserEndpoint;
+        return endPt.getPayload(payload) as Promise<IEndpointResponse>;
     }
 
     /**
      * Runs when the status of any job changes.
-     * 
-     * @param  {string}     jobId      The id of the job.
+     *
+     * @param  {string}         jobId      The id of the job.
      * @param  {IJobStatusInfo} jobStatus  The job status.
      */
-     onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void {
-        throw new Error("Method not implemented.");
+    onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void {
+        console.warn("Method not implemented.");
     }
-    
 }

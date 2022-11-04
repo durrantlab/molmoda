@@ -27,7 +27,7 @@ import {
   GLModel,
   IMolContainer,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Definitions/DefaultStyles";
+import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
 import { dynamicImports } from "@/Core/DynamicImports";
 // import Viewer2D from "./Viewer2D.vue";
 
@@ -398,20 +398,6 @@ export default class ViewerPanel extends Vue {
       .catch((err: any) => {
         console.log(err);
       });
-  }
-
-  /** mounted function */
-  mounted() {
-    // let fetchPromise = fetch("https://files.rcsb.org/view/1XDN.pdb")
-    //   // let fetchPromise = fetch("https://files.rcsb.org/view/2HU4.pdb")
-    //   // let fetchPromise = fetch("https://files.rcsb.org/view/4AV1.pdb")  // nucleic
-    //   // let fetchPromise = fetch("https://files.rcsb.org/view/1HQ3.pdb")  // has ions
-    //   // let fetchPromise = fetch("https://files.rcsb.org/ligands/view/ATP_ideal.sdf")
-    //   .then((response) => response.text())
-    //   .then((text) => {
-    //     return loadMolecularModelFromText(text, "pdb", "myfile.pdb");
-    //     // return loadMolecularModelFromText(text, "sdf", "myfile.sdf");
-    //   });
   }
 }
 </script>

@@ -52,7 +52,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 
 /**
  * LoadPubChemPlugin

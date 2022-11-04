@@ -1,6 +1,6 @@
 import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Definitions/MolFormats";
+import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
 import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
 
 // function bondOrdersAssigned(molContainers: IMolContainer[]): boolean {

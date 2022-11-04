@@ -59,6 +59,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
+  logJob = false;
 
   /**
    * Runs when the user first starts the plugin. For example, if the plugin is
@@ -74,7 +75,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
       payload.variant === undefined ? PopupVariant.Primary : payload.variant;
     this.neverClose =
       payload.neverClose === undefined ? false : payload.neverClose;
-    this.open = true;
+    this.open = payload.open !== undefined ? payload.open : true;
   }
 
   /**

@@ -6,7 +6,6 @@
     :data-width="width"
     :data-height="height"
   >
-    x
     <div
       :id="slugID"
       :style="style + '; height:100%;'"
@@ -65,7 +64,7 @@ export default class GoldenLayoutComponent extends Vue {
 </script>
 
 <style lang="scss">
-#molecules .list-group-item {
+#navigator .list-group-item {
   border: 0 !important;
   padding: 0;
   cursor: pointer;

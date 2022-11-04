@@ -5,6 +5,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException, ElementNotInteractableException
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 import json
 import time
 import re
@@ -108,6 +110,10 @@ class el:
         raise Exception(msg)
 
 
+# options = Options()
+# options.BinaryLocation = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+# driver_path = "/usr/bin/chromedriver"
+# driver = webdriver.Chrome(options=options, service=Service(driver_path))
 driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
 
 # If first argument given, use that as plugin_id

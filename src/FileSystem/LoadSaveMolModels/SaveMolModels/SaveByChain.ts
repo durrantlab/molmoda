@@ -1,5 +1,5 @@
 import { ISaveTxt } from "@/Core/FS";
-import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Definitions";
+import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Types";
 import { getTerminalNodesToUse } from "@/UI/Forms/MoleculeInputParams/WhichMols";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 import {

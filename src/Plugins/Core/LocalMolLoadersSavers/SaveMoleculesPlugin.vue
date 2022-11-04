@@ -30,11 +30,11 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Definitions/MolFormats";
+import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import {
   MolsToUse,
   molsToUseOptions,
-} from "@/UI/Forms/MoleculeInputParams/Definitions";
+} from "@/UI/Forms/MoleculeInputParams/Types";
 import { saveAll } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveAll";
 import { saveByChain } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveByChain";
 import { saveByMolecule } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveByMolecule";

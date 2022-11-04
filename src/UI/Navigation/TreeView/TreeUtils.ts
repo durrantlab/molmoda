@@ -1,5 +1,5 @@
 import { getFileNameParts } from "@/FileSystem/Utils";
-import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Definitions";
+import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Types";
 import { IMolContainer, MolType, SelectedType } from "./TreeInterfaces";
 
 /**

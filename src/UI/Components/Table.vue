@@ -55,7 +55,7 @@ interface IHeader {
 }
 export interface ITableData {
   headers: IHeader[];
-  rows: { [key: string]: any[] }[];
+  rows: { [key: string]: any }[];
 }
 
 /**

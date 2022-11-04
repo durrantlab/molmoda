@@ -60,6 +60,7 @@ export default class RenameMolPlugin extends PluginParentClass {
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;
+  logJob = false;
 
   /**
    * Check if this plugin can currently be used.
@@ -110,7 +111,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
-        ...this.testExpandMoleculesTree("4WP4.pdb"),
+        ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
         this.testSelectMoleculeInTree("Protein"),
       ],
       populateUserArgs: [this.testUserArg("newName", "2")],

@@ -1,4 +1,4 @@
-import { IFileInfo } from "@/FileSystem/Definitions";
+import { IFileInfo } from "@/FileSystem/Types";
 import { getType } from "@/FileSystem/Utils2";
 import { dynamicImports } from "./DynamicImports";
 

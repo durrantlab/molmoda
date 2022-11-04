@@ -116,6 +116,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
   nodeToActOn: IMolContainer = getDefaultNodeToActOn();
   alwaysEnabled = true;
+  logJob = false;
   doExtract = false; // shadows userArgs for reactivity
 
   /**
@@ -277,11 +278,11 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
       {
         beforePluginOpens: [
           this.testLoadExampleProtein(),
-          ...this.testExpandMoleculesTree("4WP4.pdb"),
+          ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
           this.testSelectMoleculeInTree("Protein"),
         ],
         afterPluginCloses: [
-          this.testWaitForRegex("#molecules", "Protein .cloned."),
+          this.testWaitForRegex("#navigator", "Protein .cloned."),
         ],
       },
 
@@ -289,7 +290,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
       {
         beforePluginOpens: [
           this.testWaitForRegex("#styles", "Protein"),
-          ...this.testExpandMoleculesTree("4WP4.pdb"),
+          ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
           this.testSelectMoleculeInTree("Protein"),
         ],
         populateUserArgs: [
@@ -299,7 +300,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
           },
           this.testUserArg("newName", "2"),
         ],
-        afterPluginCloses: [this.testWaitForRegex("#molecules", "Protein2")],
+        afterPluginCloses: [this.testWaitForRegex("#navigator", "Protein2")],
       },
     ];
   }
