@@ -1,9 +1,9 @@
 import { IFileInfo } from "@/FileSystem/Types";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
-import { IFormatInfo } from "../Types/MolFormats";
 import { parseMolecularModelFromText } from "./Utils";
 import { store } from "@/Store";
+import { IFormatInfo } from "../Types/MolFormats";
 
 /**
  * Uses 3DMol.js to parse the a molecular-model file.

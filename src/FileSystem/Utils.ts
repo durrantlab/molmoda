@@ -136,21 +136,6 @@ export function filesToFileInfos(
                         // It's a zip file (or a biotite file).
                         resolve(fsApi.uncompress(fileContents)); // , "biotite_file.json");
                     }
-
-                    // fileContentsPromise
-                    //     .then((fileContents: string[]) => {
-                    //         debugger
-                    //         resolve({
-                    //             name: file.name,
-                    //             size: file.size,
-                    //             contents: fileContents[0],
-                    //             type: type,
-                    //         } as IFileInfo);
-                    //         return;
-                    //     })
-                    //     .catch((err: any) => {
-                    //         console.log(err);
-                    //     });
                 };
 
                 reader.onerror = (e: any) => {

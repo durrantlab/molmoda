@@ -18,12 +18,11 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import * as api from "@/Api";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Types";
 
 /**
@@ -81,26 +80,26 @@ export default class LoadPDBPlugin extends PluginParentClass {
    */
   onPopupDone(userArgs: IUserArg[]) {
     const pdbId = this.userArgsLookup(userArgs, "pdbId");
-    loadRemote(
-      `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
-    )
-      .then((fileInfo: IFileInfo) => {
-        this.submitJobs([fileInfo]);
-        return;
-      })
-      .catch((err: string) => {
-        // TODO: Check if CIF exists?
-        api.messages.popupError(err);
-      });
+    this.submitJobs([pdbId]);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} fileInfo  Information about the molecule to load.
+   * @param {string} pdbId  The PDB ID to load.
+   * @returns {RunJobReturn}  A promise that resolves the file object.
    */
-  runJobInBrowser(fileInfo: IFileInfo) {
-    parseMoleculeFile(fileInfo);
+  runJobInBrowser(pdbId: string): RunJobReturn {
+    return loadRemote(
+      `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
+    )
+      .then((fileInfo: IFileInfo): any => {
+        return fileInfo;
+      })
+      .catch((err: string) => {
+        // TODO: Check if CIF exists?
+        api.messages.popupError(err);
+      });
   }
 
   /**

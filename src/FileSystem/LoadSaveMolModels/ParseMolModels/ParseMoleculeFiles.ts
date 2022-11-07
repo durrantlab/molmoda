@@ -4,14 +4,10 @@
 import { IFileInfo } from "../../Types";
 import * as api from "@/Api";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    molFormatInformation,
-    MolLoader,
-    getFormatInfoGivenExt,
-} from "../Types/MolFormats";
 import { parseUsing3DMolJs } from "./ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./ParseUsingOpenBabel";
 import { parseUsingBiotite } from "./ParseUsingBiotite";
+import { getFormatInfoGivenExt, molFormatInformation, MolLoader } from "../Types/MolFormats";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that

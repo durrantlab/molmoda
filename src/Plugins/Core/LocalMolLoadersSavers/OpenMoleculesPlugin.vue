@@ -25,7 +25,7 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { IFileInfo } from "@/FileSystem/Types";
@@ -130,9 +130,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJobInBrowser(fileInfo: IFileInfo): Promise<any> {
+  runJobInBrowser(fileInfo: IFileInfo): RunJobReturn {
     // It's not a biotite file (e.g., a PDB file).
-    return parseMoleculeFile(fileInfo); // promise
+    return fileInfo;
   }
 
   /**

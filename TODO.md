@@ -58,13 +58,27 @@ Evually, need login system. Wordpress powered?
 Get multi-frame example files of every acceptable format. That should be a test.
 
 Need to implement onJobStatusChange. Search for that. Along these same lines,
-jobs should submit files and commands separately. And they should return files.
-Even in browser. Make like it will be when remote. Just auto populate response files based on type (no need for extra code there, really).
+jobs should submit files and commands separately. Just auto populate response
+files based on type (no need for extra code there, really). THIS SHOULD HAPPEN
+IN JobManagerParent.ts, not in plugin parent. Rather than do
+informJobsIncorporated, do getJobOutput. Because getInfo only returns jobId and
+status. 
+
+Fake queue system should have variable to store jobId => outputfiles. And remove
+from that variable just like deleting job. Currenly calling loadFile right in
+browser endpoint, but would be good to put it in this variable instead (like
+fake file system). Then load in JobManagerParent.ts.
 
 Need to implement delay with inbrowser queue (for vina, for example). Could be
 optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
 
+IFileInfo shouldn't have type. Just use function to figure out type.
+
+Search for "TODO: Would be nice if there were a separate function"
+
 # DONE
+
+And they should return files. Even in browser. Make like it will be when remote.
 
 Redo queue system. An object with total number of processors, items in queue,
 status for each (waiting, running, error, finished), etc. Also InServerBrowser

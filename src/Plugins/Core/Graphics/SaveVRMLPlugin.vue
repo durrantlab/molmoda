@@ -88,15 +88,13 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {any} parameters  Information about the VRML file to save.
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
    */
-  runJobInBrowser(parameters: any): Promise<undefined> {
+  runJobInBrowser(parameters: any) {
     let filename = parameters.filename;
     let vrmlTxt = api.visualization.viewer.exportVRML();
     api.visualization.viewer.render();
 
-    return api.fs.saveTxt({
+    api.fs.saveTxt({
       fileName: filename,
       content: vrmlTxt,
       ext: ".vrml",

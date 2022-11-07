@@ -74,11 +74,8 @@ export default class DeleteMolPlugin extends PluginParentClass {
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
    */
-  runJobInBrowser(): Promise<undefined> {
+  runJobInBrowser() {
     if (this.nodeToActOn) {
       // Get the parent node and remove this from it's nodes.
       if (this.nodeToActOn.parentId) {
@@ -105,22 +102,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
         );
         this.$store.commit("updateMolecules", molecules);
       }
-
-      // newNode.title = this.newTitle;
-      // newNode.selected = SelectedType.FALSE;
-      // newNode.viewerDirty = true;
-      // newNode.id = randomID();
-      // newNode.focused = false;
-
-      // delete newNode.parentId;
-
-      // this.$store.commit("pushToList", {
-      //   name: "molecules",
-      //   val: newNode,
-      // });
     }
-
-    return Promise.resolve(undefined);
   }
 
   /**

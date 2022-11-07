@@ -25,8 +25,13 @@ import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
+import { getFileNameParts } from "@/FileSystem/Utils";
+import { getFormatInfoGivenExt } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { IFileInfo } from "@/FileSystem/Types";
 
-export type RunJobReturn = Promise<any> | string | void | undefined;
+export type RunJob = IFileInfo[] | IFileInfo | undefined | void
+export type RunJobReturn = Promise<RunJob> | RunJob
 
 /**
  * PluginParentClass
@@ -239,9 +244,11 @@ export abstract class PluginParentClass extends mixins(
      *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
-     * @returns {RunJobReturn}  A promise that resolves the result (any) when
-     *     the job is done, or a string itself (if the job is synchronous), or
-     *     undefined if there's nothing to return.
+     * @returns {RunJobReturn}  A promise that resolves a result (object) when
+     *     the job is done. The object maps a filename to file content, with the
+     *     type determined by the filename (key) extension. You can also return
+     *     such an object directly, without using a promise, if the job is
+     *     synchronous. Return void or undefined if there's nothing to return.
      */
     abstract runJobInBrowser(parameterSet: any): RunJobReturn;
 
@@ -273,7 +280,7 @@ export abstract class PluginParentClass extends mixins(
 
         const startTime = new Date().getTime();
 
-        const jobResult = this.runJobInBrowser(parameterSet) as RunJobReturn;
+        const jobResultFiles = this.runJobInBrowser(parameterSet) as RunJobReturn;
 
         let endLogTxt = "";
         if (this.logJob) {
@@ -281,10 +288,24 @@ export abstract class PluginParentClass extends mixins(
             endLogTxt = removeTerminalPunctuation(endLogTxt);
         }
 
+        // TODO: Would be nice if there were a separate function (perhaps in
+        // serparate file with RunJobReturn defs) that would convert all
+        // possible outputs into Promise<IFileInfo[]>. Would also remove any
+        // undefines. You might use this in InBrowserEndpoint.ts or thereabouts
+        // too, so would be good to reuse code. Make this cleaner.
+
         // It's a promise
-        if (jobResult instanceof Promise) {
-            return jobResult
-                .then((result: string | undefined) => {
+        if (jobResultFiles instanceof Promise) {
+            return jobResultFiles
+                .then((files: IFileInfo[] | IFileInfo | void | undefined) => {
+                    if (files === undefined) {
+                        files = [];
+                    }
+                    // If files is not array, make it one
+                    if (!Array.isArray(files)) {
+                        files = [files];
+                    }
+
                     if (this.logJob) {
                         endLogTxt +=
                             " " +
@@ -294,20 +315,23 @@ export abstract class PluginParentClass extends mixins(
                             );
                         api.messages.log(endLogTxt, undefined, jobId);
                     }
-                    return result;
+
+                    return files;
                 })
                 .catch((error: Error) => {
                     throw error;
                 });
         }
 
-        // It's a string or undefined
+        // It's an object or undefined
         if (this.logJob) {
             endLogTxt +=
                 " " + timeDiffDescription(new Date().getTime(), startTime);
             api.messages.log(endLogTxt, undefined, jobId);
         }
-        return jobResult;
+
+        // Make it an array
+        return jobResultFiles;
     }
 
     /**

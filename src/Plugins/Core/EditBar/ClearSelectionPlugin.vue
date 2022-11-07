@@ -56,18 +56,14 @@ export default class ClearSelectionPlugin extends PluginParentClass {
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
    */
-  runJobInBrowser(): Promise<undefined> {
+  runJobInBrowser() {
     const allNodes = getAllNodesFlattened(this.$store.state["molecules"]);
     allNodes.forEach((n) => {
       if (n.selected !== SelectedType.False) {
         n.selected = SelectedType.False;
       }
     });
-    return Promise.resolve(undefined);
   }
 
   /**

@@ -19,11 +19,10 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import * as api from "@/Api";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Types";
 
 /**
@@ -84,12 +83,21 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    */
   onPopupDone(userArgs: IUserArg[]) {
     let uniprot = this.userArgsLookup(userArgs, "uniprot");
-    loadRemote(
+    this.submitJobs([uniprot]);
+  }
+
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {string} uniprot  The requested uniprot id.
+   * @returns {RunJobReturn}  A promise that resolves the file object.
+   */
+  runJobInBrowser(uniprot: string): RunJobReturn {
+    return loadRemote(
       `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
     )
       .then((fileInfo: IFileInfo) => {
-        let json = JSON.parse(fileInfo.contents);
-        let pdbUrl = json[0]["pdbUrl"]; // TODO: When would there be more than one entry?
+        let pdbUrl = (fileInfo.contents[0] as any)["pdbUrl"]; // TODO: When would there be more than one entry?
         if (pdbUrl) {
           // Load the PDB file.
           return loadRemote(pdbUrl);
@@ -97,22 +105,13 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         // Throw error
         throw new Error("No PDB file found.");
       })
-      .then((fileInf: IFileInfo): void => {
-        this.submitJobs([fileInf]);
-        return;
+      .then((fileInf: IFileInfo): any => {
+        return fileInf;
       })
       .catch((err: string) => {
         api.messages.popupError(err);
       });
-  }
-
-  /**
-   * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @param {IFileInfo} fileInfo  Information about the molecule to load.
-   */
-  runJobInBrowser(fileInfo: IFileInfo) {
-    parseMoleculeFile(fileInfo);
+    // parseMoleculeFile(fileInfo);
   }
 
   /**

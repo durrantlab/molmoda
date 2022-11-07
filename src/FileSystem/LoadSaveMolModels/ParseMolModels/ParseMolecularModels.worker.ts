@@ -5,23 +5,6 @@ import {
 } from "@/Core/WebWorkers/WorkerHelper";
 
 import {
-    ionSel,
-    lipidSel,
-    metalSel,
-    nucleicSel,
-    proteinSel,
-    solventSel,
-} from "../Types/ComponentSelections";
-import {
-    ionsStyle,
-    ligandsStyle,
-    lipidStyle,
-    metalsStyle,
-    nucleicStyle,
-    proteinStyle,
-    solventStyle,
-} from "../Types/DefaultStyles";
-import {
     GLModel,
     IAtom,
     IMolContainer,
@@ -35,7 +18,24 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
+import {
+    ionSel,
+    lipidSel,
+    metalSel,
+    nucleicSel,
+    proteinSel,
+    solventSel,
+} from "../Types/ComponentSelections";
+import {
+    proteinStyle,
+    nucleicStyle,
+    ligandsStyle,
+    metalsStyle,
+    lipidStyle,
+    ionsStyle,
+    solventStyle,
+} from "../Types/DefaultStyles";
+import { IFormatInfo, getFormatInfoGivenExt } from "../Types/MolFormats";
 
 let glviewer: any;
 
@@ -309,7 +309,7 @@ function addMolTypeAndStyle(
 
 /**
  * Given molecular data, returns information about the format.
- * 
+ *
  * @param  {IMolData} data  The molecular data.
  * @returns {IFormatInfo}  Information about the format.
  */
@@ -320,7 +320,7 @@ function getFormatInfo(data: IMolData): IFormatInfo {
 
 /**
  * Given molecular text, divides the text by frames.
- * 
+ *
  * @param  {string} molText  The molecular text.
  * @param  {IFormatInfo} molFormatInfo  Information about the format.
  * @returns {string[]}  The frames.
@@ -420,7 +420,9 @@ function getNameFromContent(
  * @param  {IMolData} data The molecular data.
  * @returns {Promise<IMolContainer>} The divided molecule.
  */
-function divideAtomsIntoDistinctComponents(data: IMolData): Promise<IMolContainer[]> {
+function divideAtomsIntoDistinctComponents(
+    data: IMolData
+): Promise<IMolContainer[]> {
     // Any molecules that share bonds are the same component.
 
     // Get the format

@@ -110,7 +110,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
       id: "doExtract",
       label: "Delete original molecule (extract rather than clone)",
       val: false,
-      enabled: true
+      enabled: true,
     } as IFormCheckbox,
   ];
 
@@ -200,10 +200,8 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IUserArg[]} userArgs  The user arguments.
-   * @returns {RunJobReturn}  A promise that resolves when the job is
-   *     done.
    */
-  runJobInBrowser(userArgs: IUserArg[]): RunJobReturn {
+  runJobInBrowser(userArgs: IUserArg[]) {
     if (this.nodeToActOn) {
       let newerNode: IMolContainer;
       let convertedNode: Promise<IMolContainer>;
@@ -235,7 +233,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
         });
       }
 
-      return convertedNode
+      convertedNode
         .then((node) => {
           node.title = this.userArgsLookup(userArgs, "newName");
 
@@ -253,16 +251,13 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
             name: "molecules",
             val: node,
           });
-
-          return undefined;
+          return;
         })
         .catch((err: any) => {
           console.log(err);
-          return undefined;
+          return;
         });
     }
-
-    return Promise.resolve(undefined);
   }
 
   /**

@@ -90,14 +90,11 @@ export default class RenameMolPlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IUserArg[]} userArgs  The user arguments.
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
    */
-  runJobInBrowser(userArgs: IUserArg[]): Promise<undefined> {
+  runJobInBrowser(userArgs: IUserArg[]) {
     if (this.nodeToActOn) {
       this.nodeToActOn.title = this.userArgsLookup(userArgs, "newName");
     }
-    return Promise.resolve(undefined);
   }
 
   /**

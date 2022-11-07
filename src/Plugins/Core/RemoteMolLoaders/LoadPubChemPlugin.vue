@@ -48,10 +48,12 @@ import { loadRemote } from "./Utils";
 import * as api from "@/Api";
 import { appName } from "@/Core/AppName";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import {
+  PluginParentClass,
+  RunJobReturn,
+} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
-import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Types";
 
 /**
@@ -147,11 +149,10 @@ export default class LoadPubChemPlugin extends PluginParentClass {
       `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${this.molName}/synonyms/JSON`
     )
       .then((fileInfo: IFileInfo) => {
-        let json = JSON.parse(fileInfo.contents);
-        let cid = json.InformationList.Information[0].CID;
+        let cid = fileInfo.contents.InformationList.Information[0].CID;
         this.cid = cid;
 
-        let synonyms = json.InformationList.Information[0].Synonym;
+        let synonyms = fileInfo.contents.InformationList.Information[0].Synonym;
         synonyms = synonyms.filter(
           (synonym: string) =>
             synonym.toLowerCase() !== this.molName.toLowerCase()
@@ -169,17 +170,16 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
    *
    * @param {string} filename  The filename to use.
-   * @returns {Promise<any>} A promise that resolves when it is loaded.
+   * @returns RunJobReturn A promise that resolves when it is loaded.
    */
-  get2DVersion(filename: string): Promise<any> {
+  get2DVersion(filename: string): RunJobReturn {
     return loadRemote(
       `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
     )
       .then((fileInfo: IFileInfo) => {
         fileInfo.name = filename;
         fileInfo.type = "SDF";
-        this.submitJobs([fileInfo]);
-        return;
+        return fileInfo;
       })
       .catch((err: string) => {
         api.messages.popupError(err);
@@ -191,27 +191,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    */
   onPopupDone(): void {
     this.closePopup();
-
-    let filename = "";
-    if (this.molName !== "") {
-      filename += slugify(this.molName) + "-";
-    }
-    filename += "CID" + this.cid + ".sdf";
-
-    loadRemote(
-      `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=3d&response_type=display`
-    )
-      .then((fileInfo: IFileInfo) => {
-        fileInfo.name = filename;
-        fileInfo.type = "SDF";
-        this.submitJobs([fileInfo]);
-        return;
-      })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .catch((_err: string) => {
-        // If it failed, it could be because there's no 3D coordinates. Try 2D.
-        this.get2DVersion(filename);
-      });
+    this.submitJobs([{ cid: this.cid, molName: this.molName }]);
   }
 
   /**
@@ -235,10 +215,30 @@ export default class LoadPubChemPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} fileInfo  Information about the molecule to load.
+   * @returns {RunJobReturn}  A promise that resolves the file object.
    */
-  runJobInBrowser(fileInfo: IFileInfo) {
-    parseMoleculeFile(fileInfo);
+  runJobInBrowser(): RunJobReturn {
+    let filename = "";
+    if (this.molName !== "") {
+      filename += slugify(this.molName) + "-";
+    }
+    filename += "CID" + this.cid + ".sdf";
+
+    return (
+      loadRemote(
+        `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=3d&response_type=display`
+      )
+        .then((fileInfo: IFileInfo) => {
+          fileInfo.name = filename;
+          fileInfo.type = "SDF";
+          return fileInfo;
+        })
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        .catch((_err: string) => {
+          // If it failed, it could be because there's no 3D coordinates. Try 2D.
+          return this.get2DVersion(filename);
+        })
+    );
   }
 
   /**

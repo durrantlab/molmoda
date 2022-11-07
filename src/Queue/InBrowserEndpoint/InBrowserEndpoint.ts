@@ -4,6 +4,11 @@
 // respond appropriately.
 
 import { messagesApi } from "@/Api/Messages";
+import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { getFormatInfoGivenExt } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { IFileInfo } from "@/FileSystem/Types";
+import { getFileNameParts } from "@/FileSystem/Utils";
+import { RunJob } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     EndpointResponseStatus,
     IEndpointResponse,
@@ -36,6 +41,8 @@ export class InBrowserEndpoint {
     paused = false;
     pausedTimer: any;
     pausedTimerStart = 0;
+
+    private fs: {[key: string]: IFileInfo[]} = {}
 
     /**
      * The constructor.
@@ -91,7 +98,7 @@ export class InBrowserEndpoint {
                 }
 
                 if (pendingJob.delayRun) {
-                    messagesApi.popupMessage("moose", "Job started");
+                    messagesApi.popupMessage("Message", "Job started");
                     this.paused = true;
                     if (this.pausedTimer) {
                         clearTimeout(this.pausedTimer);
@@ -146,10 +153,10 @@ export class InBrowserEndpoint {
         const response = inBrowserJobFunc(pendingJob.id, pendingJob.params);
         if (response instanceof Promise) {
             return response
-                .then(() => {
+                .then((files: RunJob) => {
                     // Job is done. Move it to done queue.
                     this.moveJobsToDoneQueue([pendingJob.id], JobStatus.Done);
-                    // TODO: Something more here?
+                    this.saveOutputFiles(pendingJob.id, files);
                     return;
                 })
                 .catch(() => {
@@ -160,8 +167,42 @@ export class InBrowserEndpoint {
             // Job is done. Move it to done queue. TODO: What about if error in
             // sync func? Not caught?
             this.moveJobsToDoneQueue([pendingJob.id], JobStatus.Done);
+            this.saveOutputFiles(pendingJob.id, response);
             return Promise.resolve(undefined);
         }
+    }
+
+    private saveOutputFiles(id: string, fileInfos: RunJob) {
+        if (fileInfos === undefined) {
+            // Nothing to load
+            return;
+        }
+
+        // Make sure array
+        if (!Array.isArray(fileInfos)) {
+            fileInfos = [fileInfos];
+        }
+
+        if (this.fs[id] === undefined) {
+            this.fs[id] = [];
+        }
+
+        this.fs[id].push(...fileInfos);
+
+        // TODO: Move below to JobManagerParent.ts
+
+        // for (const fileInfo of fileInfos) {
+        //     if (fileInfo === undefined) {
+        //         continue;
+        //     }
+        //     const prts = getFileNameParts(fileInfo.name);
+
+        //     // Is it some sort of loadable file?
+        //     if (getFormatInfoGivenExt(prts.ext) !== undefined) {
+        //         // It's a molecule format. Load it.
+        //         parseMoleculeFile(fileInfo); 
+        //     }
+        // }
     }
 
     /**
@@ -313,6 +354,7 @@ export class InBrowserEndpoint {
                     payload.jobIds as string[],
                     JobStatus.Incorporated
                 );
+                // TODO: Delete from this.fs?
                 break;
             }
 

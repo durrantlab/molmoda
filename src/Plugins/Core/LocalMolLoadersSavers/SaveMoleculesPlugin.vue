@@ -22,7 +22,7 @@ import * as api from "@/Api";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
   FormElement,
   IFormSelect,
@@ -204,10 +204,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IUserArg[]} userArgs  Information about the file to save.
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
+   * @returns {RunJobReturn}  A promise that resolves when the job is
    *     done.
    */
-  runJobInBrowser(userArgs: IUserArg[]): Promise<undefined> {
+  runJobInBrowser(userArgs: IUserArg[]): RunJobReturn {
     const filename = this.userArgsLookup(userArgs, "filename");
     const saveFormat = this.userArgsLookup(userArgs, "saveFormat");
     const molsToSave = parseInt(
@@ -233,11 +233,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 }
               );
             }
-            return undefined;
+            return;
           })
           .catch((err: any) => {
             console.log(err);
-            return undefined;
+            return;
           });
       }
       case "single": {

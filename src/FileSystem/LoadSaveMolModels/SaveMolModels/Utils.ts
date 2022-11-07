@@ -7,9 +7,9 @@ import {
     MolType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { convertMolContainers } from "../ConvertMolModels/ConvertMolContainer";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
 import * as api from "@/Api";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
