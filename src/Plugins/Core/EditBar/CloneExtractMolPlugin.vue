@@ -54,10 +54,7 @@ import {
   getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import {
-  PluginParentClass,
-  RunJobReturn,
-} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import {

@@ -1,13 +1,13 @@
 // You can load some molecule files using 3Dmol.js directly, without requiring
 // any conversion. See https://3dmol.csb.pitt.edu/doc/types.html#FileFormats
 
-import { IFileInfo } from "../../Types";
+import { getFileType, IFileInfo } from "../../Types";
 import * as api from "@/Api";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { parseUsing3DMolJs } from "./ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./ParseUsingOpenBabel";
 import { parseUsingBiotite } from "./ParseUsingBiotite";
-import { getFormatInfoGivenExt, molFormatInformation, MolLoader } from "../Types/MolFormats";
+import { getFormatInfoGivenType, molFormatInformation, MolLoader } from "../Types/MolFormats";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -37,7 +37,8 @@ export function parseMoleculeFile(
 ): Promise<void | IMolContainer[]> {
     api.messages.waitSpinner(true);
 
-    const formatInfo = getFormatInfoGivenExt(fileInfo.type);
+    const ext = getFileType(fileInfo);
+    const formatInfo = getFormatInfoGivenType(ext);
     if (formatInfo === undefined) {
         return Promise.reject();
     }

@@ -13,7 +13,6 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import * as api from "@/Api";
-import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import {
   IContributorCredit,
   ISoftwareCredit,
@@ -24,6 +23,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { fileNameFilter, matchesFilename } from "@/FileSystem/FilenameManipulation";
 
 /**
  * SavePNGPlugin

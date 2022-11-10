@@ -9,13 +9,6 @@
       ></FormInput>
     </FormWrapper>
     <MolProps :smiles="smiles" />
-
-    <!-- <Table :tableData="tableData"></Table> -->
-
-    <!-- ":getSmilesFromSelected="true" -->
-    <!-- smiles="CCCOC" -->
-    <!-- extraStyles="position: absolute; left: 0; bottom: 0;" -->
-    <!-- {{ smiles }} -->
   </div>
 </template>
 
@@ -44,22 +37,6 @@ import { getSmilesOfSelected } from "./Utils";
 })
 export default class InformationPanel extends Vue {
   smiles = "";
-
-  // tableData = {
-  //   headers: [
-  //     { text: "Name", note: "moose note" },
-  //     { text: "Value", note: "moose note 2" },
-  //   ],
-  //   rows: [
-  //     { Name: "Jacob", Value: "Best" },
-  //     { Name: "Jacob", Value: "Best" },
-  //     { Name: "Jacob", Value: "Best" },
-  //     { Name: "Jacob", Value: "Best" },
-  //     { Name: "Jacob", Value: "Best" },
-  //     { Name: "Jacob", Value: "Best" },
-  //     { Name: "Jacob", Value: "Best" },
-  //   ],
-  // };
 
   /**
    * Gets the molecules from the vuex store.

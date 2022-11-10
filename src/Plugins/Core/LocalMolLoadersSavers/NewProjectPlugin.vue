@@ -86,7 +86,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     }
     this.closePopup();
     setTimeout(() => {
-      api.plugins.runPlugin("saveProject", true);
+      api.plugins.runPlugin("savemolecules", true);
     }, 1000);
   }
 
@@ -129,12 +129,12 @@ export default class NewProjectPlugin extends PluginParentClass {
         afterPluginCloses: [
           {
             cmd: TestCommand.Text,
-            selector: "#modal-saveProject #filename-saveProject-item",
+            selector: "#modal-savemolecules #filename-savemolecules-item",
             data: "test",
           },
           {
             cmd: TestCommand.Click,
-            selector: "#modal-saveProject .action-btn",
+            selector: "#modal-savemolecules .action-btn",
           },
           this.testWait(5),
           {

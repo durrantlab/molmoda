@@ -21,6 +21,7 @@ export interface IFormatInfo {
     frameSeparators?: IFrameSeparator[];
     // In some cases, you can extract a title from the file itself.
     namesRegex?: RegExp[];
+    saveWarning?: string;
 }
 
 const pdbLikeSeparators = [
@@ -48,6 +49,11 @@ const smiLikeSeparators = [
         isAtEndOfFrame: true,
     },
 ];
+
+const noBondOrdersWarning =
+    " files do not describe bond orders. One can reliably infer bond orders for most macromolecules (e.g., proteins). For small molecules, consider a format like SDF or MOL2 instead.";
+const noCoordinatesWarning =
+    " files do not include 3D atomic coordinates. Consider a format like SDF or MOL2 if coordinates are essential.";
 
 const pdbLikeNames = [
     // eslint-disable-next-line regexp/no-super-linear-backtracking
@@ -83,7 +89,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["cif"],
         description: "Crystallographic Information File",
         hasBondOrders: false,
-        loader: MolLoader.Mol3D,
+        loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken.
         frameSeparators: cifLikeSeparators,
         namesRegex: cifLikeNames,
     },
@@ -95,6 +101,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.Mol3D,
         frameSeparators: pdbLikeSeparators,
         namesRegex: pdbLikeNames,
+        saveWarning: "PDB" + noBondOrdersWarning,
     },
     MOL2: {
         primaryExt: "mol2",
@@ -162,6 +169,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.OpenBabel,
         frameSeparators: smiLikeSeparators,
         namesRegex: smiLikeNames,
+        saveWarning: "SMI" + noCoordinatesWarning,
     },
     CAN: {
         primaryExt: "can",
@@ -171,6 +179,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.OpenBabel,
         frameSeparators: smiLikeSeparators,
         namesRegex: smiLikeNames,
+        saveWarning: "CAN" + noCoordinatesWarning,
     },
     XYZ: {
         primaryExt: "xyz",
@@ -181,6 +190,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         // technically separated by number on own line, but niche case
         // frameSeparators: null
         namesRegex: [/^\d+\n(.+)$/gm], // second line, after number-only line
+        saveWarning: "XYZ" + noBondOrdersWarning,
     },
     MMTF: {
         // NOTE: binary format
@@ -226,12 +236,12 @@ export function getFormatDescriptions(
 /**
  * Get information about a format given its extension.
  *
- * @param  {string} ext  The extension
+ * @param  {string} typ  The type (as returned by getFileType).
  * @returns {IFormatInfo | undefined}  Information about the format, or
  *     undefined if the extension is not recognised.
  */
-export function getFormatInfoGivenExt(ext: string): IFormatInfo | undefined {
-    const extUpper = ext.toLowerCase();
+export function getFormatInfoGivenType(typ: string): IFormatInfo | undefined {
+    const extUpper = typ.toLowerCase();
     for (const key in molFormatInformation) {
         if (molFormatInformation[key].exts.includes(extUpper)) {
             return molFormatInformation[key];

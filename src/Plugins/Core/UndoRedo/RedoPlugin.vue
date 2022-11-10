@@ -85,7 +85,7 @@ export default class RedoPlugin extends PluginParentClass {
       ],
       closePlugin: [],
       afterPluginCloses: [
-        this.testWaitForRegex("#log", 'Job "redo:.+?" ended'),
+        // this.testWaitForRegex("#log", 'Job "redo:.+?" ended'),
         this.testWait(3),
       ],
     };

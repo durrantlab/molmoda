@@ -25,9 +25,6 @@ import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
-import { getFileNameParts } from "@/FileSystem/Utils";
-import { getFormatInfoGivenExt } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { IFileInfo } from "@/FileSystem/Types";
 
 export type RunJob = IFileInfo[] | IFileInfo | undefined | void
@@ -94,7 +91,7 @@ export abstract class PluginParentClass extends mixins(
      * main thread, without delay. Examples include undo/redo buttons. You must
      * explicitly set this to "false" to disable logging.
      *
-     * @type boolean}
+     * @type {boolean}
      */
     logJob = true;
 

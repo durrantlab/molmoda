@@ -1,6 +1,7 @@
 import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
+import { IFileInfo } from "@/FileSystem/Types";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
+import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
 
 // function bondOrdersAssigned(molContainers: IMolContainer[]): boolean {
@@ -33,7 +34,7 @@ export function convertMolContainers(
     merge = true
 ): Promise<string[]> {
     targetExt = targetExt.toLowerCase();
-    const formatInf = getFormatInfoGivenExt(targetExt) as IFormatInfo;
+    const formatInf = getFormatInfoGivenType(targetExt) as IFormatInfo;
     let molTxts: string[] = [];
     const intermediaryExt = "pdb";
 
@@ -72,7 +73,10 @@ export function convertMolContainers(
 
     // Since imtermediary is not the destination format, convert to the required format.
     const convertedTxtPromises = molTxts.map((molTxt) =>
-        convertMolFormatOpenBabel(molTxt, intermediaryExt, targetExt)
+        convertMolFormatOpenBabel(
+            { name: "tmp." + intermediaryExt, contents: molTxt } as IFileInfo,
+            targetExt
+        )
     );
 
     return Promise.all(convertedTxtPromises).then((convertedTxts) => {

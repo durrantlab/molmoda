@@ -1,10 +1,12 @@
 <template>
   <div
-    v-for="treeDatum in getLocalTreeData"
+    v-for="treeDatum, idx in getLocalTreeData"
     v-bind:key="treeDatum.id"
     :data-molid="treeDatum.id"
     :style="styleToUse"
+    :data-idx="idx"
   >
+  <!-- {{idx}} -->
     <TitleBar :treeDatum="treeDatum" :depth="depth" :treeData="treeData" />
 
     <!-- Show sub-items if appropriate -->

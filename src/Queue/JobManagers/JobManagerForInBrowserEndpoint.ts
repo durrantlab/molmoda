@@ -3,7 +3,7 @@
 import { IToEndpointPayload } from "../Types/TypesToEndpoint";
 import { InBrowserEndpoint } from "../InBrowserEndpoint/InBrowserEndpoint";
 import { JobManagerParent } from "./JobManagerParent";
-import { IEndpointResponse, IJobStatusInfo } from "../Types/TypesEndpointResponse";
+import { IEndpointResponse } from "../Types/TypesEndpointResponse";
 
 let inBrowserEndpoint: InBrowserEndpoint | undefined;
 
@@ -32,15 +32,5 @@ export class JobManagerForInBrowserEndpoint extends JobManagerParent {
     sendRequest(payload: IToEndpointPayload): Promise<IEndpointResponse> {
         const endPt = inBrowserEndpoint as InBrowserEndpoint;
         return endPt.getPayload(payload) as Promise<IEndpointResponse>;
-    }
-
-    /**
-     * Runs when the status of any job changes.
-     *
-     * @param  {string}         jobId      The id of the job.
-     * @param  {IJobStatusInfo} jobStatus  The job status.
-     */
-    onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void {
-        console.warn("Method not implemented.");
     }
 }

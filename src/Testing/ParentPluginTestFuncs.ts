@@ -104,11 +104,13 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
  * If running selenium tests, this function will add any unspecified (default)
  * test commands.
  *
- * @param  {ITest | ITest[]} tests     The existing test definition(s).
- * @param  {string}        pluginId  The plugin id.
+ * @param  {any} plugin  The plugin, with getTests() function and pluginId.
  * @returns {ITest[]}  The test definitions.
  */
-function addTestDefaults(tests: ITest | ITest[], pluginId: string): ITest[] {
+function addTestDefaults(plugin: any): ITest[] {
+    let tests: ITest | ITest[] = plugin.getTests();
+    const pluginId: string = plugin.pluginId;
+
     // If tests is ITest, wrap it in an array.
     if (!Array.isArray(tests)) {
         tests = [tests];
@@ -124,13 +126,17 @@ function addTestDefaults(tests: ITest | ITest[], pluginId: string): ITest[] {
                 selector: `#modal-${pluginId} .action-btn`,
             },
         ];
-        test.afterPluginCloses = test.afterPluginCloses || [
-            {
-                cmd: TestCommand.WaitUntilRegex,
-                selector: "#log",
-                data: 'Job "' + pluginId + ':.+?" ended',
-            },
-        ];
+        test.afterPluginCloses =
+            test.afterPluginCloses ||
+            (plugin.logJob
+                ? [
+                      {
+                          cmd: TestCommand.WaitUntilRegex,
+                          selector: "#log",
+                          data: 'Job "' + pluginId + ':.+?" ended',
+                      },
+                  ]
+                : []);
     }
 
     return tests;
@@ -147,7 +153,7 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
         PluginToTest.pluginToTest === plugin.pluginId &&
         plugin.pluginId !== ""
     ) {
-        const tests = addTestDefaults(plugin.getTests(), plugin.pluginId); // Defined in each plugin
+        const tests = addTestDefaults(plugin); // Defined in each plugin
 
         // If there is more than one test but pluginTestIndex is undefined, send
         // back command to add tests.
@@ -157,7 +163,7 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
                 val: JSON.stringify([
                     {
                         cmd: TestCommand.AddTests,
-                        data: tests.length
+                        data: tests.length,
                     },
                 ]),
                 module: "test",

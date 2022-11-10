@@ -14,6 +14,7 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
+import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Options } from "vue-class-component";
 import { switchToGoldenLayoutPanel } from "./Common";
@@ -46,6 +47,22 @@ export default class InformationWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Information");
+  }
+
+  /**
+   * Gets the selenium test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
+   getTests(): ITest {
+    return {
+      closePlugin: [],
+      afterPluginCloses: [
+        this.testWait(3),
+      ],
+    };
   }
 }
 </script>

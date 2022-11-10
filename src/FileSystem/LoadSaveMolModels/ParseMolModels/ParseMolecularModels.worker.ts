@@ -35,7 +35,7 @@ import {
     ionsStyle,
     solventStyle,
 } from "../Types/DefaultStyles";
-import { IFormatInfo, getFormatInfoGivenExt } from "../Types/MolFormats";
+import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
 
 let glviewer: any;
 
@@ -315,7 +315,7 @@ function addMolTypeAndStyle(
  */
 function getFormatInfo(data: IMolData): IFormatInfo {
     const molFormat = data.format;
-    return getFormatInfoGivenExt(molFormat) as IFormatInfo;
+    return getFormatInfoGivenType(molFormat) as IFormatInfo;
 }
 
 /**
@@ -440,6 +440,11 @@ function divideAtomsIntoDistinctComponents(
         for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
             const frame = frames[frameIdx];
             const mol = glviewer.makeGLModel_JDD(frame, data.format);
+
+            if (mol.selectedAtoms({}).length === 0) {
+                // No atoms in model. Skip.
+                continue;
+            }
 
             // Check if 3dmol GLModel has multiple frames
 

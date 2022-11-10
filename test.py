@@ -20,7 +20,7 @@ import os
 
 
 class el:
-    def __init__(self, selector, timeout=10):
+    def __init__(self, selector, timeout=20):
         self.selector = selector
         self.timeout = timeout
         try:

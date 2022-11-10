@@ -21,9 +21,6 @@ export const messagesApi = {
      *                                                     closed.
      * @param  {boolean}      [neverClose=false]           If true, the modal
      *                                                     can never be closed.
-     * @param  {boolean}      [open=true]                  If false, the modal
-     *                                                     (if already open)
-     *                                                     will be closed.
      */
     popupMessage: function (
         title: string,
@@ -43,6 +40,9 @@ export const messagesApi = {
         } as ISimpleMsg);
     },
 
+    /**
+     * Closes the popup message.
+     */
     closePopupMessage: function () {
         pluginsApi.runPlugin("simplemsg", {
             title: "",

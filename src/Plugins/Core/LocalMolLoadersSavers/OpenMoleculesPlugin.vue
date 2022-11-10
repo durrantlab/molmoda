@@ -25,16 +25,17 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import {
+  PluginParentClass,
+  RunJobReturn,
+} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { IFileInfo } from "@/FileSystem/Types";
-import {
-  fileTypesAccepts,
-  parseMoleculeFile,
-} from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * OpenMoleculesPlugin
@@ -87,6 +88,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    * @returns {boolean | Promise<boolean>}  Whether to open the popup.
    */
   onBeforePopupOpen(): boolean | Promise<boolean> {
+    // Good chance you'll need open babel, so start loading now.
+    dynamicImports.openbabeljs.module;
+
     // Below is hackish...
     (this.$refs.formFile as FormFile).clearFile();
 
@@ -140,18 +144,42 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    *
    * @gooddefault
    * @document
-   * @returns {ITest}  The selenium test commands.
+   * @returns {ITest[]}  The selenium test commands.
    */
-  getTests(): ITest {
-    return {
-      populateUserArgs: [
-        this.testUserArg("formFile", "file://./src/Testing/test.biotite"),
-      ],
-      afterPluginCloses: [
-        this.testWaitForRegex("#styles", "Protein"),
-        this.testWaitForRegex("#log", 'Job "openmolecules:.+?" ended'),
-      ],
-    };
+  getTests(): ITest[] {
+    const files = [
+      ["4WP4.pdb", 1],
+      ["4WP4.pdbqt", 1],
+      ["4WP4.pqr", 1],
+      ["4WP4.xyz", 1],
+      ["ligs.can", 1], // TODO: Should be 3 when open babel fixed
+      ["ligs.cif", 1], // TODO: Should be 3 when open babel fixed
+      ["ligs.mol2", 3],
+      ["ligs.pdb", 3],
+      ["ligs.pdbqt", 1], // TODO: Should be 3 when open babel fixed
+      ["ligs.sdf", 3],
+      ["ligs.smi", 1], // TODO: Should be 3 when open babel fixed
+      ["two_files.zip", 4], // TODO: Should be 6 when open babel fixed
+      ["test.biotite", 1],
+    ];
+
+    return files.map((f) => {
+      const name = f[0];
+      const count = (f[1] as number) - 1;
+      return {
+        populateUserArgs: [
+          this.testUserArg("formFile", "file://./src/Testing/mols/" + name),
+        ],
+        afterPluginCloses: [
+          this.testWaitForRegex("#styles", "Atoms"),
+          this.testWaitForRegex(
+            "#navigator",
+            "data.idx.." + count.toString() + "."
+          ),
+          this.testWaitForRegex("#log", 'Job "openmolecules:.+?" ended'),
+        ],
+      };
+    });
   }
 }
 </script>

@@ -43,7 +43,7 @@ module.exports = defineConfig({
                         to: "js/openbabeljs",
                     },
                     {
-                        from: "src/Testing/4WP4.pdb",
+                        from: "src/Testing/mols/4WP4.pdb",
                         to: "4WP4.pdb",
                     },
                     {

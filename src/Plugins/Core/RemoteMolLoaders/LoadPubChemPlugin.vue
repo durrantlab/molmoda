@@ -54,7 +54,7 @@ import {
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
-import { IFileInfo } from "@/FileSystem/Types";
+import { correctFilenameExt, IFileInfo } from "@/FileSystem/Types";
 
 /**
  * LoadPubChemPlugin
@@ -170,15 +170,14 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
    *
    * @param {string} filename  The filename to use.
-   * @returns RunJobReturn A promise that resolves when it is loaded.
+   * @returns {RunJobReturn} A promise that resolves when it is loaded.
    */
   get2DVersion(filename: string): RunJobReturn {
     return loadRemote(
       `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
     )
       .then((fileInfo: IFileInfo) => {
-        fileInfo.name = filename;
-        fileInfo.type = "SDF";
+        fileInfo.name = correctFilenameExt(filename, "SDF");
         return fileInfo;
       })
       .catch((err: string) => {
@@ -229,8 +228,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=3d&response_type=display`
       )
         .then((fileInfo: IFileInfo) => {
-          fileInfo.name = filename;
-          fileInfo.type = "SDF";
+          fileInfo.name = correctFilenameExt(filename, "SDF");
           return fileInfo;
         })
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

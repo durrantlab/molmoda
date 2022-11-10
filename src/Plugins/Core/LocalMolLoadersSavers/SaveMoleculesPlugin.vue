@@ -11,18 +11,21 @@
     :prohibitCancel="appClosing"
     @onDataChanged="onDataChanged"
     :hideIfDisabled="true"
-  ></PluginComponent>
+  >
+  </PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import {
+  PluginParentClass,
+  RunJobReturn,
+} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
   FormElement,
   IFormSelect,
@@ -39,6 +42,11 @@ import { saveAll } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveAll";
 import { saveByChain } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveByChain";
 import { saveByMolecule } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveByMolecule";
 import { saveBiotite } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveBiotite";
+import {
+  fileNameFilter,
+  matchesFilename,
+} from "@/FileSystem/FilenameManipulation";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * SaveMoleculesPlugin
@@ -62,6 +70,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   intro = `Please provide the name of the molecule file to save. The
       file extension will be automatically appended.`;
 
+  // If true, this plugin is being shown as part of the (terminal) app-closing
+  // process.
   appClosing = false;
 
   userArgs: FormElement[] = [
@@ -135,6 +145,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   ];
 
   alwaysEnabled = true;
+  // formatWarningMsg = "";
 
   /**
    * Determine which into text to use.
@@ -168,7 +179,17 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * (e.g., clear inputs from previous open).
    */
   onBeforePopupOpen() {
+    // Good chance you'll need open babel, so start loading now.
+    dynamicImports.openbabeljs.module;
+
     this.appClosing = this.payload !== undefined;
+    this.updateUserArgs([
+      {
+        name: "saveFormat",
+        val: "biotite",
+      } as IUserArg,
+    ]);
+    this.updateUserArgEnabled("saveFormat", !this.appClosing);
     this.payload = undefined;
   }
 
@@ -198,6 +219,46 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     this.updateUserArgEnabled("proteinFormat", showSeparateFormats);
 
     this.updateUserArgEnabled("singleFileFormat", saveFormat === "single");
+
+    // let formatWarningMsgs: string[] = [];
+
+    // if (showSeparateFormats) {
+    //   const compoundFormat = this.userArgsLookup(userArgs, "compoundFormat");
+    //   const proteinFormat = this.userArgsLookup(userArgs, "proteinFormat");
+
+    //   let compoundFormatInfo = getFormatInfoGivenType(compoundFormat);
+    //   let proteinFormatInfo = getFormatInfoGivenType(proteinFormat);
+
+    //   if (
+    //     compoundFormatInfo !== undefined &&
+    //     compoundFormatInfo?.saveWarning !== undefined
+    //   ) {
+    //     formatWarningMsgs.push(compoundFormatInfo.saveWarning);
+    //   }
+    //   if (
+    //     proteinFormatInfo !== undefined &&
+    //     proteinFormatInfo?.saveWarning !== undefined
+    //   ) {
+    //     formatWarningMsgs.push(proteinFormatInfo.saveWarning);
+    //   }
+    // } else {
+    //   const singleFileFormat = this.userArgsLookup(
+    //     userArgs,
+    //     "singleFileFormat"
+    //   );
+    //   let singleFileFormatInfo = getFormatInfoGivenType(singleFileFormat);
+
+    //   if (
+    //     singleFileFormatInfo !== undefined &&
+    //     singleFileFormatInfo?.saveWarning !== undefined
+    //   ) {
+    //     formatWarningMsgs.push(singleFileFormatInfo.saveWarning);
+    //   }
+    // }
+
+    // // Keep only unique items in formatWarningMsgs
+    // formatWarningMsgs = [...new Set(formatWarningMsgs)];
+    // this.formatWarningMsg = formatWarningMsgs.join("\n");
   }
 
   /**
@@ -244,7 +305,12 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         return saveAll(filename, molsToSave, singleFileFormat);
       }
       case "separate": {
-        return saveByMolecule(filename, molsToSave, compoundFormat, proteinFormat);
+        return saveByMolecule(
+          filename,
+          molsToSave,
+          compoundFormat,
+          proteinFormat
+        );
       }
       default: {
         // By chain is only one left.

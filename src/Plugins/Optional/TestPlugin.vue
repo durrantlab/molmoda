@@ -84,10 +84,9 @@ export default class TestPlugin extends PluginParentClass {
 
   /**
    * Runs when the user presses the action button and the popup closes.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userArgs: IUserArg[]) {
+  onPopupDone(/* userArgs: IUserArg[] */) {
+    // * @param {IUserArg[]} userArgs  The user arguments.
     // this.submitJobs([userArgs]);
     const jobParams = [];
     for (let i = 0; i < 10; i++) {
@@ -96,7 +95,7 @@ export default class TestPlugin extends PluginParentClass {
       }
       jobParams.push(jobParam);
     }
-    this.submitJobs(jobParams, Math.round(Math.random() * 5));  // , 500);
+    this.submitJobs(jobParams, Math.round(Math.random() * 2), 10000);  // , 500);
   }
 
   /**

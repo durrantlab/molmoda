@@ -1,7 +1,11 @@
 /* eslint-disable jsdoc/check-tag-names */
 import { IFileInfo } from "@/FileSystem/Types";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { ITest, ITestCommand, TestCommand } from "@/Testing/ParentPluginTestFuncs";
+import {
+    ITest,
+    ITestCommand,
+    TestCommand,
+} from "@/Testing/ParentPluginTestFuncs";
 import { Vue } from "vue-class-component";
 import * as api from "@/Api";
 import { loadRemote } from "@/Plugins/Core/RemoteMolLoaders/Utils";
@@ -12,23 +16,27 @@ import { loadRemote } from "@/Plugins/Core/RemoteMolLoaders/Utils";
 export class TestingMixin extends Vue {
     /**
      * Gets the selenium test commands for the plugin. For advanced use.
-     * 
+     *
      * @gooddefault
      * @document
      * @returns {ITest[] | ITest}  The selenium test command(s).
      */
     getTests(): ITest[] | ITest {
+        const afterPluginCloses =
+            (this as any).logJob === true
+                ? [
+                      this.testWaitForRegex(
+                          "#log",
+                          'Job "' + (this as any).pluginId + ':.+?" ended'
+                      ),
+                  ]
+                : [];
         return [
             {
                 beforePluginOpens: [],
                 populateUserArgs: [],
                 closePlugin: [this.testPressButton(".action-btn")],
-                afterPluginCloses: [
-                    this.testWaitForRegex(
-                        "#log",
-                        'Job "' + (this as any).pluginId + ':.+?" ended'
-                    ),
-                ],
+                afterPluginCloses,
             } as ITest,
         ];
     }
@@ -44,7 +52,9 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand}  The command to test the specific user argument.
      */
     testUserArg(argName: string, argVal: any): ITestCommand {
-        const selector = `#modal-${(this as any).pluginId} #${argName}-${(this as any).pluginId}-item`;
+        const selector = `#modal-${(this as any).pluginId} #${argName}-${
+            (this as any).pluginId
+        }-item`;
 
         if (typeof argVal === "string" && argVal.startsWith("file://")) {
             return {

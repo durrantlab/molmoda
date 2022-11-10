@@ -28,9 +28,9 @@ export enum EndpointAction {
     // Used to cancel jobs
     CancelJobs = "cancelJob",
 
-    // Used to update job status (e.g., to inform incorporated so can be deleted
-    // remotely)
-    UpdateJobIncorporated = "updateJobIncorporated",
+    // Gets the output of a job that has finished. Should also delete output
+    // files from remote system.
+    GetDoneJobsOutput = "getDoneJobsOutput",
 
     // Update the maximum number of processors that all jobs collectively can
     // use.

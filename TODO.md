@@ -34,10 +34,11 @@ you could put it in a web worker using import (rather than adding to head).
 https://github.com/rdkit/rdkit-js can also draw from smiles. Maybe get rid of
 smiles drawer?
 
-Current versiono of openbabel (tmp version) converts only first fframe of file
-(e.g., PDBQT). Make sure Yuri's converts all, and test that.
-
 # Ongoing: Important
+
+Current versiono of openbabel (tmp version) converts only first fframe of file
+(e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
+openmolecules to check for three molecules when you get that fixed.
 
 When change colors and things, shouldn't refocus.
 
@@ -47,36 +48,51 @@ Also, search for "This doesn't account for ligands!"
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-I think both undo and redo should warn one item sooner on stack.
-
-**** Need to update tests for all revised plugins.
-
 Evually, need login system. Wordpress powered?
     https://medevel.com/iam-systems-10-identity/ ? Keycloak?
     Or this? https://www.npmjs.com/package/passport
 
-Get multi-frame example files of every acceptable format. That should be a test.
+*** Need to implement delay with inbrowser queue (for vina, for example). Could
+be optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
+
+Search for "TODO: Would be nice if there were a separate function"
+
+Save molecule files needs more thourough tests. Can this be simplifed somehow?
+May be too many options for saving molecules. For example, by chain needed?
+
+Get slurm/Docker working?
+
+**** Get common interface for mol viewers (to use nglviewer)?
+
+# DONE
+
+I think both undo and redo should warn one item sooner on stack.
+
+When job requires conversion, logged as ended too soon. Conversion should count
+as part of job.
+
+CIF fails because of comment. Search for // TODO: "ligs.cif",
 
 Need to implement onJobStatusChange. Search for that. Along these same lines,
-jobs should submit files and commands separately. Just auto populate response
-files based on type (no need for extra code there, really). THIS SHOULD HAPPEN
-IN JobManagerParent.ts, not in plugin parent. Rather than do
-informJobsIncorporated, do getJobOutput. Because getInfo only returns jobId and
-status. 
+jobs should submit files and commands separately.
+
+Need to update tests for all revised plugins.
+
+Get multi-frame example files of every acceptable format. That should be a test.
+Include ZIP files, BIOTITE files. You've made a lot of changes to this system
+and I suspect there are errors.
+
+Just auto populate response files based on type (no need for extra code there,
+really). THIS SHOULD HAPPEN IN JobManagerParent.ts, not in plugin parent. Rather
+than do informJobsIncorporated, do getJobOutput. Because getInfo only returns
+jobId and status. 
 
 Fake queue system should have variable to store jobId => outputfiles. And remove
 from that variable just like deleting job. Currenly calling loadFile right in
 browser endpoint, but would be good to put it in this variable instead (like
 fake file system). Then load in JobManagerParent.ts.
 
-Need to implement delay with inbrowser queue (for vina, for example). Could be
-optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
-
 IFileInfo shouldn't have type. Just use function to figure out type.
-
-Search for "TODO: Would be nice if there were a separate function"
-
-# DONE
 
 And they should return files. Even in browser. Make like it will be when remote.
 

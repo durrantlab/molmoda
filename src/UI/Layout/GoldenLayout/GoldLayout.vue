@@ -54,7 +54,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { GoldenLayout, ComponentContainer } from "golden-layout";
+import { ComponentContainer } from "golden-layout";
 import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
 import "bootstrap/js/dist/tab";

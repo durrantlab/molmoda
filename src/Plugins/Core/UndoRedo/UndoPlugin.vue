@@ -83,7 +83,7 @@ export default class UndoPlugin extends PluginParentClass {
       // populateUserArgs: [this.testUserArg("filename", "test")],
       closePlugin: [],
       afterPluginCloses: [
-        this.testWaitForRegex("#log", 'Job "undo:.+?" ended'),
+        // this.testWaitForRegex("#log", 'Job "undo:.+?" ended'),
         this.testWait(3),
       ],
     };

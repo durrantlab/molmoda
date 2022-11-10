@@ -1,7 +1,7 @@
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
-import { IFileInfo } from "@/FileSystem/Types";
+import { correctFilenameExt, IFileInfo } from "@/FileSystem/Types";
 import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
 import { CombineProteinType, IMoleculeInputParams, MolsToUse } from "./Types";
@@ -84,9 +84,8 @@ function _mergeAllProteins(
 
         return [
             {
-                name: filename,
-                contents: pdbTxt,
-                type: "PDB",
+                name: correctFilenameExt(filename, "PDB"),
+                contents: pdbTxt
             },
         ] as IFileInfo[];
     });
@@ -212,9 +211,8 @@ function _perChain(
         for (let idx = 0; idx < pdbTxts.length; idx++) {
             const pdbTxt = pdbTxts[idx][0];
             files.push({
-                name: filenames[idx],
+                name: correctFilenameExt(filenames[idx], "PDB"),
                 contents: pdbTxt,
-                type: "PDB",
             });
         }
         return files;
@@ -298,14 +296,14 @@ export function makeMoleculeInput(
 
         compoundPromises = Promise.all(compoundConvertedPromises).then(
             (pdbTxts: string[][]) => {
-                const compounds = [];
+                const compounds: IFileInfo[] = [];
                 for (let idx = 0; idx < pdbTxts.length; idx++) {
                     const pdbTxt = pdbTxts[idx][0];
                     compounds.push({
                         name: filenames[idx],
                         contents: pdbTxt,
-                        type: "PDB",
-                    });
+                        // type: "PDB",
+                    } as IFileInfo);
                 }
                 return compounds;
             }

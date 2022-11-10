@@ -33,8 +33,7 @@ export function loadRemote(
                 api.messages.waitSpinner(false);
                 return resolve({
                     name: flnm,
-                    contents: resp.data as string,
-                    type: flnm.split(".").pop()?.toUpperCase() as string,
+                    contents: resp.data as string
                 });
             })
             .catch((err) => {

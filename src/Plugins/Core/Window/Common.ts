@@ -1,5 +1,10 @@
 import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 
+/**
+ * Switches to a specified tab in the golden layout.
+ * 
+ * @param  {string} componentTitle The title of the component to switch to.
+ */
 export function switchToGoldenLayoutPanel(componentTitle: string) {
     // See https://github.com/golden-layout/golden-layout/issues/430
 

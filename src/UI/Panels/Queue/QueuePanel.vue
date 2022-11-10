@@ -7,20 +7,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { Options, Vue } from "vue-class-component";
-import { Watch } from "vue-property-decorator";
 
-import * as api from "@/Api/";
-import {
-  getAllNodesFlattened,
-  getTerminalNodes,
-} from "@/UI/Navigation/TreeView/TreeUtils";
-
-import {
-  GLModel,
-  IMolContainer,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
-import { dynamicImports } from "@/Core/DynamicImports";
 import JobManager from "@/Queue/JobManagers/JobManager.vue";
 import Section from "@/UI/Layout/Section.vue";
 

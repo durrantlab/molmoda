@@ -17,7 +17,6 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { fileNameFilter, matchesFilename } from "@/FileSystem/Utils";
 import { ISaveTxt } from "@/Core/FS";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -25,6 +24,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { fileNameFilter, matchesFilename } from "@/FileSystem/FilenameManipulation";
 
 /**
  * SaveVRMLPlugin

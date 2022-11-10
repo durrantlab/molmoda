@@ -44,6 +44,11 @@ export default class JobManager extends Vue {
   jobManagerNames: string[] = [];
   jobStatusInfos: IJobStatusInfo[][] = [];
 
+  /**
+   * Get the job statuses, sorted and formatted.
+   *
+   * @returns {ITableData[]}.  The job statuses, sorted and formatted.
+   */
   get jobStatusesForTable(): ITableData[] {
     if (this.jobStatusInfos.length === 0) {
       // Not ready yet.
@@ -101,6 +106,9 @@ export default class JobManager extends Vue {
     return jobStatuseInfos;
   }
 
+  /**
+   * The mounted function.
+   */
   mounted() {
     // Periodically pull the job manager data
     setInterval(() => {

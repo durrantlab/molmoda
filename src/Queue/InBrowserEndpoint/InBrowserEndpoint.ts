@@ -4,19 +4,15 @@
 // respond appropriately.
 
 import { messagesApi } from "@/Api/Messages";
-import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { getFormatInfoGivenExt } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { IFileInfo } from "@/FileSystem/Types";
-import { getFileNameParts } from "@/FileSystem/Utils";
 import { RunJob } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     EndpointResponseStatus,
     IEndpointResponse,
-    IJobInfoEndpointResponse,
     IJobStatusInfo,
     JobStatus,
 } from "../Types/TypesEndpointResponse";
-import { IToEndpointPayload, EndpointAction } from "../Types/TypesToEndpoint";
+import { IToEndpointPayload, EndpointAction, IJobInfoToEndpoint } from "../Types/TypesToEndpoint";
 import { registeredInBrowserJobFuncs } from "./RegisteredInBrowserJobFuncs";
 
 enum Queue {
@@ -25,51 +21,60 @@ enum Queue {
     Done,
 }
 
+// This is how information about jobs is stored in the queue system internally.
+// More information than needs to be sent back to the client.
+interface IJobInfoQueueEntry extends IJobInfoToEndpoint {
+    status: JobStatus;
+    queuedTimestamp: number;
+    startedTimestamp: number;
+    finishedTimestamp: number;
+}
+
 /**
  * InBrowserEndpoint
  */
 export class InBrowserEndpoint {
-    private pendingJobs: IJobInfoEndpointResponse[] = [];
-    private runningJobs: IJobInfoEndpointResponse[] = [];
+    private _pendingJobs: IJobInfoQueueEntry[] = [];
+    private _runningJobs: IJobInfoQueueEntry[] = [];
 
     // For done, error, cancelled, inorporated
-    private doneJobs: IJobInfoEndpointResponse[] = [];
+    private _doneJobs: IJobInfoQueueEntry[] = [];
 
-    maxNumProcessors = 1;
-    queueCheckerTimer: any;
+    private _maxNumProcessors = 1;
+    private _queueCheckerTimer: any;
 
-    paused = false;
-    pausedTimer: any;
-    pausedTimerStart = 0;
+    private _paused = false;
+    private _pausedTimer: any;
+    private _pausedTimerStart = 0;
+    private _pausedWaitTime = 0;
 
-    private fs: {[key: string]: IFileInfo[]} = {}
+    private _fs: { [key: string]: IFileInfo[] } = {};
 
     /**
      * The constructor.
      */
     constructor() {
-        this.queueCheckerTimer = setInterval(() => {
-            if (this.paused) {
+        this._queueCheckerTimer = setInterval(() => {
+            if (this._paused) {
                 // Update popup message telling paused.
-                const timePassed = Date.now() - this.pausedTimerStart;
+                const timePassed = Date.now() - this._pausedTimerStart;
                 messagesApi.popupMessage(
                     "Job Start Pending",
                     "Job will start in " +
-                        Math.ceil(timePassed / 1000) +
+                        Math.ceil((this._pausedWaitTime - timePassed) / 1000) +
                         " seconds."
                 );
                 return;
             }
 
-            // Among the jobs currently running, how many processors are
-            // in use?
+            // Among the jobs currently running, how many processors are in use?
             let numProcessorsInUse = 0;
-            for (const job of this.runningJobs) {
+            for (const job of this._runningJobs) {
                 numProcessorsInUse += job.numProcessors || 1;
             }
 
             // How many processors are free?
-            let numFreeProcessors = this.maxNumProcessors - numProcessorsInUse;
+            let numFreeProcessors = this._maxNumProcessors - numProcessorsInUse;
 
             if (numFreeProcessors <= 0) {
                 // no free processors
@@ -77,17 +82,17 @@ export class InBrowserEndpoint {
             }
 
             // Show spinner if job still running.
-            messagesApi.waitSpinner(this.runningJobs.length > 0);
+            messagesApi.waitSpinner(this._runningJobs.length > 0);
 
             // Go down the queuedJobs list and move them to the running list if
             // it can fit. Repeat until no more can fit.
-            for (const pendingJob of this.pendingJobs) {
-                if (this.pendingJobs.length === 0) {
+            for (const pendingJob of this._pendingJobs) {
+                if (this._pendingJobs.length === 0) {
                     // No more queued jobs
                     break;
                 }
 
-                if (this.paused) {
+                if (this._paused) {
                     break;
                 }
 
@@ -99,18 +104,19 @@ export class InBrowserEndpoint {
 
                 if (pendingJob.delayRun) {
                     messagesApi.popupMessage("Message", "Job started");
-                    this.paused = true;
-                    if (this.pausedTimer) {
-                        clearTimeout(this.pausedTimer);
+                    this._paused = true;
+                    if (this._pausedTimer) {
+                        clearTimeout(this._pausedTimer);
                     }
-                    this.pausedTimerStart = new Date().getTime();
+                    this._pausedTimerStart = new Date().getTime();
+                    this._pausedWaitTime = pendingJob.delayRun;
 
                     // const intrvl = setInterval(() => {
                     //     messagesApi.popupMessage("moose", "Job started" + new Date().toISOString());
                     // }, 500);
-                    this.pausedTimer = setTimeout(() => {
+                    this._pausedTimer = setTimeout(() => {
                         // Now done.
-                        this.paused = false;
+                        this._paused = false;
                         messagesApi.closePopupMessage();
 
                         // Clear delayRun so it will proceed.
@@ -121,27 +127,128 @@ export class InBrowserEndpoint {
 
                 // Job works within limit. Run it.
                 numFreeProcessors -= pendJobNumProcs;
-                this.startJob(pendingJob);
+                this._startJob(pendingJob);
             }
         }, 500);
     }
 
     /**
+     * Gets a payload from the JobManager and responds appropriately (if
+     * required).
+     *
+     * @param  {IToEndpointPayload} payload  The payload describing the action to take.
+     * @returns {Promise<IEndpointResponse>}  The response to the payload.
+     */
+    public getPayload(payload: IToEndpointPayload): Promise<IEndpointResponse> {
+        switch (payload.action) {
+            case EndpointAction.SubmitJobs: {
+                const jobInfos: IJobInfoQueueEntry[] =
+                    payload.jobInfos as IJobInfoQueueEntry[];
+
+                // Set status on all jobs to Pending
+                for (const jobInfo of jobInfos) {
+                    jobInfo.status = JobStatus.Pending;
+                    jobInfo.queuedTimestamp = new Date().getTime();
+                    jobInfo.startedTimestamp = -1;
+                    jobInfo.finishedTimestamp = -1;
+                }
+
+                // Add to queuedJobs
+                this._pendingJobs.push(...jobInfos);
+
+                // Timer will start running the jobs when ready.
+                break;
+            }
+
+            case EndpointAction.GetJobsInfo: {
+                const jobStatuses: IJobStatusInfo[] = [
+                    ...this._prepGetJobsInfoResponse(Queue.Pending),
+                    ...this._prepGetJobsInfoResponse(Queue.Running),
+                    ...this._prepGetJobsInfoResponse(Queue.Done),
+                ];
+
+                return Promise.resolve({
+                    responseStatus: EndpointResponseStatus.Success,
+                    jobStatuses: jobStatuses,
+                });
+            }
+
+            case EndpointAction.CancelJobs: {
+                this._moveJobsToDoneQueue(
+                    payload.jobIds as string[],
+                    JobStatus.Cancelled
+                );
+                break;
+            }
+
+            case EndpointAction.GetDoneJobsOutput: {
+                // Are any of the jobs not in the done queue? If so, return an error.
+                const jobIds = payload.jobIds as string[];
+                for (const jobId of jobIds) {
+                    const jobIdx = this._doneJobs.findIndex((j) => j.id === jobId);
+                    if (jobIdx === -1) {
+                        return Promise.resolve({
+                            responseStatus: EndpointResponseStatus.Error,
+                            errorMessage: "Job has not yet finished, so can't provide output",
+                        });
+                    }
+                }
+                
+                // All jobs are in the done queue. Set their status to
+                // Incorporated and put them in a separate list for processing.
+                const incorporatedQueueEntries: IJobInfoQueueEntry[] = [];
+                for (const jobId of jobIds) {
+                    const jobIdx = this._doneJobs.findIndex((j) => j.id === jobId);
+                    this._doneJobs[jobIdx].status = JobStatus.Incorporated;
+                    incorporatedQueueEntries.push({
+                        ...this._doneJobs[jobIdx]
+                    });
+                }
+                
+                // Convert the queue entries into a format better for responding
+                // to the client.
+                const statusInfos = this._prepGetJobsInfoResponse(incorporatedQueueEntries);
+
+                // Add the output to the statusInfos and delete from _fs.
+                for (const statusInfo of statusInfos) {
+                    statusInfo.outputFiles = this._fs[statusInfo.id];
+                    delete this._fs[statusInfo.id];
+                }
+
+                return Promise.resolve({
+                    responseStatus: EndpointResponseStatus.Success,
+                    jobStatuses: statusInfos,
+                });
+            }
+
+            case EndpointAction.UpdateMaxNumProcessors: {
+                this._maxNumProcessors = payload.maxNumProcessors as number;
+                break;
+            }
+        }
+
+        // No response required
+        return Promise.resolve({
+            responseStatus: EndpointResponseStatus.Success,
+        });
+    }
+
+    /**
      * Starts a job. Moves to running queue and runs it.
      *
-     * @param  {IJobInfoEndpointResponse} pendingJob  The job to start.
+     * @param  {IJobInfoQueueEntry} pendingJob  The job to start.
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
-    private startJob(pendingJob: IJobInfoEndpointResponse): Promise<any> {
+    private _startJob(pendingJob: IJobInfoQueueEntry): Promise<any> {
         // Change status
         pendingJob.status = JobStatus.Running;
         pendingJob.startedTimestamp = new Date().getTime();
 
         // Add to runningJobs
-        this.runningJobs.push(pendingJob);
+        this._runningJobs.push(pendingJob);
 
         // Remove from pendingJobs
-        this.pendingJobs = this.pendingJobs.filter(
+        this._pendingJobs = this._pendingJobs.filter(
             (j) => j.id !== pendingJob.id
         );
 
@@ -155,24 +262,30 @@ export class InBrowserEndpoint {
             return response
                 .then((files: RunJob) => {
                     // Job is done. Move it to done queue.
-                    this.moveJobsToDoneQueue([pendingJob.id], JobStatus.Done);
-                    this.saveOutputFiles(pendingJob.id, files);
+                    this._moveJobsToDoneQueue([pendingJob.id], JobStatus.Done);
+                    this._saveOutputFiles(pendingJob.id, files);
                     return;
                 })
                 .catch(() => {
                     // Job is done with an error. Move it to done queue.
-                    this.moveJobsToDoneQueue([pendingJob.id], JobStatus.Error);
+                    this._moveJobsToDoneQueue([pendingJob.id], JobStatus.Error);
                 });
         } else {
             // Job is done. Move it to done queue. TODO: What about if error in
             // sync func? Not caught?
-            this.moveJobsToDoneQueue([pendingJob.id], JobStatus.Done);
-            this.saveOutputFiles(pendingJob.id, response);
+            this._moveJobsToDoneQueue([pendingJob.id], JobStatus.Done);
+            this._saveOutputFiles(pendingJob.id, response);
             return Promise.resolve(undefined);
         }
     }
 
-    private saveOutputFiles(id: string, fileInfos: RunJob) {
+    /**
+     * Save output files to the local, fake file system.
+     * 
+     * @param  {string} id         The job ID.
+     * @param  {RunJob} fileInfos  The output files.
+     */
+    private _saveOutputFiles(id: string, fileInfos: RunJob) {
         if (fileInfos === undefined) {
             // Nothing to load
             return;
@@ -183,26 +296,11 @@ export class InBrowserEndpoint {
             fileInfos = [fileInfos];
         }
 
-        if (this.fs[id] === undefined) {
-            this.fs[id] = [];
+        if (this._fs[id] === undefined) {
+            this._fs[id] = [];
         }
 
-        this.fs[id].push(...fileInfos);
-
-        // TODO: Move below to JobManagerParent.ts
-
-        // for (const fileInfo of fileInfos) {
-        //     if (fileInfo === undefined) {
-        //         continue;
-        //     }
-        //     const prts = getFileNameParts(fileInfo.name);
-
-        //     // Is it some sort of loadable file?
-        //     if (getFormatInfoGivenExt(prts.ext) !== undefined) {
-        //         // It's a molecule format. Load it.
-        //         parseMoleculeFile(fileInfo); 
-        //     }
-        // }
+        this._fs[id].push(...fileInfos);
     }
 
     /**
@@ -212,10 +310,10 @@ export class InBrowserEndpoint {
      * @param  {string[]}  jobIds  The job IDs to move.
      * @param  {JobStatus} status  The status to set.
      */
-    private moveJobsToDoneQueue(jobIds: string[], status: JobStatus) {
+    private _moveJobsToDoneQueue(jobIds: string[], status: JobStatus) {
         for (const jobId of jobIds) {
             let jobInWrongList = false;
-            for (const jobs of [this.pendingJobs, this.runningJobs]) {
+            for (const jobs of [this._pendingJobs, this._runningJobs]) {
                 // Is job in queuedJobs? If so, move it to done queue.
                 const jobIdx = jobs.findIndex((j) => j.id === jobId);
                 if (jobIdx >= 0) {
@@ -223,14 +321,14 @@ export class InBrowserEndpoint {
                     const job = jobs.splice(
                         jobIdx,
                         1
-                    )[0] as IJobInfoEndpointResponse;
+                    )[0] as IJobInfoQueueEntry;
 
                     // Change its status
                     job.status = status;
                     job.finishedTimestamp = new Date().getTime();
 
                     // Add to done queue
-                    this.doneJobs.push(job);
+                    this._doneJobs.push(job);
 
                     jobInWrongList = true;
                     break;
@@ -240,7 +338,7 @@ export class InBrowserEndpoint {
             if (!jobInWrongList) {
                 // It was already in the done queue, so we're good. But need to
                 // change its status.
-                for (const job of this.doneJobs) {
+                for (const job of this._doneJobs) {
                     if (job.id === jobId) {
                         job.status = status;
 
@@ -254,25 +352,43 @@ export class InBrowserEndpoint {
         }
     }
 
-    private debugQueueSize() {
-        console.log(
-            "MOO",
-            this.pendingJobs.length,
-            this.runningJobs.length,
-            this.doneJobs.length
-        );
-    }
+    // private _debugQueueSize() {
+    //     console.log(
+    //         "MOO",
+    //         this._pendingJobs.length,
+    //         this._runningJobs.length,
+    //         this._doneJobs.length
+    //     );
+    // }
 
-    private prepGetJobsInfoResponse(queue: Queue): IJobStatusInfo[] {
+    /**
+     * For a given queue, converts each queue entry (IJobInfoEndpointResponse)
+     * into an acceptable response to send back to the client (response requires
+     * formatted as IJobStatusInfo).
+     * 
+     * @param  {Queue | IJobInfoQueueEntry[]} queue  The queue to use, or a list
+     *                                               of queue entries.
+     * @returns {IJobStatusInfo}  The formatted response.
+     */
+    private _prepGetJobsInfoResponse(queue: Queue | IJobInfoQueueEntry[]): IJobStatusInfo[] {
         const jobStatuses: IJobStatusInfo[] = [];
-        let jobInfos: IJobInfoEndpointResponse[] = [];
-        if (queue === Queue.Pending) {
-            jobInfos = this.pendingJobs;
-        } else if (queue === Queue.Running) {
-            jobInfos = this.runningJobs;
-        } else if (queue === Queue.Done) {
-            jobInfos = this.doneJobs;
+
+        let jobInfos: IJobInfoQueueEntry[] = [];
+
+        // Is queue an array?
+        if (Array.isArray(queue)) {
+            // Must be IJobInfoQueueEntry[]
+            jobInfos = queue;
+        } else {
+            if (queue === Queue.Pending) {
+                jobInfos = this._pendingJobs;
+            } else if (queue === Queue.Running) {
+                jobInfos = this._runningJobs;
+            } else if (queue === Queue.Done) {
+                jobInfos = this._doneJobs;
+            }
         }
+            
         for (const jobInfo of jobInfos) {
             if (jobInfo.noResponse) {
                 // Don't include jobs that don't want a response.
@@ -298,75 +414,5 @@ export class InBrowserEndpoint {
         }
 
         return jobStatuses;
-    }
-
-    /**
-     * Gets a payload from the JobManager and responds appropriately (if
-     * required).
-     *
-     * @param  {IToEndpointPayload} payload  The payload describing the action to take.
-     * @returns {Promise<IEndpointResponse>}  The response to the payload.
-     */
-    public getPayload(payload: IToEndpointPayload): Promise<IEndpointResponse> {
-        switch (payload.action) {
-            case EndpointAction.SubmitJobs: {
-                const jobInfos: IJobInfoEndpointResponse[] =
-                    payload.jobInfos as IJobInfoEndpointResponse[];
-
-                // Set status on all jobs to Pending
-                for (const jobInfo of jobInfos) {
-                    jobInfo.status = JobStatus.Pending;
-                    jobInfo.queuedTimestamp = new Date().getTime();
-                    jobInfo.startedTimestamp = -1;
-                    jobInfo.finishedTimestamp = -1;
-                }
-
-                // Add to queuedJobs
-                this.pendingJobs.push(...jobInfos);
-
-                // Timer will start running the jobs when ready.
-                break;
-            }
-
-            case EndpointAction.GetJobsInfo: {
-                const jobStatuses: IJobStatusInfo[] = [
-                    ...this.prepGetJobsInfoResponse(Queue.Pending),
-                    ...this.prepGetJobsInfoResponse(Queue.Running),
-                    ...this.prepGetJobsInfoResponse(Queue.Done),
-                ];
-
-                return Promise.resolve({
-                    responseStatus: EndpointResponseStatus.Success,
-                    jobStatuses: jobStatuses,
-                });
-            }
-
-            case EndpointAction.CancelJobs: {
-                this.moveJobsToDoneQueue(
-                    payload.jobIds as string[],
-                    JobStatus.Cancelled
-                );
-                break;
-            }
-
-            case EndpointAction.UpdateJobIncorporated: {
-                this.moveJobsToDoneQueue(
-                    payload.jobIds as string[],
-                    JobStatus.Incorporated
-                );
-                // TODO: Delete from this.fs?
-                break;
-            }
-
-            case EndpointAction.UpdateMaxNumProcessors: {
-                this.maxNumProcessors = payload.maxNumProcessors as number;
-                break;
-            }
-        }
-
-        // No response required
-        return Promise.resolve({
-            responseStatus: EndpointResponseStatus.Success,
-        });
     }
 }

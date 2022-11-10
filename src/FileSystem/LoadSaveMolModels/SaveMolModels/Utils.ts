@@ -1,6 +1,5 @@
 import { ISaveTxt } from "@/Core/FS";
 import { slugify } from "@/Core/Utils";
-import { getFileNameParts } from "@/FileSystem/Utils";
 import {
     IAtom,
     IMolContainer,
@@ -9,7 +8,8 @@ import {
 import { convertMolContainers } from "../ConvertMolModels/ConvertMolContainer";
 import * as api from "@/Api";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { getFormatInfoGivenExt, IFormatInfo } from "../Types/MolFormats";
+import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
@@ -76,7 +76,7 @@ export function getSaveTxtPromises(
  * @returns {string}  The primary extension.
  */
 export function getPrimaryExt(format: string): string {
-    const formatInfo = getFormatInfoGivenExt(format) as IFormatInfo;
+    const formatInfo = getFormatInfoGivenType(format) as IFormatInfo;
     return formatInfo.primaryExt;
 }
 

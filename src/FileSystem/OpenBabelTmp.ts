@@ -1,43 +1,35 @@
 import { dynamicImports } from "@/Core/DynamicImports";
-
-// function checkExtValid(ext: string) {
-//     const format = extToFormat[ext];
-//     if (!format) {
-//         // TODO: Fix
-//         throw new Error(`Unsupported format: ${ext}`);
-//     }
-// }
+import { getFileType, IFileInfo } from "./Types";
 
 /**
  * Converts a molecule to another format using OpenBabel.
  *
- * @param  {string} content    The content of the molecule.
- * @param  {string} srcExt     The source extension.
- * @param  {string} targetExt  The target extension.
+ * @param  {IFileInfo} srcFileInfo  The information about the file to convert.
+ * @param  {string} targetFormat    The target extension.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */
 export function convertMolFormatOpenBabel(
-    content: string,
-    srcExt: string,
-    targetExt: string
+    srcFileInfo: IFileInfo,
+    targetFormat: string
 ): Promise<string> {
     // Confirm ext is supported
-    targetExt = targetExt.toLowerCase();
+    targetFormat = targetFormat.toLowerCase();
     // checkExtValid(ext);
-    srcExt = srcExt.toLowerCase();
+    // srcFormat = srcFormat.toLowerCase();
     // checkExtValid(srcExt);
+    const srcFormat = getFileType(srcFileInfo.name).toLowerCase();
 
     return dynamicImports.openbabeljs.module.then(() => {
         const OpenBabel = (window as any)["OpenBabel"];
 
         // See https://partridgejiang.github.io/cheminfo-to-web/demos/items/OpenBabel/openBabelDemo.html
         const conv = new OpenBabel.ObConversionWrapper(); // create ObConversionWrapper instance
-        const inData = content; // set input data
-        conv.setInFormat("", srcExt); // set input format by file extension
+        const inData = srcFileInfo.contents; // set input data
+        conv.setInFormat("", srcFormat); // set input format by file extension
         const mol = new OpenBabel.OBMol(); // create a new molecule object...
         conv.readString(mol, inData); // ... and load it with input data
-        conv.setOutFormat("", targetExt); // set out format by file extension
+        conv.setOutFormat("", targetFormat); // set out format by file extension
         const outData = conv.writeString(mol, false) as string; // get output data, do not trim white spaces
         conv.delete(); // free ObConversionWrapper instance
 
