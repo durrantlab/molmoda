@@ -16,7 +16,9 @@ export interface IJobStatusInfo {
     status: JobStatus;
     id: string;
     // queue time, start time, done time, depending on queue
-    timestamp: number;
+    submitTime: number;
+    startTime: number;
+    endTime: number;
     numProcessors?: number;
     commandName?: string;
     outputFiles?: IFileInfo[];

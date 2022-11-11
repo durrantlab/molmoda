@@ -5,7 +5,7 @@ import { registeredInBrowserJobFuncs } from "./RegisteredInBrowserJobFuncs";
 
 /**
  * Gets the next job to run, subject to constraints.
- * 
+ *
  * @param  {InBrowserEndpoint} endpoint The in-browser endpoint.
  * @returns {IJobInfoQueueEntry | null} . The next job to run, or null if none.
  */
@@ -67,7 +67,7 @@ export function startJob(
 ): Promise<any> {
     // Change status
     pendingJob.status = JobStatus.Running;
-    pendingJob.startedTimestamp = new Date().getTime();
+    pendingJob.startTime = new Date().getTime();
 
     // Add to runningJobs
     endpoint.runningJobs.push(pendingJob);
@@ -111,7 +111,11 @@ export function startJob(
  * @param  {string} id         The job ID.
  * @param  {RunJob} fileInfos  The output files.
  */
-function _saveOutputFiles(endpoint: InBrowserEndpoint, id: string, fileInfos: RunJob) {
+function _saveOutputFiles(
+    endpoint: InBrowserEndpoint,
+    id: string,
+    fileInfos: RunJob
+) {
     if (fileInfos === undefined) {
         // Nothing to load
         return;

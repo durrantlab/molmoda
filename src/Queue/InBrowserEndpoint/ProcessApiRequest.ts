@@ -24,7 +24,7 @@ enum Queue {
  */
 export function processApiRequest(
     endpoint: InBrowserEndpoint,
-    payload: IToEndpointPayload,
+    payload: IToEndpointPayload
 ): Promise<IEndpointResponse> {
     switch (payload.action) {
         case EndpointAction.SubmitJobs: {
@@ -72,7 +72,7 @@ export function processApiRequest(
 
 /**
  * Submits jobs to the endpoint.
- * 
+ *
  * @param  {InBrowserEndpoint}    endpoint  The in-browser endpoint.
  * @param  {IJobInfoQueueEntry[]} jobInfos  The jobs to submit.
  */
@@ -83,13 +83,15 @@ function _submitJobs(
     // Set status on all jobs to Pending
     for (const jobInfo of jobInfos) {
         jobInfo.status = JobStatus.Pending;
-        jobInfo.queuedTimestamp = new Date().getTime();
-        jobInfo.startedTimestamp = -1;
-        jobInfo.finishedTimestamp = -1;
+        jobInfo.submitTime = new Date().getTime();
+        jobInfo.startTime = 0;
+        jobInfo.endTime = 0;
     }
 
     // Add to queuedJobs
     endpoint.pendingJobs.push(...jobInfos);
+
+    _sortJobs(endpoint.pendingJobs);
 
     // Timer will start running the jobs when ready.
 }
@@ -108,6 +110,11 @@ function _getJobsInfo(endpoint: InBrowserEndpoint): Promise<IEndpointResponse> {
         ..._prepGetJobsInfoResponse(endpoint, Queue.Done),
     ];
 
+    _sortJobs(jobStatuses);
+
+    // Reverse
+    // jobStatuses.reverse();
+
     return Promise.resolve({
         responseStatus: EndpointResponseStatus.Success,
         jobStatuses: jobStatuses,
@@ -116,7 +123,7 @@ function _getJobsInfo(endpoint: InBrowserEndpoint): Promise<IEndpointResponse> {
 
 /**
  * Cancels the specified jobs.
- * 
+ *
  * @param  {InBrowserEndpoint} endpoint  The in-browser endpoint.
  * @param  {string[]}          jobIds    The ids of the jobs to cancel.
  */
@@ -135,7 +142,7 @@ function _cancelJobs(endpoint: InBrowserEndpoint, jobIds: string[]) {
 
 /**
  * Cancels all jobs.
- * 
+ *
  * @param  {InBrowserEndpoint} endpoint  The in-browser endpoint.
  */
 function _cancelAllJobs(endpoint: InBrowserEndpoint) {
@@ -278,23 +285,39 @@ function _prepGetJobsInfoResponse(
             continue;
         }
 
-        let timestamp = 0;
-        if (queue === Queue.Pending) {
-            timestamp = jobInfo.queuedTimestamp;
-        } else if (queue === Queue.Running) {
-            timestamp = jobInfo.startedTimestamp;
-        } else if (queue === Queue.Done) {
-            timestamp = jobInfo.finishedTimestamp;
-        }
+        // let timestamp = 0;
+        // if (queue === Queue.Pending) {
+        //     timestamp = jobInfo.queuedTimestamp;
+        // } else if (queue === Queue.Running) {
+        //     timestamp = jobInfo.startedTimestamp;
+        // } else if (queue === Queue.Done) {
+        //     timestamp = jobInfo.finishedTimestamp;
+        // }
 
         jobStatuses.push({
             id: jobInfo.id,
             status: jobInfo.status as JobStatus,
             numProcessors: jobInfo.numProcessors || 1,
-            timestamp: timestamp,
+            submitTime: jobInfo.submitTime,
+            startTime: jobInfo.startTime,
+            endTime: jobInfo.endTime,
             commandName: jobInfo.commandName,
         });
     }
 
     return jobStatuses;
+}
+
+function _sortJobs(jobs: (IJobInfoQueueEntry | IJobStatusInfo)[]) {
+    // Sort first by the submit time (only time all jobs are guaranteed to had),
+    // then by id.
+    jobs.sort((a, b) => {
+        if (a.submitTime < b.submitTime) {
+            return 1;
+        } else if (a.submitTime > b.submitTime) {
+            return -1;
+        } else {
+            return a.id < b.id ? 1 : -1;
+        }
+    });
 }

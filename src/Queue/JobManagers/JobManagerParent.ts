@@ -41,42 +41,46 @@ export abstract class JobManagerParent {
      * @param  {string}         jobId      The id of the job.
      * @param  {IJobStatusInfo} jobStatus  The job status.
      */
-     onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void {
+    onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void {
         if (jobStatus.status === JobStatus.Done) {
             // The job is done. Get te output files.
             this.sendRequest({
                 action: EndpointAction.GetDoneJobsOutput,
                 jobIds: [jobId],
             })
-            .then((response: IEndpointResponse): void => {
-                // Check for error
-                this._throwErrorIfNotSuccess(response);
-                
-                const jobStatuses = response.jobStatuses as IJobStatusInfo[];
+                .then((response: IEndpointResponse): void => {
+                    // Check for error
+                    this._throwErrorIfNotSuccess(response);
 
-                for (const jobStatus of jobStatuses) {
-                    if (jobStatus.outputFiles !== undefined) {
-                        for (const outputFile of jobStatus.outputFiles) {
-                            // There are output files to load.
-                            const prts = getFileNameParts(outputFile.name);
-    
-                            // Is it some sort of loadable file?
-                            if (getFormatInfoGivenType(prts.ext) !== undefined) {
-                                // It's a molecule format. Load it.
-                                parseMoleculeFile(outputFile);
+                    const jobStatuses =
+                        response.jobStatuses as IJobStatusInfo[];
+
+                    for (const jobStatus of jobStatuses) {
+                        if (jobStatus.outputFiles !== undefined) {
+                            for (const outputFile of jobStatus.outputFiles) {
+                                // There are output files to load.
+                                const prts = getFileNameParts(outputFile.name);
+
+                                // Is it some sort of loadable file?
+                                if (
+                                    getFormatInfoGivenType(prts.ext) !==
+                                    undefined
+                                ) {
+                                    // It's a molecule format. Load it.
+                                    parseMoleculeFile(outputFile);
+                                }
                             }
                         }
                     }
-                }
-                return;
-            })
-            .catch((error) => {
-                console.error(error);
-                return;
-            });
+                    return;
+                })
+                .catch((error) => {
+                    console.error(error);
+                    return;
+                });
         }
     }
-    
+
     // The name of the job manager (appears in the UI).
     abstract jobManagerName: string;
 
@@ -211,6 +215,20 @@ export abstract class JobManagerParent {
         return this.sendRequest({
             action: EndpointAction.CancelJobs,
             jobIds: ids,
+        })
+            .then((response: IEndpointResponse): EndpointResponseStatus => {
+                this._throwErrorIfNotSuccess(response);
+                return response.responseStatus;
+            })
+            .catch((error) => {
+                console.error(error);
+                return error;
+            });
+    }
+
+    public cancelAllJobs(): Promise<EndpointResponseStatus> {
+        return this.sendRequest({
+            action: EndpointAction.CancelAllJobs,
         })
             .then((response: IEndpointResponse): EndpointResponseStatus => {
                 this._throwErrorIfNotSuccess(response);

@@ -69,6 +69,26 @@ export function timeDiffDescription(
 ): string {
     const diffSecs = (timestamp2 - timestamp1) / 1000;
     const roundedSecs = Math.round(diffSecs * 10) / 10;
-    const secs = (roundedSecs == 1) ? "sec" : "secs";
+    const secs = roundedSecs == 1 ? "sec" : "secs";
     return ` (${roundedSecs.toFixed(1)} ${secs})`;
+}
+
+export function formatTimestamp(timestamp: number): string {
+    if (timestamp === 0) {
+        return "";
+    }
+    
+    // Format string like MM/DD HH:MM
+    const date = new Date(timestamp);
+
+    // Get month as 3-letter string
+    const monthString = date.toLocaleString("default", { month: "short" });
+
+    const day = date.getDate();
+    const hour = date.getHours();
+
+    // minutes are padded with 0s
+    const minute = date.getMinutes().toString().padStart(2, "0");
+
+    return `${monthString} ${day}, ${hour}:${minute}`;
 }

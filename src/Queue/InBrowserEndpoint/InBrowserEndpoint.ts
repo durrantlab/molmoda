@@ -23,9 +23,9 @@ import { getJobToRun, startJob } from "./RunJob";
 // More information than needs to be sent back to the client.
 export interface IJobInfoQueueEntry extends IJobInfoToEndpoint {
     status: JobStatus;
-    queuedTimestamp: number;
-    startedTimestamp: number;
-    finishedTimestamp: number;
+    submitTime: number;
+    startTime: number;
+    endTime: number;
 }
 
 /**
@@ -112,7 +112,7 @@ export class InBrowserEndpoint {
 
                     // Change its status
                     job.status = status;
-                    job.finishedTimestamp = new Date().getTime();
+                    job.endTime = new Date().getTime();
 
                     // Add to done queue
                     this.doneJobs.push(job);
@@ -129,8 +129,8 @@ export class InBrowserEndpoint {
                     if (job.id === jobId) {
                         job.status = status;
 
-                        if (job.finishedTimestamp === undefined) {
-                            job.finishedTimestamp = new Date().getTime();
+                        if (job.endTime === undefined) {
+                            job.endTime = new Date().getTime();
                         }
                         break;
                     }

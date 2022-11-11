@@ -52,12 +52,6 @@ Evually, need login system. Wordpress powered?
     https://medevel.com/iam-systems-10-identity/ ? Keycloak?
     Or this? https://www.npmjs.com/package/passport
 
-*** Need to implement delay with inbrowser queue (for vina, for example). Could
-be optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
-    Modal should run before job. Really, when waitable job comes up, should wait
-    for all other jobs to complete, then show modal, allow opportunity to cancel
-    that job or all jobs, and resume in time.
-
 Search for "TODO: Would be nice if there were a separate function"
 
 Save molecule files needs more thourough tests. Can this be simplifed somehow?
@@ -75,7 +69,31 @@ Perhaps settings (for local only).
 
 Icons? For treeview and favicon. Using SD?
 
+For queue, do submit time, start time, end time. Always sort by submit time. Not
+currently working. Need to think through carefully. Solution might be just to
+use one queue.
+
+Buttons on queue to cancel jobs (using different kinds). Should have funciton to
+show table column or not (part of IHeader; sort of implemented, but if you add
+second batch of things to queue, doesn't reappear).
+
 # DONE
+
+"Cancel Pending" button doesn't work.
+
+Also, when you cancel a job per job, eventually gets incorporated. Not sure this
+is working.
+
+And need to get per-cancel on each row somehow. Will likely need to modify
+<Table> component.
+
+queue says nothing present if nothing present.
+
+Need to implement delay with inbrowser queue (for vina, for example). Could
+be optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
+    Modal should run before job. Really, when waitable job comes up, should wait
+    for all other jobs to complete, then show modal, allow opportunity to cancel
+    that job or all jobs, and resume in time.
 
 I think both undo and redo should warn one item sooner on stack.
 

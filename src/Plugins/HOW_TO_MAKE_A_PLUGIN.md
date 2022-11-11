@@ -197,7 +197,7 @@ Submits multiple jobs to the queue system. [`submitJobs`](#submitJobs) is typica
 | --------- | ---- | -----------
 | `[parameterSets]` | `any[]` | A list of parameters, one per job. Even if your plugin submits only one job (most common case), you must still wrap the parameters in an array. Optional.
 | `[numProcessorsPerJob=1]` | `number` | The number of processors to use per job. Defaults to 1.
-| `[delayBetweenJobs]` | `number` | The number of milliseconds to wait between running jobs. A modal appears during this time giving the user the opportunity to cancel all jobs. Optional.
+| `[delayBetweenJobsMS]` | `number` | The number of milliseconds to wait between running jobs. A modal appears during this time giving the user the opportunity to cancel all jobs. Optional.
 
 #### `testLoadExampleProtein` (function) <a id="testLoadExampleProtein"></a>
 

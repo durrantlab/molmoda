@@ -14,7 +14,7 @@
 
 <script lang="ts">
 import MolProps from "@/UI/Components/MolProps.vue";
-import Table from "@/UI/Components/Table.vue";
+import Table from "@/UI/Components/Table/Table.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";

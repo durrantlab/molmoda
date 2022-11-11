@@ -8,7 +8,8 @@
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import Table, { ITableData } from "./Table.vue";
+import Table from "./Table/Table.vue";
+import { ITableData } from "./Table/Types";
 
 /**
  * MolProps component
