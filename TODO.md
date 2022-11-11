@@ -54,6 +54,9 @@ Evually, need login system. Wordpress powered?
 
 *** Need to implement delay with inbrowser queue (for vina, for example). Could
 be optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
+    Modal should run before job. Really, when waitable job comes up, should wait
+    for all other jobs to complete, then show modal, allow opportunity to cancel
+    that job or all jobs, and resume in time.
 
 Search for "TODO: Would be nice if there were a separate function"
 
@@ -63,6 +66,14 @@ May be too many options for saving molecules. For example, by chain needed?
 Get slurm/Docker working?
 
 **** Get common interface for mol viewers (to use nglviewer)?
+
+Perhaps settings (for local only).
+    Number of processors.
+    Viewer
+    Save/restore layout
+    Theme?
+
+Icons? For treeview and favicon. Using SD?
 
 # DONE
 

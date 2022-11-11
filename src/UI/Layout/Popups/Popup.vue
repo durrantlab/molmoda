@@ -44,9 +44,25 @@
             v-if="actionBtnTxt2"
             type="button"
             class="btn btn-primary action-btn2"
-            @click="actionBtn2"
+            @click="otherActionBtn(2)"
           >
             {{ actionBtnTxt2 }}
+          </button>
+          <button
+            v-if="actionBtnTxt3"
+            type="button"
+            class="btn btn-primary action-btn2"
+            @click="otherActionBtn(3)"
+          >
+            {{ actionBtnTxt3 }}
+          </button>
+          <button
+            v-if="actionBtnTxt4"
+            type="button"
+            class="btn btn-primary action-btn2"
+            @click="otherActionBtn(4)"
+          >
+            {{ actionBtnTxt4 }}
           </button>
         </div>
       </div>
@@ -76,6 +92,8 @@ export default class Popup extends Vue {
   @Prop() cancelBtnTxt!: string; // If undefined, no cancel button
   @Prop() actionBtnTxt!: string; // If undefined, no ok button
   @Prop({ default: "" }) actionBtnTxt2!: string; // If undefined, no ok button
+  @Prop({ default: "" }) actionBtnTxt3!: string; // If undefined, no ok button
+  @Prop({ default: "" }) actionBtnTxt4!: string; // If undefined, no ok button
   @Prop({ default: true }) cancelXBtn!: boolean;
   @Prop({ default: true }) isActionBtnEnabled!: boolean;
   @Prop({ default: false }) prohibitCancel!: boolean;
@@ -84,7 +102,7 @@ export default class Popup extends Vue {
   @Prop({}) onShown!: Function;
   @Prop({}) beforeShown!: Function;
 
-  idToUse = ""
+  idToUse = "";
 
   modal: any;
 
@@ -108,7 +126,7 @@ export default class Popup extends Vue {
 
   /**
    * Gets the id to use on the modal.
-   * 
+   *
    * @returns {string} The id to use on the modal.
    */
   get getId(): string {
@@ -153,10 +171,13 @@ export default class Popup extends Vue {
 
   /**
    * Runs when a secondary action button is pressed.
+   *
+   * @param {number} idx  The number of the other action button that was
+   *                      pressed.
    */
-  actionBtn2() {
+  otherActionBtn(idx: number) {
     setTimeout(() => {
-      this.$emit("onDone2");
+      this.$emit("onDone" + idx.toString());
       this.$emit("update:modelValue", false);
     }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
   }

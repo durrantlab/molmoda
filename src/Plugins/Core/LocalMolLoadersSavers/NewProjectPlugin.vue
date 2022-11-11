@@ -4,11 +4,13 @@
     title="New Project"
     v-model="open"
     cancelBtnTxt="Cancel"
-    actionBtnTxt="New Project"
     :pluginId="pluginId"
+    
+    actionBtnTxt="New Project"
     @onPopupDone="onPopupDone"
     actionBtnTxt2="Save Project First"
     @onPopupDone2="saveProject"
+
     :isActionBtnEnabled="true"
   >
     <p>

@@ -16,6 +16,7 @@ import * as api from "@/Api";
 import {
   IContributorCredit,
   ISoftwareCredit,
+  Licenses,
 } from "@/Plugins/PluginInterfaces";
 import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -23,7 +24,10 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { fileNameFilter, matchesFilename } from "@/FileSystem/FilenameManipulation";
+import {
+  fileNameFilter,
+  matchesFilename,
+} from "@/FileSystem/FilenameManipulation";
 
 /**
  * SavePNGPlugin
@@ -35,7 +39,13 @@ import { fileNameFilter, matchesFilename } from "@/FileSystem/FilenameManipulati
 })
 export default class SavePNGPlugin extends PluginParentClass {
   menuPath = "File/Graphics/PNG";
-  softwareCredits: ISoftwareCredit[] = []; // TODO: 3dmoljs
+  softwareCredits: ISoftwareCredit[] = [
+    {
+      name: "3Dmol.js",
+      url: "https://3dmol.csb.pitt.edu/",
+      license: Licenses.BSD3,
+    },
+  ];
   contributorCredits: IContributorCredit[] = [
     {
       name: "Jacob D. Durrant",

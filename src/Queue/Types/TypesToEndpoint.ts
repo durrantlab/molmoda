@@ -5,6 +5,7 @@ export interface IToEndpointPayload {
     action: EndpointAction;
     jobInfos?: IJobInfoToEndpoint[];
     jobIds?: string[];
+    jobType?: string;
     maxNumProcessors?: number;
 }
 
@@ -22,11 +23,17 @@ export enum EndpointAction {
     // Used to get job information
     GetJobsInfo = "getJobsInfo",
 
-    // Used to submit jobs
+    // Used to submit jobs of specified id.
     SubmitJobs = "submitJobs",
 
-    // Used to cancel jobs
+    // Used to cancel jobs of specified id.
     CancelJobs = "cancelJob",
+
+    // Used to cancel all the jobs.
+    CancelAllJobs = "cancelAllJobs",
+
+    // Used to cancel all jobs of a given type.
+    CancelAllJobsOfType = "cancelAllJobsOfType",
 
     // Gets the output of a job that has finished. Should also delete output
     // files from remote system.

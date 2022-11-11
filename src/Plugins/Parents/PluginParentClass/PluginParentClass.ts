@@ -166,7 +166,7 @@ export abstract class PluginParentClass extends mixins(
      * @gooddefault
      * @document
      */
-    protected onPopupDone(userArgs: IUserArg[]): void {
+    public onPopupDone(userArgs: IUserArg[]): void {
         this.submitJobs([userArgs]);
     }
 
@@ -183,7 +183,7 @@ export abstract class PluginParentClass extends mixins(
      *                                          Optional.
      * @param {number} [numProcessorsPerJob=1]  The number of processors to use
      *                                          per job. Defaults to 1.
-     * @param {number} [delayBetweenJobs]       The number of milliseconds to
+     * @param {number} [delayBetweenJobsMS]       The number of milliseconds to
      *                                          wait between running jobs. A
      *                                          modal appears during this time
      *                                          giving the user the opportunity
@@ -194,7 +194,7 @@ export abstract class PluginParentClass extends mixins(
     protected submitJobs(
         parameterSets?: any[],
         numProcessorsPerJob = 1,
-        delayBetweenJobs?: number
+        delayBetweenJobsMS?: number
     ) {
         if (parameterSets === undefined) {
             parameterSets = [undefined];
@@ -214,7 +214,7 @@ export abstract class PluginParentClass extends mixins(
                     commandName: this.pluginId,
                     params: p,
                     id: randomID(5),
-                    delayRun: delayBetweenJobs,
+                    delayRun: delayBetweenJobsMS,
                     numProcessors: numProcessorsPerJob,
                     noResponse: !this.logJob
                 } as IJobInfoToEndpoint;

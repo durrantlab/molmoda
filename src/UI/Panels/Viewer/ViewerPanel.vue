@@ -1,19 +1,10 @@
 <template>
   <span style="cursor:grab;">
     <div id="mol-viewer"></div>
-    <!-- smiles="CCCCOC" -->
-    <!-- <Viewer2D
-      :getSmilesFromSelected="true"
-      width="250px"
-      extraStyles="position: absolute; left: 0; bottom: 0;"
-    /> -->
   </span>
 </template>
 
 <script lang="ts">
-/* eslint-disable no-unreachable */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 
@@ -29,15 +20,12 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
 import { dynamicImports } from "@/Core/DynamicImports";
-// import Viewer2D from "./Viewer2D.vue";
 
 /**
  * ViewerPanel component
  */
 @Options({
-  components: {
-    // Viewer2D,
-  },
+  components: {},
 })
 export default class ViewerPanel extends Vue {
   molCache: { [id: string]: any } = {};
@@ -386,6 +374,7 @@ export default class ViewerPanel extends Vue {
           defaultcolors: $3Dmol.rasmolElementColors,
         });
 
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         window["viewer"] = viewer;
 
@@ -409,8 +398,4 @@ export default class ViewerPanel extends Vue {
   height: 100%;
   position: relative;
 }
-
-// #mol-viewer canvas {
-//   padding: 0 !important;
-// }
 </style>

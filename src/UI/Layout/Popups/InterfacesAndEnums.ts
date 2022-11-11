@@ -19,3 +19,16 @@ export interface ISimpleMsg {
     neverClose?: boolean;
     open?: boolean;  // Whether to open or close
 }
+
+export interface IDelayedJobPopup {
+    open: boolean;  // Whether to open or close
+    // message?: string;
+    jobType?: string;
+    jobId?: string;
+    runDelayedJob?: () => {};
+    cancelDelayedJob?: () => {};
+    cancelAllDelayedJobsOfType?: () => {};
+    cancelAllJobs?: () => {};
+    waitTimePassed?: number;
+    totalWaitTime?: number;
+}

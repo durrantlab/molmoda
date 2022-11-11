@@ -4,11 +4,16 @@
     v-model="openToUse"
     :cancelBtnTxt="cancelBtnTxt"
     :actionBtnTxt="actionBtnTxt"
+    :actionBtnTxt2="actionBtnTxt2"
+    :actionBtnTxt3="actionBtnTxt3"
+    :actionBtnTxt4="actionBtnTxt4"
     :isActionBtnEnabled="validateUserInputs"
     :prohibitCancel="prohibitCancel"
     :variant="variant"
     @onDone="onPopupDone"
     @onDone2="onPopupDone2"
+    @onDone3="onPopupDone3"
+    @onDone4="onPopupDone4"
     @onClosed="onClosed"
     :id="'modal-' + pluginId"
   >
@@ -70,9 +75,9 @@ export default class PluginComponent extends mixins(
   /** Whether the action button (e.g., "Load") is enabled. */
   @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
 
-  /** 
+  /**
    * Whether to hide user parameters that are disabled or to show them in a
-   * disabled state. 
+   * disabled state.
    */
   @Prop({ default: false }) hideIfDisabled!: boolean;
 
@@ -84,6 +89,12 @@ export default class PluginComponent extends mixins(
 
   /** The text that appears on the action button (e.g., "Load"). */
   @Prop({ default: "Load" }) actionBtnTxt!: string;
+
+  // In rare cases, might need multiple action buttons. Not going to document
+  // this for simplicity's sake.
+  @Prop({ default: "" }) actionBtnTxt2!: string;
+  @Prop({ default: "" }) actionBtnTxt3!: string;
+  @Prop({ default: "" }) actionBtnTxt4!: string;
 
   /**
    * Whether the user can cancel the plugin. Some rare plugins are not
@@ -181,6 +192,22 @@ export default class PluginComponent extends mixins(
      * Runs when the secondary action button is pressed, after the popup closes.
      */
     this.$emit("onPopupDone2");
+  }
+
+  /**
+   * Runs when the user presses the third action button and the popup closes.
+   */
+  onPopupDone3() {
+    this.$emit("update:modelValue", false);
+    this.$emit("onPopupDone3");
+  }
+
+  /**
+   * Runs when the user presses the forth action button and the popup closes.
+   */
+  onPopupDone4() {
+    this.$emit("update:modelValue", false);
+    this.$emit("onPopupDone4");
   }
 
   /**

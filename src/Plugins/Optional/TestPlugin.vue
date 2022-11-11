@@ -95,7 +95,7 @@ export default class TestPlugin extends PluginParentClass {
       }
       jobParams.push(jobParam);
     }
-    this.submitJobs(jobParams, Math.round(Math.random() * 2), 10000);  // , 500);
+    this.submitJobs(jobParams, Math.round(Math.random() * 2), 10000);
   }
 
   /**
