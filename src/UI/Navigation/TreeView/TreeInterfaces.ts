@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/ban-types */
 
-export interface GLModel {
-    selectedAtoms: Function;
-    removeAtoms: Function;
-}
+import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
+
 export interface IAtom {
     chain: string;
     resi: number;

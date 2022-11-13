@@ -22,7 +22,8 @@
             state="{}"
             :style="'height:100%; padding:0 !important;'"
           >
-            <ViewerPanel />
+            <!-- <ViewerPanel3DMolJs /> -->
+            <ViewerPanelNGL />
           </GoldenLayoutComponent>
           <GoldenLayoutComponent name="Jobs" state="{}">
             <QueuePanel />
@@ -59,7 +60,7 @@ import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
 import "bootstrap/js/dist/tab";
 import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
-import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
+import ViewerPanel3DMolJs from "@/UI/Panels/Viewer/ViewerPanel3DMolJs.vue";
 import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 import LogPanel from "@/UI/Panels/Log/LogPanel.vue";
@@ -67,6 +68,7 @@ import * as api from "@/Api";
 import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
 import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
+import ViewerPanelNGL from "@/UI/Panels/Viewer/ViewerPanelNGL.vue";
 
 /**
  * GoldLayout component
@@ -75,7 +77,8 @@ import { makeGoldenLayout } from "./GoldenLayoutCommon";
   components: {
     GoldenLayoutContainer,
     GoldenLayoutComponent,
-    ViewerPanel,
+    ViewerPanel3DMolJs,
+    ViewerPanelNGL,
     StylesPanel,
     TreeView,
     LogPanel,
@@ -138,7 +141,7 @@ export default class GoldLayout extends Vue {
     const glContainer = document.getElementById("golden-layout") as HTMLElement;
 
     const myLayout = makeGoldenLayout(glContainer);
-    
+
     myLayout.registerComponentFactoryFunction(
       "component",
       (container: ComponentContainer, componentState: any) => {

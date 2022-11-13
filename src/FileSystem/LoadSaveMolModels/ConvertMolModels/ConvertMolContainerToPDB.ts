@@ -1,8 +1,8 @@
 import {
-    GLModel,
     IAtom,
     IMolContainer,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { standardProteinResidues, solventSel } from "../Types/ComponentSelections";
 
 

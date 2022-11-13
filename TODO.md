@@ -59,7 +59,8 @@ May be too many options for saving molecules. For example, by chain needed?
 
 Get slurm/Docker working?
 
-**** Get common interface for mol viewers (to use nglviewer)?
+Get common interface for mol viewers (to use nglviewer)? Working, but no labels,
+zoom on click, and some representations are still problematic. 
 
 Perhaps settings (for local only).
     Number of processors.
@@ -77,7 +78,16 @@ Buttons on queue to cancel jobs (using different kinds). Should have funciton to
 show table column or not (part of IHeader; sort of implemented, but if you add
 second batch of things to queue, doesn't reappear).
 
+Export VRML for NGL viewer. Not working. Need to test. Look for other places
+where might not work (outside of ViewerPanel).
+
+Keyboard shortcuts built into menu system.
+
 # DONE
+
+NGL viewer surface (change to chain) also produces error.
+
+Menu behind divider
 
 "Cancel Pending" button doesn't work.
 

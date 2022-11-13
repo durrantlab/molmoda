@@ -4,7 +4,7 @@
     v-model="open"
     :cancelBtnTxt="''"
     actionBtnTxt="Run"
-    @onPopupDone="runDelayedJob"
+    @onPopupDone="onPopupDone"
     actionBtnTxt2="Cancel"
     @onPopupDone2="cancelJob"
     :actionBtnTxt3="'Cancel All ' + prettyJobType"
@@ -136,9 +136,9 @@ export default class DelayedJobPopupPlugin extends PluginParentClass {
   }
 
   /**
-   * Runs when the user clicks the "Run" button.
+   * Runs when the user clicks the "Run" button. runDelayedJob.
    */
-  runDelayedJob() {
+  onPopupDone() {
     this.runDelayedJobCallback();
   }
 

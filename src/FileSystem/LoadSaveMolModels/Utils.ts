@@ -1,7 +1,6 @@
-import {
-    IMolContainer,
-    GLModel,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+/* eslint-disable @typescript-eslint/ban-types */
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 
 interface ICopiedObj {
     promises: Promise<any>[];
@@ -20,7 +19,10 @@ export const biotiteStateKeysToRetain = ["molecules", "log"];
  * @returns {ICopiedObj} The deep-copied object.
  */
 // eslint-disable-next-line @typescript-eslint/ban-types
-export function copyObjRecursively(obj: IMolContainer, modelFunc: Function): ICopiedObj {
+export function copyObjRecursively(
+    obj: IMolContainer,
+    modelFunc: Function
+): ICopiedObj {
     const promises: Promise<any>[] = [];
     // eslint-disable-next-line @typescript-eslint/ban-types
     const _copyObjRecursively = (oldNode: any, mdlFunc: Function) => {
@@ -61,9 +63,8 @@ export function modelsToAtoms(molContainer: IMolContainer): IMolContainer {
         molContainer,
         (origNode: IMolContainer, newNode: IMolContainer): void => {
             newNode.model = (origNode.model as GLModel).selectedAtoms({});
-        },
+        }
     );
 
     return recurseResult.newNode;
 }
-

@@ -5,7 +5,6 @@ import {
 } from "@/Core/WebWorkers/WorkerHelper";
 
 import {
-    GLModel,
     IAtom,
     IMolContainer,
     IStyle,
@@ -36,6 +35,7 @@ import {
     solventStyle,
 } from "../Types/DefaultStyles";
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
+import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 
 let glviewer: any;
 
