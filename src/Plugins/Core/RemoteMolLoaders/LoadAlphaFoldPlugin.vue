@@ -82,7 +82,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
-    let uniprot = this.userArgsLookup(userArgs, "uniprot");
+    let uniprot = this.getArg(userArgs, "uniprot");
     this.submitJobs([uniprot]);
   }
 

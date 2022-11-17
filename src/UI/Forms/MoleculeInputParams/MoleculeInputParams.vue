@@ -5,7 +5,10 @@
       v-model="val.molsToUse"
     ></WhichMols> -->
     <FormWrapper label="Which project molecules to consider?" cls="border-0">
-      <FormSelect v-model="val.molsToUse" :options="molsToUseOpts"></FormSelect>
+      <FormSelect
+        v-model="molsToConsiderAsStr"
+        :options="molsToConsiderOpts"
+      ></FormSelect>
     </FormWrapper>
 
     <FormWrapper
@@ -14,7 +17,7 @@
       cls="border-0"
     >
       <FormSelect
-        v-model="val.combineProteinType"
+        v-model="val.molMergeStrategy"
         :options="mergeProtein"
       ></FormSelect>
     </FormWrapper>
@@ -32,12 +35,27 @@ import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
 import FormWrapper from "../FormWrapper.vue";
-import * as api from "@/Api";
-import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+  getCompoundsToUse,
+  getMolDescription,
+  getProteinChainsToUse,
+  getProteinsToUse,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
 import { IFormOption } from "../FormFull/FormFullInterfaces";
-import { CombineProteinType, defaultMoleculeInputParams, IMoleculeInputParams, MolsToUse, molsToUseOptions } from "./Types";
+import {
+  defaultMoleculeInputParams,
+  IMoleculeInputParams,
+  molsToConsiderOptions,
+  molsToConsiderStrToObj,
+  molsToConsiderToStr,
+} from "./Types";
+import {
+  compileMolModels,
+  IMolsToConsider,
+  MolMergeStrategy,
+} from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 // import WhichMols from "../WhichMols/WhichMols.vue";
 
 /**
@@ -56,24 +74,36 @@ export default class MoleculeInputParams extends Vue {
   @Prop({ default: { ...defaultMoleculeInputParams() } })
   modelValue!: IMoleculeInputParams;
 
-  molsToUseOpts = molsToUseOptions;
-
+  // Shadows modelValue
   val: IMoleculeInputParams = { ...defaultMoleculeInputParams() };
+
+  molsToConsiderOpts = molsToConsiderOptions;
 
   mergeProtein: IFormOption[] = [
     {
       description: "Each Protein (Group Associated Chains)",
-      val: CombineProteinType.PerProtein,
+      val: MolMergeStrategy.ByMolecule,
     },
     {
       description: "All Proteins Together (Group All Proteins into One)",
-      val: CombineProteinType.MergeAll,
+      val: MolMergeStrategy.OneMol,
     },
     {
       description: "Each Protein Chain Separately (Group Nothing)",
-      val: CombineProteinType.PerChain,
+      val: MolMergeStrategy.ByChain,
     },
   ];
+
+  // IMolsToConsider is object, but select uses string. So watch this string
+  // enum and update accordingly.
+  molsToConsiderAsStr = molsToConsiderToStr(
+    defaultMoleculeInputParams().molsToConsider
+  );
+
+  @Watch("molsToConsiderAsStr")
+  onMolsToConsiderAsStrChange() {
+    this.val.molsToConsider = molsToConsiderStrToObj[this.molsToConsiderAsStr];
+  }
 
   /**
    * Gets the molecules from the store.
@@ -101,71 +131,81 @@ export default class MoleculeInputParams extends Vue {
       txt += "This calculation acts on proteins. ";
     }
 
-    switch (this.val.molsToUse) {
-      case MolsToUse.All:
-        txt += "Among all molecules, I found ";
-        break;
-      case MolsToUse.Visible:
-        txt += "Among the visible molecules, I found ";
-        break;
-      case MolsToUse.Selected:
-        txt += "Among the selected molecules, I found ";
-        break;
-      case MolsToUse.VisibleOrSelected:
-        txt += "Among the visible and/or selected molecules, I found ";
-        break;
+    const molsToConsid = this.val.molsToConsider;
+    if (molsToConsid.all === true) {
+      txt += "Among all molecules, I found ";
+    } else if (
+      molsToConsid.visible === true &&
+      molsToConsid.selected === true
+    ) {
+      txt += "Among the visible and/or selected molecules, I found ";
+    } else if (molsToConsid.visible === true) {
+      txt += "Among the visible molecules, I found ";
+    } else if (molsToConsid.selected === true) {
+      txt += "Among the selected molecules, I found ";
     }
 
     let prts: string[] = [];
 
-    let protPrtsCount = -1;
+    const compiledMols = compileMolModels(
+      this.val.molMergeStrategy,
+      molsToConsid,
+      true // Keep compounds separate.
+    );
+
+    const nodeGroups = compiledMols.nodeGroups ?? [];
+    const compoundsNodes = compiledMols.compoundsNodes ?? [];
+    const nodeGroupsCount = nodeGroups.length;
+    const compoundsNodesCount = compoundsNodes.length;
+
     if (this.val.considerProteins) {
-      switch (this.val.combineProteinType) {
-        case CombineProteinType.PerProtein:
-          protPrtsCount = this.proteinsToUse.length;
+      switch (this.val.molMergeStrategy) {
+        case MolMergeStrategy.ByMolecule:
+          // protPrtsCount = (compiledMols.nonCompoundNodes as any).length; //  this.proteinsToUse.length;
           prts.push(
-            (protPrtsCount !== 1 ? `${protPrtsCount} proteins` : "1 protein") +
-              ` (${this.listMols(this.proteinsToUse)})`
+            (nodeGroupsCount !== 1
+              ? `${nodeGroupsCount} proteins`
+              : "1 protein") + ` (${this.listMols(nodeGroups[0])})` // TODO: First mol for now. Need to think about this. Parent?
           );
           break;
-        case CombineProteinType.MergeAll:
-          if (this.proteinChainsToUse.length === 0) {
+        case MolMergeStrategy.OneMol:
+          if (nodeGroupsCount === 0) {
+            // if ((compiledMols.allNodes as any) === 0) {
             prts.push("0 (merged) proteins");
           } else {
             prts.push("1 (merged) protein");
           }
           break;
-        case CombineProteinType.PerChain:
-          protPrtsCount = this.proteinChainsToUse.length;
+        case MolMergeStrategy.ByChain:
+          // protPrtsCount = (compiledMols.nonCompoundNodes as any).length; // this.proteinChainsToUse.length;
           prts.push(
-            (protPrtsCount !== 1
-              ? `${protPrtsCount} protein chains`
-              : "1 protein chain") +
-              ` (${this.listMols(this.proteinChainsToUse)})`
+            (nodeGroupsCount !== 1
+              ? `${nodeGroupsCount} protein chains`
+              : "1 protein chain") + ` (${this.listMols(nodeGroups[0])})` // First one. Think about this.
           );
           break;
       }
     }
 
-    let cmpPrtsCount = -1;
+    // let cmpPrtsCount = -1;
     if (this.val.considerCompounds) {
-      cmpPrtsCount = this.compoundsToUse.length;
+      // cmpPrtsCount = (compiledMols.compoundNodes as any).length; // this.compoundsToUse.length;
       prts.push(
-        (cmpPrtsCount !== 1 ? `${cmpPrtsCount} compounds` : "1 compound") +
-          ` (${this.listMols(this.compoundsToUse)})`
+        (compoundsNodesCount !== 1
+          ? `${compoundsNodesCount} compounds`
+          : "1 compound") + ` (${this.listMols(compoundsNodes)})`
       );
     }
 
     txt += prts.join(" and ");
     txt += ", so this calculation will run ";
-    if (protPrtsCount !== -1 && cmpPrtsCount !== -1) {
-      txt += `${
-        protPrtsCount * cmpPrtsCount
-      } (${protPrtsCount} x ${cmpPrtsCount}) times.`;
-    } else if (protPrtsCount !== -1) {
-      txt += `${protPrtsCount} times (once for each protein).`;
-    } else if (cmpPrtsCount !== -1) {
-      txt += `${cmpPrtsCount} times (once for each compound).`;
+    if (nodeGroupsCount !== -1 && compoundsNodesCount !== -1) {
+      const total = nodeGroupsCount * compoundsNodesCount;
+      txt += `${total} ($nodeGroupsCount} x ${compoundsNodesCount}) times.`;
+    } else if (nodeGroupsCount !== -1) {
+      txt += `$nodeGroupsCount} times (once for each protein).`;
+    } else if (compoundsNodesCount !== -1) {
+      txt += `${compoundsNodesCount} times (once for each compound).`;
     }
 
     // const protTxt = this.visibleProteins.length !== 1 ? "proteins" : "protein";
@@ -198,25 +238,19 @@ export default class MoleculeInputParams extends Vue {
    *
    * @returns {IMolContainer[]}  The visible proteins.
    */
-  get proteinsToUse(): IMolContainer[] {
-    // Get number of visible proteins (top-level menu items).
-    return api.visualization.getProteinsToUse(
-      this.val.molsToUse,
-      this.molecules
-    );
-  }
+  // get proteinsToUse(): IMolContainer[] {
+  //   // Get number of visible proteins (top-level menu items).
+  //   return getProteinsToUse(this.val.molsToConsider, this.molecules);
+  // }
 
   /**
    * Gets the visible protein chains.
    *
    * @returns {IMolContainer[]}  The visible protein chains.
    */
-  get proteinChainsToUse(): IMolContainer[] {
-    return api.visualization.getProteinChainsToUse(
-      this.val.molsToUse,
-      this.molecules
-    );
-  }
+  // get proteinChainsToUse(): IMolContainer[] {
+  //   return getProteinChainsToUse(this.val.molsToConsider, this.molecules);
+  // }
 
   /**
    * Determines whether user should be able to select which protein to consider.
@@ -227,7 +261,7 @@ export default class MoleculeInputParams extends Vue {
    */
   get isSelectWhichMolToConsidervisible(): boolean {
     return (
-      api.visualization.getProteinChainsToUse(MolsToUse.All, this.molecules)
+      getProteinChainsToUse({ all: true } as IMolsToConsider, this.molecules)
         .length > 1
     );
   }
@@ -237,12 +271,9 @@ export default class MoleculeInputParams extends Vue {
    *
    * @returns {IMolContainer[]}  The visible compounds.
    */
-  get compoundsToUse(): IMolContainer[] {
-    return api.visualization.getCompoundsToUse(
-      this.val.molsToUse,
-      this.molecules
-    );
-  }
+  // get compoundsToUse(): IMolContainer[] {
+  //   return getCompoundsToUse(this.val.molsToConsider, this.molecules);
+  // }
 
   /**
    * Watches val and emits the modelValue.
@@ -251,7 +282,8 @@ export default class MoleculeInputParams extends Vue {
    */
   @Watch("val", { deep: true })
   onValChanged(newVal: IMoleculeInputParams) {
-    newVal.molsToUse = parseInt(newVal.molsToUse as any);
+    // newVal.molsToUse = parseInt(newVal.molsToUse as any);
+    this.molsToConsiderAsStr = molsToConsiderToStr(newVal.molsToConsider);
     this.$emit("update:modelValue", newVal);
     this.$emit("onChange");
   }
@@ -267,7 +299,7 @@ export default class MoleculeInputParams extends Vue {
   }
 
   /**
-   * The mounted function, to set the initial vla from modelValue.
+   * The mounted function, to set the initial val from modelValue.
    */
   mounted() {
     this.val = this.modelValue;

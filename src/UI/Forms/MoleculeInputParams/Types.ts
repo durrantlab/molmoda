@@ -1,40 +1,64 @@
+import { IMolsToConsider, MolMergeStrategy } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { IFormOption } from "../FormFull/FormFullInterfaces";
 
-export enum MolsToUse {
-    All,
-    Visible,
-    Selected,
-    VisibleOrSelected,
+// Good to do below because when using selection, val is a string. So good not
+// to use object of type IMolsToConsider directly.
+export enum MolsToConsiderStr {
+    All = "All",
+    Selected = "Selected",
+    Visible = "Visible",
+    VisibleOrSelected = "VisibleOrSelected",
 }
 
-export const molsToUseOptions: IFormOption[] = [
+// For easy converting back to IMolsToConsider.
+export const molsToConsiderStrToObj: {
+    [key in MolsToConsiderStr]: IMolsToConsider;
+} = {
+    [MolsToConsiderStr.All]: { all: true },
+    [MolsToConsiderStr.Selected]: { selected: true },
+    [MolsToConsiderStr.Visible]: { visible: true },
+    [MolsToConsiderStr.VisibleOrSelected]: { selected: true, visible: true },
+};
+
+export function molsToConsiderToStr(
+    molsToConsider: IMolsToConsider
+): MolsToConsiderStr {
+    if (molsToConsider.all) {
+        return MolsToConsiderStr.All;
+    } else if (molsToConsider.selected && molsToConsider.visible) {
+        return MolsToConsiderStr.VisibleOrSelected;
+    } else if (molsToConsider.selected) {
+        return MolsToConsiderStr.Selected;
+    } else if (molsToConsider.visible) {
+        return MolsToConsiderStr.Visible;
+    } else {
+        // Shouldn't ever happen
+        return MolsToConsiderStr.All;
+    }
+}
+
+export const molsToConsiderOptions: IFormOption[] = [
     {
         description: "All Molecules (Visible, Hidden, Selected)",
-        val: MolsToUse.All,
+        val: MolsToConsiderStr.All,
     },
     {
         description: "Visible Molecules",
-        val: MolsToUse.Visible,
+        val: MolsToConsiderStr.Visible,
     },
     {
         description: "Selected Molecules",
-        val: MolsToUse.Selected,
+        val: MolsToConsiderStr.Selected,
     },
     {
         description: "Visible and/or Selected Molecules",
-        val: MolsToUse.VisibleOrSelected,
+        val: MolsToConsiderStr.VisibleOrSelected,
     },
 ];
 
-export enum CombineProteinType {
-    PerProtein = "PER_PROTEIN",
-    MergeAll = "MERGE_ALL",
-    PerChain = "PER_CHAIN",
-}
-
 export interface IMoleculeInputParams {
-    combineProteinType: CombineProteinType;
-    molsToUse: MolsToUse;
+    molMergeStrategy: MolMergeStrategy;
+    molsToConsider: IMolsToConsider;
     considerProteins: boolean;
     considerCompounds: boolean;
 }
@@ -46,8 +70,8 @@ export interface IMoleculeInputParams {
  */
 export function defaultMoleculeInputParams(): IMoleculeInputParams {
     return {
-        combineProteinType: CombineProteinType.MergeAll,
-        molsToUse: MolsToUse.Visible,
+        molMergeStrategy: MolMergeStrategy.OneMol,
+        molsToConsider: { visible: true, selected: true } as IMolsToConsider,
         considerProteins: true,
         considerCompounds: true,
     };

@@ -42,6 +42,7 @@ export default class UndoPlugin extends PluginParentClass {
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
+  hotkey = "z"
 
   /**
    * Check if this plugin can currently be used.

@@ -173,8 +173,8 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The updated user variables.
    */
   onDataChanged(userArgs: IUserArg[]): void {
-    let newName = this.userArgsLookup(userArgs, "newName") as string;
-    this.doExtract = this.userArgsLookup(userArgs, "doExtract") as boolean;
+    let newName = this.getArg(userArgs, "newName") as string;
+    this.doExtract = this.getArg(userArgs, "doExtract") as boolean;
     this.intro = this.doExtract ? extractDescription : cloneDescription;
 
     if (this.doExtract) {
@@ -232,7 +232,7 @@ export default class CloneExtractMolPlugin extends PluginParentClass {
 
       convertedNode
         .then((node) => {
-          node.title = this.userArgsLookup(userArgs, "newName");
+          node.title = this.getArg(userArgs, "newName");
 
           let subNodes = getAllNodesFlattened([node]);
           subNodes.forEach((n) => {

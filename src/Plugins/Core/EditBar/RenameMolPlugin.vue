@@ -93,7 +93,7 @@ export default class RenameMolPlugin extends PluginParentClass {
    */
   runJobInBrowser(userArgs: IUserArg[]) {
     if (this.nodeToActOn) {
-      this.nodeToActOn.title = this.userArgsLookup(userArgs, "newName");
+      this.nodeToActOn.title = this.getArg(userArgs, "newName");
     }
   }
 

@@ -61,6 +61,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
   accept = fileTypesAccepts;
+  hotkey = "o";
 
   /**
    * Runs when the files are loaded.

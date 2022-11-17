@@ -1,9 +1,9 @@
-import { ISaveTxt } from "@/Core/FS";
 import { store } from "@/Store";
 import { setStoreIsDirty } from "@/Store/LoadAndSaveStore";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
 import { biotiteStateKeysToRetain, modelsToAtoms } from "../Utils";
+import { IFileInfo } from "@/FileSystem/Types";
 
 /**
  * Runs the job when the user wants to save in the .biotite format.
@@ -51,12 +51,8 @@ export function saveState(filename: string, state: any): Promise<any> {
 
     // Create JSON file (compressed).
     return api.fs.saveTxt({
-        fileName: "biotite_file.json",
-        content: jsonStr,
-        ext: ".json",
-        compress: {
-            fileName: filename,
-            ext: ".biotite",
-        },
-    } as ISaveTxt);
+        name: "biotite_file.json",
+        contents: jsonStr,
+        compressedName: filename,
+    } as IFileInfo);
 }

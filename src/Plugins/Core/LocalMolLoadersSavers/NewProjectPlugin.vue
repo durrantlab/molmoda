@@ -55,6 +55,7 @@ export default class NewProjectPlugin extends PluginParentClass {
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
+  hotkey = "n";
 
   /**
    * Runs when the user presses the action button and the popup closes.

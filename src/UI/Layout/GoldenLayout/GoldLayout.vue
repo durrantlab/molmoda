@@ -22,8 +22,7 @@
             state="{}"
             :style="'height:100%; padding:0 !important;'"
           >
-            <!-- <ViewerPanel3DMolJs /> -->
-            <ViewerPanelNGL />
+            <ViewerPanel />
           </GoldenLayoutComponent>
           <GoldenLayoutComponent name="Jobs" state="{}">
             <QueuePanel />
@@ -68,7 +67,7 @@ import * as api from "@/Api";
 import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
 import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
-import ViewerPanelNGL from "@/UI/Panels/Viewer/ViewerPanelNGL.vue";
+import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 
 /**
  * GoldLayout component
@@ -77,8 +76,7 @@ import ViewerPanelNGL from "@/UI/Panels/Viewer/ViewerPanelNGL.vue";
   components: {
     GoldenLayoutContainer,
     GoldenLayoutComponent,
-    ViewerPanel3DMolJs,
-    ViewerPanelNGL,
+    ViewerPanel,
     StylesPanel,
     TreeView,
     LogPanel,

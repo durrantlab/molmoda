@@ -1,5 +1,5 @@
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
-import { MolsToUse } from "@/UI/Forms/MoleculeInputParams/Types";
+import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { IMolContainer, MolType, SelectedType } from "./TreeInterfaces";
 
 /**
@@ -209,66 +209,66 @@ export function getRootNodesOfType(
 }
 
 /**
- * Filters molecules by "to-use" property.
+ * Filters molecules by "to-consider" property.
  *
- * @param  {IMolContainer[]} molecules  The array of IMolContainer to filter.
- * @param  {MolsToUse}       molsToUse  The "to-use" property to filter by.
+ * @param  {IMolContainer[]} molecules       The array of IMolContainer to
+ *                                           filter.
+ * @param  {IMolsToConsider} molsToConsider  The "to-consider" property to
+ *                                           filter by.
  * @returns {IMolContainer[]}  The filtered array of IMolContainer.
  */
-function _filterMolsByUseProperty(
+function _filterMolsByToConsiderProperty(
     molecules: IMolContainer[],
-    molsToUse: MolsToUse
+    molsToConsider: IMolsToConsider
 ): IMolContainer[] {
-    switch (molsToUse) {
-        case MolsToUse.All:
-            break;
-        case MolsToUse.Visible:
-            molecules = molecules.filter((m) => m.visible);
-            break;
-        case MolsToUse.Selected:
-            molecules = molecules.filter(
-                (m) => m.selected !== SelectedType.False
-            );
-            break;
-        case MolsToUse.VisibleOrSelected:
-            molecules = molecules.filter((m) => m.visible || m.selected);
-            break;
-        default:
-            throw new Error("Invalid MoleculesToConsider value.");
+    if (molsToConsider.all) {
+        return molecules;
     }
 
-    return molecules;
+    if (molsToConsider.visible && molsToConsider.selected) {
+        return molecules.filter((m) => m.visible || m.selected !== SelectedType.False);
+    }
+
+    if (molsToConsider.visible) {
+        return molecules.filter((m) => m.visible);
+    }
+
+    if (molsToConsider.selected) {
+        return molecules.filter((m) => m.selected !== SelectedType.False);
+    }
+
+    throw new Error("Invalid MoleculesToConsider value.");
 }
 
 /**
  * Gets the visible proteins. (Each protein may have multiple chains.)
  *
- * @param  {MolsToUse}        molsToUse  The kinds of molecule properties to
- *                                       filter by.
- * @param  {IMolContainer[]}  molecules  The list of molecules to consider.
+ * @param  {IMolsToConsider} molsToConsider  The kinds of molecule properties to
+ *                                           filter by.
+ * @param  {IMolContainer[]} molecules       The list of molecules to consider.
  * @returns {IMolContainer[]}  The visible proteins.
  */
 export function getProteinsToUse(
-    molsToUse: MolsToUse,
+    molsToConsider: IMolsToConsider,
     molecules: IMolContainer[]
 ): IMolContainer[] {
     // Get number of visible proteins (top-level menu items).
 
     const proteins = getRootNodesOfType(molecules, MolType.Protein);
 
-    return _filterMolsByUseProperty(proteins, molsToUse);
+    return _filterMolsByToConsiderProperty(proteins, molsToConsider);
 }
 
 /**
  * Gets the visible protein chains.
  *
- * @param  {MolsToUse}        molsToUse  The kinds of molecule properties to
- *                                       filter by.
- * @param  {IMolContainer[]}  molecules  The list of molecules to consider.
+ * @param  {IMolsToConsider}  molsToConsider  The kinds of molecule properties
+ *                                            to filter by.
+ * @param  {IMolContainer[]}  molecules       The list of molecules to consider.
  * @returns {IMolContainer[]}  The visible protein chains.
  */
 export function getProteinChainsToUse(
-    molsToUse: MolsToUse,
+    molsToConsider: IMolsToConsider,
     molecules: IMolContainer[]
 ): IMolContainer[] {
     // Get the number of chains (terminal nodes).
@@ -278,19 +278,19 @@ export function getProteinChainsToUse(
         (m) => m.type === MolType.Protein
     );
 
-    return _filterMolsByUseProperty(proteinChains, molsToUse);
+    return _filterMolsByToConsiderProperty(proteinChains, molsToConsider);
 }
 
 /**
  * Gets the visible compounds.
  *
- * @param  {MolsToUse}       molsToUse  The kinds of molecule properties to
- *                                      filter by.
- * @param  {IMolContainer[]} molecules  The list of molecules to consider.
+ * @param  {IMolsToConsider} molsToConsider  The kinds of molecule properties to
+ *                                           filter by.
+ * @param  {IMolContainer[]} molecules       The list of molecules to consider.
  * @returns {IMolContainer[]}  The visible compounds.
  */
 export function getCompoundsToUse(
-    molsToUse: MolsToUse,
+    molsToConsider: IMolsToConsider,
     molecules: IMolContainer[]
 ): IMolContainer[] {
     const terminalNodes = getTerminalNodes(molecules);
@@ -298,7 +298,7 @@ export function getCompoundsToUse(
         (m) => m.type === MolType.Compound
     );
 
-    return _filterMolsByUseProperty(compounds, molsToUse);
+    return _filterMolsByToConsiderProperty(compounds, molsToConsider);
 }
 
 /**

@@ -96,7 +96,7 @@ export class UserArgsMixin extends Vue {
      * @param  {string}     name      The name of the user argument to find.
      * @returns {any}  The value of the user argument with the specified name.
      */
-    protected userArgsLookup(userArgs: IUserArg[], name: string): any {
+    protected getArg(userArgs: IUserArg[], name: string): any {
         for (const userArg of userArgs) {
             if (userArg.name === name) {
                 return userArg.val;

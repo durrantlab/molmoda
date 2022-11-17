@@ -90,7 +90,7 @@ export default class SavePNGPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
-    this.submitJobs([{ filename: this.userArgsLookup(userArgs, "filename") }]);
+    this.submitJobs([{ filename: this.getArg(userArgs, "filename") }]);
   }
 
   /**
@@ -100,8 +100,8 @@ export default class SavePNGPlugin extends PluginParentClass {
    */
   runJobInBrowser(parameters: any) {
     let filename = parameters.filename;
-    let pngUri = api.visualization.viewer.pngURI();
-    api.fs.savePngUri(filename, pngUri);
+    let pngUri = api.visualization.viewer?.pngURI();
+    api.fs.savePngUri(filename, pngUri as string);
   }
 
   /**

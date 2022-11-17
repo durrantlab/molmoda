@@ -30,6 +30,7 @@ export interface IMenuItem {
     path: string[] | string | undefined; // Directory structure, ending in text label
     function?: () => void;
     type?: MenuItemType; // If absent, will assume MenuItemType.ACTION
+    hotkey?: string;
 
     // Below used internally, not from plugin.
     _rank?: number;

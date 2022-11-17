@@ -1,10 +1,10 @@
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import * as api from "@/Api";
 import { slugify } from "@/Core/Utils";
 import { correctFilenameExt, IFileInfo } from "@/FileSystem/Types";
-import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getCompoundsToUse, getMolDescription, getProteinChainsToUse, getProteinsToUse } from "@/UI/Navigation/TreeView/TreeUtils";
 import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
-import { CombineProteinType, IMoleculeInputParams, MolsToUse } from "./Types";
+import { IMoleculeInputParams } from "./Types";
+import { IMolsToConsider, MolMergeStrategy } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 
 // function _getNameOfParent(
 //     mol: IMolContainer,
@@ -54,7 +54,7 @@ function _makeTmpFilename(
 /**
  * Merge all protein chains into one molecule.
  *
- * @param  {MolsToUse}        molsToUse     The kinds of molecule properties to
+ * @param  {IMolsToConsider} molsToConsider The kinds of molecule properties to
  *                                          filter by.
  * @param  {IMolContainer[]} molContainers  The list of molecules with protein
  *                                          chains (among other things).
@@ -63,12 +63,12 @@ function _makeTmpFilename(
  *     this case).
  */
 function _mergeAllProteins(
-    molsToUse: MolsToUse,
+    molsToConsider: IMolsToConsider,
     molContainers: IMolContainer[]
 ): Promise<IFileInfo[]> {
     // Get all the chains.
-    const proteinChains = api.visualization.getProteinChainsToUse(
-        molsToUse,
+    const proteinChains = getProteinChainsToUse(
+        molsToConsider,
         molContainers
     );
 
@@ -103,7 +103,7 @@ function _mergeAllProteins(
  * Merge all chains of each protein into one molecule, but keep the proteins
  * separate.
  *
- * @param  {MolsToUse}        molsToUse     The kinds of molecule properties to
+ * @param  {IMolsToConsider} molsToConsider The kinds of molecule properties to
  *                                          filter by.
  * @param  {IMolContainer[]} molContainers  The list of molecules with protein
  *                                          chains (among other things).
@@ -111,12 +111,12 @@ function _mergeAllProteins(
  *     strings of the merged molecules.
  */
 function _mergePerProtein(
-    molsToUse: MolsToUse,
+    molsToConsider: IMolsToConsider,
     molContainers: IMolContainer[]
 ): Promise<IFileInfo[]> {
     // Get all the proteins.
-    const proteins = api.visualization.getProteinsToUse(
-        molsToUse,
+    const proteins = getProteinsToUse(
+        molsToConsider,
         molContainers
     );
 
@@ -124,7 +124,7 @@ function _mergePerProtein(
     const mergedProteinFilesPromises: Promise<IFileInfo[]>[] = [];
     for (const protein of proteins) {
         mergedProteinFilesPromises.push(
-            _mergeAllProteins(molsToUse, [protein])
+            _mergeAllProteins(molsToConsider, [protein])
         );
         filenames.push(_makeTmpFilename(protein, molContainers));
     }
@@ -181,7 +181,7 @@ function _mergePerProtein(
 /**
  * Consider each protein chain to be a separate protein.
  *
- * @param  {MolsToUse}        molsToUse     The kinds of molecule properties to
+ * @param  {IMolsToConsider} molsToConsider The kinds of molecule properties to
  *                                          filter by.
  * @param  {IMolContainer[]} molContainers  The list of molecules with protein
  *                                          chains (among other things).
@@ -189,12 +189,12 @@ function _mergePerProtein(
  *     strings of the chains.
  */
 function _perChain(
-    molsToUse: MolsToUse,
+    molsToConsider: IMolsToConsider,
     molContainers: IMolContainer[]
 ): Promise<IFileInfo[]> {
     // Get all the chains.
-    const proteinChains = api.visualization.getProteinChainsToUse(
-        molsToUse,
+    const proteinChains = getProteinChainsToUse(
+        molsToConsider,
         molContainers
     );
 
@@ -256,22 +256,22 @@ export function makeMoleculeInput(
     let compoundPromises: Promise<IFileInfo[]> = Promise.resolve([]);
 
     if (molInputParams.considerProteins) {
-        switch (molInputParams.combineProteinType) {
-            case CombineProteinType.MergeAll:
+        switch (molInputParams.molMergeStrategy) {
+            case MolMergeStrategy.OneMol:
                 proteinsPromise = _mergeAllProteins(
-                    molInputParams.molsToUse,
+                    molInputParams.molsToConsider,
                     molContainers
                 );
                 break;
-            case CombineProteinType.PerProtein:
+            case MolMergeStrategy.ByMolecule:
                 proteinsPromise = _mergePerProtein(
-                    molInputParams.molsToUse,
+                    molInputParams.molsToConsider,
                     molContainers
                 );
                 break;
-            case CombineProteinType.PerChain:
+            case MolMergeStrategy.ByChain:
                 proteinsPromise = _perChain(
-                    molInputParams.molsToUse,
+                    molInputParams.molsToConsider,
                     molContainers
                 );
                 break;
@@ -279,8 +279,8 @@ export function makeMoleculeInput(
     }
 
     if (molInputParams.considerCompounds) {
-        const compoundMols = api.visualization.getCompoundsToUse(
-            molInputParams.molsToUse,
+        const compoundMols = getCompoundsToUse(
+            molInputParams.molsToConsider,
             molContainers
         );
 

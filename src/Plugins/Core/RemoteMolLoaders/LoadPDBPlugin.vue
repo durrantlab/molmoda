@@ -34,7 +34,7 @@ import { IFileInfo } from "@/FileSystem/Types";
   },
 })
 export default class LoadPDBPlugin extends PluginParentClass {
-  menuPath = "File/[1] Remote Import/[2] Protein Data Bank";
+  menuPath = "File/[1] Remote Import/[2] PDB ID";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -52,6 +52,8 @@ export default class LoadPDBPlugin extends PluginParentClass {
       <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a
       database of biological molecules (e.g., proteins and nucleic acids), if
       you're uncertain.`;
+
+  hotkey = "d"
 
   userArgs: FormElement[] = [
     {
@@ -79,7 +81,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
-    const pdbId = this.userArgsLookup(userArgs, "pdbId");
+    const pdbId = this.getArg(userArgs, "pdbId");
     this.submitJobs([pdbId]);
   }
 

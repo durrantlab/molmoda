@@ -1,62 +1,67 @@
 import { IFileInfo } from "@/FileSystem/Types";
 import { dynamicImports } from "./DynamicImports";
 
-export interface ISaveTxt {
-    fileName: string;
-    content?: string;
-    ext?: string;
-    compress?: ISaveTxt;
-}
-
 /**
  * Adds an extension if missing.
  *
- * @param  {ISaveTxt} params   The parameters describing the text file.
+ * @param  {IFileInfo} params   The parameters describing the text file.
  * @param  {string} defaultExt The default extension to use.
- * @returns {ISaveTxt} The parameters with the extension added to the filename
+ * @returns {IFileInfo} The parameters with the extension added to the filename
  *     field.
  */
-function _addExt(params: ISaveTxt, defaultExt: string): ISaveTxt {
-    // Set some default values.
-    params.ext = params.ext || defaultExt;
-    // params.compress = params.compress || false;
+// function _addExt(params: IFileInfo, defaultExt: string): IFileInfo {
+//     // Get the extension from the filename
+//     // *****
 
-    // If ext doesn't start with a period, add one.
-    if (params.ext.charAt(0) !== ".") {
-        params.ext = "." + params.ext;
-    }
+//     // Set some default values.
+//     params.ext = params.ext || defaultExt;
+//     // params.compress = params.compress || false;
 
-    // If fileName doesn't end in the string contained in params.ext (case
-    // insensitive), add it. Use endsWith
-    if (!params.fileName.toLowerCase().endsWith(params.ext.toLowerCase())) {
-        params.fileName += params.ext;
-    }
+//     // If ext doesn't start with a period, add one.
+//     if (params.ext.charAt(0) !== ".") {
+//         params.ext = "." + params.ext;
+//     }
 
-    return params;
-}
+//     // If fileName doesn't end in the string contained in params.ext (case
+//     // insensitive), add it. Use endsWith
+//     if (!params.name.toLowerCase().endsWith(params.ext.toLowerCase())) {
+//         params.name += params.ext;
+//     }
+
+//     return params;
+// }
 
 /**
  * Saves a text file.
  *
- * @param  {ISaveTxt} params The parameters describing the text file.
+ * @param  {IFileInfo} params The parameters describing the text file.
  * @returns {Promise<any>} A promise that resolves after saving the file.
  */
-export function saveTxt(params: ISaveTxt): Promise<any> {
-    params = _addExt(params, ".txt");
-    if (params.compress) {
-        params.compress = _addExt(params.compress, ".zip");
+export function saveTxt(params: IFileInfo): Promise<any> {
+    // Add .txt extension if
+    // params = _addExt(params, ".txt");
+
+    // If doesn't end in ".zip" (case insensitive), add it.
+    const validCompressedExts = [".zip", ".biotite"];
+    if (
+        params.compressedName &&
+        !validCompressedExts.some((ext) =>
+            params.compressedName?.toLowerCase().endsWith(ext)
+        )
+    ) {
+        params.compressedName += ".zip";
     }
 
-    if (params.compress) {
-        return saveZipWithTxtFiles(params.compress, [params]);
+    if (params.compressedName) {
+        return saveZipWithTxtFiles(params.compressedName, [params]);
     }
 
     // Don't compress the output
     return dynamicImports.fileSaver.module.then((fileSaver: any) => {
-        const blob = new Blob([params.content as string], {
+        const blob = new Blob([params.contents as string], {
             type: "text/plain;charset=utf-8",
         });
-        fileSaver.saveAs(blob, params.fileName);
+        fileSaver.saveAs(blob, params.name);
         return;
     });
 
@@ -69,23 +74,23 @@ export function saveTxt(params: ISaveTxt): Promise<any> {
 /**
  * Saves a zip file containing one or more text files.
  *
- * @param  {ISaveTxt} zipParams The parameters describing the zip file.
- * @param  {ISaveTxt[]} files   A list of parameters describing the text files
- *                              to add to the zip file.
+ * @param  {string} compressedName The parameters describing the zip file.
+ * @param  {IFileInfo[]} files      A list of parameters describing the text
+ *                                 files to add to the zip file.
  * @returns {Promise<any>} A promise that resolves after saving the zip file.
  */
 export function saveZipWithTxtFiles(
-    zipParams: ISaveTxt,
-    files: ISaveTxt[]
+    compressedName: string,
+    files: IFileInfo[]
 ): Promise<any> {
-    zipParams = _addExt(zipParams, ".zip");
-    files = files.map((file) => _addExt(file, ".txt"));
+    // compressedName = _addExt(compressedName, ".zip");
+    // files = files.map((file) => _addExt(file, ".txt"));
 
     const makeZipPromise = dynamicImports.jsZip.module.then((JSZip: any) => {
         // Compress the output
         const zip = new JSZip();
         files.forEach((file) => {
-            zip.file(file.fileName, file.content, {
+            zip.file(file.name, file.contents, {
                 compression: "DEFLATE",
                 // Note: Below doesn't seem to improve compression, so
                 // comment out.
@@ -105,7 +110,7 @@ export function saveZipWithTxtFiles(
     return Promise.all(promises).then((payload: any[]) => {
         const fileSaver = payload[0];
         const zipBlob = payload[1];
-        fileSaver.saveAs(zipBlob, zipParams.fileName);
+        fileSaver.saveAs(zipBlob, compressedName);
         return;
     });
 }
@@ -201,10 +206,10 @@ export function uncompress(s: string): Promise<IFileInfo[]> {
                 const contents = fileContents[i];
 
                 fileInfos.push({
-                    name: fileName.split("/").pop(),  // basename
+                    name: fileName.split("/").pop(), // basename
                     // Getting file size not supported with zip. You could
                     // implement, though.
-                    // size: 0,  
+                    // size: 0,
                     contents: contents,
                     // type: type,
                 } as IFileInfo);

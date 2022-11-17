@@ -6,6 +6,7 @@ const CircularDependencyPlugin = require("circular-dependency-plugin");
 module.exports = defineConfig({
     transpileDependencies: true,
     productionSourceMap: true,
+    parallel: 4,
     configureWebpack: (config) => {
         if (process.env.NODE_ENV === "development") {
             config.devtool = "eval-source-map";
@@ -30,6 +31,7 @@ module.exports = defineConfig({
             stream: false,
             crypto: false,
         };
+        config.resolve.symlinks = false;
         config.plugins.push(
             new CopyPlugin({
                 patterns: [
@@ -77,6 +79,8 @@ module.exports = defineConfig({
             minSize: 10000,
             maxSize: 250000,
         };
+
+        config.optimization.runtimeChunk = true;
 
         // Only build source maps if in development
         config.devtool =

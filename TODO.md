@@ -36,14 +36,15 @@ smiles drawer?
 
 # Ongoing: Important
 
-Current versiono of openbabel (tmp version) converts only first fframe of file
+Current version of openbabel (tmp version) converts only first fframe of file
 (e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
 openmolecules to check for three molecules when you get that fixed.
 
 When change colors and things, shouldn't refocus.
 
 *** Idea to consider: MolCombine. You should be able to specify the formats.
-Also, search for "This doesn't account for ligands!"
+Also, search for "This doesn't account for ligands!" Really, need to unify this
+with saveing plugin. All goes to one place.
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
@@ -60,30 +61,43 @@ May be too many options for saving molecules. For example, by chain needed?
 Get slurm/Docker working?
 
 Get common interface for mol viewers (to use nglviewer)? Working, but no labels,
-zoom on click, and some representations are still problematic. 
+zoom on click, and some representations are still problematic. Also, generic
+savePng and save VRML. Export VRML for NGL viewer. Not working. Need to test.
+Look for other places where might not work (outside of ViewerPanel). See
+https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter-in-typescript
 
-Perhaps settings (for local only).
+Possible to merge tree branches into one, at least at top level? Maybe top level
+should always be molecule, with children always of the same name, even if there
+is only one of them. That would simplify things like merging.
+
+Perhaps settings (for local only). Edit -> Preferences. 
     Number of processors.
     Viewer
     Save/restore layout
     Theme?
 
-Icons? For treeview and favicon. Using SD?
+Favicon. Using SD?
 
 For queue, do submit time, start time, end time. Always sort by submit time. Not
 currently working. Need to think through carefully. Solution might be just to
 use one queue.
 
-Buttons on queue to cancel jobs (using different kinds). Should have funciton to
-show table column or not (part of IHeader; sort of implemented, but if you add
-second batch of things to queue, doesn't reappear).
+Add ZIP files of molecules to test input
 
-Export VRML for NGL viewer. Not working. Need to test. Look for other places
-where might not work (outside of ViewerPanel).
+MoleculeInputParams.vue pretty broken...
+
+# DONE
+
+Pretty sure save is broken (make compound visible but select, say save only
+visible, compound still shows up in zip file)
+
+Icons? For treeview and f
 
 Keyboard shortcuts built into menu system.
 
-# DONE
+Buttons on queue to cancel jobs (using different kinds). Should have funciton to
+show table column or not (part of IHeader; sort of implemented, but if you add
+second batch of things to queue, doesn't reappear).
 
 NGL viewer surface (change to chain) also produces error.
 

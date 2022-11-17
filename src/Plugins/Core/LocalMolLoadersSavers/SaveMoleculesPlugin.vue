@@ -34,19 +34,24 @@ import {
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import {
-  MolsToUse,
-  molsToUseOptions,
-} from "@/UI/Forms/MoleculeInputParams/Types";
-import { saveAll } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveAll";
-import { saveByChain } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveByChain";
-import { saveByMolecule } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveByMolecule";
 import { saveBiotite } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveBiotite";
 import {
   fileNameFilter,
   matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { dynamicImports } from "@/Core/DynamicImports";
+import {
+  compileMolModels,
+  convertCompiledMolModelsToIFileInfos,
+  IMolsToConsider,
+  MolMergeStrategy,
+  saveMolFiles,
+} from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
+import {
+  molsToConsiderOptions,
+  MolsToConsiderStr,
+} from "@/UI/Forms/MoleculeInputParams/Types";
+import { IFileInfo } from "@/FileSystem/Types";
 
 /**
  * SaveMoleculesPlugin
@@ -70,6 +75,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   intro = `Please provide the name of the molecule file to save. The
       file extension will be automatically appended.`;
 
+  hotkey = "s";
+
   // If true, this plugin is being shown as part of the (terminal) app-closing
   // process.
   appClosing = false;
@@ -88,7 +95,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       },
     } as IFormText,
     {
-      id: "saveFormat",
+      id: "molMergeStrategy",
       label: "File format",
       val: "biotite",
       options: [
@@ -97,24 +104,25 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
           description: ".biotite (entire project)",
         },
         {
-          val: "single",
+          val: MolMergeStrategy.OneMol,
           description: "Single file",
         },
         {
-          val: "separate",
+          val: MolMergeStrategy.ByMolecule,
           description: "Separate files, receptors/ligands",
         },
-        {
-          val: "separate-chains",
-          description: "Separate files, receptor/ligand chains",
-        },
+        // By chain now depreciated.
+        // {
+        //   val: MolMergeStrategy.ByChain,
+        //   description: "Separate files, receptor/ligand chains",
+        // },
       ],
     } as IFormSelect,
     {
       label: "Molecules to save",
-      id: "molsToSave",
-      val: MolsToUse.All.toString(),
-      options: molsToUseOptions,
+      id: "whichMols",
+      val: MolsToConsiderStr.All,
+      options: molsToConsiderOptions,
       enabled: false,
     } as IFormSelect,
     {
@@ -185,11 +193,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     this.appClosing = this.payload !== undefined;
     this.updateUserArgs([
       {
-        name: "saveFormat",
+        name: "molMergeStrategy",
         val: "biotite",
       } as IUserArg,
     ]);
-    this.updateUserArgEnabled("saveFormat", !this.appClosing);
+    this.updateUserArgEnabled("molMergeStrategy", !this.appClosing);
     this.payload = undefined;
   }
 
@@ -208,17 +216,22 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * @param {userArgs[]} userArgs  The updated user arguments.
    */
   onDataChanged(userArgs: IUserArg[]) {
-    let saveFormat = this.userArgsLookup(userArgs, "saveFormat");
+    let molMergeStrategy = this.getArg(userArgs, "molMergeStrategy");
 
-    this.updateUserArgEnabled("molsToSave", saveFormat !== "biotite");
+    this.updateUserArgEnabled("whichMols", molMergeStrategy !== "biotite");
 
     let showSeparateFormats =
-      ["separate", "separate-chains"].indexOf(saveFormat) !== -1;
+      [MolMergeStrategy.ByMolecule, MolMergeStrategy.ByChain].indexOf(
+        molMergeStrategy
+      ) !== -1;
 
     this.updateUserArgEnabled("compoundFormat", showSeparateFormats);
     this.updateUserArgEnabled("proteinFormat", showSeparateFormats);
 
-    this.updateUserArgEnabled("singleFileFormat", saveFormat === "single");
+    this.updateUserArgEnabled(
+      "singleFileFormat",
+      molMergeStrategy === MolMergeStrategy.OneMol
+    );
 
     // let formatWarningMsgs: string[] = [];
 
@@ -269,54 +282,98 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    *     done.
    */
   runJobInBrowser(userArgs: IUserArg[]): RunJobReturn {
-    const filename = this.userArgsLookup(userArgs, "filename");
-    const saveFormat = this.userArgsLookup(userArgs, "saveFormat");
-    const molsToSave = parseInt(
-      this.userArgsLookup(userArgs, "molsToSave"),
-      10
-    );
-    const compoundFormat = this.userArgsLookup(userArgs, "compoundFormat");
-    const proteinFormat = this.userArgsLookup(userArgs, "proteinFormat");
-    const singleFileFormat = this.userArgsLookup(userArgs, "singleFileFormat");
+    const filename = this.getArg(userArgs, "filename");
+    const molMergeStrategy = this.getArg(userArgs, "molMergeStrategy") as
+      | string
+      | MolMergeStrategy;
+    const whichMols = this.getArg(userArgs, "whichMols") as MolsToConsiderStr;
+    let compoundFormat = this.getArg(userArgs, "compoundFormat");
+    let nonCompoundFormat = this.getArg(userArgs, "proteinFormat");
+    const singleFileFormat = this.getArg(userArgs, "singleFileFormat");
 
-    switch (saveFormat) {
-      case "biotite": {
-        return saveBiotite(filename)
-          .then(() => {
-            if (this.appClosing) {
-              api.messages.popupMessage(
-                "Session Ended",
-                "Your file has been saved. You may now close/reload this tab/window.",
-                PopupVariant.Info,
-                () => {
-                  // Reload the page
-                  window.location.reload();
-                }
-              );
-            }
-            return;
-          })
-          .catch((err: any) => {
-            console.log(err);
-            return;
-          });
-      }
-      case "single": {
-        return saveAll(filename, molsToSave, singleFileFormat);
-      }
-      case "separate": {
-        return saveByMolecule(
-          filename,
-          molsToSave,
-          compoundFormat,
-          proteinFormat
-        );
-      }
-      default: {
-        // By chain is only one left.
-        return saveByChain(filename, molsToSave, compoundFormat, proteinFormat);
-      }
+    if (molMergeStrategy === "biotite") {
+      return saveBiotite(filename)
+        .then(() => {
+          if (this.appClosing) {
+            api.messages.popupMessage(
+              "Session Ended",
+              "Your file has been saved. You may now close/reload this tab/window.",
+              PopupVariant.Info,
+              () => {
+                // Reload the page
+                window.location.reload();
+              }
+            );
+          }
+          return;
+        })
+        .catch((err: any) => {
+          console.log(err);
+          return;
+        });
     }
+
+    // Not biotite. Determine combine mol strategy.
+    // let molMergeStrategy: MolMergeStrategy | undefined = (
+    //   {
+    //     single: MolMergeStrategy.OneMol,
+    //     separate: MolMergeStrategy.ByMolecule,
+    //   } as any
+    // )[molMergeStrategy];
+    // molMergeStrategy = molMergeStrategy ?? MolMergeStrategy.ByChain;
+
+    // If saving to a single molecule, compoundFormat and nonCompoundFormat
+    // should be the same.
+    if (molMergeStrategy === MolMergeStrategy.OneMol) {
+      compoundFormat = singleFileFormat;
+      nonCompoundFormat = singleFileFormat;
+    }
+
+    let molsToConsider: IMolsToConsider;
+    if (whichMols === MolsToConsiderStr.All) {
+      molsToConsider = {
+        all: true,
+      };
+    } else {
+      molsToConsider = {
+        visible:
+          [
+            MolsToConsiderStr.Visible,
+            MolsToConsiderStr.VisibleOrSelected,
+          ].indexOf(whichMols) !== -1,
+        selected:
+          [
+            MolsToConsiderStr.Selected,
+            MolsToConsiderStr.VisibleOrSelected,
+          ].indexOf(whichMols) !== -1,
+      };
+    }
+
+    // Divide terminal nodes into compound and non-compound, per the merge
+    // strategy and mols to consider.
+    const compiledMolModels = compileMolModels(
+      molMergeStrategy as MolMergeStrategy,
+      molsToConsider,
+      true // TODO: Should be user-specifiable option
+    );
+
+    // Perform any file conversion needed
+    convertCompiledMolModelsToIFileInfos(
+      compiledMolModels,
+      compoundFormat,
+      nonCompoundFormat,
+      molMergeStrategy === MolMergeStrategy.OneMol,
+      filename
+    )
+      .then((fileInfos: IFileInfo[]) => {
+        // Now save the molecules
+        saveMolFiles(filename, fileInfos);
+        return;
+      })
+      .catch((err: any) => {
+        console.log(err);
+        return;
+      });
   }
 
   /**

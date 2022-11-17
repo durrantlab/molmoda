@@ -146,6 +146,56 @@ export const dynamicImports = {
         },
     } as IDynamicImport,
 
+    hotkeys: {
+        credit: {
+            name: "HotKeys.js",
+            url: "https://github.com/jaywcjlove/hotkeys",
+            license: Licenses.MIT,
+        },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "hotkeys" */
+                /* webpackMode: "lazy" */
+                "hotkeys-js"
+            ).then((hotkeys) => {
+                return hotkeys.default;
+            });
+        },
+    } as IDynamicImport,
+
+
+    detectOs: {
+        credit: {
+            name: "Detect OS",
+            url: "https://github.com/jankapunkt/js-detect-os",
+            license: Licenses.MIT,
+        },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "detect-os" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "detect-os"
+            ).then((detectOs) => {
+                return detectOs.default;
+            });
+        },
+    } as IDynamicImport,
+
+
     memfs: {
         credit: {
             name: "memfs",

@@ -26,9 +26,10 @@ import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
 import { IFileInfo } from "@/FileSystem/Types";
+import { registerHotkeys } from "@/Core/HotKeys";
 
-export type RunJob = IFileInfo[] | IFileInfo | undefined | void
-export type RunJobReturn = Promise<RunJob> | RunJob
+export type RunJob = IFileInfo[] | IFileInfo | undefined | void;
+export type RunJobReturn = Promise<RunJob> | RunJob;
 
 /**
  * PluginParentClass
@@ -84,6 +85,15 @@ export abstract class PluginParentClass extends mixins(
      * @type {FormElement[]}
      */
     abstract userArgs: FormElement[];
+
+    /**
+     * Optionally define a hotkey (keyboard shortcut) to trigger this plugin.
+     * For example, "r". Note that biotite maps "r" to "ctrl+r" and "command+r"
+     * automatically, so no need to specify ctrl/command.
+     *
+     * @type {string}
+     */
+    hotkey = "";
 
     /**
      * Some jobs are so trivial that there is no need to log them. These run in
@@ -216,7 +226,7 @@ export abstract class PluginParentClass extends mixins(
                     id: randomID(5),
                     delayRun: delayBetweenJobsMS,
                     numProcessors: numProcessorsPerJob,
-                    noResponse: !this.logJob
+                    noResponse: !this.logJob,
                 } as IJobInfoToEndpoint;
             }
         );
@@ -266,9 +276,12 @@ export abstract class PluginParentClass extends mixins(
         if (this.runJobInBrowser === null) {
             // Below won't ever happen (wouldn't pass validation), but makes it
             // easy to avoid typescript error.
-            throw new Error(`Plugin ${this.pluginId} has no runJobInBrowser function.`);
+            throw new Error(
+                `Plugin ${this.pluginId} has no runJobInBrowser function.`
+            );
         }
 
+        // Log the job if appropriate.
         if (this.logJob) {
             let startLogTxt = this.onStartJobLogMsg(this.pluginId);
             startLogTxt = removeTerminalPunctuation(startLogTxt);
@@ -277,7 +290,9 @@ export abstract class PluginParentClass extends mixins(
 
         const startTime = new Date().getTime();
 
-        const jobResultFiles = this.runJobInBrowser(parameterSet) as RunJobReturn;
+        const jobResultFiles = this.runJobInBrowser(
+            parameterSet
+        ) as RunJobReturn;
 
         let endLogTxt = "";
         if (this.logJob) {
@@ -358,9 +373,10 @@ export abstract class PluginParentClass extends mixins(
             contributorCredits: this.contributorCredits,
             menuData: {
                 path: this.menuPath,
+                hotkey: this.hotkey,
                 function: () => {
-                    // Could use this, but use api for consistency's sake.
-                    // this.onPluginStart();
+                    // Could use `this.onPluginStart();`, but use api for
+                    // consistency's sake.
                     const msg = this.checkPluginAllowed();
                     if (msg !== null) {
                         api.messages.popupError(msg);
@@ -377,6 +393,30 @@ export abstract class PluginParentClass extends mixins(
             this.pluginId,
             this._runJobInBrowser.bind(this)
         );
+
+        // Register the hotkey if any.
+        if (this.hotkey !== "") {
+            // TODO: Good to access registerHotkeys through api for
+            // consistency's sake?
+
+            // command+ in hotkey? Throw error.
+            if (this.hotkey.indexOf("+") !== -1) {
+                const msg = `Plugin ${this.pluginId} has a hotkey with "+" in it. This is not allowed. Use only the letter.`;
+                throw new Error(msg);
+            }
+
+            const key = this.hotkey.toLowerCase();
+            registerHotkeys(`ctrl+${key}, command+${key}`, (e: KeyboardEvent) => {
+                e.preventDefault()
+                const msg = this.checkPluginAllowed();
+                if (msg !== null) {
+                    api.messages.popupError(msg);
+                } else {
+                    api.plugins.runPlugin(this.pluginId);
+                }
+
+            });
+        }
 
         this.onMounted();
 

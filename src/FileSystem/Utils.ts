@@ -6,8 +6,6 @@ export interface IFileParts {
     ext: string;
 }
 
-
-
 /**
  * Checks if a given file type is acceptable.
  *
@@ -29,7 +27,7 @@ function checkBadFileType(
 }
 
 /**
- * Convert a ist of File objects to type IFileInfo.
+ * Convert a list of File objects to type IFileInfo.
  *
  * @param {File[]}  fileList                 The list of files to convert, as
  *                                           loaded through <input>.

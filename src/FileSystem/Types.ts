@@ -3,8 +3,12 @@ import { getFormatInfoGivenType } from "./LoadSaveMolModels/Types/MolFormats";
 
 export interface IFileInfo {
     name: string;
-    // size: number;
     contents: any; // string, or obj in some cases
+
+    // Name of the ZIP file (if any) to create which contains the file.
+    compressedName?: string;
+
+    // size: number;
     // type: string; // all caps, extension (e.g., "PDB")
 }
 

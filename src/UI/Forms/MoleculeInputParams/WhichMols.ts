@@ -1,40 +1,40 @@
+import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 import {
     IMolContainer,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { MolsToUse } from "./Types";
 
-/**
- * Whether a given molsToUse variable includes visible molecules. (Basically,
- * whether it is MolsToUse.Visible or MolsToUse.VisibleOrSelected.)
- *
- * @param  {MolsToUse} molsToUse  The molsToUse variable to check.
- * @returns {boolean}  Whether the molsToUse variable includes visible
- *     molecules.
- */
-function molsToUseIncludesVisible(molsToUse: MolsToUse): boolean {
-    return (
-        [MolsToUse.Visible, MolsToUse.VisibleOrSelected].indexOf(molsToUse) !==
-        -1
-    );
-}
+// /**
+//  * Whether a given molsToUse variable includes visible molecules. (Basically,
+//  * whether it is MolsToUse.Visible or MolsToUse.VisibleOrSelected.)
+//  *
+//  * @param  {MolsToUse} molsToUse  The molsToUse variable to check.
+//  * @returns {boolean}  Whether the molsToUse variable includes visible
+//  *     molecules.
+//  */
+// function molsToUseIncludesVisible(molsToUse: MolsToUse): boolean {
+//     return (
+//         [MolsToUse.Visible, MolsToUse.VisibleOrSelected].indexOf(molsToUse) !==
+//         -1
+//     );
+// }
 
-/**
- * Whether a given molsToUse variable includes selected molecules. (Basically,
- * whether it is MolsToUse.Selected or MolsToUse.VisibleOrSelected.)
- *
- * @param  {MolsToUse} molsToUse  The molsToUse variable to check.
- * @returns {boolean}  Whether the molsToUse variable includes selected
- *     molecules.
- */
-function molsToUseIncludesSelected(molsToUse: MolsToUse): boolean {
-    return (
-        [MolsToUse.Selected, MolsToUse.VisibleOrSelected].indexOf(molsToUse) !==
-        -1
-    );
-}
+// /**
+//  * Whether a given molsToUse variable includes selected molecules. (Basically,
+//  * whether it is MolsToUse.Selected or MolsToUse.VisibleOrSelected.)
+//  *
+//  * @param  {MolsToUse} molsToUse  The molsToUse variable to check.
+//  * @returns {boolean}  Whether the molsToUse variable includes selected
+//  *     molecules.
+//  */
+// function molsToUseIncludesSelected(molsToUse: MolsToUse): boolean {
+//     return (
+//         [MolsToUse.Selected, MolsToUse.VisibleOrSelected].indexOf(molsToUse) !==
+//         -1
+//     );
+// }
 
 /**
  * Whether a given molecule is selected. It can be directly selected, or the
@@ -53,28 +53,30 @@ function isMolSelected(mol: IMolContainer): boolean {
 /**
  * Given a molsToUse variable, gets the molecules to consider.
  *
- * @param  {MolsToUse}        molsToUse        The molsToUse variable.
- * @param  {IMolContainer[]}  [terminalNodes]  The list of molecules to
- *                                             consider. If undefined, gets all
- *                                             molecules from VueX store.
+ * @param  {IMolsToConsider} molsToConsider   The molsToUse variable.
+ * @param  {IMolContainer[]} [terminalNodes]  The list of molecules to consider.
+ *                                            If undefined, gets all molecules
+ *                                            from VueX store.
  * @returns {IMolContainer[]}  The molecules to consider.
  */
-export function getTerminalNodesToUse(
-    molsToUse: MolsToUse,
+export function getTerminalNodesToConsider(
+    molsToConsider: IMolsToConsider,
     terminalNodes?: IMolContainer[]
 ): IMolContainer[] {
     if (terminalNodes === undefined) {
         terminalNodes = getTerminalNodes(getStoreVar("molecules"));
     }
 
-    if (molsToUse === MolsToUse.All) {
-        return terminalNodes;
+    if (molsToConsider.all === true) {
+        return getTerminalNodes(terminalNodes);
     }
 
+    // Not all, so select which ones to include.
+
     return terminalNodes.filter((mol) => {
-        if (mol.visible === true && molsToUseIncludesVisible(molsToUse)) {
+        if (mol.visible === true && molsToConsider.visible === true) {
             return true;
         }
-        return isMolSelected(mol) && molsToUseIncludesSelected(molsToUse);
+        return isMolSelected(mol) && molsToConsider.selected === true;
     });
 }

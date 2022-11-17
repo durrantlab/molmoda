@@ -30,7 +30,7 @@
         "tests/**/*.tsx",
         "src/worker.js",
         "src/UI/Panels/Viewer/3Dmol-nojquery.JDD.js"
-, "src/Plugins/PluginParent.ts.old", "src/UI/Panels/Viewer/Viewer2D.vue.old"    ],
+, "src/Plugins/PluginParent.ts.old", "src/UI/Panels/Viewer/Viewer2D.vue.old", "src/UI/Panels/Viewer/ViewerPanelParent.ts.old"    ],
     "exclude": ["node_modules"],
     // "typedocOptions": {
     //     "entryPoints": ["src/main.ts"],

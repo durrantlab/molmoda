@@ -1,4 +1,3 @@
-import { ISaveTxt } from "@/Core/FS";
 import { slugify } from "@/Core/Utils";
 import {
     IAtom,
@@ -10,6 +9,14 @@ import * as api from "@/Api";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
+import { IFileInfo } from "@/FileSystem/Types";
+
+export function removeRepeatMolContainers(molContainers: IMolContainer[]): IMolContainer[] {
+    return molContainers.filter(
+        (node, index, self) =>
+            index === self.findIndex((t) => t.id === node.id)
+    );
+}
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
@@ -20,8 +27,12 @@ import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
  */
 export function separateCompoundNonCompoundTerminalNodes(
     molContainers: IMolContainer[]
-): {[key: string]: IMolContainer[]} {
-    const terminalNodes = getTerminalNodes(molContainers);
+): { [key: string]: IMolContainer[] } {
+    let terminalNodes = getTerminalNodes(molContainers);
+
+    // Keep only terminal nodes with unique ids
+    terminalNodes = removeRepeatMolContainers(terminalNodes);
+
     const compoundNodes = terminalNodes.filter(
         (node) => node.type === MolType.Compound
     );
@@ -40,15 +51,15 @@ export function separateCompoundNonCompoundTerminalNodes(
  *                                       one.
  * @param  {string}          [filename]  The fileame to use. Will be generated
  *                                       if not given.
- * @returns {Promise<ISaveTxt[]>}  A promise that resolves to a list of ISaveTxt
+ * @returns {Promise<IFileInfo[]>}  A promise that resolves to a list of IFileInfo
  *     containing the texts for saving.
  */
-export function getSaveTxtPromises(
+export function getConvertedTxts(
     nodes: IMolContainer[],
     targetExt: string,
     merge: boolean,
     filename?: string
-): Promise<ISaveTxt[]> {
+): Promise<IFileInfo[]> {
     return convertMolContainers(nodes, targetExt, merge).then(
         (compoundTxts: string[]) => {
             return compoundTxts.map((txt, idx) => {
@@ -56,13 +67,12 @@ export function getSaveTxtPromises(
                 const molEntry = nodes[idx] as IMolContainer;
 
                 return {
-                    fileName:
+                    name:
                         filename === undefined
                             ? getFilename(molEntry, targetExt)
                             : `${filename}.${targetExt}`,
-                    content: txt,
-                    ext: `.${targetExt}`,
-                } as ISaveTxt;
+                    contents: txt
+                } as IFileInfo;
             });
         }
     );
@@ -105,28 +115,23 @@ function getFilename(molContainer: IMolContainer, ext: string): string {
 }
 
 /**
- * Given a list of ISaveTxt objects (e.g., from getSaveTxtPromises), save them
+ * Given a list of IFileInfo objects (e.g., from getSaveTxtPromises), save them
  * to the disk. Compress if necessary.
  *
- * @param  {ISaveTxt[]} files     The files to save.
- * @param  {string}     filename  The filename to use.
+ * @param  {IFileInfo[]} files     The files to save.
+ * @param  {string}     compressedName  The filename to use.
  * @returns {Promise<any>}  A promise that resolves when the files are saved.
  */
 export function saveTxtFiles(
-    files: ISaveTxt[],
-    filename: string
+    files: IFileInfo[],
+    compressedName: string
 ): Promise<any> {
     if (files.length === 1) {
         // Only one file. Save it directly. Name of file should be filename.ext
         // (otherwise that would be name of zip file).
-        files[0].fileName = filename + files[0].ext;
+        // files[0].name = zipFilename + files[0].ext;
         return api.fs.saveTxt(files[0]);
     }
-    
-    return api.fs.saveZipWithTxtFiles(
-        {
-            fileName: filename,
-        } as ISaveTxt,
-        files
-    );
+
+    return api.fs.saveZipWithTxtFiles(compressedName, files);
 }

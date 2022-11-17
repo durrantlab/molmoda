@@ -87,7 +87,7 @@ export default class Table extends Vue {
    */
   get tableDataToUse(): ITableData {
     const dataToUse = {
-      headers: this.tableData.headers,
+      headers: this.tableData.headers.map(h => h),  // To copy
       rows: [] as { [key: string]: CellValue }[],
     };
 

@@ -41,6 +41,7 @@ export default class RedoPlugin extends PluginParentClass {
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
+  hotkey = "y"
 
   /**
    * Check if this plugin can currently be used.
