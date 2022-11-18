@@ -5,8 +5,6 @@ import { getTerminalNodesToConsider } from "@/UI/Forms/MoleculeInputParams/Which
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ICompiledNodes, IMolsToConsider } from "./SaveMolModels";
 import {
-    getConvertedTxts,
-    getPrimaryExt,
     removeRepeatMolContainers,
     separateCompoundNonCompoundTerminalNodes,
 } from "./Utils";

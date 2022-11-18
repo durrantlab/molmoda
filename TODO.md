@@ -86,6 +86,11 @@ Add ZIP files of molecules to test input
 
 MoleculeInputParams.vue pretty broken...
 
+Would be nice if you could hide disabled items in form groups.
+
+Save plugin: Sometimes when click visible and selected both off, one doesn't pop
+up. Need to investiate.
+
 # DONE
 
 Pretty sure save is broken (make compound visible but select, say save only

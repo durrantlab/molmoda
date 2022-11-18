@@ -28,6 +28,8 @@ import {
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
   FormElement,
+  IFormCheckbox,
+  IFormGroup,
   IFormSelect,
   IFormText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -47,10 +49,7 @@ import {
   MolMergeStrategy,
   saveMolFiles,
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import {
-  molsToConsiderOptions,
-  MolsToConsiderStr,
-} from "@/UI/Forms/MoleculeInputParams/Types";
+import { MolsToConsiderStr } from "@/UI/Forms/MoleculeInputParams/Types";
 import { IFileInfo } from "@/FileSystem/Types";
 
 /**
@@ -95,39 +94,87 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       },
     } as IFormText,
     {
-      id: "molMergeStrategy",
-      label: "File format",
-      val: "biotite",
-      options: [
-        {
-          val: "biotite",
-          description: ".biotite (entire project)",
-        },
-        {
-          val: MolMergeStrategy.OneMol,
-          description: "Single file",
-        },
-        {
-          val: MolMergeStrategy.ByMolecule,
-          description: "Separate files, receptors/ligands",
-        },
-        // By chain now depreciated.
-        // {
-        //   val: MolMergeStrategy.ByChain,
-        //   description: "Separate files, receptor/ligand chains",
-        // },
-      ],
-    } as IFormSelect,
+      id: "useBiotiteFormat",
+      label: "Save project in .biotite format",
+      val: true,
+    } as IFormCheckbox,
+    // {
+    //   id: "molSavingGroup",
+    //   label: "File Contents",
+    //   childElements: [
+
+    //     {
+    //       id: "mergeAllMolecules",
+    //       label: "Each molecule in a seprate file",
+    //       val: false,
+    //     } as IFormCheckbox,
+    //   ] as FormElement[],
+    //   startOpened: true,
+    //   enabled: false,
+    // } as IFormGroup,
     {
-      label: "Molecules to save",
-      id: "whichMols",
-      val: MolsToConsiderStr.All,
-      options: molsToConsiderOptions,
+      id: "whichMolsGroup",
+      label: "Molecules to Save",
+      childElements: [
+        {
+          id: "saveAllMols",
+          label: "All molecules",
+          val: true,
+        } as IFormCheckbox,
+        {
+          id: "saveVisible",
+          label: "Visible molecules",
+          val: false,
+        } as IFormCheckbox,
+        {
+          id: "saveSelected",
+          label: "Selected molecules",
+          val: false,
+        } as IFormCheckbox,
+      ] as FormElement[],
+      startOpened: true,
       enabled: false,
-    } as IFormSelect,
+    } as IFormGroup,
+    {
+      id: "separateCompounds",
+      label: "Save each small-molecule compound to a separate file",
+      val: true,
+      enabled: false
+    } as IFormCheckbox,
+    // {
+    //   id: "molMergeStrategy",
+    //   label: "File format",
+    //   val: "biotite",
+    //   options: [
+    //     {
+    //       val: "biotite",
+    //       description: ".biotite (entire project)",
+    //     },
+    //     {
+    //       val: MolMergeStrategy.OneMol,
+    //       description: "Single file",
+    //     },
+    //     {
+    //       val: MolMergeStrategy.ByMolecule,
+    //       description: "Separate files, receptors/ligands",
+    //     },
+    //     // By chain now depreciated.
+    //     // {
+    //     //   val: MolMergeStrategy.ByChain,
+    //     //   description: "Separate files, receptor/ligand chains",
+    //     // },
+    //   ],
+    // } as IFormSelect,
+    // {
+    //   label: "Molecules to save",
+    //   id: "whichMols",
+    //   val: MolsToConsiderStr.All,
+    //   options: molsToConsiderOptions,
+    //   enabled: false,
+    // } as IFormSelect,
     {
       label: "File format",
-      id: "singleFileFormat",
+      id: "oneMolFileFormat",
       val: "pdb",
       options: getFormatDescriptions(false).filter(
         (option) => option.val !== "biotite"
@@ -135,19 +182,19 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       enabled: false,
     } as IFormSelect,
     {
-      label: "File format for compounds (e.g., small molecules)",
+      label: "File format",
+      id: "nonCompoundFormat",
+      val: "pdb",
+      options: getFormatDescriptions(false),
+      enabled: false,
+    } as IFormSelect,
+    {
+      label: "File format for separate small-molecule compounds",
       id: "compoundFormat",
       val: "mol2",
       options: getFormatDescriptions(true).filter(
         (option) => option.val !== "biotite"
       ),
-      enabled: false,
-    } as IFormSelect,
-    {
-      label: "File format for other molecules (e.g., proteins)",
-      id: "proteinFormat",
-      val: "pdb",
-      options: getFormatDescriptions(false),
       enabled: false,
     } as IFormSelect,
   ];
@@ -191,13 +238,28 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     dynamicImports.openbabeljs.module;
 
     this.appClosing = this.payload !== undefined;
+
+    // Reset some form values
     this.updateUserArgs([
+      // {
+      //   name: "molMergeStrategy",
+      //   val: "biotite",
+      // },
       {
-        name: "molMergeStrategy",
-        val: "biotite",
-      } as IUserArg,
+        name: "useBiotiteFormat",
+        val: true,
+      },
+      {
+        name: "saveAllMols",
+        val: true,
+      },
+      {
+        name: "separateCompounds",
+        val: true,
+      },
     ]);
-    this.updateUserArgEnabled("molMergeStrategy", !this.appClosing);
+    // this.updateUserArgEnabled("molMergeStrategy", !this.appClosing);
+
     this.payload = undefined;
   }
 
@@ -216,31 +278,93 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * @param {userArgs[]} userArgs  The updated user arguments.
    */
   onDataChanged(userArgs: IUserArg[]) {
-    let molMergeStrategy = this.getArg(userArgs, "molMergeStrategy");
+    let useBiotite = this.getArg(userArgs, "useBiotiteFormat") as boolean;
+    // this.updateUserArgEnabled("molMergingGroup", !useBiotite);
+    this.updateUserArgEnabled("whichMolsGroup", !useBiotite);
+    this.updateUserArgEnabled("separateCompounds", !useBiotite);
+    
 
-    this.updateUserArgEnabled("whichMols", molMergeStrategy !== "biotite");
+    let saveAllMols = this.getArg(userArgs, "saveAllMols") as boolean;
+    this.updateUserArgEnabled("saveVisible", !saveAllMols && !useBiotite);
+    this.updateUserArgEnabled("saveSelected", !saveAllMols && !useBiotite);
 
-    let showSeparateFormats =
-      [MolMergeStrategy.ByMolecule, MolMergeStrategy.ByChain].indexOf(
-        molMergeStrategy
-      ) !== -1;
+    if (saveAllMols) {
+      // If saving all, make sure the other two are unchecked.
+      this.updateUserArgs([
+        {
+          name: "saveVisible",
+          val: false,
+        },
+        {
+          name: "saveSelected",
+          val: false,
+        },
+      ]);
+    } else {
+      // At least one of the other two must be checked. Let's just check them
+      // both.
+      let saveVisible = this.getArg(userArgs, "saveVisible") as boolean;
+      let saveSelected = this.getArg(userArgs, "saveSelected") as boolean;
+      if (!saveVisible) {
+        this.updateUserArgs([
+          {
+            name: "saveSelected",
+            val: true,
+          },
+        ]);
+      }
+      // TODO: Below doesn't always work. See TODO.md.
+      if (!saveSelected) {
+        this.updateUserArgs([
+          {
+            name: "saveVisible",
+            val: true,
+          },
+        ]);
+      }
+    }
 
-    this.updateUserArgEnabled("compoundFormat", showSeparateFormats);
-    this.updateUserArgEnabled("proteinFormat", showSeparateFormats);
+    // Show onemol format or protein format, depending on whether
+    // mergeAllMolecules is true.
+    let mergeAllMolecules = this.getArg(
+      userArgs,
+      "mergeAllMolecules"
+    ) as boolean;
+    this.updateUserArgEnabled("oneMolFileFormat", mergeAllMolecules && !useBiotite);
+    this.updateUserArgEnabled("nonCompoundFormat", !mergeAllMolecules && !useBiotite);
 
-    this.updateUserArgEnabled(
-      "singleFileFormat",
-      molMergeStrategy === MolMergeStrategy.OneMol
-    );
+    // If separating out compounds, show compound format.
+    let separateCompounds = this.getArg(
+      userArgs,
+      "separateCompounds"
+    ) as boolean;
+    this.updateUserArgEnabled("compoundFormat", separateCompounds && !useBiotite);
+
+    // let molMergeStrategy = this.getArg(userArgs, "molMergeStrategy");
+
+    // this.updateUserArgEnabled("whichMols", molMergeStrategy !== "biotite");
+
+    // let showSeparateFormats =
+    //   [MolMergeStrategy.ByMolecule, MolMergeStrategy.ByChain].indexOf(
+    //     molMergeStrategy
+    //   ) !== -1;
+
+    // this.updateUserArgEnabled("compoundFormat", showSeparateFormats);
+    // this.updateUserArgEnabled("nonCompoundFormat", showSeparateFormats);
+
+    // this.updateUserArgEnabled(
+    //   "oneMolFileFormat",
+    //   molMergeStrategy === MolMergeStrategy.OneMol
+    // );
 
     // let formatWarningMsgs: string[] = [];
 
     // if (showSeparateFormats) {
     //   const compoundFormat = this.userArgsLookup(userArgs, "compoundFormat");
-    //   const proteinFormat = this.userArgsLookup(userArgs, "proteinFormat");
+    //   const nonCompoundFormat = this.userArgsLookup(userArgs, "nonCompoundFormat");
 
     //   let compoundFormatInfo = getFormatInfoGivenType(compoundFormat);
-    //   let proteinFormatInfo = getFormatInfoGivenType(proteinFormat);
+    //   let proteinFormatInfo = getFormatInfoGivenType(nonCompoundFormat);
 
     //   if (
     //     compoundFormatInfo !== undefined &&
@@ -255,17 +379,17 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     //     formatWarningMsgs.push(proteinFormatInfo.saveWarning);
     //   }
     // } else {
-    //   const singleFileFormat = this.userArgsLookup(
+    //   const oneMolFileFormat = this.userArgsLookup(
     //     userArgs,
-    //     "singleFileFormat"
+    //     "oneMolFileFormat"
     //   );
-    //   let singleFileFormatInfo = getFormatInfoGivenType(singleFileFormat);
+    //   let oneMolFileFormatInfo = getFormatInfoGivenType(oneMolFileFormat);
 
     //   if (
-    //     singleFileFormatInfo !== undefined &&
-    //     singleFileFormatInfo?.saveWarning !== undefined
+    //     oneMolFileFormatInfo !== undefined &&
+    //     oneMolFileFormatInfo?.saveWarning !== undefined
     //   ) {
-    //     formatWarningMsgs.push(singleFileFormatInfo.saveWarning);
+    //     formatWarningMsgs.push(oneMolFileFormatInfo.saveWarning);
     //   }
     // }
 
@@ -283,15 +407,30 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    */
   runJobInBrowser(userArgs: IUserArg[]): RunJobReturn {
     const filename = this.getArg(userArgs, "filename");
-    const molMergeStrategy = this.getArg(userArgs, "molMergeStrategy") as
-      | string
-      | MolMergeStrategy;
-    const whichMols = this.getArg(userArgs, "whichMols") as MolsToConsiderStr;
+    // const molMergeStrategy = this.getArg(userArgs, "molMergeStrategy") as
+    //   | string
+    //   | MolMergeStrategy;
+    // const whichMols = this.getArg(userArgs, "whichMols") as MolsToConsiderStr;
+    const useBiotiteFormat = this.getArg(
+      userArgs,
+      "useBiotiteFormat"
+    ) as boolean;
     let compoundFormat = this.getArg(userArgs, "compoundFormat");
-    let nonCompoundFormat = this.getArg(userArgs, "proteinFormat");
-    const singleFileFormat = this.getArg(userArgs, "singleFileFormat");
+    let nonCompoundFormat = this.getArg(userArgs, "nonCompoundFormat");
+    const oneMolFileFormat = this.getArg(userArgs, "oneMolFileFormat");
+    const separateCompounds = this.getArg(
+      userArgs,
+      "separateCompounds"
+    ) as boolean;
+    const mergeAllMolecules = this.getArg(
+      userArgs,
+      "mergeAllMolecules"
+    ) as boolean;
+    const saveAllMols = this.getArg(userArgs, "saveAllMols") as boolean;
+    const saveVisible = this.getArg(userArgs, "saveVisible") as boolean;
+    const saveSelected = this.getArg(userArgs, "saveSelected") as boolean;
 
-    if (molMergeStrategy === "biotite") {
+    if (useBiotiteFormat) {
       return saveBiotite(filename)
         .then(() => {
           if (this.appClosing) {
@@ -322,30 +461,30 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     // )[molMergeStrategy];
     // molMergeStrategy = molMergeStrategy ?? MolMergeStrategy.ByChain;
 
-    // If saving to a single molecule, compoundFormat and nonCompoundFormat
-    // should be the same.
-    if (molMergeStrategy === MolMergeStrategy.OneMol) {
-      compoundFormat = singleFileFormat;
-      nonCompoundFormat = singleFileFormat;
+    // NOTE: By chain not supported. Just use extract.
+    const molMergeStrategy = mergeAllMolecules
+      ? MolMergeStrategy.OneMol
+      : MolMergeStrategy.ByMolecule;
+
+    // If saving to a single molecule and not separating out compounds,
+    // compoundFormat and nonCompoundFormat should be the same.
+    if (
+      molMergeStrategy === MolMergeStrategy.OneMol &&
+      separateCompounds === false
+    ) {
+      compoundFormat = oneMolFileFormat;
+      nonCompoundFormat = oneMolFileFormat;
     }
 
     let molsToConsider: IMolsToConsider;
-    if (whichMols === MolsToConsiderStr.All) {
+    if (saveAllMols === true) {
       molsToConsider = {
         all: true,
       };
     } else {
       molsToConsider = {
-        visible:
-          [
-            MolsToConsiderStr.Visible,
-            MolsToConsiderStr.VisibleOrSelected,
-          ].indexOf(whichMols) !== -1,
-        selected:
-          [
-            MolsToConsiderStr.Selected,
-            MolsToConsiderStr.VisibleOrSelected,
-          ].indexOf(whichMols) !== -1,
+        visible: saveVisible,
+        selected: saveSelected,
       };
     }
 
@@ -354,7 +493,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     const compiledMolModels = compileMolModels(
       molMergeStrategy as MolMergeStrategy,
       molsToConsider,
-      true // TODO: Should be user-specifiable option
+      separateCompounds
     );
 
     // Perform any file conversion needed

@@ -2,7 +2,7 @@
   <span>
     <span v-for="formElem of modelValue" v-bind:key="formElem.id">
       <FormWrapper
-        v-if="formElem.type === FormElementType.Group"
+        v-if="formElem.type === FormElementType.Group && !disabled(formElem)"
         cls="border-0 mt-2"
       >
         <Accordian :id="formElem.id">
@@ -11,9 +11,11 @@
             :title="formElem.label"
             :showInitially="asGroup(formElem).startOpened"
           >
+          <!-- :hideIfDisabled="hideIfDisabled" -->
             <FormFull
               v-model="asGroup(formElem).childElements"
               :id="id"
+              @onChange="onDataUpdated"
             ></FormFull>
           </AccordianItem>
         </Accordian>
@@ -165,7 +167,7 @@ export default class FormFull extends Vue {
 
   /**
    * Get the DOM id for a form element.
-   * 
+   *
    * @param {FormElement} formElem  The form element.
    * @returns {string}              The DOM id.
    */

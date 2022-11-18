@@ -2,8 +2,6 @@
 // be accessed directly.
 
 import { IFileInfo } from "@/FileSystem/Types";
-import { compileOneMol } from "./CompileOneMol";
-import { compileByChain } from "./CompileByChain";
 import { compileByMolecule } from "./CompileByMolecule";
 import { getConvertedTxts, getPrimaryExt, saveTxtFiles } from "./Utils";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -75,16 +73,18 @@ export function compileMolModels(
         );
     }
 
-    switch (molMergeStrategy) {
-        case MolMergeStrategy.OneMol:
-            // Here need to pass filename, because we're saving all in one file.
-            return compileOneMol(molsToConsider, keepCompoundsSeparate);
-        case MolMergeStrategy.ByMolecule:
-            return compileByMolecule(molsToConsider, keepCompoundsSeparate);
-        default:
-            // By chain is only one left.
-            return compileByChain(molsToConsider, keepCompoundsSeparate);
-    }
+    return compileByMolecule(molsToConsider, keepCompoundsSeparate);
+
+    // switch (molMergeStrategy) {
+    //     case MolMergeStrategy.OneMol:
+    //         // Here need to pass filename, because we're saving all in one file.
+    //         return compileOneMol(molsToConsider, keepCompoundsSeparate);
+    //     case MolMergeStrategy.ByMolecule:
+    //         return compileByMolecule(molsToConsider, keepCompoundsSeparate);
+    //     default:
+    //         // By chain is only one left.
+    //         return compileByChain(molsToConsider, keepCompoundsSeparate);
+    // }
 }
 
 export function convertCompiledMolModelsToIFileInfos(
@@ -128,11 +128,13 @@ export function convertCompiledMolModelsToIFileInfos(
     } else {
         // Not the onemol strategy. There could be multiple noncompound groups.
         // Convert them separately.
-        nonCompoundPromises = compiledNodes.nodeGroups.map((nodes) =>
-            // Always merging here, but in case of perr chain merging strategy,
-            // will only be one terminal node anyway.
-            getConvertedTxts(nodes, nonCompoundTargetExt, true)
-        );
+        nonCompoundPromises = compiledNodes.nodeGroups
+            .filter((group) => group.length > 0)
+            .map((nodes) =>
+                // Always merging here, but in case of perr chain merging strategy,
+                // will only be one terminal node anyway.
+                getConvertedTxts(nodes, nonCompoundTargetExt, true)
+            );
     }
 
     // Now do the compounds, which don't depend on the merge strategy. (If they

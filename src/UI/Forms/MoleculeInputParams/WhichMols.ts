@@ -64,11 +64,14 @@ export function getTerminalNodesToConsider(
     terminalNodes?: IMolContainer[]
 ): IMolContainer[] {
     if (terminalNodes === undefined) {
-        terminalNodes = getTerminalNodes(getStoreVar("molecules"));
+        terminalNodes = getStoreVar("molecules");
     }
 
+    // Get the terminal nodes
+    terminalNodes = getTerminalNodes(terminalNodes as IMolContainer[]);
+    
     if (molsToConsider.all === true) {
-        return getTerminalNodes(terminalNodes);
+        return terminalNodes;
     }
 
     // Not all, so select which ones to include.

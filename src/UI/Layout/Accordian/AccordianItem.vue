@@ -2,7 +2,7 @@
   <div class="accordion-item" :id="id">
     <h2 class="accordion-header" :id="'heading-' + id">
       <button
-        :class="'accordion-button bg-primary text-white p-1' + (show ? '' : ' collapsed')"
+        :class="'accordion-button bg-primary text-white p-2' + (show ? '' : ' collapsed')"
         type="button"
         data-bs-toggle="collapse"
         :data-bs-target="'#collapse-' + id"
@@ -18,7 +18,7 @@
       :aria-labelledby="'heading-' + id"
       :data-bs-parent="'#' + id"
     >
-      <div class="accordion-body p-2">
+      <div class="accordion-body p-2 pt-0">
         <slot></slot>
       </div>
     </div>

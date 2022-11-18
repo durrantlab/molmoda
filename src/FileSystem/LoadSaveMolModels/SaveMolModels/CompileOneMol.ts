@@ -1,10 +1,8 @@
-import { IFileInfo } from "@/FileSystem/Types";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 import { getTerminalNodesToConsider } from "@/UI/Forms/MoleculeInputParams/WhichMols";
 import { IMolContainer, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { ICompiledNodes, IMolsToConsider } from "./SaveMolModels";
-import { getPrimaryExt, getConvertedTxts, saveTxtFiles } from "./Utils";
 
 /**
  * Runs the job when the user wants to save in a non-biotite format, all
@@ -15,6 +13,9 @@ import { getPrimaryExt, getConvertedTxts, saveTxtFiles } from "./Utils";
  *     with all the files.
  */
 export function compileOneMol(molsToConsider: IMolsToConsider, keepCompoundsSeparate: boolean): ICompiledNodes {
+    alert("Compiling as one molecule depreciated!");
+    throw new Error("Compiling as one molecule depreciated!");
+
     // Not using biotite format. Create ZIP file with protein and small
     // molecules.
     const mols = getStoreVar("molecules");

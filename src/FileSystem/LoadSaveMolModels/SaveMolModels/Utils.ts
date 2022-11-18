@@ -61,8 +61,8 @@ export function getConvertedTxts(
     filename?: string
 ): Promise<IFileInfo[]> {
     return convertMolContainers(nodes, targetExt, merge).then(
-        (compoundTxts: string[]) => {
-            return compoundTxts.map((txt, idx) => {
+        (molTxts: string[]) => {
+            return molTxts.map((txt, idx) => {
                 // Prepend the chain
                 const molEntry = nodes[idx] as IMolContainer;
 
