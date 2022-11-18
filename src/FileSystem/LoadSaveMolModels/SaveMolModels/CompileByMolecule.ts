@@ -61,7 +61,7 @@ export function compileByMolecule(
     }
 
     return {
-        nodeGroups: nonCompoundNodesByMolecule,
+        nodeGroups: nonCompoundNodesByMolecule.filter(n => n.length > 0),
         compoundsNodes: compoundNodes,
     };
 

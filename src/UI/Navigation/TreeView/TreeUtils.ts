@@ -221,7 +221,7 @@ function _filterMolsByToConsiderProperty(
     molecules: IMolContainer[],
     molsToConsider: IMolsToConsider
 ): IMolContainer[] {
-    if (molsToConsider.all) {
+    if (molsToConsider.hiddenAndUnselected) {
         return molecules;
     }
 
@@ -343,5 +343,5 @@ export function getMolDescription(
         titles.splice(1, 1);
     }
 
-    return titles.join(":");
+    return titles.join(":").split("(")[0].trim();
 }

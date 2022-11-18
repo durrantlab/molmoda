@@ -1,24 +1,9 @@
 <template>
   <span>
-    <!-- <WhichMols
-      v-if="isSelectWhichMolToConsidervisible"
-      v-model="val.molsToUse"
-    ></WhichMols> -->
     <FormWrapper label="Which project molecules to consider?" cls="border-0">
       <FormSelect
         v-model="molsToConsiderAsStr"
         :options="molsToConsiderOpts"
-      ></FormSelect>
-    </FormWrapper>
-
-    <FormWrapper
-      v-if="isSelectWhichMolToConsidervisible && val.considerProteins"
-      label="What is a distinct protein?"
-      cls="border-0"
-    >
-      <FormSelect
-        v-model="val.molMergeStrategy"
-        :options="mergeProtein"
       ></FormSelect>
     </FormWrapper>
     <FormWrapper cls="mt-3">
@@ -35,15 +20,9 @@ import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
 import FormWrapper from "../FormWrapper.vue";
-import {
-  getCompoundsToUse,
-  getMolDescription,
-  getProteinChainsToUse,
-  getProteinsToUse,
-} from "@/UI/Navigation/TreeView/TreeUtils";
+import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
-import { IFormOption } from "../FormFull/FormFullInterfaces";
 import {
   defaultMoleculeInputParams,
   IMoleculeInputParams,
@@ -51,12 +30,7 @@ import {
   molsToConsiderStrToObj,
   molsToConsiderToStr,
 } from "./Types";
-import {
-  compileMolModels,
-  IMolsToConsider,
-  MolMergeStrategy,
-} from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-// import WhichMols from "../WhichMols/WhichMols.vue";
+import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 
 /**
  * CombineProteins component
@@ -67,7 +41,6 @@ import {
     FormSelect,
     FormWrapper,
     Alert,
-    // WhichMols,
   },
 })
 export default class MoleculeInputParams extends Vue {
@@ -78,21 +51,6 @@ export default class MoleculeInputParams extends Vue {
   val: IMoleculeInputParams = { ...defaultMoleculeInputParams() };
 
   molsToConsiderOpts = molsToConsiderOptions;
-
-  mergeProtein: IFormOption[] = [
-    {
-      description: "Each Protein (Group Associated Chains)",
-      val: MolMergeStrategy.ByMolecule,
-    },
-    {
-      description: "All Proteins Together (Group All Proteins into One)",
-      val: MolMergeStrategy.OneMol,
-    },
-    {
-      description: "Each Protein Chain Separately (Group Nothing)",
-      val: MolMergeStrategy.ByChain,
-    },
-  ];
 
   // IMolsToConsider is object, but select uses string. So watch this string
   // enum and update accordingly.
@@ -121,108 +79,83 @@ export default class MoleculeInputParams extends Vue {
    *     be used.
    */
   get summary(): string {
-    let txt = "";
-
+    let actsOn = "";
     if (this.val.considerCompounds && this.val.considerProteins) {
-      txt += "This calculation acts on protein/compound pairs. ";
+      actsOn = "protein/compound pairs";
     } else if (this.val.considerCompounds) {
-      txt += "This calculation acts on compounds. ";
+      actsOn = "compounds";
     } else if (this.val.considerProteins) {
-      txt += "This calculation acts on proteins. ";
+      actsOn = "proteins";
     }
 
     const molsToConsid = this.val.molsToConsider;
-    if (molsToConsid.all === true) {
-      txt += "Among all molecules, I found ";
+
+    let whichMols = "";
+    if (molsToConsid.hiddenAndUnselected === true) {
+      whichMols = "all";
     } else if (
       molsToConsid.visible === true &&
       molsToConsid.selected === true
     ) {
-      txt += "Among the visible and/or selected molecules, I found ";
+      whichMols = "the visible and/or selected";
     } else if (molsToConsid.visible === true) {
-      txt += "Among the visible molecules, I found ";
+      whichMols = "the visible";
     } else if (molsToConsid.selected === true) {
-      txt += "Among the selected molecules, I found ";
+      whichMols = "the selected";
     }
 
     let prts: string[] = [];
 
     const compiledMols = compileMolModels(
-      this.val.molMergeStrategy,
       molsToConsid,
       true // Keep compounds separate.
     );
 
     const nodeGroups = compiledMols.nodeGroups ?? [];
-    const compoundsNodes = compiledMols.compoundsNodes ?? [];
     const nodeGroupsCount = nodeGroups.length;
+    const compoundsNodes = compiledMols.compoundsNodes ?? [];
     const compoundsNodesCount = compoundsNodes.length;
 
     if (this.val.considerProteins) {
-      switch (this.val.molMergeStrategy) {
-        case MolMergeStrategy.ByMolecule:
-          // protPrtsCount = (compiledMols.nonCompoundNodes as any).length; //  this.proteinsToUse.length;
-          prts.push(
-            (nodeGroupsCount !== 1
-              ? `${nodeGroupsCount} proteins`
-              : "1 protein") + ` (${this.listMols(nodeGroups[0])})` // TODO: First mol for now. Need to think about this. Parent?
-          );
-          break;
-        case MolMergeStrategy.OneMol:
-          if (nodeGroupsCount === 0) {
-            // if ((compiledMols.allNodes as any) === 0) {
-            prts.push("0 (merged) proteins");
-          } else {
-            prts.push("1 (merged) protein");
-          }
-          break;
-        case MolMergeStrategy.ByChain:
-          // protPrtsCount = (compiledMols.nonCompoundNodes as any).length; // this.proteinChainsToUse.length;
-          prts.push(
-            (nodeGroupsCount !== 1
-              ? `${nodeGroupsCount} protein chains`
-              : "1 protein chain") + ` (${this.listMols(nodeGroups[0])})` // First one. Think about this.
-          );
-          break;
-      }
-    }
-
-    // let cmpPrtsCount = -1;
-    if (this.val.considerCompounds) {
-      // cmpPrtsCount = (compiledMols.compoundNodes as any).length; // this.compoundsToUse.length;
       prts.push(
-        (compoundsNodesCount !== 1
-          ? `${compoundsNodesCount} compounds`
-          : "1 compound") + ` (${this.listMols(compoundsNodes)})`
+        (nodeGroupsCount !== 1 ? `${nodeGroupsCount} proteins` : "1 protein")
+        //  + ` (${this.listMols(nodeGroups[0])})` // TODO: First mol for now. Need to think about this. Parent?
       );
     }
 
-    txt += prts.join(" and ");
-    txt += ", so this calculation will run ";
+    if (this.val.considerCompounds) {
+      prts.push(
+        (compoundsNodesCount !== 1
+          ? `${compoundsNodesCount} compounds`
+          : "1 compound")  //  + ` (${this.listMols(compoundsNodes)})`
+      );
+    }
+    let components = prts.join(" and ");
+
+    let numRuns = "";
     if (nodeGroupsCount !== -1 && compoundsNodesCount !== -1) {
       const total = nodeGroupsCount * compoundsNodesCount;
-      txt += `${total} ($nodeGroupsCount} x ${compoundsNodesCount}) times.`;
+      numRuns = `${total} (${nodeGroupsCount} x ${compoundsNodesCount}) times`;
     } else if (nodeGroupsCount !== -1) {
-      txt += `$nodeGroupsCount} times (once for each protein).`;
+      numRuns = `${nodeGroupsCount} times (once for each protein)`;
     } else if (compoundsNodesCount !== -1) {
-      txt += `${compoundsNodesCount} times (once for each compound).`;
+      numRuns = `${compoundsNodesCount} times (once for each compound)`;
     }
 
-    // const protTxt = this.visibleProteins.length !== 1 ? "proteins" : "protein";
-    // const chainTxt = this.visibleProteinChains.length !== 1 ? "chains" : "chain";
-    // txt += `but there are ${this.visibleProteinChains.length} visible protein ${chainTxt} grouped into ${this.visibleProteins.length} ${protTxt}. `;
-    // txt += "What should be considered a distinct protein?";
-
-    return txt;
+    return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found ${components}, so this calculation will run ${numRuns}.`;
   }
 
   /**
    * Lists the molecules in string format, at most two.
    *
-   * @param {IMolContainer[]} mols  The molecules to list.
+   * @param {IMolContainer[] | undefined} mols  The molecules to list.
    * @returns {string}  The molecules in string format, at most two.
    */
-  listMols(mols: IMolContainer[]): string {
+  listMols(mols: IMolContainer[] | undefined): string {
+    if (mols === undefined) {
+      return "";
+    }
+
     let descriptions = mols.map((m) =>
       getMolDescription(m, this.molecules, true)
     );
@@ -232,48 +165,6 @@ export default class MoleculeInputParams extends Vue {
     }
     return descriptions.join(", ");
   }
-
-  /**
-   * Gets the visible proteins.
-   *
-   * @returns {IMolContainer[]}  The visible proteins.
-   */
-  // get proteinsToUse(): IMolContainer[] {
-  //   // Get number of visible proteins (top-level menu items).
-  //   return getProteinsToUse(this.val.molsToConsider, this.molecules);
-  // }
-
-  /**
-   * Gets the visible protein chains.
-   *
-   * @returns {IMolContainer[]}  The visible protein chains.
-   */
-  // get proteinChainsToUse(): IMolContainer[] {
-  //   return getProteinChainsToUse(this.val.molsToConsider, this.molecules);
-  // }
-
-  /**
-   * Determines whether user should be able to select which protein to consider.
-   * If there is only one protein, no need to allow the user to select. TODO:
-   * This doesn't account for ligands!
-   *
-   * @returns {boolean}  true if should be visible, false if not.
-   */
-  get isSelectWhichMolToConsidervisible(): boolean {
-    return (
-      getProteinChainsToUse({ all: true } as IMolsToConsider, this.molecules)
-        .length > 1
-    );
-  }
-
-  /**
-   * Gets the visible compounds.
-   *
-   * @returns {IMolContainer[]}  The visible compounds.
-   */
-  // get compoundsToUse(): IMolContainer[] {
-  //   return getCompoundsToUse(this.val.molsToConsider, this.molecules);
-  // }
 
   /**
    * Watches val and emits the modelValue.

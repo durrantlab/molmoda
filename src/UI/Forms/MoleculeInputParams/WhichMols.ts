@@ -70,7 +70,7 @@ export function getTerminalNodesToConsider(
     // Get the terminal nodes
     terminalNodes = getTerminalNodes(terminalNodes as IMolContainer[]);
     
-    if (molsToConsider.all === true) {
+    if (molsToConsider.hiddenAndUnselected === true) {
         return terminalNodes;
     }
 

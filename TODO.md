@@ -68,7 +68,8 @@ https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter
 
 Possible to merge tree branches into one, at least at top level? Maybe top level
 should always be molecule, with children always of the same name, even if there
-is only one of them. That would simplify things like merging.
+is only one of them. That would simplify things like merging. This is pretty
+critical, actually (no more OneMol merge strategy supported).
 
 Perhaps settings (for local only). Edit -> Preferences. 
     Number of processors.

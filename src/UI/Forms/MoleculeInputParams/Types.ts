@@ -1,4 +1,4 @@
-import { IMolsToConsider, MolMergeStrategy } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
+import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { IFormOption } from "../FormFull/FormFullInterfaces";
 
 // Good to do below because when using selection, val is a string. So good not
@@ -14,7 +14,7 @@ export enum MolsToConsiderStr {
 export const molsToConsiderStrToObj: {
     [key in MolsToConsiderStr]: IMolsToConsider;
 } = {
-    [MolsToConsiderStr.All]: { all: true },
+    [MolsToConsiderStr.All]: { hiddenAndUnselected: true },
     [MolsToConsiderStr.Selected]: { selected: true },
     [MolsToConsiderStr.Visible]: { visible: true },
     [MolsToConsiderStr.VisibleOrSelected]: { selected: true, visible: true },
@@ -23,7 +23,7 @@ export const molsToConsiderStrToObj: {
 export function molsToConsiderToStr(
     molsToConsider: IMolsToConsider
 ): MolsToConsiderStr {
-    if (molsToConsider.all) {
+    if (molsToConsider.hiddenAndUnselected) {
         return MolsToConsiderStr.All;
     } else if (molsToConsider.selected && molsToConsider.visible) {
         return MolsToConsiderStr.VisibleOrSelected;
@@ -57,7 +57,6 @@ export const molsToConsiderOptions: IFormOption[] = [
 ];
 
 export interface IMoleculeInputParams {
-    molMergeStrategy: MolMergeStrategy;
     molsToConsider: IMolsToConsider;
     considerProteins: boolean;
     considerCompounds: boolean;
@@ -70,7 +69,6 @@ export interface IMoleculeInputParams {
  */
 export function defaultMoleculeInputParams(): IMoleculeInputParams {
     return {
-        molMergeStrategy: MolMergeStrategy.OneMol,
         molsToConsider: { visible: true, selected: true } as IMolsToConsider,
         considerProteins: true,
         considerCompounds: true,
