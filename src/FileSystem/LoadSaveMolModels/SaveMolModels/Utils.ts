@@ -6,17 +6,13 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { convertMolContainers } from "../ConvertMolModels/ConvertMolContainer";
 import * as api from "@/Api";
-import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+    getTerminalNodes,
+    keepUniqueMolContainers,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { IFileInfo } from "@/FileSystem/Types";
-
-export function removeRepeatMolContainers(molContainers: IMolContainer[]): IMolContainer[] {
-    return molContainers.filter(
-        (node, index, self) =>
-            index === self.findIndex((t) => t.id === node.id)
-    );
-}
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
@@ -31,7 +27,7 @@ export function separateCompoundNonCompoundTerminalNodes(
     let terminalNodes = getTerminalNodes(molContainers);
 
     // Keep only terminal nodes with unique ids
-    terminalNodes = removeRepeatMolContainers(terminalNodes);
+    terminalNodes = keepUniqueMolContainers(terminalNodes);
 
     const compoundNodes = terminalNodes.filter(
         (node) => node.type === MolType.Compound
@@ -71,7 +67,7 @@ export function getConvertedTxts(
                         filename === undefined
                             ? getFilename(molEntry, targetExt)
                             : `${filename}.${targetExt}`,
-                    contents: txt
+                    contents: txt,
                 } as IFileInfo;
             });
         }

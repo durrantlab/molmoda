@@ -2,9 +2,9 @@
   <PluginComponent
     ref="pluginComponent"
     v-model:modelValue="open"
-    title="Delete Molecule"
+    title="Merge Molecules"
     :intro="intro"
-    actionBtnTxt="Delete"
+    actionBtnTxt="Merge"
     :userArgs="userArgs"
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
@@ -30,15 +30,15 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /**
- * DeleteMolPlugin
+ * MergeMolsPlugin
  */
 @Options({
   components: {
     PluginComponent,
   },
 })
-export default class DeleteMolPlugin extends PluginParentClass {
-  menuPath = ["Edit", "Molecules", "[3] Delete..."];
+export default class MergeMolsPlugin extends PluginParentClass {
+  menuPath = ["Edit", "Molecules", "[3] Merge..."];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -46,8 +46,8 @@ export default class DeleteMolPlugin extends PluginParentClass {
       url: "http://durrantlab.com/",
     },
   ];
-  pluginId = "deletemol";
-  intro = "Delete the selected molecule(s)?";
+  pluginId = "mergemols";
+  intro = "Merge the selected molecules?";
   userArgs: FormElement[] = [];
 
   nodesToActOn: IMolContainer[] = [getDefaultNodeToActOn()];
@@ -77,35 +77,8 @@ export default class DeleteMolPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     if (this.nodesToActOn) {
-      for (const node of this.nodesToActOn) {
-        removeNode(node);
-      }
+      ****
 
-      // Get the parent node and remove this from it's nodes.
-      // if (this.nodeToActOn.parentId) {
-      //   const parentNode = getNodeOfId(
-      //     this.nodeToActOn.parentId,
-      //     this.$store.state.molecules
-      //   );
-
-      //   if (parentNode) {
-      //     parentNode.viewerDirty = true;
-
-      //     // Remove this node from the parent's nodes list.
-      //     if (parentNode.nodes) {
-      //       parentNode.nodes = parentNode.nodes.filter(
-      //         (n) => n.id !== this.nodeToActOn?.id
-      //       );
-      //     }
-      //   }
-      // } else {
-      //   // It's a root node, without a parent id.
-      //   let molecules = this.$store.state.molecules;
-      //   molecules = molecules.filter(
-      //     (n: IMolContainer) => n.id !== this.nodeToActOn?.id
-      //   );
-      //   this.$store.commit("updateMolecules", molecules);
-      // }
     }
   }
 
@@ -118,25 +91,26 @@ export default class DeleteMolPlugin extends PluginParentClass {
    */
   getTests(): ITest[] {
     return [
-      {
-        beforePluginOpens: [
-          this.testLoadExampleProtein(),
-          ...this.testExpandMoleculesTree("4WP4"),
-          this.testSelectMoleculeInTree("Protein"),
-        ],
-        // closePlugin: [],
-        afterPluginCloses: [],
-      },
-      {
-        // Also test deleting a root node.
-        beforePluginOpens: [
-          this.testLoadExampleProtein(),
-          ...this.testExpandMoleculesTree("4WP4"),
-          this.testSelectMoleculeInTree("4WP4"),
-        ],
-        // closePlugin: [],
-        afterPluginCloses: [],
-      },
+      // TODO: Need tests.
+      // {
+      //   beforePluginOpens: [
+      //     this.testLoadExampleProtein(),
+      //     ...this.testExpandMoleculesTree("4WP4"),
+      //     this.testSelectMoleculeInTree("Protein"),
+      //   ],
+      //   // closePlugin: [],
+      //   afterPluginCloses: [],
+      // },
+      // {
+      //   // Also test deleting a root node.
+      //   beforePluginOpens: [
+      //     this.testLoadExampleProtein(),
+      //     ...this.testExpandMoleculesTree("4WP4"),
+      //     this.testSelectMoleculeInTree("4WP4"),
+      //   ],
+      //   // closePlugin: [],
+      //   afterPluginCloses: [],
+      // },
     ];
   }
 }

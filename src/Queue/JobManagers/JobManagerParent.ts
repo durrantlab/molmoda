@@ -5,6 +5,7 @@
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { getFileType } from "@/FileSystem/Types";
 import {
     EndpointResponseStatus,
     IEndpointResponse,
@@ -59,11 +60,11 @@ export abstract class JobManagerParent {
                         if (jobStatus.outputFiles !== undefined) {
                             for (const outputFile of jobStatus.outputFiles) {
                                 // There are output files to load.
-                                const prts = getFileNameParts(outputFile.name);
+                                const ext = getFileType(outputFile);
 
                                 // Is it some sort of loadable file?
                                 if (
-                                    getFormatInfoGivenType(prts.ext) !==
+                                    getFormatInfoGivenType(ext) !==
                                     undefined
                                 ) {
                                     // It's a molecule format. Load it.
@@ -226,6 +227,12 @@ export abstract class JobManagerParent {
             });
     }
 
+    /**
+     * Cancel all jobs.
+     *
+     * @returns {Promise<EndpointResponseStatus>}  A promise that resolves with
+     *    the response status.
+     */
     public cancelAllJobs(): Promise<EndpointResponseStatus> {
         return this.sendRequest({
             action: EndpointAction.CancelAllJobs,

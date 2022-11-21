@@ -2,7 +2,7 @@ export let appName = "Biotite";
 
 /**
  * Updates the app name. When running just one plugin, name should be updated to
- * reflect plugin name.
+ * reflect plugin name. TODO: Not currently used, but I think it should be.
  *
  * @param  {string} newName  The new name.
  */

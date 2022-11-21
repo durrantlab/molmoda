@@ -5,7 +5,7 @@ interface _IColorInfo {
 }
 
 // See https://www.scaler.com/topics/html-color-names/
-export let colorInfomation = [
+let colorInfomation = [
     { hex: "#F0F8FF", name: "AliceBlue" },
     { hex: "#FAEBD7", name: "AntiqueWhite" },
     { hex: "#00FFFF", name: "Aqua" },

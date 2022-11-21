@@ -19,6 +19,9 @@ import { ViewerParent } from "./ViewerParent";
 
 let NGL: any;
 
+/**
+ * The NGL viewer. Inherits ViewerParent class.
+ */
 export class ViewerNGL extends ViewerParent {
     private _nglObj: any;
 
@@ -155,10 +158,9 @@ export class ViewerNGL extends ViewerParent {
                     };
                     break;
                 default:
-                    // debugger;
                     if (colorscheme.endsWith("Carbon")) {
                         const schemeId = NGL.ColormakerRegistry.addScheme(
-                            function (params: any) {
+                            function (/* params: any */) {
                                 // See https://nglviewer.org/ngl/api/manual/usage/coloring.html
 
                                 const carbonColor = parseInt(
@@ -471,6 +473,19 @@ export class ViewerNGL extends ViewerParent {
                     false
                 );
 
+                // You need to also monitor the size of the div, because with
+                // resizing the panels, you can resize div without resizing
+                // window.
+                const div = document.getElementById(id);
+                if (div) {
+                    setInterval(() => {
+                        if (div.clientWidth !== stage.width) {
+                            stage.handleResize();
+                        }
+                    }, 1000);
+                }
+                // TODO: Unregister this interval when the viewer is removed?
+
                 this._nglObj = stage;
 
                 // this.surfaceType = NGL.SurfaceType.MS;
@@ -492,8 +507,8 @@ export class ViewerNGL extends ViewerParent {
                         padding: "0.5em",
                         fontFamily: "sans-serif",
                     });
-                    stage.viewer.container.appendChild(tooltip)
-    
+                    stage.viewer.container.appendChild(tooltip);
+
                     stage.signals.hovered.removeAll();
                     stage.signals.hovered.add(function (pickingProxy: any) {
                         if (
@@ -502,12 +517,12 @@ export class ViewerNGL extends ViewerParent {
                         ) {
                             // debugger;
                             const atom =
-                            pickingProxy.atom || pickingProxy.closestBondAtom;
+                                pickingProxy.atom ||
+                                pickingProxy.closestBondAtom;
                             const cp = pickingProxy.canvasPosition;
-                            stage.tooltip.innerText =
-                            "MOO ATOM: ";  //  + atom.qualifiedName();
-                            stage.tooltip.style.bottom = (cp.y - 150) + "px";
-                            stage.tooltip.style.left = (cp.x - 150) + "px";
+                            stage.tooltip.innerText = "MOO ATOM: "; //  + atom.qualifiedName();
+                            stage.tooltip.style.bottom = cp.y - 150 + "px";
+                            stage.tooltip.style.left = cp.x - 150 + "px";
                             stage.tooltip.style.display = "block";
                             // console.log("hi", tooltip);
                         } else {
@@ -515,7 +530,6 @@ export class ViewerNGL extends ViewerParent {
                         }
                     });
                 }, 1000);
-
 
                 return this as ViewerParent;
             })

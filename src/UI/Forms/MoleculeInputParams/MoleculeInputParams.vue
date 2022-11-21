@@ -1,10 +1,22 @@
 <template>
   <span>
     <FormWrapper label="Which project molecules to consider?" cls="border-0">
-      <FormSelect
-        v-model="molsToConsiderAsStr"
-        :options="molsToConsiderOpts"
-      ></FormSelect>
+      <FormCheckBox
+        v-model.boolean="val.molsToConsider.visible"
+        text="Visible molecules"
+        id="visMols"
+        class="mt-2"
+      />
+      <FormCheckBox
+        v-model.boolean="val.molsToConsider.selected"
+        text="Selected molecules"
+        id="selMols"
+      />
+      <FormCheckBox
+        v-model.boolean="val.molsToConsider.hiddenAndUnselected"
+        text="Other molecules (hidden and unselected)"
+        id="otherMols"
+      />
     </FormWrapper>
     <FormWrapper cls="mt-3">
       <Alert type="info">{{ summary }}</Alert>
@@ -20,17 +32,14 @@ import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
 import FormWrapper from "../FormWrapper.vue";
-import { getMolDescription } from "@/UI/Navigation/TreeView/TreeUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
 import {
   defaultMoleculeInputParams,
   IMoleculeInputParams,
-  molsToConsiderOptions,
-  molsToConsiderStrToObj,
-  molsToConsiderToStr,
 } from "./Types";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
+import FormCheckBox from "../FormCheckBox.vue";
 
 /**
  * CombineProteins component
@@ -41,6 +50,7 @@ import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
     FormSelect,
     FormWrapper,
     Alert,
+    FormCheckBox,
   },
 })
 export default class MoleculeInputParams extends Vue {
@@ -49,19 +59,6 @@ export default class MoleculeInputParams extends Vue {
 
   // Shadows modelValue
   val: IMoleculeInputParams = { ...defaultMoleculeInputParams() };
-
-  molsToConsiderOpts = molsToConsiderOptions;
-
-  // IMolsToConsider is object, but select uses string. So watch this string
-  // enum and update accordingly.
-  molsToConsiderAsStr = molsToConsiderToStr(
-    defaultMoleculeInputParams().molsToConsider
-  );
-
-  @Watch("molsToConsiderAsStr")
-  onMolsToConsiderAsStrChange() {
-    this.val.molsToConsider = molsToConsiderStrToObj[this.molsToConsiderAsStr];
-  }
 
   /**
    * Gets the molecules from the store.
@@ -91,7 +88,11 @@ export default class MoleculeInputParams extends Vue {
     const molsToConsid = this.val.molsToConsider;
 
     let whichMols = "";
-    if (molsToConsid.hiddenAndUnselected === true) {
+    if (
+      molsToConsid.visible === true &&
+      molsToConsid.selected === true &&
+      molsToConsid.hiddenAndUnselected === true
+    ) {
       whichMols = "all";
     } else if (
       molsToConsid.visible === true &&
@@ -118,16 +119,16 @@ export default class MoleculeInputParams extends Vue {
 
     if (this.val.considerProteins) {
       prts.push(
-        (nodeGroupsCount !== 1 ? `${nodeGroupsCount} proteins` : "1 protein")
+        nodeGroupsCount !== 1 ? `${nodeGroupsCount} proteins` : "1 protein"
         //  + ` (${this.listMols(nodeGroups[0])})` // TODO: First mol for now. Need to think about this. Parent?
       );
     }
 
     if (this.val.considerCompounds) {
       prts.push(
-        (compoundsNodesCount !== 1
+        compoundsNodesCount !== 1
           ? `${compoundsNodesCount} compounds`
-          : "1 compound")  //  + ` (${this.listMols(compoundsNodes)})`
+          : "1 compound" //  + ` (${this.listMols(compoundsNodes)})`
       );
     }
     let components = prts.join(" and ");
@@ -151,20 +152,20 @@ export default class MoleculeInputParams extends Vue {
    * @param {IMolContainer[] | undefined} mols  The molecules to list.
    * @returns {string}  The molecules in string format, at most two.
    */
-  listMols(mols: IMolContainer[] | undefined): string {
-    if (mols === undefined) {
-      return "";
-    }
+  // listMols(mols: IMolContainer[] | undefined): string {
+  //   if (mols === undefined) {
+  //     return "";
+  //   }
 
-    let descriptions = mols.map((m) =>
-      getMolDescription(m, this.molecules, true)
-    );
-    if (descriptions.length > 2) {
-      descriptions = descriptions.slice(0, 2);
-      descriptions.push("...");
-    }
-    return descriptions.join(", ");
-  }
+  //   let descriptions = mols.map((m) =>
+  //     getMolDescription(m, this.molecules, true)
+  //   );
+  //   if (descriptions.length > 2) {
+  //     descriptions = descriptions.slice(0, 2);
+  //     descriptions.push("...");
+  //   }
+  //   return descriptions.join(", ");
+  // }
 
   /**
    * Watches val and emits the modelValue.
@@ -173,8 +174,6 @@ export default class MoleculeInputParams extends Vue {
    */
   @Watch("val", { deep: true })
   onValChanged(newVal: IMoleculeInputParams) {
-    // newVal.molsToUse = parseInt(newVal.molsToUse as any);
-    this.molsToConsiderAsStr = molsToConsiderToStr(newVal.molsToConsider);
     this.$emit("update:modelValue", newVal);
     this.$emit("onChange");
   }

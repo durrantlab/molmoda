@@ -113,6 +113,9 @@ export default class MenuActionLink extends Vue {
     }
   }
 
+  /**
+   * Mounted function.
+   */
   mounted() {
     // Get the os
     dynamicImports.detectOs.module

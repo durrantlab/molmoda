@@ -77,7 +77,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
-        ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
+        ...this.testExpandMoleculesTree("4WP4"),
         this.testSelectMoleculeInTree("Protein"),
       ],
       closePlugin: [],

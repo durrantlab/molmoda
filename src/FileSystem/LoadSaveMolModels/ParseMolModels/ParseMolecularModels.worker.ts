@@ -36,6 +36,7 @@ import {
 } from "../Types/DefaultStyles";
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 
 let glviewer: any;
 
@@ -43,6 +44,8 @@ enum NodesOrModel {
     Nodes,
     Model,
 }
+
+const COLLAPSE_ONE_NODE_LEVELS = false;
 
 /**
  * Helper function to generate default mol container (used throughout).
@@ -479,11 +482,13 @@ function divideAtomsIntoDistinctComponents(
                 flattenChains(ionAtomsByChain);
 
             // For everything else, if given chain has one item, collapse it.
-            compoundsByChain = collapseSingles(compoundsByChain, true);
-            proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
-            nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
-            metalAtomsByChain = collapseSingles(metalAtomsByChain);
-            lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
+            if (COLLAPSE_ONE_NODE_LEVELS) {
+                compoundsByChain = collapseSingles(compoundsByChain, true);
+                proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
+                nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
+                metalAtomsByChain = collapseSingles(metalAtomsByChain);
+                lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
+            }
 
             proteinAtomsByChain.type = MolType.Protein;
             nucleicAtomsByChain.type = MolType.Nucleic;
@@ -493,18 +498,19 @@ function divideAtomsIntoDistinctComponents(
             ionAtomsNoChain.type = MolType.Ions;
             solventAtomsNoChain.type = MolType.Solvent;
 
-            // // add in default styles
-            // proteinAtomsByChain.style = proteinStyle;
-            // nucleicAtomsByChain.style = nucleicStyle;
+            let molName = data.molName;
 
-            let molName =
-                data.molName +
-                (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
-            const molNameFromContent = getNameFromContent(frame, molFormatInfo);
+            // Remove extension from name
+            molName = getFileNameParts(molName).basename;
 
-            if (molNameFromContent !== "") {
-                molName = `${molNameFromContent} (${molName})`;
-            }
+            // Add name from content if you like (decided against it)
+            // molName =
+            //     data.molName +
+            //     (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
+            // const molNameFromContent = getNameFromContent(frame, molFormatInfo);
+            // if (molNameFromContent !== "") {
+            //     molName = `${molNameFromContent} (${molName})`;
+            // }
 
             // Page into single object
             let fileContents: IMolContainer = {
@@ -571,7 +577,9 @@ function cleanUpFileContents(molContainer: IMolContainer): IMolContainer {
         }
     }
 
-    molContainer = collapseSingles(molContainer);
+    if (COLLAPSE_ONE_NODE_LEVELS) {
+        molContainer = collapseSingles(molContainer);
+    }
 
     return molContainer;
 }

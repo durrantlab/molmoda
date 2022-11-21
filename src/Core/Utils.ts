@@ -73,6 +73,13 @@ export function timeDiffDescription(
     return ` (${roundedSecs.toFixed(1)} ${secs})`;
 }
 
+/**
+ * Given a number of milliseconds since the Unix Epoch, produces a string that
+ * describes the time.
+ *
+ * @param  {number} timestamp  The timestamp.
+ * @returns {string}  A description of the time.
+ */
 export function formatTimestamp(timestamp: number): string {
     if (timestamp === 0) {
         return "";

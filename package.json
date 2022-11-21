@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "cd utils && ./before_compile.sh && cd .. && vue-cli-service build",
     "lint": "vue-cli-service lint",
     "docs": "vue-cli-service build --mode docs; jsdoc dist/js/app.js",
     "docs2": "jsdoc -r -c jsdoc.json src/"

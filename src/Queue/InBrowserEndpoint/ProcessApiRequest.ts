@@ -308,6 +308,11 @@ function _prepGetJobsInfoResponse(
     return jobStatuses;
 }
 
+/**
+ * Sorts a list of jobs in place.
+ *
+ * @param  {(IJobInfoQueueEntry|IJobStatusInfo)[]} jobs  The jobs to sort.
+ */
 function _sortJobs(jobs: (IJobInfoQueueEntry | IJobStatusInfo)[]) {
     // Sort first by the submit time (only time all jobs are guaranteed to had),
     // then by id.

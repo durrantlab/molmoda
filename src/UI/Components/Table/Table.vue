@@ -134,10 +134,25 @@ export default class Table extends Vue {
     return dataToUse;
   }
 
+  /**
+   * Gets a cell, cast as ICellValue. Just so typescript will be happy.
+   *
+   * @param {CellValue} cell  The cell to cast.
+   * @returns {ICellValue} The cell cast as ICellValue.
+   */
   getCell(cell: CellValue): ICellValue {
     return cell as ICellValue;
   }
 
+  /**
+   * Whether to show the icon for a given table row, based on the provided
+   * filter function.
+   *
+   * @param {ICellValue} cell  The cell to check, which provides the filter
+   *                           function, etc.
+   * @param {any} row          The table row.
+   * @returns {boolean} True if the cell has an icon and it should be shown.
+   */
   showIcon(cell: ICellValue, row: { [key: string]: CellValue }): boolean {
     if (cell.iconClasses === undefined) {
       // No icon specified, so nothing to show.
@@ -152,6 +167,15 @@ export default class Table extends Vue {
     return cell.iconShowFilterFunc(row);
   }
 
+  /**
+   * Whether to show a given table column.
+   *
+   * @param {IHeader}    header     The table header, which provides the column
+   *                                function.
+   * @param {ITableData} tableData  The table data, which provides info about
+   *                                the column to evaluate.
+   * @returns {boolean} True if the column should be shown.
+   */
   showColumn(header: IHeader, tableData: ITableData): boolean {
     if (header.showColumnFunc === undefined) {
       // If no filter function defined, always show the column.
@@ -164,6 +188,11 @@ export default class Table extends Vue {
     // return this.tableData.headers.find((h) => h.text === header) !== undefined;
   }
 
+  /**
+   * 
+   * @param {string | undefined} emitName  The name of the event to emit.
+   * @param {any}                row       The table row to emit.
+   */
   iconClicked(emitName: string | undefined, row: { [key: string]: CellValue }) {
     this.$emit(emitName as string, row);
   }

@@ -8,6 +8,10 @@ import {
     ViewerType,
 } from "./Types";
 
+/**
+ * The ViewerParent abstract class. Other viewers (e.g., 3dmoljs) inherit this
+ * one.
+ */
 export abstract class ViewerParent {
     // Keep track of which molecules have been loaded.
     molCache: { [id: string]: ModelType } = {};
@@ -24,6 +28,11 @@ export abstract class ViewerParent {
      */
     abstract _removeModel(id: string): void;
 
+    /**
+     * Removes multiple models.
+     * 
+     * @param {string[]} ids  The ids of the models to remove.
+     */
     removeModels(ids: string[]) {
         // Find the ids that are still present in the cache. These should be
         // removed.
@@ -41,6 +50,12 @@ export abstract class ViewerParent {
         });
     }
 
+
+    /**
+     * Removes a single model from the viewer.
+     * 
+     * @param {string} id  The id of the model to remove.
+     */
     removeModel(id: string) {
         // Clear any surfaces
         this.clearSurfacesOfMol(id);
@@ -114,6 +129,14 @@ export abstract class ViewerParent {
      */
     abstract _addSurface(id: string, style: StyleType): Promise<SurfaceType>;
 
+    /**
+     * Adds a surface.
+     *
+     * @param {string}    id     The id of the model to add the surface to.
+     * @param {StyleType} style  The style of the surface.
+     * @returns {Promise<SurfaceType>}  A promise that resolves with the surface
+     *     type when it's ready.
+     */
     addSurface(id: string, style: StyleType): Promise<SurfaceType> {
         return this._addSurface(id, style).then((surface: SurfaceType) => {
             // Add to surface cache
@@ -133,6 +156,13 @@ export abstract class ViewerParent {
      */
     abstract addGLModel(model: GLModel): Promise<ModelType>;
 
+    /**
+     * Adds a list of IMolContainers to the viewer.
+     * 
+     * @param {IMolContainer[]} molContainers   The list of molecules to add.
+     * @returns {Promise<IMolContainer>[]}  A list of promises that resolve
+     *    when the molecules are added.
+     */
     addMolContainers(molContainers: IMolContainer[]): Promise<IMolContainer>[] {
         // Add all the models and put them in the cache.
         const addMolPromises: Promise<IMolContainer>[] = [];
@@ -250,11 +280,21 @@ export abstract class ViewerParent {
      */
     abstract convertSelection(sel: any): any;
 
+    /**
+     * Gets a PNG URI of the current view.
+     * 
+     * @returns {string}  The URI.
+     */
     pngURI(): string {
         console.error("pngURI not implemented");
         return "";
     }
 
+    /**
+     * Gets a VRML model of the current scene.
+     * 
+     * @returns {string}  The VRML string.
+     */
     exportVRML(): string {
         console.error("exportVRML not implemented");
         return "";
@@ -275,6 +315,11 @@ export abstract class ViewerParent {
         return this.molCache[id];
     }
 
+    /**
+     * Removes a model from the cache.
+     * 
+     * @param {string} id  The id of the model to remove.
+     */
     removeFromCache(id: string): void {
         delete this.molCache[id];
     }

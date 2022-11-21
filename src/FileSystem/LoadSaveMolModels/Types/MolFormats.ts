@@ -4,7 +4,7 @@ export enum MolLoader {
     Mol3D, // 3dmoljs. Always prefer over open babel when available.
     OpenBabel,
     Biotite,
-    // Zip
+    Zip
 }
 
 interface IFrameSeparator {
@@ -200,6 +200,14 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false, // Not sure
         loader: MolLoader.Mol3D,
     },
+
+    ZIP: {
+        primaryExt: "zip",
+        exts: ["zip"],
+        description: "ZIP archive",
+        hasBondOrders: false,  // Not sure
+        loader: MolLoader.Zip,
+    }
 };
 
 /**

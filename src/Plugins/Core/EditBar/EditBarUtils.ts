@@ -9,7 +9,7 @@ import {
 
 /**
  * Gets a default IMolContainer.
- * 
+ *
  * @returns {IMolContainer}  The default IMolContainer.
  */
 export function getDefaultNodeToActOn(): IMolContainer {
@@ -25,26 +25,25 @@ export function getDefaultNodeToActOn(): IMolContainer {
 
 /**
  * Determine which node to act on. Mostly likely the selected molecule.
- * 
+ *
  * @param  {any} This  The associated Editbar Vue component.
  */
-export function setNodeToActOn(This: any) {
+export function setNodesToActOn(This: any) {
     if (This.payload) {
         // this.payload is the node id.
         const id = This.payload;
-        This.nodeToActOn = getNodeOfId(
-            id,
-            This.$store.state.molecules
-        ) as IMolContainer;
+        This.nodesToActOn = [
+            getNodeOfId(id, This.$store.state.molecules),
+        ] as IMolContainer[];
     } else {
-        // Find the selected molecule instead.
+        // Find the selected molecules instead.
         const nodes = getAllNodesFlattened(This.$store.state.molecules);
-        This.nodeToActOn = nodes.find(
-            (n) => n.selected === SelectedType.True
-        ) as IMolContainer;
+        This.nodesToActOn = nodes.filter(
+            (n) => n.selected !== SelectedType.False
+        ) as IMolContainer[];
     }
 
-    if (!This.nodeToActOn) {
+    if (!This.nodesToActOn) {
         // TODO: fix this
         alert("You shouldn't be able to run this if no molecule is selected.");
     }

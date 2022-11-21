@@ -46,10 +46,11 @@ export function getFileType(fileInfo: IFileInfo | string): string {
 
     if (prts.ext.indexOf(".") != -1) {
         // Yes, so consider first and last parts of extension. For example, for
-        // tmp.pdb, consider both tmp and pdb.
+        // tmp.pdb, consider both tmp and pdb. But consider last one first (so
+        // pdb before tmp).
         const extParts = prts.ext.split(".");
-        possibleTypes.push(extParts[0].toUpperCase());
         possibleTypes.push(extParts[extParts.length - 1].toUpperCase());
+        possibleTypes.push(extParts[0].toUpperCase());
     }
 
     for (const typ of possibleTypes) {

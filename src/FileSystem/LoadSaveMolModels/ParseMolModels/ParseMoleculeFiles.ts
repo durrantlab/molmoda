@@ -57,4 +57,7 @@ export function parseMoleculeFile(
         //     return parseUsingJsZip(fileInfo);
         // }
     }
+
+    // Should never get here...
+    return Promise.resolve();
 }

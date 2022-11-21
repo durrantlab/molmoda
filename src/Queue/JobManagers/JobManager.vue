@@ -171,6 +171,11 @@ export default class JobManager extends Vue {
     return jobStatuseInfos;
   }
 
+  /**
+   * Cancels all jobs when the user clicks the "Cancel All" button.
+   *
+   * @param {string} jobManagerName  The name of the job manager.
+   */
   cancelAll(jobManagerName: string) {
     // Get manager with this name
     const jobManager = jobManagers.find(
@@ -179,6 +184,11 @@ export default class JobManager extends Vue {
     jobManager.cancelAllJobs();
   }
 
+  /**
+   * Cancels a job when the user clicks the cancel icon on the table row.
+   *
+   * @param {any} row  A row from the table describing the job to cancel.
+   */
   cancelJob(row: { [key: string]: CellValue }) {
     for (const jobManager of jobManagers) {
       const id = "id_" + (row["Job ID"] as any).val.split(":")[1];

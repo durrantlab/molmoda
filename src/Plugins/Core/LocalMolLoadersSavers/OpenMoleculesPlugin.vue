@@ -148,8 +148,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
    * @returns {ITest[]}  The selenium test commands.
    */
   getTests(): ITest[] {
-    const files = [
+    const filesToTest = [
       ["4WP4.pdb", 1],
+      ["4WP4.pdb.zip", 1],
       ["4WP4.pdbqt", 1],
       ["4WP4.pqr", 1],
       ["4WP4.xyz", 1],
@@ -162,11 +163,13 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
       ["ligs.smi", 1], // TODO: Should be 3 when open babel fixed
       ["two_files.zip", 4], // TODO: Should be 6 when open babel fixed
       ["test.biotite", 1],
+      ["ligs.smi.zip", 1], // TODO: Should be 3 when open babel fixed
+      ["four_mols.zip", 2], // TODO: Should be 4 when open babel fixed
     ];
 
-    return files.map((f) => {
-      const name = f[0];
-      const count = (f[1] as number) - 1;
+    return filesToTest.map((fileToTest) => {
+      const name = fileToTest[0];
+      const count = (fileToTest[1] as number) - 1;
       return {
         populateUserArgs: [
           this.testUserArg("formFile", "file://./src/Testing/mols/" + name),

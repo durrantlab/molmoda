@@ -18,7 +18,7 @@ import {
   ISoftwareCredit,
   Licenses,
 } from "@/Plugins/PluginInterfaces";
-import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -81,7 +81,7 @@ export default class SavePNGPlugin extends PluginParentClass {
    *     message. If null, proceed to run the plugin.
    */
   checkPluginAllowed(): string | null {
-    return checkanyMolLoaded(this);
+    return checkAnyMolLoaded(this);
   }
 
   /**

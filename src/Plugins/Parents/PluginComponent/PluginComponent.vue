@@ -152,10 +152,10 @@ export default class PluginComponent extends mixins(
     let combinePromises: Promise<IFileInfo[][]>[] = [];
     for (const idx in userArgs) {
       const param = userArgs[idx];
-      if (param.val.combineProteinType) {
+      if (param.val.molsToConsider) {
         combineIdxs.push(parseInt(idx));
         combinePromises.push(
-          makeMoleculeInput(param.val, this.$store.state["molecules"])
+          makeMoleculeInput(param.val)
         );
       }
     }

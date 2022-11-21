@@ -4,9 +4,11 @@
 
 // export function parseUsingJsZip(
 //     fileInfo: IFileInfo
-// ): Promise<void | IMolContainer> {
+// ): Promise<void | IMolContainer[]> {
+//     debugger;
 //     // It's a zip file.
 //     api.fs.uncompress(fileInfo.contents).then((files) => {
+//         debugger;
 //         return;
 //     })
 //     .catch((err) => {

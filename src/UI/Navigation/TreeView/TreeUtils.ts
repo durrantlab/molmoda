@@ -1,5 +1,6 @@
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
-import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
+import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
+import { getStoreVar, setStoreVar } from "@/Store/StoreExternalAccess";
 import { IMolContainer, MolType, SelectedType } from "./TreeInterfaces";
 
 /**
@@ -49,10 +50,10 @@ export function getAllNodesFlattened(mols: IMolContainer[]): IMolContainer[] {
         let allNodes: IMolContainer[] = [];
 
         for (const mol of mls) {
+            allNodes.push(mol);
             if (mol.nodes) {
                 allNodes = allNodes.concat(findNodes(mol.nodes));
             }
-            allNodes.push(mol);
         }
         return allNodes;
     }
@@ -125,186 +126,9 @@ export function getNodesOfType(
 }
 
 /**
- * Remove a node of given id.
- *
- * @param  {string}          id    The id of the node to remove.
- * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
- */
-export function removeNode(id: string, mols: IMolContainer[]) {
-    const node = getNodeOfId(id, mols);
-    if (!node || !node.parentId) {
-        return;
-    }
-
-    const parentNode = getNodeOfId(node.parentId, mols);
-    if (!parentNode || !parentNode.nodes) {
-        return;
-    }
-
-    parentNode.nodes = parentNode.nodes.filter((n) => n.id !== id);
-}
-
-/**
- * Add a node after another node.
- *
- * @param  {IMolContainer} nodeToAdd     The node to add.
- * @param  {IMolContainer} existingNode  The node to add after.
- * @param  {IMolContainer[]} mols        The array of IMolContainer to search.
- */
-export function addNodeAfter(
-    nodeToAdd: IMolContainer,
-    existingNode: IMolContainer,
-    mols: IMolContainer[]
-) {
-    if (!existingNode.parentId) {
-        return;
-    }
-
-    // Get the parent node of existing node
-    const parentNode = getNodeOfId(existingNode.parentId, mols);
-
-    if (!parentNode || !parentNode.nodes) {
-        return;
-    }
-
-    // Get index of existing node in the list.
-    const existingNodeIndex = parentNode.nodes.findIndex(
-        (n) => n.id === existingNode.id
-    );
-
-    // Insert the new node after the existing node.
-    parentNode.nodes.splice(existingNodeIndex + 1, 0, nodeToAdd);
-
-    // Update nodeToAdd parentId
-    nodeToAdd.parentId = parentNode.id;
-}
-
-/**
- * Get the root (parent-most) nodes of a given type.
- *
- * @param  {IMolContainer[]} mols  The array of IMolContainer to search.
- * @param  {MolType}         type  The nodes type to find.
- * @returns {IMolContainer[]}  The array of root nodes of the given type.
- */
-export function getRootNodesOfType(
-    mols: IMolContainer[],
-    type: MolType
-): IMolContainer[] {
-    // Think of this as the opposite of getTerminalNodes. Instead of getting the
-    // nodes with no more children, you're getting the nodes whose parent type
-    // is different.
-    const allNodes = getAllNodesFlattened(mols);
-    return allNodes.filter((node) => {
-        if (node.type !== type) {
-            return false;
-        }
-        if (node.parentId) {
-            const parentNode = getNodeOfId(node.parentId, mols);
-            if (parentNode) {
-                return parentNode.type !== type;
-            }
-        }
-        return true;
-    });
-}
-
-/**
- * Filters molecules by "to-consider" property.
- *
- * @param  {IMolContainer[]} molecules       The array of IMolContainer to
- *                                           filter.
- * @param  {IMolsToConsider} molsToConsider  The "to-consider" property to
- *                                           filter by.
- * @returns {IMolContainer[]}  The filtered array of IMolContainer.
- */
-function _filterMolsByToConsiderProperty(
-    molecules: IMolContainer[],
-    molsToConsider: IMolsToConsider
-): IMolContainer[] {
-    if (molsToConsider.hiddenAndUnselected) {
-        return molecules;
-    }
-
-    if (molsToConsider.visible && molsToConsider.selected) {
-        return molecules.filter((m) => m.visible || m.selected !== SelectedType.False);
-    }
-
-    if (molsToConsider.visible) {
-        return molecules.filter((m) => m.visible);
-    }
-
-    if (molsToConsider.selected) {
-        return molecules.filter((m) => m.selected !== SelectedType.False);
-    }
-
-    throw new Error("Invalid MoleculesToConsider value.");
-}
-
-/**
- * Gets the visible proteins. (Each protein may have multiple chains.)
- *
- * @param  {IMolsToConsider} molsToConsider  The kinds of molecule properties to
- *                                           filter by.
- * @param  {IMolContainer[]} molecules       The list of molecules to consider.
- * @returns {IMolContainer[]}  The visible proteins.
- */
-export function getProteinsToUse(
-    molsToConsider: IMolsToConsider,
-    molecules: IMolContainer[]
-): IMolContainer[] {
-    // Get number of visible proteins (top-level menu items).
-
-    const proteins = getRootNodesOfType(molecules, MolType.Protein);
-
-    return _filterMolsByToConsiderProperty(proteins, molsToConsider);
-}
-
-/**
- * Gets the visible protein chains.
- *
- * @param  {IMolsToConsider}  molsToConsider  The kinds of molecule properties
- *                                            to filter by.
- * @param  {IMolContainer[]}  molecules       The list of molecules to consider.
- * @returns {IMolContainer[]}  The visible protein chains.
- */
-export function getProteinChainsToUse(
-    molsToConsider: IMolsToConsider,
-    molecules: IMolContainer[]
-): IMolContainer[] {
-    // Get the number of chains (terminal nodes).
-
-    const terminalNodes = getTerminalNodes(molecules);
-    const proteinChains: IMolContainer[] = terminalNodes.filter(
-        (m) => m.type === MolType.Protein
-    );
-
-    return _filterMolsByToConsiderProperty(proteinChains, molsToConsider);
-}
-
-/**
- * Gets the visible compounds.
- *
- * @param  {IMolsToConsider} molsToConsider  The kinds of molecule properties to
- *                                           filter by.
- * @param  {IMolContainer[]} molecules       The list of molecules to consider.
- * @returns {IMolContainer[]}  The visible compounds.
- */
-export function getCompoundsToUse(
-    molsToConsider: IMolsToConsider,
-    molecules: IMolContainer[]
-): IMolContainer[] {
-    const terminalNodes = getTerminalNodes(molecules);
-    const compounds: IMolContainer[] = terminalNodes.filter(
-        (m) => m.type === MolType.Compound
-    );
-
-    return _filterMolsByToConsiderProperty(compounds, molsToConsider);
-}
-
-/**
  * Gets a description of a molecule. Useful when you want to refer to a molecule
  * in text (not the heirarchical tree). If slugified, could be used as a
- * filename.
+ * filename. TODO: Not currently used, but I think it should be.
  *
  * @param  {IMolContainer}    mol                          The molecule to
  *                                                         describe.
@@ -344,4 +168,157 @@ export function getMolDescription(
     }
 
     return titles.join(":").split("(")[0].trim();
+}
+
+/**
+ * Given a list of IMolContainer, returns only those with unique ids.
+ *
+ * @param  {IMolContainer[]} molContainers  The list of IMolContainer to filter.
+ * @returns {IMolContainer[]} The filtered list.
+ */
+export function keepUniqueMolContainers(
+    molContainers: IMolContainer[]
+): IMolContainer[] {
+    return molContainers.filter(
+        (node, index, self) => index === self.findIndex((t) => t.id === node.id)
+    );
+}
+
+/**
+ * Given a IMolsToConsider variable, gets the molecules to consider.
+ *
+ * @param  {IMolsToConsider} molsToConsider   The molsToUse variable.
+ * @param  {IMolContainer[]} [terminalNodes]  The list of molecules to consider.
+ *                                            If undefined, gets all molecules
+ *                                            from VueX store.
+ * @returns {IMolContainer[]}  The molecules to consider.
+ */
+export function getTerminalNodesToConsider(
+    molsToConsider: IMolsToConsider,
+    terminalNodes?: IMolContainer[]
+): IMolContainer[] {
+    if (terminalNodes === undefined) {
+        terminalNodes = getStoreVar("molecules");
+    }
+
+    // Get the terminal nodes
+    terminalNodes = getTerminalNodes(terminalNodes as IMolContainer[]);
+
+    let molsToKeep: IMolContainer[] = [];
+
+    if (molsToConsider.visible) {
+        molsToKeep.push(...terminalNodes.filter((m) => m.visible));
+    }
+
+    if (molsToConsider.selected) {
+        molsToKeep.push(
+            ...terminalNodes.filter((m) => m.selected !== SelectedType.False)
+        );
+    }
+
+    if (molsToConsider.hiddenAndUnselected) {
+        molsToKeep.push(
+            ...terminalNodes.filter(
+                (m) => !m.visible && m.selected === SelectedType.False
+            )
+        );
+    }
+
+    // Make sure there are no duplicates (visible and selected, for example).
+    molsToKeep = keepUniqueMolContainers(molsToKeep);
+
+    return molsToKeep;
+}
+
+/**
+ * Remove a node of given id.
+ *
+ * @param  {string | IMolContainer | null} node  The id of the node to remove,
+ *                                               or the node itself.
+ */
+export function removeNode(node: string | IMolContainer | null) {
+    const mols = getStoreVar("molecules");
+    if (typeof node === "string") {
+        node = getNodeOfId(node, mols);
+    }
+    if (!node) {
+        // Node doesn't exist.
+        return;
+    }
+
+    let id = node.id;
+
+    if (!node.parentId) {
+        // It's a root node, without a parent id.
+        setStoreVar(
+            "molecules",
+            mols.filter((n: IMolContainer) => n.id !== id)
+        );
+        return;
+    }
+
+    // If you get here, node is not string or null, but must be IMolContainer.
+    let curNode = getNodeOfId(node.parentId, mols);
+
+    // Could be that in removing this node, parent node has no children. Delete
+    // that too, up the tree (because these are not terminal nodes, and if a
+    // non-terminal node doens't have any children, there's no reason for it to
+    // exist).
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        if (!curNode) {
+            // Parent node does not exist. Something's wrong.
+            break;
+        }
+
+        if (!curNode.nodes) {
+            // Parent node has no children, something's wrong.
+            break;
+        }
+
+        curNode.nodes = curNode.nodes.filter((n) => n.id !== id);
+        if (curNode.nodes.length > 0) {
+            // Parent node still has children (siblings of just deleted), so
+            // we're done.
+            break;
+        }
+
+        if (!curNode.parentId) {
+            // No parent node, so we're done
+            break;
+        }
+
+        // Go up to parent.
+        id = curNode.id as string;
+        curNode = getNodeOfId(curNode.parentId, mols);
+
+        if (!curNode) {
+            // No parent node, so we're done. Already checked using parentId,
+            // but you need this here for typescript.
+            break;
+        }
+    }
+}
+
+export function getNodeAncestory(id: string, mols: IMolContainer[]) {
+    const node = getNodeOfId(id, mols);
+    if (!node) {
+        return [];
+    }
+
+    let curNode = node;
+    const ancestors: IMolContainer[] = [node];
+    while (curNode.parentId) {
+        const parentNode = getNodeOfId(curNode.parentId, mols);
+
+        if (parentNode === null) {
+            break;
+        }
+
+        // Add at first position
+        ancestors.unshift(parentNode);
+        curNode = parentNode;
+    }
+
+    return ancestors;
 }

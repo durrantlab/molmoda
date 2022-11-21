@@ -21,8 +21,8 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getDefaultNodeToActOn, setNodeToActOn } from "./EditBarUtils";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
+import { checkAnyMolSelected, checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
@@ -58,7 +58,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     } as IFormText,
   ];
 
-  nodeToActOn: IMolContainer = getDefaultNodeToActOn();
+  nodesToActOn: IMolContainer[] = [getDefaultNodeToActOn()];
   alwaysEnabled = true;
   logJob = false;
 
@@ -69,7 +69,7 @@ export default class RenameMolPlugin extends PluginParentClass {
    *     message. If null, proceed to run the plugin.
    */
   checkPluginAllowed(): string | null {
-    return checkAnyMolSelected(this as any);
+    return checkOneMolSelected(this as any);
   }
 
   /**
@@ -77,11 +77,11 @@ export default class RenameMolPlugin extends PluginParentClass {
    * (e.g., clear inputs from previous open).
    */
   onBeforePopupOpen() {
-    setNodeToActOn(this);
+    setNodesToActOn(this);
     this.updateUserArgs([
       {
         name: "newName",
-        val: this.nodeToActOn?.title,
+        val: (this.nodesToActOn as IMolContainer[])[0].title,
       } as IUserArg,
     ]);
   }
@@ -92,8 +92,8 @@ export default class RenameMolPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   runJobInBrowser(userArgs: IUserArg[]) {
-    if (this.nodeToActOn) {
-      this.nodeToActOn.title = this.getArg(userArgs, "newName");
+    if (this.nodesToActOn) {
+      this.nodesToActOn[0].title = this.getArg(userArgs, "newName");
     }
   }
 
@@ -108,7 +108,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     return {
       beforePluginOpens: [
         this.testLoadExampleProtein(),
-        ...this.testExpandMoleculesTree("PRO-HEVEIN (4WP4.pdb)"),
+        ...this.testExpandMoleculesTree("4WP4"),
         this.testSelectMoleculeInTree("Protein"),
       ],
       populateUserArgs: [this.testUserArg("newName", "2")],

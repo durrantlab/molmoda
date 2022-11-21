@@ -21,7 +21,7 @@ export type FormElement =
     | IFormColor
     | IFormCheckbox;
 
-export interface IFormElement {
+interface IFormElement {
     id: string;
 
     // `type` inferred if not given, but in some cases must specify (e.g.,

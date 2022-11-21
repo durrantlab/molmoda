@@ -9,6 +9,7 @@
         min-height: 56px;
         height: 56px;
       "
+      class="bg-light"
     >
       <Menu :menuData="menuData" />
     </div>
@@ -36,7 +37,6 @@ import {
   IPluginSetupInfo,
   ISoftwareCredit,
 } from "../Plugins/PluginInterfaces";
-import { globalCredits as globalSoftwareCredits } from "./GlobalCredits";
 import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
 import * as compileErrors from "../compile_errors.json";
@@ -45,7 +45,7 @@ import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import JobManager from "@/Queue/JobManagers/JobManager.vue";
-import { registerHotkeys } from "@/Core/HotKeys";
+import { globalCredits } from "./GlobalCredits";
 
 /**
  * Main app component
@@ -66,7 +66,7 @@ export default class App extends Vue {
   menuData: IMenuEntry[] = [];
 
   // Software credits (libraries used)
-  softwareCredits: ISoftwareCredit[] = globalSoftwareCredits;
+  softwareCredits: ISoftwareCredit[] = globalCredits;
 
   // Contributor credits (people)
   contributorCredits: IContributorCredit[] = [
@@ -170,5 +170,18 @@ export default class App extends Vue {
 
 body.waiting * {
   cursor: wait !important;
+}
+
+// See https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting
+
+// Select not input not textarea
+:not([textarea][input]) {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
 }
 </style>

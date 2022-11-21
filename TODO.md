@@ -42,10 +42,6 @@ openmolecules to check for three molecules when you get that fixed.
 
 When change colors and things, shouldn't refocus.
 
-*** Idea to consider: MolCombine. You should be able to specify the formats.
-Also, search for "This doesn't account for ligands!" Really, need to unify this
-with saveing plugin. All goes to one place.
-
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
@@ -55,9 +51,6 @@ Evually, need login system. Wordpress powered?
 
 Search for "TODO: Would be nice if there were a separate function"
 
-Save molecule files needs more thourough tests. Can this be simplifed somehow?
-May be too many options for saving molecules. For example, by chain needed?
-
 Get slurm/Docker working?
 
 Get common interface for mol viewers (to use nglviewer)? Working, but no labels,
@@ -66,12 +59,14 @@ savePng and save VRML. Export VRML for NGL viewer. Not working. Need to test.
 Look for other places where might not work (outside of ViewerPanel). See
 https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter-in-typescript
 
-Possible to merge tree branches into one, at least at top level? Maybe top level
-should always be molecule, with children always of the same name, even if there
-is only one of them. That would simplify things like merging. This is pretty
-critical, actually (no more OneMol merge strategy supported).
+*** Save molecule files needs more thourough tests.
 
-Perhaps settings (for local only). Edit -> Preferences. 
+*** Possible to merge tree branches into one, at least at top level?
+
+If you clone group (e.g., protein), also clone all children. This doesn't
+currently happen.
+
+Perhaps settings (for local only). Edit -> Preferences.
     Number of processors.
     Viewer
     Save/restore layout
@@ -83,16 +78,95 @@ For queue, do submit time, start time, end time. Always sort by submit time. Not
 currently working. Need to think through carefully. Solution might be just to
 use one queue.
 
+updateAppName not used anywhere, but I think it should be.
+
+*** When running tests, don't load tow molecules (see deletemol for example)
+
+*** Popup over title to let know about shift, command, cntrl, etc.?
+
+# DONE
+
+On clone/extract rename, maybe just keep original root name but add increment.
+
+Don't merge names in tree anymore. It's concise (which is nice), but ultimately
+just confusing.
+
+*** Need to be able to select multiple molecules. Currently working on one with
+shift pressed. Search for "If shift key is down, selecting multiple items."
+
+Idea to consider: MolCombine. You should be able to specify the formats. Also,
+search for "This doesn't account for ligands!" Really, need to unify this with
+saveing plugin. All goes to one place.
+
+Delete test should test root node and other.
+
+nglviewer resize panel, doesn't resize.
+
+Can this be simplifed somehow? May be too many options for saving molecules. For
+example, by chain needed?
+
 Add ZIP files of molecules to test input
+
+Maybe top level should always be molecule, with children always of the same
+name, even if there is only one of them. That would simplify things like
+merging. This is pretty critical, actually (no more OneMol merge strategy
+supported).
+
+Rename one tht is collapsed, always gets last one. What about earlir ones in
+ancestory?
+
+Extract and clone broken.
+
+Deleteing molecules not working
+
+Suggested name for clone/extact not always good.
 
 MoleculeInputParams.vue pretty broken...
 
 Would be nice if you could hide disabled items in form groups.
 
+SaveMoleculesPlugin.vue is running this sort of thing through SaveAll.ts, SaveByMolecule.ts, SaveByChain.ts. These are the better ones to use.
+
+MoleculeInputParams.vue using things like: (MakeMoleculeInput.ts too)
+	getProteinsToUse
+	getProteinChainsToUse
+	getCompoundsToUse
+Which ultimately route through TreeUtils.ts. It does appear to be two different systems. Unify them. Get rid of these functions.
+
+MoleculeInputParams
+
+Is MolsToConsiderStr redundant with something?
+
+Does saving files respesct other formats (e.g., XYZ)? I see PDBs regardless.
+
+To save the files (assuming not biotite).
+
+Single file (everything in one megafile) or separate files (proteins/ligands). None of this save by chain stuff. If they want chains, they can extract them to separate molecules.
+
+In terms of which ones to save, all. If not all, visible or selected. (Checkboxes in UI, Booleans in func, maybe throw error if visible/selected set when all is).
+
+Protein (othermolecule) format, then ligand format. If ligand format not given, use protein format for ligands.
+
+Maybe instead of all/visible-selected, could be visible, selected, all others, or hidden/deselected
+
+getTerminalNodesToConsider redundant with _filterMolsByToConsiderProperty? Good to delete one.
+
+Might want radio and checkbox bar options too.
+
+One you implement molecule merge option, you could do away with that too. Good to simplify interface.
+
+Eventually, you need a “save compounds to separate files” option. Will require refctoring a lot of things.
+
+Returns a list of IFileInfo with the files. Use same structure as elsewhere (no two different structures).
+
+Get rid of CombineProteinType? Use MolMergeStrategy instead.
+
+MolsToUse (get rid of it? Replace with IMolsToConsider)
+
+What is difference between ISaveTxt and IFileInfo?
+
 Save plugin: Sometimes when click visible and selected both off, one doesn't pop
 up. Need to investiate.
-
-# DONE
 
 Pretty sure save is broken (make compound visible but select, say save only
 visible, compound still shows up in zip file)

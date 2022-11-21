@@ -31,7 +31,7 @@ export function saveBiotite(filename: string): Promise<undefined> {
  * @param  {any}    state    The state to save.
  * @returns {Promise<any>} A promise that resolves when the save is complete.
  */
-export function saveState(filename: string, state: any): Promise<any> {
+function saveState(filename: string, state: any): Promise<any> {
     // To save state to json, GLModel must be converted to IAtom[]. This makes
     // copies (not in place).
     const newMolData = state.molecules.map((mol: IMolContainer) => {

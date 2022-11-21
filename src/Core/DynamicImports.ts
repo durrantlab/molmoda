@@ -1,6 +1,6 @@
 import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
 
-export interface IDynamicImport {
+interface IDynamicImport {
     credit: ISoftwareCredit;
     module: Promise<any>;
 }

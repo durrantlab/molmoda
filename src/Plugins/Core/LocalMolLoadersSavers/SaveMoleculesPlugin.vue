@@ -19,7 +19,7 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import * as api from "@/Api";
-import { checkanyMolLoaded } from "../CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
@@ -45,10 +45,9 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import {
   compileMolModels,
   convertCompiledMolModelsToIFileInfos,
-  IMolsToConsider,
   saveMolFiles,
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { IFileInfo } from "@/FileSystem/Types";
+import { ICmpdNonCmpdFileInfos, IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 
 /**
  * SaveMoleculesPlugin
@@ -115,7 +114,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
           label: "Other molecules (hidden and unselected)",
           val: true,
         } as IFormCheckbox,
-
       ] as FormElement[],
       startOpened: true,
       enabled: false,
@@ -127,7 +125,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       enabled: false,
     } as IFormCheckbox,
     {
-      label: "File format",
+      label: "File format (one)",
       id: "oneMolFileFormat",
       val: "pdb",
       options: getFormatDescriptions(false).filter(
@@ -154,7 +152,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   ];
 
   alwaysEnabled = true;
-  // formatWarningMsg = "";
 
   /**
    * Determine which into text to use.
@@ -180,7 +177,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    *     message. If null, proceed to run the plugin.
    */
   checkPluginAllowed(): string | null {
-    return checkanyMolLoaded(this);
+    return checkAnyMolLoaded(this);
   }
 
   /**
@@ -240,66 +237,22 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     this.updateUserArgEnabled("whichMolsGroup", !useBiotite);
     this.updateUserArgEnabled("separateCompounds", !useBiotite);
 
-    let saveHiddenAndUnselected = this.getArg(userArgs, "saveHiddenAndUnselected") as boolean;
-    // this.updateUserArgEnabled("saveVisible", !saveHiddenAndUnselected && !useBiotite);
-    // this.updateUserArgEnabled("saveSelected", !saveHiddenAndUnselected && !useBiotite);
-
-    // if (saveHiddenAndUnselected) {
-    //   // If saving all, make sure the other two are unchecked.
-    //   this.updateUserArgs([
-    //     {
-    //       name: "saveVisible",
-    //       val: false,
-    //     },
-    //     {
-    //       name: "saveSelected",
-    //       val: false,
-    //     },
-    //   ]);
-    // } else {
-    //   // At least one of the other two must be checked. Let's just check them
-    //   // both.
-    //   let saveVisible = this.getArg(userArgs, "saveVisible") as boolean;
-    //   let saveSelected = this.getArg(userArgs, "saveSelected") as boolean;
-    //   if (!saveVisible) {
-    //     this.updateUserArgs([
-    //       {
-    //         name: "saveSelected",
-    //         val: true,
-    //       },
-    //     ]);
-    //   }
-    //   // TODO: Below doesn't always work. See TODO.md.
-    //   if (!saveSelected) {
-    //     this.updateUserArgs([
-    //       {
-    //         name: "saveVisible",
-    //         val: true,
-    //       },
-    //     ]);
-    //   }
-    // }
-
     // Show onemol format or protein format, depending on whether
     // mergeAllMolecules is true.
-    let mergeAllMolecules = this.getArg(
-      userArgs,
-      "mergeAllMolecules"
-    ) as boolean;
-    this.updateUserArgEnabled(
-      "oneMolFileFormat",
-      mergeAllMolecules && !useBiotite
-    );
-    this.updateUserArgEnabled(
-      "nonCompoundFormat",
-      !mergeAllMolecules && !useBiotite
-    );
-
-    // If separating out compounds, show compound format.
     let separateCompounds = this.getArg(
       userArgs,
       "separateCompounds"
     ) as boolean;
+    this.updateUserArgEnabled(
+      "oneMolFileFormat",
+      !separateCompounds && !useBiotite
+    );
+    this.updateUserArgEnabled(
+      "nonCompoundFormat",
+      separateCompounds && !useBiotite
+    );
+
+    // If separating out compounds, show compound format.
     this.updateUserArgEnabled(
       "compoundFormat",
       separateCompounds && !useBiotite
@@ -326,7 +279,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       userArgs,
       "separateCompounds"
     ) as boolean;
-    const saveHiddenAndUnselected = this.getArg(userArgs, "saveHiddenAndUnselected") as boolean;
+    const saveHiddenAndUnselected = this.getArg(
+      userArgs,
+      "saveHiddenAndUnselected"
+    ) as boolean;
     const saveVisible = this.getArg(userArgs, "saveVisible") as boolean;
     const saveSelected = this.getArg(userArgs, "saveSelected") as boolean;
 
@@ -359,19 +315,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       nonCompoundFormat = oneMolFileFormat;
     }
 
-    let molsToConsider: IMolsToConsider;
-    if (saveHiddenAndUnselected === true) {
-      molsToConsider = {
-        visible: true,
-        selected: true,
-        hiddenAndUnselected: true,
-      } as IMolsToConsider;
-    } else {
-      molsToConsider = {
-        visible: saveVisible,
-        selected: saveSelected,
-      };
-    }
+    let molsToConsider = {
+      visible: saveVisible,
+      selected: saveSelected,
+      hiddenAndUnselected: saveHiddenAndUnselected,
+    } as IMolsToConsider;
 
     // Divide terminal nodes into compound and non-compound, per the mols to
     // consider.
@@ -386,9 +334,9 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       compoundFormat,
       nonCompoundFormat
     )
-      .then((fileInfos: IFileInfo[]) => {
+      .then((compoundNonCompoundFileInfos: ICmpdNonCmpdFileInfos) => {
         // Now save the molecules
-        saveMolFiles(filename, fileInfos);
+        saveMolFiles(filename, compoundNonCompoundFileInfos);
         return;
       })
       .catch((err: any) => {

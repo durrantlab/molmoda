@@ -1,65 +1,11 @@
-import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { IFormOption } from "../FormFull/FormFullInterfaces";
-
-// Good to do below because when using selection, val is a string. So good not
-// to use object of type IMolsToConsider directly.
-export enum MolsToConsiderStr {
-    All = "All",
-    Selected = "Selected",
-    Visible = "Visible",
-    VisibleOrSelected = "VisibleOrSelected",
-}
-
-// For easy converting back to IMolsToConsider.
-export const molsToConsiderStrToObj: {
-    [key in MolsToConsiderStr]: IMolsToConsider;
-} = {
-    [MolsToConsiderStr.All]: { hiddenAndUnselected: true },
-    [MolsToConsiderStr.Selected]: { selected: true },
-    [MolsToConsiderStr.Visible]: { visible: true },
-    [MolsToConsiderStr.VisibleOrSelected]: { selected: true, visible: true },
-};
-
-export function molsToConsiderToStr(
-    molsToConsider: IMolsToConsider
-): MolsToConsiderStr {
-    if (molsToConsider.hiddenAndUnselected) {
-        return MolsToConsiderStr.All;
-    } else if (molsToConsider.selected && molsToConsider.visible) {
-        return MolsToConsiderStr.VisibleOrSelected;
-    } else if (molsToConsider.selected) {
-        return MolsToConsiderStr.Selected;
-    } else if (molsToConsider.visible) {
-        return MolsToConsiderStr.Visible;
-    } else {
-        // Shouldn't ever happen
-        return MolsToConsiderStr.All;
-    }
-}
-
-export const molsToConsiderOptions: IFormOption[] = [
-    {
-        description: "All Molecules (Visible, Hidden, Selected)",
-        val: MolsToConsiderStr.All,
-    },
-    {
-        description: "Visible Molecules",
-        val: MolsToConsiderStr.Visible,
-    },
-    {
-        description: "Selected Molecules",
-        val: MolsToConsiderStr.Selected,
-    },
-    {
-        description: "Visible and/or Selected Molecules",
-        val: MolsToConsiderStr.VisibleOrSelected,
-    },
-];
+import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 
 export interface IMoleculeInputParams {
     molsToConsider: IMolsToConsider;
     considerProteins: boolean;
     considerCompounds: boolean;
+    proteinFormat: string;
+    compoundFormat: string;
 }
 
 /**
@@ -69,8 +15,10 @@ export interface IMoleculeInputParams {
  */
 export function defaultMoleculeInputParams(): IMoleculeInputParams {
     return {
-        molsToConsider: { visible: true, selected: true } as IMolsToConsider,
+        molsToConsider: { visible: true, selected: true, hiddenAndUnselected: false } as IMolsToConsider,
         considerProteins: true,
         considerCompounds: true,
+        proteinFormat: "pdb",
+        compoundFormat: "mol2"
     };
 }

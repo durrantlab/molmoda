@@ -1,6 +1,6 @@
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 
-export interface ILicense {
+interface ILicense {
     name: string;
     url: string;
 }

@@ -1,21 +1,23 @@
-import { slugify } from "@/Core/Utils";
-import { IFileInfo } from "@/FileSystem/Types";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
-import { getTerminalNodesToConsider } from "@/UI/Forms/MoleculeInputParams/WhichMols";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { ICompiledNodes, IMolsToConsider } from "./SaveMolModels";
 import {
-    removeRepeatMolContainers,
-    separateCompoundNonCompoundTerminalNodes,
-} from "./Utils";
+    getTerminalNodesToConsider,
+    keepUniqueMolContainers,
+} from "@/UI/Navigation/TreeView/TreeUtils";
+import { IMolsToConsider, ICompiledNodes } from "./Types";
+import { separateCompoundNonCompoundTerminalNodes } from "./Utils";
 
 /**
  * Runs the job when the user wants to save in a non-biotite format, by
  * molecule.
  *
- * @param {IMolsToConsider} molsToConsider     The molecules to save.
- * @returns {ICompiledNodes}  A promise that resolves when the job is
- *     done, with the files.
+ * @param {IMolsToConsider} molsToConsider         The molecules to save.
+ * @param {boolean}         keepCompoundsSeparate  Whether to keep compounds
+ *                                                 separate. If false, they sre
+ *                                                 merged with the main
+ *                                                 molecule.
+ * @returns {ICompiledNodes}  A promise that resolves when the job is done, with
+ *     the files.
  */
 export function compileByMolecule(
     molsToConsider: IMolsToConsider,
@@ -55,13 +57,13 @@ export function compileByMolecule(
                 molsToConsider,
                 allNodes
             );
-            termNodes = removeRepeatMolContainers(termNodes);
+            termNodes = keepUniqueMolContainers(termNodes);
             nonCompoundNodesByMolecule.push(termNodes);
         }
     }
 
     return {
-        nodeGroups: nonCompoundNodesByMolecule.filter(n => n.length > 0),
+        nodeGroups: nonCompoundNodesByMolecule.filter((n) => n.length > 0),
         compoundsNodes: compoundNodes,
     };
 
