@@ -31,14 +31,17 @@
     /> -->
 
     <!-- title text -->
-    <div
-      class="title-text clickable"
-      @click="titleClick(treeDatumID)"
-      :style="treeDatum.visible ? '' : 'color: lightgray;'"
+    <!-- :placement="tipPlacement" -->
+    <Tooltip :tip="selInstructions">
+      <div
+        class="title-text clickable"
+        @click="titleClick(treeDatumID)"
+        :style="treeDatum.visible ? '' : 'color: lightgray;'"
+      >
+        {{ treeDatum.title }}
+        <span v-if="treeDatum.nodes">({{ treeDatum.nodes?.length }})</span>
+      </div></Tooltip
     >
-      {{ treeDatum.title }}
-      <span v-if="treeDatum.nodes">({{ treeDatum.nodes?.length }})</span>
-    </div>
 
     <!-- menu-item buttons -->
     <IconBar :width="24 * Object.keys(iconsToDisplay).length">
@@ -81,8 +84,8 @@
         :iconID1="['far', 'clone']"
         :iconID2="['far', 'clone']"
         :width="22"
-        @click="cloneExtractMol(treeDatumID)"
-        title="Clone/Extract"
+        @click="cloneMol(treeDatumID)"
+        title="Clone"
       />
       <IconSwitcher
         v-if="iconsToDisplay.rename"
@@ -115,7 +118,7 @@ import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as api from "@/Api";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { controlKeyDown, shiftKeyDown } from "@/Core/HotKeys";
+import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
 
 interface IIconsToDisplay {
   visible?: boolean;
@@ -194,6 +197,10 @@ export default class TitleBar extends Vue {
     }
 
     return toDisplay;
+  }
+
+  get selInstructions(): string {
+    return selectInstructionsBrief;
   }
 
   /**
@@ -323,8 +330,8 @@ export default class TitleBar extends Vue {
    *
    * @param {string} id  The id of the molecule (node).
    */
-  cloneExtractMol(id: string) {
-    api.plugins.runPlugin("cloneextractmol", id);
+  cloneMol(id: string) {
+    api.plugins.runPlugin("clonemol", id);
   }
 
   /**
@@ -336,104 +343,13 @@ export default class TitleBar extends Vue {
     api.plugins.runPlugin("deletemol", id);
   }
 
-  setSelectWithChildren(node: IMolContainer, selected = SelectedType.True) {
-    node.selected = selected;
-
-    // Children too
-    if (node.nodes) {
-      let childrenSelection =
-        selected === SelectedType.True
-          ? SelectedType.ChildOfTrue
-          : SelectedType.False;
-      for (let nd of getAllNodesFlattened(node.nodes)) {
-        nd.selected = childrenSelection;
-      }
-    }
-  }
-
   /**
    * Runs when the user clicks the title.
    *
    * @param {string} id  The id of the molecule (node).
    */
   titleClick(id: string) {
-    let node = this.getNode(id);
-
-    // If control key is down, toggle selected and its children.
-    if (controlKeyDown) {
-      if (
-        node.selected === SelectedType.True ||
-        node.selected === SelectedType.ChildOfTrue
-      ) {
-        this.setSelectWithChildren(node, SelectedType.False);
-      } else {
-        this.setSelectWithChildren(node, SelectedType.True);
-      }
-      return;
-    }
-
-    // If shift key is down, selecting multiple items.
-    if (shiftKeyDown) {
-      const flattened = getAllNodesFlattened(this.$store.state.molecules);
-      // Go through flattened, save the node if it is selected, stop when you
-      // get to this id.
-      let mostRecentSelected: IMolContainer | null = null;
-      for (let nd of flattened) {
-        if (nd.selected !== SelectedType.False) {
-          mostRecentSelected = nd;
-        }
-        if (nd.id === id) {
-          break;
-        }
-      }
-
-      if (mostRecentSelected !== null && mostRecentSelected.id !== id) {
-        // Note that if it is null, will treat as if shift not pressed (no
-        // return outside of if).
-        let selecting = false;
-        for (let nd of flattened) {
-          if (nd.id === mostRecentSelected.id || nd.id === id) {
-            selecting = !selecting;
-          }
-          if (selecting) {
-            this.setSelectWithChildren(nd, SelectedType.True);
-          }
-        }
-        this.setSelectWithChildren(node, SelectedType.True);
-        // debugger;
-        return;
-      }
-    }
-
-    // Not control or shift.
-    const currentSelected = node.selected;
-
-    // Unselect all nodes.
-    for (let nd of getAllNodesFlattened(this.$store.state.molecules)) {
-      nd.selected = SelectedType.False;
-    }
-
-    // Select the one you clicked on if needed.
-    if (currentSelected === SelectedType.False) {
-      this.setSelectWithChildren(node, SelectedType.True);
-    }
-
-    // let deselectOnly = node.selected === SelectedType.True;
-
-    // if (deselectOnly) {
-    //   return;
-    // }
-
-    // this.setSelectWithChildren(node, SelectedType.True);
-
-    // // node.selected = SelectedType.True;
-
-    // // // Children too
-    // // if (node.nodes) {
-    // //   for (let nd of getAllNodesFlattened(node.nodes)) {
-    // //     nd.selected = SelectedType.ChildOfTrue;
-    // //   }
-    // // }
+    doSelecting(id, this.getLocalTreeData);
   }
 }
 </script>

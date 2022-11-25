@@ -61,11 +61,6 @@ https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter
 
 *** Save molecule files needs more thourough tests.
 
-*** Possible to merge tree branches into one, at least at top level?
-
-If you clone group (e.g., protein), also clone all children. This doesn't
-currently happen.
-
 Perhaps settings (for local only). Edit -> Preferences.
     Number of processors.
     Viewer
@@ -74,17 +69,33 @@ Perhaps settings (for local only). Edit -> Preferences.
 
 Favicon. Using SD?
 
-For queue, do submit time, start time, end time. Always sort by submit time. Not
-currently working. Need to think through carefully. Solution might be just to
-use one queue.
+*** For queue, do submit time, start time, end time. Always sort by submit time.
+Not currently working. Need to think through carefully. Solution might be just
+to use one queue.
 
 updateAppName not used anywhere, but I think it should be.
 
-*** When running tests, don't load tow molecules (see deletemol for example)
+*** When running tests, don't load two molecules (see deletemol for example)
 
-*** Popup over title to let know about shift, command, cntrl, etc.?
+Tutorial based on tests (first one).
+
+Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
 # DONE
+
+Popup over title to let know about shift, command, cntrl, etc.?
+
+Modal with just cancel button? Enter should also trigger cancel.
+
+Multiple selected, click on just one, it should be selected and all others
+deselected.
+
+Possible to merge tree branches into one, at least at top level? Be sure to use
+cloneMols() func for this.
+
+If you clone group (e.g., protein), also clone all children. This doesn't
+currently happen. I think it does now. Try cloning and deleteing a child to see
+if it gets deleted from original.
 
 On clone/extract rename, maybe just keep original root name but add increment.
 

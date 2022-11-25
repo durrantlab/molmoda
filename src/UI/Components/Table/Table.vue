@@ -27,7 +27,7 @@
                 (header.width ? 'width:' + header.width + 'px;' : '')
               "
             >
-              <Tooltip v-if="header.note !== undefined" :title="header.note">
+              <Tooltip v-if="header.note !== undefined" :tip="header.note">
                 {{ header.text }}
               </Tooltip>
               <span v-else>{{ header.text }}</span>

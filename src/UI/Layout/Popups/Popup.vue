@@ -188,8 +188,13 @@ export default class Popup extends Vue {
    * @param {KeyboardEvent} e  The keyboard event.
    */
   onKeypress(e: KeyboardEvent) {
-    if (e.key === "Enter" && this.actionBtnTxt && this.isActionBtnEnabled) {
-      this.actionBtn();
+    if (e.key === "Enter") {
+      if (this.actionBtnTxt && this.isActionBtnEnabled) {
+        this.actionBtn();
+      } else {
+        // Close modal (assuming only cancel button available).
+        this.$emit("update:modelValue", false);
+      }
     }
   }
 

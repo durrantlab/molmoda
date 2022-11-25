@@ -1,3 +1,4 @@
+import { selectInstructionsLong } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
@@ -18,17 +19,29 @@ export function checkAnyMolSelected(This: PluginParentClass): string | null {
     return null;
 }
 
-/*
+/**
  * Checks whether the user has selected one and only one molecule.
  *
- * @param  {PluginParentClass} This  The associated EditBarPlugin. @returns
- * {string | null}  An error if the user hasn't selected any molecules, null
- * otherwise.
+ * @param  {PluginParentClass} This  The associated EditBarPlugin.
+ * @returns {string | null}  An error if the user hasn't selected any molecules,
+ *     null otherwise.
  */
 export function checkOneMolSelected(This: PluginParentClass): string | null {
     const num = numSelected(This);
     if (num !== 1) {
         return "First select one (and only one) molecule by clicking on its name in the Molecules panel.";
+    }
+
+    return null;
+}
+
+export function checkMultipleMolsSelected(
+    This: PluginParentClass
+): string | null {
+    const num = numSelected(This);
+    if (num < 2) {
+        return `First select at least two molecules by clicking on their names in the Molecules panel. ${selectInstructionsLong}`
+        // Click while holding down the Control, Command (Mac), and/or Shift keys to select multiple molecules.";
     }
 
     return null;

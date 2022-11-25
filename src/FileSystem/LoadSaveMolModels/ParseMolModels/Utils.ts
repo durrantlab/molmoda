@@ -4,7 +4,7 @@ import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { copyObjRecursively } from "../Utils";
+import { atomsToModels, copyObjRecursively } from "../Utils";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 
 /**
@@ -46,46 +46,3 @@ export function parseMolecularModelFromText(
         });
 }
 
-/**
- * Given an IMolContainer with models specifies as IAtom[], convert the models
- * to GLModel.
- *
- * @param  {IMolContainer} molContainer The IMolContainer to convert.
- * @returns {Promise<IMolContainer>} The converted IMolContainer.
- */
-export function atomsToModels(
-    molContainer: IMolContainer
-): Promise<IMolContainer> {
-    const recurseResult = copyObjRecursively(
-        molContainer,
-        (
-            origNode: IMolContainer,
-            newNode: IMolContainer
-        ): Promise<void> => {
-            return _atomsToModel(origNode.model as IAtom[]).then(
-                (model: GLModel) => {
-                    newNode.model = model;
-                    return;
-                }
-            );
-        },
-    );
-
-    return Promise.all(recurseResult.promises).then(() => {
-        return recurseResult.newNode;
-    });
-}
-
-/**
- * Given an array of IAtom, convert the array to a GLModel.
- *
- * @param  {IAtom[]} atoms The array of IAtom to convert.
- * @returns {Promise<GLModel>} The converted GLModel.
- */
-function _atomsToModel(atoms: IAtom[]): Promise<GLModel> {
-    return dynamicImports.mol3d.module.then(($3Dmol: any) => {
-        const model = new $3Dmol.GLModel();
-        model.addAtoms(atoms);
-        return model;
-    });
-}

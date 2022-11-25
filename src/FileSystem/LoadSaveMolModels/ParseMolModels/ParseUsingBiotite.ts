@@ -3,8 +3,7 @@ import { store } from "@/Store";
 import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ILog } from "@/UI/Panels/Log/LogUtils";
-import { biotiteStateKeysToRetain } from "../Utils";
-import { atomsToModels } from "./Utils";
+import { atomsToModels, biotiteStateKeysToRetain } from "../Utils";
 
 /**
  * Uses biotite to parse the a molecular-model file. For biotite-native files.

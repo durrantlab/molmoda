@@ -8,7 +8,6 @@ let hotkeys: any = undefined;
 export let shiftKeyDown = false;
 export let controlKeyDown = false;
 
-
 // Detect click anywhere, but only once. Don't start listening for shift and
 // control until then.
 let clickDetected = false;
@@ -19,13 +18,13 @@ document.addEventListener("click", () => {
             .then((hotkeys) => {
                 hotkeys("*", { keyup: true }, (event: any) => {
                     if (hotkeys.shift) {
-                        shiftKeyDown = event.type === 'keydown';
+                        shiftKeyDown = event.type === "keydown";
                     }
                     if (hotkeys.ctrl) {
-                        controlKeyDown = event.type === 'keydown';
+                        controlKeyDown = event.type === "keydown";
                     }
                     if (hotkeys.command) {
-                        controlKeyDown = event.type === 'keydown';
+                        controlKeyDown = event.type === "keydown";
                     }
                     console.log(shiftKeyDown, controlKeyDown);
                 });
@@ -35,6 +34,12 @@ document.addEventListener("click", () => {
                 console.error(err);
             });
     }
+});
+
+// If user unfocuses this tab, clear shift/control hotkeys.
+window.addEventListener("blur", () => {
+    shiftKeyDown = false;
+    controlKeyDown = false;
 });
 
 function hotkeysPromise(): Promise<any> {

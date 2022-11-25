@@ -6,7 +6,7 @@ system uses these to autopopulate with plugins. -->
 
     <!-- TEMPLATE1 START -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
-    <CloneExtractMolPlugin @onPluginSetup="onPluginSetup"></CloneExtractMolPlugin>
+    <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <DelayedJobPopupPlugin @onPluginSetup="onPluginSetup"></DelayedJobPopupPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
@@ -15,6 +15,7 @@ system uses these to autopopulate with plugins. -->
     <LoadPDBPlugin @onPluginSetup="onPluginSetup"></LoadPDBPlugin>
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
     <LogWindowPlugin @onPluginSetup="onPluginSetup"></LogWindowPlugin>
+    <MergeMolsPlugin @onPluginSetup="onPluginSetup"></MergeMolsPlugin>
     <NavigatorWindowPlugin @onPluginSetup="onPluginSetup"></NavigatorWindowPlugin>
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
     <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
@@ -42,7 +43,7 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 
 // TEMPLATE2 START
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
-import CloneExtractMolPlugin from "./Core/EditBar/CloneExtractMolPlugin.vue";
+import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import DelayedJobPopupPlugin from "./Core/DelayedJobPopupPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
@@ -51,6 +52,7 @@ import LoadAlphaFoldPlugin from "./Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue
 import LoadPDBPlugin from "./Core/RemoteMolLoaders/LoadPDBPlugin.vue";
 import LoadPubChemPlugin from "./Core/RemoteMolLoaders/LoadPubChemPlugin.vue";
 import LogWindowPlugin from "./Core/Window/LogWindowPlugin.vue";
+import MergeMolsPlugin from "./Core/EditBar/MergeMolsPlugin.vue";
 import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
 import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
 import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
@@ -76,7 +78,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     // TEMPLATE3 START
     ClearSelectionPlugin,
-    CloneExtractMolPlugin,
+    CloneMolPlugin,
     DelayedJobPopupPlugin,
     DeleteMolPlugin,
     InformationWindowPlugin,
@@ -85,6 +87,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     LoadPDBPlugin,
     LoadPubChemPlugin,
     LogWindowPlugin,
+    MergeMolsPlugin,
     NavigatorWindowPlugin,
     NewProjectPlugin,
     OpenMoleculesPlugin,
@@ -100,6 +103,10 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     TestPlugin,
     // TEMPLATE3 END
+
+
+
+
 
 
 

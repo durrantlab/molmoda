@@ -1,7 +1,7 @@
 <template>
   <PluginComponent
     ref="pluginComponent"
-    v-model:modelValue="open"
+    v-model="open"
     title="Merge Molecules"
     :intro="intro"
     actionBtnTxt="Merge"
@@ -20,14 +20,19 @@ import {
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 
-import { removeNode } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+  cloneMols,
+  getNodeAncestory,
+  getTerminalNodes,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { checkAnyMolSelected, checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
+import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * MergeMolsPlugin
@@ -38,7 +43,7 @@ import { ITest } from "@/Testing/ParentPluginTestFuncs";
   },
 })
 export default class MergeMolsPlugin extends PluginParentClass {
-  menuPath = ["Edit", "Molecules", "[3] Merge..."];
+  menuPath = ["Edit", "Molecules", "[5] Merge..."];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -47,8 +52,19 @@ export default class MergeMolsPlugin extends PluginParentClass {
     },
   ];
   pluginId = "mergemols";
-  intro = "Merge the selected molecules?";
-  userArgs: FormElement[] = [];
+  intro =
+    "The selected molecules will be copied and merged into a single new molecule. Enter the name of the new, merged molecule.";
+  userArgs: FormElement[] = [
+    {
+      id: "newName",
+      label: "",
+      val: "",
+      placeHolder: "Name of new merged molecule",
+      validateFunc: (newName: string): boolean => {
+        return newName.length > 0;
+      },
+    } as IFormText,
+  ];
 
   nodesToActOn: IMolContainer[] = [getDefaultNodeToActOn()];
   alwaysEnabled = true;
@@ -60,6 +76,21 @@ export default class MergeMolsPlugin extends PluginParentClass {
    */
   onBeforePopupOpen(): void {
     setNodesToActOn(this);
+
+    // Generate the suggested title for merged molecule.
+    // Get top of molecule title.
+    let titles: string[] = [];
+    for (const node of this.nodesToActOn) {
+      titles.push(getNodeAncestory(node, this.$store.state.molecules)[0].title);
+    }
+
+    this.updateUserArgs([
+      {
+        name: "newName",
+        // val: title + ":" + nodeToActOn.title + " (cloned)",
+        val: titles.join("-") + " (merged)",
+      } as IUserArg,
+    ]);
   }
 
   /**
@@ -69,17 +100,82 @@ export default class MergeMolsPlugin extends PluginParentClass {
    *     message. If null, proceed to run the plugin.
    */
   checkPluginAllowed(): string | null {
-    return checkAnyMolSelected(this as any);
+    return checkMultipleMolsSelected(this as any);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  runJobInBrowser() {
-    if (this.nodesToActOn) {
-      ****
-
+  runJobInBrowser(userArgs: IUserArg[]) {
+    if (!this.nodesToActOn) {
+      // Nothing to do.
+      return;
     }
+
+    // debugging below
+    cloneMols(this.nodesToActOn, true)
+      .then((molContainers: IMolContainer[]) => {
+        const mergedMolContainer = molContainers[0];
+
+        // Keep going through the nodes of each container and merge them into the
+        // first container.
+        for (let i = 1; i < molContainers.length; i++) {
+          const molContainer = molContainers[i];
+
+          // Get the terminal nodes
+          const terminalNodes = getTerminalNodes([molContainer]);
+
+          // Get ancestry of each terminal node
+          for (const terminalNode of terminalNodes) {
+            const ancestry = getNodeAncestory(terminalNode, [molContainer]);
+
+            // Remove first one, which is the root node
+            ancestry.shift();
+
+            let mergedMolContainerPointer = mergedMolContainer;
+            const mergedMolNodesTitles = mergedMolContainerPointer.nodes?.map(
+              (node) => node.title
+            ) as string[];
+
+            while (mergedMolNodesTitles?.indexOf(ancestry[0].title) !== -1) {
+              if (!mergedMolContainerPointer.nodes) {
+                // When does this happen?
+                debugger;
+                break;
+              }
+
+              // Update the pointer
+              mergedMolContainerPointer = mergedMolContainerPointer.nodes.find(
+                (node) => node.title === ancestry[0].title
+              ) as IMolContainer;
+
+              // Remove the first node from the ancestry
+              ancestry.shift();
+            }
+
+            // You've reached the place where the node should be added. First,
+            // update its parentId.
+            const nodeToAdd = ancestry[0];
+            nodeToAdd.parentId = mergedMolContainerPointer.id;
+
+            // And add it
+            mergedMolContainerPointer.nodes?.push(nodeToAdd);
+          }
+        }
+
+        mergedMolContainer.title = this.getArg(userArgs, "newName");
+
+        this.$store.commit("pushToList", {
+          name: "molecules",
+          val: mergedMolContainer,
+        });
+        return;
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
   /**

@@ -1,5 +1,10 @@
+import { randomID } from "@/Core/Utils";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
+import {
+    atomsToModels,
+    modelsToAtoms,
+} from "@/FileSystem/LoadSaveMolModels/Utils";
 import { getStoreVar, setStoreVar } from "@/Store/StoreExternalAccess";
 import { IMolContainer, MolType, SelectedType } from "./TreeInterfaces";
 
@@ -300,11 +305,16 @@ export function removeNode(node: string | IMolContainer | null) {
     }
 }
 
-export function getNodeAncestory(id: string, mols: IMolContainer[]) {
-    const node = getNodeOfId(id, mols);
+export function getNodeAncestory(node: string | IMolContainer | null, mols: IMolContainer[]) {
+    if (typeof node === "string") {
+        node = getNodeOfId(node, mols);
+    }
+    
     if (!node) {
         return [];
     }
+
+    // If you get here, node is of type IMolContainer.
 
     let curNode = node;
     const ancestors: IMolContainer[] = [node];
@@ -321,4 +331,141 @@ export function getNodeAncestory(id: string, mols: IMolContainer[]) {
     }
 
     return ancestors;
+}
+
+export function cloneMols(
+    molContainers: IMolContainer[],
+    includeAncestors = true
+): Promise<IMolContainer[]> {
+    const allMols = getStoreVar("molecules");
+    const promises: Promise<IMolContainer>[] = [];
+
+    for (const nodeToActOn of molContainers) {
+        // Get ancestors if includeAncestors specified
+        let nodeGenealogy: IMolContainer[];
+        if (includeAncestors) {
+            nodeGenealogy = getNodeAncestory(nodeToActOn.id as string, allMols);
+
+            // Make copies (except models still by ref) of all the nodes in the
+            // ancestory, emptying the nodes except for the last one.
+            for (let i = 0; i < nodeGenealogy.length; i++) {
+                // Copy the node, because you'll be modifying it.
+                nodeGenealogy[i] = {
+                    ...nodeGenealogy[i],
+                };
+
+                // Empty the nodes, except for the last one. (the modification)
+                if (i < nodeGenealogy.length - 1) {
+                    nodeGenealogy[i].nodes = [];
+                }
+            }
+
+            // Place each node in the ancestory under the next node.
+            for (let i = 0; i < nodeGenealogy.length - 1; i++) {
+                nodeGenealogy[i].nodes?.push(nodeGenealogy[i + 1]);
+
+                // Also, parentId
+                nodeGenealogy[i + 1].parentId = nodeGenealogy[i].id;
+            }
+        } else {
+            // No ancestors. Just include this one.
+            nodeGenealogy = [{ ...nodeToActOn }];
+        }
+
+        // You must copy {...node} everything from last item of nodeGenealogy
+        // down to bottom (children). Note that this doesn't make a copy of the
+        // model, though, just everything else.
+        const _recurse = (nodes: IMolContainer[]) => {
+            for (const node of nodes) {
+                node.nodes = node.nodes?.map((n) => ({ ...n }));
+                node.nodes?.forEach((n) => {
+                    _recurse([n]);
+                });
+            }
+        };
+        _recurse([nodeGenealogy[nodeGenealogy.length - 1]]);
+
+        let topNode = nodeGenealogy[0];
+
+        // Now you must redo all ids because they should be distinct from the
+        // original copy.
+        const allNodesFlattened = [topNode];
+        if (topNode.nodes) {
+            allNodesFlattened.push(...getAllNodesFlattened(topNode.nodes));
+        }
+        const oldIdToNewId = new Map<string, string>();
+        for (const node of allNodesFlattened) {
+            oldIdToNewId.set(node.id as string, randomID());
+        }
+        for (const node of allNodesFlattened) {
+            node.id = oldIdToNewId.get(node.id as string);
+            if (node.parentId) {
+                node.parentId = oldIdToNewId.get(node.parentId);
+            }
+            node.selected = SelectedType.False;
+            node.viewerDirty = true;
+            node.focused = false;
+        }
+
+        // then make copes of all models. modelsToAtoms => atomsToModels
+        topNode = modelsToAtoms(topNode);
+        promises.push(atomsToModels(topNode));
+
+        //     // Cloning the molecule. Make a deep copy of the node.
+        //     nodeToActOn = modelsToAtoms(nodeToActOn);
+        //     clonedNode = atomsToModels(nodeToActOn)
+        //         .then((node) => {
+        //             // Get the nodes ancestory
+        //             const nodeGenealogy: IMolContainer[] = getNodeAncestory(
+        //                 node.id as string,
+        //                 allMols
+        //             );
+
+        //             // Make copies of all the nodes in the ancestory, emptying the nodes
+        //             // except for the last one.
+        //             for (let i = 0; i < nodeGenealogy.length; i++) {
+        //                 nodeGenealogy[i] = {
+        //                     ...nodeGenealogy[i],
+        //                 };
+
+        //                 if (i < nodeGenealogy.length - 1) {
+        //                     nodeGenealogy[i].nodes = [];
+        //                 }
+        //             }
+
+        //             // Place each node in the ancestory under the next node.
+        //             for (let i = 0; i < nodeGenealogy.length - 1; i++) {
+        //                 nodeGenealogy[i].nodes?.push(nodeGenealogy[i + 1]);
+
+        //                 // Also, parentId
+        //                 nodeGenealogy[i + 1].parentId = nodeGenealogy[i].id;
+        //             }
+
+        //             const topNode = nodeGenealogy[0];
+
+        //             // Now you must redo all ids because they could be distinct from the
+        //             // original copy.
+        //             const allNodesFlattened = [topNode];
+        //             if (topNode.nodes) {
+        //                 allNodesFlattened.push(
+        //                     ...getAllNodesFlattened(topNode.nodes)
+        //                 );
+        //             }
+        //             const oldIdToNewId = new Map<string, string>();
+        //             for (const node of allNodesFlattened) {
+        //                 oldIdToNewId.set(node.id as string, randomID());
+        //             }
+        //             for (const node of allNodesFlattened) {
+        //                 node.id = oldIdToNewId.get(node.id as string);
+        //                 if (node.parentId) {
+        //                     node.parentId = oldIdToNewId.get(node.parentId);
+        //                 }
+        //                 node.selected = SelectedType.False;
+        //                 node.viewerDirty = true;
+        //                 node.focused = false;
+        //             }
+        //         });
+    }
+
+    return Promise.all(promises);
 }

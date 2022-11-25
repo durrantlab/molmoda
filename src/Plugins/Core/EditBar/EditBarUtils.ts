@@ -39,7 +39,8 @@ export function setNodesToActOn(This: any) {
         // Find the selected molecules instead.
         const nodes = getAllNodesFlattened(This.$store.state.molecules);
         This.nodesToActOn = nodes.filter(
-            (n) => n.selected !== SelectedType.False
+            // (n) => n.selected !== SelectedType.False
+            (n) => n.selected === SelectedType.True
         ) as IMolContainer[];
     }
 

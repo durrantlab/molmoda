@@ -2,7 +2,7 @@
   <span
     data-bs-toggle="tooltip"
     :data-bs-placement="placement"
-    :title="title"
+    :title="tip"
     ref="tooltip"
     style="margin:0;padding:0;"
   >
@@ -22,7 +22,7 @@ import BSToolTip from "bootstrap/js/dist/tooltip";
   components: {},
 })
 export default class Tooltip extends Vue {
-  @Prop({ required: true }) title!: string;
+  @Prop({ required: true }) tip!: string;
   @Prop({ default: "top" }) placement!: string;
 
   /** mounted function */

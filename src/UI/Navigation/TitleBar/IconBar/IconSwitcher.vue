@@ -1,5 +1,5 @@
 <template>
-  <Tooltip :title="title" :placement="tipPlacement">
+  <Tooltip :tip="title" :placement="tipPlacement">
     <div
       :style="flexFixedWidth + (clickable ? 'cursor: pointer;' : '')"
       class="title-element"
