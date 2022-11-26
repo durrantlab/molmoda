@@ -113,7 +113,7 @@ export default class NewProjectPlugin extends PluginParentClass {
       // First test without saving first
       {
         beforePluginOpens: [this.testLoadExampleProtein()],
-        // populateUserArgs: [],
+        // pluginOpen: [],
         // closePlugin: [],
         afterPluginCloses: [this.testWait(1)],
       },
@@ -121,7 +121,7 @@ export default class NewProjectPlugin extends PluginParentClass {
       // Test with saving first (secondary button)
       {
         beforePluginOpens: [this.testWaitForRegex("#styles", "Protein")],
-        // populateUserArgs: [],
+        // pluginOpen: [],
         closePlugin: [
           {
             cmd: TestCommand.Click,

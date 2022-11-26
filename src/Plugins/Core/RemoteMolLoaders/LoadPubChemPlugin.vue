@@ -248,7 +248,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      populateUserArgs: [
+      pluginOpen: [
         {
           selector: "#modal-loadpubchem #formMolName",
           cmd: TestCommand.Text,

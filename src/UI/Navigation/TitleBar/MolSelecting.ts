@@ -8,6 +8,13 @@ export const selectInstructionsBrief =
 export const selectInstructionsLong =
     "Click while holding down the Control, Command (Mac), or Shift key to select multiple molecules.";
 
+/**
+ * Selects node(s) and their children. Accounts for different key combinations
+ * (ctrl, shift, cmd).
+ *
+ * @param  {string}          id           The id of the last node selected.
+ * @param  {IMolContainer[]} molTreeData  The molecule tree data.
+ */
 export function doSelecting(id: string, molTreeData: IMolContainer[]) {
     const node = getNodeOfId(id, molTreeData);
 
@@ -85,6 +92,13 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
     }
 }
 
+/**
+ * Sets the selected property of a node and its children.
+ *
+ * @param  {IMolContainer} node                          The node to set.
+ * @param  {SelectedType}  [selected=SelectedType.True]  The selected property
+ *                                                       to set.
+ */
 function setSelectWithChildren(
     node: IMolContainer,
     selected = SelectedType.True

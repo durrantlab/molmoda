@@ -51,7 +51,7 @@ export class InBrowserEndpoint {
      * @param  {IToEndpointPayload} payload  The payload describing the action to take.
      * @returns {Promise<IEndpointResponse>}  The response to the payload.
      */
-    public proecssApiRequest(
+    public processApiRequest(
         payload: IToEndpointPayload
     ): Promise<IEndpointResponse> {
         return processApiRequest2(this, payload);

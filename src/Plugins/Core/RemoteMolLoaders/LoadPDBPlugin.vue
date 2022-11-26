@@ -113,7 +113,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      populateUserArgs: [this.testUserArg("pdbId", "1XDN")],
+      pluginOpen: [this.testSetUserArg("pdbId", "1XDN")],
       afterPluginCloses: [
         this.testWaitForRegex("#styles", "Protein"),
         this.testWaitForRegex("#log", 'Job "loadpdb:.+?" ended'),

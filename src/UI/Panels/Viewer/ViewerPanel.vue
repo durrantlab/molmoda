@@ -18,8 +18,8 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { Viewer3DMol } from "./Viewers/Viewer3DMol";
 import { ViewerNGL } from "./Viewers/ViewerNGL";
+import { Viewer3DMol } from "./Viewers/Viewer3DMol";
 
 /**
  * ViewerPanel component
@@ -297,6 +297,7 @@ export default class ViewerPanel extends Vue {
    * @param {any} sel  The selection of the atoms to use.
    */
   private _makeAtomsHoverableAndClickable(sel: any) {
+    console.log(sel);
     // TODO: Below not generic
     // api.visualization.viewer?.setHoverable(
     //   sel,

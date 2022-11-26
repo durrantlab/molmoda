@@ -225,7 +225,7 @@ export default class CloneMolPlugin extends PluginParentClass {
           this.testSelectMoleculeInTree("Protein"),
         ],
         afterPluginCloses: [
-          this.testWaitForRegex("#navigator", "Protein .cloned."),
+          this.testWaitForRegex("#navigator", ".cloned."),
         ],
       },
     ];

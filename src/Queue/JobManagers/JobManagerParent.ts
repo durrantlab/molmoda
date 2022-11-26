@@ -2,7 +2,6 @@
 // commands to the EndPoint API (whether a remote url or the in-browser queue
 // system).
 
-import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { getFileType } from "@/FileSystem/Types";
@@ -63,10 +62,7 @@ export abstract class JobManagerParent {
                                 const ext = getFileType(outputFile);
 
                                 // Is it some sort of loadable file?
-                                if (
-                                    getFormatInfoGivenType(ext) !==
-                                    undefined
-                                ) {
+                                if (getFormatInfoGivenType(ext) !== undefined) {
                                     // It's a molecule format. Load it.
                                     parseMoleculeFile(outputFile);
                                 }

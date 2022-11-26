@@ -122,19 +122,19 @@ function _updateDelayedJobPopup(
             if (endpoint.pausedInfo.jobToRun === null) {
                 return;
             }
-            endpoint.proecssApiRequest({
+            endpoint.processApiRequest({
                 action: EndpointAction.CancelJobs,
                 jobIds: [endpoint.pausedInfo.jobToRun.id],
             });
         },
         cancelAllDelayedJobsOfType: () => {
-            endpoint.proecssApiRequest({
+            endpoint.processApiRequest({
                 action: EndpointAction.CancelAllJobsOfType,
                 jobType: endpoint.pausedInfo.jobToRun?.commandName,
             });
         },
         cancelAllJobs: () => {
-            endpoint.proecssApiRequest({
+            endpoint.processApiRequest({
                 action: EndpointAction.CancelAllJobs,
             });
         },

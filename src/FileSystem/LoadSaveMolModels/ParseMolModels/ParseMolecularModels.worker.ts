@@ -369,52 +369,53 @@ function divideMolTxtIntoFrames(
 }
 
 /**
- * Given molecular text, tries to detect the name from the text itself.
+ * Given molecular text, tries to detect the name from the text itself. TODO:
+ * Not currently using this function, but leave it if you need it.
  *
  * @param  {string} molText  The molecular text.
  * @param  {IFormatInfo} molFormatInfo  Information about the format.
  * @returns {string}  The name. Returns "" if no name found.
  */
-function getNameFromContent(
-    molText: string,
-    molFormatInfo: IFormatInfo
-): string {
-    const regexps = molFormatInfo.namesRegex;
-    let firstMatch = "";
-    if (regexps) {
-        for (const regexp of regexps) {
-            // Must reset regex for repeated use. Interesting. See
-            // https://stackoverflow.com/questions/4724701/regexp-exec-returns-null-sporadically
-            regexp.lastIndex = 0;
+// function getNameFromContent(
+//     molText: string,
+//     molFormatInfo: IFormatInfo
+// ): string {
+//     const regexps = molFormatInfo.namesRegex;
+//     let firstMatch = "";
+//     if (regexps) {
+//         for (const regexp of regexps) {
+//             // Must reset regex for repeated use. Interesting. See
+//             // https://stackoverflow.com/questions/4724701/regexp-exec-returns-null-sporadically
+//             regexp.lastIndex = 0;
 
-            const match = regexp.exec(molText);
-            if (match) {
-                firstMatch = match[1];
-                break;
+//             const match = regexp.exec(molText);
+//             if (match) {
+//                 firstMatch = match[1];
+//                 break;
 
-                // below prevents multiple matches
-                // molText = molText.replaceAll(match[1], "");
-            }
-        }
-    }
+//                 // below prevents multiple matches
+//                 // molText = molText.replaceAll(match[1], "");
+//             }
+//         }
+//     }
 
-    // Remove terminal ; from match
-    if (firstMatch.endsWith(";")) {
-        firstMatch = firstMatch.substring(0, firstMatch.length - 1);
-    }
+//     // Remove terminal ; from match
+//     if (firstMatch.endsWith(";")) {
+//         firstMatch = firstMatch.substring(0, firstMatch.length - 1);
+//     }
 
-    // Keep only unique
-    // allMatches = allMatches.filter((v, i, a) => a.indexOf(v) === i);
+//     // Keep only unique
+//     // allMatches = allMatches.filter((v, i, a) => a.indexOf(v) === i);
 
-    // Keep only at most first 10 letters. Append ... if more than 10
-    // letters.
-    if (firstMatch.length > 20) {
-        firstMatch = firstMatch.substring(0, 20) + "...";
-    }
+//     // Keep only at most first 10 letters. Append ... if more than 10
+//     // letters.
+//     if (firstMatch.length > 20) {
+//         firstMatch = firstMatch.substring(0, 20) + "...";
+//     }
 
-    // Compile into single string. Separate by ;
-    return firstMatch.replaceAll(":", "");
-}
+//     // Compile into single string. Separate by ;
+//     return firstMatch.replaceAll(":", "");
+// }
 
 /**
  * Given molecular data from the main thread, convert it into a IMolContainer

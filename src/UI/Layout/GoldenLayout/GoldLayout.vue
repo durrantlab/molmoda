@@ -59,7 +59,6 @@ import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
 import "bootstrap/js/dist/tab";
 import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
-import ViewerPanel3DMolJs from "@/UI/Panels/Viewer/ViewerPanel3DMolJs.vue";
 import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";
 import LogPanel from "@/UI/Panels/Log/LogPanel.vue";

@@ -121,7 +121,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   getTests(): ITest {
     return {
       beforePluginOpens: [this.testLoadExampleProtein()],
-      populateUserArgs: [this.testUserArg("filename", "test")],
+      pluginOpen: [this.testSetUserArg("filename", "test")],
       afterPluginCloses: [
         this.testWaitForRegex("#log", 'Job "savevrml:.+?" ended'),
         this.testWait(3),

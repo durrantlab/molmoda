@@ -47,7 +47,10 @@ import {
   convertCompiledMolModelsToIFileInfos,
   saveMolFiles,
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { ICmpdNonCmpdFileInfos, IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
+import {
+  ICmpdNonCmpdFileInfos,
+  IMolsToConsider,
+} from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 
 /**
  * SaveMoleculesPlugin
@@ -350,17 +353,64 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    *
    * @gooddefault
    * @document
-   * @returns {ITest}  The selenium test commands.
+   * @returns {ITest[]}  The selenium test commands.
    */
-  getTests(): ITest {
-    return {
-      beforePluginOpens: [this.testLoadExampleProtein()],
-      populateUserArgs: [this.testUserArg("filename", "test")],
+  getTests(): ITest[] {
+    const biotiteJob = {
+      beforePluginOpens: [
+        this.testLoadExampleProtein(),
+        ...this.testExpandMoleculesTree("4WP4"),
+        this.testSelectMoleculeInTree("Protein"),
+      ],
+      pluginOpen: [this.testSetUserArg("filename", "test")],
       afterPluginCloses: [
         this.testWaitForRegex("#log", 'Job "savemolecules:.+?" ended'),
         this.testWait(3),
       ],
     };
+
+    const jobs = [
+      // Biotite
+      biotiteJob,
+    ];
+
+    let idx = 0;
+
+    for (let toConsider of [
+      [true, false, false],
+      [false, true, false],
+      [true, true, false],
+      [true, true, true],
+      // Not going to consider below for simplicity's sake.
+      // [false, false, true],
+      // [true, false, true],
+      // [false, true, true],
+    ]) {
+      // Unpack as visible, selected, hiddenAndUnselected
+      const [visible, selected, hiddenAndUnselected] = toConsider;
+
+      idx++;
+
+      const pluginOpen = [
+        this.testSetUserArg("filename", "test"),
+        this.testSetUserArg("useBiotiteFormat", false),
+        this.testSetUserArg("saveVisible", visible),
+        this.testSetUserArg("saveSelected", selected),
+        this.testSetUserArg("saveHiddenAndUnselected", hiddenAndUnselected),
+        this.testSetUserArg("separateCompounds", idx % 2 === 0),
+      ];
+
+      // Note that the PDB and MOL2 formats (defaults) require OpenBabel and
+      // non-OpenBabel, respectively. So already good testing without varying
+      // those.
+
+      jobs.push({
+        ...biotiteJob,
+        pluginOpen: pluginOpen,
+      });
+    }
+
+    return jobs;
   }
 }
 </script>

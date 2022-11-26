@@ -14,6 +14,8 @@ import { loadRemote } from "@/Plugins/Core/RemoteMolLoaders/Utils";
  * TestingMixin
  */
 export class TestingMixin extends Vue {
+    private testProteinLoadRequested = false;
+
     /**
      * Gets the selenium test commands for the plugin. For advanced use.
      *
@@ -34,7 +36,7 @@ export class TestingMixin extends Vue {
         return [
             {
                 beforePluginOpens: [],
-                populateUserArgs: [],
+                pluginOpen: [],
                 closePlugin: [this.testPressButton(".action-btn")],
                 afterPluginCloses,
             } as ITest,
@@ -51,7 +53,7 @@ export class TestingMixin extends Vue {
      * @document
      * @returns {ITestCommand}  The command to test the specific user argument.
      */
-    testUserArg(argName: string, argVal: any): ITestCommand {
+    testSetUserArg(argName: string, argVal: any): ITestCommand {
         const selector = `#modal-${(this as any).pluginId} #${argName}-${
             (this as any).pluginId
         }-item`;
@@ -61,6 +63,14 @@ export class TestingMixin extends Vue {
                 cmd: TestCommand.Upload,
                 selector,
                 data: argVal.substring(7),
+            };
+        }
+
+        if (typeof argVal === "boolean") {
+            return {
+                cmd: TestCommand.CheckBox,
+                selector,
+                data: argVal
             };
         }
 
@@ -130,14 +140,17 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand}  The command to wait for the molecule to load.
      */
     testLoadExampleProtein(): ITestCommand {
-        loadRemote("4WP4.pdb", false)
-            .then((fileInfo: IFileInfo) => {
-                parseMoleculeFile(fileInfo);
-                return;
-            })
-            .catch((err: string) => {
-                api.messages.popupError(err);
-            });
+        if (!this.testProteinLoadRequested) {
+            loadRemote("4WP4.pdb", false)
+                .then((fileInfo: IFileInfo) => {
+                    parseMoleculeFile(fileInfo);
+                    return;
+                })
+                .catch((err: string) => {
+                    api.messages.popupError(err);
+                });
+        }
+        this.testProteinLoadRequested = true;
 
         // TODO: testWaitForRegex("#styles", "Protein") used elsewhere. Could make
         // "wait for file load" command.
@@ -174,15 +187,18 @@ export class TestingMixin extends Vue {
      * If running a selenium test, this function will generate the command to
      * select a given molecule in the tree view.
      *
-     * @param {string} treeTitle  The title of the molecule to select in the
-     *                            molecule tree.
+     * @param {string}  treeTitle             The title of the molecule to
+     *                                        select in the molecule tree.
+     * @param {boolean} [shiftPressed=false]  Whether the shift key should be
+     *                                        pressed.
      * @returns {ITestCommand} The command to select the specified molecule in
      *     the tree.
      */
-    testSelectMoleculeInTree(treeTitle: string): ITestCommand {
+    testSelectMoleculeInTree(treeTitle: string, shiftPressed = false): ITestCommand {
         return {
             cmd: TestCommand.Click,
             selector: `#navigator div[data-label="${treeTitle}"] .title-text`,
+            data: shiftPressed
         };
     }
 }

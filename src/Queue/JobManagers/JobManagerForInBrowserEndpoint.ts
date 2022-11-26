@@ -31,6 +31,6 @@ export class JobManagerForInBrowserEndpoint extends JobManagerParent {
      */
     sendRequest(payload: IToEndpointPayload): Promise<IEndpointResponse> {
         const endPt = inBrowserEndpoint as InBrowserEndpoint;
-        return endPt.proecssApiRequest(payload) as Promise<IEndpointResponse>;
+        return endPt.processApiRequest(payload) as Promise<IEndpointResponse>;
     }
 }

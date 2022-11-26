@@ -81,7 +81,7 @@ export default class UndoPlugin extends PluginParentClass {
   getTests(): ITest {
     return {
       beforePluginOpens: [this.testLoadExampleProtein()],
-      // populateUserArgs: [this.testUserArg("filename", "test")],
+      // pluginOpen: [this.testSetUserArg("filename", "test")],
       closePlugin: [],
       afterPluginCloses: [
         // this.testWaitForRegex("#log", 'Job "undo:.+?" ended'),

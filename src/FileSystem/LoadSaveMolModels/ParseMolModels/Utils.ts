@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { dynamicImports } from "@/Core/DynamicImports";
-import { atomsToModels, copyObjRecursively } from "../Utils";
-import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
+import { atomsToModels } from "../Utils";
 
 /**
  * Loads a molecule from text, using a web worker.

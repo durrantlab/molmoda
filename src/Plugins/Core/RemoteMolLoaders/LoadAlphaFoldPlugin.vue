@@ -123,7 +123,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      populateUserArgs: [this.testUserArg("uniprot", "P86927")],
+      pluginOpen: [this.testSetUserArg("uniprot", "P86927")],
       afterPluginCloses: [
         this.testWaitForRegex("#styles", "Protein"),
         this.testWaitForRegex("#log", 'Job "loadalphafold:.+?" ended'),

@@ -171,8 +171,8 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
       const name = fileToTest[0];
       const count = (fileToTest[1] as number) - 1;
       return {
-        populateUserArgs: [
-          this.testUserArg("formFile", "file://./src/Testing/mols/" + name),
+        pluginOpen: [
+          this.testSetUserArg("formFile", "file://./src/Testing/mols/" + name),
         ],
         afterPluginCloses: [
           this.testWaitForRegex("#styles", "Atoms"),

@@ -35,7 +35,14 @@ export function checkOneMolSelected(This: PluginParentClass): string | null {
     return null;
 }
 
-export function checkMultipleMolsSelected(
+/**
+ * Checks whether the user has selected multiple molecules (> 1).
+ *
+ * @param  {PluginParentClass} This  The associated EditBarPlugin.
+ * @returns {string | null}  An error if the user hasn't selected multiple
+ *     molecules, null otherwise.
+ */
+ export function checkMultipleMolsSelected(
     This: PluginParentClass
 ): string | null {
     const num = numSelected(This);
@@ -47,6 +54,12 @@ export function checkMultipleMolsSelected(
     return null;
 }
 
+/**
+ * Gets the number of molecules selected.
+ *
+ * @param  {PluginParentClass} This  The associated EditBarPlugin.
+ * @returns {number}  The number of molecules selected.
+ */
 function numSelected(This: PluginParentClass): number {
     // Check if user has selected anything
     const selectedNodes = getAllNodesFlattened(

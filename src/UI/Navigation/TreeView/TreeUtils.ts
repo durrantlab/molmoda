@@ -305,11 +305,22 @@ export function removeNode(node: string | IMolContainer | null) {
     }
 }
 
-export function getNodeAncestory(node: string | IMolContainer | null, mols: IMolContainer[]) {
+/**
+ * Get a nodes ancestory.
+ *
+ * @param  {string|IMolContainer|null} node  The node. Can be id, or node
+ *                                           itself.
+ * @param  {IMolContainer[]}           mols  The list of molecules to search.
+ * @returns {IMolContainer[]}  The list of nodes in the ancestory.
+ */
+export function getNodeAncestory(
+    node: string | IMolContainer | null,
+    mols: IMolContainer[]
+): IMolContainer[] {
     if (typeof node === "string") {
         node = getNodeOfId(node, mols);
     }
-    
+
     if (!node) {
         return [];
     }
@@ -333,6 +344,17 @@ export function getNodeAncestory(node: string | IMolContainer | null, mols: IMol
     return ancestors;
 }
 
+/**
+ * Clones a list of molecules.
+ *
+ * @param  {IMolContainer[]} molContainers            The list of molecules to
+ *                                                    clone.
+ * @param  {boolean}         [includeAncestors=true]  If true, includes the
+ *                                                    ancestors of the molecules
+ *                                                    in the clone.
+ * @returns {Promise<IMolContainer[]>}  A promise that resolves the cloned list
+ *     of molecules.
+ */
 export function cloneMols(
     molContainers: IMolContainer[],
     includeAncestors = true

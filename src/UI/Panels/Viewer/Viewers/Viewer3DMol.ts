@@ -224,4 +224,8 @@ export class Viewer3DMol extends ViewerParent {
         // Already in 3Dmoljs format, so no conversion needed.
         return sel;
     }
+
+    pngURI(): Promise<string> {
+        return Promise.resolve(this._mol3dObj.pngURI());
+    }
 }

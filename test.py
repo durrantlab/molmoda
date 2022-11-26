@@ -7,6 +7,9 @@ from selenium.common.exceptions import TimeoutException, ElementNotInteractableE
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
+
 import json
 import time
 import re
@@ -67,9 +70,17 @@ class el:
                 f"{self.selector} still [[{text}]] after {self.timeout} seconds"
             )
 
-    def click(self):
+    def click(self, shiftPressed=False):
         try:
+            if shiftPressed:
+                # Key down
+                # import pdb; pdb.set_trace()
+                ActionChains(driver).key_down(Keys.SHIFT).perform()
             self.el.click()
+            if shiftPressed:
+                # Key up
+                ActionChains(driver).key_up(Keys.SHIFT).perform()
+
             self.check_errors()
         except ElementNotInteractableException as e:
             print(e)
@@ -79,6 +90,13 @@ class el:
         file_path = os.path.realpath(file_path)
         self.el.send_keys(file_path)
         self.check_errors()
+
+    def checkBox(self, value):
+        # Get current value of checkbox
+        current_value = self.el.get_attribute("checked") == "true"
+
+        if value != current_value:
+            self.el.click()
 
     def wait_until_contains_regex(self, regex):
         self.el = WebDriverWait(driver, self.timeout).until(
@@ -154,7 +172,7 @@ while plugin_ids:
     for cmd in cmds:
         print(f"   {json.dumps(cmd)}")
         if cmd["cmd"] == "click":
-            el(cmd["selector"]).click()
+            el(cmd["selector"]).click(cmd["data"] if "data" in cmd else False)
         elif cmd["cmd"] == "text":
             el(cmd["selector"]).text = cmd["data"]
         elif cmd["cmd"] == "wait":
@@ -165,6 +183,8 @@ while plugin_ids:
             el(cmd["selector"]).upload_file(cmd["data"])
         elif cmd["cmd"] == "addTests":
             plugin_ids.extend((plugin_id, i) for i in range(cmd["data"]))
+        elif cmd["cmd"] == "checkBox":
+            el(cmd["selector"]).checkBox(cmd["data"])
     print("  Passed!")
 
 input("Done. Press Enter to end all tests...")

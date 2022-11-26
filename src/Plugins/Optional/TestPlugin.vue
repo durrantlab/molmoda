@@ -86,18 +86,18 @@ export default class TestPlugin extends PluginParentClass {
    * 
    * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userArgs: IUserArg[]) {
+  onPopupDone(/* userArgs: IUserArg[] */) {
     // * @param {IUserArg[]} userArgs  The user arguments.
     debugger;
-    this.submitJobs([userArgs]);
-    // const jobParams = [];
-    // for (let i = 0; i < 10; i++) {
-    //   const jobParam = {
-    //     delay: Math.random() * 10000,  // ms
-    //   }
-    //   jobParams.push(jobParam);
-    // }
-    // this.submitJobs(jobParams, Math.round(Math.random() * 2));  // , 10000);
+    // this.submitJobs([userArgs]);
+    const jobParams = [];
+    for (let i = 0; i < 10; i++) {
+      const jobParam = {
+        delay: Math.random() * 10000,  // ms
+      }
+      jobParams.push(jobParam);
+    }
+    this.submitJobs(jobParams, Math.round(Math.random() * 2));  // , 10000);
   }
 
   /**
@@ -108,7 +108,6 @@ export default class TestPlugin extends PluginParentClass {
    *     done.
    */
   runJobInBrowser(_args: any): Promise<undefined> {
-    debugger;
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(undefined);

@@ -516,9 +516,9 @@ export class ViewerNGL extends ViewerParent {
                             (pickingProxy.atom || pickingProxy.bond)
                         ) {
                             // debugger;
-                            const atom =
-                                pickingProxy.atom ||
-                                pickingProxy.closestBondAtom;
+                            // const atom =
+                            //     pickingProxy.atom ||
+                            //     pickingProxy.closestBondAtom;
                             const cp = pickingProxy.canvasPosition;
                             stage.tooltip.innerText = "MOO ATOM: "; //  + atom.qualifiedName();
                             stage.tooltip.style.bottom = cp.y - 150 + "px";
@@ -537,5 +537,32 @@ export class ViewerNGL extends ViewerParent {
                 console.log(err);
                 return this as ViewerParent;
             });
+    }
+
+    pngURI(): Promise<string> {
+        // debugger;
+        return this._nglObj.viewer.makeImage({
+            factor: 1,
+            antialias: true,
+            trim: false,
+            transparent: true,
+        })
+        .then((blob: Blob) => {
+            // Blob is a png image. Convert it to DataURI.
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    resolve(reader.result as string);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+
+                return reader.result as string;
+            });
+        })
+        .catch((err: any) => {
+            console.log(err);
+            return "";
+        });
     }
 }

@@ -11,6 +11,13 @@ export let goldenLayout: GoldenLayout;
  * @returns {GoldenLayout}  The golden layout.
  */
 export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
+    // const currentLayout = localStorage.getItem("currentLayout");
+    // if (currentLayout !== null) {
+    //     goldenLayout = new GoldenLayout(JSON.parse(currentLayout), glContainer);
+    //     goldenLayout.init();
+    // } else {
+    // }
+
     goldenLayout = new GoldenLayout(glContainer);
     return goldenLayout;
 }

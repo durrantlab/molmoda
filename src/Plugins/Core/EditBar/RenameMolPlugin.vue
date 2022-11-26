@@ -22,7 +22,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { checkAnyMolSelected, checkOneMolSelected } from "../CheckUseAllowedUtils";
+import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
@@ -111,7 +111,7 @@ export default class RenameMolPlugin extends PluginParentClass {
         ...this.testExpandMoleculesTree("4WP4"),
         this.testSelectMoleculeInTree("Protein"),
       ],
-      populateUserArgs: [this.testUserArg("newName", "2")],
+      pluginOpen: [this.testSetUserArg("newName", "2")],
       // closePlugin: [],
       // afterPluginCloses: [],
     };

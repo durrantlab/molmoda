@@ -29,7 +29,7 @@ import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { checkAnyMolSelected, checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
+import { checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
@@ -187,26 +187,16 @@ export default class MergeMolsPlugin extends PluginParentClass {
    */
   getTests(): ITest[] {
     return [
-      // TODO: Need tests.
-      // {
-      //   beforePluginOpens: [
-      //     this.testLoadExampleProtein(),
-      //     ...this.testExpandMoleculesTree("4WP4"),
-      //     this.testSelectMoleculeInTree("Protein"),
-      //   ],
-      //   // closePlugin: [],
-      //   afterPluginCloses: [],
-      // },
-      // {
-      //   // Also test deleting a root node.
-      //   beforePluginOpens: [
-      //     this.testLoadExampleProtein(),
-      //     ...this.testExpandMoleculesTree("4WP4"),
-      //     this.testSelectMoleculeInTree("4WP4"),
-      //   ],
-      //   // closePlugin: [],
-      //   afterPluginCloses: [],
-      // },
+      {
+        beforePluginOpens: [
+          this.testLoadExampleProtein(),
+          ...this.testExpandMoleculesTree("4WP4"),
+          this.testSelectMoleculeInTree("Protein"),
+          this.testSelectMoleculeInTree("Compounds", true),
+        ],
+        // closePlugin: [],
+        afterPluginCloses: [this.testWaitForRegex("#navigator", ".merged.")],
+      },
     ];
   }
 }

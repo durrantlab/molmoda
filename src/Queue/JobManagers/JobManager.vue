@@ -110,9 +110,9 @@ export default class JobManager extends Vue {
   jobStatusInfos: IJobStatusInfo[][] = [];
 
   /**
-   * Get the job statuses, sorted and formatted.
+   * Get the job statuses, formatted.
    *
-   * @returns {ITableData[]}.  The job statuses, sorted and formatted.
+   * @returns {ITableData[]}.  The job statuses, formatted.
    */
   get jobStatusesForTable(): ITableData[] {
     if (this.jobStatusInfos.length === 0) {
@@ -167,6 +167,10 @@ export default class JobManager extends Vue {
         rows: rows,
       });
     }
+
+    // if (jobStatuseInfos[0].rows.length !== 0) {
+    //   debugger;
+    // }
 
     return jobStatuseInfos;
   }

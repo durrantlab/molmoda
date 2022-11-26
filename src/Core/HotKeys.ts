@@ -26,7 +26,6 @@ document.addEventListener("click", () => {
                     if (hotkeys.command) {
                         controlKeyDown = event.type === "keydown";
                     }
-                    console.log(shiftKeyDown, controlKeyDown);
                 });
                 return;
             })
@@ -42,6 +41,11 @@ window.addEventListener("blur", () => {
     controlKeyDown = false;
 });
 
+/**
+ * Get the hotkeys object (library). If it is not yet loaded, load it.
+ * 
+ * @returns {Promise<any>}  A promise that resolves to the hotkeys object.
+ */
 function hotkeysPromise(): Promise<any> {
     return hotkeys === undefined
         ? dynamicImports.hotkeys.module.then((mod) => {

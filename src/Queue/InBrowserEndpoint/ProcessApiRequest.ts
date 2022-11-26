@@ -83,7 +83,7 @@ function _submitJobs(
     // Set status on all jobs to Pending
     for (const jobInfo of jobInfos) {
         jobInfo.status = JobStatus.Pending;
-        jobInfo.submitTime = new Date().getTime();
+        jobInfo.submitTime = new Date().getTime() + Math.random();
         jobInfo.startTime = 0;
         jobInfo.endTime = 0;
     }
@@ -172,7 +172,7 @@ function _cancelAllJobsOfType(endpoint: InBrowserEndpoint, jobType: string) {
         ...endpoint.runningJobs.filter((j) => j.commandName === jobType)
     );
     const ids = jobsToCancel.map((j) => j.id);
-    endpoint.proecssApiRequest({
+    endpoint.processApiRequest({
         action: EndpointAction.CancelJobs,
         jobIds: ids,
     });

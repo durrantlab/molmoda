@@ -24,7 +24,7 @@ export class UserArgsMixin extends Vue {
      * @returns {boolean}  True if successfully updated, false otherwise.
      */
     protected updateUserArgEnabled(argId: string, val: boolean): boolean {
-        const pluginComponent = this.validatePluginComponentRefSet();
+        const pluginComponent = this.validatePluginComponentRefIsSet();
         if (pluginComponent === false) {
             return false;
         }
@@ -59,7 +59,7 @@ export class UserArgsMixin extends Vue {
      * @document
      */
     protected updateUserArgs(userArgs: IUserArg[]) {
-        const pluginComponent = this.validatePluginComponentRefSet();
+        const pluginComponent = this.validatePluginComponentRefIsSet();
         if (pluginComponent === false) {
             return;
         }
@@ -149,7 +149,7 @@ export class UserArgsMixin extends Vue {
      * @returns {any} Returns false if ref is not set to "pluginComponent",
      *     otherwise returns the plugin component.
      */
-    private validatePluginComponentRefSet(): any {
+    private validatePluginComponentRefIsSet(): any {
         const pluginComponent = this.$refs["pluginComponent"] as any;
         if (pluginComponent === undefined) {
             console.warn(

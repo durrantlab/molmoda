@@ -199,6 +199,11 @@ export default class TitleBar extends Vue {
     return toDisplay;
   }
 
+  /**
+   * Get instructions about how to select molecules.
+   * 
+   * @returns {string} Instructions about how to select molecules.
+   */
   get selInstructions(): string {
     return selectInstructionsBrief;
   }

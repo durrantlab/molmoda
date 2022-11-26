@@ -283,12 +283,9 @@ export abstract class ViewerParent {
     /**
      * Gets a PNG URI of the current view.
      * 
-     * @returns {string}  The URI.
+     * @returns {Promise<string>}  A promise that resolves the URI.
      */
-    pngURI(): string {
-        console.error("pngURI not implemented");
-        return "";
-    }
+    abstract pngURI(): Promise<string>;
 
     /**
      * Gets a VRML model of the current scene.

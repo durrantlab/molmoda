@@ -8,7 +8,7 @@
   >
     <!-- {{idx}} -->
     <TitleBar
-      :treeDatum="treeChildNodeToUse(treeDatum)"
+      :treeDatum="treeDatum"
       :depth="depth"
       :treeData="treeData"
     />
@@ -17,13 +17,13 @@
     <!-- <Transition name="slide"> -->
     <TreeView
       v-if="
-        treeChildNodeToUse(treeDatum)?.nodes &&
-        treeChildNodeToUse(treeDatum)?.treeExpanded
+        treeDatum?.nodes &&
+        treeDatum?.treeExpanded
       "
-      :treeData="treeChildNodeToUse(treeDatum)?.nodes"
+      :treeData="treeDatum?.nodes"
       :depth="depth + 1"
       :styleToUse="indentStyle"
-      :ref="treeChildNodeToUse(treeDatum)?.id"
+      :ref="treeDatum?.id"
     />
     <!-- </Transition> -->
   </div>
@@ -101,72 +101,72 @@ export default class TreeView extends Vue {
     return this.treeData as IMolContainer[];
   }
 
-  fixTitle(title: string): string {
-    // For compounds, remove text and put chain at end.
-    title = title.replace(/Compounds:(.):(.+)$/g, "$2:$1");
-    title = title.replace("Compounds:", "");
-    title = title.replace(/^(.):(.+?):(\d*)$/g, "$2:$3:$1");
+  // fixTitle(title: string): string {
+  //   // For compounds, remove text and put chain at end.
+  //   title = title.replace(/Compounds:(.):(.+)$/g, "$2:$1");
+  //   title = title.replace("Compounds:", "");
+  //   title = title.replace(/^(.):(.+?):(\d*)$/g, "$2:$3:$1");
 
-    // If Any word, :, single letter, remove single letter (using regex)
-    title = title.replace(/^([^:]+):.$/g, "$1");
+  //   // If Any word, :, single letter, remove single letter (using regex)
+  //   title = title.replace(/^([^:]+):.$/g, "$1");
 
-    return title;
-  }
+  //   return title;
+  // }
 
-  treeChildNodeToUse(curMolCont: IMolContainer): IMolContainer | null {
+  // treeChildNodeToUse(curMolCont: IMolContainer): IMolContainer | null {
 
-    return curMolCont;
+  //   return curMolCont;
 
-    // NOTE: Below merges children nicely, but I worry is sacrifices clarity for
-    // conciseness.
+  //   // NOTE: Below merges children nicely, but I worry is sacrifices clarity for
+  //   // conciseness.
 
-    // if (curMolCont.nodes === undefined) {
-    //   // No children (terminal node)
-    //   return curMolCont;
-    // }
+  //   // if (curMolCont.nodes === undefined) {
+  //   //   // No children (terminal node)
+  //   //   return curMolCont;
+  //   // }
 
-    // if (curMolCont.nodes.length > 1) {
-    //   // Multiple children
-    //   return curMolCont;
-    // }
+  //   // if (curMolCont.nodes.length > 1) {
+  //   //   // Multiple children
+  //   //   return curMolCont;
+  //   // }
 
-    // if (curMolCont.nodes.length === 0) {
-    //   // This shouldn't happen. Not a terminal node, but no children.
-    //   return curMolCont; // null;
-    // }
+  //   // if (curMolCont.nodes.length === 0) {
+  //   //   // This shouldn't happen. Not a terminal node, but no children.
+  //   //   return curMolCont; // null;
+  //   // }
 
-    // if (!curMolCont.parentId) {
-    //   // Doing this because I don't want to collapse the names up to the top
-    //   // one. Stop short of that.
-    //   return curMolCont;
-    // }
+  //   // if (!curMolCont.parentId) {
+  //   //   // Doing this because I don't want to collapse the names up to the top
+  //   //   // one. Stop short of that.
+  //   //   return curMolCont;
+  //   // }
 
-    // if (curMolCont.nodes.length === 1) {
-    //   if (curMolCont.nodes[0].nodes?.length === 1) {
-    //     // Single child with single child
-    //     let title =
-    //       curMolCont.title +
-    //       ":" +
-    //       curMolCont.nodes[0].title +
-    //       ":" +
-    //       curMolCont.nodes[0].nodes[0].title;
+  //   // if (curMolCont.nodes.length === 1) {
+  //   //   if (curMolCont.nodes[0].nodes?.length === 1) {
+  //   //     // Single child with single child
+  //   //     let title =
+  //   //       curMolCont.title +
+  //   //       ":" +
+  //   //       curMolCont.nodes[0].title +
+  //   //       ":" +
+  //   //       curMolCont.nodes[0].nodes[0].title;
 
-    //     return {
-    //       ...curMolCont.nodes[0].nodes[0],
-    //       title: this.fixTitle(title),
-    //     };
-    //   }
+  //   //     return {
+  //   //       ...curMolCont.nodes[0].nodes[0],
+  //   //       title: this.fixTitle(title),
+  //   //     };
+  //   //   }
 
-    //   // Single child
-    //   let title = curMolCont.title + ":" + curMolCont.nodes[0].title;
-    //   return {
-    //     ...curMolCont.nodes[0],
-    //     title: this.fixTitle(title),
-    //   };
-    // }
+  //   //   // Single child
+  //   //   let title = curMolCont.title + ":" + curMolCont.nodes[0].title;
+  //   //   return {
+  //   //     ...curMolCont.nodes[0],
+  //   //     title: this.fixTitle(title),
+  //   //   };
+  //   // }
 
-    // return curMolCont;
-  }
+  //   // return curMolCont;
+  // }
 }
 </script>
 

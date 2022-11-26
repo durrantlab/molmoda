@@ -9,6 +9,7 @@ export enum TestCommand {
     WaitUntilRegex = "waitUntilRegex",
     Upload = "upload",
     AddTests = "addTests",
+    CheckBox = "checkBox",
 }
 
 export interface ITestCommand {
@@ -23,7 +24,7 @@ export interface ITest {
 
     // Populate the user arguments. Do not include the command to click the
     // plugin action button.
-    populateUserArgs?: ITestCommand[];
+    pluginOpen?: ITestCommand[];
 
     // Clicks the popup button to close the plugin.
     closePlugin?: ITestCommand[];
@@ -119,7 +120,7 @@ function addTestDefaults(plugin: any): ITest[] {
     // If any elements of each test are undefined, replace with defaults.
     for (const test of tests) {
         test.beforePluginOpens = test.beforePluginOpens || [];
-        test.populateUserArgs = test.populateUserArgs || [];
+        test.pluginOpen = test.pluginOpen || [];
         test.closePlugin = test.closePlugin || [
             {
                 cmd: TestCommand.Click,
@@ -177,7 +178,7 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
         const cmds = [
             ...(test.beforePluginOpens as ITestCommand[]), // Defined in each plugin
             ..._openPluginCmds(plugin),
-            ...(test.populateUserArgs as ITestCommand[]), // Defined in each plugin
+            ...(test.pluginOpen as ITestCommand[]), // Defined in each plugin
             {
                 cmd: TestCommand.Wait,
                 data: 1,

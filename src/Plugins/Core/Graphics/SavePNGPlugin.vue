@@ -100,8 +100,10 @@ export default class SavePNGPlugin extends PluginParentClass {
    */
   runJobInBrowser(parameters: any) {
     let filename = parameters.filename;
-    let pngUri = api.visualization.viewer?.pngURI();
-    api.fs.savePngUri(filename, pngUri as string);
+    api.visualization.viewer?.pngURI().then((pngUri: string) => {
+      api.fs.savePngUri(filename, pngUri as string);
+      return;
+    });
   }
 
   /**
@@ -114,7 +116,7 @@ export default class SavePNGPlugin extends PluginParentClass {
   getTests(): ITest {
     return {
       beforePluginOpens: [this.testLoadExampleProtein()],
-      populateUserArgs: [this.testUserArg("filename", "test")],
+      pluginOpen: [this.testSetUserArg("filename", "test")],
       afterPluginCloses: [
         this.testWaitForRegex("#log", 'Job "savepng:.+?" ended'),
         this.testWait(3),
