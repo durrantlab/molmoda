@@ -3,8 +3,8 @@
 
 <template>
   <div
-    class="title"
-    :style="indentStyle + selectedStyle(treeDatumID)"
+    :class="'title' + selectedclass(treeDatumID)"
+    :style="indentStyle"
     :data-label="treeDatum.title"
     @click="titleBarClick"
   >
@@ -44,7 +44,7 @@
     >
 
     <!-- menu-item buttons -->
-    <IconBar :width="24 * Object.keys(iconsToDisplay).length">
+    <IconBar :width="24 * Object.keys(iconsToDisplay).length" extraStyles="me-2">
       <!-- the eye icon should always be farthest to the right, so list it first -->
       <IconSwitcher
         class="title-element clickable"
@@ -224,10 +224,10 @@ export default class TitleBar extends Vue {
    * @param {string} id  The id of the selected molecule (node).
    * @returns {string}  The style.
    */
-  selectedStyle(id: string): string {
+  selectedclass(id: string): string {
     let node = this.getNode(id);
     return node.selected !== SelectedType.False
-      ? "background-color: #f0f0f0;"
+      ? " selected"
       : "";
   }
 
@@ -391,6 +391,10 @@ export default class TitleBar extends Vue {
 
 .btn-bar {
   overflow: hidden;
+  right: 0;
+  position: absolute;
+  background-color: white;
+  padding-bottom: 1px;
 }
 
 // See https://codepen.io/kdydesign/pen/VrQZqx
@@ -427,6 +431,10 @@ $transition-time: 0.2s;
 .slide-leave-to {
   overflow: hidden;
   max-height: 0;
+}
+
+.selected {
+  background-color: #f0f0f0;
 }
 </style>
 

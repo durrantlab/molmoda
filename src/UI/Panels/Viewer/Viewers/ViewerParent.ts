@@ -7,6 +7,15 @@ import {
     LabelType,
     ViewerType,
 } from "./Types";
+import * as api from "@/Api/";
+import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
+import { getStoreVar } from "@/Store/StoreExternalAccess";
+
+export let loadViewerLibPromise: Promise<any> | undefined = undefined;
+
+export function setLoadViewerLibPromise(val: Promise<any>) {
+    loadViewerLibPromise = val;
+}
 
 /**
  * The ViewerParent abstract class. Other viewers (e.g., 3dmoljs) inherit this
@@ -279,6 +288,38 @@ export abstract class ViewerParent {
      * @returns {any}  The converted selection.
      */
     abstract convertSelection(sel: any): any;
+
+    /**
+     * Unloads the viewer and removes it from api.
+     */
+    public unLoadViewer() {
+        // Remove from api
+        api.visualization.viewer = undefined;
+        loadViewerLibPromise = undefined;
+        
+        // Do any viewer-specific unloading
+        this.unLoad();
+
+        // Remove 3dmoljs from dom
+        const viewer = document.getElementById("mol-viewer");
+        if (viewer) {
+            viewer.innerHTML = "";
+        }
+
+        // All IMolContainers are now dirty (so will be rerendered if new viewer
+        // loaded).
+        for (const molContainer of getAllNodesFlattened(getStoreVar("molecules"))) {
+            molContainer.viewerDirty = true;
+        }
+    }
+
+    
+    /**
+     * Unloads the viewer (from the DOM, etc.).
+     * 
+     * @returns any
+     */
+    abstract unLoad(): any;
 
     /**
      * Gets a PNG URI of the current view.

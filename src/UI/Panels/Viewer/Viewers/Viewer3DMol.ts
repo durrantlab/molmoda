@@ -91,7 +91,7 @@ export class Viewer3DMol extends ViewerParent {
         return this._mol3dObj.addSurface(
             // $3Dmol.SurfaceType.VDW,
             // $3Dmol.SurfaceType.MS,
-            2,  // surface type $3Dmol.SurfaceType.MS
+            2, // surface type $3Dmol.SurfaceType.MS
             style.surface, // style
             { model: model as any } // selection
         );
@@ -227,5 +227,13 @@ export class Viewer3DMol extends ViewerParent {
 
     pngURI(): Promise<string> {
         return Promise.resolve(this._mol3dObj.pngURI());
+    }
+
+    /**
+     * Unloads the viewer (from the DOM, etc.).
+     */
+    unLoad() {
+        // this._mol3dObj.clear();
+        this._mol3dObj = null;
     }
 }

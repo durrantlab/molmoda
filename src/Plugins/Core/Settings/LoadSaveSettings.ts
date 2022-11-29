@@ -1,16 +1,10 @@
 import { jobManagers } from "@/Queue/JobManagers/JobManagerParent";
+import { setStoreVar } from "@/Store/StoreExternalAccess";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
+import * as api from "@/Api/";
 
 export function saveSettings(settings: IUserArg[]) {
     localStorage.setItem("settings", JSON.stringify(settings));
-
-    if (settings.find((s) => s.name === "layout")?.val === "current") {
-        const currentLayout = goldenLayout.toConfig();
-        localStorage.setItem("currentLayout", JSON.stringify(currentLayout));
-    } else {
-        localStorage.removeItem("currentLayout");
-    }
 }
 
 export function getSettings(): IUserArg[] {
@@ -21,25 +15,52 @@ export function getSettings(): IUserArg[] {
     return JSON.parse(settingsJson) as IUserArg[];
 }
 
-export function applySettings(settings: IUserArg[]) {
+export function getSetting(name: string): any {
+    const settings = getSettings();
     for (const setting of settings) {
-        const name = setting.name;
-        const val = setting.val;
-        switch (name) {
-            case "maxProcs":
-                jobManagers
-                    .find(
-                        (jobManager) =>
-                            jobManager.jobManagerName ===
-                            "Local (In Browser) Queue"
-                    )
-                    ?.updateMaxNumProcessors(val);
-                break;
-            case "molViewer":
-                break;
-            case "layout":
-                // This is handled in GoldenLayoutCommon.ts
-                break;
+        if (setting.name === name) {
+            return setting.val;
         }
     }
+
+    // Get default
+    const defaults = defaultSettings();
+    for (const settingName in defaults) {
+        if (settingName === name) {
+            return defaults[settingName];
+        }
+    }
+
+    return undefined;
+}
+
+export function applySettings(settings: IUserArg[]) {
+    // Convert the settings to a map for easy lookup.
+    const settingsMap = new Map<string, IUserArg>();
+    for (const setting of settings) {
+        settingsMap.set(setting.name, setting);
+    }
+    const defaults = defaultSettings();
+
+    // maxProcs in mapping? Use that as maxProcs if so. Otherwise, default.
+    const maxProcs = settingsMap.get("maxProcs")?.val ?? defaults.maxProcs;
+    jobManagers
+        .find(
+            (jobManager) =>
+                jobManager.jobManagerName === "Local (In Browser) Queue"
+        )
+        ?.updateMaxNumProcessors(maxProcs);
+
+    const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
+    api.visualization.viewer?.unLoadViewer();
+    setStoreVar("molViewer", molViewer);
+}
+
+export function defaultSettings(): any {
+    // Leave one processor free
+    const maxProcsAvailable = navigator.hardwareConcurrency || 4;
+    const procsToRecommend =
+        maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
+
+    return { maxProcs: procsToRecommend, molViewer: "3dmol" };
 }

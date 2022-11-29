@@ -1,5 +1,5 @@
 <template>
-  <div class="btn-bar" :style="flexFixedWidth(width)">
+  <div :class="'btn-bar ' + extraStyles" :style="flexFixedWidth(width)">
     <slot></slot>
   </div>
 </template>
@@ -19,6 +19,7 @@ import { flexFixedWidthStyle } from "./IconBarUtils";
 export default class IconBar extends Vue {
   @Prop({ required: true }) width!: number;
   @Prop({ default: "" }) class!: string;
+  @Prop({ default: "" }) extraStyles!: string;
 
   /**
    * Get the style for a fixed-width element.

@@ -99,6 +99,7 @@ export function setupVueXStore(): Store<any> {
             "molecules": [] as IMolContainer[],
             "log": [] as ILog[],
             "updateZoom": true,
+            "molViewer": "3dmol"
         },
         getters: {},
         mutations: {

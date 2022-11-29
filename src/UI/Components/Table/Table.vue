@@ -35,16 +35,18 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, idx) of tableDataToUse.rows" v-bind:key="idx">
+          <tr v-for="(row, rowIdx) of tableDataToUse.rows" v-bind:key="rowIdx">
             <td
               v-for="header of tableDataToUse.headers"
               v-bind:key="header.text"
+              @click="rowClicked(rowIdx)"
+              :style="clickableRows ? 'cursor: pointer;' : ''"
             >
               {{ getCell(row[header.text]).val }}
               <div
                 v-if="showIcon(getCell(row[header.text]), row)"
                 class="icon-clickable"
-                @click="
+                @click.stop="
                   iconClicked(getCell(row[header.text]).iconClickEmitName, row)
                 "
               >
@@ -79,6 +81,7 @@ export default class Table extends Vue {
   @Prop({ default: 2 }) precision!: number;
   @Prop({ default: "" }) caption!: string;
   @Prop({ default: true }) allowTextWrap!: boolean;
+  @Prop({ default: false }) clickableRows!: boolean;
 
   /**
    * Get the table data to use.
@@ -87,12 +90,11 @@ export default class Table extends Vue {
    */
   get tableDataToUse(): ITableData {
     const dataToUse = {
-      headers: this.tableData.headers.map(h => h),  // To copy
+      headers: this.tableData.headers.map((h) => h), // To copy
       rows: [] as { [key: string]: CellValue }[],
     };
 
     // v-if="showColumn(header, tableDataToUse)"
-
 
     for (const row of this.tableData.rows) {
       const newRow: { [key: string]: CellValue } = {};
@@ -130,7 +132,7 @@ export default class Table extends Vue {
         delete row[header.text];
       }
     }
-    
+
     return dataToUse;
   }
 
@@ -189,12 +191,16 @@ export default class Table extends Vue {
   }
 
   /**
-   * 
+   *
    * @param {string | undefined} emitName  The name of the event to emit.
    * @param {any}                row       The table row to emit.
    */
   iconClicked(emitName: string | undefined, row: { [key: string]: CellValue }) {
     this.$emit(emitName as string, row);
+  }
+
+  rowClicked(rowIdx: number) {
+    this.$emit("rowClicked", this.tableData.rows[rowIdx]);
   }
 }
 </script>

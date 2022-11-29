@@ -1,7 +1,11 @@
 import { controlKeyDown, shiftKeyDown } from "@/Core/HotKeys";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 import { SelectedType, IMolContainer } from "../TreeView/TreeInterfaces";
-import { getAllNodesFlattened, getNodeOfId } from "../TreeView/TreeUtils";
+import {
+    getAllNodesFlattened,
+    getNodeAncestory,
+    getNodeOfId,
+} from "../TreeView/TreeUtils";
 
 export const selectInstructionsBrief =
     "Click + Ctrl/Shift/Cmd to select multiple";
@@ -81,14 +85,19 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
     const currentlySelected = node.selected;
 
     // Unselect all nodes.
-    for (const nd of allNodesFlattened) {
-        nd.selected = SelectedType.False;
-    }
+    unselectAll(allNodesFlattened);
 
     // Select the one you clicked on if if was previously not selected, or
     // multiple ones were previously selected.
     if (currentlySelected === SelectedType.False || numSelected > 1) {
         setSelectWithChildren(node, SelectedType.True);
+    }
+}
+
+function unselectAll(flattenedNodes: IMolContainer[]) {
+    // Unselect all nodes.
+    for (const nd of flattenedNodes) {
+        nd.selected = SelectedType.False;
     }
 }
 
@@ -115,4 +124,31 @@ function setSelectWithChildren(
             nd.selected = childrenSelection;
         }
     }
+}
+
+export function selectProgramatically(id: string) {
+    const allMols = getStoreVar("molecules");
+    const node = getNodeOfId(id, allMols);
+    if (!node) {
+        // null?
+        return;
+    }
+
+    unselectAll(getAllNodesFlattened(allMols));
+    setSelectWithChildren(node, SelectedType.True);
+
+    // Expand all parents.
+    const ancestors = getNodeAncestory(node, allMols);
+    for (const anc of ancestors) {
+        anc.treeExpanded = true;
+    }
+
+    setTimeout(() => {
+        const selected = document.getElementsByClassName("selected")[0];
+        if (selected) {
+            // selected.scrollIntoView();
+            // scroll gradually over 1 sec
+            selected.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    }, 500);
 }

@@ -8,7 +8,7 @@ export interface IAtom {
     resi: number;
     resn: string;
     serial?: number;
-    atom?: string;  // atom name
+    atom?: string; // atom name
     altLoc?: string;
     pdbline?: string;
     x?: number;
@@ -38,23 +38,43 @@ export enum SelectedType {
 }
 
 export interface IMolContainer {
-    title: string;                // appears in tree
-    model?: IAtom[] | GLModel;    // IAtom in worker, GLMoldel in main thread
+    title: string; // appears in tree
+    model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
     treeExpanded: boolean;
     visible: boolean;
-    selected: SelectedType;       // Not bool (string enum). "false" vs. false.
+    selected: SelectedType; // Not bool (string enum). "false" vs. false.
     focused: boolean;
-    viewerDirty: boolean;         // triggers 3dmoljs viewer
-    id?: string;                  // random id for terminal nodes
-    parentId?: string;            // parent id for tree
-    src?: string;                 // typically, the file name
-    nodes?: IMolContainer[];      // Next level down in menu. So if molecule,
-                                  // then chain. If chain, then residue. Etc.
+    viewerDirty: boolean; // triggers 3dmoljs viewer
+    id?: string; // random id for terminal nodes
+    parentId?: string; // parent id for tree
+    src?: string; // typically, the file name
+    nodes?: IMolContainer[]; // Next level down in menu. So if molecule,
+    // then chain. If chain, then residue. Etc.
     type?: MolType;
-    styles?: IStyle[];  // styles and selections for this node
+    styles?: IStyle[]; // styles and selections for this node
+    data?: IMolContainerData[];
 }
 
-export interface IResidue extends IMolContainer { }
+export enum MolContainerDataType {
+    Table,
+    Graph,
+}
+
+export interface IMolContainerData {
+    // Varies depending on type. TODO: Make more specific using ||
+    data: any;
+
+    // The title that will appear in the data panel. All data with same title
+    // grouped together.
+    title?: string;
+
+    type: MolContainerDataType;
+
+    // The IMolContainer that this data is associated with.
+    molContainer?: IMolContainer;
+}
+
+export interface IResidue extends IMolContainer {}
 
 export interface IColorStyle {
     color?: string;
@@ -67,5 +87,5 @@ export interface IStyle {
     stick?: IColorStyle;
     line?: IColorStyle;
     cartoon?: IColorStyle;
-    surface?: IColorStyle;  // NOTE: Not how 3dmoljs handles surface.
+    surface?: IColorStyle; // NOTE: Not how 3dmoljs handles surface.
 }

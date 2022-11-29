@@ -7,7 +7,9 @@ import {
 import {
     IAtom,
     IMolContainer,
+    IMolContainerData,
     IStyle,
+    MolContainerDataType,
     MolType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -597,6 +599,21 @@ function addParentIds(molContainer: IMolContainer) {
             anyNode.nodes.forEach((node: IMolContainer) => {
                 node.parentId = anyNode.id;
             });
+        }
+
+        // Below for debugging. TODO: remove
+        anyNode.data = [
+            {
+                title: Math.random() < 0.5 ? "Atoms" : "Atomz",
+                data: { x: Math.random() },
+                type: MolContainerDataType.Table,
+            },
+        ] as IMolContainerData[];
+
+        if (Math.random() < 0.5) {
+            anyNode.data[0].data.y = Math.random();
+        } else {
+            anyNode.data[0].data.z = Math.random();
         }
     });
 }

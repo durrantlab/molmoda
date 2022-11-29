@@ -9,8 +9,7 @@
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
   >
-    <p v-html="intro"></p>
-
+  <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block;" />
     <p>
       The following organizations and individuals have contributed, directly or
       indirectly, to the {{ appName }} project:
@@ -82,6 +81,7 @@ export default class AboutPlugin extends PluginParentClass {
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
+  lazyLoadedImg = "";
 
   /**
    * Get the software credits to show in order.
@@ -122,6 +122,10 @@ export default class AboutPlugin extends PluginParentClass {
    */
   get appName(): string {
     return appName;
+  }
+
+  onBeforePopupOpen() {
+    this.lazyLoadedImg = "./img/icons/android-chrome-192x192.png";
   }
 
   /**

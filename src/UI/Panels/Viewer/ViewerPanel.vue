@@ -20,6 +20,10 @@ import { Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { ViewerNGL } from "./Viewers/ViewerNGL";
 import { Viewer3DMol } from "./Viewers/Viewer3DMol";
+import {
+  loadViewerLibPromise,
+  setLoadViewerLibPromise,
+} from "./Viewers/ViewerParent";
 
 /**
  * ViewerPanel component
@@ -45,27 +49,36 @@ export default class ViewerPanel extends Vue {
    */
   @Watch("treeview", { immediate: false, deep: true })
   onTreeviewChanged(allMolecules: IMolContainer[]) {
-    let promise: Promise<any>;
-    if (api.visualization.viewer !== undefined) {
-      // Molecular library already loaded.
-      promise = Promise.resolve(api.visualization.viewer);
-    } else {
-      // Need to load the molecular library.
-      // api.visualization.viewer = new Viewer3DMol(); // TODO: Or NGL
-      api.visualization.viewer = new ViewerNGL();
-      promise = api.visualization.viewer
-        .loadAndSetupViewerLibrary("mol-viewer")
-        .then((viewer: any) => {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          window["viewer"] = viewer;
+    if (loadViewerLibPromise === undefined) {
+      if (api.visualization.viewer !== undefined) {
+        // Molecular library already loaded.
+        setLoadViewerLibPromise(Promise.resolve(api.visualization.viewer));
+      } else {
+        // Need to load the molecular library.
+        if (this.$store.state.molViewer === "3dmol") {
+          api.visualization.viewer = new Viewer3DMol();
+        } else if (this.$store.state.molViewer === "ngl") {
+          api.visualization.viewer = new ViewerNGL();
+        } else {
+          throw new Error("Unknown viewer");
+        }
 
-          api.visualization.viewer = viewer;
-          return viewer;
-        });
+        const promise = api.visualization.viewer
+          .loadAndSetupViewerLibrary("mol-viewer")
+          .then((viewer: any) => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            window["viewer"] = viewer;
+
+            api.visualization.viewer = viewer;
+            return viewer;
+          });
+
+        setLoadViewerLibPromise(promise);
+      }
     }
 
-    promise
+    (loadViewerLibPromise as Promise<any>)
       .then(() => {
         if (allMolecules.length === 0) {
           // No molecules present

@@ -2,6 +2,7 @@
 
 import { IJobInfoToEndpoint } from "./Types/TypesToEndpoint";
 import { JobManagerForInBrowserEndpoint } from "./JobManagers/JobManagerForInBrowserEndpoint";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 // Endpoints here
 let jobManagerForInBrowserEndpoint: JobManagerForInBrowserEndpoint;
@@ -13,8 +14,8 @@ let jobManagerForInBrowserEndpoint: JobManagerForInBrowserEndpoint;
  */
 export function jobQueueSetup() {
     console.warn("jobQueueSetup");
-    // TODO: six procs shouldn't be hard-coded.
-    jobManagerForInBrowserEndpoint = new JobManagerForInBrowserEndpoint(6)
+    const nprocs = getSetting("maxProcs");
+    jobManagerForInBrowserEndpoint = new JobManagerForInBrowserEndpoint(nprocs)
 
     // TODO: Setup local and remote server endpoints here too.
 }

@@ -55,7 +55,7 @@ export function convertCompiledMolModelsToIFileInfos(
     let compoundPromises: Promise<IFileInfo[]>[] = [];
     if (compiledNodes.compoundsNodes) {
         compoundPromises = compiledNodes.compoundsNodes.map((node) =>
-            // Note that compounds never merged (TODO: for now, anyway).
+            // Note that compounds never merged
             getConvertedTxts([node], compoundTargetExt, false)
         );
     }

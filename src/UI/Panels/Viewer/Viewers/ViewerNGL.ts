@@ -24,6 +24,7 @@ let NGL: any;
  */
 export class ViewerNGL extends ViewerParent {
     private _nglObj: any;
+    private resizeInterval: any;
 
     /**
      * Removes a model from the viewer.
@@ -478,13 +479,12 @@ export class ViewerNGL extends ViewerParent {
                 // window.
                 const div = document.getElementById(id);
                 if (div) {
-                    setInterval(() => {
+                    this.resizeInterval = setInterval(() => {
                         if (div.clientWidth !== stage.width) {
                             stage.handleResize();
                         }
                     }, 1000);
                 }
-                // TODO: Unregister this interval when the viewer is removed?
 
                 this._nglObj = stage;
 
@@ -564,5 +564,16 @@ export class ViewerNGL extends ViewerParent {
             console.log(err);
             return "";
         });
+    }
+
+    /**
+     * Unloads the viewer (from the DOM, etc.).
+     */
+     unLoad() {
+        this._nglObj.dispose();
+        this._nglObj = null;
+        if (this.resizeInterval) {
+            clearInterval(this.resizeInterval);
+        }
     }
 }

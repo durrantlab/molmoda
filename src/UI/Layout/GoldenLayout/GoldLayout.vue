@@ -27,6 +27,9 @@
           <GoldenLayoutComponent name="Jobs" state="{}">
             <QueuePanel />
           </GoldenLayoutComponent>
+          <GoldenLayoutComponent name="Data" state="{}">
+            <DataPanel />
+          </GoldenLayoutComponent>
         </GoldenLayoutContainer>
 
         <GoldenLayoutContainer type="column" :width="20">
@@ -67,6 +70,7 @@ import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
 import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
+import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
 
 /**
  * GoldLayout component
@@ -81,6 +85,7 @@ import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
     LogPanel,
     InformationPanel,
     QueuePanel,
+    DataPanel,
   },
 })
 export default class GoldLayout extends Vue {

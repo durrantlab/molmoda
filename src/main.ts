@@ -9,6 +9,7 @@ import { jobQueueSetup } from "./Queue/JobQueue";
 import { setupTests } from "./Testing/SetupTests";
 import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
+import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
 
 // api.sys.loadStatus.started = true;
 
@@ -23,6 +24,8 @@ setupWarnSaveOnClose();
 // console.warn("Below now meaningless?");
 // api.sys.loadStatus.menuFinalized = true;
 const store = setupVueXStore();
+applySettings(getSettings());
+
 createApp(App)
     .component("font-awesome-icon", FontAwesomeIcon)
     .use(store)

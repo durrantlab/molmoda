@@ -29,7 +29,12 @@ import {
   ISoftwareCredit,
   IContributorCredit,
 } from "@/Plugins/PluginInterfaces";
-import { applySettings, getSettings, saveSettings } from "./LoadSaveSettings";
+import {
+  applySettings,
+  defaultSettings,
+  getSettings,
+  saveSettings,
+} from "./LoadSaveSettings";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 
 /** SettingsPlugin */
@@ -73,22 +78,6 @@ export default class SettingsPlugin extends PluginParentClass {
         } as IFormOption,
       ],
     } as IFormSelect,
-    {
-      type: FormElemType.Select,
-      id: "layout",
-      label: "Panel layout",
-      val: "default",
-      options: [
-        {
-          val: "current",
-          description: "Use the current layout",
-        } as IFormOption,
-        {
-          val: "default",
-          description: "Use the default layout",
-        } as IFormOption,
-      ],
-    } as IFormSelect,
   ];
   alwaysEnabled = true;
   logJob = false;
@@ -108,27 +97,17 @@ export default class SettingsPlugin extends PluginParentClass {
     const molViewer = savedSettings.filter(
       (setting) => setting.name === "molViewer"
     )[0]?.val;
-    const layout = savedSettings.filter(
-      (setting) => setting.name === "layout"
-    )[0]?.val;
 
-    // Leave one processor free
-    const maxProcsAvailable = navigator.hardwareConcurrency || 4;
-    const procsToRecommend =
-      maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
+    const defaults = defaultSettings();
 
     // Update the userArgs with the saved values.
     updatedUserVals.push({
       name: "maxProcs",
-      val: maxProcs ? parseInt(maxProcs) : procsToRecommend,
+      val: maxProcs ? parseInt(maxProcs) : defaults.maxProcs,
     });
     updatedUserVals.push({
       name: "molViewer",
-      val: molViewer ? molViewer : "3dmol",
-    });
-    updatedUserVals.push({
-      name: "layout",
-      val: layout ? layout : "default",
+      val: molViewer ? molViewer : defaults.molViewer,
     });
 
     this.updateUserArgs(updatedUserVals);
