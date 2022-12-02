@@ -1,6 +1,10 @@
 <template>
-  <div class="information-container" ref="information-container" v-if="smiles !== ''">
-    <Viewer2D width="100%" :maxHeight="150" :smiles="smiles"/>
+  <div
+    class="information-container"
+    ref="information-container"
+    v-if="smiles !== ''"
+  >
+    <Viewer2D width="100%" :maxHeight="150" :smiles="smiles" />
     <FormWrapper cls="mb-3">
       <FormInput
         v-model="smiles"
@@ -8,7 +12,7 @@
         placeHolder="SMILES"
       ></FormInput>
     </FormWrapper>
-    <MolProps :smiles="smiles" />
+    <MolProps :smiles="smiles" :molContainer="molContainer" />
   </div>
 </template>
 
@@ -21,7 +25,7 @@ import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { getSmilesOfSelected } from "./Utils";
+import { getFirstSelected, getSmilesOfMolContainer } from "./Utils";
 
 /**
  * InformationPanel component
@@ -32,11 +36,12 @@ import { getSmilesOfSelected } from "./Utils";
     MolProps,
     Table,
     FormInput,
-    FormWrapper
+    FormWrapper,
   },
 })
 export default class InformationPanel extends Vue {
   smiles = "";
+  molContainer: IMolContainer | undefined = undefined;
 
   /**
    * Gets the molecules from the vuex store.
@@ -55,9 +60,16 @@ export default class InformationPanel extends Vue {
    */
   @Watch("molecules", { immediate: false, deep: true })
   onMolecules(allMolecules: IMolContainer[]) {
-    getSmilesOfSelected(allMolecules)
+    const firstSelected = getFirstSelected(allMolecules);
+
+    if (firstSelected === null) {
+      return;
+    }
+
+    getSmilesOfMolContainer(firstSelected)
       .then((smi) => {
         this.smiles = smi;
+        this.molContainer = firstSelected;
         return;
       })
       .catch((err) => {

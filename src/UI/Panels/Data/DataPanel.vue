@@ -1,12 +1,16 @@
 <template>
   <!-- Iterate through key, pair of allTableData -->
-  <h5>Data, Visible/Selected Molecules</h5>
+  <h5>Data: Visible/Selected Molecules</h5>
 
-  <div v-for="(tableData, tableName) in allTableData" v-bind:key="tableName">
+  <p v-if="allTableData.length === 0" style="font-size: 14px">
+    No molecules (visible or selected) currently have any data to display
+  </p>
+
+  <div v-for="tableData in allTableData" v-bind:key="tableData[0]">
     <Table
-      :tableData="tableData"
-      :caption="tableName"
-      :allowTextWrap="false"
+      :tableData="tableData[1]"
+      :caption="tableData[0]"
+      :allowTextWrap="allowTextWrap(tableData[1])"
       @rowClicked="rowClicked"
       :clickableRows="true"
     >
@@ -44,7 +48,23 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
   },
 })
 export default class DataPanel extends Vue {
-  get allTableData(): { [key: string]: ITableData } {
+  /**
+   * Whether the table should be allowed to wrap text.
+   *
+   * @param {ITableData} tableData  The table data.
+   * @returns {boolean}  Whether the table should be allowed to wrap text.
+   */
+  allowTextWrap(tableData: ITableData): boolean {
+    return tableData.headers.length > 5;
+  }
+
+  /**
+   * Get the data for the table.
+   *
+   * @returns {any}  The data for the table.
+   */
+  get allTableData(): any[] {
+    // { [key: string]: ITableData }
     const allMols = this.$store.state.molecules;
 
     // First get all the visible or selected nodes.
@@ -52,29 +72,23 @@ export default class DataPanel extends Vue {
       (x: IMolContainer) => x.visible || x.selected !== SelectedType.False
     );
 
-    // Get the data for each molecule.
-    const datasByMol = nodes
-      .filter((x) => x.data)
-      .map((x) => {
-        return x.data?.map((d) => {
-          d.molContainer = x;
-          return d;
-        }) as IMolContainerData[];
-      });
-
-    // Organize that data by data title instead of molecule.
     const dataByTitle: { [key: string]: IMolContainerData[] } = {};
-    for (const dataByMol of datasByMol) {
-      for (const data of dataByMol) {
-        if (data.title === undefined) {
-          continue;
-        }
-        const title = data.title;
+    for (const node of nodes) {
+      if (node.data === undefined) {
+        continue;
+      }
+      const titles = Object.keys(node.data);
+      titles.sort();
+
+      for (const title of titles) {
+        const data = node.data[title];
         if (dataByTitle[title] === undefined) {
           dataByTitle[title] = [];
         }
-        // delete data.title;
-        dataByTitle[title].push(data);
+        dataByTitle[title].push({
+          ...data,
+          molContainer: node,
+        });
       }
     }
 
@@ -87,10 +101,10 @@ export default class DataPanel extends Vue {
     }
 
     // Format data for a table
-    const allTableData: { [key: string]: ITableData } = {};
-    const falseFunc = (tableData: ITableData) => false;
-
-    for (const title in dataByTitle) {
+    // const allTableData: { [key: string]: ITableData } = {};
+    const allTableData: any[] = []; // Title, ITableData
+    const falseFunc = () => false;
+    for (const title in tableDataByTitle) {
       // Get the headers
       const headers: string[] = [];
       for (const data of tableDataByTitle[title]) {
@@ -100,7 +114,11 @@ export default class DataPanel extends Vue {
           }
         }
       }
-      headers.sort();
+
+      // Sort headers case insensitive
+      headers.sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      );
 
       const tableData: ITableData = {
         headers: headers.map((x) => ({ text: x })),
@@ -131,12 +149,32 @@ export default class DataPanel extends Vue {
         };
       });
 
-      allTableData[title] = tableData;
+      allTableData.push([title, tableData]);
+
+      // allTableData[title] = tableData;
     }
+
+    // Sort by first element
+    allTableData.sort((a, b) => {
+      if (a[0] < b[0]) {
+        return -1;
+      }
+      if (a[0] > b[0]) {
+        return 1;
+      }
+      return 0;
+    });
 
     return allTableData;
   }
 
+  /**
+   * Gets the name of the molecule in path-like format.
+   *
+   * @param {IMolContainer} molContainer  The molecule container.
+   * @param {IMolContainer[]} allMols  All the molecules.
+   * @returns {string}  The name of the molecule in path-like format.
+   */
   nodePathName(molContainer: IMolContainer, allMols: IMolContainer[]): string {
     const maxLength = 20;
 
@@ -179,6 +217,11 @@ export default class DataPanel extends Vue {
     return newTitle;
   }
 
+  /**
+   * Runs when row is clicked.
+   *
+   * @param {any} row  The row that was clicked.
+   */
   rowClicked(row: { [key: string]: CellValue }) {
     selectProgramatically(row.id as string);
     // debugger;

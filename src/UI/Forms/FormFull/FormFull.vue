@@ -189,11 +189,11 @@ export default class FormFull extends Vue {
    * Cast the form element to an IFormTextOrColor. Just to make typing work in
    * template...
    *
-   * @param {any} val  The form element.
+   * @param {any} frmElem  The form element.
    * @returns {IFormGroup}  The IFormTextOrColor.
    */
-  makeGeneric(val: FormElement): IGenericFormElement {
-    return val as IGenericFormElement;
+  makeGeneric(frmElem: FormElement): IGenericFormElement {
+    return frmElem as IGenericFormElement;
   }
 
   /**

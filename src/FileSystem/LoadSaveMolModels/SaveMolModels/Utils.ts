@@ -68,6 +68,7 @@ export function getConvertedTxts(
                             ? getFilename(molEntry, targetExt)
                             : `${filename}.${targetExt}`,
                     contents: txt,
+                    molContainer: molEntry,
                 } as IFileInfo;
             });
         }

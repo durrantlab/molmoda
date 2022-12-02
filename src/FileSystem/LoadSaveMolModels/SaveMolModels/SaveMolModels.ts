@@ -12,10 +12,12 @@ import {
 
 /**
  * Compiles (organizes) all the molecules, separating compounds if appropriate.
+ * As currently implemented, always merges models of the same molecule together,
+ * with possible exception of compound (if so specified).
  *
  * @param  {IMolsToConsider} molsToConsider         The molecules to compile.
  * @param  {boolean}         keepCompoundsSeparate  Whether to keep compounds
- *                                                  separate. If false, they sre
+ *                                                  separate. If false, they are
  *                                                  merged with the main
  *                                                  molecule.
  * @returns {ICompiledNodes}  The compiled nodes.
@@ -63,8 +65,6 @@ export function convertCompiledMolModelsToIFileInfos(
     const allCompoundPromises = Promise.all(compoundPromises);
     const allNonCompoundPromises = Promise.all(nonCompoundPromises);
 
-    // No need to keep them separate at this point, since conversion already
-    // took place. So ...
     return Promise.all([allCompoundPromises, allNonCompoundPromises]).then(
         (fileInfos: any[]) => {
             const compounds = fileInfos[0] as IFileInfo[][];

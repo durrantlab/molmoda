@@ -26,7 +26,7 @@ import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
  *                                          convert to.
  * @param  {boolean}         [merge=false]  Whether to merge the models into a
  *                                          single PDB string.
- * @returns {string[]} The PDB strings.
+ * @returns {string[]} The text-formatted (e.g., PDB, MOL2) strings.
  */
 export function convertMolContainers(
     molContainers: IMolContainer[],

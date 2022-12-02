@@ -3,6 +3,7 @@ import {
     FormElemType,
     IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IMoleculeInputParams, MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Vue } from "vue-class-component";
 
 /**
@@ -127,7 +128,14 @@ export class UserInputsMixin extends Vue {
             if (origUserInput.validateFunc !== undefined) {
                 userArg.validateFunc = origUserInput.validateFunc;
             }
+
+            // If it's a MoleculeInput, turn it back into an object.
+            if (userArg.val && userArg.val.isMoleculeInput) {
+                userArg.val = new MoleculeInput(userArg.val as IMoleculeInputParams);
+            }
         }
+
+
 
         this.inferUserInputTypes(userArgs);
         this.addDefaultUserInputsIfNeeded(userArgs);

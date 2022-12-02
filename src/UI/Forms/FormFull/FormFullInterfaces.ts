@@ -1,4 +1,4 @@
-import { IMoleculeInputParams } from "../MoleculeInputParams/Types";
+import { MoleculeInput } from "../MoleculeInputParams/MoleculeInput";
 
 export enum FormElemType {
     Text,
@@ -44,6 +44,7 @@ export interface IGenericFormElement extends IFormElement {
     placeHolder?: any;
     filterFunc?: any;
     enabled?: any;
+    isMoleculeInput?: any;
 }
 
 export interface IFormText extends IFormElement {
@@ -88,5 +89,5 @@ export interface IFormGroup extends IFormElement {
 }
 
 export interface IFormMoleculeInputParams extends IFormElement {
-    val: IMoleculeInputParams;
+    val: MoleculeInput;
 }

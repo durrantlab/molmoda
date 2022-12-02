@@ -602,19 +602,18 @@ function addParentIds(molContainer: IMolContainer) {
         }
 
         // Below for debugging. TODO: remove
-        anyNode.data = [
-            {
-                title: Math.random() < 0.5 ? "Atoms" : "Atomz",
-                data: { x: Math.random() },
-                type: MolContainerDataType.Table,
-            },
-        ] as IMolContainerData[];
+        // anyNode.data = {};
+        // const title = Math.random() < 0.5 ? "Atoms" : "Atomz";
+        // anyNode.data[title] = {
+        //     data: { x: Math.random() },
+        //     type: MolContainerDataType.Table,
+        // } as IMolContainerData;
 
-        if (Math.random() < 0.5) {
-            anyNode.data[0].data.y = Math.random();
-        } else {
-            anyNode.data[0].data.z = Math.random();
-        }
+        // if (Math.random() < 0.5) {
+        //     anyNode.data[title].data.y = Math.random();
+        // } else {
+        //     anyNode.data[title].data.z = Math.random();
+        // }
     });
 }
 

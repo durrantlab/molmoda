@@ -2,7 +2,8 @@ import { dynamicImports } from "@/Core/DynamicImports";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import WEBOBABEL_Module from "@/libs/ToCopy/obabel-wasm/obabel";
+// import OpenBabel from "@/libs/ToCopy/obabel-wasm/obabel";
+// import { initOpenBabel } from "@/libs/ToCopy/obabel-wasm/obabel";
 
 let txtBuf = "";
 
@@ -24,52 +25,62 @@ export function runOpenBabel(
     afterRunFuncs?: Function
 ): Promise<string | void> {
     txtBuf = "";
+    let BFS: any;
 
     return dynamicImports.browserfs.module
         .then((browserfs: any) => {
-            const BFS = new browserfs.EmscriptenFS() as any;
-
-            // No PDB, MOL2, XYZ, etc.
-            // No --gen3D, --gen2D
-            // Running in webworker?
-
-            return WEBOBABEL_Module({
-                arguments: args,
-                fs: BFS,
-                logReadFiles: true,
-                noInitialRun: true,
-                locateFile: (path: string) => {
-                    return "js/obabel-wasm/" + path;
-                },
-                print: (text: string) => {
-                    txtBuf += text + "\n";
-                },
-                printErr: (text: string) => {
-                    txtBuf += text + "\n";
-                },
-                preRun: [
-                    () => {
-                        // console.log("preRun");
-                        // console.log(WEBOBABEL_Module.FS);
-                    },
-                ],
-                onRuntimeInitialized: () => {
-                    // console.log("onRuntimeInitialized");
-                },
-                postRun: [
-                    () => {
-                        // Note: This runs when Wasm loaded and initialized, not after program
-                        // executed.
-
-                        // console.log("postRun");
-                        // this.inputs.push({ q: args, re: txtBuf });
-                        // args = [];
-                    },
-                ],
-            });
+            BFS = new browserfs.EmscriptenFS() as any;
+            return dynamicImports.obabelwasm.module;
         })
-        .then((module: any): Promise<string> => {
-            const obabel = module;
+        // .then((obabelwasm: any) => {
+            // debugger;
+        // });
+
+        //     // No PDB, MOL2, XYZ, etc.
+        //     // No --gen3D, --gen2D
+        //     // Running in webworker?
+
+        //     // const module = {
+        //     //     arguments: args,
+        //     //     fs: BFS,
+        //     //     logReadFiles: true,
+        //     //     noInitialRun: true,
+        //     //     locateFile: (path: string) => {
+        //     //         return "js/obabel-wasm/" + path;
+        //     //     },
+        //     //     print: (text: string) => {
+        //     //         debugger;
+        //     //         txtBuf += text + "\n";
+        //     //     },
+        //     //     printErr: (text: string) => {
+        //     //         txtBuf += text + "\n";
+        //     //     },
+        //     //     preRun: [
+        //     //         () => {
+        //     //             // console.log("preRun");
+        //     //             // console.log(WEBOBABEL_Module.FS);
+        //     //         },
+        //     //     ],
+        //     //     onRuntimeInitialized: () => {
+        //     //         // console.log("onRuntimeInitialized");
+        //     //     },
+        //     //     postRun: [
+        //     //         () => {
+        //     //             // Note: This runs when Wasm loaded and initialized, not after program
+        //     //             // executed.
+        //     //             // console.log("postRun");
+        //     //             // this.inputs.push({ q: args, re: txtBuf });
+        //     //             // args = [];
+        //     //         },
+        //     //     ]
+        //     // };
+
+        //     // debugger;
+
+        //     // return initOpenBabel(module);
+        //     // return "";  // TODO: FIX
+        // })
+        .then((obabel: any): Promise<string> => {
 
             // obabel.FS.mkdir("/data", true, true);
             // //obabel.FS.mount(BFS, {root: '/'}, '/data');
@@ -85,18 +96,21 @@ export function runOpenBabel(
 
             // resolve the promise to write the file
             return new Promise((resolve) => {
-                obabel.FS.syncfs(false, () => {
+                // obabel.FS.syncfs(false, () => {
                     //   console.log("syncfs");
+                    // debugger
 
                     // callMain with the arguments
-                    obabel.callMain(obabel.arguments);
+                    // obabel.callMain(obabel.arguments);
+                    debugger;
+                    obabel.callMain("-L", "formats");
 
                     if (afterRunFuncs) {
                         afterRunFuncs(obabel);
                     }
-        
+
                     resolve(txtBuf);
-                });
+                // });
             });
 
             // obabel.FS.writeFile(
@@ -131,7 +145,7 @@ export function runOpenBabel(
 
 /**
  * Helper function that creates a directory of the Open Babel file system.
- * 
+ *
  * @param {any} obabel   The OpenBabel module.
  * @param {string} path  The path to the directory to create.
  */
@@ -141,7 +155,7 @@ export function mkdir(obabel: any, path: string) {
 
 /**
  * A helper function that creates a file in the Open Babel file system.
- * 
+ *
  * @param {any}    obabel  The OpenBabel module.
  * @param {string} path    The path to the text file to create.
  * @param {string} text    The text to write to the file.

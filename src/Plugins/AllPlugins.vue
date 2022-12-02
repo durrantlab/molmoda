@@ -30,6 +30,7 @@ system uses these to autopopulate with plugins. -->
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
+    <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <!-- TEMPLATE1 END -->
   </div>
@@ -68,6 +69,7 @@ import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
+import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 // TEMPLATE2 END
 
@@ -104,8 +106,17 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     UndoPlugin,
     ViewerWindowPlugin,
 
+    MolPropsPlugin,
     TestPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
+
+
 
 
 

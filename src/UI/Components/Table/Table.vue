@@ -199,6 +199,11 @@ export default class Table extends Vue {
     this.$emit(emitName as string, row);
   }
 
+  /**
+   * Runs when the row is clicked. Emits "rowClicked" event.
+   * 
+   * @param {number} rowIdx  The index of the row that was clicked.
+   */
   rowClicked(rowIdx: number) {
     this.$emit("rowClicked", this.tableData.rows[rowIdx]);
   }

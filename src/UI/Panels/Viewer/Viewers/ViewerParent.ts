@@ -13,6 +13,11 @@ import { getStoreVar } from "@/Store/StoreExternalAccess";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 
+/**
+ * Sets the loadViewerLibPromise variable.
+ * 
+ * @param  {Promise<any>} val  The promise to set.
+ */
 export function setLoadViewerLibPromise(val: Promise<any>) {
     loadViewerLibPromise = val;
 }

@@ -180,7 +180,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    *     message. If null, proceed to run the plugin.
    */
   checkPluginAllowed(): string | null {
-    return checkAnyMolLoaded(this);
+    return checkAnyMolLoaded();
   }
 
   /**

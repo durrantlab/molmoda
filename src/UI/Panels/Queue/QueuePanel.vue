@@ -1,4 +1,5 @@
 <template>
+  <h5>Jobs: Scheduled/Running/Completed</h5>
   <JobManager />
 </template>
 

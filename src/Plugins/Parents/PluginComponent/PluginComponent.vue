@@ -44,7 +44,6 @@ import {
   collapseFormElementArray,
   IUserArg,
 } from "@/UI/Forms/FormFull/FormFullUtils";
-import { makeMoleculeInput } from "@/UI/Forms/MoleculeInputParams/MakeMoleculeInput";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { UserInputsMixin } from "./Mixins/UserInputsMixin";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
@@ -149,19 +148,20 @@ export default class PluginComponent extends mixins(
     // If one of the user arguments is of type MoleculeInputParams, replace
     // it with IFileInfo objects.
     let combineIdxs: number[] = [];
-    let combinePromises: Promise<IFileInfo[][]>[] = [];
+    let combinePromises: Promise<IFileInfo[][] | IFileInfo[]>[] = [];
     for (const idx in userArgs) {
       const param = userArgs[idx];
       if (param.val.molsToConsider) {
         combineIdxs.push(parseInt(idx));
+        debugger;
         combinePromises.push(
-          makeMoleculeInput(param.val)
+          param.val.getFileInfos()
         );
       }
     }
 
     Promise.all(combinePromises)
-      .then((combinedMols: IFileInfo[][][]) => {
+      .then((combinedMols: (IFileInfo[] | IFileInfo[][])[]) => {
         for (let idx = 0; idx < combineIdxs.length; idx++) {
           let i = combineIdxs[idx];
           userArgs[i].val = combinedMols[idx];

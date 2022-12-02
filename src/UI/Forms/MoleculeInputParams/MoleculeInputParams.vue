@@ -1,20 +1,23 @@
 <template>
   <span>
-    <FormWrapper label="Which project molecules to consider?" cls="border-0">
+    <FormWrapper
+      :label="'Which ' + molNameToUse + ' to consider?'"
+      cls="border-0"
+    >
       <FormCheckBox
         v-model.boolean="val.molsToConsider.visible"
-        text="Visible molecules"
+        :text="'Visible ' + molNameToUse"
         id="visMols"
         class="mt-2"
       />
       <FormCheckBox
         v-model.boolean="val.molsToConsider.selected"
-        text="Selected molecules"
+        :text="'Selected ' + molNameToUse"
         id="selMols"
       />
       <FormCheckBox
         v-model.boolean="val.molsToConsider.hiddenAndUnselected"
-        text="Other molecules (hidden and unselected)"
+        :text="'Other ' + molNameToUse + ' (hidden and unselected)'"
         id="otherMols"
       />
     </FormWrapper>
@@ -34,12 +37,9 @@ import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
 import FormWrapper from "../FormWrapper.vue";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
-import {
-  defaultMoleculeInputParams,
-  IMoleculeInputParams,
-} from "./Types";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import FormCheckBox from "../FormCheckBox.vue";
+import { MoleculeInput } from "./MoleculeInput";
 
 /**
  * CombineProteins component
@@ -54,11 +54,11 @@ import FormCheckBox from "../FormCheckBox.vue";
   },
 })
 export default class MoleculeInputParams extends Vue {
-  @Prop({ default: { ...defaultMoleculeInputParams() } })
-  modelValue!: IMoleculeInputParams;
+  @Prop({ default: new MoleculeInput() })
+  modelValue!: MoleculeInput;
 
   // Shadows modelValue
-  val: IMoleculeInputParams = { ...defaultMoleculeInputParams() };
+  val: MoleculeInput = new MoleculeInput();
 
   /**
    * Gets the molecules from the store.
@@ -67,6 +67,13 @@ export default class MoleculeInputParams extends Vue {
    */
   get molecules(): IMolContainer[] {
     return this.$store.state.molecules;
+  }
+
+  get molNameToUse(): string {
+    if (this.val.considerCompounds && !this.val.considerProteins) {
+      return "compounds";
+    }
+    return "molecules";
   }
 
   /**
@@ -107,14 +114,14 @@ export default class MoleculeInputParams extends Vue {
 
     let prts: string[] = [];
 
-    const compiledMols = compileMolModels(
+    const mergedByMols = compileMolModels(
       molsToConsid,
       true // Keep compounds separate.
     );
 
-    const nodeGroups = compiledMols.nodeGroups ?? [];
+    const nodeGroups = mergedByMols.nodeGroups ?? [];
     const nodeGroupsCount = nodeGroups.length;
-    const compoundsNodes = compiledMols.compoundsNodes ?? [];
+    const compoundsNodes = mergedByMols.compoundsNodes ?? [];
     const compoundsNodesCount = compoundsNodes.length;
 
     if (this.val.considerProteins) {
@@ -134,13 +141,15 @@ export default class MoleculeInputParams extends Vue {
     let components = prts.join(" and ");
 
     let numRuns = "";
-    if (nodeGroupsCount !== -1 && compoundsNodesCount !== -1) {
+    if (this.val.considerCompounds && this.val.considerProteins) {
       const total = nodeGroupsCount * compoundsNodesCount;
       numRuns = `${total} (${nodeGroupsCount} x ${compoundsNodesCount}) times`;
-    } else if (nodeGroupsCount !== -1) {
+    } else if (this.val.considerProteins) {
       numRuns = `${nodeGroupsCount} times (once for each protein)`;
-    } else if (compoundsNodesCount !== -1) {
+    } else if (this.val.considerCompounds) {
       numRuns = `${compoundsNodesCount} times (once for each compound)`;
+    } else {
+      numRuns = "0 times";
     }
 
     return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found ${components}, so this calculation will run ${numRuns}.`;
@@ -170,10 +179,10 @@ export default class MoleculeInputParams extends Vue {
   /**
    * Watches val and emits the modelValue.
    *
-   * @param {IMoleculeInputParams} newVal  The new value.
+   * @param {MoleculeInput} newVal  The new value.
    */
   @Watch("val", { deep: true })
-  onValChanged(newVal: IMoleculeInputParams) {
+  onValChanged(newVal: MoleculeInput) {
     this.$emit("update:modelValue", newVal);
     this.$emit("onChange");
   }
@@ -181,10 +190,10 @@ export default class MoleculeInputParams extends Vue {
   /**
    * Watches modelValue and sets val accordingly.
    *
-   * @param {IMoleculeInputParams} newVal  The new value.
+   * @param {MoleculeInput} newVal  The new value.
    */
   @Watch("modelValue", { deep: true })
-  onModelValueChanged(newVal: IMoleculeInputParams) {
+  onModelValueChanged(newVal: MoleculeInput) {
     this.val = newVal;
   }
 

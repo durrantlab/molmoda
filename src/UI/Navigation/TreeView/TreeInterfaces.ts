@@ -52,7 +52,7 @@ export interface IMolContainer {
     // then chain. If chain, then residue. Etc.
     type?: MolType;
     styles?: IStyle[]; // styles and selections for this node
-    data?: IMolContainerData[];
+    data?: { [key: string]: IMolContainerData };  // key is title
 }
 
 export enum MolContainerDataType {
@@ -63,10 +63,6 @@ export enum MolContainerDataType {
 export interface IMolContainerData {
     // Varies depending on type. TODO: Make more specific using ||
     data: any;
-
-    // The title that will appear in the data panel. All data with same title
-    // grouped together.
-    title?: string;
 
     type: MolContainerDataType;
 

@@ -4,6 +4,9 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { SurfaceType, StyleType, LabelType } from "./Types";
 
+/**
+ * Viewer3DMol
+ */
 export class Viewer3DMol extends ViewerParent {
     private _mol3dObj: any;
 
@@ -225,6 +228,11 @@ export class Viewer3DMol extends ViewerParent {
         return sel;
     }
 
+    /**
+     * Gets the data uri of the current view (png).
+     * 
+     * @returns {Promise<string>}  A promise that resolves to the data uri.
+     */
     pngURI(): Promise<string> {
         return Promise.resolve(this._mol3dObj.pngURI());
     }

@@ -94,6 +94,11 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
     }
 }
 
+/**
+ * Unselects all nodes.
+ *
+ * @param  {IMolContainer[]} flattenedNodes  The nodes to consider, flattened.
+ */
 function unselectAll(flattenedNodes: IMolContainer[]) {
     // Unselect all nodes.
     for (const nd of flattenedNodes) {
@@ -126,6 +131,11 @@ function setSelectWithChildren(
     }
 }
 
+/**
+ * Selects a given node programatically.
+ *
+ * @param  {string} id  The id of the node to select.
+ */
 export function selectProgramatically(id: string) {
     const allMols = getStoreVar("molecules");
     const node = getNodeOfId(id, allMols);

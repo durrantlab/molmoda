@@ -11,6 +11,12 @@
 
 <script lang="ts">
 import {
+  writeFile,
+  readDir,
+  readFile,
+  runOpenBabel,
+} from "@/FileSystem/OpenBabel";
+import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
@@ -20,8 +26,7 @@ import {
   IFormMoleculeInputParams,
   IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { defaultMoleculeInputParams } from "@/UI/Forms/MoleculeInputParams/Types";
+import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
@@ -57,7 +62,7 @@ export default class TestPlugin extends PluginParentClass {
     {
       // type: FormElemType.MoleculeInputParams,
       id: "makemolinputparams",
-      val: { ...defaultMoleculeInputParams(), compoundFormat: "can" },
+      val: new MoleculeInput({ compoundFormat: "can" }),
     } as IFormMoleculeInputParams,
     {
       id: "group",
@@ -83,21 +88,21 @@ export default class TestPlugin extends PluginParentClass {
 
   /**
    * Runs when the user presses the action button and the popup closes.
-   * 
+   *
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(/* userArgs: IUserArg[] */) {
     // * @param {IUserArg[]} userArgs  The user arguments.
-    debugger;
+    // debugger;
     // this.submitJobs([userArgs]);
     const jobParams = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 1; i++) {
       const jobParam = {
-        delay: Math.random() * 10000,  // ms
-      }
+        delay: Math.random() * 10000, // ms
+      };
       jobParams.push(jobParam);
     }
-    this.submitJobs(jobParams, Math.round(Math.random() * 2));  // , 10000);
+    this.submitJobs(jobParams, Math.round(Math.random() * 2)); // , 10000);
   }
 
   /**
@@ -108,11 +113,12 @@ export default class TestPlugin extends PluginParentClass {
    *     done.
    */
   runJobInBrowser(_args: any): Promise<undefined> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(undefined);
-      }, _args.delay);
-    });
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve(undefined);
+    //   }, _args.delay);
+    // });
+
     // console.log(_args);
 
     // Submit some jobs that delay randomly.
@@ -120,31 +126,32 @@ export default class TestPlugin extends PluginParentClass {
     // debugger;
     // return Promise.resolve(undefined);
 
-    // // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
-    // // let args: string[] = ['-H'];
+    // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
+    // let args: string[] = ['-H'];
 
-    // let beforeOBFunc = (obabel: any) => {
-    //   writeFile(obabel, "testfile.txt", "test text");
-    // };
+    let beforeOBFunc = (obabel: any) => {
+      // writeFile(obabel, "testfile.txt", "test text");
+    };
 
-    // let afterOBFunc = (obabel: any) => {
-    //   console.log(readDir(obabel, "."));
-    //   console.log(readFile(obabel, "testfile.txt"));
-    // };
+    let afterOBFunc = (obabel: any) => {
+      // console.log(readDir(obabel, "."));
+      // console.log(readFile(obabel, "testfile.txt"));
+    };
 
-    // return runOpenBabel(
-    //   ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
-    //   beforeOBFunc,
-    //   afterOBFunc
-    // )
-    //   .then((res) => {
-    //     console.log(res);
-    //     return undefined;
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     return undefined;
-    //   });
+    return runOpenBabel(
+      ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
+      beforeOBFunc,
+      afterOBFunc
+    )
+      .then((res) => {
+        debugger;
+        console.log(res);
+        return undefined;
+      })
+      .catch((err) => {
+        console.log(err);
+        return undefined;
+      });
   }
 }
 </script>

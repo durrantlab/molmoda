@@ -169,7 +169,6 @@ export const dynamicImports = {
         },
     } as IDynamicImport,
 
-
     detectOs: {
         credit: {
             name: "Detect OS",
@@ -194,7 +193,6 @@ export const dynamicImports = {
             });
         },
     } as IDynamicImport,
-
 
     memfs: {
         credit: {
@@ -238,6 +236,98 @@ export const dynamicImports = {
             ).then((browserfs) => {
                 return browserfs;
             });
+        },
+    },
+    obabelwasm: {
+        credit: {
+            name: "obabelwasm",
+            url: "", // TODO: Get your url here?
+            license: Licenses.GPL2,
+        },
+
+        get module(): Promise<any> {
+            // NOTE: Unfortunately, the only way I could get this to work was by
+            // attaching it to the main window. A promise that resolves the
+            // module is not effective for some reason.
+
+            const module = {
+                arguments: [], // args,
+                // fs: BFS,
+                logReadFiles: true,
+                noInitialRun: true,
+                locateFile: (path: string) => {
+                    return "js/obabel-wasm/" + path;
+                },
+                print: (text: string) => {
+                    debugger;
+                    // txtBuf += text + "\n";
+                },
+                printErr: (text: string) => {
+                    debugger;
+                    // txtBuf += text + "\n";
+                },
+                preRun: [
+                    () => {
+                        // console.log("preRun");
+                        // console.log(WEBOBABEL_Module.FS);
+                    },
+                ],
+                onRuntimeInitialized: () => {
+                    // console.log("onRuntimeInitialized");
+                },
+                postRun: [
+                    () => {
+                        // Note: This runs when Wasm loaded and initialized, not after program
+                        // executed.
+                        // console.log("postRun");
+                        // this.inputs.push({ q: args, re: txtBuf });
+                        // args = [];
+                    },
+                ],
+            };
+
+            return import(
+                /* webpackChunkName: "obabelwasm" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "@/libs/ToCopy/obabel-wasm/obabel"
+            ).then((obabelModule) => {
+                return obabelModule.default(module);
+            })
+            .then((obabelObj: any) => {
+                return obabelObj.ready;
+            })
+            .then((obabelObj: any) => {
+                return obabelObj;
+            });
+
+            // return addJsToHeader(
+            //     "obabelwasm",
+            //     "js/obabel-wasm/obabel.js",
+            //     () => {
+            //         return Promise.resolve((window as any)["ObabelModule"]);
+            //         // const prom1 = new Promise((resolve) => {
+            //         //     OpenBabel.onRuntimeInitialized = () => {
+            //         //         resolve(undefined);
+            //         //     };
+            //         // });
+            //         // return new Promise(function (resolve) {
+            //         //     const checkReady = () => {
+            //         //         console.log("checking");
+            //         //         if (ObabelModule) {
+            //         //             (window as any)["ObabelModule"] = ObabelModule;
+            //         //             resolve(ObabelModule);
+            //         //         } else {
+            //         //             setTimeout(checkReady, 500);
+            //         //         }
+            //         //     };
+            //         //     checkReady();
+            //         // });
+            //         // return Promise.all([prom2]);
+            //         // return Promise.resolve(undefined);
+            //     }
+            // );
         },
     },
     openbabeljs: {

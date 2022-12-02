@@ -1,3 +1,4 @@
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType } from "./LoadSaveMolModels/Types/MolFormats";
 
@@ -7,6 +8,10 @@ export interface IFileInfo {
 
     // Name of the ZIP file (if any) to create which contains the file.
     compressedName?: string;
+
+    // If file is derived from a molContainer, it's sometimes useful to keep
+    // track of the origial molContainer (e.g., to add data to it).
+    molContainer?: IMolContainer;
 
     // size: number;
     // type: string; // all caps, extension (e.g., "PDB")
