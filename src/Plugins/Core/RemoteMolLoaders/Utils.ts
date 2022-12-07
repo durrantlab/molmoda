@@ -1,19 +1,16 @@
-import { IFileInfo } from "@/FileSystem/Types";
 import * as api from "@/Api";
-import axios from 'axios';
+import { FileInfo } from "@/FileSystem/FileInfo";
+import axios from "axios";
 
 /**
  * Loads a remote file and sends it to the relevant Vue component.
  *
  * @param {string}  url           The URL of the remote file to load.
  * @param {string} [validateUrl]  Whether to validate the url. Defaults to true.
- * @returns {Promise<IFileInfo>} A promise that resolves the file info (name,
+ * @returns {Promise<FileInfo>} A promise that resolves the file info (name,
  *     contents, type).
  */
-export function loadRemote(
-    url: string,
-    validateUrl = true
-): Promise<IFileInfo> {
+export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
     api.messages.waitSpinner(true);
     return new Promise((resolve, reject) => {
         const urlUpper = url.toUpperCase();
@@ -27,14 +24,17 @@ export function loadRemote(
             return;
         }
 
-        axios.get(url)
+        axios
+            .get(url)
             .then((resp) => {
                 const flnm = url.split("/").pop() as string;
                 api.messages.waitSpinner(false);
-                return resolve({
-                    name: flnm,
-                    contents: resp.data as string
-                });
+                return resolve(
+                    new FileInfo({
+                        name: flnm,
+                        contents: resp.data as string,
+                    })
+                );
             })
             .catch((err) => {
                 reject(`Could not load the URL ${url}: ` + err.message);

@@ -4,7 +4,6 @@
 // respond appropriately.
 
 import { messagesApi } from "@/Api/Messages";
-import { IFileInfo } from "@/FileSystem/Types";
 import { IEndpointResponse, JobStatus } from "../Types/TypesEndpointResponse";
 import {
     IToEndpointPayload,
@@ -18,6 +17,7 @@ import {
     startPausedQueue,
 } from "./PausedQueue";
 import { getJobToRun, startJob } from "./RunJob";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 // This is how information about jobs is stored in the queue system internally.
 // More information than needs to be sent back to the client.
@@ -42,7 +42,7 @@ export class InBrowserEndpoint {
 
     public pausedInfo: IPausedJob;
 
-    public fs: { [key: string]: IFileInfo[] } = {};
+    public fs: { [key: string]: FileInfo[] } = {};
 
     /**
      * Gets a payload from the JobManager and responds appropriately (if

@@ -25,10 +25,10 @@ import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
-import { IFileInfo } from "@/FileSystem/Types";
 import { registerHotkeys } from "@/Core/HotKeys";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
-export type RunJob = IFileInfo[] | IFileInfo | undefined | void;
+export type RunJob = FileInfo[] | FileInfo | undefined | void;
 export type RunJobReturn = Promise<RunJob> | RunJob;
 
 /**
@@ -309,7 +309,7 @@ export abstract class PluginParentClass extends mixins(
         // It's a promise
         if (jobResultFiles instanceof Promise) {
             return jobResultFiles
-                .then((files: IFileInfo[] | IFileInfo | void | undefined) => {
+                .then((files: FileInfo[] | FileInfo | void | undefined) => {
                     if (files === undefined) {
                         files = [];
                     }

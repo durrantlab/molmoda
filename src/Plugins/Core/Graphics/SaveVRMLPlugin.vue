@@ -28,7 +28,7 @@ import {
   fileNameFilter,
   matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * SaveVRMLPlugin
@@ -104,11 +104,10 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     let vrmlTxt = api.visualization.viewer?.exportVRML();
     api.visualization.viewer?.renderAll();
 
-    api.fs.saveTxt({
+    api.fs.saveTxt(new FileInfo({
       name: filename,
-      contents: vrmlTxt,
-      ext: ".vrml",
-    } as IFileInfo);
+      contents: vrmlTxt
+    }));
   }
 
   /**

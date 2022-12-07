@@ -230,7 +230,7 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Gets the data uri of the current view (png).
-     * 
+     *
      * @returns {Promise<string>}  A promise that resolves to the data uri.
      */
     pngURI(): Promise<string> {

@@ -30,7 +30,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * NewProjectPlugin
@@ -50,7 +50,7 @@ export default class NewProjectPlugin extends PluginParentClass {
       url: "http://durrantlab.com/",
     },
   ];
-  filesToLoad: IFileInfo[] = [];
+  filesToLoad: FileInfo[] = [];
   pluginId = "newproject";
 
   userArgs: FormElement[] = [];

@@ -1,15 +1,15 @@
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { dynamicImports } from "./DynamicImports";
 
 /**
  * Adds an extension if missing.
  *
- * @param  {IFileInfo} params   The parameters describing the text file.
+ * @param  {FileInfo} params   The parameters describing the text file.
  * @param  {string} defaultExt The default extension to use.
- * @returns {IFileInfo} The parameters with the extension added to the filename
+ * @returns {FileInfo} The parameters with the extension added to the filename
  *     field.
  */
-// function _addExt(params: IFileInfo, defaultExt: string): IFileInfo {
+// function _addExt(params: FileInfo, defaultExt: string): FileInfo {
 //     // Get the extension from the filename
 //     // *****
 
@@ -34,10 +34,10 @@ import { dynamicImports } from "./DynamicImports";
 /**
  * Saves a text file.
  *
- * @param  {IFileInfo} params The parameters describing the text file.
+ * @param  {FileInfo} params The parameters describing the text file.
  * @returns {Promise<any>} A promise that resolves after saving the file.
  */
-export function saveTxt(params: IFileInfo): Promise<any> {
+export function saveTxt(params: FileInfo): Promise<any> {
     // Add .txt extension if
     // params = _addExt(params, ".txt");
 
@@ -75,13 +75,13 @@ export function saveTxt(params: IFileInfo): Promise<any> {
  * Saves a zip file containing one or more text files.
  *
  * @param  {string} compressedName The parameters describing the zip file.
- * @param  {IFileInfo[]} files      A list of parameters describing the text
+ * @param  {FileInfo[]} files      A list of parameters describing the text
  *                                 files to add to the zip file.
  * @returns {Promise<any>} A promise that resolves after saving the zip file.
  */
 export function saveZipWithTxtFiles(
     compressedName: string,
-    files: IFileInfo[]
+    files: FileInfo[]
 ): Promise<any> {
     // compressedName = _addExt(compressedName, ".zip");
     // files = files.map((file) => _addExt(file, ".txt"));
@@ -169,10 +169,10 @@ export function savePngUri(fileName: string, pngUri: string) {
  * of a text file in it.
  *
  * @param  {string} s          The compressed data.
- * @returns {Promise<string[]>} A promise that resolves to the contents of the
+ * @returns {Promise<FileInfo[]>} A promise that resolves to the contents of the
  *     file(s). Always an array, even if only one file is returned.
  */
-export function uncompress(s: string): Promise<IFileInfo[]> {
+export function uncompress(s: string): Promise<FileInfo[]> {
     const getZipObjPromise = dynamicImports.jsZip.module.then((JSZip) => {
         return JSZip.loadAsync(s);
     });
@@ -193,7 +193,7 @@ export function uncompress(s: string): Promise<IFileInfo[]> {
             return Promise.all(promises);
         })
         .then((fileContents: string[]) => {
-            const fileInfos: IFileInfo[] = [];
+            const fileInfos: FileInfo[] = [];
             for (let i = 0; i < fileNames.length; i++) {
                 const fileName = fileNames[i];
                 if (fileName.startsWith("__MACOSX")) {
@@ -205,14 +205,14 @@ export function uncompress(s: string): Promise<IFileInfo[]> {
 
                 const contents = fileContents[i];
 
-                fileInfos.push({
-                    name: fileName.split("/").pop(), // basename
+                fileInfos.push(new FileInfo({
+                    name: fileName.split("/").pop() as string, // basename
                     // Getting file size not supported with zip. You could
                     // implement, though.
                     // size: 0,
                     contents: contents,
                     // type: type,
-                } as IFileInfo);
+                }));
             }
             return fileInfos;
         });

@@ -130,25 +130,46 @@ export default class TestPlugin extends PluginParentClass {
     // let args: string[] = ['-H'];
 
     let beforeOBFunc = (obabel: any) => {
-      // writeFile(obabel, "testfile.txt", "test text");
+      // writeFile(obabel, "/test.can", "c1cccccc1");
+      // console.log(readDir(obabel, "/"));
+      // const txt = readFile(obabel, "testfile.txt");
+      // debugger;
     };
 
     let afterOBFunc = (obabel: any) => {
-      // console.log(readDir(obabel, "."));
-      // console.log(readFile(obabel, "testfile.txt"));
+      console.log(readDir(obabel, "."));
+      console.log(readDir(obabel, "/"));
+      // setTimeout(() => {
+        // const txt = readFile(obabel, "test.pdb");
+        // debugger;
+      // }, 500);
     };
 
+    // writeFile("/moose/txt.txt", "I cam a cat")
+    //   .then(() => {
+    //     return readFile("/moose/txt.txt");
+    //   })
+    //   .then((txt) => {
+    //     debugger;
+    //     return;
+    //   })
+    //   .catch((err) => {
+    //     debugger;
+    //     return;
+    //   });
+
     return runOpenBabel(
-      ["-:CO(=O)", "--gen2D", "-osdf", "-p", "7.4"],
+      // ["-:CO(=O)", "-ocan", "-p", "7.4", "--gen2D"],
+      ["-:CO(=O)", "-O", "/test.pdb", "-p", "7.4"],
       beforeOBFunc,
       afterOBFunc
     )
-      .then((res) => {
+      .then((res: any) => {
         debugger;
         console.log(res);
         return undefined;
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.log(err);
         return undefined;
       });

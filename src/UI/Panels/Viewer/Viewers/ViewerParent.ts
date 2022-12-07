@@ -1,4 +1,9 @@
-import { IStyle, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import {
+    IStyle,
+    IMolContainer,
+    ShapeType,
+    IShape,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { GLModel } from "../GLModelType";
 import {
     ModelType,
@@ -15,7 +20,7 @@ export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 
 /**
  * Sets the loadViewerLibPromise variable.
- * 
+ *
  * @param  {Promise<any>} val  The promise to set.
  */
 export function setLoadViewerLibPromise(val: Promise<any>) {
@@ -34,6 +39,9 @@ export abstract class ViewerParent {
     // Note that a given molecule can have multiple surfaces.
     surfaces: { [id: string]: SurfaceType[] } = {};
 
+    // Keep track of the shapes.
+    shapes: { [id: string]: ShapeType[] } = {};
+
     /**
      * Removes a model from the viewer.
      *
@@ -43,11 +51,21 @@ export abstract class ViewerParent {
     abstract _removeModel(id: string): void;
 
     /**
-     * Removes multiple models.
-     * 
+     * Removes a shape from the viewer.
+     *
+     * @param  {string} id  The id of the model to remove.
+     * @returns {void}
+     */
+    abstract _removeShape(id: string): void;
+
+    /**
+     * Removes multiple objects (models or shapes).
+     *
      * @param {string[]} ids  The ids of the models to remove.
      */
-    removeModels(ids: string[]) {
+    removeObjects(ids: string[]) {
+        // TODO: Currently model only here. Do shape too.
+
         // Find the ids that are still present in the cache. These should be
         // removed.
         const idsOfMolsToDelete: string[] = [];
@@ -60,20 +78,20 @@ export abstract class ViewerParent {
 
         // Remove them from the cache, viewer, etc.
         idsOfMolsToDelete.forEach((id: string) => {
-            this.removeModel(id);
+            this.removeObject(id);
         });
     }
 
-
     /**
-     * Removes a single model from the viewer.
-     * 
+     * Removes a single model or single shape from the viewer.
+     *
      * @param {string} id  The id of the model to remove.
      */
-    removeModel(id: string) {
+    removeObject(id: string) {
         // Clear any surfaces
         this.clearSurfacesOfMol(id);
 
+        // TODO: Now just model. Implement shape.
         this._removeModel(id);
 
         // Remove from cache
@@ -170,9 +188,18 @@ export abstract class ViewerParent {
      */
     abstract addGLModel(model: GLModel): Promise<ModelType>;
 
+
+    /**
+     * Adds a shape to the viewer.
+     *
+     * @param  {GLModel} shape  The shape to add.
+     * @returns {ShapeType}  The shape that was added.
+     */
+    abstract addShape(shape: IShape): Promise<ShapeType>;
+
     /**
      * Adds a list of IMolContainers to the viewer.
-     * 
+     *
      * @param {IMolContainer[]} molContainers   The list of molecules to add.
      * @returns {Promise<IMolContainer>[]}  A list of promises that resolve
      *    when the molecules are added.
@@ -186,6 +213,7 @@ export abstract class ViewerParent {
             // If it's not in the cache, the system has probably not yet loaded the
             // molecule. Always load it.
             let addMolPromise: Promise<IMolContainer>;
+            // TODO: Currently doesn't account for shapes.
             const cacheItem = this.molCache[id];
             if (cacheItem) {
                 // Already in cache
@@ -301,7 +329,7 @@ export abstract class ViewerParent {
         // Remove from api
         api.visualization.viewer = undefined;
         loadViewerLibPromise = undefined;
-        
+
         // Do any viewer-specific unloading
         this.unLoad();
 
@@ -313,29 +341,30 @@ export abstract class ViewerParent {
 
         // All IMolContainers are now dirty (so will be rerendered if new viewer
         // loaded).
-        for (const molContainer of getAllNodesFlattened(getStoreVar("molecules"))) {
+        for (const molContainer of getAllNodesFlattened(
+            getStoreVar("molecules")
+        )) {
             molContainer.viewerDirty = true;
         }
     }
 
-    
     /**
      * Unloads the viewer (from the DOM, etc.).
-     * 
+     *
      * @returns any
      */
     abstract unLoad(): any;
 
     /**
      * Gets a PNG URI of the current view.
-     * 
+     *
      * @returns {Promise<string>}  A promise that resolves the URI.
      */
     abstract pngURI(): Promise<string>;
 
     /**
      * Gets a VRML model of the current scene.
-     * 
+     *
      * @returns {string}  The VRML string.
      */
     exportVRML(): string {
@@ -359,11 +388,12 @@ export abstract class ViewerParent {
     }
 
     /**
-     * Removes a model from the cache.
-     * 
-     * @param {string} id  The id of the model to remove.
+     * Removes a model or shape from the cache.
+     *
+     * @param {string} id  The id of the model or shape to remove.
      */
     removeFromCache(id: string): void {
+        // TODO: Just model here, not shape yet.
         delete this.molCache[id];
     }
 
@@ -382,11 +412,11 @@ export abstract class ViewerParent {
     }
 
     /**
-     * Clear the cache of molecules and surfaces.
+     * Clear the cache of molecules, shapes, and surfaces.
      */
     clearCache() {
         for (const id in this.molCache) {
-            this.removeModel(id);
+            this.removeObject(id);
         }
         this.renderAll();
     }

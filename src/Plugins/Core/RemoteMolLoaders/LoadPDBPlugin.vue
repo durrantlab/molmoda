@@ -23,7 +23,7 @@ import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * LoadPDBPlugin
@@ -95,7 +95,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
     return loadRemote(
       `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
     )
-      .then((fileInfo: IFileInfo): any => {
+      .then((fileInfo: FileInfo): any => {
         return fileInfo;
       })
       .catch((err: string) => {

@@ -1,4 +1,4 @@
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export interface IMolsToConsider {
@@ -17,6 +17,6 @@ export interface ICompiledNodes {
 }
 
 export interface ICmpdNonCmpdFileInfos {
-    compoundFileInfos: IFileInfo[];
-    nonCompoundFileInfos: IFileInfo[];
+    compoundFileInfos: FileInfo[];
+    nonCompoundFileInfos: FileInfo[];
 }

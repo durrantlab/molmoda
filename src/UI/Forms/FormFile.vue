@@ -26,8 +26,8 @@ import { randomID } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
-import { IFileInfo } from "@/FileSystem/Types";
 import { filesToFileInfos } from "@/FileSystem/Utils";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * FormFile component
@@ -80,11 +80,11 @@ export default class FormFile extends Vue {
     let fileList = Array.from(files);
 
     filesToFileInfos(fileList, this.isZip, this.allAcceptableFileTypes)
-      .then((filesLoaded: (IFileInfo | string)[]) => {
+      .then((filesLoaded: (FileInfo | string)[]) => {
         const errorMsgs = filesLoaded.filter((a) => typeof a === "string");
         const toLoad = filesLoaded.filter(
           (a) => typeof a !== "string"
-        ) as IFileInfo[];
+        ) as FileInfo[];
 
         this.$emit("onFilesLoaded", toLoad);
 

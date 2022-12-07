@@ -12,7 +12,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
@@ -47,7 +47,7 @@ export function separateCompoundNonCompoundTerminalNodes(
  *                                       one.
  * @param  {string}          [filename]  The fileame to use. Will be generated
  *                                       if not given.
- * @returns {Promise<IFileInfo[]>}  A promise that resolves to a list of IFileInfo
+ * @returns {Promise<FileInfo[]>}  A promise that resolves to a list of FileInfo
  *     containing the texts for saving.
  */
 export function getConvertedTxts(
@@ -55,21 +55,20 @@ export function getConvertedTxts(
     targetExt: string,
     merge: boolean,
     filename?: string
-): Promise<IFileInfo[]> {
+): Promise<FileInfo[]> {
     return convertMolContainers(nodes, targetExt, merge).then(
-        (molTxts: string[]) => {
-            return molTxts.map((txt, idx) => {
+        (molFileInfos: FileInfo[]) => {
+            return molFileInfos.map((molFileInfo, idx) => {
                 // Prepend the chain
                 const molEntry = nodes[idx] as IMolContainer;
 
-                return {
-                    name:
-                        filename === undefined
-                            ? getFilename(molEntry, targetExt)
-                            : `${filename}.${targetExt}`,
-                    contents: txt,
-                    molContainer: molEntry,
-                } as IFileInfo;
+                // molFileInfo is pretty incomplete. Update some of the values.
+                molFileInfo.name =
+                    filename === undefined
+                        ? getFilename(molEntry, targetExt)
+                        : `${filename}.${targetExt}`;
+                molFileInfo.molContainer = molEntry;
+                return molFileInfo;
             });
         }
     );
@@ -98,11 +97,14 @@ function getFilename(molContainer: IMolContainer, ext: string): string {
     let txtPrts = [getFileNameParts(molContainer.src as string).basename];
     const firstAtom: IAtom = (molContainer.model as any).selectedAtoms({})[0];
     if (molContainer.type === MolType.Compound) {
-        txtPrts.push(firstAtom.resn.trim());
-        txtPrts.push(firstAtom.resi.toString().trim());
+        const resn = firstAtom.resn ? firstAtom.resn.trim() : "";
+        const resi = firstAtom.resi ? firstAtom.resi.toString().trim() : "";
+        txtPrts.push(resn);
+        txtPrts.push(resi);
     }
 
-    txtPrts.push(firstAtom.chain.trim());
+    const chain = firstAtom.chain ? firstAtom.chain.trim() : "";
+    txtPrts.push(chain);
     txtPrts.push(molContainer.type as string);
 
     // remove undefined or ""
@@ -115,12 +117,12 @@ function getFilename(molContainer: IMolContainer, ext: string): string {
  * Given a list of IFileInfo objects (e.g., from getSaveTxtPromises), save them
  * to the disk. Compress if necessary.
  *
- * @param  {IFileInfo[]} files     The files to save.
+ * @param  {FileInfo[]} files     The files to save.
  * @param  {string}     compressedName  The filename to use.
  * @returns {Promise<any>}  A promise that resolves when the files are saved.
  */
 export function saveTxtFiles(
-    files: IFileInfo[],
+    files: FileInfo[],
     compressedName: string
 ): Promise<any> {
     if (files.length === 1) {

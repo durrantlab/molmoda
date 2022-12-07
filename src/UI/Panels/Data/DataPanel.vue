@@ -5,9 +5,30 @@
   <p v-if="allTableData.length === 0" style="font-size: 14px">
     No molecules (visible or selected) currently have any data to display
   </p>
+  <!-- <span v-else-if="allTableData.length > 1">
+    <h6 v-for="tableData in allTableData" v-bind:key="tableData[0]" style="display: inline-block;">
+      <span class="badge bg-secondary">{{ tableData[0] }}</span>
+    </h6>
+  </span> -->
+
+  <!-- class="btn-group btn-group-sm mb-3" -->
+  <!-- style="flex-wrap: wrap" -->
+  <!-- role="group" -->
+
+  <!-- style="margin: 1px"
+  class="btn btn-primary btn-sm" -->
+  <p v-else-if="allTableData.length > 1" aria-label="Tables" class="mb-3">
+    Available tables:
+    <span v-for="(tableData, idx) in allTableData" v-bind:key="tableData[0]">
+      <a href="#" @click.prevent="tocLinkScroll(tableData[0])">
+        {{ tableData[0] }}
+      </a><span v-if="(idx !== allTableData.length - 1)">, </span>
+    </span>
+  </p>
 
   <div v-for="tableData in allTableData" v-bind:key="tableData[0]">
     <Table
+      :id="slugify(tableData[0])"
       :tableData="tableData[1]"
       :caption="tableData[0]"
       :allowTextWrap="allowTextWrap(tableData[1])"
@@ -38,6 +59,7 @@ import {
   getNodeAncestory,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
+import { slugify } from "@/Core/Utils";
 
 /**
  * DataPanel component
@@ -183,6 +205,9 @@ export default class DataPanel extends Vue {
 
     // Simplify words some
     titles = titles.map((x) => {
+      if (x === undefined) {
+        return "";
+      }
       return x
         .replace("Protein", "Prot")
         .replace("Compound", "Cmpd")
@@ -225,6 +250,31 @@ export default class DataPanel extends Vue {
   rowClicked(row: { [key: string]: CellValue }) {
     selectProgramatically(row.id as string);
     // debugger;
+  }
+
+  /**
+   * Scrolls to the given table when a TOC link is clicked.
+   *
+   * @param {string} caption  The caption (title) of the table.
+   */
+  tocLinkScroll(caption: string) {
+    const id = this.slugify(caption);
+
+    // Smooth scroll. TODO: Tried to use this.$refs, but didn't work. Could revisit.
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  /**
+   * Slugifies the given string.
+   * 
+   * @param {string} text  The text to slugify.
+   * @returns {string}  The slugified text.
+   */
+  slugify(text: string): string {
+    return slugify(text);
   }
 }
 </script>

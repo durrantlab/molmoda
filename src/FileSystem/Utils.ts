@@ -1,5 +1,6 @@
-import { correctFilenameExt, getFileType, IFileInfo } from "./Types";
 import { fsApi } from "@/Api/FS";
+import { FileInfo } from "./FileInfo";
+import { getFileType } from "./Utils2";
 
 export interface IFileParts {
     basename: string;
@@ -27,27 +28,27 @@ function checkBadFileType(
 }
 
 /**
- * Convert a list of File objects to type IFileInfo.
+ * Convert a list of File objects to type FileInfo.
  *
  * @param {File[]}  fileList                 The list of files to convert, as
  *                                           loaded through <input>.
  * @param {boolean} isZip                    Whether the files are zip files.
  * @param {string[]} allAcceptableFileTypes  A list of acceptable file types.
- * @returns {Promise<IFileInfo>} A promise that resolves to the converted file.
+ * @returns {Promise<FileInfo>} A promise that resolves to the converted file.
  */
 export function filesToFileInfos(
     fileList: File[],
     isZip: boolean,
     allAcceptableFileTypes: string[]
-): Promise<(IFileInfo | string)[]> {
+): Promise<(FileInfo | string)[]> {
     // Type is file extension, uppercase.
 
-    const fileInfoBatchesPromises: Promise<IFileInfo[] | string>[] = [];
+    const fileInfoBatchesPromises: Promise<FileInfo[] | string>[] = [];
     for (const file of fileList) {
         const type = getFileType(file.name);
         const treatAsZip = isZip || type == "BIOTITE" || type == "ZIP";
 
-        const fileInfoBatchPromise: Promise<IFileInfo[] | string> = new Promise(
+        const fileInfoBatchPromise: Promise<FileInfo[] | string> = new Promise(
             (resolve, reject) => {
                 const reader = new FileReader();
 
@@ -64,16 +65,16 @@ export function filesToFileInfos(
 
                     const fileReader = e.target as FileReader;
                     let fileContents = fileReader.result as string;
-                    // let fileContentsPromise: Promise<IFileInfo[]>;
+                    // let fileContentsPromise: Promise<FileInfo[]>;
                     if (!treatAsZip) {
                         fileContents = fileContents.replace(/\r\n/g, "\n");
                         resolve([
-                            {
+                            new FileInfo({
                                 name: file.name,
                                 // size: file.size,
                                 contents: fileContents,
                                 // type: type,
-                            } as IFileInfo,
+                            }),
                         ]);
                     } else {
                         // It's a zip file (or a biotite file).
@@ -98,8 +99,8 @@ export function filesToFileInfos(
 
     // Flatten the array of arrays of files into a single array of files.
     return Promise.all(fileInfoBatchesPromises).then(
-        (fileInfoBatches: (IFileInfo[] | string)[]) => {
-            const flattenedFileInfos: (IFileInfo | string)[] = [];
+        (fileInfoBatches: (FileInfo[] | string)[]) => {
+            const flattenedFileInfos: (FileInfo | string)[] = [];
             for (const fileInfoBatch of fileInfoBatches) {
                 if (typeof fileInfoBatch === "string") {
                     // An error message. Add without modification.
@@ -132,4 +133,28 @@ export function filesToFileInfos(
             return flattenedFileInfos;
         }
     );
+}
+
+
+
+
+/**
+ * Given a filename and format type, update the filename so the extension
+ * reflects the correct type.
+ *
+ * @param  {string} filename The filename to update.
+ * @param  {string} type     The type to update to.
+ * @returns {string} . The updated filename.
+ */
+export function correctFilenameExt(filename: string, type: string): string {
+    const typeByFilename = getFileType(filename);
+
+    // If the extension is already correct, return the filename
+    if (typeByFilename === type.toUpperCase()) {
+        return filename;
+    }
+
+    // If the extension is not correct, return the filename with the correct
+    // extension
+    return filename + "." + type.toLowerCase();
 }

@@ -4,7 +4,7 @@
 
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { getFileType } from "@/FileSystem/Types";
+import { getFileType } from "@/FileSystem/Utils2";
 import {
     EndpointResponseStatus,
     IEndpointResponse,
@@ -59,6 +59,14 @@ export abstract class JobManagerParent {
                         if (jobStatus.outputFiles !== undefined) {
                             for (const outputFile of jobStatus.outputFiles) {
                                 // There are output files to load.
+
+                                // Check to make sure it's of type FileInfo.
+                                if (!outputFile.name && !outputFile.contents) {
+                                    throw new Error(
+                                        "Output file is not of type FileInfo. Good to check plugins. If a plugin doesn't return a new molecule, just resolve nothing."
+                                    );
+                                }
+
                                 const ext = getFileType(outputFile);
 
                                 // Is it some sort of loadable file?

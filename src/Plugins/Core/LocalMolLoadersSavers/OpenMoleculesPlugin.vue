@@ -31,11 +31,11 @@ import {
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { IFileInfo } from "@/FileSystem/Types";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * OpenMoleculesPlugin
@@ -55,7 +55,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
       url: "http://durrantlab.com/",
     },
   ];
-  filesToLoad: IFileInfo[] = [];
+  filesToLoad: FileInfo[] = [];
   pluginId = "openmolecules";
 
   userArgs: FormElement[] = [];
@@ -66,9 +66,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
   /**
    * Runs when the files are loaded.
    *
-   * @param {IFileInfo[]} files  The files that were loaded.
+   * @param {FileInfo[]} files  The files that were loaded.
    */
-  onFilesLoaded(files: IFileInfo[]) {
+  onFilesLoaded(files: FileInfo[]) {
     this.filesToLoad = files;
   }
 
@@ -104,7 +104,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         false,
         this.accept.split(",").map((a) => a.toUpperCase().substring(1))
       )
-        .then((fileInfos: (IFileInfo | string)[]) => {
+        .then((fileInfos: (FileInfo | string)[]) => {
           const errorMsgs = fileInfos.filter((a) => typeof a === "string");
 
           if (errorMsgs.length > 0) {
@@ -113,7 +113,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
           const toLoad = fileInfos.filter(
             (a) => typeof a !== "string"
-          ) as IFileInfo[];
+          ) as FileInfo[];
 
           this.filesToLoad = toLoad;
           this.onPopupDone();
@@ -131,11 +131,11 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IFileInfo} fileInfo  Information about the molecules to save.
+   * @param {FileInfo} fileInfo  Information about the molecules to save.
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJobInBrowser(fileInfo: IFileInfo): RunJobReturn {
+  runJobInBrowser(fileInfo: FileInfo): RunJobReturn {
     // It's not a biotite file (e.g., a PDB file).
     return fileInfo;
   }

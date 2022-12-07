@@ -34,6 +34,9 @@ export const ionsStyle: IStyle[] = [_sphereStyle];
 
 export const solventStyle: IStyle[] = [_stickStyle];
 
+// Empty on purpose to satisfy typescript
+export const shapeStyle: IStyle[] = [];
+
 export const defaultStyles: { [key in MolType]: IStyle[] } = {
     [MolType.Protein]: proteinStyle,
     [MolType.Nucleic]: nucleicStyle,
@@ -42,4 +45,5 @@ export const defaultStyles: { [key in MolType]: IStyle[] } = {
     [MolType.Lipid]: lipidStyle,
     [MolType.Ions]: ionsStyle,
     [MolType.Solvent]: solventStyle,
+    [MolType.Shape]: shapeStyle,
 };

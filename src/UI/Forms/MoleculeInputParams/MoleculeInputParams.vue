@@ -69,6 +69,11 @@ export default class MoleculeInputParams extends Vue {
     return this.$store.state.molecules;
   }
 
+  /**
+   * Gets the name of the molecule to use (e.g., "compounds" or "molecules").
+   *
+   * @returns {string}  The name of the molecule to use.
+   */
   get molNameToUse(): string {
     if (this.val.considerCompounds && !this.val.considerProteins) {
       return "compounds";

@@ -52,6 +52,11 @@ module.exports = defineConfig({
                         from: "node_modules/@rdkit/rdkit/dist",
                         to: "js/rdkitjs",
                     },
+                    // Below is for webworker
+                    {
+                        from: "node_modules/@rdkit/rdkit/dist/RDKit_minimal.wasm",
+                        to: "js/RDKit_minimal.wasm",
+                    },
                 ],
             })
         );

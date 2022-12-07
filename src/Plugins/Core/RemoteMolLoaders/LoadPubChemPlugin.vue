@@ -54,7 +54,8 @@ import {
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
-import { correctFilenameExt, IFileInfo } from "@/FileSystem/Types";
+import { correctFilenameExt } from "@/FileSystem/Utils";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * LoadPubChemPlugin
@@ -148,7 +149,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     loadRemote(
       `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${this.molName}/synonyms/JSON`
     )
-      .then((fileInfo: IFileInfo) => {
+      .then((fileInfo: FileInfo) => {
         let cid = fileInfo.contents.InformationList.Information[0].CID;
         this.cid = cid;
 
@@ -176,7 +177,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     return loadRemote(
       `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
     )
-      .then((fileInfo: IFileInfo) => {
+      .then((fileInfo: FileInfo) => {
         fileInfo.name = correctFilenameExt(filename, "SDF");
         return fileInfo;
       })
@@ -227,7 +228,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
       loadRemote(
         `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=3d&response_type=display`
       )
-        .then((fileInfo: IFileInfo) => {
+        .then((fileInfo: FileInfo) => {
           fileInfo.name = correctFilenameExt(filename, "SDF");
           return fileInfo;
         })

@@ -7,9 +7,7 @@ import {
 import {
     IAtom,
     IMolContainer,
-    IMolContainerData,
     IStyle,
-    MolContainerDataType,
     MolType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";

@@ -39,8 +39,10 @@ export default class MolProps extends Vue {
    */
   @Watch("smiles")
   onSmiles() {
-    calcMolProps(this.smiles, this.molContainer)
-      .then((resp: ICalcMolProps) => {
+    calcMolProps([this.smiles], [this.molContainer])
+      .then((resps: ICalcMolProps[]) => {
+        // Only one molecule.
+        const resp = resps[0];
         this.lipinskiTableData = this.convertDescriptorsToTableData(
           resp.lipinski
         );

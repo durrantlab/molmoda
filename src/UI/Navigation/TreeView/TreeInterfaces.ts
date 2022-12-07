@@ -29,6 +29,7 @@ export enum MolType {
     Lipid = "lipid",
     Ions = "ions",
     Solvent = "solvent",
+    Shape = "shape",
 }
 
 export enum SelectedType {
@@ -38,21 +39,44 @@ export enum SelectedType {
 }
 
 export interface IMolContainer {
+    // Properties common to both non-terminal and terminal nodes.
     title: string; // appears in tree
-    model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
+    type?: MolType;
+    id?: string; // random id for nodes
+    parentId?: string; // parent id for tree
+    src?: string; // typically, the file name
     treeExpanded: boolean;
     visible: boolean;
     selected: SelectedType; // Not bool (string enum). "false" vs. false.
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
-    id?: string; // random id for terminal nodes
-    parentId?: string; // parent id for tree
-    src?: string; // typically, the file name
+    data?: { [key: string]: IMolContainerData }; // key is title of chart, etc.
+
+    // These are specifically for non-terminal nodes
     nodes?: IMolContainer[]; // Next level down in menu. So if molecule,
-    // then chain. If chain, then residue. Etc.
-    type?: MolType;
+
+    // These are specifically for terminal nodes
+    model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
     styles?: IStyle[]; // styles and selections for this node
-    data?: { [key: string]: IMolContainerData };  // key is title
+    shapes?: IShape[];
+}
+
+export enum ShapeType {
+    Sphere,
+    Prism,
+}
+
+export interface IShape {
+    type: ShapeType;
+    id: string;
+    center: [number, number, number];
+    alpha?: number;
+    color?: string;
+    radius?: number; // for sphere
+    dimensions?: [number, number, number]; // x/y/z size for prism
+
+    // TODO: For additional shapes that could be useful with binana.
+    // Cylinder, Arrow
 }
 
 export enum MolContainerDataType {

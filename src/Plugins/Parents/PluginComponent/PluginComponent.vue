@@ -26,6 +26,7 @@
       @onChange="onChange"
       :hideIfDisabled="hideIfDisabled"
     ></FormFull>
+    <slot name="afterForm"></slot>
   </Popup>
 </template>
 
@@ -47,7 +48,7 @@ import {
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { UserInputsMixin } from "./Mixins/UserInputsMixin";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * PopupOptionalPlugin component
@@ -148,20 +149,19 @@ export default class PluginComponent extends mixins(
     // If one of the user arguments is of type MoleculeInputParams, replace
     // it with IFileInfo objects.
     let combineIdxs: number[] = [];
-    let combinePromises: Promise<IFileInfo[][] | IFileInfo[]>[] = [];
+    let combinePromises: Promise<FileInfo[][] | FileInfo[]>[] = [];
     for (const idx in userArgs) {
       const param = userArgs[idx];
       if (param.val.molsToConsider) {
         combineIdxs.push(parseInt(idx));
-        debugger;
         combinePromises.push(
-          param.val.getFileInfos()
+          param.val.getProtCompounds()
         );
       }
     }
 
     Promise.all(combinePromises)
-      .then((combinedMols: (IFileInfo[] | IFileInfo[][])[]) => {
+      .then((combinedMols: (FileInfo[] | FileInfo[][])[]) => {
         for (let idx = 0; idx < combineIdxs.length; idx++) {
           let i = combineIdxs[idx];
           userArgs[i].val = combinedMols[idx];

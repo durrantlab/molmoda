@@ -184,4 +184,17 @@ body.waiting * {
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
+
+// https://stackoverflow.com/questions/7855590/preventing-scroll-bars-from-being-hidden-for-macos-trackpad-users-in-webkit-blin
+
+// ::-webkit-scrollbar-x {
+//     -webkit-appearance: none;
+//     width: 0; /* Remove vertical space */
+//     height: 8px;
+// }
+// ::-webkit-scrollbar-thumb {
+//     border-radius: 4px;
+//     background-color: rgba(0,0,0,.5);
+//     box-shadow: 0 0 1px rgba(255,255,255,.5);
+// }
 </style>

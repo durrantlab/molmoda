@@ -2,16 +2,26 @@
   <PluginComponent
     :userArgs="userArgs"
     v-model="open"
-    title="Load Molecule from PubChem"
+    title="Calculate Molecular Properties"
     :intro="intro"
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
-  ></PluginComponent>
+    actionBtnTxt="Calculate"
+  >
+    <template #afterForm>
+      <Alert type="info"
+        >Once calculated, the molecular properties will appear in the Data tab{{
+          tableNames
+        }}</Alert
+      >
+    </template>
+  </PluginComponent>
 </template>
 
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
+import { checkAnyMolLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -24,8 +34,14 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
+import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
-import { calcMolProps, ICalcMolProps } from "./CalcMolProps";
+import {
+  calcMolProps,
+  countsTitle,
+  lipinskiTitle,
+  otherTitle,
+} from "./CalcMolProps";
 
 /**
  * TestPlugin
@@ -33,6 +49,7 @@ import { calcMolProps, ICalcMolProps } from "./CalcMolProps";
 @Options({
   components: {
     PluginComponent,
+    Alert,
   },
 })
 export default class MolPropsPlugin extends PluginParentClass {
@@ -46,7 +63,7 @@ export default class MolPropsPlugin extends PluginParentClass {
   ];
   pluginId = "molprops";
 
-  intro = `This is a <b>test</b> component.`;
+  intro = `This plugin identifies small-molecule compounds and calculates their molecular properties.`;
 
   userArgs: FormElement[] = [
     {
@@ -55,10 +72,24 @@ export default class MolPropsPlugin extends PluginParentClass {
       val: new MoleculeInput({
         compoundFormat: "can",
         considerProteins: false,
+        batchSize: null,
       }),
     } as IFormMoleculeInputParams,
   ];
 
+  /**
+   * Get the names of the tables that will be created
+   *
+   * @returns {string} The names of the tables that will be created
+   */
+  get tableNames(): string {
+    return `, in tables named "${lipinskiTitle}," "${countsTitle}," and "${otherTitle}."`;
+  }
+
+  /**
+   * Runs before the popup opens. Starts importing the modules needed for the
+   * plugin.
+   */
   onBeforePopupOpen() {
     // You're probably going to need open babel and rdkitjs
     dynamicImports.rdkitjs.module;
@@ -71,14 +102,9 @@ export default class MolPropsPlugin extends PluginParentClass {
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
-  // checkPluginAllowed(): string | null {
-  //   return checkAnyMolSelected(
-  //     this.$store.state.molecules.filter(
-  //       (m: IMolContainer) => m.type === MolType.Compound
-  //     ),
-  //     "compound"
-  //   );
-  // }
+  checkPluginAllowed(): string | null {
+    return checkAnyMolLoaded();
+  }
 
   /**
    * Runs when the user presses the action button and the popup closes.
@@ -86,24 +112,39 @@ export default class MolPropsPlugin extends PluginParentClass {
    * @param {IUserArg[]} userArgs  The user arguments.
    */
   onPopupDone(userArgs: IUserArg[]) {
-    const compounds = this.getArg(userArgs, "makemolinputparams");
-    this.submitJobs(compounds); // , 10000);
+    const compoundBatches: FileInfo[][] = this.getArg(
+      userArgs,
+      "makemolinputparams"
+    );
+    this.submitJobs(compoundBatches); // , 10000);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
-   * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
+   * @param {FileInfo[]} compoundBatch  The user arguments to pass to the "executable."
+   *                             Contains compound information.
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJobInBrowser(fileInfo: IFileInfo): Promise<undefined> {
-    return calcMolProps(fileInfo.contents, fileInfo.molContainer).then(
-      (molProps: ICalcMolProps) => {
-        // debugger
-        return undefined;
-      }
+  runJobInBrowser(compoundBatch: FileInfo[]): Promise<undefined | void> {
+    // Convert all the fileInfos to the can format.
+    const canPromises = compoundBatch.map((fileInfo) =>
+      fileInfo.convertFromPDBTxt("can")
     );
+
+    return Promise.all(canPromises)
+      .then((fileInfos: FileInfo[]) => {
+        calcMolProps(
+          fileInfos.map((f) => f.contents),
+          fileInfos.map((f) => f.molContainer)
+        );
+        return;
+      })
+      .catch((err: any): void => {
+        console.log(err);
+        return;
+      });
   }
 }
 </script>

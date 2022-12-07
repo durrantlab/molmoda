@@ -1,21 +1,21 @@
-import { IFileInfo } from "@/FileSystem/Types";
 import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
 import { store } from "@/Store";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { parseMolecularModelFromText } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * Uses OpenBabel to parse the a molecular-model file.
  *
- * @param  {IFileInfo}   fileInfo    The file to parse.
+ * @param  {FileInfo}   fileInfo    The file to parse.
  * @param  {IFormatInfo} formatInfo  The format of the file.
  * @returns {Promise<void | IMolContainer[]>}  A promise that resolves when the
  *    file is parsed. The promise resolves to an array of IMolContainer objects,
  *    one for each frame. Can also resolve void.
  */
 export function parseUsingOpenBabel(
-    fileInfo: IFileInfo,
+    fileInfo: FileInfo,
     formatInfo: IFormatInfo
 ): Promise<void | IMolContainer[]> {
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";

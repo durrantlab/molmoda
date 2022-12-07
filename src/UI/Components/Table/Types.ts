@@ -2,6 +2,7 @@ export interface IHeader {
     text: string;
     note?: string;
     width?: number;
+    sortable?: boolean;
     showColumnFunc?: (tableData: ITableData) => boolean;
 }
 

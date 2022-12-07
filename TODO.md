@@ -67,29 +67,50 @@ Tutorial based on tests (first one).
 
 Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
-Add graphs to data too. Plotly? And legend to scroll if ther eis more than one
-table. Also, you should be able to download charts (csv, xlsx) and graphs (png,
-svg, xlsx, csv).
+Add graphs to data too. Plotly? Also, you should be able to download graphs
+(png, svg, xlsx, csv). And text too. And should auto keep track of how the
+molecule was generated.
+
+Test elements could be restructured as objects. Would be better to put functions
+on each one.
+
+Integrate Yuri OpenBabel. See if you can get it to work in web worker.
+
+Need to make shapes (cubes and spheres)
+
+When adding new molecule, make sure filename is not already in list. Append (#).
+
+Multiframe files, still put under one molecule. And if more than a fixed number,
+autohide all but first few. Can use merge feature if needed.
+
+# DONE
+
+And legend to scroll if ther eis more than one table.
+
+You should be able to download charts (CSV, XLSX)
 
 You need a sortable table (optional).
+
+Table needs horizontal scroll bar always visible (if goes to right)?
+
+Need functions to batch the data. Test using molprop calculator.
+
+Message at end of Mol Prop plugin letting people know properties will appear in
+data tab. This kind of message needs to be in UserArgs, maybe? Might be
+overkill.
 
 Need to use data system for MolProp instead of current system. Pretty much done,
 but need to check if data already present instead of recalaculting (essentially
 use mol data as cache).
 
-Table needs horizontal scroll bar always visible (if goes to right)?
+What about attaching a convert function to IFileInfo? Just something to think
+about.
 
 Shouldn't convert formats (e.g., to get CAN for prop calc) automatically so
 availble onPopupDone. This shoul dbe in runjob. Because sometimes might want to
 run conversion on remote server too. Maybe return object (from class) instead of
 JSON? And it has method to do conversion right in jobs.
     It's a class now, but it's tricky. You can do conversion in each job, but molecules need to be collated before, in the browser.
-
-Message at end of Mol Prop plugin letting people know properties will appear in
-data tab. This kind of message needs to be in UserArgs, maybe? Might be
-overkill.
-
-# DONE
 
 Font sizes in Jobs and Data are different. Make appearance consistent.
 

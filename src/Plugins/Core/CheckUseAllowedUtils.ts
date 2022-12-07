@@ -12,6 +12,8 @@ import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
  * @param  {IMolContainer[]} [molContainers]  The molecule containers to
  *                                            consider. Ultimately defaults to
  *                                            all molecules if not specified.
+ * @param  {string}           noun            The noun to use in the error
+ *                                            message.
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
@@ -105,7 +107,7 @@ export function checkAnyMolLoaded(
     }
 
     if ((molContainers as IMolContainer[]).length === 0) {
-        return "Nothing to save or export (empty project). Try adding molecules first.";
+        return "No molecules are currently loaded (empty project). Try adding molecules first.";
     }
 
     return null;

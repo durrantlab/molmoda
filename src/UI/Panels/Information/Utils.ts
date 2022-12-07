@@ -1,4 +1,5 @@
 import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     IMolContainer,
     MolType,
@@ -6,6 +7,13 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 
+/**
+ * Gets the first of all the selected molecules.
+ *
+ * @param  {IMolContainer[]} molecules  The molecules to consider.
+ * @returns {IMolContainer | null}  The first selected molecule, or null if none
+ *    are selected.
+ */
 export function getFirstSelected(
     molecules: IMolContainer[]
 ): IMolContainer | null {
@@ -23,18 +31,18 @@ export function getFirstSelected(
 }
 
 /**
- * Get the SMILES string of the currently selected molecule.
+ * Get the SMILES string of the provided IMolContainer.
  *
- * @param  {IMolContainer[]} molecules  The molecules.
+ * @param  {IMolContainer} molContainer  The IMolContainer.
  * @returns {Promise<string>}  A promise that resolves to the SMILES string.
  */
 export function getSmilesOfMolContainer(
-    firstSelected: IMolContainer
+    molContainer: IMolContainer
 ): Promise<string> {
     // Get it as a smiles string
-    return convertMolContainers([firstSelected], "can", false)
-        .then((cans: string[]) => {
-            return cans[0].trim();
+    return convertMolContainers([molContainer], "can", false)
+        .then((fileInfos: FileInfo[]) => {
+            return fileInfos[0].contents.trim();
         })
         .catch((error) => {
             console.error(error);

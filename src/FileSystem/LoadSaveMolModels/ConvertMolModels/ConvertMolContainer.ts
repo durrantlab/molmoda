@@ -1,7 +1,5 @@
-import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
 
 // function bondOrdersAssigned(molContainers: IMolContainer[]): boolean {
@@ -26,17 +24,15 @@ import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
  *                                          convert to.
  * @param  {boolean}         [merge=false]  Whether to merge the models into a
  *                                          single PDB string.
- * @returns {string[]} The text-formatted (e.g., PDB, MOL2) strings.
+ * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
  */
 export function convertMolContainers(
     molContainers: IMolContainer[],
     targetExt: string,
     merge = true
-): Promise<string[]> {
+): Promise<FileInfo[]> {
     targetExt = targetExt.toLowerCase();
-    const formatInf = getFormatInfoGivenType(targetExt) as IFormatInfo;
     let molTxts: string[] = [];
-    const intermediaryExt = "pdb";
 
     // let calculateBondOrders = false;
     // if (formatInf.hasBondOrders === true) {
@@ -63,23 +59,17 @@ export function convertMolContainers(
     // Use PDB as intermediary. First, convert the mol containers to a PDB
     // string.
     molTxts = convertMolContainersToPDB(molContainers, merge);
-    // intermediaryExt = "pdb";
 
-    // If PDB is destination format, just return that
-    if (formatInf.primaryExt === "pdb") {
-        return Promise.resolve(molTxts);
-    }
-    // }
-
-    // Since imtermediary is not the destination format, convert to the required format.
-    const convertedTxtPromises = molTxts.map((molTxt) =>
-        convertMolFormatOpenBabel(
-            { name: "tmp." + intermediaryExt, contents: molTxt } as IFileInfo,
-            targetExt
-        )
+    const fileInfos = molTxts.map((molTxt: string) =>
+        new FileInfo({
+            name: "tmp.pdb",
+            contents: molTxt
+        })
     );
 
-    return Promise.all(convertedTxtPromises).then((convertedTxts) => {
-        return convertedTxts;
-    });
+    const promises = fileInfos.map((fileInfo: FileInfo) =>
+        fileInfo.convertFromPDBTxt(targetExt)
+    );
+
+    return Promise.all(promises);
 }

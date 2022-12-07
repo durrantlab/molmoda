@@ -1,7 +1,6 @@
 // Entry point for all the save-molecule functions except biotite, which should
 // be accessed directly.
 
-import { IFileInfo } from "@/FileSystem/Types";
 import { compileByMolecule } from "./CompileByMolecule";
 import { getConvertedTxts, getPrimaryExt, saveTxtFiles } from "./Utils";
 import {
@@ -9,6 +8,7 @@ import {
     ICompiledNodes,
     ICmpdNonCmpdFileInfos,
 } from "./Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * Compiles (organizes) all the molecules, separating compounds if appropriate.
@@ -54,7 +54,7 @@ export function convertCompiledMolModelsToIFileInfos(
         );
 
     // Now do the compounds.
-    let compoundPromises: Promise<IFileInfo[]>[] = [];
+    let compoundPromises: Promise<FileInfo[]>[] = [];
     if (compiledNodes.compoundsNodes) {
         compoundPromises = compiledNodes.compoundsNodes.map((node) =>
             // Note that compounds never merged
@@ -67,8 +67,8 @@ export function convertCompiledMolModelsToIFileInfos(
 
     return Promise.all([allCompoundPromises, allNonCompoundPromises]).then(
         (fileInfos: any[]) => {
-            const compounds = fileInfos[0] as IFileInfo[][];
-            const nonCompounds = fileInfos[1] as IFileInfo[][];
+            const compounds = fileInfos[0] as FileInfo[][];
+            const nonCompounds = fileInfos[1] as FileInfo[][];
 
             const compoundsFlat = compounds.reduce(
                 (acc, val) => acc.concat(val),

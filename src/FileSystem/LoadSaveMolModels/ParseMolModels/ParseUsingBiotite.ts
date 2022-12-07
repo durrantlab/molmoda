@@ -1,4 +1,4 @@
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { store } from "@/Store";
 import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -8,13 +8,13 @@ import { atomsToModels, biotiteStateKeysToRetain } from "../Utils";
 /**
  * Uses biotite to parse the a molecular-model file. For biotite-native files.
  *
- * @param  {IFileInfo} fileInfo  The file to parse.
+ * @param  {FileInfo} fileInfo  The file to parse.
  * @returns {Promise<void | IMolContainer[]>}  A promise that resolves when the
  *    file is parsed. The promise resolves to an array of IMolContainer objects,
  *    one for each frame. Can also resolve void.
  */
 export function parseUsingBiotite(
-    fileInfo: IFileInfo
+    fileInfo: FileInfo
 ): Promise<void | IMolContainer[]> {
     return jsonStrToState(fileInfo.contents)
         .then((stateFromJson) => {

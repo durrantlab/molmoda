@@ -1,4 +1,4 @@
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 export enum EndpointResponseStatus {
     Success = "success",
@@ -21,7 +21,7 @@ export interface IJobStatusInfo {
     endTime: number;
     numProcessors?: number;
     commandName?: string;
-    outputFiles?: IFileInfo[];
+    outputFiles?: FileInfo[];
 }
 
 export enum JobStatus {

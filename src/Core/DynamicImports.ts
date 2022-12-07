@@ -245,46 +245,15 @@ export const dynamicImports = {
             license: Licenses.GPL2,
         },
 
-        get module(): Promise<any> {
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+         get module(): Promise<any> {
             // NOTE: Unfortunately, the only way I could get this to work was by
             // attaching it to the main window. A promise that resolves the
             // module is not effective for some reason.
-
-            const module = {
-                arguments: [], // args,
-                // fs: BFS,
-                logReadFiles: true,
-                noInitialRun: true,
-                locateFile: (path: string) => {
-                    return "js/obabel-wasm/" + path;
-                },
-                print: (text: string) => {
-                    debugger;
-                    // txtBuf += text + "\n";
-                },
-                printErr: (text: string) => {
-                    debugger;
-                    // txtBuf += text + "\n";
-                },
-                preRun: [
-                    () => {
-                        // console.log("preRun");
-                        // console.log(WEBOBABEL_Module.FS);
-                    },
-                ],
-                onRuntimeInitialized: () => {
-                    // console.log("onRuntimeInitialized");
-                },
-                postRun: [
-                    () => {
-                        // Note: This runs when Wasm loaded and initialized, not after program
-                        // executed.
-                        // console.log("postRun");
-                        // this.inputs.push({ q: args, re: txtBuf });
-                        // args = [];
-                    },
-                ],
-            };
 
             return import(
                 /* webpackChunkName: "obabelwasm" */
@@ -293,14 +262,12 @@ export const dynamicImports = {
                 // @ts-ignore
                 "@/libs/ToCopy/obabel-wasm/obabel"
             ).then((obabelModule) => {
-                return obabelModule.default(module);
-            })
-            .then((obabelObj: any) => {
-                return obabelObj.ready;
-            })
-            .then((obabelObj: any) => {
-                return obabelObj;
+                return obabelModule.default; // (module);
             });
+            // .then((obabelObj: any) => {
+            //     debugger;
+            //     return obabelObj.ready;
+            // });
 
             // return addJsToHeader(
             //     "obabelwasm",
@@ -440,15 +407,44 @@ export const dynamicImports = {
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
-            return addJsToHeader(
-                "rdkitjs",
-                "js/rdkitjs/RDKit_minimal.js",
-                () => {
-                    return (window as any).initRDKitModule().catch(() => {
-                        // handle loading errors here...
-                    });
-                }
-            );
+            // Note that this is for running rdkitjs in the main thread (not web
+            // worker). After refactoring, it actually always runs in a
+            // webworker, so this never gets used. But I'm leaving it here
+            // because it's a convenient way to register the library with the
+            // credits system.
+
+            return Promise.resolve();
+
+            // return addJsToHeader(
+            //     "rdkitjs",
+            //     "js/rdkitjs/RDKit_minimal.js",
+            //     () => {
+            //         return (window as any).initRDKitModule().catch(() => {
+            //             // handle loading errors here...
+            //         });
+            //     }
+            // );
+        },
+    },
+    sheetsjs: {
+        credit: {
+            name: "SheetJS Community Edition",
+            url: "https://git.sheetjs.com/sheetjs/sheetjs",
+            license: Licenses.APACHE2,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "sheetsjs" */
+                /* webpackMode: "lazy" */
+                "xlsx"
+            ).then((sheetsjs) => {
+                return sheetsjs;
+            });
         },
     },
 };

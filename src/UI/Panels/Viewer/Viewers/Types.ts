@@ -5,3 +5,4 @@ export type SurfaceType = any;
 export type ViewerType = any;
 export type LabelType = any;
 export type StyleType = any;
+export type ShapeType = any;

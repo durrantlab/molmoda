@@ -12,6 +12,9 @@ import { faArrowsToEye } from "@fortawesome/free-solid-svg-icons/faArrowsToEye";
 import { faClone } from "@fortawesome/free-regular-svg-icons/faClone";
 import { faPencil } from "@fortawesome/free-solid-svg-icons/faPencil";
 import { faRectangleXmark } from "@fortawesome/free-regular-svg-icons/faRectangleXmark";
+import { faSort } from "@fortawesome/free-solid-svg-icons/faSort";
+import { faSortDown } from "@fortawesome/free-solid-svg-icons/faSortDown";
+import { faSortUp } from "@fortawesome/free-solid-svg-icons/faSortUp";
 
 /**
  * Load the font awesome icons.
@@ -30,4 +33,7 @@ export function loadFontAwesomeFonts() {
     library.add(faPencil);
     library.add(faRectangleXmark);
     // dom.watch();
+    library.add(faSort);
+    library.add(faSortDown);
+    library.add(faSortUp);
 }

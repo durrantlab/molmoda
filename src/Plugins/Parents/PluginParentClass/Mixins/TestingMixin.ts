@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/check-tag-names */
-import { IFileInfo } from "@/FileSystem/Types";
 import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import {
     ITest,
@@ -9,6 +8,7 @@ import {
 import { Vue } from "vue-class-component";
 import * as api from "@/Api";
 import { loadRemote } from "@/Plugins/Core/RemoteMolLoaders/Utils";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * TestingMixin
@@ -142,7 +142,7 @@ export class TestingMixin extends Vue {
     testLoadExampleProtein(): ITestCommand {
         if (!this.testProteinLoadRequested) {
             loadRemote("4WP4.pdb", false)
-                .then((fileInfo: IFileInfo) => {
+                .then((fileInfo: FileInfo) => {
                     parseMoleculeFile(fileInfo);
                     return;
                 })

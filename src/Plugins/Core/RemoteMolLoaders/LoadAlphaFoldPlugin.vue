@@ -23,7 +23,7 @@ import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentC
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
-import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * LoadAlphaFoldPlugin
@@ -96,7 +96,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     return loadRemote(
       `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
     )
-      .then((fileInfo: IFileInfo) => {
+      .then((fileInfo: FileInfo) => {
         let pdbUrl = (fileInfo.contents[0] as any)["pdbUrl"]; // TODO: When would there be more than one entry?
         if (pdbUrl) {
           // Load the PDB file.
@@ -105,7 +105,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         // Throw error
         throw new Error("No PDB file found.");
       })
-      .then((fileInf: IFileInfo): any => {
+      .then((fileInf: FileInfo): any => {
         return fileInf;
       })
       .catch((err: string) => {

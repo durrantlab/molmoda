@@ -3,7 +3,12 @@
 import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { createStore, Store } from "vuex";
 import { allHooks } from "@/Api/Hooks";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import {
+    IMolContainer,
+    MolType,
+    SelectedType,
+    ShapeType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { setStoreIsDirty } from "./LoadAndSaveStore";
 import { ILog } from "@/UI/Panels/Log/LogUtils";
 import { setupExternalStoreAccess } from "./StoreExternalAccess";
@@ -12,7 +17,7 @@ import { NameValPair } from "./StoreInterfaces";
 const _commonMutations = {
     /**
      * Sets a state variable.
-     * 
+     *
      * @param {any}         state    The state.
      * @param {NameValPair} payload  The name and value to set.
      */
@@ -26,7 +31,7 @@ const _commonMutations = {
 
     /**
      * Adds a value to a list in the state.
-     * 
+     *
      * @param {any}         state    The state.
      * @param {NameValPair} payload  The name and value to push to the list.
      */
@@ -40,7 +45,7 @@ const _commonMutations = {
 
     /**
      * Adds a property (value) to an object in the state.
-     * 
+     *
      * @param {any}         state    The state.
      * @param {NameValPair} payload  The name and property (value) to add.
      */
@@ -53,7 +58,7 @@ const _commonMutations = {
 
     /**
      * Updates the molecules in the state.
-     * 
+     *
      * @param {any}             state  The state.
      * @param {IMolContainer[]} mols   The updated molecules.
      */
@@ -90,16 +95,56 @@ export let store: any;
 
 /**
  * Sets up the vuex store.
- * 
+ *
  * @returns {Store} The vuex store.
  */
 export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
-            "molecules": [] as IMolContainer[],
-            "log": [] as ILog[],
-            "updateZoom": true,
-            "molViewer": "3dmol"
+            molecules: [
+                {
+                    title: "Shape group",
+                    id: "test",
+                    treeExpanded: true,
+                    visible: true,
+                    selected: SelectedType.False,
+                    focused: true,
+                    viewerDirty: true,
+                    nodes: [
+                        {
+                            title: "Shapes",
+                            id: "shapes",
+                            treeExpanded: true,
+                            visible: true,
+                            selected: SelectedType.False,
+                            focused: true,
+                            viewerDirty: true,
+                            nodes: [
+                                {
+                                    title: "Shapes",
+                                    id: "shapes",
+                                    treeExpanded: true,
+                                    visible: true,
+                                    selected: SelectedType.False,
+                                    focused: true,
+                                    viewerDirty: true,
+                                    shapes: [
+                                        {
+                                            type: ShapeType.Sphere,
+                                            id: "My shape",
+                                            center: [0, 0, 0],
+                                            radius: 10,
+                                        }
+                                    ]
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ] as IMolContainer[],
+            log: [] as ILog[],
+            updateZoom: true,
+            molViewer: "3dmol",
         },
         getters: {},
         mutations: {

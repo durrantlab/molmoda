@@ -1,5 +1,6 @@
 import { dynamicImports } from "@/Core/DynamicImports";
 import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     IStyle,
     IMolContainer,
@@ -331,8 +332,8 @@ export class ViewerNGL extends ViewerParent {
             "pdb",
             true
         )
-            .then((pdbTxt: string[]) => {
-                const stringBlob = new Blob([pdbTxt[0]], {
+            .then((fileInfoPDB: FileInfo[]) => {
+                const stringBlob = new Blob([fileInfoPDB[0].contents], {
                     type: "text/plain",
                 });
 

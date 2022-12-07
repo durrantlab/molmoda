@@ -1,16 +1,19 @@
 import { dynamicImports } from "@/Core/DynamicImports";
-import { getFileType, IFileInfo } from "./Types";
+import { IFileInfo } from "./Types";
+import { getFileType } from "./Utils2";
+
+type FileInfo = IFileInfo;  // To avoid circular dependency.
 
 /**
  * Converts a molecule to another format using OpenBabel.
  *
- * @param  {IFileInfo} srcFileInfo  The information about the file to convert.
+ * @param  {FileInfo} srcFileInfo  The information about the file to convert.
  * @param  {string} targetFormat    The target extension.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */
 export function convertMolFormatOpenBabel(
-    srcFileInfo: IFileInfo,
+    srcFileInfo: FileInfo,
     targetFormat: string
 ): Promise<string> {
     // Confirm ext is supported
