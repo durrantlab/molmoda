@@ -35,6 +35,8 @@ export function copyObjRecursively(
             if (key === "model") {
                 const modelPromise = mdlFunc(oldNode, origNode);
                 promises.push(modelPromise);
+            } else if (key === "shape") { 
+                origNode[key] = JSON.parse(JSON.stringify(val));
             } else if (Array.isArray(val)) {
                 origNode[key] = val.map((item: any) => {
                     return _copyObjRecursively(item, mdlFunc);

@@ -1,19 +1,27 @@
 import {
     IStyle,
     IMolContainer,
-    ShapeType,
     IShape,
+    ShapeType,
+    ISphere,
+    IBox,
+    IArrow,
+    ICylinder,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { GLModel } from "../GLModelType";
 import {
-    ModelType,
-    SurfaceType,
-    StyleType,
-    LabelType,
-    ViewerType,
+    GenericModelType,
+    GenericSurfaceType,
+    GenericStyleType,
+    GenericLabelType,
+    GenericViewerType,
+    GenericShapeType,
 } from "./Types";
 import * as api from "@/Api/";
-import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+    getAllNodesFlattened,
+    getNodeOfId,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
@@ -33,14 +41,14 @@ export function setLoadViewerLibPromise(val: Promise<any>) {
  */
 export abstract class ViewerParent {
     // Keep track of which molecules have been loaded.
-    molCache: { [id: string]: ModelType } = {};
+    molCache: { [id: string]: GenericModelType } = {};
 
     // Keep track of the surfaces as well. Associating them with molecule ids.
     // Note that a given molecule can have multiple surfaces.
-    surfaces: { [id: string]: SurfaceType[] } = {};
+    surfaces: { [id: string]: GenericSurfaceType[] } = {};
 
     // Keep track of the shapes.
-    shapes: { [id: string]: ShapeType[] } = {};
+    shapeCache: { [id: string]: GenericShapeType } = {};
 
     /**
      * Removes a model from the viewer.
@@ -53,7 +61,7 @@ export abstract class ViewerParent {
     /**
      * Removes a shape from the viewer.
      *
-     * @param  {string} id  The id of the model to remove.
+     * @param  {string} id  The id of the shape to remove.
      * @returns {void}
      */
     abstract _removeShape(id: string): void;
@@ -61,38 +69,47 @@ export abstract class ViewerParent {
     /**
      * Removes multiple objects (models or shapes).
      *
-     * @param {string[]} ids  The ids of the models to remove.
+     * @param {string[]} remainingMolIds  The ids of the models that remain.
      */
-    removeObjects(ids: string[]) {
-        // TODO: Currently model only here. Do shape too.
-
+    removeObjects(remainingMolIds: string[]) {
         // Find the ids that are still present in the cache. These should be
         // removed.
-        const idsOfMolsToDelete: string[] = [];
+        const idsOfMolsOrShapesToDelete: string[] = [];
         for (const molCacheId in this.molCache) {
-            if (ids.indexOf(molCacheId) === -1) {
+            if (remainingMolIds.indexOf(molCacheId) === -1) {
                 // There's an id in the cache that isn't in the tree.
-                idsOfMolsToDelete.push(molCacheId);
+                idsOfMolsOrShapesToDelete.push(molCacheId);
+            }
+        }
+        for (const shapeCacheId in this.shapeCache) {
+            if (remainingMolIds.indexOf(shapeCacheId) === -1) {
+                // There's an id in the cache that isn't in the tree.
+                idsOfMolsOrShapesToDelete.push(shapeCacheId);
             }
         }
 
         // Remove them from the cache, viewer, etc.
-        idsOfMolsToDelete.forEach((id: string) => {
+        idsOfMolsOrShapesToDelete.forEach((id: string) => {
             this.removeObject(id);
         });
     }
 
     /**
-     * Removes a single model or single shape from the viewer.
+     * Removes a single model or shape from the viewer.
      *
-     * @param {string} id  The id of the model to remove.
+     * @param {string} id  The id of the model or shape to remove.
      */
     removeObject(id: string) {
         // Clear any surfaces
         this.clearSurfacesOfMol(id);
 
-        // TODO: Now just model. Implement shape.
-        this._removeModel(id);
+        if (this.molCache[id]) {
+            this._removeModel(id);
+        }
+
+        if (this.shapeCache[id]) {
+            this._removeShape(id);
+        }
 
         // Remove from cache
         this.removeFromCache(id);
@@ -104,10 +121,10 @@ export abstract class ViewerParent {
     /**
      * Removes a surface from the viewer.
      *
-     * @param  {SurfaceType} surface  The surface to remove.
+     * @param  {GenericSurfaceType} surface  The surface to remove.
      * @returns {void}
      */
-    abstract removeSurface(surface: SurfaceType): void;
+    abstract removeSurface(surface: GenericSurfaceType): void;
 
     /**
      * Hide a model.
@@ -118,12 +135,73 @@ export abstract class ViewerParent {
     abstract hideMolecule(id: string): void;
 
     /**
+     * Hide a shape.
+     *
+     * @param  {string} id  The shape to hide.
+     * @returns {void}
+     */
+    abstract hideShape(id: string): void;
+
+    /**
+     * Hide a model or shape.
+     *
+     * @param  {string} id  The model or shape to hide.
+     * @returns {void}
+     */
+    hideObject(id: string) {
+        if (this.molCache[id]) {
+            this.hideMolecule(id);
+            return;
+        }
+
+        if (this.shapeCache[id]) {
+            this.hideShape(id);
+        }
+    }
+
+    /**
+     * Show a model or shape.
+     *
+     * @param  {string} id  The id of the model or shape to show.
+     */
+    showObject(id: string) {
+        if (this.molCache[id]) {
+            this.showMolecule(id);
+            return;
+        }
+
+        if (this.shapeCache[id]) {
+            // Get the original IMolContainer to find the target opacity.
+            const molContainer = getNodeOfId(id, getStoreVar("molecules"));
+            let opacity = 1;
+            if (
+                molContainer &&
+                molContainer.shape &&
+                molContainer.shape.opacity
+            ) {
+                opacity = molContainer.shape.opacity;
+            }
+
+            this.showShape(id, opacity);
+        }
+    }
+
+    /**
      * Show a model.
      *
      * @param  {string} id  The id of the model to show.
      * @returns {void}
      */
     abstract showMolecule(id: string): void;
+
+    /**
+     * Show a shape.
+     *
+     * @param  {string} id       The id of the shape to show.
+     * @param  {number} opacity  The opacity to show the shape at.
+     * @returns {void}
+     */
+    abstract showShape(id: string, opacity: number): void;
 
     /**
      * Clear the current molecular styles.
@@ -139,7 +217,7 @@ export abstract class ViewerParent {
      *
      * @param  {string} id        The id of the model to set the style of.
      * @param  {any} selection    The selection to apply the style to.
-     * @param  {StyleType} style  The style to apply.
+     * @param  {GenericStyleType} style  The style to apply.
      * @param  {boolean} [add?]   Whether to add the style to the existing
      *                            styles. If false, replaces the existing style.
      * @returns {void}
@@ -147,7 +225,7 @@ export abstract class ViewerParent {
     abstract setMolecularStyle(
         id: string,
         selection: any,
-        style: StyleType,
+        style: GenericStyleType,
         add?: boolean
     ): void;
 
@@ -155,27 +233,35 @@ export abstract class ViewerParent {
      * Adds a surface to the given model.
      *
      * @param  {string}    id     The id of the model to add the surface to.
-     * @param  {StyleType} style  The style of the surface.
-     * @returns {Promise<SurfaceType>}  A promise that resolves when the
+     * @param  {GenericStyleType} style  The style of the surface.
+     * @returns {Promise<GenericSurfaceType>}  A promise that resolves when the
      *     surface.
      */
-    abstract _addSurface(id: string, style: StyleType): Promise<SurfaceType>;
+    abstract _addSurface(
+        id: string,
+        style: GenericStyleType
+    ): Promise<GenericSurfaceType>;
 
     /**
      * Adds a surface.
      *
      * @param {string}    id     The id of the model to add the surface to.
-     * @param {StyleType} style  The style of the surface.
-     * @returns {Promise<SurfaceType>}  A promise that resolves with the surface
+     * @param {GenericStyleType} style  The style of the surface.
+     * @returns {Promise<GenericSurfaceType>}  A promise that resolves with the surface
      *     type when it's ready.
      */
-    addSurface(id: string, style: StyleType): Promise<SurfaceType> {
-        return this._addSurface(id, style).then((surface: SurfaceType) => {
-            // Add to surface cache
-            this.surfaces[id] = this.surfaces[id] || [];
-            this.surfaces[id].push(surface);
-            return surface;
-        });
+    addSurface(
+        id: string,
+        style: GenericStyleType
+    ): Promise<GenericSurfaceType> {
+        return this._addSurface(id, style).then(
+            (surface: GenericSurfaceType) => {
+                // Add to surface cache
+                this.surfaces[id] = this.surfaces[id] || [];
+                this.surfaces[id].push(surface);
+                return surface;
+            }
+        );
     }
 
     /**
@@ -184,18 +270,87 @@ export abstract class ViewerParent {
      * that viewer's format.
      *
      * @param  {GLModel} model  The model to add.
-     * @returns {ModelType}  The model that was added.
+     * @returns {GenericModelType}  The model that was added.
      */
-    abstract addGLModel(model: GLModel): Promise<ModelType>;
+    abstract addGLModel(model: GLModel): Promise<GenericModelType>;
 
+    /**
+     * Adds a sphere to the viewer.
+     *
+     * @param  {ISphere} shape  The sphere to add.
+     * @returns {GenericShapeType}  The sphere that was added.
+     */
+    abstract addSphere(shape: ISphere): Promise<GenericShapeType>;
+
+    /**
+     * Adds a box to the viewer.
+     *
+     * @param  {IBox} shape  The box to add.
+     * @returns {GenericShapeType}  The box that was added.
+     */
+    abstract addBox(shape: IBox): Promise<GenericShapeType>;
+
+    /**
+     * Adds a arrow to the viewer.
+     *
+     * @param  {IArrow} shape  The arrow to add.
+     * @returns {GenericShapeType}  The arrow that was added.
+     */
+    abstract addArrow(shape: IArrow): Promise<GenericShapeType>;
+
+    /**
+     * Adds a cylinder to the viewer.
+     *
+     * @param  {ICylinder} shape  The cylinder to add.
+     * @returns {GenericShapeType}  The cylinder that was added.
+     */
+    abstract addCylinder(shape: ICylinder): Promise<GenericShapeType>;
 
     /**
      * Adds a shape to the viewer.
      *
-     * @param  {GLModel} shape  The shape to add.
-     * @returns {ShapeType}  The shape that was added.
+     * @param  {IShape} shape  The shape to add.
+     * @returns {GenericShapeType}  The shape that was added.
      */
-    abstract addShape(shape: IShape): Promise<ShapeType>;
+    addShape(shape: IShape): Promise<GenericShapeType> {
+        return new Promise((resolve) => {
+            const shapeFull = {
+                color: "red",
+                opacity: 0.8,
+                ...shape,
+            };
+            switch (shape.type) {
+                case ShapeType.Sphere: {
+                    const genericShape = this.addSphere(shapeFull as ISphere);
+                    resolve(genericShape);
+                    return;
+                }
+                case ShapeType.Box: {
+                    const genericShape = this.addBox(shapeFull as IBox);
+                    resolve(genericShape);
+                    return;
+                }
+                case ShapeType.Arrow: {
+                    const genericShape = this.addArrow({
+                        radius: 0.5,
+                        radiusRatio: 1.618034,
+                        ...shapeFull,
+                    } as IArrow);
+                    resolve(genericShape);
+                    return;
+                }
+                case ShapeType.Cylinder: {
+                    const genericShape = this.addCylinder({
+                        radius: 0.5,
+                        dashed: false,
+                        ...shapeFull,
+                    } as ICylinder);
+                    resolve(genericShape);
+                    return;
+                }
+            }
+        });
+    }
 
     /**
      * Adds a list of IMolContainers to the viewer.
@@ -212,29 +367,44 @@ export abstract class ViewerParent {
 
             // If it's not in the cache, the system has probably not yet loaded the
             // molecule. Always load it.
-            let addMolPromise: Promise<IMolContainer>;
+            let addObjPromise: Promise<IMolContainer>;
             // TODO: Currently doesn't account for shapes.
-            const cacheItem = this.molCache[id];
-            if (cacheItem) {
-                // Already in cache
-                addMolPromise = Promise.resolve(molContainer);
+            if (this.molCache[id] || this.shapeCache[id]) {
+                // Already in molecule cache
+                addObjPromise = Promise.resolve(molContainer);
             } else {
                 // Not in cache.
-                addMolPromise = this.addGLModel(molContainer.model as GLModel)
-                    .then((visMol: ModelType) => {
-                        this.molCache[id] = visMol;
-                        console.warn("Uncomment below!");
-                        // this._makeAtomsHoverableAndClickable({ model: visMol });
+                if (molContainer.model) {
+                    addObjPromise = this.addGLModel(
+                        molContainer.model as GLModel
+                    )
+                        .then((visMol: GenericModelType) => {
+                            this.molCache[id] = visMol;
+                            console.warn("Uncomment below!");
+                            // this._makeAtomsHoverableAndClickable({ model: visMol });
 
-                        return molContainer;
-                    })
-                    .catch((err) => {
-                        console.log(err);
+                            return molContainer;
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            return molContainer;
+                        });
+                } else if (molContainer.shape) {
+                    addObjPromise = this.addShape(
+                        molContainer.shape as IShape
+                    ).then((shape: GenericShapeType) => {
+                        this.shapeCache[id] = shape;
                         return molContainer;
                     });
+                } else {
+                    throw new Error(
+                        "MolContainer must have either a model or a shape."
+                    );
+                }
             }
-            addMolPromises.push(addMolPromise);
+            addMolPromises.push(addObjPromise);
         }
+
         return addMolPromises;
     }
 
@@ -270,32 +440,32 @@ export abstract class ViewerParent {
      * @param  {number} x       The x coordinate.
      * @param  {number} y       The y coordinate.
      * @param  {number} z       The z coordinate.
-     * @returns {LabelType}  The label.
+     * @returns {GenericLabelType}  The label.
      */
     abstract addLabel(
         lblTxt: string,
         x: number,
         y: number,
         z: number
-    ): LabelType;
+    ): GenericLabelType;
 
     /**
      * Removes a label from the viewer.
      *
-     * @param  {LabelType} label  The label to remove.
+     * @param  {GenericLabelType} label  The label to remove.
      * @returns {void}
      */
-    abstract removeLabel(label: LabelType): void;
+    abstract removeLabel(label: GenericLabelType): void;
 
     /**
      * Loads and sets up the viewer object.
      *
      * @param  {string} id  The HTML Dom id of the element to load the viewer
      *                      into.
-     * @returns {Promise<ViewerType>}  A promise that resolves the viewer when
+     * @returns {Promise<GenericViewerType>}  A promise that resolves the viewer when
      *    it is loaded and set up.
      */
-    abstract loadAndSetupViewerLibrary(id: string): Promise<ViewerType>;
+    abstract loadAndSetupViewerLibrary(id: string): Promise<GenericViewerType>;
 
     /**
      * Converts the 3DMoljs style stored in the molecules tree to a style format
@@ -306,12 +476,12 @@ export abstract class ViewerParent {
      *                                      contain additional/more accessible
      *                                      information about the molecule than
      *                                      is available in the model itself.
-     * @returns {StyleType}  The converted style.
+     * @returns {GenericStyleType}  The converted style.
      */
     abstract convertStyle(
         style: IStyle,
         molContainer: IMolContainer
-    ): StyleType;
+    ): GenericStyleType;
 
     /**
      * Converts a 3DMoljs selection to the selection format compatible with this
@@ -373,18 +543,23 @@ export abstract class ViewerParent {
     }
 
     /**
-     * A helper function that looks up the model in cache (in the
+     * A helper function that looks up a model or shape in cache (in the
      * viewer-appropriate format) given a molecule container.
      *
-     * @param  {string} id  The molecule id.
-     * @returns {ModelType | undefined}  The model, or undefined if it is not in
-     *    the cache.
+     * @param  {string} id  The molecule or shape id.
+     * @returns {GenericModelType | undefined}  The model or shape, or undefined if it
+     *    is not in the cache.
      */
-    protected lookupMol(id: string): ModelType | undefined {
+    protected lookup(
+        id: string
+    ): GenericModelType | GenericShapeType | undefined {
         if (id === undefined) {
             return undefined;
         }
-        return this.molCache[id];
+        if (this.molCache[id]) {
+            return this.molCache[id];
+        }
+        return this.shapeCache[id];
     }
 
     /**
@@ -393,8 +568,12 @@ export abstract class ViewerParent {
      * @param {string} id  The id of the model or shape to remove.
      */
     removeFromCache(id: string): void {
-        // TODO: Just model here, not shape yet.
-        delete this.molCache[id];
+        if (this.molCache[id]) {
+            delete this.molCache[id];
+        }
+        if (this.shapeCache[id]) {
+            delete this.shapeCache[id];
+        }
     }
 
     /**
@@ -416,6 +595,9 @@ export abstract class ViewerParent {
      */
     clearCache() {
         for (const id in this.molCache) {
+            this.removeObject(id);
+        }
+        for (const id in this.shapeCache) {
             this.removeObject(id);
         }
         this.renderAll();

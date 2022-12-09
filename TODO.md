@@ -21,10 +21,10 @@ https://gruhn.github.io/vue-qrcode-reader/demos/CustomTracking.html ???
 Table component?
 
 Messaging. Need toast? You started working on toast.
-    Rather than bind to a boolean to show or not, populate a list of messages.
-    After certain amount of time (specified in data structure), close toast and
-    go to next one (if present).
-    https://getbootstrap.com/docs/5.0/components/toasts/
+Rather than bind to a boolean to show or not, populate a list of messages.
+After certain amount of time (specified in data structure), close toast and
+go to next one (if present).
+https://getbootstrap.com/docs/5.0/components/toasts/
 
 Create demo (minimal) plugin to illustrate. Once API settles.
 
@@ -46,8 +46,8 @@ Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
 Evually, need login system. Wordpress powered?
-    https://medevel.com/iam-systems-10-identity/ ? Keycloak?
-    Or this? https://www.npmjs.com/package/passport
+https://medevel.com/iam-systems-10-identity/ ? Keycloak?
+Or this? https://www.npmjs.com/package/passport
 
 Search for "TODO: Would be nice if there were a separate function"
 
@@ -59,7 +59,7 @@ save VRML. Export VRML for NGL viewer. Not working. Need to test.
 Look for other places where might not work (outside of ViewerPanel). See
 https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter-in-typescript
 
-****When saving file to single pdb, it's ackwardly named. Fix that.
+\*\*\*\*When saving file to single pdb, it's ackwardly named. Fix that.
 
 updateAppName not used anywhere, but I think it should be.
 
@@ -76,7 +76,12 @@ on each one.
 
 Integrate Yuri OpenBabel. See if you can get it to work in web worker.
 
-Need to make shapes (cubes and spheres)
+Need to make shapes (cubes and spheres). And need to implement for NGLTools.
+https://3dmol.csb.pitt.edu/doc/$3Dmol.GLShape.html Shapes should have
+property "movable" to move if click on atom. Also, need to be able to set
+opacity, color, and center/dimens/radius (if movable) in styles. For this to
+work, you will need atom click callback. Consider implementing as hook through
+api. https://nglviewer.org/ngl/api/class/src/geometry/shape.js~Shape.html
 
 When adding new molecule, make sure filename is not already in list. Append (#).
 
@@ -84,6 +89,17 @@ Multiframe files, still put under one molecule. And if more than a fixed number,
 autohide all but first few. Can use merge feature if needed.
 
 # DONE
+
+Currebtly default values on shapes (e.g., radius) are defined in Viewer3D. But
+that hsould go into the parent so effects all viewers.
+
+Need box.
+
+Still need to do things like testing deleting, etc. Cloning. also, need to get
+opacity working.
+
+addShape should be defined on Parent, not each child. Child should define
+addSphere, addBox, etc.
 
 And legend to scroll if ther eis more than one table.
 
@@ -110,7 +126,7 @@ Shouldn't convert formats (e.g., to get CAN for prop calc) automatically so
 availble onPopupDone. This shoul dbe in runjob. Because sometimes might want to
 run conversion on remote server too. Maybe return object (from class) instead of
 JSON? And it has method to do conversion right in jobs.
-    It's a class now, but it's tricky. You can do conversion in each job, but molecules need to be collated before, in the browser.
+It's a class now, but it's tricky. You can do conversion in each job, but molecules need to be collated before, in the browser.
 
 Font sizes in Jobs and Data are different. Make appearance consistent.
 
@@ -142,13 +158,13 @@ base (like "display", "clone", etc.). I changed my mind, but e
 
 Favicon. Using SD?
 
-*** Perhaps settings (for local only). Edit -> Preferences.
-    Number of processors.
-    Viewer
-    Save/restore layout
-    Theme?
+\*\*\* Perhaps settings (for local only). Edit -> Preferences.
+Number of processors.
+Viewer
+Save/restore layout
+Theme?
 
-savePng and 
+savePng and
 
 Save molecule files needs more thourough tests.
 
@@ -177,7 +193,7 @@ On clone/extract rename, maybe just keep original root name but add increment.
 Don't merge names in tree anymore. It's concise (which is nice), but ultimately
 just confusing.
 
-*** Need to be able to select multiple molecules. Currently working on one with
+\*\*\* Need to be able to select multiple molecules. Currently working on one with
 shift pressed. Search for "If shift key is down, selecting multiple items."
 
 Idea to consider: MolCombine. You should be able to specify the formats. Also,
@@ -214,9 +230,9 @@ Would be nice if you could hide disabled items in form groups.
 SaveMoleculesPlugin.vue is running this sort of thing through SaveAll.ts, SaveByMolecule.ts, SaveByChain.ts. These are the better ones to use.
 
 MoleculeInputParams.vue using things like: (MakeMoleculeInput.ts too)
-	getProteinsToUse
-	getProteinChainsToUse
-	getCompoundsToUse
+getProteinsToUse
+getProteinChainsToUse
+getCompoundsToUse
 Which ultimately route through TreeUtils.ts. It does appear to be two different systems. Unify them. Get rid of these functions.
 
 MoleculeInputParams
@@ -235,7 +251,7 @@ Protein (othermolecule) format, then ligand format. If ligand format not given, 
 
 Maybe instead of all/visible-selected, could be visible, selected, all others, or hidden/deselected
 
-getTerminalNodesToConsider redundant with _filterMolsByToConsiderProperty? Good to delete one.
+getTerminalNodesToConsider redundant with \_filterMolsByToConsiderProperty? Good to delete one.
 
 Might want radio and checkbox bar options too.
 
@@ -275,15 +291,16 @@ Also, when you cancel a job per job, eventually gets incorporated. Not sure this
 is working.
 
 And need to get per-cancel on each row somehow. Will likely need to modify
+
 <Table> component.
 
 queue says nothing present if nothing present.
 
 Need to implement delay with inbrowser queue (for vina, for example). Could
 be optional parameter on jobInfo. Just do modal with timeOut that's cancellable.
-    Modal should run before job. Really, when waitable job comes up, should wait
-    for all other jobs to complete, then show modal, allow opportunity to cancel
-    that job or all jobs, and resume in time.
+Modal should run before job. Really, when waitable job comes up, should wait
+for all other jobs to complete, then show modal, allow opportunity to cancel
+that job or all jobs, and resume in time.
 
 I think both undo and redo should warn one item sooner on stack.
 
@@ -304,7 +321,7 @@ and I suspect there are errors.
 Just auto populate response files based on type (no need for extra code there,
 really). THIS SHOULD HAPPEN IN JobManagerParent.ts, not in plugin parent. Rather
 than do informJobsIncorporated, do getJobOutput. Because getInfo only returns
-jobId and status. 
+jobId and status.
 
 Fake queue system should have variable to store jobId => outputfiles. And remove
 from that variable just like deleting job. Currenly calling loadFile right in
@@ -318,7 +335,7 @@ And they should return files. Even in browser. Make like it will be when remote.
 Redo queue system. An object with total number of processors, items in queue,
 status for each (waiting, running, error, finished), etc. Also InServerBrowser
 class that mimics remote RESP API.
-    https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
+https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design/
 
 Should be "Window" menu item to highlight (focus and flash) the various panels.
 Good as app gets more complicated.
@@ -366,7 +383,7 @@ Load biotite. No spinner?
 2D imag eshould not be visible when no compoudn selected
 
 Viewer2D: Canvas dimensions calculated from javascript measure of actual size on
-screen, * resolution factor. Style determined by prop.
+screen, \* resolution factor. Style determined by prop.
 
 You reall yneed to get SVG working on smiles draw. Canvas is bad (low res).
 
@@ -427,12 +444,12 @@ redo test...
 // Second test extracting
 
 validate:
-    :userArgs="userArgs"
-    v-model="open"
-    title="Load PDB ID"
-    @onPopupDone="onPopupDone"
-    :pluginId="pluginId"
-    Other?
+:userArgs="userArgs"
+v-model="open"
+title="Load PDB ID"
+@onPopupDone="onPopupDone"
+:pluginId="pluginId"
+Other?
 
 Still need to do component too (props and emits).
 
@@ -446,20 +463,20 @@ validate: no plugin defines mounted() function. Use onMounted() instead.
 
 Also, spider out and get all interfaces and enums.
 
-Separate out helper functions for documentation. 
+Separate out helper functions for documentation.
 
 You stopped working mid way on CloneExtract. Used watch to make userParams
 reactive. Just getting too complicated.
 
 Userparams reactive so change directly
- 
+
 Inform when userparamstouse changes (clone/extract)
 
 Waits too long to focus
 
 How to specify only one plugin?
 
-Validate.py needs to make sure all plugins define 
+Validate.py needs to make sure all plugins define
 menuPath
 softwareCredits
 contributorCredits
@@ -482,9 +499,9 @@ for different plugins? Just make a single Vue component to rule them all. No
 extends hierarchy.
 
 New plugin system: Look for other things in pdb loading that can be moved to
-    generic class. For example, onPopupDone should always run this.closePopup(),
-    shouldn't it? Etc. Also, why not pass "sanitized/simplified" user parameters
-    to onPopupDone? I think you already have a function for that.
+generic class. For example, onPopupDone should always run this.closePopup(),
+shouldn't it? Etc. Also, why not pass "sanitized/simplified" user parameters
+to onPopupDone? I think you already have a function for that.
 
 Continue converting plugin parents to vue-based system, using Renderless
 
@@ -500,16 +517,16 @@ Ability to select molecule. And then widget to select protein/ligand allows you
 to choose between all visible and all selected. Vue component to specify whether
 to combine PDBs (receptors) or not. Basically combine everything but something
 designated ligand. CombineProteins should be integrated into FormFull. It's now
-integrated. 
+integrated.
 
-Add names of proteins in list (up to 3). 
+Add names of proteins in list (up to 3).
 Need standardized way of refering to this (string). Search for // MOOMOO
 
 And it should tell you how many combinations there will be as you change it.
 Also, still need protein x ligand. Why when no protein loaded, it says 1 protein
-and 1 compound? 
+and 1 compound?
 
-Selected vs. visible doesn't seem to work. 
+Selected vs. visible doesn't seem to work.
 
 But it should really provide all combinations of proteins + ligands, not just
 the proteins.
@@ -520,7 +537,7 @@ Certain functions should only be called through API. Enforce that.
 
 Hamburger menu broken
 
-Rename/extract/etc only appears when selected. Menu items too. 
+Rename/extract/etc only appears when selected. Menu items too.
 
 Plugin class names must end in "Plugin" ... mke eslint plugin
 
@@ -537,15 +554,15 @@ Logging everything. Need to add log to more things. Also, need to be able to
 specify log messages explicitly in plugin (override). Generally more work do be
 done here.
 
-Also, seems to make app bigger than window (can scroll down). 
+Also, seems to make app bigger than window (can scroll down).
 
 In new session popup, also make "Save Session" option as second button, not just
 link.
 
 New session, but with ability to detect if saved or not. This is almost done.
-    When then try to close, catches it, opens savesession plugin. But need to
-    make sure all that works, supplement with additional text if closing (maybe
-    no cancel), and hten popup after telliung them they can save.
+When then try to close, catches it, opens savesession plugin. But need to
+make sure all that works, supplement with additional text if closing (maybe
+no cancel), and hten popup after telliung them they can save.
 
 On optional plugin, can you reopen it once closed? Only if cancel. If run, can
 rerun later.
@@ -590,7 +607,8 @@ Also need to be able to extract a molecule, and merge it.
 
 Plugins should be able to do check and abort. For example, of not all ligands
 have 3D coordinates. But make generic, user-defined.
-* Gray out undo/redo if not possible?
+
+-   Gray out undo/redo if not possible?
 
 Menu should close when popup opens.
 
@@ -601,15 +619,16 @@ Extract doesn't make sense, though.
 
 When you clone, not enough to do deep copy. Because then when you hide original,
 hides clone. Need to regenerate GLModel for clone.
-    Note: You tried to implement this, broke it. Need to fix.
+Note: You tried to implement this, broke it. Need to fix.
 
-Need delete molecule too. 
-* Not being removed. 
-* I have confirmed the problem in _zoomPerFocus. If I comment it mostly out,
+Need delete molecule too.
+
+-   Not being removed.
+-   I have confirmed the problem in \_zoomPerFocus. If I comment it mostly out,
     still doesn't work.
-* Confirmed being removed from cache. That's not the problem.
-* In example, even when using your library, remove does change value of
-  viewer.getModel(X). But it doesn't change it in the context of your app.  
+-   Confirmed being removed from cache. That's not the problem.
+-   In example, even when using your library, remove does change value of
+    viewer.getModel(X). But it doesn't change it in the context of your app.
 
 Also delete and extract. Would require select
 
@@ -628,11 +647,11 @@ Note you souldn't be able to extract or clone top-level molecules.
 Also, you can select molecules that aren't visible (so you don't have to display
 large molecular library to use it, for example).
 
-Note extract doesn't require name change. 
+Note extract doesn't require name change.
 
 Make plugin parent type for all edit buttons?
 
-You should be able to rename molecule. 
+You should be able to rename molecule.
 
 Also, put a cap on how many previous states stored?
 
@@ -651,8 +670,8 @@ protein).
 Surface opacity? Sticks/lines width? Etc. (No, better to keep interface as
 simple as possible)
 
-You need to be able to reorder the molecules. 
-    https://www.npmjs.com/package/vuedraggable
+You need to be able to reorder the molecules.
+https://www.npmjs.com/package/vuedraggable
 
 Eyeball button should be to the farthest right, so when others get hidden not so
 disruptive (no hole).
@@ -666,7 +685,7 @@ that.
 1FDA is good to test. More files in ZIP than are in outline. Very confusing.
 
 Would be good to have simple popup with single text input for use in saving and
-exporting. (Mostly done, except for export VRML.) 
+exporting. (Mostly done, except for export VRML.)
 
 Menu items should have rank option for ordering. (Works on leafs, but not
 branches, meaning submenus). What about using something like optional [#] at
@@ -687,9 +706,9 @@ Need to organize dynamic imports. Should automatically add to credits. And need
 to make sure dividing into separate chunks.
 
 Ability to save store to localstorage, and download.
-    https://www.npmjs.com/package/vuex-persist
-    https://github.com/championswimmer/vuex-persist/issues/99 
-    Don't think this is going to work. Started to work on custom solution...
+https://www.npmjs.com/package/vuex-persist
+https://github.com/championswimmer/vuex-persist/issues/99
+Don't think this is going to work. Started to work on custom solution...
 
 Load in aspirin and unfurl tree. Undefineds there.
 

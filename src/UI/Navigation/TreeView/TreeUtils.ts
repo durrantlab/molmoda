@@ -429,6 +429,13 @@ export function cloneMols(
             node.focused = false;
         }
 
+        // Make copies of all the shapes.
+        for (const node of allNodesFlattened) {
+            if (node.shape) {
+                node.shape = JSON.parse(JSON.stringify(node.shape));
+            }
+        }
+
         // then make copes of all models. modelsToAtoms => atomsToModels
         topNode = modelsToAtoms(topNode);
         promises.push(atomsToModels(topNode));

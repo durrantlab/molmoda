@@ -58,25 +58,42 @@ export interface IMolContainer {
     // These are specifically for terminal nodes
     model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
     styles?: IStyle[]; // styles and selections for this node
-    shapes?: IShape[];
+    shape?: IShape;
 }
 
 export enum ShapeType {
     Sphere,
-    Prism,
+    Box,
+    Arrow,
+    Cylinder
 }
 
 export interface IShape {
     type: ShapeType;
-    id: string;
     center: [number, number, number];
-    alpha?: number;
+    opacity?: number;
     color?: string;
-    radius?: number; // for sphere
-    dimensions?: [number, number, number]; // x/y/z size for prism
+}
 
-    // TODO: For additional shapes that could be useful with binana.
-    // Cylinder, Arrow
+export interface ISphere extends IShape {
+    radius: number;
+}
+
+export interface IBox extends IShape {
+    // x/y/z size for box
+    dimensions: [number, number, number];
+}
+
+export interface IArrow extends IShape {
+    endPt: [number, number, number]; // center is start pt
+    radius?: number;
+    radiusRatio?: number; // Radius of arrow head is radiusRatio * radius
+}
+
+export interface ICylinder extends IShape {
+    endPt: [number, number, number]; // center is start pt
+    radius?: number;
+    dashed?: boolean;
 }
 
 export enum MolContainerDataType {

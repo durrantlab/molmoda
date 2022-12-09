@@ -4,7 +4,11 @@ import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { createStore, Store } from "vuex";
 import { allHooks } from "@/Api/Hooks";
 import {
+    IArrow,
+    IBox,
+    ICylinder,
     IMolContainer,
+    ISphere,
     MolType,
     SelectedType,
     ShapeType,
@@ -114,28 +118,81 @@ export function setupVueXStore(): Store<any> {
                         {
                             title: "Shapes",
                             id: "shapes",
+                            parentId: "test",
                             treeExpanded: true,
                             visible: true,
                             selected: SelectedType.False,
                             focused: true,
                             viewerDirty: true,
                             nodes: [
+                                // {
+                                //     title: "Shapes2",
+                                //     id: "shapes2",
+                                //     parentId: "shapes",
+                                //     treeExpanded: true,
+                                //     visible: true,
+                                //     selected: SelectedType.False,
+                                //     focused: true,
+                                //     viewerDirty: true,
+                                //     shape: {
+                                //         type: ShapeType.Sphere,
+                                //         id: "My shape",
+                                //         center: [0, 0, 0],
+                                //         radius: 10,
+                                //         opacity: 0.2,
+                                //     } as ISphere,
+                                // },
+                                // {
+                                //     title: "Shapes3",
+                                //     id: "shapes3",
+                                //     parentId: "shapes",
+                                //     treeExpanded: true,
+                                //     visible: true,
+                                //     selected: SelectedType.False,
+                                //     focused: true,
+                                //     viewerDirty: true,
+                                //     shape: {
+                                //         type: ShapeType.Box,
+                                //         center: [0, 0, 0],
+                                //         dimensions: [30, 10, 10],
+                                //         color: "green",
+                                //         opacity: 0.5,
+                                //     } as IBox,
+                                // },
+
+                                // {
+                                //     title: "Shapes4",
+                                //     id: "shapes4",
+                                //     parentId: "shapes",
+                                //     treeExpanded: true,
+                                //     visible: true,
+                                //     selected: SelectedType.False,
+                                //     focused: true,
+                                //     viewerDirty: true,
+                                //     shape: {
+                                //         type: ShapeType.Arrow,
+                                //         center: [0, 5, 0],
+                                //         endPt: [10, 10, 10],
+                                //         color: "green",
+                                //         opacity: 0.5,
+                                //     } as IArrow,
+                                // },
                                 {
-                                    title: "Shapes",
-                                    id: "shapes",
+                                    title: "Shapes5",
+                                    id: "shapes5",
+                                    parentId: "shapes",
                                     treeExpanded: true,
                                     visible: true,
                                     selected: SelectedType.False,
                                     focused: true,
                                     viewerDirty: true,
-                                    shapes: [
-                                        {
-                                            type: ShapeType.Sphere,
-                                            id: "My shape",
-                                            center: [0, 0, 0],
-                                            radius: 10,
-                                        }
-                                    ]
+                                    shape: {
+                                        type: ShapeType.Cylinder,
+                                        center: [5, 0, 0],
+                                        endPt: [-10, 10, 10],
+                                        color: "green",
+                                        opacity: 0.5,
+                                    } as ICylinder,
                                 },
                             ],
                         },

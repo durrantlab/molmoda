@@ -5,16 +5,22 @@ import {
     IStyle,
     IMolContainer,
     IColorStyle,
+    IShape,
+    IBox,
+    ISphere,
+    ICylinder,
+    IArrow,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { colorNameToHex } from "../../Options/Styles/ColorSelect/ColorConverter";
 import { elementColors, defaultElementColor } from "../ElementColors";
 import { GLModel } from "../GLModelType";
 import {
-    ModelType,
-    SurfaceType,
-    StyleType,
-    LabelType,
-    ViewerType,
+    GenericModelType,
+    GenericSurfaceType,
+    GenericStyleType,
+    GenericLabelType,
+    GenericViewerType,
+    GenericShapeType,
 } from "./Types";
 import { ViewerParent } from "./ViewerParent";
 
@@ -34,16 +40,28 @@ export class ViewerNGL extends ViewerParent {
      */
     _removeModel(id: string) {
         // remove from viewer
-        const mol = this.lookupMol(id);
-        mol.dispose();
+        const mol = this.lookup(id);
+        if (mol) {
+            mol.dispose();
+        }
+    }
+
+    /**
+     * Removes a shape from the viewer.
+     *
+     * @param  {string} id  The id of the shape to remove.
+     */
+    _removeShape(id: string) {
+        // TODO:
+        throw new Error("Method not implemented.");
     }
 
     /**
      * Removes a surface from the viewer.
      *
-     * @param  {SurfaceType} surface  The surface to remove.
+     * @param  {GenericSurfaceType} surface  The surface to remove.
      */
-    removeSurface(surface: SurfaceType) {
+    removeSurface(surface: GenericSurfaceType) {
         // ngl throws an error. Very annoying. Couldn't debug, so just catch.
         try {
             surface.dispose();
@@ -61,7 +79,7 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string} id  The id of the model to hide.
      */
     hideMolecule(id: string) {
-        const model = this.lookupMol(id);
+        const model = this.lookup(id);
         model.setVisibility(false);
     }
 
@@ -71,8 +89,29 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string} id  The model to show.
      */
     showMolecule(id: string) {
-        const model = this.lookupMol(id);
+        const model = this.lookup(id);
         model.setVisibility(true);
+    }
+
+    /**
+     * Hide a shape.
+     *
+     * @param  {string} id  The shape to hide.
+     */
+    hideShape(id: string) {
+        // TODO:
+        throw new Error("Method not implemented.");
+    }
+
+    /**
+     * Show a shape.
+     *
+     * @param  {string} id  The id of the shape to show.
+     * @param  {number} opacity  The opacity to show the shape at.
+     */
+    showShape(id: string, opacity: number) {
+        // TODO:
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -81,7 +120,7 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string} id  The id of the model to clear the styles of.
      */
     clearMoleculeStyles(id: string) {
-        const model = this.lookupMol(id);
+        const model = this.lookup(id);
         model.removeAllRepresentations();
     }
 
@@ -94,9 +133,9 @@ export class ViewerNGL extends ViewerParent {
      *                                      contain additional/more accessible
      *                                      information about the molecule than is
      *                                      available in the model itself.
-     * @returns {StyleType}  The converted style.
+     * @returns {GenericStyleType}  The converted style.
      */
-    convertStyle(style: IStyle, molContainer: IMolContainer): StyleType {
+    convertStyle(style: IStyle, molContainer: IMolContainer): GenericStyleType {
         const styleAsDict = style as { [key: string]: IColorStyle };
 
         const newStyle: { [key: string]: any } = {
@@ -227,7 +266,7 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string}     id           The id of the model to set the style
      *                                   of.
      * @param  {string}     selection    The selection to apply the style to.
-     * @param  {StyleType}  style        The style to apply.
+     * @param  {GenericStyleType}  style        The style to apply.
      * @param  {boolean}    [add=false]  Whether to add the style to the
      *                                   existing styles. If false, replaces the
      *                                   existing style.
@@ -235,13 +274,24 @@ export class ViewerNGL extends ViewerParent {
     setMolecularStyle(
         id: string,
         selection: string,
-        style: StyleType,
+        style: GenericStyleType,
         add = false
     ) {
-        const model = this.lookupMol(id);
+        const model = this.lookup(id);
+        if (!model) {
+            // Model not present
+            return;
+        }
+
+        if (!model.removeAllRepresentations) {
+            // It's a shape, not a molecule
+            return;
+        }
+
         if (!add) {
             // Clear existing style
-            this.clearMoleculeStyles(model);
+            // this.clearMoleculeStyles(model);
+            this.clearMoleculeStyles(id);
         }
 
         // Iterate through properties of the style
@@ -294,12 +344,15 @@ export class ViewerNGL extends ViewerParent {
      * Adds a surface to the given model.
      *
      * @param  {string}     id     The id of the model to add the surface to.
-     * @param  {StyleType}  style  The style of the surface.
-     * @returns {Promise<SurfaceType>}  A promise that resolves when the
+     * @param  {GenericStyleType}  style  The style of the surface.
+     * @returns {Promise<GenericSurfaceType>}  A promise that resolves when the
      *     surface.
      */
-    _addSurface(id: string, style: StyleType): Promise<SurfaceType> {
-        const model = this.lookupMol(id);
+    _addSurface(
+        id: string,
+        style: GenericStyleType
+    ): Promise<GenericSurfaceType> {
+        const model = this.lookup(id);
         const surf = model.addRepresentation("surface", {
             ...style.surface,
         });
@@ -317,9 +370,9 @@ export class ViewerNGL extends ViewerParent {
      * to viewer.
      *
      * @param  {GLModel} model  The model to add.
-     * @returns {Promise<ModelType>}  The model that was added.
+     * @returns {Promise<GenericModelType>}  The model that was added.
      */
-    addGLModel(model: GLModel): Promise<ModelType> {
+    addGLModel(model: GLModel): Promise<GenericModelType> {
         // TODO: If ligand, convert to SDF (preserve bond orders)
 
         // Convert the model to PDB
@@ -349,6 +402,46 @@ export class ViewerNGL extends ViewerParent {
     }
 
     /**
+     * Adds a sphere to the viewer.
+     *
+     * @param  {ISphere} shape  The sphere to add.
+     * @returns {GenericShapeType}  The sphere that was added.
+     */
+    addSphere(shape: ISphere): Promise<GenericShapeType> {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * Adds a box to the viewer.
+     *
+     * @param  {IBox} shape  The box to add.
+     * @returns {GenericShapeType}  The box that was added.
+     */
+    addBox(shape: IBox): Promise<GenericShapeType> {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * Adds a arrow to the viewer.
+     *
+     * @param  {IArrow} shape  The arrow to add.
+     * @returns {GenericShapeType}  The arrow that was added.
+     */
+    addArrow(shape: IArrow): Promise<GenericShapeType> {
+        throw new Error("Not implemented");
+    }
+
+    /**
+     * Adds a cylinder to the viewer.
+     *
+     * @param  {ICylinder} shape  The cylinder to add.
+     * @returns {GenericShapeType}  The cylinder that was added.
+     */
+    addCylinder(shape: ICylinder): Promise<GenericShapeType> {
+        throw new Error("Not implemented");
+    }
+
+    /**
      * Render all the molecules and surfaces currently added to the viewer.
      */
     renderAll() {
@@ -362,7 +455,12 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string[]} ids  The ids of the models to zoom in on.
      */
     zoomToModels(ids: string[]) {
-        const models = ids.map((id) => this.lookupMol(id));
+        let models = ids.map((id) => this.lookup(id));
+        models = models.filter((model) => model !== undefined);
+
+        if (models.length === 0) {
+            return;
+        }
 
         this._nglObj.animationControls.clear();
 
@@ -419,9 +517,14 @@ export class ViewerNGL extends ViewerParent {
      * @param  {number} x       The x coordinate.
      * @param  {number} y       The y coordinate.
      * @param  {number} z       The z coordinate.
-     * @returns {LabelType}  The label.
+     * @returns {GenericLabelType}  The label.
      */
-    addLabel(lblTxt: string, x: number, y: number, z: number): LabelType {
+    addLabel(
+        lblTxt: string,
+        x: number,
+        y: number,
+        z: number
+    ): GenericLabelType {
         return this._nglObj.addLabel(
             // TODO:
             lblTxt,
@@ -443,9 +546,9 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Removes a label from the viewer.
      *
-     * @param  {LabelType} label  The label to remove.
+     * @param  {GenericLabelType} label  The label to remove.
      */
-    removeLabel(label: LabelType) {
+    removeLabel(label: GenericLabelType) {
         this._nglObj``.removeLabel(label);
     }
 
@@ -457,7 +560,7 @@ export class ViewerNGL extends ViewerParent {
      * @returns {Promise<any>}  A promise that resolves the viewer object when
      *     3dmol.js is loaded.
      */
-    loadAndSetupViewerLibrary(id: string): Promise<ViewerType> {
+    loadAndSetupViewerLibrary(id: string): Promise<GenericViewerType> {
         return dynamicImports.ngl.module
             .then((ngl: any) => {
                 NGL = ngl;
@@ -542,35 +645,36 @@ export class ViewerNGL extends ViewerParent {
 
     pngURI(): Promise<string> {
         // debugger;
-        return this._nglObj.viewer.makeImage({
-            factor: 1,
-            antialias: true,
-            trim: false,
-            transparent: true,
-        })
-        .then((blob: Blob) => {
-            // Blob is a png image. Convert it to DataURI.
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    resolve(reader.result as string);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
+        return this._nglObj.viewer
+            .makeImage({
+                factor: 1,
+                antialias: true,
+                trim: false,
+                transparent: true,
+            })
+            .then((blob: Blob) => {
+                // Blob is a png image. Convert it to DataURI.
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve(reader.result as string);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
 
-                return reader.result as string;
+                    return reader.result as string;
+                });
+            })
+            .catch((err: any) => {
+                console.log(err);
+                return "";
             });
-        })
-        .catch((err: any) => {
-            console.log(err);
-            return "";
-        });
     }
 
     /**
      * Unloads the viewer (from the DOM, etc.).
      */
-     unLoad() {
+    unLoad() {
         this._nglObj.dispose();
         this._nglObj = null;
         if (this.resizeInterval) {

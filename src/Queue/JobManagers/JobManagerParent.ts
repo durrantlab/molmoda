@@ -264,8 +264,6 @@ export abstract class JobManagerParent {
     ): Promise<EndpointResponseStatus> {
         jobIds = this._makeArray(jobIds);
 
-        debugger;
-
         return this.sendRequest({
             action: EndpointAction.GetDoneJobsOutput,
             jobIds: jobIds,
