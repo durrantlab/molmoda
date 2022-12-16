@@ -142,8 +142,7 @@ export default class MolPropsPlugin extends PluginParentClass {
         return;
       })
       .catch((err: any): void => {
-        console.log(err);
-        return;
+        throw err;
       });
   }
 }

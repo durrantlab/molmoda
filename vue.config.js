@@ -41,6 +41,10 @@ module.exports = defineConfig({
                         to: "js/obabel-wasm",
                     },
                     {
+                        from: "src/libs/ToCopy/fpocketweb",
+                        to: "js/fpocketweb",
+                    },
+                    {
                         from: "src/libs/ToCopy/openbabeljs",
                         to: "js/openbabeljs",
                     },

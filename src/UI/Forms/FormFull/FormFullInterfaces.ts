@@ -8,7 +8,8 @@ export enum FormElemType {
     Range,
     Group,
     MoleculeInputParams,
-    Checkbox
+    Checkbox,
+    Vector3D
 }
 
 export type FormElement =
@@ -19,7 +20,8 @@ export type FormElement =
     | IFormGroup
     | IFormMoleculeInputParams
     | IFormColor
-    | IFormCheckbox;
+    | IFormCheckbox
+    | IFormVector3D;
 
 interface IFormElement {
     id: string;
@@ -33,6 +35,10 @@ interface IFormElement {
     validateFunc?: (val: any) => boolean;
 
     enabled?: boolean;
+
+    // Description appears below in smaller font. TODO: Not implemented
+    // everywhere. Just as needed.
+    description?: string;
 }
 
 // Below interface just to help with typescript.
@@ -70,6 +76,10 @@ export interface IFormRange extends IFormNumber {
     min: number;
     max: number;
     step: number;
+}
+
+export interface IFormVector3D extends IFormElement {
+    val: [number, number, number];
 }
 
 export interface IFormOption {

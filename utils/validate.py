@@ -116,6 +116,36 @@ for ts_file in ts_files:
     if "fetch(" in content:
         add_error(ts_file, "Use axios.get instead of fetch.")
 
+    # if ".catch(" in content, there must be a "throw" within the next few
+    # lines. Use regex.
+    if ".catch(" in content:
+        # import pdb; pdb.set_trace()
+        for match in re.findall(r"\.catch\((.{0,200})", content, re.DOTALL):
+            if "throw" not in match:
+                add_error(
+                    ts_file,
+                    "If you use .catch(), you must throw an error within the next few lines. Comment out 'throw err' in those rare cases where you want to ignore an error.",
+                )
+
+    # Try to avoid filtering molecules directly. Use the extractFlattenedContainers() function
+    # instead.
+    matches = (
+        [t for t in re.finditer(r"[cC]ontainer.{0,25}\.filter", content, re.DOTALL)]
+        + [t for t in re.finditer(r"\.filter.{0,25}[cC]ontainer", content, re.DOTALL)]
+        + [t for t in re.finditer(r"[nN]ode.{0,25}\.filter", content, re.DOTALL)]
+    )
+    txts = [content[m.span()[0] - 65 : m.span()[1] + 65] for m in matches]
+    txts = [t for t in txts if "mol_filter_ok" not in t]
+
+    for txt in txts:
+        # replace all new lines and double spaces using regex
+        txt = re.sub(r"\s+", " ", txt)
+
+        add_error(
+            ts_file,
+            f"Use the extractFlattenedContainers() function instead of filtering molContainers directly (or include mol_filter_ok somewhere nearby): `{txt}`",
+        )
+
     # All *.vue files /Plugins/ must be plugins, except those in .../Parents/...
     if (
         "/Plugins/" in ts_file
@@ -125,6 +155,7 @@ for ts_file in ts_files:
     ):
         validate_plugin(ts_file)
 
+errors = sorted(set(errors))
 
 # Save errors to ../src/compile_errors.json
 with open("../src/compile_errors.json", "w") as file:

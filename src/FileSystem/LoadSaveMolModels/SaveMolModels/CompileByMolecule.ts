@@ -1,6 +1,7 @@
 import { getStoreVar } from "@/Store/StoreExternalAccess";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
+    extractFlattenedContainers,
     getTerminalNodesToConsider,
     keepUniqueMolContainers,
 } from "@/UI/Navigation/TreeView/TreeUtils";
@@ -25,7 +26,7 @@ export function compileByMolecule(
 ): ICompiledNodes {
     // Not using biotite format. Create ZIP file with protein and small
     // molecules.
-    const compoundNodes: IMolContainer[] = [];
+    let compoundNodes: IMolContainer[] = [];
     const nonCompoundNodesByMolecule: IMolContainer[][] = [];
 
     for (const molContainer of getStoreVar("molecules")) {
@@ -45,12 +46,18 @@ export function compileByMolecule(
                 )
             );
 
-            nonCompoundNodesByMolecule.push(
-                getTerminalNodesToConsider(
-                    molsToConsider,
-                    separatedNodes.nonCompoundNodes
-                )
+            let terminalNodes = getTerminalNodesToConsider(
+                molsToConsider,
+                separatedNodes.nonCompoundNodes
             );
+
+            // Remove undefineds, shapes
+            terminalNodes = extractFlattenedContainers(terminalNodes, {
+                undefined: false,
+                shape: false,
+            });
+
+            nonCompoundNodesByMolecule.push(terminalNodes);
         } else {
             // Keep compounds together with non-compounds.
             let termNodes = getTerminalNodesToConsider(
@@ -58,12 +65,27 @@ export function compileByMolecule(
                 allNodes
             );
             termNodes = keepUniqueMolContainers(termNodes);
+
+            // Removed undefineds, shapes
+            termNodes = extractFlattenedContainers(termNodes, {
+                undefined: false,
+            });
+            termNodes = extractFlattenedContainers(termNodes, { shape: false });
+
             nonCompoundNodesByMolecule.push(termNodes);
         }
     }
 
+    compoundNodes = extractFlattenedContainers(compoundNodes, {
+        undefined: false,
+    });
+    compoundNodes = extractFlattenedContainers(compoundNodes, { shape: false });
+
     return {
-        nodeGroups: nonCompoundNodesByMolecule.filter((n) => n.length > 0),
+        // mol_filter_ok
+        nodeGroups: nonCompoundNodesByMolecule.filter(
+            (n) => n !== undefined && n.length > 0
+        ),
         compoundsNodes: compoundNodes,
     };
 

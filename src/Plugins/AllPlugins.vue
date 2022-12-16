@@ -16,6 +16,7 @@ system uses these to autopopulate with plugins. -->
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
     <LogWindowPlugin @onPluginSetup="onPluginSetup"></LogWindowPlugin>
     <MergeMolsPlugin @onPluginSetup="onPluginSetup"></MergeMolsPlugin>
+    <MoveShapesOnClickPlugin @onPluginSetup="onPluginSetup"></MoveShapesOnClickPlugin>
     <NavigatorWindowPlugin @onPluginSetup="onPluginSetup"></NavigatorWindowPlugin>
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
     <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
@@ -30,6 +31,7 @@ system uses these to autopopulate with plugins. -->
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
+    <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <!-- TEMPLATE1 END -->
@@ -55,6 +57,7 @@ import LoadPDBPlugin from "./Core/RemoteMolLoaders/LoadPDBPlugin.vue";
 import LoadPubChemPlugin from "./Core/RemoteMolLoaders/LoadPubChemPlugin.vue";
 import LogWindowPlugin from "./Core/Window/LogWindowPlugin.vue";
 import MergeMolsPlugin from "./Core/EditBar/MergeMolsPlugin.vue";
+import MoveShapesOnClickPlugin from "./Core/MoveShapesOnClickPlugin.vue";
 import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
 import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
 import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
@@ -69,6 +72,7 @@ import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
+import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 // TEMPLATE2 END
@@ -92,6 +96,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     LoadPubChemPlugin,
     LogWindowPlugin,
     MergeMolsPlugin,
+    MoveShapesOnClickPlugin,
     NavigatorWindowPlugin,
     NewProjectPlugin,
     OpenMoleculesPlugin,
@@ -106,9 +111,19 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     UndoPlugin,
     ViewerWindowPlugin,
 
+    FPocketWebPlugin,
     MolPropsPlugin,
     TestPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
+
+
+
 
 
 

@@ -80,8 +80,7 @@ export abstract class JobManagerParent {
                     return;
                 })
                 .catch((error) => {
-                    console.error(error);
-                    return;
+                    throw error;
                 });
         }
     }
@@ -146,8 +145,7 @@ export abstract class JobManagerParent {
             })
 
             .catch((error) => {
-                console.error(error);
-                return error;
+                throw error;
             });
     }
 
@@ -202,8 +200,7 @@ export abstract class JobManagerParent {
                 return jobStatuses;
             })
             .catch((error) => {
-                console.error(error);
-                return error;
+                throw error;
             });
     }
 
@@ -226,8 +223,7 @@ export abstract class JobManagerParent {
                 return response.responseStatus;
             })
             .catch((error) => {
-                console.error(error);
-                return error;
+                throw error;
             });
     }
 
@@ -246,8 +242,7 @@ export abstract class JobManagerParent {
                 return response.responseStatus;
             })
             .catch((error) => {
-                console.error(error);
-                return error;
+                throw error;
             });
     }
 
@@ -273,8 +268,7 @@ export abstract class JobManagerParent {
                 return response.responseStatus;
             })
             .catch((error) => {
-                console.error(error);
-                return error;
+                throw error;
             });
     }
 
@@ -298,8 +292,7 @@ export abstract class JobManagerParent {
                 return response.responseStatus;
             })
             .catch((error) => {
-                console.error(error);
-                return error;
+                throw error;
             });
     }
 

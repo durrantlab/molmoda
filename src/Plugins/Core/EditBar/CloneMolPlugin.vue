@@ -129,7 +129,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         return;
       })
       .catch((err) => {
-        console.error(err);
+        throw err;
       });
 
     // debugger  // Replace below with cloneMols when ready.
@@ -203,8 +203,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     //     return;
     //   })
     //   .catch((err: any) => {
-    //     console.log(err);
-    //     return;
+    //     throw err;
     //   });
   }
 

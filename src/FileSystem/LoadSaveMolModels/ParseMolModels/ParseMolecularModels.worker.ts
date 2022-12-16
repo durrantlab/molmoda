@@ -552,6 +552,7 @@ function cleanUpFileContents(molContainer: IMolContainer): IMolContainer {
     if (molContainer.nodes) {
         // Iterate through organizedAtoms. If object and has no keys, remove it.
         // If list and has length 0, remove it.
+        // mol_filter_ok
         molContainer.nodes = molContainer.nodes.filter((m: IMolContainer) => {
             let totalSubItems = 0;
             totalSubItems += m.nodes ? m.nodes.length : 0;
@@ -669,5 +670,5 @@ waitForDataFromMainThread()
         return;
     })
     .catch((err: any) => {
-        console.error(err);
+        throw err;
     });

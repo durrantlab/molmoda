@@ -22,7 +22,7 @@ import {
     getAllNodesFlattened,
     getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
-import { getStoreVar } from "@/Store/StoreExternalAccess";
+import { getStoreVar, setStoreVar } from "@/Store/StoreExternalAccess";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 
@@ -49,6 +49,11 @@ export abstract class ViewerParent {
 
     // Keep track of the shapes.
     shapeCache: { [id: string]: GenericShapeType } = {};
+
+    // This function is called to add a class to the a div surrounding the
+    // viewer. For example, to change the style on the cursor depending on
+    // whether you're hovering over an atom.
+    updateViewerDivClassCallback: undefined | ((classes: string) => void);
 
     /**
      * Removes a model from the viewer.
@@ -383,11 +388,13 @@ export abstract class ViewerParent {
                             console.warn("Uncomment below!");
                             // this._makeAtomsHoverableAndClickable({ model: visMol });
 
+                            this._makeAtomsHoverableAndClickable();
+
                             return molContainer;
                         })
                         .catch((err) => {
-                            console.log(err);
-                            return molContainer;
+                            throw err;
+                            // return molContainer;
                         });
                 } else if (molContainer.shape) {
                     addObjPromise = this.addShape(
@@ -406,6 +413,29 @@ export abstract class ViewerParent {
         }
 
         return addMolPromises;
+    }
+
+    /**
+     * Makes atoms responsible to mouse hovering and clicking.
+     */
+    private _makeAtomsHoverableAndClickable() {
+        this.makeAtomsClickable((x: number, y: number, z: number) => {
+            api.plugins.runPlugin("moveshapesonclick", [x, y, z]);
+            setStoreVar("clearFocusedMolecule", false);
+        });
+
+        this.makeAtomsHoverable(
+            (/* x: number, y: number, z: number */) => {
+                if (this.updateViewerDivClassCallback) {
+                    this.updateViewerDivClassCallback("cursor-pointer");
+                }
+            },
+            () => {
+                if (this.updateViewerDivClassCallback) {
+                    this.updateViewerDivClassCallback("cursor-grab");
+                }
+            }
+        );
     }
 
     /**
@@ -431,7 +461,7 @@ export abstract class ViewerParent {
      * @param  {number} z  The z coordinate.
      * @returns {void}
      */
-    abstract zoomToPoint(x: number, y: number, z: number): void;
+    abstract centerOnPoint(x: number, y: number, z: number): void;
 
     /**
      * Adds a label to the viewer
@@ -458,14 +488,34 @@ export abstract class ViewerParent {
     abstract removeLabel(label: GenericLabelType): void;
 
     /**
-     * Loads and sets up the viewer object.
+     * Loads and sets up the viewer object. Defined on the children.
      *
      * @param  {string} id  The HTML Dom id of the element to load the viewer
      *                      into.
      * @returns {Promise<GenericViewerType>}  A promise that resolves the viewer when
      *    it is loaded and set up.
      */
-    abstract loadAndSetupViewerLibrary(id: string): Promise<GenericViewerType>;
+    abstract _loadAndSetupViewerLibrary(id: string): Promise<GenericViewerType>;
+
+    /**
+     * Loads and sets up the viewer object.
+     *
+     * @param  {string}   id                            The HTML Dom id of the
+     *                                                  element to load the
+     *                                                  viewer into.
+     * @param  {Function} updateViewerDivClassCallback  A callback that updates
+     *                                                  the class of the
+     *                                                  viewer-encompassing div.
+     * @returns {Promise<GenericViewerType>}  A promise that resolves the viewer
+     *    when it is loaded and set up.
+     */
+    loadAndSetupViewerLibrary(
+        id: string,
+        updateViewerDivClassCallback: (classes: string) => void
+    ): Promise<GenericViewerType> {
+        this.updateViewerDivClassCallback = updateViewerDivClassCallback;
+        return this._loadAndSetupViewerLibrary(id);
+    }
 
     /**
      * Converts the 3DMoljs style stored in the molecules tree to a style format
@@ -537,10 +587,7 @@ export abstract class ViewerParent {
      *
      * @returns {string}  The VRML string.
      */
-    exportVRML(): string {
-        console.error("exportVRML not implemented");
-        return "";
-    }
+    abstract exportVRML(): string;
 
     /**
      * A helper function that looks up a model or shape in cache (in the
@@ -601,5 +648,85 @@ export abstract class ViewerParent {
             this.removeObject(id);
         }
         this.renderAll();
+    }
+
+    /**
+     * Makes atoms react when clicked.
+     *
+     * @param {Function} callBack  Function that runs when atom is clicked. The
+     *                             function is passed the x, y, and z
+     *                             coordinates of the atom.
+     */
+    abstract makeAtomsClickable(
+        callBack: (x: number, y: number, z: number) => any
+    ): void;
+
+    /**
+     * Makes atoms react when mouse moves over then (hoverable).
+     *
+     * @param {Function} onHoverInCallBack   Function that runs when hover over
+     *                                       atom starts.
+     * @param {Function} onHoverOutCallBack  Function that runs when hover over
+     *                                       atom ends.
+     */
+    abstract makeAtomsHoverable(
+        onHoverInCallBack: (x: number, y: number, z: number) => any,
+        onHoverOutCallBack: () => any
+    ): void;
+
+    /**
+     * Sets (updates) the style of an existing shape.
+     *
+     * @param {string} id  The id of the shape.
+     * @param {IShape | ISphere | IBox} shapeStyle  The style to set.
+     */
+    updateShapeStyle(id: string, shapeStyle: IShape | ISphere | IBox) {
+        // Rather than update the shape, we remove it and re-add it. This is
+        // because the 3DMoljs viewer does not have a way to update the position
+        // as best I can tell.
+        this.addShape(shapeStyle)
+            .then((shape: GenericShapeType) => {
+                this._removeShape(id);
+                this.shapeCache[id] = shape;
+                return;
+            })
+            .catch((err: Error) => {
+                throw err;
+            });
+    }
+
+    /**
+     * Gets the text to show when mouse hovers over an atom.
+     *
+     * @param {string} chain     The chain id.
+     * @param {string} resn      The residue name.
+     * @param {string} resi      The residue index.
+     * @param {string} atomName  The atom name.
+     * @returns {string | undefined}  The text to show, or undefined if no text
+     *   should be shown.
+     */
+    protected hoverLabelText(
+        chain?: string,
+        resn?: string,
+        resi?: string,
+        atomName?: string
+    ): string | undefined {
+        const lbls: string[] = [];
+        if (chain) {
+            lbls.push(chain);
+        }
+        if (resn) {
+            lbls.push(resn);
+        }
+        if (resi) {
+            lbls.push(resi);
+        }
+        if (atomName) {
+            lbls.push(atomName);
+        }
+        if (lbls.length > 0) {
+            return lbls.join(":");
+        }
+        return undefined;
     }
 }

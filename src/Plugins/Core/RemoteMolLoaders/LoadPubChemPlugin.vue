@@ -165,6 +165,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         return;
       })
       .catch(catchFunc);
+      // throw err;
   }
 
   /**
@@ -183,6 +184,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
       })
       .catch((err: string) => {
         api.messages.popupError(err);
+        // throw err;
       });
   }
 
@@ -235,6 +237,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .catch((_err: string) => {
           // If it failed, it could be because there's no 3D coordinates. Try 2D.
+          // throw err;
           return this.get2DVersion(filename);
         })
     );

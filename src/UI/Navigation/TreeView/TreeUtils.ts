@@ -118,61 +118,19 @@ export function getNodesOfType(
     onlyVisible = false
 ): IMolContainer[] {
     let nodesToConsider = getAllNodesFlattened(mols);
-    nodesToConsider = nodesToConsider.filter((node) => node.type === type);
+
+    nodesToConsider = extractFlattenedContainers(nodesToConsider, { type: type });
 
     if (onlyVisible) {
-        nodesToConsider = nodesToConsider.filter((node) => node.visible);
+        nodesToConsider = extractFlattenedContainers(nodesToConsider, {
+            visible: true,
+        });
     }
 
     // Note that children of compounds also marked compounds, so no need to
     // explicitly search for/include children.
 
     return nodesToConsider;
-}
-
-/**
- * Gets a description of a molecule. Useful when you want to refer to a molecule
- * in text (not the heirarchical tree). If slugified, could be used as a
- * filename. TODO: Not currently used, but I think it should be.
- *
- * @param  {IMolContainer}    mol                          The molecule to
- *                                                         describe.
- * @param  {IMolContainer[]}  molContainers                The list of all
- *                                                         molecules.
- * @param  {boolean}          [noCategoryComponent=false]  Whether to include
- *                                                         the category
- *                                                         component of the
- *                                                         description
- *                                                         ("protein",
- *                                                         "compound", "metal",
- *                                                         etc.).
- * @returns {string}  The description.
- */
-export function getMolDescription(
-    mol: IMolContainer,
-    molContainers: IMolContainer[],
-    noCategoryComponent = false
-): string {
-    // If it has no parent, just return it's title.
-    let curMol: IMolContainer | null = mol;
-    const titles = [getFileNameParts(curMol.title as string).basename];
-
-    while (curMol.parentId) {
-        curMol = getNodeOfId(curMol.parentId, molContainers);
-        if (curMol) {
-            // Add to top of list
-            titles.unshift(getFileNameParts(curMol.title as string).basename);
-            continue;
-        }
-        break;
-    }
-
-    if (noCategoryComponent && (titles.length > 2 || titles[1] === "Protein")) {
-        // Remove one in position 1 ("protein", "compound", "metal", etc.)
-        titles.splice(1, 1);
-    }
-
-    return titles.join(":").split("(")[0].trim();
 }
 
 /**
@@ -184,6 +142,7 @@ export function getMolDescription(
 export function keepUniqueMolContainers(
     molContainers: IMolContainer[]
 ): IMolContainer[] {
+    // mol_filter_ok
     return molContainers.filter(
         (node, index, self) => index === self.findIndex((t) => t.id === node.id)
     );
@@ -212,19 +171,23 @@ export function getTerminalNodesToConsider(
     let molsToKeep: IMolContainer[] = [];
 
     if (molsToConsider.visible) {
-        molsToKeep.push(...terminalNodes.filter((m) => m.visible));
+        molsToKeep.push(
+            ...extractFlattenedContainers(terminalNodes, { visible: true })
+        );
     }
 
     if (molsToConsider.selected) {
         molsToKeep.push(
-            ...terminalNodes.filter((m) => m.selected !== SelectedType.False)
+            ...extractFlattenedContainers(terminalNodes, { selected: true })
         );
     }
 
     if (molsToConsider.hiddenAndUnselected) {
         molsToKeep.push(
+            // mol_filter_ok
             ...terminalNodes.filter(
-                (m) => !m.visible && m.selected === SelectedType.False
+                (m: IMolContainer) =>
+                    !m.visible && m.selected === SelectedType.False
             )
         );
     }
@@ -255,10 +218,7 @@ export function removeNode(node: string | IMolContainer | null) {
 
     if (!node.parentId) {
         // It's a root node, without a parent id.
-        setStoreVar(
-            "molecules",
-            mols.filter((n: IMolContainer) => n.id !== id)
-        );
+        setStoreVar("molecules", extractFlattenedContainers(mols, { notId: id }));
         return;
     }
 
@@ -281,7 +241,7 @@ export function removeNode(node: string | IMolContainer | null) {
             break;
         }
 
-        curNode.nodes = curNode.nodes.filter((n) => n.id !== id);
+        curNode.nodes = extractFlattenedContainers(curNode.nodes, { notId: id });
         if (curNode.nodes.length > 0) {
             // Parent node still has children (siblings of just deleted), so
             // we're done.
@@ -439,62 +399,206 @@ export function cloneMols(
         // then make copes of all models. modelsToAtoms => atomsToModels
         topNode = modelsToAtoms(topNode);
         promises.push(atomsToModels(topNode));
-
-        //     // Cloning the molecule. Make a deep copy of the node.
-        //     nodeToActOn = modelsToAtoms(nodeToActOn);
-        //     clonedNode = atomsToModels(nodeToActOn)
-        //         .then((node) => {
-        //             // Get the nodes ancestory
-        //             const nodeGenealogy: IMolContainer[] = getNodeAncestory(
-        //                 node.id as string,
-        //                 allMols
-        //             );
-
-        //             // Make copies of all the nodes in the ancestory, emptying the nodes
-        //             // except for the last one.
-        //             for (let i = 0; i < nodeGenealogy.length; i++) {
-        //                 nodeGenealogy[i] = {
-        //                     ...nodeGenealogy[i],
-        //                 };
-
-        //                 if (i < nodeGenealogy.length - 1) {
-        //                     nodeGenealogy[i].nodes = [];
-        //                 }
-        //             }
-
-        //             // Place each node in the ancestory under the next node.
-        //             for (let i = 0; i < nodeGenealogy.length - 1; i++) {
-        //                 nodeGenealogy[i].nodes?.push(nodeGenealogy[i + 1]);
-
-        //                 // Also, parentId
-        //                 nodeGenealogy[i + 1].parentId = nodeGenealogy[i].id;
-        //             }
-
-        //             const topNode = nodeGenealogy[0];
-
-        //             // Now you must redo all ids because they could be distinct from the
-        //             // original copy.
-        //             const allNodesFlattened = [topNode];
-        //             if (topNode.nodes) {
-        //                 allNodesFlattened.push(
-        //                     ...getAllNodesFlattened(topNode.nodes)
-        //                 );
-        //             }
-        //             const oldIdToNewId = new Map<string, string>();
-        //             for (const node of allNodesFlattened) {
-        //                 oldIdToNewId.set(node.id as string, randomID());
-        //             }
-        //             for (const node of allNodesFlattened) {
-        //                 node.id = oldIdToNewId.get(node.id as string);
-        //                 if (node.parentId) {
-        //                     node.parentId = oldIdToNewId.get(node.parentId);
-        //                 }
-        //                 node.selected = SelectedType.False;
-        //                 node.viewerDirty = true;
-        //                 node.focused = false;
-        //             }
-        //         });
     }
 
     return Promise.all(promises);
+}
+
+/**
+ * Gets a description of a molecule. Useful when you want to refer to a molecule
+ * in text (not the heirarchical tree). If slugified, could be used as a
+ * filename. TODO: Not currently used.
+ *
+ * @param  {IMolContainer}    mol                          The molecule to
+ *                                                         describe.
+ * @param  {IMolContainer[]}  molContainers                The list of all
+ *                                                         molecules.
+ * @param  {boolean}          [noCategoryComponent=false]  Whether to include
+ *                                                         the category
+ *                                                         component of the
+ *                                                         description
+ *                                                         ("protein",
+ *                                                         "compound", "metal",
+ *                                                         etc.).
+ * @returns {string}  The description.
+ */
+export function getMolDescription(
+    mol: IMolContainer,
+    molContainers: IMolContainer[],
+    noCategoryComponent = false
+): string {
+    // If it has no parent, just return it's title.
+    let curMol: IMolContainer | null = mol;
+    const titles = [getFileNameParts(curMol.title as string).basename];
+
+    while (curMol.parentId) {
+        curMol = getNodeOfId(curMol.parentId, molContainers);
+        if (curMol) {
+            // Add to top of list
+            titles.unshift(getFileNameParts(curMol.title as string).basename);
+            continue;
+        }
+        break;
+    }
+
+    if (noCategoryComponent && (titles.length > 2 || titles[1] === "Protein")) {
+        // Remove one in position 1 ("protein", "compound", "metal", etc.)
+        titles.splice(1, 1);
+    }
+
+    return titles.join(":").split("(")[0].trim();
+}
+
+/**
+ * Gets the name of the molecule in path-like format.
+ *
+ * @param {IMolContainer} molContainer  The molecule container.
+ * @param {string} [separator=">"]  The separator to use.
+ * @param {number} [maxLength=20]  Abbreviate to no longer than this length. If
+ *                                 0 or less, don't abbreviate.
+ * @param {IMolContainer[]} [allMols]  All the molecules.
+ * @returns {string}  The name of the molecule in path-like format.
+ */
+export function nodePathName(
+    molContainer: IMolContainer,
+    separator = ">",
+    maxLength = 20,
+    allMols?: IMolContainer[]
+): string {
+    // If molecules not provided, get them from the store (all molecules).
+    if (allMols === undefined) {
+        allMols = getStoreVar("molecules") as IMolContainer[];
+    }
+
+    const ancestors = getNodeAncestory(molContainer, allMols);
+    let titles = ancestors.map((x) => x.title);
+
+    // Simplify words some
+    let newTitle = "";
+    if (maxLength > 0) {
+        titles = titles.map((x) => {
+            if (x === undefined) {
+                return "";
+            }
+            return x
+                .replace("Protein", "Prot")
+                .replace("Compound", "Cmpd")
+                .replace("Solvent", "Sol");
+        });
+
+        newTitle = titles.join(separator);
+        while (titles.length > 3) {
+            if (newTitle.length < maxLength) {
+                break;
+            }
+
+            // remove any existing elements of value ...
+            titles = titles.filter((x) => x !== "...");
+
+            // Set middle element to ...
+            let middle = Math.floor(titles.length / 2);
+            if (middle === titles.length - 1) {
+                middle--;
+            }
+            if (middle === 0) {
+                middle++;
+            }
+            titles[middle] = "...";
+
+            newTitle = titles.join(separator);
+        }
+        if (newTitle.length > maxLength) {
+            newTitle = molContainer.title;
+        }
+    } else {
+        // Not abbreviating
+        newTitle = titles.join(separator);
+    }
+
+    return newTitle;
+}
+
+export interface IFilterMol {
+    model?: boolean | undefined;
+    shape?: boolean | undefined;
+    selected?: boolean | SelectedType | undefined;
+    visible?: boolean | undefined;
+    type?: MolType | undefined;
+    notId?: string | undefined;
+    undefined?: boolean | undefined;
+}
+
+export function extractFlattenedContainers(
+    molContainers: IMolContainer[],
+    filter: IFilterMol
+): IMolContainer[] {
+    // First filter out models
+    if (filter.model !== undefined) {
+        // mol_filter_ok
+        molContainers = molContainers.filter((molContainer) => {
+            const hasModel = molContainer.model !== undefined;
+            return hasModel === filter.model;
+        });
+    }
+
+    // Then filter out shapes
+    if (filter.shape !== undefined) {
+        // mol_filter_ok
+        molContainers = molContainers.filter((molContainer) => {
+            const hasShape = molContainer.shape !== undefined;
+            return hasShape === filter.shape;
+        });
+    }
+
+    // Then filter out selected
+    if (filter.selected !== undefined) {
+        // Is boolean?
+        if (typeof filter.selected === "boolean") {
+            // mol_filter_ok
+            molContainers = molContainers.filter((molContainer) => {
+                const isSelected = molContainer.selected !== SelectedType.False;
+                return isSelected === filter.selected;
+            });
+        } else {
+            // Of type SelectedType
+            // mol_filter_ok
+            molContainers = molContainers.filter((molContainer) => {
+                return molContainer.selected === filter.selected;
+            });
+        }
+    }
+
+    // Then filter out visible
+    if (filter.visible !== undefined) {
+        // mol_filter_ok
+        molContainers = molContainers.filter((molContainer) => {
+            const isVisible = molContainer.visible === true;
+            return isVisible === filter.visible;
+        });
+    }
+
+    if (filter.undefined !== undefined) {
+        // mol_filter_ok
+        molContainers = molContainers.filter((molContainer) => {
+            const isUndefined = molContainer === undefined;
+            return isUndefined === filter.undefined;
+        });
+    }
+
+    // Then filter out type
+    if (filter.type !== undefined) {
+        // mol_filter_ok
+        molContainers = molContainers.filter((molContainer) => {
+            return molContainer.type === filter.type;
+        });
+    }
+
+    if (filter.notId !== undefined) {
+        // mol_filter_ok
+        molContainers = molContainers.filter((molContainer) => {
+            return molContainer.id !== filter.notId;
+        });
+    }
+
+    return molContainers;
 }

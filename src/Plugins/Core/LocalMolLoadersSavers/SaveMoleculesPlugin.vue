@@ -306,8 +306,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
           return;
         })
         .catch((err: any) => {
-          console.log(err);
-          return;
+          throw err;
         });
     }
 
@@ -343,8 +342,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         return;
       })
       .catch((err: any) => {
-        console.log(err);
-        return;
+        throw err;
       });
   }
 

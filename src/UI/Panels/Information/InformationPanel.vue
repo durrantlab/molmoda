@@ -1,19 +1,19 @@
 <template>
-  <div
-    class="information-container"
-    ref="information-container"
-    v-if="smiles !== ''"
-  >
-    <Viewer2D width="100%" :maxHeight="150" :smiles="smiles" />
-    <FormWrapper cls="mb-3">
-      <FormInput
-        v-model="smiles"
-        :readonly="true"
-        placeHolder="SMILES"
-      ></FormInput>
-    </FormWrapper>
-    <MolProps :smiles="smiles" :molContainer="molContainer" />
-  </div>
+    <div
+        class="information-container"
+        ref="information-container"
+        v-if="smiles !== ''"
+    >
+        <Viewer2D width="100%" :maxHeight="150" :smiles="smiles" />
+        <FormWrapper cls="mb-3">
+            <FormInput
+                v-model="smiles"
+                :readonly="true"
+                placeHolder="SMILES"
+            ></FormInput>
+        </FormWrapper>
+        <MolProps :smiles="smiles" :molContainer="molContainer" />
+    </div>
 </template>
 
 <script lang="ts">
@@ -31,52 +31,51 @@ import { getFirstSelected, getSmilesOfMolContainer } from "./Utils";
  * InformationPanel component
  */
 @Options({
-  components: {
-    Viewer2D,
-    MolProps,
-    Table,
-    FormInput,
-    FormWrapper,
-  },
+    components: {
+        Viewer2D,
+        MolProps,
+        Table,
+        FormInput,
+        FormWrapper,
+    },
 })
 export default class InformationPanel extends Vue {
-  smiles = "";
-  molContainer: IMolContainer | undefined = undefined;
+    smiles = "";
+    molContainer: IMolContainer | undefined = undefined;
 
-  /**
-   * Gets the molecules from the vuex store.
-   *
-   * @returns {IMolContainer[]}  The molecules from the vuex store.
-   */
-  get molecules(): IMolContainer[] {
-    return this.$store.state.molecules;
-  }
-
-  /**
-   * Watches the molecules in the vuex store. If the molecules change, set the
-   * smiles of the selected molecule.
-   *
-   * @param {IMolContainer[]} allMolecules  The new value of the molecules.
-   */
-  @Watch("molecules", { immediate: false, deep: true })
-  onMolecules(allMolecules: IMolContainer[]) {
-    const firstSelected = getFirstSelected(allMolecules);
-
-    if (firstSelected === null) {
-      return;
+    /**
+     * Gets the molecules from the vuex store.
+     *
+     * @returns {IMolContainer[]}  The molecules from the vuex store.
+     */
+    get molecules(): IMolContainer[] {
+        return this.$store.state.molecules;
     }
 
-    getSmilesOfMolContainer(firstSelected)
-      .then((smi) => {
-        this.smiles = smi;
-        this.molContainer = firstSelected;
-        return;
-      })
-      .catch((err) => {
-        console.log(err);
-        return;
-      });
-  }
+    /**
+     * Watches the molecules in the vuex store. If the molecules change, set the
+     * smiles of the selected molecule.
+     *
+     * @param {IMolContainer[]} allMolecules  The new value of the molecules.
+     */
+    @Watch("molecules", { immediate: false, deep: true })
+    onMolecules(allMolecules: IMolContainer[]) {
+        const firstSelected = getFirstSelected(allMolecules);
+
+        if (firstSelected === null) {
+            return;
+        }
+
+        getSmilesOfMolContainer(firstSelected)
+            .then((smi) => {
+                this.smiles = smi;
+                this.molContainer = firstSelected;
+                return;
+            })
+            .catch((err) => {
+                throw err;
+            });
+    }
 }
 </script>
 

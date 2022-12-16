@@ -93,7 +93,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
 
       //     // Remove this node from the parent's nodes list.
       //     if (parentNode.nodes) {
-      //       parentNode.nodes = parentNode.nodes.filter(
+      //       parentNode.nodes = parentNode.nodes.fidlter(
       //         (n) => n.id !== this.nodeToActOn?.id
       //       );
       //     }
@@ -101,7 +101,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
       // } else {
       //   // It's a root node, without a parent id.
       //   let molecules = this.$store.state.molecules;
-      //   molecules = molecules.filter(
+      //   molecules = molecules.fdilter(
       //     (n: IMolContainer) => n.id !== this.nodeToActOn?.id
       //   );
       //   this.$store.commit("updateMolecules", molecules);

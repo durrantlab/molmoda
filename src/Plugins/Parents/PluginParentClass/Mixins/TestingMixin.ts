@@ -148,6 +148,7 @@ export class TestingMixin extends Vue {
                 })
                 .catch((err: string) => {
                     api.messages.popupError(err);
+                    // throw err;
                 });
         }
         this.testProteinLoadRequested = true;

@@ -4,7 +4,10 @@ import {
     IMolContainer,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+    extractFlattenedContainers,
+    getAllNodesFlattened,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 
 /**
  * Checks whether the user has selected any molecule.
@@ -84,9 +87,12 @@ function numSelected(molContainers?: IMolContainer[]): number {
     }
 
     // Check if user has selected anything
-    const selectedNodes = getAllNodesFlattened(
-        molContainers as IMolContainer[]
-    ).filter((n) => n.selected === SelectedType.True);
+    const selectedNodes = extractFlattenedContainers(
+        getAllNodesFlattened(molContainers as IMolContainer[]),
+        {
+            selected: SelectedType.True,
+        }
+    );
     return selectedNodes.length;
 }
 

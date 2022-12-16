@@ -160,7 +160,7 @@ export function savePngUri(fileName: string, pngUri: string) {
             return;
         })
         .catch((err: any) => {
-            console.error(err);
+            throw err;
         });
 }
 

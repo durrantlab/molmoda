@@ -348,7 +348,7 @@ export default class Table extends Vue {
           return;
         })
         .catch((err: any) => {
-          console.error(err);
+          throw err;
         });
     }
   }

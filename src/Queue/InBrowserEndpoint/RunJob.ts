@@ -94,6 +94,7 @@ export function startJob(
             .catch(() => {
                 // Job is done with an error. Move it to done queue.
                 endpoint.moveJobsToDoneQueue([pendingJob.id], JobStatus.Error);
+                // throw err;
             });
     } else {
         // Job is done. Move it to done queue. TODO: What about if error in

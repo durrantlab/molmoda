@@ -11,7 +11,10 @@ import {
     ICylinder,
     IArrow,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { colorNameToHex } from "../../Options/Styles/ColorSelect/ColorConverter";
+import {
+    analyzeColor,
+    colorNameToHex,
+} from "../../Options/Styles/ColorSelect/ColorConverter";
 import { elementColors, defaultElementColor } from "../ElementColors";
 import { GLModel } from "../GLModelType";
 import {
@@ -23,6 +26,7 @@ import {
     GenericShapeType,
 } from "./Types";
 import { ViewerParent } from "./ViewerParent";
+import * as api from "@/Api";
 
 let NGL: any;
 
@@ -31,7 +35,7 @@ let NGL: any;
  */
 export class ViewerNGL extends ViewerParent {
     private _nglObj: any;
-    private resizeInterval: any;
+    private _resizeInterval: any;
 
     /**
      * Removes a model from the viewer.
@@ -52,8 +56,11 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string} id  The id of the shape to remove.
      */
     _removeShape(id: string) {
-        // TODO:
-        throw new Error("Method not implemented.");
+        const shape = this.lookup(id);
+        if (shape) {
+            shape.associatedShapeComponent.dispose();
+            shape.dispose();
+        }
     }
 
     /**
@@ -99,8 +106,12 @@ export class ViewerNGL extends ViewerParent {
      * @param  {string} id  The shape to hide.
      */
     hideShape(id: string) {
-        // TODO:
-        throw new Error("Method not implemented.");
+        const shape = this.lookup(id);
+        if (shape) {
+            shape.associatedShapeComponent.addRepresentation("buffer", {
+                opacity: 0,
+            });
+        }
     }
 
     /**
@@ -110,8 +121,13 @@ export class ViewerNGL extends ViewerParent {
      * @param  {number} opacity  The opacity to show the shape at.
      */
     showShape(id: string, opacity: number) {
-        // TODO:
-        throw new Error("Method not implemented.");
+        // debugger;
+        const shape = this.lookup(id);
+        if (shape) {
+            shape.associatedShapeComponent.addRepresentation("buffer", {
+                opacity,
+            });
+        }
     }
 
     /**
@@ -397,7 +413,7 @@ export class ViewerNGL extends ViewerParent {
                 });
             })
             .catch((err) => {
-                console.error(err);
+                throw err;
             });
     }
 
@@ -408,7 +424,39 @@ export class ViewerNGL extends ViewerParent {
      * @returns {GenericShapeType}  The sphere that was added.
      */
     addSphere(shape: ISphere): Promise<GenericShapeType> {
-        throw new Error("Not implemented");
+        return dynamicImports.ngl.module.then((ngl: any) => {
+            const colorVec = this._getColorVec(shape);
+            const sphere = new ngl.Shape("sphere", { disableImpostor: true });
+            sphere.addSphere(shape.center, colorVec, shape.radius);
+            this._addShapeToViewer(sphere, shape.opacity as number);
+            return sphere;
+        });
+    }
+
+    /**
+     * Adds a shape to the viewer.
+     *
+     * @param  {GenericShapeType} shape    The shape to add.
+     * @param  {number}           opacity  The opacity of the shape.
+     */
+    private _addShapeToViewer(shape: GenericShapeType, opacity: number) {
+        const shapeComp = this._nglObj.addComponentFromObject(shape);
+        shape.associatedShapeComponent = shapeComp;
+        shapeComp.addRepresentation("buffer", { opacity });
+    }
+
+    /**
+     * Gets a normalized color vector from a shape.
+     *
+     * @param  {IShape} shape  The shape to get the color from.
+     * @returns {[number, number, number]}  The color vector.
+     */
+    private _getColorVec(shape: IShape): [number, number, number] {
+        return analyzeColor(shape.color as string).rgb?.map((c) => c / 255) as [
+            number,
+            number,
+            number
+        ];
     }
 
     /**
@@ -418,7 +466,20 @@ export class ViewerNGL extends ViewerParent {
      * @returns {GenericShapeType}  The box that was added.
      */
     addBox(shape: IBox): Promise<GenericShapeType> {
-        throw new Error("Not implemented");
+        return dynamicImports.ngl.module.then((ngl: any) => {
+            const colorVec = this._getColorVec(shape);
+            const box = new ngl.Shape("box", { disableImpostor: true });
+            box.addBox(
+                shape.center,
+                colorVec,
+                // TODO: I'm not 100% sure below is correct.
+                shape.dimensions[0],
+                [0, shape.dimensions[1], 0],
+                [0, 0, shape.dimensions[2]]
+            );
+            this._addShapeToViewer(box, shape.opacity as number);
+            return box;
+        });
     }
 
     /**
@@ -428,7 +489,13 @@ export class ViewerNGL extends ViewerParent {
      * @returns {GenericShapeType}  The arrow that was added.
      */
     addArrow(shape: IArrow): Promise<GenericShapeType> {
-        throw new Error("Not implemented");
+        return dynamicImports.ngl.module.then((ngl: any) => {
+            const colorVec = this._getColorVec(shape);
+            const arrow = new ngl.Shape("arrow", { disableImpostor: true });
+            arrow.addArrow(shape.center, shape.endPt, colorVec, shape.radius);
+            this._addShapeToViewer(arrow, shape.opacity as number);
+            return arrow;
+        });
     }
 
     /**
@@ -438,7 +505,20 @@ export class ViewerNGL extends ViewerParent {
      * @returns {GenericShapeType}  The cylinder that was added.
      */
     addCylinder(shape: ICylinder): Promise<GenericShapeType> {
-        throw new Error("Not implemented");
+        return dynamicImports.ngl.module.then((ngl: any) => {
+            const colorVec = this._getColorVec(shape);
+            const cylinder = new ngl.Shape("cylinder", {
+                disableImpostor: true,
+            });
+            cylinder.addCylinder(
+                shape.center,
+                shape.endPt,
+                colorVec,
+                shape.radius
+            );
+            this._addShapeToViewer(cylinder, shape.opacity as number);
+            return cylinder;
+        });
     }
 
     /**
@@ -465,6 +545,11 @@ export class ViewerNGL extends ViewerParent {
         this._nglObj.animationControls.clear();
 
         // Get a box that encompasses all the models.
+        if (models.length === 0 || !models[0].getBox) {
+            // Nothing you can do...
+            return;
+        }
+
         const encompassingBox = models[0].getBox();
         for (let i = 1; i < models.length; i++) {
             encompassingBox.union(models[i].getBox());
@@ -492,7 +577,7 @@ export class ViewerNGL extends ViewerParent {
      * @param  {number} y  The y coordinate.
      * @param  {number} z  The z coordinate.
      */
-    zoomToPoint(x: number, y: number, z: number) {
+    centerOnPoint(x: number, y: number, z: number) {
         this._nglObj.animationControls.clear();
 
         const box = this._nglObj.getBox();
@@ -525,22 +610,17 @@ export class ViewerNGL extends ViewerParent {
         y: number,
         z: number
     ): GenericLabelType {
-        return this._nglObj.addLabel(
-            // TODO:
-            lblTxt,
-            // https://3dmol.csb.pitt.edu/doc/types.html#LabelSpec
-            {
-                position: { x: x, y: y, z: z },
-                backgroundColor: "white",
-                fontColor: "black",
-                borderThickness: 1,
-                borderColor: "black",
-                backgroundOpacity: 0.9,
-                // screenOffset: $3Dmol.Vector2(10, 10),
-                inFront: true,
-                alignment: "bottomCenter", // 'bottomLeft'
-            }
-        );
+        return this._nglObj.addLabel(lblTxt, {
+            position: { x: x, y: y, z: z },
+            backgroundColor: "white",
+            fontColor: "black",
+            borderThickness: 1,
+            borderColor: "black",
+            backgroundOpacity: 0.9,
+            // screenOffset: $3Dmol.Vector2(10, 10),
+            inFront: true,
+            alignment: "bottomCenter", // 'bottomLeft'
+        });
     }
 
     /**
@@ -549,7 +629,7 @@ export class ViewerNGL extends ViewerParent {
      * @param  {GenericLabelType} label  The label to remove.
      */
     removeLabel(label: GenericLabelType) {
-        this._nglObj``.removeLabel(label);
+        this._nglObj.removeLabel(label);
     }
 
     /**
@@ -560,7 +640,7 @@ export class ViewerNGL extends ViewerParent {
      * @returns {Promise<any>}  A promise that resolves the viewer object when
      *     3dmol.js is loaded.
      */
-    loadAndSetupViewerLibrary(id: string): Promise<GenericViewerType> {
+    _loadAndSetupViewerLibrary(id: string): Promise<GenericViewerType> {
         return dynamicImports.ngl.module
             .then((ngl: any) => {
                 NGL = ngl;
@@ -583,7 +663,7 @@ export class ViewerNGL extends ViewerParent {
                 // window.
                 const div = document.getElementById(id);
                 if (div) {
-                    this.resizeInterval = setInterval(() => {
+                    this._resizeInterval = setInterval(() => {
                         if (div.clientWidth !== stage.width) {
                             stage.handleResize();
                         }
@@ -599,52 +679,22 @@ export class ViewerNGL extends ViewerParent {
 
                 // Check out: https://nglviewer.org/ngl/api/manual/usage/interaction-controls.html
 
-                setTimeout(() => {
-                    const tooltip = document.createElement("div");
-                    Object.assign(tooltip.style, {
-                        display: "none",
-                        position: "absolute",
-                        zIndex: 10,
-                        pointerEvents: "none",
-                        backgroundColor: "rgba(0, 0, 0, 0.6)",
-                        color: "lightgrey",
-                        padding: "0.5em",
-                        fontFamily: "sans-serif",
-                    });
-                    stage.viewer.container.appendChild(tooltip);
-
-                    stage.signals.hovered.removeAll();
-                    stage.signals.hovered.add(function (pickingProxy: any) {
-                        if (
-                            pickingProxy &&
-                            (pickingProxy.atom || pickingProxy.bond)
-                        ) {
-                            // debugger;
-                            // const atom =
-                            //     pickingProxy.atom ||
-                            //     pickingProxy.closestBondAtom;
-                            const cp = pickingProxy.canvasPosition;
-                            stage.tooltip.innerText = "MOO ATOM: "; //  + atom.qualifiedName();
-                            stage.tooltip.style.bottom = cp.y - 150 + "px";
-                            stage.tooltip.style.left = cp.x - 150 + "px";
-                            stage.tooltip.style.display = "block";
-                            // console.log("hi", tooltip);
-                        } else {
-                            stage.tooltip.style.display = "none";
-                        }
-                    });
-                }, 1000);
+                // setTimeout(() => {
 
                 return this as ViewerParent;
             })
             .catch((err: any) => {
-                console.log(err);
-                return this as ViewerParent;
+                throw err;
+                // return this as ViewerParent;
             });
     }
 
+    /**
+     * Gets the data uri of the current view (png).
+     *
+     * @returns {Promise<string>}  A promise that resolves to the data uri.
+     */
     pngURI(): Promise<string> {
-        // debugger;
         return this._nglObj.viewer
             .makeImage({
                 factor: 1,
@@ -666,8 +716,8 @@ export class ViewerNGL extends ViewerParent {
                 });
             })
             .catch((err: any) => {
-                console.log(err);
-                return "";
+                throw err;
+                // return "";
             });
     }
 
@@ -677,8 +727,118 @@ export class ViewerNGL extends ViewerParent {
     unLoad() {
         this._nglObj.dispose();
         this._nglObj = null;
-        if (this.resizeInterval) {
-            clearInterval(this.resizeInterval);
+        if (this._resizeInterval) {
+            clearInterval(this._resizeInterval);
         }
     }
+
+    /**
+     * Makes atoms react when clicked.
+     *
+     * @param {Function} callBack  Function that runs when atom is clicked. The
+     *                             function is passed the x, y, and z
+     *                             coordinates of the atom.
+     */
+    makeAtomsClickable(callBack: (x: number, y: number, z: number) => any) {
+        this._nglObj.signals.clicked.add((pickingProxy: any) => {
+            if (pickingProxy.atom) {
+                const coors = pickingProxy.atom.positionToArray();
+                callBack(coors[0], coors[1], coors[2]);
+            }
+        });
+    }
+
+    currentMouseHoverState = 1;
+    toolTipDiv: HTMLDivElement | null = null;
+
+    /**
+     * Makes atoms react when mouse moves over then (hoverable).
+     *
+     * @param {Function} onHoverInCallBack   Function that runs when hover over
+     *                                       atom starts.
+     * @param {Function} onHoverOutCallBack  Function that runs when hover over
+     *                                       atom ends.
+     */
+    makeAtomsHoverable(
+        onHoverInCallBack: (x: number, y: number, z: number) => any,
+        onHoverOutCallBack: () => any
+    ) {
+        if (this.toolTipDiv === null) {
+            this.toolTipDiv = document.createElement("div");
+            Object.assign(this.toolTipDiv.style, {
+                display: "none",
+                position: "absolute",
+                zIndex: 10,
+                pointerEvents: "none",
+                backgroundColor: "rgba(0, 0, 0, 0.6)",
+                color: "lightgrey",
+                padding: "0.5em",
+                fontFamily: "sans-serif",
+            });
+            this._nglObj.viewer.container.appendChild(this.toolTipDiv);
+
+            // Remove original tooltip from DOM
+            this._nglObj.tooltip.parentElement.removeChild(
+                this._nglObj.tooltip
+            );
+        }
+
+        this._nglObj.signals.hovered.removeAll();
+        this._nglObj.signals.hovered.add((pickingProxy: any) => {
+            if (pickingProxy && (pickingProxy.atom || pickingProxy.bond)) {
+                const atom = pickingProxy.atom || pickingProxy.closestBondAtom;
+                if (this.toolTipDiv !== null) {
+                    // const lblTxt = "";
+                    const atomInf = atom.toObject();
+                    const lblTxt = this.hoverLabelText(
+                        atomInf.chainname,
+                        atomInf.resname,
+                        atomInf.resno,
+                        atomInf.atomname
+                    );
+
+                    if (lblTxt) {
+                        const cp = pickingProxy.canvasPosition;
+                        this.toolTipDiv.innerText = lblTxt; //  + atom.qualifiedName();
+                        this.toolTipDiv.style.bottom =
+                            (cp.y + 2).toString() + "px";
+                        this.toolTipDiv.style.left =
+                            (cp.x + 2).toString() + "px";
+                        this.toolTipDiv.style.display = "block";
+                    } else {
+                        this.toolTipDiv.style.display = "none";
+                    }
+                }
+
+                if (this.currentMouseHoverState === 0) {
+                    return;
+                }
+
+                onHoverInCallBack(atom.x, atom.y, atom.z);
+                this.currentMouseHoverState = 0;
+            } else {
+                if (this.toolTipDiv !== null) {
+                    this.toolTipDiv.style.display = "none";
+                }
+                if (this.currentMouseHoverState === 1) {
+                    return;
+                }
+
+                onHoverOutCallBack();
+
+                this.currentMouseHoverState = 1;
+            }
+        });
+        // }, 1000);
+    }
+
+    /**
+     * Gets a VRML model of the current scene. But not implemented for NGL.
+     *
+     * @returns {string}  The VRML string.
+     */
+     exportVRML(): string {
+        api.messages.popupError("The currently selected molecular viewer (NGL) does not support VRML export. Try switching to the 3Dmol.js viewer instead (Biotite > Settings).")
+        return "";
+     }
 }

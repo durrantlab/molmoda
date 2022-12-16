@@ -29,8 +29,7 @@ export function parseUsingBiotite(
             return undefined;
         })
         .catch((err: any) => {
-            console.error(err);
-            return undefined;
+            throw err;
         });
 }
 

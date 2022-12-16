@@ -44,6 +44,6 @@ export function parseUsingOpenBabel(
         .catch((err) => {
             // It's a catch block for the promise returned by
             // convertMolFormatOpenBabel.
-            console.warn(err);
+            throw err;
         });
 }

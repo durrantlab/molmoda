@@ -154,8 +154,7 @@ export default class TestPlugin extends PluginParentClass {
     //     return;
     //   })
     //   .catch((err) => {
-    //     debugger;
-    //     return;
+    //     throw err;
     //   });
 
     return runOpenBabel(
@@ -166,12 +165,11 @@ export default class TestPlugin extends PluginParentClass {
     )
       .then((res: any) => {
         debugger;
-        console.log(res);
+        // console.log(res);
         return undefined;
       })
       .catch((err: any) => {
-        console.log(err);
-        return undefined;
+        throw err;
       });
   }
 }

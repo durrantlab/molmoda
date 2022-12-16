@@ -39,9 +39,8 @@ function addJsToHeader(
                         resolve(module);
                         return;
                     })
-                    .catch(() => {
-                        console.warn("error");
-                        return;
+                    .catch((err) => {
+                        throw err;
                     });
             }, 5000);
         };
@@ -281,7 +280,6 @@ export const dynamicImports = {
             //         // });
             //         // return new Promise(function (resolve) {
             //         //     const checkReady = () => {
-            //         //         console.log("checking");
             //         //         if (ObabelModule) {
             //         //             (window as any)["ObabelModule"] = ObabelModule;
             //         //             resolve(ObabelModule);
@@ -326,7 +324,6 @@ export const dynamicImports = {
                     });
                     const prom2 = new Promise(function (resolve) {
                         const checkReady = () => {
-                            console.log("checking");
                             if (OpenBabel.ObConversionWrapper) {
                                 (window as any)["OpenBabel"] = OpenBabel;
                                 resolve(undefined);
@@ -356,7 +353,6 @@ export const dynamicImports = {
             //     });
             //     const prom2 = new Promise(function (resolve) {
             //         const checkReady = () => {
-            //             console.log("checking");
             //             if (OpenBabel.ObConversionWrapper) {
             //                 (window as any)["OpenBabel"] = OpenBabel;
             //                 modulesAlreadyAddedToHeader["openbabeljs"] =
@@ -419,7 +415,8 @@ export const dynamicImports = {
             //     "rdkitjs",
             //     "js/rdkitjs/RDKit_minimal.js",
             //     () => {
-            //         return (window as any).initRDKitModule().catch(() => {
+            //         return (window as any).initRDKitModule().catch((err) => {
+                // throw err;
             //             // handle loading errors here...
             //         });
             //     }
@@ -445,6 +442,51 @@ export const dynamicImports = {
             ).then((sheetsjs) => {
                 return sheetsjs;
             });
+        },
+    },
+
+    fpocketweb: {
+        credit: {
+            name: "fpocketweb",
+            url: "https://git.durrantlab.pitt.edu/jdurrant/fpocketweb",
+            license: Licenses.APACHE2,
+        },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            // NOTE: Unfortunately, the only way I could get this to work was by
+            // attaching it to the main window. A promise that resolves the
+            // module is not effective for some reason.
+
+            return addJsToHeader(
+                "fpocketweb",
+                "js/fpocketweb/FpocketWeb.min.js",
+                () => {
+                    return Promise.resolve((window as any).FpocketWeb);
+                    // const OpenBabel = (window as any)["OpenBabelModule"]();
+                    // const prom1 = new Promise((resolve) => {
+                    //     OpenBabel.onRuntimeInitialized = () => {
+                    //         resolve(undefined);
+                    //     };
+                    // });
+                    // const prom2 = new Promise(function (resolve) {
+                    //     const checkReady = () => {
+                    //         if (OpenBabel.ObConversionWrapper) {
+                    //             (window as any)["OpenBabel"] = OpenBabel;
+                    //             resolve(undefined);
+                    //         } else {
+                    //             setTimeout(checkReady, 500);
+                    //         }
+                    //     };
+                    //     checkReady();
+                    // });
+                    // return Promise.all([prom1, prom2]);
+                }
+            );
         },
     },
 };

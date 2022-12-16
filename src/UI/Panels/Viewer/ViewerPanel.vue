@@ -1,5 +1,5 @@
 <template>
-    <span style="cursor: grab">
+    <span :class="containerClass" @mousemove="onMouseMove">
         <div id="mol-viewer"></div>
     </span>
 </template>
@@ -32,6 +32,9 @@ import {
     components: {},
 })
 export default class ViewerPanel extends Vue {
+    containerClass = "cursor-grab";
+    switchToGrabCursorTimer: any = undefined;
+
     /**
      * Get the molecules from the store. All viewers of any type will need to
      * react to changes in the molecules.
@@ -40,6 +43,42 @@ export default class ViewerPanel extends Vue {
      */
     get treeview(): IMolContainer[] {
         return this.$store.state["molecules"];
+    }
+
+    /**
+     * Clears the cursor timeout (which sets the cursor to "grab" after a few
+     * seconds.
+     */
+    clearCursorTimeout() {
+        if (this.switchToGrabCursorTimer) {
+            clearTimeout(this.switchToGrabCursorTimer);
+        }
+    }
+
+    /**
+     * Handles mouse move events, changing cursor css via classes.
+     *
+     * @param {MouseEvent} e  The mouse event.
+     */
+    onMouseMove(e: MouseEvent) {
+        // If currently pointing, abandon effort (over atom).
+        if (this.containerClass === "cursor-pointer") {
+            this.clearCursorTimeout();
+            return;
+        }
+
+        // Is the mouse button down?
+        if (e.buttons !== 0) {
+            this.containerClass = "cursor-grabbing";
+            this.clearCursorTimeout();
+            return;
+        }
+
+        this.clearCursorTimeout();
+        this.switchToGrabCursorTimer = setTimeout(() => {
+            this.containerClass = "cursor-grab";
+        }, 5000);
+        this.containerClass = "";
     }
 
     /**
@@ -66,7 +105,12 @@ export default class ViewerPanel extends Vue {
                 }
 
                 const promise = api.visualization.viewer
-                    .loadAndSetupViewerLibrary("mol-viewer")
+                    .loadAndSetupViewerLibrary(
+                        "mol-viewer",
+                        (classes: string) => {
+                            this.containerClass = classes;
+                        }
+                    )
                     .then((viewer: any) => {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
@@ -92,8 +136,7 @@ export default class ViewerPanel extends Vue {
                 return this._updateStylesAndZoom();
             })
             .catch((err) => {
-                console.log(err);
-                return;
+                throw err;
             });
     }
 
@@ -113,9 +156,8 @@ export default class ViewerPanel extends Vue {
                 return;
             })
             .catch((err) => {
-                console.log(err);
                 api.messages.waitSpinner(false);
-                return;
+                throw err;
             });
     }
 
@@ -273,7 +315,16 @@ export default class ViewerPanel extends Vue {
                         continue;
                     }
 
-                    // Visible, but no style specified. This should never happen.
+                    // Visible, but no style specified. Is it a shape?
+                    if (molContainer.shape) {
+                        api.visualization.viewer?.updateShapeStyle(
+                            molContainer.id as string,
+                            molContainer.shape
+                        );
+                    }
+
+                    // Visible, no styles, not a shape. This should never
+                    // happen.
                     api.visualization.viewer?.setMolecularStyle(
                         molContainer.id as string,
                         api.visualization.viewer?.convertSelection({}),
@@ -290,8 +341,8 @@ export default class ViewerPanel extends Vue {
                 return visibleTerminalNodeModelsIds;
             })
             .catch((err) => {
-                console.log(err);
-                return visibleTerminalNodeModelsIds;
+                throw err;
+                // return visibleTerminalNodeModelsIds;
             });
     }
 
@@ -326,77 +377,6 @@ export default class ViewerPanel extends Vue {
             // api.visualization.viewer.zoom(0.8);
         }
     }
-
-    /**
-     * Make the atoms mouseover hoverable and clickable.
-     *
-     * @param {any} sel  The selection of the atoms to use.
-     */
-    private _makeAtomsHoverableAndClickable(sel: any) {
-        console.log(sel);
-        // TODO: Below not generic
-        // api.visualization.viewer?.setHoverable(
-        //   sel,
-        //   true,
-        //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        //   (atom: any, viewer: any, _event: any, _container: any) => {
-        //     if (!atom.label) {
-        //       let lbls: string[] = [];
-        //       if (atom.chain) {
-        //         lbls.push(atom.chain);
-        //       }
-        //       if (atom.resn) {
-        //         lbls.push(atom.resn);
-        //       }
-        //       if (atom.resi) {
-        //         lbls.push(atom.resi);
-        //       }
-        //       if (atom.atom) {
-        //         lbls.push(atom.atom);
-        //       }
-        //       if (lbls.length > 0) {
-        //         let lblTxt = lbls.join(":");
-        //         atom.label = api.visualization.viewer?.addLabel(lblTxt, atom.x, atom.y, atom.z);
-        //         // atom.label = viewer.addLabel(
-        //         //   // TODO:
-        //         //   lblTxt,
-        //         //   // https://3dmol.csb.pitt.edu/doc/types.html#LabelSpec
-        //         //   {
-        //         //     position: atom,
-        //         //     backgroundColor: "white",
-        //         //     fontColor: "black",
-        //         //     borderThickness: 1,
-        //         //     borderColor: "black",
-        //         //     backgroundOpacity: 0.9,
-        //         //     // screenOffset: $3Dmol.Vector2(10, 10),
-        //         //     inFront: true,
-        //         //     alignment: "bottomCenter", // 'bottomLeft'
-        //         //   }
-        //         // );
-        //       }
-        //     }
-        //   },
-        //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        //   (atom: any, _viewer: any, _event: any, _container: any) => {
-        //     if (atom.label) {
-        //       setTimeout(() => {
-        //         api.visualization.viewer?.removeLabel(atom.label);
-        //         delete atom.label; // TODO:
-        //       }, 1000);
-        //     }
-        //   }
-        // );
-        // api.visualization.viewer?.setClickable(
-        //   // TODO:
-        //   {},
-        //   true,
-        //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        //   (atom: any, _viewer: any, _event: any, _container: any) => {
-        //     api.visualization.viewer?.zoomToPoint(atom.x, atom.y, atom.z);
-        //     this.$store.commit("clearFocusedMolecule", false);
-        //   }
-        // );
-    }
 }
 </script>
 
@@ -406,5 +386,17 @@ export default class ViewerPanel extends Vue {
     width: 100%;
     height: 100%;
     position: relative;
+}
+
+.cursor-grab {
+    cursor: grab;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.cursor-grabbing {
+    cursor: grabbing;
 }
 </style>

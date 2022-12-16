@@ -177,8 +177,7 @@ export default class PluginComponent extends mixins(
         return;
       })
       .catch((err) => {
-        console.error(err);
-        return;
+        throw err;
       });
   }
 

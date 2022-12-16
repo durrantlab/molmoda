@@ -1,4 +1,4 @@
-interface _IColorInfo {
+export interface IColorInfo {
     hex: string;
     name: string;
     rgb?: number[];
@@ -162,7 +162,22 @@ function _hexToRgb(hex: string): number[] | null {
         : null;
 }
 
-colorInfomation = colorInfomation.map((v: _IColorInfo): _IColorInfo => {
+/**
+ * Convert rgb to hex value.
+ * 
+ * @param  {number[]} rgb  RGB values
+ * @returns {string}  Hex color value
+ */
+function _rgbToHex(rgb: number[]): string {
+    return (
+        "#" +
+        ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2])
+            .toString(16)
+            .slice(1)
+    );
+}
+
+colorInfomation = colorInfomation.map((v: IColorInfo): IColorInfo => {
     v.rgb = _hexToRgb(v.hex) as number[];
     return v;
 });
@@ -178,7 +193,7 @@ export function hexToColorName(hex: string): string {
     const rgb = _hexToRgb(hex) as number[];
 
     // No go through colorInformation and calculate distance to rgb
-    const distances = colorInfomation.map((v: _IColorInfo): number => {
+    const distances = colorInfomation.map((v: IColorInfo): number => {
         const rgb2 = v.rgb as number[];
 
         // distance
@@ -201,11 +216,50 @@ export function hexToColorName(hex: string): string {
  * @returns {string}  Hex color value
  */
 export function colorNameToHex(name: string): string {
+    name = name.toUpperCase();
     const color = colorInfomation.find(
-        (v: _IColorInfo): boolean => v.name === name
+        (v: IColorInfo): boolean => v.name.toUpperCase() === name
     );
     if (color) {
         return color.hex;
     }
     return "";
+}
+
+/**
+ * Get the color information for a given color
+ *
+ * @param  {string | number[]} color  Color name or hex color value or rgb
+ *                                    values.
+ * @returns {IColorInfo}  Color information.
+ */
+export function analyzeColor(color: string | number[]): IColorInfo {
+    const colorInfo = {
+        hex: "",
+        name: "",
+        rgb: [0, 0, 0],
+    } as IColorInfo;
+
+    // If it starts with "#", it's a hex color
+    if (typeof color === "string" && color.startsWith("#")) {
+        colorInfo.hex = color;
+        colorInfo.name = hexToColorName(color);
+        colorInfo.rgb = _hexToRgb(color) as number[];
+    }
+
+    // If it's an array of numbers, it's rgb
+    else if (Array.isArray(color) && color.length === 3) {
+        colorInfo.hex = _rgbToHex(color);
+        colorInfo.name = hexToColorName(colorInfo.hex);
+        colorInfo.rgb = color;
+    }
+
+    // It's a color name
+    else if (typeof color === "string") {
+        colorInfo.name = color;
+        colorInfo.hex = colorNameToHex(color);
+        colorInfo.rgb = _hexToRgb(colorInfo.hex) as number[];
+    }
+
+    return colorInfo;
 }

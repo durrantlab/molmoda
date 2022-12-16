@@ -7,6 +7,7 @@ import {
 import { convertMolContainers } from "../ConvertMolModels/ConvertMolContainer";
 import * as api from "@/Api";
 import {
+    extractFlattenedContainers,
     getTerminalNodes,
     keepUniqueMolContainers,
 } from "@/UI/Navigation/TreeView/TreeUtils";
@@ -29,10 +30,11 @@ export function separateCompoundNonCompoundTerminalNodes(
     // Keep only terminal nodes with unique ids
     terminalNodes = keepUniqueMolContainers(terminalNodes);
 
-    const compoundNodes = terminalNodes.filter(
-        (node) => node.type === MolType.Compound
-    );
+    const compoundNodes = extractFlattenedContainers(terminalNodes, {
+        type: MolType.Compound,
+    });
     const nonCompoundNodes = terminalNodes.filter(
+        // mol_filter_ok
         (node) => node.type !== MolType.Compound
     );
     return { compoundNodes, nonCompoundNodes };
@@ -56,6 +58,14 @@ export function getConvertedTxts(
     merge: boolean,
     filename?: string
 ): Promise<FileInfo[]> {
+    // Remove shapes from nodes. These can never be converted.
+    nodes = extractFlattenedContainers(nodes, { shape: false});
+
+    // If no nodes left, nothing to convert.
+    if (nodes.length === 0) {
+        return Promise.resolve([]);
+    }
+
     return convertMolContainers(nodes, targetExt, merge).then(
         (molFileInfos: FileInfo[]) => {
             return molFileInfos.map((molFileInfo, idx) => {

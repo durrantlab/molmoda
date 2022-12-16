@@ -134,7 +134,13 @@ export class MoleculeInput {
 
         return Promise.all([allProtPromises, allCmpdPromises])
             .then((payload: FileInfo[][]) => {
-                const [prots, cmpds] = payload;
+                let [prots, cmpds] = payload;
+
+                // Remove any undefineds. This happens when there are no
+                // proteins and/or compounds loaded.
+                prots = prots.filter((p: FileInfo) => p !== undefined);
+                cmpds = cmpds.filter((c: FileInfo) => c !== undefined);
+
                 const proteinCompoundPairs: IProtCmpdMolContainerPair[] = [];
                 if (prots.length > 0 && cmpds.length > 0) {
                     // Both proteins and compounds, so get every pairing.
@@ -167,8 +173,8 @@ export class MoleculeInput {
                 // });
             })
             .catch((err: Error) => {
-                console.log(err);
-                return [];
+                throw err;
+                // return [];
             });
     }
 

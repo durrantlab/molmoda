@@ -5,7 +5,10 @@ import {
     MolType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import {
+    extractFlattenedContainers,
+    getTerminalNodes,
+} from "@/UI/Navigation/TreeView/TreeUtils";
 
 /**
  * Gets the first of all the selected molecules.
@@ -19,11 +22,10 @@ export function getFirstSelected(
 ): IMolContainer | null {
     // Get any terminal node that is selected and a compound
     const terminalNodes = getTerminalNodes(molecules);
-    const selectedTerminalNodes = terminalNodes.filter(
-        (node) =>
-            node.selected === SelectedType.True &&
-            node.type === MolType.Compound
-    );
+    const selectedTerminalNodes = extractFlattenedContainers(terminalNodes, {
+        selected: true,
+        type: MolType.Compound,
+    });
     if (selectedTerminalNodes.length === 0) {
         return null;
     }
@@ -45,7 +47,6 @@ export function getSmilesOfMolContainer(
             return fileInfos[0].contents.trim();
         })
         .catch((error) => {
-            console.error(error);
-            return "";
+            throw error;
         });
 }

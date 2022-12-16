@@ -1,10 +1,10 @@
-import {
-    IAtom,
-    IMolContainer,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { extractFlattenedContainers } from "@/UI/Navigation/TreeView/TreeUtils";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
-import { standardProteinResidues, solventSel } from "../Types/ComponentSelections";
-
+import {
+    standardProteinResidues,
+    solventSel,
+} from "../Types/ComponentSelections";
 
 // Inspired by
 // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L576
@@ -258,16 +258,21 @@ export function convertMolContainersToPDB(
     molContainers: IMolContainer[],
     merge = false
 ): string[] {
-    let mols = molContainers.map((molContainer) => molContainer.model) as
-        | GLModel[]
-        | IAtom[][];
+    let mols = extractFlattenedContainers(molContainers, { model: true }).map(
+        (molContainer) => molContainer.model as GLModel | IAtom[]
+    );
+    // .filhter((mol) => Array.isArray(mol) && mol.length > 0);
     // mol is 3dmoljs molecule object.
+
+    if (mols.length === 0) {
+        return [""];
+    }
 
     const pdbTxts: string[] = [];
     const conectTxts: string[] = [];
 
     if (merge) {
-        mols = [_mergeMols(mols)];
+        mols = [_mergeMols(mols as GLModel[] | IAtom[][])];
     }
 
     // let curSerial = 1;

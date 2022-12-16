@@ -218,5 +218,5 @@ waitForDataFromMainThread()
         return;
     })
     .catch((err: Error) => {
-        console.error(err);
+        throw err;
     });

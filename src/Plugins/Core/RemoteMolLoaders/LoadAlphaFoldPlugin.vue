@@ -110,6 +110,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
       })
       .catch((err: string) => {
         api.messages.popupError(err);
+        // throw err;
       });
     // parseMoleculeFile(fileInfo);
   }

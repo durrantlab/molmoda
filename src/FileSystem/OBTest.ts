@@ -71,13 +71,11 @@ export function obTest() {
     });
 
     obabel.then((lll: any) => {
-        console.log(lll);
         debugger;
         return;
     })
     .catch((err: any) => {
-        console.error(err);
         debugger;
-        return;
+        throw err;
     });
 }

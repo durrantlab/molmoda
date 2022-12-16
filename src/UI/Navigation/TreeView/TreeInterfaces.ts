@@ -62,10 +62,10 @@ export interface IMolContainer {
 }
 
 export enum ShapeType {
-    Sphere,
-    Box,
-    Arrow,
-    Cylinder
+    Sphere="Sphere",
+    Box="Box",
+    Arrow="Arrow",
+    Cylinder="Cylinder"
 }
 
 export interface IShape {
@@ -73,6 +73,7 @@ export interface IShape {
     center: [number, number, number];
     opacity?: number;
     color?: string;
+    movable?: boolean;  // Whether you can move or resize
 }
 
 export interface ISphere extends IShape {

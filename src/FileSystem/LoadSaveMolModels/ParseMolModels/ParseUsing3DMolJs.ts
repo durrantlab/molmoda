@@ -31,6 +31,6 @@ export function parseUsing3DMolJs(fileInfo: FileInfo, formatInfo: IFormatInfo): 
             return molContainers;
         })
         .catch((err) => {
-            console.warn(err);
+            throw err;
         });
 }

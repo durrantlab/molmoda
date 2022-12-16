@@ -104,10 +104,13 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     let vrmlTxt = api.visualization.viewer?.exportVRML();
     api.visualization.viewer?.renderAll();
 
-    api.fs.saveTxt(new FileInfo({
-      name: filename,
-      contents: vrmlTxt
-    }));
+    if (vrmlTxt !== "") {
+      debugger
+      api.fs.saveTxt(new FileInfo({
+        name: filename,
+        contents: vrmlTxt
+      }));
+    }
   }
 
   /**

@@ -34,6 +34,14 @@ you could put it in a web worker using import (rather than adding to head).
 https://github.com/rdkit/rdkit-js can also draw from smiles. Maybe get rid of
 smiles drawer?
 
+Evually, need login system. Wordpress powered?
+https://medevel.com/iam-systems-10-identity/ ? Keycloak?
+Or this? https://www.npmjs.com/package/passport
+
+Get slurm/Docker working?
+
+Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
+
 # Ongoing: Important
 
 Current version of openbabel (tmp version) converts only first fframe of file
@@ -45,50 +53,68 @@ When change colors and things, shouldn't refocus.
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-Evually, need login system. Wordpress powered?
-https://medevel.com/iam-systems-10-identity/ ? Keycloak?
-Or this? https://www.npmjs.com/package/passport
-
 Search for "TODO: Would be nice if there were a separate function"
 
-Get slurm/Docker working?
+SaveVRMLPlugin not working on 3DMoljs. Not adding vrml to filename.
 
-Get common interface for mol viewers (to use nglviewer)? Working, but no labels,
-zoom on click, and some representations are still problematic. Also, generic
-save VRML. Export VRML for NGL viewer. Not working. Need to test.
-Look for other places where might not work (outside of ViewerPanel). See
-https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter-in-typescript
-
-\*\*\*\*When saving file to single pdb, it's ackwardly named. Fix that.
+When saving file to single pdb, it's ackwardly named. Fix that.
 
 updateAppName not used anywhere, but I think it should be.
-
-Tutorial based on tests (first one).
-
-Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
 Add graphs to data too. Plotly? Also, you should be able to download graphs
 (png, svg, xlsx, csv). And text too. And should auto keep track of how the
 molecule was generated.
 
 Test elements could be restructured as objects. Would be better to put functions
-on each one.
+on each one. Then, Tutorial based on tests (first one).
 
 Integrate Yuri OpenBabel. See if you can get it to work in web worker.
-
-Need to make shapes (cubes and spheres). And need to implement for NGLTools.
-https://3dmol.csb.pitt.edu/doc/$3Dmol.GLShape.html Shapes should have
-property "movable" to move if click on atom. Also, need to be able to set
-opacity, color, and center/dimens/radius (if movable) in styles. For this to
-work, you will need atom click callback. Consider implementing as hook through
-api. https://nglviewer.org/ngl/api/class/src/geometry/shape.js~Shape.html
 
 When adding new molecule, make sure filename is not already in list. Append (#).
 
 Multiframe files, still put under one molecule. And if more than a fixed number,
 autohide all but first few. Can use merge feature if needed.
 
+Do fpocket web. Saying two proteins when there's only 1.
+
 # DONE
+
+*****Export VRML for NGL viewer. Not working. Throw error.
+
+Get common interface for mol viewers (to use nglviewer)? Working, but no labels,
+zoom on click, and some representations are still problematic. Also, generic
+save VRML. Not working. Need to test. Look for other places where might not work
+(outside of ViewerPanel). See
+https://stackoverflow.com/questions/52375863/how-to-import-three-js-gltfexporter-in-typescript
+
+If recently moved mouse, then normal pointer. If over atom, hand pointer. If
+haven't moved mouse in a while, grab. If dragging, grabbing.
+
+Arrow change on hover.
+
+Can some of what's in ViewerPanel be moved to ViewerParent? Maybe. Not sure.
+Could still be utility in keeping the logic separate.
+
+Need nice padding on bottom of styles panel.
+
+When click atom, move center of all selected objects there. Also, message in
+styles panel saying you can do this.
+
+If no shapes anywhere, don't even show shape subsection of styles panel.
+
+Shapes styles don't update. Search for "error?"
+
+Shapes should have property "movable" to move if click on atom. Also, need to be
+able to set opacity, color, and center/dimens/radius (if movable) in styles. For
+this to work, you will need atom click callback.
+
+Need vector for FormFull.
+
+Consider implementing as hook through api.
+https://nglviewer.org/ngl/api/class/src/geometry/shape.js~Shape.html
+
+Need to make shapes (cubes and spheres). And need to implement for NGLTools.
+https://3dmol.csb.pitt.edu/doc/$3Dmol.GLShape.html 
 
 Currebtly default values on shapes (e.g., radius) are defined in Viewer3D. But
 that hsould go into the parent so effects all viewers.

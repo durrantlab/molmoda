@@ -158,7 +158,7 @@ export function runOpenBabel(
 
         // })
         .catch((err: any) => {
-            console.log(err);
+            throw err;
         });
 }
 
@@ -188,7 +188,7 @@ export function writeFile(obabel: any, path: string, text: string): any {
     //     return;
     // })
     // .catch((err: any) => {
-    //     console.log(err);
+    //     throw err;
     // });
 
     // debugger;

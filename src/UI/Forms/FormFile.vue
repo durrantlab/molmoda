@@ -1,22 +1,24 @@
 <template>
-  <div class="input-group custom-file-button">
-    <label class="input-group-text" :for="id">
-      Choose File<span v-if="multiple">(s)</span>
-    </label>
-    <input
-      ref="fileinput"
-      type="file"
-      class="form-control"
-      :id="id"
-      :multiple="multiple"
-      @change="onFileChanged"
-      :accept="accept"
-    />
-    <FormElementDescription>
-      {{ acceptableFileTypesMsg }}.
-      <span v-if="errorMsg !== ''" class="text-danger">{{ errorMsg }}.</span>
-    </FormElementDescription>
-  </div>
+    <div class="input-group custom-file-button">
+        <label class="input-group-text" :for="id">
+            Choose File<span v-if="multiple">(s)</span>
+        </label>
+        <input
+            ref="fileinput"
+            type="file"
+            class="form-control"
+            :id="id"
+            :multiple="multiple"
+            @change="onFileChanged"
+            :accept="accept"
+        />
+        <FormElementDescription>
+            {{ acceptableFileTypesMsg }}.
+            <span v-if="errorMsg !== ''" class="text-danger"
+                >{{ errorMsg }}.</span
+            >
+        </FormElementDescription>
+    </div>
 </template>
 
 <script lang="ts">
@@ -33,83 +35,87 @@ import { FileInfo } from "@/FileSystem/FileInfo";
  * FormFile component
  */
 @Options({
-  components: {
-    FormElementDescription,
-  },
+    components: {
+        FormElementDescription,
+    },
 })
 export default class FormFile extends Vue {
-  @Prop({ default: randomID() }) id!: string;
-  @Prop({ default: true }) multiple!: boolean;
-  @Prop({}) accept!: string;
-  @Prop({ default: false }) isZip!: boolean;
+    @Prop({ default: randomID() }) id!: string;
+    @Prop({ default: true }) multiple!: boolean;
+    @Prop({}) accept!: string;
+    @Prop({ default: false }) isZip!: boolean;
 
-  errorMsg = "";
+    errorMsg = "";
 
-  /**
-   * Gets text describing the acceptable file types.
-   *
-   * @returns {string} Text describing the acceptable file types.
-   */
-  get acceptableFileTypesMsg(): string {
-    return (
-      "Acceptable file types: " + this.accept.toUpperCase().replace(/,/g, ", ")
-    );
-  }
-
-  /**
-   * Gets all the acceptable file types.
-   *
-   * @returns {string[]} All the acceptable file types.
-   */
-  get allAcceptableFileTypes(): string[] {
-    return this.accept.split(",").map((a) => a.toUpperCase().substring(1));
-  }
-
-  /**
-   * Runs when the file changes.
-   */
-  onFileChanged(/* _e: Event */) {
-    let input = this.$refs.fileinput as HTMLInputElement;
-    let files = input.files;
-
-    if (files === null || files.length == 0) {
-      return;
+    /**
+     * Gets text describing the acceptable file types.
+     *
+     * @returns {string} Text describing the acceptable file types.
+     */
+    get acceptableFileTypesMsg(): string {
+        return (
+            "Acceptable file types: " +
+            this.accept.toUpperCase().replace(/,/g, ", ")
+        );
     }
 
-    // Make it as an array
-    let fileList = Array.from(files);
+    /**
+     * Gets all the acceptable file types.
+     *
+     * @returns {string[]} All the acceptable file types.
+     */
+    get allAcceptableFileTypes(): string[] {
+        return this.accept.split(",").map((a) => a.toUpperCase().substring(1));
+    }
 
-    filesToFileInfos(fileList, this.isZip, this.allAcceptableFileTypes)
-      .then((filesLoaded: (FileInfo | string)[]) => {
-        const errorMsgs = filesLoaded.filter((a) => typeof a === "string");
-        const toLoad = filesLoaded.filter(
-          (a) => typeof a !== "string"
-        ) as FileInfo[];
+    /**
+     * Runs when the file changes.
+     */
+    onFileChanged(/* _e: Event */) {
+        let input = this.$refs.fileinput as HTMLInputElement;
+        let files = input.files;
 
-        this.$emit("onFilesLoaded", toLoad);
-
-        if (errorMsgs.length > 0) {
-          this.clearFile();
-          this.errorMsg = errorMsgs.join(", ");
-        } else {
-          this.errorMsg = "";
+        if (files === null || files.length == 0) {
+            return;
         }
-        // this.clearFile();
-        return;
-      })
-      .catch((err: any) => {
-        this.clearFile();
-        this.errorMsg = err;
-      });
-  }
 
-  /**
-   * Clears the file input.
-   */
-  clearFile() {
-    // @ts-ignore
-    (this.$refs.fileinput as HTMLInputElement).value = null;
-  }
+        // Make it as an array
+        let fileList = Array.from(files);
+
+        filesToFileInfos(fileList, this.isZip, this.allAcceptableFileTypes)
+            .then((filesLoaded: (FileInfo | string)[]) => {
+                const errorMsgs = filesLoaded.filter(
+                    (a) => typeof a === "string"
+                );
+                const toLoad = filesLoaded.filter(
+                    (a) => typeof a !== "string"
+                ) as FileInfo[];
+
+                this.$emit("onFilesLoaded", toLoad);
+
+                if (errorMsgs.length > 0) {
+                    this.clearFile();
+                    this.errorMsg = errorMsgs.join(", ");
+                } else {
+                    this.errorMsg = "";
+                }
+                // this.clearFile();
+                return;
+            })
+            .catch((err: any) => {
+                this.clearFile();
+                this.errorMsg = err;
+                // throw err;
+            });
+    }
+
+    /**
+     * Clears the file input.
+     */
+    clearFile() {
+        // @ts-ignore
+        (this.$refs.fileinput as HTMLInputElement).value = null;
+    }
 }
 </script>
 
@@ -119,22 +125,22 @@ export default class FormFile extends Vue {
 // See https://stackoverflow.com/questions/65770908/how-to-change-choose-file-text-using-bootstrap-5
 
 .custom-file-button {
-  input[type="file"] {
-    margin-left: -2px !important;
+    input[type="file"] {
+        margin-left: -2px !important;
 
-    &::-webkit-file-upload-button {
-      display: none;
+        &::-webkit-file-upload-button {
+            display: none;
+        }
+        &::file-selector-button {
+            display: none;
+        }
     }
-    &::file-selector-button {
-      display: none;
-    }
-  }
 
-  &:hover {
-    label {
-      background-color: #dde0e3;
-      cursor: pointer;
+    &:hover {
+        label {
+            background-color: #dde0e3;
+            cursor: pointer;
+        }
     }
-  }
 }
 </style>

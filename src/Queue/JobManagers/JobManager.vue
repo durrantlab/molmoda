@@ -216,8 +216,7 @@ export default class JobManager extends Vue {
           return;
         })
         .catch((err) => {
-          console.log(err);
-          return;
+          throw err;
         });
     }, 1000);
   }

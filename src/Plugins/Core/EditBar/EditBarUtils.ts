@@ -3,6 +3,7 @@ import {
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
+    extractFlattenedContainers,
     getAllNodesFlattened,
     getNodeOfId,
 } from "@/UI/Navigation/TreeView/TreeUtils";
@@ -38,10 +39,9 @@ export function setNodesToActOn(This: any) {
     } else {
         // Find the selected molecules instead.
         const nodes = getAllNodesFlattened(This.$store.state.molecules);
-        This.nodesToActOn = nodes.filter(
-            // (n) => n.selected !== SelectedType.False
-            (n) => n.selected === SelectedType.True
-        ) as IMolContainer[];
+        This.nodesToActOn = extractFlattenedContainers(nodes, {
+            selected: SelectedType.True,
+        });
     }
 
     if (!This.nodesToActOn) {

@@ -5,7 +5,6 @@ import {
     IArrow,
     IBox,
     ICylinder,
-    IShape,
     ISphere,
     IStyle,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -190,7 +189,7 @@ export class Viewer3DMol extends ViewerParent {
             radius: shape.radius,
             color: shape.color,
         });
-        this.setShapeOpacity(sphere, shape?.opacity);
+        this._setShapeOpacity(sphere, shape?.opacity);
         return Promise.resolve(sphere);
     }
 
@@ -216,7 +215,7 @@ export class Viewer3DMol extends ViewerParent {
             },
             color: shape.color,
         });
-        this.setShapeOpacity(box, shape?.opacity);
+        this._setShapeOpacity(box, shape?.opacity);
         return Promise.resolve(box);
     }
 
@@ -242,7 +241,7 @@ export class Viewer3DMol extends ViewerParent {
             color: shape.color,
             radiusRatio: shape.radiusRatio,
         });
-        this.setShapeOpacity(arrow, shape?.opacity);
+        this._setShapeOpacity(arrow, shape?.opacity);
         return Promise.resolve(arrow);
     }
 
@@ -270,14 +269,20 @@ export class Viewer3DMol extends ViewerParent {
             toCap: 2,
             dashed: shape.dashed,
         });
-        this.setShapeOpacity(cylinder, shape?.opacity);
+        this._setShapeOpacity(cylinder, shape?.opacity);
         return Promise.resolve(cylinder);
     }
 
-    setShapeOpacity(shape: any, opacity: number | undefined) {
-        setInterval(() => {
-            // Not sure why, but this needs to be in an interval for the opacity
-            // to actually change.
+    /**
+     * Sets the opacity of a shape.
+     *
+     * @param {any}                shape    The shape to set the opacity of.
+     * @param {number | undefined} opacity  The opacity to set.
+     */
+    private _setShapeOpacity(shape: any, opacity: number | undefined) {
+        setTimeout(() => {
+            // Not sure why, but this needs to be in a setTimeout for the
+            // opacity to actually change.
             shape.opacity = opacity || 0.8;
             this.renderAll();
         }, 0);
@@ -318,8 +323,9 @@ export class Viewer3DMol extends ViewerParent {
      * @param  {number} y  The y coordinate.
      * @param  {number} z  The z coordinate.
      */
-    zoomToPoint(x: number, y: number, z: number) {
-        this._mol3dObj.zoomTo({ x: x, y: y, z: z }, 500, true);
+    centerOnPoint(x: number, y: number, z: number) {
+        // this._mol3dObj.zoomTo({ x: x, y: y, z: z }, 500, true);
+        this._mol3dObj.center({ x: x, y: y, z: z }, 500, false);
     }
 
     /**
@@ -338,7 +344,6 @@ export class Viewer3DMol extends ViewerParent {
         z: number
     ): GenericLabelType {
         return this._mol3dObj.addLabel(
-            // TODO:
             lblTxt,
             // https://3dmol.csb.pitt.edu/doc/types.html#LabelSpec
             {
@@ -372,7 +377,7 @@ export class Viewer3DMol extends ViewerParent {
      * @returns {Promise<any>}  A promise that resolves the viewer object when
      *     3dmol.js is loaded.
      */
-    loadAndSetupViewerLibrary(id: string): Promise<ViewerParent> {
+    _loadAndSetupViewerLibrary(id: string): Promise<ViewerParent> {
         return dynamicImports.mol3d.module
             .then(($3Dmol: any) => {
                 const viewer = $3Dmol.createViewer(id, {
@@ -385,13 +390,13 @@ export class Viewer3DMol extends ViewerParent {
 
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                window["shapeCache"] = this.shapeCache;
+                // window["shapeCache"] = this.shapeCache;
 
                 return this as ViewerParent;
             })
             .catch((err: any) => {
-                console.log(err);
-                return this as ViewerParent;
+                throw err;
+                // return this as ViewerParent;
             });
     }
 
@@ -434,5 +439,81 @@ export class Viewer3DMol extends ViewerParent {
     unLoad() {
         // this._mol3dObj.clear();
         this._mol3dObj = null;
+    }
+
+    /**
+     * Makes atoms react when clicked.
+     *
+     * @param {Function} callBack  Function that runs when atom is clicked. The
+     *                             function is passed the x, y, and z
+     *                             coordinates of the atom.
+     */
+    makeAtomsClickable(callBack: (x: number, y: number, z: number) => any) {
+        this._mol3dObj.setClickable(
+            {},
+            true,
+            (atom: any /* _viewer: any, _event: any, _container: any */) => {
+                this.centerOnPoint(atom.x, atom.y, atom.z);
+                callBack(atom.x, atom.y, atom.z);
+            }
+        );
+    }
+
+    /**
+     * Makes atoms react when mouse moves over then (hoverable).
+     *
+     * @param {Function} onHoverInCallBack   Function that runs when hover over
+     *                                       atom starts.
+     * @param {Function} onHoverOutCallBack  Function that runs when hover over
+     *                                       atom ends.
+     */
+    makeAtomsHoverable(
+        onHoverInCallBack: (x: number, y: number, z: number) => any,
+        onHoverOutCallBack: () => any
+    ) {
+        this._mol3dObj.setHoverable(
+            {},
+            true,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            (atom: any, viewer: any, _event: any, _container: any) => {
+                if (!atom.label) {
+                    const lblTxt = this.hoverLabelText(
+                        atom.chain,
+                        atom.resn,
+                        atom.resi,
+                        atom.atom
+                    );
+
+                    if (lblTxt) {
+                        atom.label = this.addLabel(
+                            lblTxt,
+                            atom.x,
+                            atom.y,
+                            atom.z
+                        );
+                    }
+                }
+                onHoverInCallBack(atom.x, atom.y, atom.z);
+            },
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            (atom: any, _viewer: any, _event: any, _container: any) => {
+                if (atom.label) {
+                    setTimeout(() => {
+                        this.removeLabel(atom.label);
+                        delete atom.label;
+                    }, 1000);
+                }
+                onHoverOutCallBack();
+            }
+        );
+    }
+
+    /**
+     * Gets a VRML model of the current scene. But not implemented for NGL.
+     *
+     * @returns {string}  The VRML string.
+     */
+    exportVRML(): string {
+        return this._mol3dObj.exportVRML();
     }
 }

@@ -109,7 +109,6 @@ export function calcMolProps(
             return molDescriptors as ICalcMolProps[];
         })
         .catch((err: Error) => {
-            console.error(err);
             throw err;
         });
 }

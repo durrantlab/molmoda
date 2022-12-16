@@ -47,6 +47,7 @@ export function convertCompiledMolModelsToIFileInfos(
 
     // There could be multiple noncompound groups. Convert them separately.
     const nonCompoundPromises = compiledNodes.nodeGroups
+        // mol_filter_ok
         .filter((group) => group.length > 0)
         .map((nodes) =>
             // Always merging here.

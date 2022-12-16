@@ -159,7 +159,7 @@ export abstract class PluginParentClass extends mixins(
                 return;
             })
             .catch((err: any) => {
-                console.error(err);
+                throw err;
             });
     }
 

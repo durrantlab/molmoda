@@ -30,7 +30,7 @@ document.addEventListener("click", () => {
                 return;
             })
             .catch((err) => {
-                console.error(err);
+                throw err;
             });
     }
 });
@@ -75,6 +75,6 @@ export function registerHotkeys(hotkey: string, callback: Function) {
             return;
         })
         .catch((err) => {
-            console.log(err);
+            throw err;
         });
 }

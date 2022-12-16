@@ -12,7 +12,7 @@
 //         return;
 //     })
 //     .catch((err) => {
-//         console.warn(err);
+//         throw err;
 //     });
 
 //     debugger;
