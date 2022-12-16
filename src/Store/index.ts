@@ -265,7 +265,7 @@ export function setupVueXStore(): Store<any> {
 
     // For debugging
     // @ts-ignore
-    window.store = store;
+    // window.store = store;
 
     return store;
 }

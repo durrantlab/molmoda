@@ -88,7 +88,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
      */
     onBeforePopupOpen() {
         // You're probably going to need fpocketweb
-        dynamicImports.fpocketweb.module;
+        // dynamicImports.fpocketweb.module;
     }
 
     /**
@@ -127,10 +127,11 @@ export default class FPocketWebPlugin extends PluginParentClass {
     runJobInBrowser(pdbFile: FileInfo): Promise<undefined | void> {
         dynamicImports.fpocketweb.module
             .then((FpocketWeb: any) => {
+                const fPocketParams = defaultFpocketParams;
                 FpocketWeb.start(
-                    { ...defaultFpocketParams },
-                    pdbFile.contents,
+                    {}, // fPocketParams,
                     pdbFile.name,
+                    pdbFile.contents,
 
                     // onDone
                     (
@@ -139,26 +140,18 @@ export default class FPocketWebPlugin extends PluginParentClass {
                         stdErr: string,
                         pocketsContents: string
                     ) => {
-                        this.$store.commit("setVar", {
-                            name: "pqrContents",
-                            val: pocketsContents,
-                        });
-                        this.$store.commit("setVar", {
-                            name: "infoFile",
-                            val: true,
-                        });
                         debugger;
                         // this.afterWASM(outPdbqtFileTxt, stdOut, stdErr);
                     },
 
                     // onError
                     (errObj: any) => {
-                        debugger;
+                        alert(errObj["message"]);
                         // this.showFpocketWebError(errObj["message"]);
                     },
-                    // TODO: This should be based on the url path.
-                    // Utils.curPath() + "FpocketWeb/"
+
                     "js/fpocketweb/"
+                    // Utils.curPath() + "FpocketWeb/"  // TODO: Good to implement something like this in biotite.
                 );
                 return;
             })

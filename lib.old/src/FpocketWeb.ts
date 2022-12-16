@@ -1,5 +1,5 @@
+/* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable prefer-rest-params */
-
 // This file is part of FPocketWeb, released under the Apache 2.0 License. See
 // LICENSE.md or go to https://opensource.org/licenses/Apache-2.0 for full
 // details. Copyright 2022 Jacob D. Durrant.
@@ -7,7 +7,8 @@
 // There are a few variables and functions from vina.js that I want to easily
 // access from here.
 
-const VERSION = "1.02"; // Replaced by compile script.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const VERSION = "1.0.2";
 console.log("FPocketWeb");
 console.log("    Compiled from the Fpocket codebase:");
 console.log("    https://github.com/Discngine/fpocket");
@@ -46,10 +47,10 @@ const decodeBase64 =
                   s = 0;
               const f =
                   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+
               // eslint-disable-next-line sonarjs/no-one-iteration-loop
               for (
-                  // eslint-disable-next-line regexp/no-useless-escape, no-useless-escape, regexp/strict, regexp/prefer-d
-                  r = r.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+                  r = r.replace(/[^A-Za-z\d+/=]/g, "");
                   (e =
                       (f.indexOf(r.charAt(s++)) << 2) |
                       ((i = f.indexOf(r.charAt(s++))) >> 4)),
@@ -67,6 +68,7 @@ const decodeBase64 =
           };
 
 // Make FPocketWeb global namespace.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const FpocketWeb = (function () {
     return {
         FPOCKET_ENVIRONMENT_IS_NODE: (window as any)[
@@ -82,14 +84,12 @@ const FpocketWeb = (function () {
 
         start: function start(
             fpocketParams: IFpocketParams,
-            pdbFileName: string,
             pdbContents: string,
+            pdbFileName: string,
             onDone?: any,
             onError?: any,
             baseUrl?: string
         ): void {
-            const pdbFileNameTrimmed = pdbFileName.replace(".pdb", "");
-
             // baseUrl = undefined;  // For debugging.
             let baseUrlMsg = "\nFPOCKET\n======\n\n";
             if (baseUrl !== undefined) {
@@ -144,9 +144,10 @@ const FpocketWeb = (function () {
                 stdErr: "",
                 pdbFile: pdbContents,
                 pdbFileName: pdbFileName,
-                pdbFileNameTrimmed: pdbFileNameTrimmed,
+                pdbFileNameTrimmed: pdbFileName.replace(/\.pdb$/, ""), // TODO: not sure
                 print: (function () {
                     return function (e: string) {
+                        console.log(e);
                         1 < arguments.length &&
                             (e = Array.prototype.slice
                                 .call(arguments)
@@ -156,6 +157,7 @@ const FpocketWeb = (function () {
                     };
                 })(),
                 printErr: function (e: string) {
+                    console.log(e);
                     // 1 < arguments.length && (e = Array.prototype.slice.call(arguments).join(" ")), console.error(e)
                     1 < arguments.length &&
                         (e = Array.prototype.slice.call(arguments).join(" ")),
@@ -164,67 +166,76 @@ const FpocketWeb = (function () {
                 },
                 setStatus: (e: string) => {
                     if (e === "" && onDone !== undefined) {
-                        // This happens when it is done running.
-                        const pdbBaseNameTrimmed = pdbFileNameTrimmed;
-                        const outTxt: string = new TextDecoder("utf-8").decode(
-                            (window as any)["FS"]["readFile"](
-                                "/" +
-                                    pdbBaseNameTrimmed +
-                                    "_out/" +
-                                    pdbBaseNameTrimmed +
-                                    "_out.pdb"
-                            )
-                        );
-                        const stdOut: string = (window as any)[
-                            "FPOCKET_Module"
-                        ]["stdOut"];
-                        const stdErr: string = (window as any)[
-                            "FPOCKET_Module"
-                        ]["stdErr"];
-                        const pocketsContents = new TextDecoder("utf-8").decode(
-                            (window as any)["FS"]["readFile"](
-                                "/" +
-                                    pdbBaseNameTrimmed +
-                                    "_out/" +
-                                    pdbBaseNameTrimmed +
-                                    "_pockets.pqr"
-                            )
-                        );
-                        onDone(outTxt, stdOut, stdErr, pocketsContents);
+                        debugger;
+                        setTimeout(() => {
+                            // This happens when it is done running.
+                            // const pdbBaseNameTrimmed = (window as any)["store"][
+                            //     "state"
+                            // ]["pdbFileNameTrimmed"];
+                            // TODO: Below shouldn't just be a copy
+                            const pdbBaseNameTrimmed = (window as any)[
+                                "FPOCKET_Module"
+                            ]["pdbFileNameTrimmed"];
+                            const outTxt: string = new TextDecoder("utf-8").decode(
+                                (window as any)["FS"]["readFile"](
+                                    "/" +
+                                        pdbBaseNameTrimmed +
+                                        "_out/" +
+                                        pdbBaseNameTrimmed +
+                                        "_out.pdb"
+                                )
+                            );
+                            const stdOut: string = (window as any)[
+                                "FPOCKET_Module"
+                            ]["stdOut"];
+                            const stdErr: string = (window as any)[
+                                "FPOCKET_Module"
+                            ]["stdErr"];
+                            const pocketsContents = new TextDecoder("utf-8").decode(
+                                (window as any)["FS"]["readFile"](
+                                    "/" +
+                                        pdbBaseNameTrimmed +
+                                        "_out/" +
+                                        pdbBaseNameTrimmed +
+                                        "_pockets.pqr"
+                                )
+                            );
+                            onDone(outTxt, stdOut, stdErr, pocketsContents);
+                        }, 5000);
                     }
                 },
                 onError: onError,
-                catchError: (n: string) => {
+                catchError: (n: any) => {
                     onError(n);
                     // throw n;  // Don't throw the errr. You're catching it now.
-                },
-            };
+                }
+            }; // end FPOCKET_Module
 
             if (fpocketParams["pdbFile"] !== undefined) {
                 console.warn(
-                    "FPocketWeb does not support Vina's --receptor parameter. Instead, pass the content of the receptor file as a string to the webina.start() function."
+                    "FPocketWeb does not support the --pdbFile parameter. Instead, pass the content of the receptor file as a string to the webina.start() function."
                 );
             }
 
             // Receptor and ligand files are always the same.
-            FPOCKET_Module["arguments"] = [
-                "-f",
-                pdbFileName
-            ];
-            function waitForElement() {
+            debugger;
+            FPOCKET_Module["arguments"] = ["-f", pdbFileName];
+            const waitForElement = () => {
                 if (
                     typeof FPOCKET_Module["FS_createDataFile"] !== "undefined"
                 ) {
-                    const pdbBaseName = pdbFileName;
-                    const pdbBaseNameTrimmed = pdbBaseName.replace(
+                    debugger;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const pdbBaseNameTrimmed = pdbFileName.replace(
                         /\.[^/.]+$/,
                         ""
                     );
                     //variable exists, do what you want
                     console.log("filecreate called");
+                    debugger;
                     FPOCKET_Module["FS_createDataFile"](
                         "/",
-                        pdbBaseName,
+                        pdbFileName,
                         pdbContents,
                         true,
                         true,
@@ -233,11 +244,14 @@ const FpocketWeb = (function () {
                     //FPOCKET_Module["FS_createPath"]('/', pdbBaseNameTrimmed + '_out', true, true);
                     //FPOCKET_Module["FS_createPath"]('/' + pdbBaseNameTrimmed + '_out', 'pockets', true, true);
                 } else {
+                    console.log(this);
+                    debugger;
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     setTimeout(waitForElement, 500);
                 }
-            }
+            };
 
-            //waitForElement();
+            // waitForElement();
 
             // For some reason, WebAssembly always uses one more processor
             // than specified. Compensate for that here. But sometimes it
@@ -251,7 +265,7 @@ const FpocketWeb = (function () {
             const paramNamesLen = paramNames.length;
             for (let i = 0; i < paramNamesLen; i++) {
                 const key = paramNames[i];
-                const val = (fpocketParams as any)[key];
+                const val = (fpocketParams as { [key: string]: any })[key];
                 FPOCKET_Module["arguments"].push("--" + key);
 
                 if (typeof val !== "boolean") {
@@ -284,9 +298,10 @@ const FpocketWeb = (function () {
          meminitXHR.responseType = "arraybuffer";
          meminitXHR.send(null);
          */
-            // (window as any)["FS"].createDataFile('/', 'test', "fsdfsd", true, true, true);
+            // window["FS"].createDataFile('/', 'test', "fsdfsd", true, true, true);
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         isDataURI: function (r: string) {
             //return String.prototype.startsWith ? r.startsWith(this.WEBINA_DATA_URI_PREFIX) : 0 === r.indexOf(this.WEBINA_DATA_URI_PREFIX)
             return true;
@@ -306,6 +321,7 @@ const FpocketWeb = (function () {
                 return new Uint8Array(t.buffer, t.byteOffset, t.byteLength);
             }
             try {
+                // eslint-disable-next-line prefer-const
                 const r = decodeBase64(e) as string,
                     a = new Uint8Array(r.length);
                 for (let i = 0; i < r.length; ++i) a[i] = r.charCodeAt(i);
@@ -324,7 +340,7 @@ const FpocketWeb = (function () {
         },
 
         // Not used?
-        intArrayFromString: function (r: number, e: any, t: number) {
+        intArrayFromString: function (r: any, e: any, t: any) {
             const a = 0 < t ? t : this.FPOCKET_lengthBytesUTF8(r) + 1,
                 i = new Array(a),
                 n = this.FPOCKET_stringToUTF8Array(r, i, 0, i.length);
