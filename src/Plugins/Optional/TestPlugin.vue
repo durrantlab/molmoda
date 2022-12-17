@@ -130,6 +130,7 @@ export default class TestPlugin extends PluginParentClass {
     // let args: string[] = ['-H'];
 
     let beforeOBFunc = (obabel: any) => {
+      console.log("h");
       // writeFile(obabel, "/test.can", "c1cccccc1");
       // console.log(readDir(obabel, "/"));
       // const txt = readFile(obabel, "testfile.txt");
@@ -137,8 +138,15 @@ export default class TestPlugin extends PluginParentClass {
     };
 
     let afterOBFunc = (obabel: any) => {
-      console.log(readDir(obabel, "."));
-      console.log(readDir(obabel, "/"));
+      // try {
+        throw "dog";  // TODO: Why is this not caught unless in try statement?
+      // } catch(e) {
+      //   console.log(e);
+      //   debugger;
+      // }
+      // console.log("h2");
+      // console.log(readDir(obabel, "."));
+      // console.log(readDir(obabel, "/"));
       // setTimeout(() => {
         // const txt = readFile(obabel, "test.pdb");
         // debugger;

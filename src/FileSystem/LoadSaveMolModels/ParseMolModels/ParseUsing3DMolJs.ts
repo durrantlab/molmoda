@@ -14,18 +14,20 @@ import { FileInfo } from "@/FileSystem/FileInfo";
  *    file is parsed. The promise resolves to an array of IMolContainer objects,
  *    one for each frame. Can also resolve void.
  */
-export function parseUsing3DMolJs(fileInfo: FileInfo, formatInfo: IFormatInfo): Promise<void | IMolContainer[]> {
+export function parseUsing3DMolJs(fileInfo: FileInfo, formatInfo: IFormatInfo, addToTree = true): Promise<void | IMolContainer[]> {
     return parseMolecularModelFromText(
         fileInfo.contents,
         formatInfo.primaryExt,
         fileInfo.name
     )
         .then((molContainers: IMolContainer[]) => {
-            // Update VueX store
-            store.commit("pushToList", {
-                name: "molecules",
-                val: molContainers,
-            });
+            if (addToTree) {
+                // Update VueX store
+                store.commit("pushToList", {
+                    name: "molecules",
+                    val: molContainers,
+                });
+            }
                         
             api.messages.waitSpinner(false);
             return molContainers;

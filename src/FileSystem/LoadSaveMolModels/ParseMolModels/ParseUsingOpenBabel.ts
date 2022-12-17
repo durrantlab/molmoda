@@ -16,7 +16,8 @@ import { FileInfo } from "@/FileSystem/FileInfo";
  */
 export function parseUsingOpenBabel(
     fileInfo: FileInfo,
-    formatInfo: IFormatInfo
+    formatInfo: IFormatInfo,
+    addToTree = true
 ): Promise<void | IMolContainer[]> {
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
 
@@ -33,11 +34,13 @@ export function parseUsingOpenBabel(
             );
         })
         .then((molContainers: IMolContainer[]) => {
-            // Update VueX store
-            store.commit("pushToList", {
-                name: "molecules",
-                val: molContainers,
-            });
+            if (addToTree) {
+                // Update VueX store
+                store.commit("pushToList", {
+                    name: "molecules",
+                    val: molContainers,
+                });
+            }
 
             return molContainers;
         })

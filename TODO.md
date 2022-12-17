@@ -75,9 +75,21 @@ When adding new molecule, make sure filename is not already in list. Append (#).
 Multiframe files, still put under one molecule. And if more than a fixed number,
 autohide all but first few. Can use merge feature if needed.
 
-Do fpocket web. Saying two proteins when there's only 1.
+fpocketweb can't specify parameters. If you use the defaults you made up, you
+get no results.
+
+Search for // Merge them TODO: NOT MERGING PROPERLY
+
+Viewer could be spash screen until files loaded (with occasional messages that
+could be informative).
 
 # DONE
+
+No Data panel in Window menu
+
+not running in worker. Also, 
+
+Do fpocket web. Saying two proteins when there's only 1.
 
 *****Export VRML for NGL viewer. Not working. Throw error.
 

@@ -270,7 +270,7 @@ export default class TitleBar extends Vue {
         // If they click on the title bar, start loading openbabel and rdkitjs. It's
         // increasingly likely that these will be needed in a bit.
         dynamicImports.openbabeljs.module;
-        dynamicImports.rdkitjs.module;
+        // dynamicImports.rdkitjs.module;
     }
 
     /**

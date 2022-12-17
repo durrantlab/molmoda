@@ -7,6 +7,7 @@ system uses these to autopopulate with plugins. -->
     <!-- TEMPLATE1 START -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
+    <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DelayedJobPopupPlugin @onPluginSetup="onPluginSetup"></DelayedJobPopupPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
@@ -48,6 +49,7 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 // TEMPLATE2 START
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
+import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DelayedJobPopupPlugin from "./Core/DelayedJobPopupPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
@@ -87,6 +89,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     // TEMPLATE3 START
     ClearSelectionPlugin,
     CloneMolPlugin,
+    DataWindowPlugin,
     DelayedJobPopupPlugin,
     DeleteMolPlugin,
     InformationWindowPlugin,
@@ -115,6 +118,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     MolPropsPlugin,
     TestPlugin,
     // TEMPLATE3 END
+
 
 
 

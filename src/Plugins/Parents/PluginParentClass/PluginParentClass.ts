@@ -252,10 +252,10 @@ export abstract class PluginParentClass extends mixins(
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
      * @returns {RunJobReturn}  A promise that resolves a result (object) when
-     *     the job is done. The object maps a filename to file content, with the
-     *     type determined by the filename (key) extension. You can also return
-     *     such an object directly, without using a promise, if the job is
-     *     synchronous. Return void or undefined if there's nothing to return.
+     *     the job is done. The object is a FileInfo object, or a list of
+     *     FileInfo objects. You can also return such an object directly,
+     *     without using a promise, if the job is synchronous. Return void or
+     *     undefined if there's nothing to return.
      */
     abstract runJobInBrowser(parameterSet: any): RunJobReturn;
 

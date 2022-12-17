@@ -119,7 +119,9 @@ export function getNodesOfType(
 ): IMolContainer[] {
     let nodesToConsider = getAllNodesFlattened(mols);
 
-    nodesToConsider = extractFlattenedContainers(nodesToConsider, { type: type });
+    nodesToConsider = extractFlattenedContainers(nodesToConsider, {
+        type: type,
+    });
 
     if (onlyVisible) {
         nodesToConsider = extractFlattenedContainers(nodesToConsider, {
@@ -218,7 +220,10 @@ export function removeNode(node: string | IMolContainer | null) {
 
     if (!node.parentId) {
         // It's a root node, without a parent id.
-        setStoreVar("molecules", extractFlattenedContainers(mols, { notId: id }));
+        setStoreVar(
+            "molecules",
+            extractFlattenedContainers(mols, { notId: id })
+        );
         return;
     }
 
@@ -241,7 +246,9 @@ export function removeNode(node: string | IMolContainer | null) {
             break;
         }
 
-        curNode.nodes = extractFlattenedContainers(curNode.nodes, { notId: id });
+        curNode.nodes = extractFlattenedContainers(curNode.nodes, {
+            notId: id,
+        });
         if (curNode.nodes.length > 0) {
             // Parent node still has children (siblings of just deleted), so
             // we're done.
@@ -601,4 +608,62 @@ export function extractFlattenedContainers(
     }
 
     return molContainers;
+}
+
+export function mergeMolContainers(
+    molContainers: IMolContainer[],
+    newName = "mergedMol"
+): IMolContainer {
+    const mergedMolContainer = molContainers[0];
+
+    // Keep going through the nodes of each container and merge them into the
+    // first container.
+    for (let i = 1; i < molContainers.length; i++) {
+        const molContainer = molContainers[i];
+
+        // Get the terminal nodes
+        const terminalNodes = getTerminalNodes([molContainer]);
+
+        // Get ancestry of each terminal node
+        for (const terminalNode of terminalNodes) {
+            const ancestry = getNodeAncestory(terminalNode, [molContainer]);
+
+            // Remove first one, which is the root node
+            ancestry.shift();
+
+            let mergedMolContainerPointer = mergedMolContainer;
+            const mergedMolNodesTitles = mergedMolContainerPointer.nodes?.map(
+                (node) => node.title
+            ) as string[];
+
+            while (mergedMolNodesTitles?.indexOf(ancestry[0].title) !== -1) {
+                if (!mergedMolContainerPointer.nodes) {
+                    // When does this happen?
+                    debugger;
+                    break;
+                }
+
+                // Update the pointer
+                mergedMolContainerPointer =
+                    mergedMolContainerPointer.nodes.find(
+                        (node) => node.title === ancestry[0].title
+                    ) as IMolContainer;
+
+                // Remove the first node from the ancestry
+                ancestry.shift();
+            }
+
+            // You've reached the place where the node should be added. First,
+            // update its parentId.
+            const nodeToAdd = ancestry[0];
+            nodeToAdd.parentId = mergedMolContainerPointer.id;
+
+            // And add it
+            mergedMolContainerPointer.nodes?.push(nodeToAdd);
+        }
+    }
+
+    mergedMolContainer.title = newName;
+
+    return mergedMolContainer;
 }

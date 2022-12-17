@@ -1,56 +1,83 @@
 <template>
-  <div ref="golden-layout-data" id="golden-layout-data">
-    <GoldenLayoutContainer type="column">
-      <GoldenLayoutContainer type="row" :height="80">
-        <GoldenLayoutComponent
-          name="Navigator"
-          extraClass="sortable-group"
-          state="{}"
-          :width="20"
-        >
-          <div
-            @click.self="clearSelection"
-            style="height: 100%; overflow-x: clip"
-          >
-            <TreeView />
-          </div>
-        </GoldenLayoutComponent>
+    <div ref="golden-layout-data" id="golden-layout-data">
+        <GoldenLayoutContainer type="column">
+            <GoldenLayoutContainer type="row" :height="80">
+                <GoldenLayoutComponent
+                    name="Navigator"
+                    extraClass="sortable-group"
+                    state="{}"
+                    :width="20"
+                >
+                    <div
+                        @click.self="clearSelection"
+                        style="height: 100%; overflow-x: clip"
+                    >
+                        <TreeView />
+                    </div>
+                </GoldenLayoutComponent>
 
-        <GoldenLayoutContainer type="stack" :width="60">
-          <GoldenLayoutComponent
-            name="Viewer"
-            state="{}"
-            :style="'height:100%; padding:0 !important;'"
-          >
-            <ViewerPanel />
-          </GoldenLayoutComponent>
-          <GoldenLayoutComponent name="Jobs" state="{}">
-            <QueuePanel />
-          </GoldenLayoutComponent>
-          <GoldenLayoutComponent name="Data" state="{}">
-            <DataPanel />
-          </GoldenLayoutComponent>
+                <GoldenLayoutContainer type="stack" :width="60">
+                    <GoldenLayoutComponent
+                        name="Viewer"
+                        state="{}"
+                        :style="'height:100%; padding:0 !important;'"
+                    >
+                        <div v-if="!viewerLoaded" class="splash-screen">
+                            <div class="container-fluid p-3">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <img
+                                            src="img/icons/android-chrome-192x192.png"
+                                            class="rounded mx-auto d-block"
+                                            alt="Logo"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p class="text-center">{{appInfo}}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p>Biotite is such and such a thing, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>. To get started, do such and such a thing.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <ViewerPanel @onViewerLoaded="onViewerLoaded" />
+                    </GoldenLayoutComponent>
+                    <GoldenLayoutComponent name="Jobs" state="{}">
+                        <QueuePanel />
+                    </GoldenLayoutComponent>
+                    <GoldenLayoutComponent name="Data" state="{}">
+                        <DataPanel />
+                    </GoldenLayoutComponent>
+                </GoldenLayoutContainer>
+
+                <GoldenLayoutContainer type="column" :width="20">
+                    <GoldenLayoutComponent name="Styles" state="{}" :width="20">
+                        <StylesPanel />
+                    </GoldenLayoutComponent>
+
+                    <GoldenLayoutComponent
+                        name="Information"
+                        state="{}"
+                        :width="20"
+                    >
+                        <InformationPanel />
+                    </GoldenLayoutComponent>
+                </GoldenLayoutContainer>
+            </GoldenLayoutContainer>
+            <GoldenLayoutContainer type="row" :height="20">
+                <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
+                    <LogPanel />
+                </GoldenLayoutComponent>
+            </GoldenLayoutContainer>
         </GoldenLayoutContainer>
+    </div>
 
-        <GoldenLayoutContainer type="column" :width="20">
-          <GoldenLayoutComponent name="Styles" state="{}" :width="20">
-            <StylesPanel />
-          </GoldenLayoutComponent>
-
-          <GoldenLayoutComponent name="Information" state="{}" :width="20">
-            <InformationPanel />
-          </GoldenLayoutComponent>
-        </GoldenLayoutContainer>
-      </GoldenLayoutContainer>
-      <GoldenLayoutContainer type="row" :height="20">
-        <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
-          <LogPanel />
-        </GoldenLayoutComponent>
-      </GoldenLayoutContainer>
-    </GoldenLayoutContainer>
-  </div>
-
-  <div id="golden-layout"></div>
+    <div id="golden-layout"></div>
 </template>
 
 <script lang="ts">
@@ -71,142 +98,155 @@ import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
+import { appName, appVersion } from "@/Core/AppName";
 
 /**
  * GoldLayout component
  */
 @Options({
-  components: {
-    GoldenLayoutContainer,
-    GoldenLayoutComponent,
-    ViewerPanel,
-    StylesPanel,
-    TreeView,
-    LogPanel,
-    InformationPanel,
-    QueuePanel,
-    DataPanel,
-  },
+    components: {
+        GoldenLayoutContainer,
+        GoldenLayoutComponent,
+        ViewerPanel,
+        StylesPanel,
+        TreeView,
+        LogPanel,
+        InformationPanel,
+        QueuePanel,
+        DataPanel,
+    },
 })
 export default class GoldLayout extends Vue {
-  /**
-   * Extract data from the DOM.
-   *
-   * @param {HTMLElement} dom  The DOM element to extract data from.
-   * @returns {any[]}  The data extracted from the DOM.
-   */
-  private _convertDOMToData(dom: HTMLElement): any[] {
-    let children = dom.children;
-    let content = [];
-    for (const el of children) {
-      let child = el as HTMLElement;
-      let type = child.getAttribute("data-type");
-      let width = child.getAttribute("data-width");
-      let height = child.getAttribute("data-height");
+    viewerLoaded = false;
 
-      if (type !== "component") {
-        // It's a container
-        content.push({
-          type: type,
-          content: this._convertDOMToData(child),
-          width: width,
-          height: height,
-        });
-      } else {
-        // It's a component
-        // let componentName = child.getAttribute("data-componentName");
-        let title = child.getAttribute("data-title");
-        let componentState = JSON.parse(
-          child.getAttribute("data-componentState") as string
-        );
-        content.push({
-          type: type,
-          componentType: type,
-          // componentName: componentName,
-          title: title,
-          componentState: componentState,
-          width: width,
-          height: height,
-        });
-      }
+    get appInfo(): string {
+      return appName + " " + appVersion;
     }
-    return content;
-  }
 
-  /**
-   * Set up the Golden Layout.
-   *
-   * @param {HTMLElement} dataDOM  The DOM.
-   * @param {any}         config   The Golden Layout configuration.
-   */
-  private _setupGoldenLayout(dataDOM: HTMLElement, config: any) {
-    const glContainer = document.getElementById("golden-layout") as HTMLElement;
+    /**
+     * Extract data from the DOM.
+     *
+     * @param {HTMLElement} dom  The DOM element to extract data from.
+     * @returns {any[]}  The data extracted from the DOM.
+     */
+    private _convertDOMToData(dom: HTMLElement): any[] {
+        let children = dom.children;
+        let content = [];
+        for (const el of children) {
+            let child = el as HTMLElement;
+            let type = child.getAttribute("data-type");
+            let width = child.getAttribute("data-width");
+            let height = child.getAttribute("data-height");
 
-    const myLayout = makeGoldenLayout(glContainer);
+            if (type !== "component") {
+                // It's a container
+                content.push({
+                    type: type,
+                    content: this._convertDOMToData(child),
+                    width: width,
+                    height: height,
+                });
+            } else {
+                // It's a component
+                // let componentName = child.getAttribute("data-componentName");
+                let title = child.getAttribute("data-title");
+                let componentState = JSON.parse(
+                    child.getAttribute("data-componentState") as string
+                );
+                content.push({
+                    type: type,
+                    componentType: type,
+                    // componentName: componentName,
+                    title: title,
+                    componentState: componentState,
+                    width: width,
+                    height: height,
+                });
+            }
+        }
+        return content;
+    }
 
-    myLayout.registerComponentFactoryFunction(
-      "component",
-      (container: ComponentContainer, componentState: any) => {
-        // container.element.innerHTML = "<h2>" + componentState.label + "</h2>";
-        let domID = componentState.domID;
+    /**
+     * Set up the Golden Layout.
+     *
+     * @param {HTMLElement} dataDOM  The DOM.
+     * @param {any}         config   The Golden Layout configuration.
+     */
+    private _setupGoldenLayout(dataDOM: HTMLElement, config: any) {
+        const glContainer = document.getElementById(
+            "golden-layout"
+        ) as HTMLElement;
 
-        // search dataDOM for the element with the given ID
-        let el = dataDOM.querySelector(`#${domID}`) as HTMLElement;
+        const myLayout = makeGoldenLayout(glContainer);
 
-        // Move el to the container
-        container.element.appendChild(el);
+        myLayout.registerComponentFactoryFunction(
+            "component",
+            (container: ComponentContainer, componentState: any) => {
+                // container.element.innerHTML = "<h2>" + componentState.label + "</h2>";
+                let domID = componentState.domID;
 
-        // Also add classes to make it work with bootstrap
-        // container.element
-        // container.tab.element
-      }
-    );
+                // search dataDOM for the element with the given ID
+                let el = dataDOM.querySelector(`#${domID}`) as HTMLElement;
 
-    // @ts-ignore
-    myLayout.loadLayout(config);
+                // Move el to the container
+                container.element.appendChild(el);
 
-    myLayout.on("stateChanged", () => {
-      //now save the state
-      // this.makeGoldenLayoutBootstrapCompatible();
-      addBootstrapColorClasses();
-    });
+                // Also add classes to make it work with bootstrap
+                // container.element
+                // container.tab.element
+            }
+        );
 
-    // Listen to resize and update layout
-    window.addEventListener("resize", () => {
-      // @ts-ignore
-      myLayout.setSize();
-    });
+        // @ts-ignore
+        myLayout.loadLayout(config);
 
-    addBootstrapColorClasses();
+        myLayout.on("stateChanged", () => {
+            //now save the state
+            // this.makeGoldenLayoutBootstrapCompatible();
+            addBootstrapColorClasses();
+        });
 
-    // this.makeGoldenLayoutBootstrapCompatible();
-  }
+        // Listen to resize and update layout
+        window.addEventListener("resize", () => {
+            // @ts-ignore
+            myLayout.setSize();
+        });
 
-  /**
-   * Clears any selected molecules. This is called when the user clicks on the
-   * background of the tree view.
-   */
-  clearSelection() {
-    api.plugins.runPlugin("clearselection");
-  }
+        addBootstrapColorClasses();
 
-  /** mounted function */
-  mounted() {
-    let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
+        // this.makeGoldenLayoutBootstrapCompatible();
+    }
 
-    let config = {
-      settings: {
-        showPopoutIcon: false,
-        // showCloseIcon: false
-      },
-      content: this._convertDOMToData(dataDOM),
-    };
+    /**
+     * Clears any selected molecules. This is called when the user clicks on the
+     * background of the tree view.
+     */
+    clearSelection() {
+        api.plugins.runPlugin("clearselection");
+    }
 
-    this._setupGoldenLayout(dataDOM, config);
+    /** mounted function */
+    mounted() {
+        let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
 
-    // Remove dataDOM
-    dataDOM.remove();
-  }
+        let config = {
+            settings: {
+                showPopoutIcon: false,
+                // showCloseIcon: false
+            },
+            content: this._convertDOMToData(dataDOM),
+        };
+
+        this._setupGoldenLayout(dataDOM, config);
+
+        // Remove dataDOM
+        dataDOM.remove();
+    }
+
+    onViewerLoaded() {
+        this.viewerLoaded = true;
+    }
 }
 </script>
 
@@ -221,14 +261,20 @@ export default class GoldLayout extends Vue {
 // @import "golden-layout/dist/css/themes/goldenlayout-borderless-dark-theme.css";
 
 #golden-layout {
-  /* Takes up whole screen */
-  display: block;
-  width: 100%;
-  height: 100%;
+    /* Takes up whole screen */
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 #golden-layout-data {
-  display: none;
+    display: none;
+}
+
+.splash-screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 }
 </style>
 
@@ -238,19 +284,19 @@ export default class GoldLayout extends Vue {
 
 // Below is to make golden layout work with bootstrap
 .reduced-padding-on-right {
-  padding-right: 10px !important;
+    padding-right: 10px !important;
 }
 
 // I don't want anything to be closable, but I want it to still be draggable.
 // This seems to be the way to do it.
 .lm_close_tab,
 .lm_close {
-  display: none;
+    display: none;
 }
 
 // Need to make hamburger menu look good.
 .lm_header {
-  z-index: 0;
+    z-index: 0;
 }
 </style>
 

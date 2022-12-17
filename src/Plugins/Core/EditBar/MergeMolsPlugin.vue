@@ -24,6 +24,7 @@ import {
     cloneMols,
     getNodeAncestory,
     getTerminalNodes,
+    mergeMolContainers,
 } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -119,62 +120,10 @@ export default class MergeMolsPlugin extends PluginParentClass {
         // debugging below
         cloneMols(this.nodesToActOn, true)
             .then((molContainers: IMolContainer[]) => {
-                const mergedMolContainer = molContainers[0];
-
-                // Keep going through the nodes of each container and merge them into the
-                // first container.
-                for (let i = 1; i < molContainers.length; i++) {
-                    const molContainer = molContainers[i];
-
-                    // Get the terminal nodes
-                    const terminalNodes = getTerminalNodes([molContainer]);
-
-                    // Get ancestry of each terminal node
-                    for (const terminalNode of terminalNodes) {
-                        const ancestry = getNodeAncestory(terminalNode, [
-                            molContainer,
-                        ]);
-
-                        // Remove first one, which is the root node
-                        ancestry.shift();
-
-                        let mergedMolContainerPointer = mergedMolContainer;
-                        const mergedMolNodesTitles =
-                            mergedMolContainerPointer.nodes?.map(
-                                (node) => node.title
-                            ) as string[];
-
-                        while (
-                            mergedMolNodesTitles?.indexOf(ancestry[0].title) !==
-                            -1
-                        ) {
-                            if (!mergedMolContainerPointer.nodes) {
-                                // When does this happen?
-                                debugger;
-                                break;
-                            }
-
-                            // Update the pointer
-                            mergedMolContainerPointer =
-                                mergedMolContainerPointer.nodes.find(
-                                    (node) => node.title === ancestry[0].title
-                                ) as IMolContainer;
-
-                            // Remove the first node from the ancestry
-                            ancestry.shift();
-                        }
-
-                        // You've reached the place where the node should be added. First,
-                        // update its parentId.
-                        const nodeToAdd = ancestry[0];
-                        nodeToAdd.parentId = mergedMolContainerPointer.id;
-
-                        // And add it
-                        mergedMolContainerPointer.nodes?.push(nodeToAdd);
-                    }
-                }
-
-                mergedMolContainer.title = this.getArg(userArgs, "newName");
+                const mergedMolContainer = mergeMolContainers(
+                    molContainers,
+                    this.getArg(userArgs, "newName")
+                );
 
                 this.$store.commit("pushToList", {
                     name: "molecules",

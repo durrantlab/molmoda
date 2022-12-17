@@ -34,7 +34,8 @@ export const fileTypesAccepts = _allAcceptableFileTypes
  *     loaded.
  */
 export function parseMoleculeFile(
-    fileInfo: FileInfo
+    fileInfo: FileInfo,
+    addToTree = true
 ): Promise<void | IMolContainer[]> {
     api.messages.waitSpinner(true);
 
@@ -46,10 +47,10 @@ export function parseMoleculeFile(
 
     switch (formatInfo.loader) {
         case MolLoader.Mol3D: {
-            return parseUsing3DMolJs(fileInfo, formatInfo);
+            return parseUsing3DMolJs(fileInfo, formatInfo, addToTree);
         }
         case MolLoader.OpenBabel: {
-            return parseUsingOpenBabel(fileInfo, formatInfo);
+            return parseUsingOpenBabel(fileInfo, formatInfo, addToTree);
         }
         case MolLoader.Biotite: {
             return parseUsingBiotite(fileInfo);

@@ -20,7 +20,9 @@
 
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
+import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { checkAnyMolLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -35,6 +37,8 @@ import {
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
+import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { mergeMolContainers } from "@/UI/Navigation/TreeView/TreeUtils";
 import { Options } from "vue-class-component";
 import { defaultFpocketParams, IFpocketParams } from "./FPocketWebTypes";
 
@@ -121,57 +125,63 @@ export default class FPocketWebPlugin extends PluginParentClass {
      *
      * @param {FileInfo} pdbFile  The user arguments to pass to the
      *                            "executable." Contains compound information.
-     * @returns {Promise<undefined>}  A promise that resolves when the job is
+     * @returns {Promise<any>}  A promise that resolves when the job is
      *     done.
      */
-    runJobInBrowser(pdbFile: FileInfo): Promise<undefined | void> {
-        dynamicImports.fpocketweb.module
-            .then((FpocketWeb: any) => {
-                const fPocketParams = defaultFpocketParams;
-                FpocketWeb.start(
-                    {}, // fPocketParams,
-                    pdbFile.name,
-                    pdbFile.contents,
+    runJobInBrowser(pdbFile: FileInfo): Promise<any> {
+        const worker = new Worker(
+            new URL("./FPocketWeb.worker", import.meta.url)
+        );
 
-                    // onDone
-                    (
-                        outPdbqtFileTxt: string,
-                        stdOut: string,
-                        stdErr: string,
-                        pocketsContents: string
-                    ) => {
-                        debugger;
-                        // this.afterWASM(outPdbqtFileTxt, stdOut, stdErr);
-                    },
+        return runWorker(worker, {
+            pdbName: pdbFile.name,
+            pdbContents: pdbFile.contents,
+        })
+            .then((payload: any) => {
+                const outPdbFileTxt = payload.outPdbFileTxt;
+                const stdOut = payload.stdOut;
+                const stdErr = payload.stdErr;
+                const pocketsContents = payload.pocketsContents;
 
-                    // onError
-                    (errObj: any) => {
-                        alert(errObj["message"]);
-                        // this.showFpocketWebError(errObj["message"]);
-                    },
+                const fileInfos = [
+                    new FileInfo({
+                        name: "outPdbFileTxt.pdb",
+                        contents: outPdbFileTxt,
+                    }),
+                    new FileInfo({
+                        name: "pocketsContents.pqr",
+                        contents: pocketsContents,
+                    }),
+                ];
 
-                    "js/fpocketweb/"
-                    // Utils.curPath() + "FpocketWeb/"  // TODO: Good to implement something like this in biotite.
+                const molPromises = fileInfos.map(
+                    (f) =>
+                        parseMoleculeFile(f, false) as Promise<IMolContainer[]>
                 );
-                return;
+
+                return Promise.all(molPromises);
             })
-            .catch((err: any): void => {
-                throw err;
+            .then((mols: IMolContainer[][]) => {
+                const outPdbFileTxtMol = mols[0][0];
+                const pocketsContentsMol = mols[1][0];
+
+                debugger;
+
+                // Merge them TODO: NOT MERGING PROPERLY
+                const mergedMols = mergeMolContainers([
+                    outPdbFileTxtMol,
+                    pocketsContentsMol,
+                ]);
+
+                // Add to molecules
+                this.$store.commit("pushToList", {
+                    name: "molecules",
+                    val: mergedMols,
+                });
+
+                // debugger;
+                return;
             });
-        return Promise.resolve(undefined);
-
-        // Convert all the fileInfos to the can format.
-        // const canPromises = compoundBatch.map((fileInfo) =>
-        //   fileInfo.convertFromPDBTxt("can")
-        // );
-
-        // return Promise.all(canPromises)
-        //   .then((fileInfos: FileInfo[]) => {
-        //     return;
-        //   })
-        //   .catch((err: any): void => {
-        //     throw err;
-        //   });
     }
 }
 </script>

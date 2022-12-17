@@ -117,6 +117,7 @@ export default class ViewerPanel extends Vue {
                         window["viewer"] = viewer;
 
                         api.visualization.viewer = viewer;
+                        this.$emit("onViewerLoaded");
                         return viewer;
                     });
 

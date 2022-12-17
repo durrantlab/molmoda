@@ -392,35 +392,11 @@ export const dynamicImports = {
         },
     },
     rdkitjs: {
+        // Always called from webworker
         credit: {
             name: "rdkitjs",
             url: "https://github.com/rdkit/rdkit-js",
             license: Licenses.BSD3,
-        },
-        /**
-         * Gets the module.
-         *
-         * @returns {Promise<any>}  A promise that resolves to the module.
-         */
-        get module(): Promise<any> {
-            // Note that this is for running rdkitjs in the main thread (not web
-            // worker). After refactoring, it actually always runs in a
-            // webworker, so this never gets used. But I'm leaving it here
-            // because it's a convenient way to register the library with the
-            // credits system.
-
-            return Promise.resolve();
-
-            // return addJsToHeader(
-            //     "rdkitjs",
-            //     "js/rdkitjs/RDKit_minimal.js",
-            //     () => {
-            //         return (window as any).initRDKitModule().catch((err) => {
-                // throw err;
-            //             // handle loading errors here...
-            //         });
-            //     }
-            // );
         },
     },
     sheetsjs: {
@@ -446,47 +422,11 @@ export const dynamicImports = {
     },
 
     fpocketweb: {
+        // Called directly from webworker
         credit: {
             name: "fpocketweb",
             url: "https://git.durrantlab.pitt.edu/jdurrant/fpocketweb",
             license: Licenses.APACHE2,
-        },
-
-        /**
-         * Gets the module.
-         *
-         * @returns {Promise<any>}  A promise that resolves to the module.
-         */
-        get module(): Promise<any> {
-            // NOTE: Unfortunately, the only way I could get this to work was by
-            // attaching it to the main window. A promise that resolves the
-            // module is not effective for some reason.
-
-            return addJsToHeader(
-                "fpocketweb",
-                "js/fpocketweb/FpocketWeb.min.js",
-                () => {
-                    return Promise.resolve((window as any).FpocketWeb);
-                    // const OpenBabel = (window as any)["OpenBabelModule"]();
-                    // const prom1 = new Promise((resolve) => {
-                    //     OpenBabel.onRuntimeInitialized = () => {
-                    //         resolve(undefined);
-                    //     };
-                    // });
-                    // const prom2 = new Promise(function (resolve) {
-                    //     const checkReady = () => {
-                    //         if (OpenBabel.ObConversionWrapper) {
-                    //             (window as any)["OpenBabel"] = OpenBabel;
-                    //             resolve(undefined);
-                    //         } else {
-                    //             setTimeout(checkReady, 500);
-                    //         }
-                    //     };
-                    //     checkReady();
-                    // });
-                    // return Promise.all([prom1, prom2]);
-                }
-            );
-        },
+        }
     },
 };

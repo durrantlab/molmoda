@@ -48,6 +48,7 @@ var decodeBase64 = "function" == typeof atob
     };
 // Make FPocketWeb global namespace.
 var FpocketWeb = (function () {
+    var window = self;
     return {
         FPOCKET_ENVIRONMENT_IS_NODE: window["FPOCKET_ENVIRONMENT_IS_NODE"],
         FPOCKET_lengthBytesUTF8: window["FPOCKET_lengthBytesUTF8"],
@@ -151,6 +152,9 @@ var FpocketWeb = (function () {
                 catchError: function (n) {
                     onError(n);
                     // throw n;  // Don't throw the errr. You're catching it now.
+                },
+                locateFile: function (path) {
+                    return "fpocketweb/" + path.split("/").pop();
                 }
             };
             if (fpocketParams["pdbFile"] !== undefined) {
@@ -207,9 +211,17 @@ var FpocketWeb = (function () {
                      console.warn(msg);
                  } else {
                      */
-            var script = document.createElement("script");
-            script.src = this.FPOCKET_BASE_URL + "fpocket.js";
-            document.body.appendChild(script);
+            try {
+                var script = document.createElement("script");
+                script.src = this.FPOCKET_BASE_URL + "fpocket.js";
+                document.body.appendChild(script);
+            }
+            catch (e) {
+                // Must be in worker.
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                importScripts(this.FPOCKET_BASE_URL + "fpocket.js");
+            }
             /* }
        //  }
 

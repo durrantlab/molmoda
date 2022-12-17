@@ -68,6 +68,7 @@ const decodeBase64 =
 
 // Make FPocketWeb global namespace.
 const FpocketWeb = (function () {
+    const window = self;
     return {
         FPOCKET_ENVIRONMENT_IS_NODE: (window as any)[
             "FPOCKET_ENVIRONMENT_IS_NODE"
@@ -198,6 +199,9 @@ const FpocketWeb = (function () {
                     onError(n);
                     // throw n;  // Don't throw the errr. You're catching it now.
                 },
+                locateFile(path: string) {
+                    return "fpocketweb/" + path.split("/").pop();
+                }
             };
 
             if (fpocketParams["pdbFile"] !== undefined) {
@@ -274,9 +278,16 @@ const FpocketWeb = (function () {
                      console.warn(msg);
                  } else {
                      */
-            const script = document.createElement("script");
-            script.src = this.FPOCKET_BASE_URL + "fpocket.js";
-            document.body.appendChild(script);
+                    try {
+                        const script = document.createElement("script");
+                        script.src = this.FPOCKET_BASE_URL + "fpocket.js";
+                        document.body.appendChild(script);
+                    } catch (e) {
+                        // Must be in worker.
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        importScripts(this.FPOCKET_BASE_URL + "fpocket.js");
+                    }
             /* }
        //  }
 

@@ -27,3 +27,7 @@ docs/*
 *.old
 *.orig
 icons
+
+# Remove these in time
+src/libs/ToCopy/obabel-wasm
+
