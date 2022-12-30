@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 // @ts-ignore
 import cloneDeep from "lodash.clonedeep";
 
-export const undoStack: IMolContainer[][] = [[]];
-export let redoStack: IMolContainer[][] = [];
+export const undoStack: TreeNodeList[] = [new TreeNodeList()];
+export let redoStack: TreeNodeList[] = [];
 let timeoutId: number;
 const maxItemsOnUndoStack = 10;
 
 /**
  * Pushes a new item to the undo stack.
  * 
- * @param  {IMolContainer[]} item The item to push.
+ * @param  {TreeNodeList} item The item to push.
  */
-function addItemToUndoStack(item: IMolContainer[]) {
+function addItemToUndoStack(item: TreeNodeList) {
     if (undoStack.length > maxItemsOnUndoStack) {
         undoStack.shift();
     }
@@ -28,9 +28,9 @@ function addItemToUndoStack(item: IMolContainer[]) {
  * By adding to the stack only after a delay, you prevent adding excessive
  * changes in rapid succession.
  *
- * @param  {IMolContainer[]} molecules The item to push.
+ * @param  {TreeNodeList} molecules The item to push.
  */
-export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
+export function addToUndoStackAfterUserInaction(molecules: TreeNodeList) {
     if (timeoutId) {
         window.clearTimeout(timeoutId);
     }
@@ -39,10 +39,10 @@ export function addToUndoStackAfterUserInaction(molecules: IMolContainer[]) {
         redoStack = [];
 
         // Make new molecule
-        const moleculesObjToAddToStack = cloneDeep(molecules);
+        const moleculesObjToAddToStack = cloneDeep(molecules) as TreeNodeList;
         
-        getTerminalNodes(moleculesObjToAddToStack)
-        .forEach((mol) => { mol.viewerDirty = true; });
+        moleculesObjToAddToStack.filters.onlyTerminal
+        .forEach((mol: TreeNode) => { mol.viewerDirty = true; });
 
         // Move new molecules to the stack
         addItemToUndoStack(moleculesObjToAddToStack);

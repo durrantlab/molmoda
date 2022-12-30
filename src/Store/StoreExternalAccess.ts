@@ -1,3 +1,4 @@
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { NameValPair } from "./StoreInterfaces";
 
 let store: any;
@@ -53,4 +54,13 @@ export function getStoreVar(name: string, module = ""): any {
     } else {
         return store.state[module][name];
     }
+}
+
+/**
+ * Gets the molecules from the store. Doing it this way so it will be typed.
+ * 
+ * @returns {TreeNodeList}  The molecules in the store.
+ */
+export function getMoleculesFromStore(): TreeNodeList {
+    return getStoreVar("molecules") as TreeNodeList;
 }

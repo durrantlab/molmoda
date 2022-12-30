@@ -1,10 +1,6 @@
-import { getStoreVar } from "@/Store/StoreExternalAccess";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    extractFlattenedContainers,
-    getTerminalNodesToConsider,
-    keepUniqueMolContainers,
-} from "@/UI/Navigation/TreeView/TreeUtils";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { getTerminalNodesToConsider } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolsToConsider, ICompiledNodes } from "./Types";
 import { separateCompoundNonCompoundTerminalNodes } from "./Utils";
 
@@ -26,21 +22,21 @@ export function compileByMolecule(
 ): ICompiledNodes {
     // Not using biotite format. Create ZIP file with protein and small
     // molecules.
-    let compoundNodes: IMolContainer[] = [];
-    const nonCompoundNodesByMolecule: IMolContainer[][] = [];
+    let compoundNodes = new TreeNodeList();
+    const nonCompoundNodesByMolecule: TreeNodeList[] = [];
 
-    for (const molContainer of getStoreVar("molecules")) {
-        const allNodes = [molContainer];
-        if (molContainer.nodes) {
-            allNodes.push(...molContainer.nodes);
+    getMoleculesFromStore().forEach((treeNode) => {
+        const allNodes = new TreeNodeList([treeNode]);
+        if (treeNode.nodes) {
+            allNodes.extend(treeNode.nodes);
         }
 
         if (keepCompoundsSeparate) {
             const separatedNodes =
                 separateCompoundNonCompoundTerminalNodes(allNodes);
 
-            compoundNodes.push(
-                ...getTerminalNodesToConsider(
+            compoundNodes.extend(
+                getTerminalNodesToConsider(
                     molsToConsider,
                     separatedNodes.compoundNodes
                 )
@@ -52,10 +48,8 @@ export function compileByMolecule(
             );
 
             // Remove undefineds, shapes
-            terminalNodes = extractFlattenedContainers(terminalNodes, {
-                undefined: false,
-                shape: false,
-            });
+            terminalNodes = terminalNodes.filters.removeUndefined();
+            terminalNodes = terminalNodes.filters.keepShapes(false);
 
             nonCompoundNodesByMolecule.push(terminalNodes);
         } else {
@@ -64,22 +58,18 @@ export function compileByMolecule(
                 molsToConsider,
                 allNodes
             );
-            termNodes = keepUniqueMolContainers(termNodes);
+            termNodes = termNodes.filters.onlyUnique;
 
             // Removed undefineds, shapes
-            termNodes = extractFlattenedContainers(termNodes, {
-                undefined: false,
-            });
-            termNodes = extractFlattenedContainers(termNodes, { shape: false });
+            termNodes = termNodes.filters.removeUndefined();
+            termNodes = termNodes.filters.keepShapes(false);
 
             nonCompoundNodesByMolecule.push(termNodes);
         }
-    }
-
-    compoundNodes = extractFlattenedContainers(compoundNodes, {
-        undefined: false,
     });
-    compoundNodes = extractFlattenedContainers(compoundNodes, { shape: false });
+
+    compoundNodes = compoundNodes.filters.removeUndefined();
+    compoundNodes = compoundNodes.filters.keepShapes(false);
 
     return {
         // mol_filter_ok

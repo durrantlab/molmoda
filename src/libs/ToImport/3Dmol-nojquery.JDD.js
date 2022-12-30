@@ -31531,12 +31531,13 @@ $3Dmol.GLViewer = (function() {
           return data;
         };
 
-        this.makeGLModel_JDD = function(txt, format) {
+        this.makeGLModel_JDD = function(txt, format, noComputeSecondaryStructure=false) {
           let mol = new $3Dmol.GLModel(
             models.length, 
             {defaultcolors:defaultcolors, cartoonQuality:config.cartoonQuality}
           );
-          mol.addMolData(txt, format, { keepH: true, multimodel: true });  // Assume always multimodel.
+          // Assume always multimodel.
+          mol.addMolData(txt, format, { keepH: true, multimodel: true, noComputeSecondaryStructure: noComputeSecondaryStructure });
           return mol;
         }
 

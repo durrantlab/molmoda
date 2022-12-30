@@ -1,11 +1,11 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { _convertTreeNodeListToPDB } from "./_ConvertTreeNodeListToPDB";
 
-// function bondOrdersAssigned(molContainers: IMolContainer[]): boolean {
+// function bondOrdersAssigned(treeNodes: TreeNode[]): boolean {
 //     const bondOrders: Set<number> = new Set();
-//     for (const molContainer of molContainers) {
-//         const atoms = getAtomsOfModel(molContainer.model as GLModel);
+//     for (const treeNode of treeNodes) {
+//         const atoms = getAtomsOfModel(treeNode.model as GLModel);
 //         for (const atom of atoms) {
 //             for (const bondOrder of atom.bondOrder) {
 //                 bondOrders.add(bondOrder);
@@ -18,16 +18,17 @@ import { convertMolContainersToPDB } from "./ConvertMolContainerToPDB";
 
 /**
  * Given a list of mol containers, convert them to a specified molecular format.
+ * Don't call this function directly. Instead, use TreeNodeList.toFileInfos().
  *
- * @param  {IMolContainer[]} molContainers  The list of mol containers.
- * @param  {string}          targetExt            The extension of the format to
- *                                          convert to.
- * @param  {boolean}         [merge=false]  Whether to merge the models into a
- *                                          single PDB string.
- * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
+ * @param  {TreeNodeList}  treeNodeList  The list of mol containers.
+ * @param  {string}        targetExt      The extension of the format to convert
+ *                                        to.
+ * @param  {boolean}      [merge=false]   Whether to merge the models into a
+ *                                        single PDB string.
+ * @returns {FileInfo[]}  The text-formatted (e.g., PDB, MOL2) strings.
  */
-export function convertMolContainers(
-    molContainers: IMolContainer[],
+export function _convertTreeNodeList(
+    treeNodeList: TreeNodeList,
     targetExt: string,
     merge = true
 ): Promise<FileInfo[]> {
@@ -40,12 +41,12 @@ export function convertMolContainers(
     //     // format supports it. In this case, use PDB as an intermediary because
     //     // they will force conversion via open babel, which will assign bond
     //     // orders for you.
-    //     if (!bondOrdersAssigned(molContainers)) {
+    //     if (!bondOrdersAssigned(treeNodeList)) {
     //         calculateBondOrders = true;
     //     } else {
     //         // Use MOL2 as intermediary. First, convert the mol containers to a MOL2
     //         // string.
-    //         molTxts = convertMolContainersToMol2(molContainers, merge);
+    //         molTxts = convertTreeNodeToMol2(treeNodeList, merge);
     //         intermediaryExt = "mol2";
 
     //         // If MOL2 is destination format, just return that
@@ -58,7 +59,7 @@ export function convertMolContainers(
     // if (formatInf.hasBondOrders !== true || calculateBondOrders) {
     // Use PDB as intermediary. First, convert the mol containers to a PDB
     // string.
-    molTxts = convertMolContainersToPDB(molContainers, merge);
+    molTxts = _convertTreeNodeListToPDB(treeNodeList, merge);
 
     const fileInfos = molTxts.map((molTxt: string) =>
         new FileInfo({

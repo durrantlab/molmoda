@@ -1,21 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { getAllNodesFlattened } from "@/UI/Navigation/TreeView/TreeUtils";
 import { createStore, Store } from "vuex";
 import { allHooks } from "@/Api/Hooks";
-import {
-    IArrow,
-    IBox,
-    ICylinder,
-    IMolContainer,
-    ISphere,
-    SelectedType,
-    ShapeType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { setStoreIsDirty } from "./LoadAndSaveStore";
 import { ILog } from "@/UI/Panels/Log/LogUtils";
 import { setupExternalStoreAccess } from "./StoreExternalAccess";
 import { NameValPair } from "./StoreInterfaces";
+import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
 
 const _commonMutations = {
     /**
@@ -39,6 +32,14 @@ const _commonMutations = {
      * @param {NameValPair} payload  The name and value to push to the list.
      */
     pushToList(state: any, payload: NameValPair) {
+        // If payload.val is an instance of TreeNodeList, then we need to
+        // use pushToMolecules instead.
+        if (payload.val.nodes) {
+            // It's TreeNodeList
+            (this as any).commit("pushToMolecules", payload.val);
+            return;
+        }
+
         if (Array.isArray(payload.val)) {
             state[payload.name].push(...payload.val);
         } else {
@@ -47,25 +48,47 @@ const _commonMutations = {
     },
 
     /**
+     * Adds a value to a list in the state.
+     *
+     * @param {any}          state  The state.
+     * @param {TreeNodeList} mols   The name and value to push to the list.
+     */
+    pushToMolecules(state: any, mols: TreeNodeList | TreeNode) {
+        // @ts-ignore
+        if (mols.title) {
+            // It's a tree node
+            (state.molecules as TreeNodeList).push(mols as TreeNode);
+        } else {
+            // It's TreeNodeList
+
+            (state.molecules as TreeNodeList).extend(mols as TreeNodeList);
+        }
+
+        // Since it's an object, need to trigger reactivity. TODO: No way to do
+        // this via deep?
+        state.molecules = (state.molecules as TreeNodeList).copy.shallow;
+    },
+
+    /**
      * Adds a property (value) to an object in the state.
      *
      * @param {any}         state    The state.
      * @param {NameValPair} payload  The name and property (value) to add.
      */
-    addToObj(state: any, payload: NameValPair) {
-        state[payload.name] = {
-            ...state[payload.name],
-            ...payload.val,
-        };
-    },
+    // addToObj(state: any, payload: NameValPair) {
+    //     state[payload.name] = {
+    //         ...state[payload.name],
+    //         ...payload.val,
+    //     };
+    // },
 
     /**
      * Updates the molecules in the state.
      *
      * @param {any}             state  The state.
-     * @param {IMolContainer[]} mols   The updated molecules.
+     * @param {TreeNodeList} mols   The updated molecules.
      */
-    updateMolecules(state: any, mols: IMolContainer[]) {
+    updateMolecules(state: any, mols: TreeNodeList) {
         // state.molecules = mols;
 
         // remove entries in state.molecules
@@ -74,7 +97,7 @@ const _commonMutations = {
         }
 
         // Add in new items
-        state.molecules.push(...mols);
+        state.molecules.extend(mols);
     },
 };
 
@@ -104,7 +127,7 @@ export let store: any;
 export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
-            molecules: [
+            molecules: newTreeNodeList([
                 // {
                 //     title: "Shape group",
                 //     id: "test",
@@ -160,7 +183,6 @@ export function setupVueXStore(): Store<any> {
                 //                         movable: true
                 //                     } as IBox,
                 //                 },
-
                 //                 {
                 //                     title: "Shapes4",
                 //                     id: "shapes4",
@@ -201,7 +223,7 @@ export function setupVueXStore(): Store<any> {
                 //         },
                 //     ],
                 // },
-            ] as IMolContainer[],
+            ]),
             log: [] as ILog[],
             updateZoom: true,
             molViewer: "3dmol",
@@ -220,9 +242,11 @@ export function setupVueXStore(): Store<any> {
                 if (!updateZoom) {
                     state["updateZoom"] = false;
                 }
-                for (const node of getAllNodesFlattened(state["molecules"])) {
-                    node.focused = false;
-                }
+                (state["molecules"] as TreeNodeList).flattened.forEach(
+                    (node: TreeNode) => {
+                        node.focused = false;
+                    }
+                );
                 // Revert updateZoom after rerender
                 if (!updateZoom) {
                     setTimeout(() => {
@@ -265,7 +289,7 @@ export function setupVueXStore(): Store<any> {
 
     // For debugging
     // @ts-ignore
-    // window.store = store;
+    window.store = store;
 
     return store;
 }

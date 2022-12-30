@@ -137,7 +137,7 @@ export default class MolPropsPlugin extends PluginParentClass {
       .then((fileInfos: FileInfo[]) => {
         calcMolProps(
           fileInfos.map((f) => f.contents),
-          fileInfos.map((f) => f.molContainer)
+          fileInfos.map((f) => f.treeNode)
         );
         return;
       })

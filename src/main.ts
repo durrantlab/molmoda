@@ -10,6 +10,7 @@ import { setupTests } from "./Testing/SetupTests";
 import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
+import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 
 // api.sys.loadStatus.started = true;
 
@@ -18,6 +19,8 @@ loadFontAwesomeFonts();
 jobQueueSetup();
 setupTests();
 setupWarnSaveOnClose();
+
+defineMakerFuncs();
 
 // api.sys.loadStatus.pluginsLoaded = true;
 

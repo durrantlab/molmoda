@@ -20,13 +20,7 @@ import {
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 
-import {
-    cloneMols,
-    getNodeAncestory,
-    getTerminalNodes,
-    mergeMolContainers,
-} from "@/UI/Navigation/TreeView/TreeUtils";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { mergeTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
@@ -34,6 +28,10 @@ import { checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/ParentPluginTestFuncs";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 
 /**
  * MergeMolsPlugin
@@ -67,7 +65,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         } as IFormText,
     ];
 
-    nodesToActOn: IMolContainer[] = [getDefaultNodeToActOn()];
+    nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
     alwaysEnabled = true;
     logJob = false;
 
@@ -76,16 +74,24 @@ export default class MergeMolsPlugin extends PluginParentClass {
      * children to define it.
      */
     onBeforePopupOpen(): void {
-        setNodesToActOn(this);
+        setNodesToActOn(this, true);
 
         // Generate the suggested title for merged molecule.
         // Get top of molecule title.
         let titles: string[] = [];
-        for (const node of this.nodesToActOn) {
+        this.nodesToActOn.forEach((node) => {
             titles.push(
-                getNodeAncestory(node, this.$store.state.molecules)[0].title
+                node
+                    .getAncestry(this.$store.state.molecules as TreeNodeList)
+                    .get(0).title
             );
-        }
+        });
+
+        // Keep only unique titles
+        titles = titles.filter((title, index) => {
+            return titles.indexOf(title) === index;
+        });
+        titles.sort();
 
         this.updateUserArgs([
             {
@@ -103,7 +109,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        return checkMultipleMolsSelected(this as any);
+        return checkMultipleMolsSelected();
     }
 
     /**
@@ -117,23 +123,57 @@ export default class MergeMolsPlugin extends PluginParentClass {
             return;
         }
 
-        // debugging below
-        cloneMols(this.nodesToActOn, true)
-            .then((molContainers: IMolContainer[]) => {
-                const mergedMolContainer = mergeMolContainers(
-                    molContainers,
+        // We need to collect all the ids of the ones to keep. This includes the
+        // ones in this.nodesToActOn, which are terminal nodes. It should also
+        // include all their direct ancestors.
+        treeNodeListDeepClone(getMoleculesFromStore())
+            .then((allNodes: TreeNodeList) => {
+                let idsToKeep: string[] = this.nodesToActOn.map((node) => {
+                    return node.id;
+                });
+                this.nodesToActOn.forEach((node) => {
+                    node.getAncestry(allNodes).forEach((ancestor) => {
+                        if (ancestor.id) {
+                            idsToKeep.push(ancestor.id);
+                        }
+                    });
+                });
+                idsToKeep = idsToKeep.filter((id, index) => {
+                    // only unique
+                    return idsToKeep.indexOf(id) === index;
+                });
+                const onlySelectedTreeNodeList =
+                    allNodes.filters.onlyIdsDeep(idsToKeep);
+
+                return mergeTreeNodes(
+                    onlySelectedTreeNodeList,
                     this.getArg(userArgs, "newName")
                 );
-
-                this.$store.commit("pushToList", {
-                    name: "molecules",
-                    val: mergedMolContainer,
-                });
+            })
+            .then((mergedTreeNode: TreeNode) => {
+                this.$store.commit("pushToMolecules", mergedTreeNode);
                 return;
             })
             .catch((err) => {
                 throw err;
             });
+
+        // debugging below
+        // cloneMolsWithAncestry(this.nodesToActOn, true)
+        //     .then((treeNodeList: TreeNodeList) => {
+        //         return mergeTreeNodes(
+        //             treeNodeList,
+        //             this.getArg(userArgs, "newName")
+        //         );
+        //     })
+        //     .then((mergedTreeNode: TreeNode) => {
+        //         debugger;
+        //         this.$store.commit("pushToMolecules", mergedTreeNode);
+        //         return;
+        //     })
+        //     .catch((err) => {
+        //         throw err;
+        //     });
     }
 
     /**

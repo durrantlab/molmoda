@@ -13,10 +13,10 @@ export class UserInputsMixin extends Vue {
     public userArgsToUse: FormElement[] = [];
 
     /**
-     * Check if the user hasn't defined types for any arguments, and guess at
-     * the types if not. I suspect users will not generally define types, so
-     * this must be robust. Note that modifies the user argument in place, so no
-     * need to return anything.
+     * Check if the user hasn't defined types for any arguments, and guess
+     * at/infer/detect the types if not. I suspect users will not generally
+     * define types, so this must be robust. Note that modifies the user
+     * argument in place, so no need to return anything.
      *
      * @param  {FormElement[]} userArgs  The user arguments.
      */
@@ -66,6 +66,16 @@ export class UserInputsMixin extends Vue {
                 if (_userArg.childElements !== undefined) {
                     userArg.type = FormElemType.Group;
                     this.inferUserInputTypes(_userArg.childElements); // Recurse
+                } else if (_userArg.alertType !== undefined) {
+                    // It's a message
+                    userArg.type = FormElemType.Alert;
+
+                    if (_userArg.label !== undefined) {
+                        throw new Error(
+                            "Cannot specify label on FormElemType.Alert argument: " +
+                            JSON.stringify(userArg)
+                        );
+                    }
                 } else {
                     throw new Error(
                         "Could not infer type of user argument: " +

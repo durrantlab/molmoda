@@ -42,6 +42,8 @@ Get slurm/Docker working?
 
 Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
+Integrate Yuri OpenBabel. See if you can get it to work in web worker.
+
 # Ongoing: Important
 
 Current version of openbabel (tmp version) converts only first fframe of file
@@ -55,35 +57,59 @@ clear log on load session.
 
 Search for "TODO: Would be nice if there were a separate function"
 
-SaveVRMLPlugin not working on 3DMoljs. Not adding vrml to filename.
-
-When saving file to single pdb, it's ackwardly named. Fix that.
-
 updateAppName not used anywhere, but I think it should be.
 
 Add graphs to data too. Plotly? Also, you should be able to download graphs
 (png, svg, xlsx, csv). And text too. And should auto keep track of how the
 molecule was generated.
 
-Test elements could be restructured as objects. Would be better to put functions
-on each one. Then, Tutorial based on tests (first one).
-
-Integrate Yuri OpenBabel. See if you can get it to work in web worker.
-
 When adding new molecule, make sure filename is not already in list. Append (#).
+You could now easily build this into extend and push on TreeNode classes.
 
 Multiframe files, still put under one molecule. And if more than a fixed number,
-autohide all but first few. Can use merge feature if needed.
+autohide all but first few. Can use merge feature if needed. Tick box on open:
+    Option to merge as separte files, or all together.
+
+*** SaveVRMLPlugin not working on 3DMoljs. Not adding vrml to filename.
+
+*** When saving file to single pdb, it's ackwardly named. Fix that.
+
+*** Test elements could be restructured as objects. Would be better to put functions
+on each one. Then, Tutorial based on tests (first one).
+
+*** Would be good if there were a message that was displayed when all calculations finish.
+
+# DONE
+
+Many docstrings
+
+IForm needs to be able to display alert. Add a warning to changing parameters of FPocketWeb once implemented.
+
+Also, why does form system not autodetect boolean as checkbox?
 
 fpocketweb can't specify parameters. If you use the defaults you made up, you
 get no results.
 
+    Get table info from stdout. (It's not stdout. Where is the data?)
+
+fpocketweb: opacty on surfaces (even if can't modify).
+
+Others?
+
+Backspace = delete.
+
+Ctrl+A = select all
+
 Search for // Merge them TODO: NOT MERGING PROPERLY
+
+Protein hidden (because already present elsewhere)
+
+Automatically open pockets so visible.
+
+All but first few hidden.
 
 Viewer could be spash screen until files loaded (with occasional messages that
 could be informative).
-
-# DONE
 
 No Data panel in Window menu
 

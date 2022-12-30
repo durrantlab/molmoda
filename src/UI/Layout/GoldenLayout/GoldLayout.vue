@@ -119,6 +119,11 @@ import { appName, appVersion } from "@/Core/AppName";
 export default class GoldLayout extends Vue {
     viewerLoaded = false;
 
+    /**
+     * Gets the app name and version.
+     * 
+     * @returns {string}  The app name and version.
+     */
     get appInfo(): string {
       return appName + " " + appVersion;
     }
@@ -244,6 +249,9 @@ export default class GoldLayout extends Vue {
         dataDOM.remove();
     }
 
+    /**
+     * Called when the viewer is loaded.
+     */
     onViewerLoaded() {
         this.viewerLoaded = true;
     }

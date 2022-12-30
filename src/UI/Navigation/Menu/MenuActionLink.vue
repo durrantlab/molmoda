@@ -14,7 +14,7 @@
         >
             {{ menuData._text }}
             <div
-                v-if="menuData.hotkey !== ''"
+                v-if="showHotkey"
                 style="float: right"
                 class="text-muted"
             >
@@ -53,6 +53,26 @@ export default class MenuActionLink extends Vue {
     @Prop({ default: false }) isTopLevel!: boolean;
 
     hotkeyPrefix = "Ctrl+";
+
+    /**
+     * Whether to show the hot key in the menu.
+     * 
+     * @returns {boolean}  Whether to show the hot-key text.
+     */
+    get showHotkey(): boolean {
+        const hotkey = this.menuData.hotkey;
+        if (!hotkey) {
+            return false;
+        }
+        if (hotkey === "") {
+            return false;
+        }
+
+        // Conveniently, hotkey length covers case where hotkey is a long string
+        // ("backspace") or an array (multiple hotkeys). In either case, don't
+        // want to show it in the menu.
+        return hotkey.length === 1;
+    }
 
     /**
      * Gets a slug for the menu text.

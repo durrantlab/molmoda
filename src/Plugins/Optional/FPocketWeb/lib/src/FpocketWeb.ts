@@ -7,29 +7,12 @@
 // There are a few variables and functions from vina.js that I want to easily
 // access from here.
 
-const VERSION = "1.02"; // Replaced by compile script.
+const VERSION = "1.02"; // Replaced by compile script.  // TODO:
 console.log("FPocketWeb");
 console.log("    Compiled from the Fpocket codebase:");
 console.log("    https://github.com/Discngine/fpocket");
 
 let FPOCKET_Module: any;
-
-interface IFpocketParams {
-    pdbFile: string;
-    calculate_interaction_grids?: boolean;
-    pocket_descr_stdout?: boolean;
-    model_number?: number;
-    topology_file?: string;
-    min_alpha_size?: number;
-    max_alpha_size?: number;
-    clustering_distance?: number;
-    clustering_method?: string;
-    clustering_measure?: string;
-    min_spheres_per_pocket?: number;
-    ratio_apol_spheres_pocket?: number;
-    number_apol_asph_pocket?: number;
-    iterations_volume_mc?: number;
-}
 
 // A shiv for decodeBase64.
 const decodeBase64 =
@@ -82,7 +65,7 @@ const FpocketWeb = (function () {
         FS: (window as any)["FS"],
 
         start: function start(
-            fpocketParams: IFpocketParams,
+            fpocketParams: any,
             pdbFileName: string,
             pdbContents: string,
             onDone?: any,
@@ -167,31 +150,60 @@ const FpocketWeb = (function () {
                     if (e === "" && onDone !== undefined) {
                         // This happens when it is done running.
                         const pdbBaseNameTrimmed = pdbFileNameTrimmed;
-                        const outTxt: string = new TextDecoder("utf-8").decode(
-                            (window as any)["FS"]["readFile"](
-                                "/" +
-                                    pdbBaseNameTrimmed +
-                                    "_out/" +
-                                    pdbBaseNameTrimmed +
-                                    "_out.pdb"
-                            )
-                        );
+                        let outTxt: string;
+                        try {
+                            outTxt = new TextDecoder(
+                                "utf-8"
+                            ).decode(
+                                (window as any)["FS"]["readFile"](
+                                    "/" +
+                                        pdbBaseNameTrimmed +
+                                        "_out/" +
+                                        pdbBaseNameTrimmed +
+                                        "_out.pdb"
+                                )
+                            );
+                        } catch (e) {
+                            console.error(e);
+                            onError(e);
+                            return;
+                        }
+
+                        let infoTxt: string;
+                        try {
+                            infoTxt = new TextDecoder(
+                                "utf-8"
+                            ).decode(
+                                (window as any)["FS"]["readFile"](
+                                    "/" +
+                                        pdbBaseNameTrimmed +
+                                        "_out/" +
+                                        pdbBaseNameTrimmed +
+                                        "_info.txt"
+                                )
+                            );
+                        } catch (e) {
+                            console.error(e);
+                            onError(e);
+                            return;
+                        }
+
                         const stdOut: string = (window as any)[
                             "FPOCKET_Module"
                         ]["stdOut"];
                         const stdErr: string = (window as any)[
                             "FPOCKET_Module"
                         ]["stdErr"];
-                        const pocketsContents = new TextDecoder("utf-8").decode(
-                            (window as any)["FS"]["readFile"](
-                                "/" +
-                                    pdbBaseNameTrimmed +
-                                    "_out/" +
-                                    pdbBaseNameTrimmed +
-                                    "_pockets.pqr"
-                            )
-                        );
-                        onDone(outTxt, stdOut, stdErr, pocketsContents);
+                        // const pocketsContents = new TextDecoder("utf-8").decode(
+                        //     (window as any)["FS"]["readFile"](
+                        //         "/" +
+                        //             pdbBaseNameTrimmed +
+                        //             "_out/" +
+                        //             pdbBaseNameTrimmed +
+                        //             "_pockets.pqr"
+                        //     )
+                        // );
+                        onDone(outTxt, stdOut, stdErr, infoTxt); // pocketsContents);
                     }
                 },
                 onError: onError,
@@ -201,7 +213,7 @@ const FpocketWeb = (function () {
                 },
                 locateFile(path: string) {
                     return "fpocketweb/" + path.split("/").pop();
-                }
+                },
             };
 
             if (fpocketParams["pdbFile"] !== undefined) {
@@ -211,10 +223,7 @@ const FpocketWeb = (function () {
             }
 
             // Receptor and ligand files are always the same.
-            FPOCKET_Module["arguments"] = [
-                "-f",
-                pdbFileName
-            ];
+            FPOCKET_Module["arguments"] = ["-f", pdbFileName];
             function waitForElement() {
                 if (
                     typeof FPOCKET_Module["FS_createDataFile"] !== "undefined"
@@ -265,6 +274,8 @@ const FpocketWeb = (function () {
 
             (window as any)["FPOCKET_Module"] = FPOCKET_Module;
 
+            console.log(FPOCKET_Module["arguments"]);
+
             // Initialize the memory
             /* let memoryInitializer = this.FPOCKET_BASE_URL + "fpocket.html.mem";
              memoryInitializer = FPOCKET_Module["locateFile"] ? FPOCKET_Module["locateFile"](memoryInitializer, "") : memoryInitializer, FPOCKET_Module["memoryInitializerRequestURL"] = memoryInitializer;
@@ -278,16 +289,16 @@ const FpocketWeb = (function () {
                      console.warn(msg);
                  } else {
                      */
-                    try {
-                        const script = document.createElement("script");
-                        script.src = this.FPOCKET_BASE_URL + "fpocket.js";
-                        document.body.appendChild(script);
-                    } catch (e) {
-                        // Must be in worker.
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        importScripts(this.FPOCKET_BASE_URL + "fpocket.js");
-                    }
+            try {
+                const script = document.createElement("script");
+                script.src = this.FPOCKET_BASE_URL + "fpocket.js";
+                document.body.appendChild(script);
+            } catch (e) {
+                // Must be in worker.
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                importScripts(this.FPOCKET_BASE_URL + "fpocket.js");
+            }
             /* }
        //  }
 

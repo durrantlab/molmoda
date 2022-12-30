@@ -1,9 +1,10 @@
 import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 export interface IMoleculeInputParams {
     molsToConsider?: IMolsToConsider;
@@ -18,7 +19,7 @@ export interface IMoleculeInputParams {
     batchSize?: number | null | undefined;
 }
 
-export interface IProtCmpdMolContainerPair {
+interface IProtCmpdTreeNodePair {
     prot: FileInfo;
     cmpd: FileInfo;
 }
@@ -80,12 +81,12 @@ export class MoleculeInput {
     /**
      * Given a list of molecules, makes all pairs of proteins + compounds.
      *
-     * @returns {Promise<IProtCmpdMolContainerPair[]>}  The protein, compound pairs.
+     * @returns {Promise<IProtCmpdTreeNodePair[]>}  The protein, compound pairs.
      */
     public getProtCompounds(): Promise<
-        | IProtCmpdMolContainerPair[]
+        | IProtCmpdTreeNodePair[]
         | FileInfo[]
-        | IProtCmpdMolContainerPair[][]
+        | IProtCmpdTreeNodePair[][]
         | FileInfo[][]
     > {
         // let proteins: IFileInfo[] = [];
@@ -100,11 +101,11 @@ export class MoleculeInput {
             compiledMols.nodeGroups = [];
         }
         if (!this.considerCompounds) {
-            compiledMols.compoundsNodes = [];
+            compiledMols.compoundsNodes = new TreeNodeList();
         }
 
         const protFileInfoPromises = compiledMols.nodeGroups.map(
-            (prots: IMolContainer[]) => {
+            (prots: TreeNodeList) => {
                 return getConvertedTxts(prots, "pdb", true).then(
                     (fileInfos: FileInfo[]) => {
                         // There's only one
@@ -117,9 +118,9 @@ export class MoleculeInput {
         let cmpdFileInfoPromises: Promise<FileInfo>[] = [];
         if (compiledMols.compoundsNodes) {
             cmpdFileInfoPromises = compiledMols.compoundsNodes.map(
-                (cmpds: IMolContainer) => {
+                (cmpds: TreeNode) => {
                     // TODO: Is PDB the right format for a compound?
-                    return getConvertedTxts([cmpds], "pdb", true).then(
+                    return getConvertedTxts(new TreeNodeList([cmpds]), "pdb", true).then(
                         (fileInfos: FileInfo[]) => {
                             // There's only one
                             return fileInfos[0];
@@ -141,7 +142,7 @@ export class MoleculeInput {
                 prots = prots.filter((p: FileInfo) => p !== undefined);
                 cmpds = cmpds.filter((c: FileInfo) => c !== undefined);
 
-                const proteinCompoundPairs: IProtCmpdMolContainerPair[] = [];
+                const proteinCompoundPairs: IProtCmpdTreeNodePair[] = [];
                 if (prots.length > 0 && cmpds.length > 0) {
                     // Both proteins and compounds, so get every pairing.
                     for (const prot of prots) {
@@ -149,7 +150,7 @@ export class MoleculeInput {
                             proteinCompoundPairs.push({
                                 prot: prot,
                                 cmpd: cmpd,
-                            } as IProtCmpdMolContainerPair);
+                            } as IProtCmpdTreeNodePair);
                         }
                     }
                     return this._makeBatches(proteinCompoundPairs);
@@ -161,7 +162,7 @@ export class MoleculeInput {
                     // .map((c: FileInfo) => {
                     //     return {
                     //         cmpd: c,
-                    //     } as IProtCmpdMolContainerPair;
+                    //     } as IProtCmpdTreeNodePair;
                     // });
                 }
 
@@ -169,7 +170,7 @@ export class MoleculeInput {
                 // .map((p) => {
                 //     return {
                 //         prot: p,
-                //     } as IProtCmpdMolContainerPair;
+                //     } as IProtCmpdTreeNodePair;
                 // });
             })
             .catch((err: Error) => {

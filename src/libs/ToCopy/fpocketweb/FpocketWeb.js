@@ -19,7 +19,7 @@
 // details. Copyright 2022 Jacob D. Durrant.
 // There are a few variables and functions from vina.js that I want to easily
 // access from here.
-var VERSION = "1.02"; // Replaced by compile script.
+var VERSION = "1.02"; // Replaced by compile script.  // TODO:
 console.log("FPocketWeb");
 console.log("    Compiled from the Fpocket codebase:");
 console.log("    https://github.com/Discngine/fpocket");
@@ -133,19 +133,44 @@ var FpocketWeb = (function () {
                     if (e === "" && onDone !== undefined) {
                         // This happens when it is done running.
                         var pdbBaseNameTrimmed = pdbFileNameTrimmed;
-                        var outTxt = new TextDecoder("utf-8").decode(window["FS"]["readFile"]("/" +
-                            pdbBaseNameTrimmed +
-                            "_out/" +
-                            pdbBaseNameTrimmed +
-                            "_out.pdb"));
+                        var outTxt = void 0;
+                        try {
+                            outTxt = new TextDecoder("utf-8").decode(window["FS"]["readFile"]("/" +
+                                pdbBaseNameTrimmed +
+                                "_out/" +
+                                pdbBaseNameTrimmed +
+                                "_out.pdb"));
+                        }
+                        catch (e) {
+                            console.error(e);
+                            onError(e);
+                            return;
+                        }
+                        var infoTxt = void 0;
+                        try {
+                            infoTxt = new TextDecoder("utf-8").decode(window["FS"]["readFile"]("/" +
+                                pdbBaseNameTrimmed +
+                                "_out/" +
+                                pdbBaseNameTrimmed +
+                                "_info.txt"));
+                        }
+                        catch (e) {
+                            console.error(e);
+                            onError(e);
+                            return;
+                        }
                         var stdOut = window["FPOCKET_Module"]["stdOut"];
                         var stdErr = window["FPOCKET_Module"]["stdErr"];
-                        var pocketsContents = new TextDecoder("utf-8").decode(window["FS"]["readFile"]("/" +
-                            pdbBaseNameTrimmed +
-                            "_out/" +
-                            pdbBaseNameTrimmed +
-                            "_pockets.pqr"));
-                        onDone(outTxt, stdOut, stdErr, pocketsContents);
+                        // const pocketsContents = new TextDecoder("utf-8").decode(
+                        //     (window as any)["FS"]["readFile"](
+                        //         "/" +
+                        //             pdbBaseNameTrimmed +
+                        //             "_out/" +
+                        //             pdbBaseNameTrimmed +
+                        //             "_pockets.pqr"
+                        //     )
+                        // );
+                        onDone(outTxt, stdOut, stdErr, infoTxt); // pocketsContents);
                     }
                 },
                 onError: onError,
@@ -161,10 +186,7 @@ var FpocketWeb = (function () {
                 console.warn("FPocketWeb does not support Vina's --receptor parameter. Instead, pass the content of the receptor file as a string to the webina.start() function.");
             }
             // Receptor and ligand files are always the same.
-            FPOCKET_Module["arguments"] = [
-                "-f",
-                pdbFileName
-            ];
+            FPOCKET_Module["arguments"] = ["-f", pdbFileName];
             function waitForElement() {
                 if (typeof FPOCKET_Module["FS_createDataFile"] !== "undefined") {
                     var pdbBaseName = pdbFileName;
@@ -198,6 +220,7 @@ var FpocketWeb = (function () {
                 }
             }
             window["FPOCKET_Module"] = FPOCKET_Module;
+            console.log(FPOCKET_Module["arguments"]);
             // Initialize the memory
             /* let memoryInitializer = this.FPOCKET_BASE_URL + "fpocket.html.mem";
              memoryInitializer = FPOCKET_Module["locateFile"] ? FPOCKET_Module["locateFile"](memoryInitializer, "") : memoryInitializer, FPOCKET_Module["memoryInitializerRequestURL"] = memoryInitializer;

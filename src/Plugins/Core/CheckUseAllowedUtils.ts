@@ -1,30 +1,23 @@
-import { getStoreVar } from "@/Store/StoreExternalAccess";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { selectInstructionsLong } from "@/UI/Navigation/TitleBar/MolSelecting";
-import {
-    IMolContainer,
-    SelectedType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    extractFlattenedContainers,
-    getAllNodesFlattened,
-} from "@/UI/Navigation/TreeView/TreeUtils";
+import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * Checks whether the user has selected any molecule.
  *
- * @param  {IMolContainer[]} [molContainers]  The molecule containers to
- *                                            consider. Ultimately defaults to
- *                                            all molecules if not specified.
- * @param  {string}           noun            The noun to use in the error
- *                                            message.
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *                                     Ultimately defaults to all molecules if
+ *                                     not specified.
+ * @param  {string}           noun     The noun to use in the error message.
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
 export function checkAnyMolSelected(
-    molContainers?: IMolContainer[],
+    treeNodeList?: TreeNodeList,
     noun = "molecule"
 ): string | null {
-    const num = numSelected(molContainers);
+    const num = numSelected(treeNodeList);
     if (num === 0) {
         return `No ${noun}s are currently selected. First select a ${noun} by clicking on its name in the Molecules panel.`;
     }
@@ -35,16 +28,16 @@ export function checkAnyMolSelected(
 /**
  * Checks whether the user has selected one and only one molecule.
  *
- * @param  {IMolContainer[]} [molContainers]  The molecule containers to
- *                                            consider. Ultimately defaults to
- *                                            all molecules if not specified.
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *                                     Ultimately defaults to all molecules if
+ *                                     not specified.
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
 export function checkOneMolSelected(
-    molContainers?: IMolContainer[]
+    treeNodeList?: TreeNodeList
 ): string | null {
-    const num = numSelected(molContainers);
+    const num = numSelected(treeNodeList);
     if (num !== 1) {
         return "First select one (and only one) molecule by clicking on its name in the Molecules panel.";
     }
@@ -55,16 +48,16 @@ export function checkOneMolSelected(
 /**
  * Checks whether the user has selected multiple molecules (> 1).
  *
- * @param  {IMolContainer[]} [molContainers]  The molecule containers to
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to
  *                                            consider. Ultimately defaults to
  *                                            all molecules if not specified.
  * @returns {string | null}  An error if the user hasn't selected multiple
  *     molecules, null otherwise.
  */
 export function checkMultipleMolsSelected(
-    molContainers?: IMolContainer[]
+    treeNodeList?: TreeNodeList
 ): string | null {
-    const num = numSelected(molContainers);
+    const num = numSelected(treeNodeList);
     if (num < 2) {
         return `First select at least two molecules by clicking on their names in the Molecules panel. ${selectInstructionsLong}`;
         // Click while holding down the Control, Command (Mac), and/or Shift keys to select multiple molecules.";
@@ -76,43 +69,38 @@ export function checkMultipleMolsSelected(
 /**
  * Gets the number of molecules selected.
  *
- * @param  {IMolContainer[]} [molContainers]  The molecule containers to
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to
  *                                            consider. Ultimately defaults to
  *                                            all molecules if not specified.
  * @returns {number}  The number of molecules selected.
  */
-function numSelected(molContainers?: IMolContainer[]): number {
-    if (molContainers === undefined) {
-        molContainers = getStoreVar("molecules");
+function numSelected(treeNodeList?: TreeNodeList): number {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
     }
 
     // Check if user has selected anything
-    const selectedNodes = extractFlattenedContainers(
-        getAllNodesFlattened(molContainers as IMolContainer[]),
-        {
-            selected: SelectedType.True,
-        }
-    );
+    const selectedNodes = (
+        treeNodeList as TreeNodeList
+    ).flattened.filters.keepSelected(SelectedType.True);
     return selectedNodes.length;
 }
 
 /**
  * Checks whether the user has loaded any molecule.
  *
- * @param  {IMolContainer[]} [molContainers]  The molecule containers to
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to
  *                                            consider. Ultimately defaults to
  *                                            all molecules if not specified.
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
-export function checkAnyMolLoaded(
-    molContainers?: IMolContainer[]
-): string | null {
-    if (molContainers === undefined) {
-        molContainers = getStoreVar("molecules");
+export function checkAnyMolLoaded(treeNodeList?: TreeNodeList): string | null {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
     }
 
-    if ((molContainers as IMolContainer[]).length === 0) {
+    if ((treeNodeList as TreeNodeList).length === 0) {
         return "No molecules are currently loaded (empty project). Try adding molecules first.";
     }
 

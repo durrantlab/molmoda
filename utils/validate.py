@@ -127,24 +127,24 @@ for ts_file in ts_files:
                     "If you use .catch(), you must throw an error within the next few lines. Comment out 'throw err' in those rare cases where you want to ignore an error.",
                 )
 
-    # Try to avoid filtering molecules directly. Use the extractFlattenedContainers() function
-    # instead.
-    matches = (
-        [t for t in re.finditer(r"[cC]ontainer.{0,25}\.filter", content, re.DOTALL)]
-        + [t for t in re.finditer(r"\.filter.{0,25}[cC]ontainer", content, re.DOTALL)]
-        + [t for t in re.finditer(r"[nN]ode.{0,25}\.filter", content, re.DOTALL)]
-    )
-    txts = [content[m.span()[0] - 65 : m.span()[1] + 65] for m in matches]
-    txts = [t for t in txts if "mol_filter_ok" not in t]
+    # Try to avoid filtering molecules directly. Use the shallowFilters
+    # subclass.
+    # matches = (
+    #     [t for t in re.finditer(r"[cC]ontainer.{0,25}\.filter", content, re.DOTALL)]
+    #     + [t for t in re.finditer(r"\.filter.{0,25}[cC]ontainer", content, re.DOTALL)]
+    #     + [t for t in re.finditer(r"[nN]ode.{0,25}\.filter", content, re.DOTALL)]
+    # )
+    # txts = [content[m.span()[0] - 65 : m.span()[1] + 65] for m in matches]
+    # txts = [t for t in txts if "mol_filter_ok" not in t]
 
-    for txt in txts:
-        # replace all new lines and double spaces using regex
-        txt = re.sub(r"\s+", " ", txt)
+    # for txt in txts:
+    #     # replace all new lines and double spaces using regex
+    #     txt = re.sub(r"\s+", " ", txt)
 
-        add_error(
-            ts_file,
-            f"Use the extractFlattenedContainers() function instead of filtering molContainers directly (or include mol_filter_ok somewhere nearby): `{txt}`",
-        )
+    #     add_error(
+    #         ts_file,
+    #         f"Use the shallowFilters subclass instead of filtering TreeNodeList directly (or include mol_filter_ok somewhere nearby): `{txt}`",
+    #     )
 
     # All *.vue files /Plugins/ must be plugins, except those in .../Parents/...
     if (

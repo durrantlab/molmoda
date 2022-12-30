@@ -26,6 +26,7 @@ system uses these to autopopulate with plugins. -->
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
     <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
     <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
+    <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
@@ -68,6 +69,7 @@ import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
 import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
 import SavePNGPlugin from "./Core/Graphics/SavePNGPlugin.vue";
 import SaveVRMLPlugin from "./Core/Graphics/SaveVRMLPlugin.vue";
+import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
@@ -108,6 +110,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     SaveMoleculesPlugin,
     SavePNGPlugin,
     SaveVRMLPlugin,
+    SelectAllPlugin,
     SettingsPlugin,
     SimpleMsgPlugin,
     StylesWindowPlugin,
@@ -118,6 +121,9 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     MolPropsPlugin,
     TestPlugin,
     // TEMPLATE3 END
+
+
+
 
 
 

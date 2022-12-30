@@ -1,4 +1,4 @@
-export interface IColorInfo {
+interface IColorInfo {
     hex: string;
     name: string;
     rgb?: number[];
@@ -262,4 +262,33 @@ export function analyzeColor(color: string | number[]): IColorInfo {
     }
 
     return colorInfo;
+}
+
+/**
+ * Get a random pastel color as a hex value.
+ * 
+ * @returns {string}  Hex color value
+ */
+export function randomPastelColor(): string {
+    // Make a random color
+    let rgb = [0, 0, 0];
+    for (let i = 0; i < 3; i++) {
+        rgb[i] = Math.floor(Math.random() * 256);
+    }
+
+    // Saturate it 10%
+    const max = Math.max(...rgb);
+    const sat = 0.1;
+    rgb = rgb.map((val) => {
+        return Math.floor(val + sat * (max - val));
+    });
+
+    // Mix it with white
+    const mix = 0.5;
+    rgb = rgb.map((val) => {
+        return Math.floor(val * mix + 255 * (1 - mix));
+    });
+
+    // Set color to hex
+    return "#" + rgb.map((val) => val.toString(16)).join("");
 }

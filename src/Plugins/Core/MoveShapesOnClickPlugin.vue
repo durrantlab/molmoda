@@ -29,17 +29,10 @@ import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import {
-extractFlattenedContainers,
-    getTerminalNodes,
-    nodePathName,
-} from "@/UI/Navigation/TreeView/TreeUtils";
-import {
-    IMolContainer,
-    IShape,
-    SelectedType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IShape } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /** AboutPlugin */
 @Options({
@@ -77,19 +70,16 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
     /**
      * Get the selected shapes.
      *
-     * @returns {IMolContainer[]}  The selected shapes.
+     * @returns {TreeNodeList}  The selected shapes.
      */
-    get selectedShapes(): IMolContainer[] {
+    get selectedShapes(): TreeNodeList {
         // Get terminal nodes
-        const terminalNodes = getTerminalNodes(
-            this.$store.state.molecules as IMolContainer[]
-        );
+        let terminalNodes = (this.$store.state.molecules as TreeNodeList).filters.onlyTerminal;
 
         // Get the ones that are selected and shapes
-        return extractFlattenedContainers(terminalNodes, {
-            selected: true,
-            shape: true,
-        });
+        terminalNodes = terminalNodes.filters.keepSelected();
+        terminalNodes = terminalNodes.filters.keepShapes();
+        return terminalNodes;
     }
 
     /**
@@ -99,30 +89,30 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
      */
     get selectedShapesTitles(): string[] {
         const selectedShapes = this.selectedShapes;
-        return selectedShapes.map((node) => nodePathName(node, " > ", 0));
+        return selectedShapes.map((node) => node.descriptions.pathName(" > ", 0));
     }
 
     /**
      * Runs when the popup closes via done button. Here, does nothing.
      */
     onPopupDone() {
-        this.submitJobs(this.selectedShapes);
+        this.submitJobs(this.selectedShapes.toArray() as TreeNode[]);
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {IMolContainer} molContainer  The molecule container associated
+     * @param {TreeNode} treeNode  The molecule container associated
      *     with the shape.
      */
-    runJobInBrowser(molContainer: IMolContainer) {
+    runJobInBrowser(treeNode: TreeNode) {
         const newShape = {
-            ...molContainer.shape,
+            ...treeNode.shape,
             center: this.payload,
         } as IShape;
-        molContainer.shape = newShape;
-        molContainer.viewerDirty = true;
+        treeNode.shape = newShape;
+        treeNode.viewerDirty = true;
     }
 }
 </script>

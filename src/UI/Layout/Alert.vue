@@ -1,5 +1,5 @@
 <template>
-  <div :class="'alert alert-' + type" style="width: 100%;" role="alert">
+  <div :class="'alert alert-' + type + ' ' + extraClasses" style="width: 100%;" role="alert">
     <slot></slot>
   </div>
 </template>
@@ -17,6 +17,7 @@ import { Prop } from "vue-property-decorator";
 })
 export default class Alert extends Vue {
   @Prop({ default: "primary" }) type!: string;
+  @Prop({ default: "" }) extraClasses!: string;
 }
 </script>
 

@@ -25,7 +25,7 @@ Title of the popup. This component property is required.
 #### `userArgs` (:property) <a id="userArgs"></a>
 
 The user arguments (plugin parameters) that the end user can specify. This component property is required.
- Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L15).
+ Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 16](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L16).
 
 
 ### Optional Properties
@@ -140,7 +140,7 @@ A list of software credits. If the plugin uses no third-party packages, set this
 #### `userArgs` (variable) <a id="userArgs"></a>
 
 A list of user arguments. Note that [`userArgs`](#userArgs) defines the user arguments, but it is not reactive. See it as an unchangable template. Use [`updateUserArgs`](#updateUserArgs) to programmatically change actual user-specified inputs.
- Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L15).
+ Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 16](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L16).
 
 
 ### Optional Functions/Variables

@@ -92,10 +92,12 @@ export function startJob(
                 return;
             })
             .catch((e: any) => {
+                // throw err
+                
                 // Job is done with an error. Move it to done queue.
                 endpoint.moveJobsToDoneQueue([pendingJob.id], JobStatus.Error);
                 
-                // Note: Warning instead of throwing error. TODO: Right thing to do?
+                // Note: Warning instead of throwing error. TODO: Right thing to do? 
                 console.warn(e);
             });
     } else {

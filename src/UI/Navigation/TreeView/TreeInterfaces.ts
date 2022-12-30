@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
+import { TreeNode } from "../../../TreeNodes/TreeNode/TreeNode";
 
 export interface IAtom {
     chain: string;
@@ -38,34 +38,12 @@ export enum SelectedType {
     ChildOfTrue = "child_of_true",
 }
 
-export interface IMolContainer {
-    // Properties common to both non-terminal and terminal nodes.
-    title: string; // appears in tree
-    type?: MolType;
-    id?: string; // random id for nodes
-    parentId?: string; // parent id for tree
-    src?: string; // typically, the file name
-    treeExpanded: boolean;
-    visible: boolean;
-    selected: SelectedType; // Not bool (string enum). "false" vs. false.
-    focused: boolean;
-    viewerDirty: boolean; // triggers 3dmoljs viewer
-    data?: { [key: string]: IMolContainerData }; // key is title of chart, etc.
-
-    // These are specifically for non-terminal nodes
-    nodes?: IMolContainer[]; // Next level down in menu. So if molecule,
-
-    // These are specifically for terminal nodes
-    model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
-    styles?: IStyle[]; // styles and selections for this node
-    shape?: IShape;
-}
 
 export enum ShapeType {
-    Sphere="Sphere",
-    Box="Box",
-    Arrow="Arrow",
-    Cylinder="Cylinder"
+    Sphere = "Sphere",
+    Box = "Box",
+    Arrow = "Arrow",
+    Cylinder = "Cylinder",
 }
 
 export interface IShape {
@@ -73,7 +51,7 @@ export interface IShape {
     center: [number, number, number];
     opacity?: number;
     color?: string;
-    movable?: boolean;  // Whether you can move or resize
+    movable?: boolean; // Whether you can move or resize
 }
 
 export interface ISphere extends IShape {
@@ -97,27 +75,28 @@ export interface ICylinder extends IShape {
     dashed?: boolean;
 }
 
-export enum MolContainerDataType {
+export enum TreeNodeDataType {
     Table,
     Graph,
 }
 
-export interface IMolContainerData {
+export interface ITreeNodeData {
     // Varies depending on type. TODO: Make more specific using ||
     data: any;
 
-    type: MolContainerDataType;
+    type: TreeNodeDataType;
 
-    // The IMolContainer that this data is associated with.
-    molContainer?: IMolContainer;
+    // The TreeNode that this data is associated with.
+    treeNode?: TreeNode;
 }
 
-export interface IResidue extends IMolContainer {}
+// export interface IResidue extends TreeNode {}
 
 export interface IColorStyle {
     color?: string;
     colorscheme?: string;
     radius?: number;
+    opacity?: number;  // Only for surfaces. Not user editable.
 }
 
 export interface IStyle {

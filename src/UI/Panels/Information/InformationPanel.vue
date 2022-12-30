@@ -12,7 +12,7 @@
                 placeHolder="SMILES"
             ></FormInput>
         </FormWrapper>
-        <MolProps :smiles="smiles" :molContainer="molContainer" />
+        <MolProps :smiles="smiles" :treeNode="treeNode" />
     </div>
 </template>
 
@@ -22,10 +22,11 @@ import Table from "@/UI/Components/Table/Table.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { getFirstSelected, getSmilesOfMolContainer } from "./Utils";
+import { getFirstSelected, getSmilesOfTreeNode } from "./Utils";
 
 /**
  * InformationPanel component
@@ -41,14 +42,14 @@ import { getFirstSelected, getSmilesOfMolContainer } from "./Utils";
 })
 export default class InformationPanel extends Vue {
     smiles = "";
-    molContainer: IMolContainer | undefined = undefined;
+    treeNode: TreeNode | undefined = undefined;
 
     /**
      * Gets the molecules from the vuex store.
      *
-     * @returns {IMolContainer[]}  The molecules from the vuex store.
+     * @returns {TreeNodeList}  The molecules from the vuex store.
      */
-    get molecules(): IMolContainer[] {
+    get molecules(): TreeNodeList {
         return this.$store.state.molecules;
     }
 
@@ -56,20 +57,20 @@ export default class InformationPanel extends Vue {
      * Watches the molecules in the vuex store. If the molecules change, set the
      * smiles of the selected molecule.
      *
-     * @param {IMolContainer[]} allMolecules  The new value of the molecules.
+     * @param {TreeNodeList} allMolecules  The new value of the molecules.
      */
     @Watch("molecules", { immediate: false, deep: true })
-    onMolecules(allMolecules: IMolContainer[]) {
+    onMolecules(allMolecules: TreeNodeList) {
         const firstSelected = getFirstSelected(allMolecules);
 
         if (firstSelected === null) {
             return;
         }
 
-        getSmilesOfMolContainer(firstSelected)
+        getSmilesOfTreeNode(firstSelected)
             .then((smi) => {
                 this.smiles = smi;
-                this.molContainer = firstSelected;
+                this.treeNode = firstSelected;
                 return;
             })
             .catch((err) => {

@@ -1,9 +1,7 @@
 import { dynamicImports } from "@/Core/DynamicImports";
-import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     IStyle,
-    IMolContainer,
     IColorStyle,
     IShape,
     IBox,
@@ -27,6 +25,7 @@ import {
 } from "./Types";
 import { ViewerParent } from "./ViewerParent";
 import * as api from "@/Api";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 let NGL: any;
 
@@ -36,6 +35,8 @@ let NGL: any;
 export class ViewerNGL extends ViewerParent {
     private _nglObj: any;
     private _resizeInterval: any;
+    private _madeClickable = false;
+    private _madeHoverable = false;
 
     /**
      * Removes a model from the viewer.
@@ -145,13 +146,13 @@ export class ViewerNGL extends ViewerParent {
      * compatible with this viewer.
      *
      * @param {IStyle}        style         The style to convert.
-     * @param {IMolContainer} molContainer  The molecular container, which may
+     * @param {TreeNode} treeNode  The molecular container, which may
      *                                      contain additional/more accessible
      *                                      information about the molecule than is
      *                                      available in the model itself.
      * @returns {GenericStyleType}  The converted style.
      */
-    convertStyle(style: IStyle, molContainer: IMolContainer): GenericStyleType {
+    convertStyle(style: IStyle, treeNode: TreeNode): GenericStyleType {
         const styleAsDict = style as { [key: string]: IColorStyle };
 
         const newStyle: { [key: string]: any } = {
@@ -166,6 +167,7 @@ export class ViewerNGL extends ViewerParent {
             const color = colorStyle.color;
             const colorscheme = colorStyle.colorscheme;
             const radius = colorStyle.radius;
+            const opacity = colorStyle.opacity;
 
             switch (color) {
                 case undefined:
@@ -204,8 +206,8 @@ export class ViewerNGL extends ViewerParent {
                     newStyle[component] = { colorScheme: "sstruc" };
                     break;
                 case "chain":
-                    if (molContainer.model) {
-                        chainId = (molContainer.model as GLModel).selectedAtoms(
+                    if (treeNode.model) {
+                        chainId = (treeNode.model as GLModel).selectedAtoms(
                             {}
                         )[0].chain;
                     }
@@ -254,7 +256,15 @@ export class ViewerNGL extends ViewerParent {
             if (radius !== undefined) {
                 newStyle[component] = { aspectRatio: radius };
             }
+
+            if (opacity !== undefined) {
+                // For some reason opacity is not as strong in NGL, so reduce it
+                // artifactually.
+                newStyle[component].opacity = opacity * 0.5;
+            }
         }
+
+        console.log(newStyle);
 
         return newStyle;
     }
@@ -392,17 +402,10 @@ export class ViewerNGL extends ViewerParent {
         // TODO: If ligand, convert to SDF (preserve bond orders)
 
         // Convert the model to PDB
-        return convertMolContainers(
-            [
-                {
-                    model: model,
-                } as IMolContainer,
-            ],
-            "pdb",
-            true
-        )
-            .then((fileInfoPDB: FileInfo[]) => {
-                const stringBlob = new Blob([fileInfoPDB[0].contents], {
+        return new TreeNode({ model: model } as TreeNode)
+            .toFileInfo("pdb")
+            .then((fileInfoPDB: FileInfo) => {
+                const stringBlob = new Blob([fileInfoPDB.contents], {
                     type: "text/plain",
                 });
 
@@ -449,7 +452,7 @@ export class ViewerNGL extends ViewerParent {
      * Gets a normalized color vector from a shape.
      *
      * @param  {IShape} shape  The shape to get the color from.
-     * @returns {[number, number, number]}  The color vector.
+     * @returns {number[]}  The color vector.
      */
     private _getColorVec(shape: IShape): [number, number, number] {
         return analyzeColor(shape.color as string).rgb?.map((c) => c / 255) as [
@@ -735,11 +738,17 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Makes atoms react when clicked.
      *
+     * @param {any}      model     The model to make clickable.
      * @param {Function} callBack  Function that runs when atom is clicked. The
      *                             function is passed the x, y, and z
      *                             coordinates of the atom.
      */
-    makeAtomsClickable(callBack: (x: number, y: number, z: number) => any) {
+    makeAtomsClickable(model: any, callBack: (x: number, y: number, z: number) => any) {
+        if (this._madeClickable) {
+            // Only need to call once for NGL.
+            return;
+        }
+        this._madeClickable = true;
         this._nglObj.signals.clicked.add((pickingProxy: any) => {
             if (pickingProxy.atom) {
                 const coors = pickingProxy.atom.positionToArray();
@@ -754,15 +763,22 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Makes atoms react when mouse moves over then (hoverable).
      *
+     * @param {any}      model               The model to make hoverable.
      * @param {Function} onHoverInCallBack   Function that runs when hover over
      *                                       atom starts.
      * @param {Function} onHoverOutCallBack  Function that runs when hover over
      *                                       atom ends.
      */
     makeAtomsHoverable(
+        model: any,
         onHoverInCallBack: (x: number, y: number, z: number) => any,
         onHoverOutCallBack: () => any
     ) {
+        if (this._madeHoverable) {
+            // Only need to call once for NGL.
+            return;
+        }
+        this._madeHoverable = true;
         if (this.toolTipDiv === null) {
             this.toolTipDiv = document.createElement("div");
             Object.assign(this.toolTipDiv.style, {
@@ -837,8 +853,10 @@ export class ViewerNGL extends ViewerParent {
      *
      * @returns {string}  The VRML string.
      */
-     exportVRML(): string {
-        api.messages.popupError("The currently selected molecular viewer (NGL) does not support VRML export. Try switching to the 3Dmol.js viewer instead (Biotite > Settings).")
+    exportVRML(): string {
+        api.messages.popupError(
+            "The currently selected molecular viewer (NGL) does not support VRML export. Try switching to the 3Dmol.js viewer instead (Biotite > Settings)."
+        );
         return "";
-     }
+    }
 }

@@ -115,6 +115,17 @@
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
                 />
+
+                <Alert
+                    v-else-if="formElem.type === FormElementType.Alert"
+                    :id="itemId(formElem)"
+                    :type="makeGeneric(formElem).alertType"
+                    extraClasses="mt-2 mb-0"
+                >
+                    <span v-if="formElem.description">
+                        {{ formElem.description }}
+                    </span>
+                </Alert>
             </FormWrapper>
         </span>
     </span>
@@ -141,6 +152,7 @@ import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
 import MoleculeInputParams from "../MoleculeInputParams/MoleculeInputParams.vue";
 import FormCheckBox from "../FormCheckBox.vue";
 import FormVector3D from "../FormVector3D.vue";
+import Alert from "@/UI/Layout/Alert.vue";
 
 /**
  * FormFull
@@ -155,6 +167,7 @@ import FormVector3D from "../FormVector3D.vue";
         MoleculeInputParams,
         FormCheckBox,
         FormVector3D,
+        Alert,
     },
 })
 export default class FormFull extends Vue {

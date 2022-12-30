@@ -444,12 +444,16 @@ export class Viewer3DMol extends ViewerParent {
     /**
      * Makes atoms react when clicked.
      *
+     * @param {GLModel}  model     The model to make clickable.
      * @param {Function} callBack  Function that runs when atom is clicked. The
      *                             function is passed the x, y, and z
      *                             coordinates of the atom.
      */
-    makeAtomsClickable(callBack: (x: number, y: number, z: number) => any) {
-        this._mol3dObj.setClickable(
+    makeAtomsClickable(
+        model: GLModel,
+        callBack: (x: number, y: number, z: number) => any
+    ) {
+        model.setClickable(
             {},
             true,
             (atom: any /* _viewer: any, _event: any, _container: any */) => {
@@ -462,16 +466,18 @@ export class Viewer3DMol extends ViewerParent {
     /**
      * Makes atoms react when mouse moves over then (hoverable).
      *
+     * @param {GLModel}  model               The model to make hoverable.
      * @param {Function} onHoverInCallBack   Function that runs when hover over
      *                                       atom starts.
      * @param {Function} onHoverOutCallBack  Function that runs when hover over
      *                                       atom ends.
      */
     makeAtomsHoverable(
+        model: GLModel,
         onHoverInCallBack: (x: number, y: number, z: number) => any,
         onHoverOutCallBack: () => any
     ) {
-        this._mol3dObj.setHoverable(
+        model.setHoverable(
             {},
             true,
             // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -1,6 +1,5 @@
 import {
     IStyle,
-    IMolContainer,
     IShape,
     ShapeType,
     ISphere,
@@ -18,11 +17,9 @@ import {
     GenericShapeType,
 } from "./Types";
 import * as api from "@/Api/";
-import {
-    getAllNodesFlattened,
-    getNodeOfId,
-} from "@/UI/Navigation/TreeView/TreeUtils";
-import { getStoreVar, setStoreVar } from "@/Store/StoreExternalAccess";
+import { getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 
@@ -176,15 +173,15 @@ export abstract class ViewerParent {
         }
 
         if (this.shapeCache[id]) {
-            // Get the original IMolContainer to find the target opacity.
-            const molContainer = getNodeOfId(id, getStoreVar("molecules"));
+            // Get the original TreeNode to find the target opacity.
+            const treeNode = getMoleculesFromStore().filters.onlyId(id);
             let opacity = 1;
             if (
-                molContainer &&
-                molContainer.shape &&
-                molContainer.shape.opacity
+                treeNode &&
+                treeNode.shape &&
+                treeNode.shape.opacity
             ) {
-                opacity = molContainer.shape.opacity;
+                opacity = treeNode.shape.opacity;
             }
 
             this.showShape(id, opacity);
@@ -358,54 +355,52 @@ export abstract class ViewerParent {
     }
 
     /**
-     * Adds a list of IMolContainers to the viewer.
+     * Adds a list of tree nodes to the viewer.
      *
-     * @param {IMolContainer[]} molContainers   The list of molecules to add.
-     * @returns {Promise<IMolContainer>[]}  A list of promises that resolve
-     *    when the molecules are added.
+     * @param {TreeNodeList} treeNodeList   The list of molecules to add.
+     * @returns {Promise<TreeNode>[]}  A list of promises that resolve when the
+     *    molecules are added.
      */
-    addMolContainers(molContainers: IMolContainer[]): Promise<IMolContainer>[] {
+    addTreeNodeList(treeNodeList: TreeNodeList): Promise<TreeNode>[] {
         // Add all the models and put them in the cache.
-        const addMolPromises: Promise<IMolContainer>[] = [];
-        for (const molContainer of molContainers) {
-            const id = molContainer.id as string;
+        const addMolPromises: Promise<TreeNode>[] = [];
+        for (let idx = 0; idx < treeNodeList.length; idx++) {
+            const treeNode = treeNodeList.get(idx);
+            const id = treeNode.id as string;
 
             // If it's not in the cache, the system has probably not yet loaded the
             // molecule. Always load it.
-            let addObjPromise: Promise<IMolContainer>;
+            let addObjPromise: Promise<TreeNode>;
             // TODO: Currently doesn't account for shapes.
             if (this.molCache[id] || this.shapeCache[id]) {
                 // Already in molecule cache
-                addObjPromise = Promise.resolve(molContainer);
+                addObjPromise = Promise.resolve(treeNode);
             } else {
                 // Not in cache.
-                if (molContainer.model) {
+                if (treeNode.model) {
                     addObjPromise = this.addGLModel(
-                        molContainer.model as GLModel
+                        treeNode.model as GLModel
                     )
                         .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
-                            console.warn("Uncomment below!");
-                            // this._makeAtomsHoverableAndClickable({ model: visMol });
+                            this._makeAtomsHoverableAndClickable(visMol);
 
-                            this._makeAtomsHoverableAndClickable();
-
-                            return molContainer;
+                            return treeNode;
                         })
                         .catch((err) => {
                             throw err;
-                            // return molContainer;
+                            // return treeNode;
                         });
-                } else if (molContainer.shape) {
+                } else if (treeNode.shape) {
                     addObjPromise = this.addShape(
-                        molContainer.shape as IShape
+                        treeNode.shape as IShape
                     ).then((shape: GenericShapeType) => {
                         this.shapeCache[id] = shape;
-                        return molContainer;
+                        return treeNode;
                     });
                 } else {
                     throw new Error(
-                        "MolContainer must have either a model or a shape."
+                        "TreeNode must have either a model or a shape."
                     );
                 }
             }
@@ -417,14 +412,18 @@ export abstract class ViewerParent {
 
     /**
      * Makes atoms responsible to mouse hovering and clicking.
+     *
+     * @param {GenericModelType} model  The model to make atoms hoverable and
+     *                                  clickable.
      */
-    private _makeAtomsHoverableAndClickable() {
-        this.makeAtomsClickable((x: number, y: number, z: number) => {
+    private _makeAtomsHoverableAndClickable(model: GenericModelType) {
+        this.makeAtomsClickable(model, (x: number, y: number, z: number) => {
             api.plugins.runPlugin("moveshapesonclick", [x, y, z]);
             setStoreVar("clearFocusedMolecule", false);
         });
 
         this.makeAtomsHoverable(
+            model,
             (/* x: number, y: number, z: number */) => {
                 if (this.updateViewerDivClassCallback) {
                     this.updateViewerDivClassCallback("cursor-pointer");
@@ -522,7 +521,7 @@ export abstract class ViewerParent {
      * compatible with this viewer.
      *
      * @param {IStyle}        style         The style to convert.
-     * @param {IMolContainer} molContainer  The molecular container, which may
+     * @param {TreeNode} treeNode  The molecular container, which may
      *                                      contain additional/more accessible
      *                                      information about the molecule than
      *                                      is available in the model itself.
@@ -530,7 +529,7 @@ export abstract class ViewerParent {
      */
     abstract convertStyle(
         style: IStyle,
-        molContainer: IMolContainer
+        treeNode: TreeNode
     ): GenericStyleType;
 
     /**
@@ -559,13 +558,13 @@ export abstract class ViewerParent {
             viewer.innerHTML = "";
         }
 
-        // All IMolContainers are now dirty (so will be rerendered if new viewer
+        // All tree nodes are now dirty (so will be rerendered if new viewer
         // loaded).
-        for (const molContainer of getAllNodesFlattened(
-            getStoreVar("molecules")
-        )) {
-            molContainer.viewerDirty = true;
-        }
+        getMoleculesFromStore().flattened.forEach(
+            (treeNode: TreeNode) => {
+                treeNode.viewerDirty = true;
+            }
+        );
     }
 
     /**
@@ -653,23 +652,28 @@ export abstract class ViewerParent {
     /**
      * Makes atoms react when clicked.
      *
-     * @param {Function} callBack  Function that runs when atom is clicked. The
-     *                             function is passed the x, y, and z
-     *                             coordinates of the atom.
+     * @param {GenericModelType} model     The model to make clickable.
+     * @param {Function}         callBack  Function that runs when atom is
+     *                                     clicked. The function is passed the
+     *                                     x, y, and z coordinates of the atom.
      */
     abstract makeAtomsClickable(
+        model: GenericModelType,
         callBack: (x: number, y: number, z: number) => any
     ): void;
 
     /**
      * Makes atoms react when mouse moves over then (hoverable).
      *
-     * @param {Function} onHoverInCallBack   Function that runs when hover over
-     *                                       atom starts.
-     * @param {Function} onHoverOutCallBack  Function that runs when hover over
-     *                                       atom ends.
+     * @param {GenericModelType} model               The model to make
+     *                                               hoverable.
+     * @param {Function}         onHoverInCallBack   Function that runs when
+     *                                               hover over atom starts.
+     * @param {Function}         onHoverOutCallBack  Function that runs when
+     *                                               hover over atom ends.
      */
     abstract makeAtomsHoverable(
+        model: GenericModelType,
         onHoverInCallBack: (x: number, y: number, z: number) => any,
         onHoverOutCallBack: () => any
     ): void;

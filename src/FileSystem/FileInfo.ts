@@ -1,4 +1,4 @@
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType, IFormatInfo } from "./LoadSaveMolModels/Types/MolFormats";
 import { convertMolFormatOpenBabel } from "./OpenBabelTmp";
@@ -11,7 +11,7 @@ export class FileInfo {
     name: string;
     contents: any;
     compressedName?: string;
-    molContainer?: IMolContainer;
+    treeNode?: TreeNode;
     cachedConvertText: {[key: string]: string} = {};
 
     /**
@@ -23,7 +23,7 @@ export class FileInfo {
         this.name = fileInfo.name;
         this.contents = fileInfo.contents;
         this.compressedName = fileInfo.compressedName;
-        this.molContainer = fileInfo.molContainer;
+        this.treeNode = fileInfo.treeNode;
     }
 
     /**

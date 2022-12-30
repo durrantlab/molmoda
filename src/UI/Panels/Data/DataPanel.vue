@@ -34,7 +34,7 @@
             :id="slugify(tableData[0])"
             :tableData="tableData[1]"
             :caption="tableData[0]"
-            :allowTextWrap="allowTextWrap(tableData[1])"
+            :noFixedTable="noFixedTable(tableData[1])"
             @rowClicked="rowClicked"
             :clickableRows="true"
         >
@@ -52,17 +52,14 @@ import { Options, Vue } from "vue-class-component";
 import Table from "@/UI/Components/Table/Table.vue";
 import { CellValue, ITableData } from "@/UI/Components/Table/Types";
 import {
-    IMolContainer,
-    IMolContainerData,
-    MolContainerDataType,
+    TreeNodeDataType,
     SelectedType,
+    ITreeNodeData,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    getAllNodesFlattened,
-    nodePathName,
-} from "@/UI/Navigation/TreeView/TreeUtils";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { slugify } from "@/Core/Utils";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * DataPanel component
@@ -79,8 +76,12 @@ export default class DataPanel extends Vue {
      * @param {ITableData} tableData  The table data.
      * @returns {boolean}  Whether the table should be allowed to wrap text.
      */
-    allowTextWrap(tableData: ITableData): boolean {
+    noFixedTable(tableData: ITableData): boolean {
+        // In the past I allowed text wrapping if there were more than 5 columns
+        // to try to make it more readable, but I've come to prefer never
+        // wrapping.
         return tableData.headers.length > 5;
+        // return false;
     }
 
     /**
@@ -90,16 +91,17 @@ export default class DataPanel extends Vue {
      */
     get allTableData(): any[] {
         // { [key: string]: ITableData }
-        const allMols = this.$store.state.molecules;
+        const allMols = this.$store.state.molecules as TreeNodeList;
 
         // First get all the visible or selected nodes.
-        const nodes = getAllNodesFlattened(allMols).filter(
+        const nodes = allMols.flattened.filter(
             // mol_filter_ok
-            (x: IMolContainer) => x.visible || x.selected !== SelectedType.False
+            (x: TreeNode) => x.visible || x.selected !== SelectedType.False
         );
 
-        const dataByTitle: { [key: string]: IMolContainerData[] } = {};
-        for (const node of nodes) {
+        const dataByTitle: { [key: string]: ITreeNodeData[] } = {};
+        for (let idx = 0; idx < nodes.length; idx++) {
+            let node = nodes.get(idx);
             if (node.data === undefined) {
                 continue;
             }
@@ -113,16 +115,16 @@ export default class DataPanel extends Vue {
                 }
                 dataByTitle[title].push({
                     ...data,
-                    molContainer: node,
+                    treeNode: node,
                 });
             }
         }
 
         // Keep only the table data. TODO: Deal with graph data elsewhere
-        const tableDataByTitle: { [key: string]: IMolContainerData[] } = {};
+        const tableDataByTitle: { [key: string]: ITreeNodeData[] } = {};
         for (const title in dataByTitle) {
             tableDataByTitle[title] = dataByTitle[title].filter(
-                (x) => x.type === MolContainerDataType.Table
+                (x) => x.type === TreeNodeDataType.Table
             );
         }
 
@@ -156,29 +158,27 @@ export default class DataPanel extends Vue {
                 text: "id",
                 showColumnFunc: falseFunc,
             });
-            tableData.headers.unshift({ text: "Molecule" });
+            tableData.headers.unshift({ text: "Entry" });
 
             const defaultRow: { [key: string]: CellValue } = {};
             for (const header of headers) {
                 defaultRow[header] = "";
             }
 
-            tableData.rows = dataByTitle[title].map(
-                (data: IMolContainerData) => {
-                    // The title should reflect ancestors.
-                    let title = data.molContainer?.title;
-                    if (data.molContainer) {
-                        title = this.nodePathName(data.molContainer, allMols);
-                    }
-
-                    return {
-                        ...defaultRow,
-                        ...data.data,
-                        Molecule: title,
-                        id: data.molContainer?.id,
-                    };
+            tableData.rows = dataByTitle[title].map((data: ITreeNodeData) => {
+                // The title should reflect ancestors.
+                let title = data.treeNode?.title;
+                if (data.treeNode) {
+                    title = this.nodePathName(data.treeNode, allMols);
                 }
-            );
+
+                return {
+                    ...defaultRow,
+                    ...data.data,
+                    Entry: title,
+                    id: data.treeNode?.id,
+                };
+            });
 
             allTableData.push([title, tableData]);
 
@@ -202,15 +202,12 @@ export default class DataPanel extends Vue {
     /**
      * Gets the name of the molecule in path-like format.
      *
-     * @param {IMolContainer} molContainer  The molecule container.
-     * @param {IMolContainer[]} allMols  All the molecules.
+     * @param {TreeNode} treeNode  The molecule container.
+     * @param {TreeNodeList} allMols  All the molecules.
      * @returns {string}  The name of the molecule in path-like format.
      */
-    nodePathName(
-        molContainer: IMolContainer,
-        allMols: IMolContainer[]
-    ): string {
-        return nodePathName(molContainer, ">", 50, allMols);
+    nodePathName(treeNode: TreeNode, allMols: TreeNodeList): string {
+        return treeNode.descriptions.pathName(">", 35, allMols);
     }
 
     /**

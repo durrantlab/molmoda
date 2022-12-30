@@ -9,7 +9,8 @@ export enum FormElemType {
     Group,
     MoleculeInputParams,
     Checkbox,
-    Vector3D
+    Vector3D,
+    Alert
 }
 
 export type FormElement =
@@ -21,7 +22,8 @@ export type FormElement =
     | IFormMoleculeInputParams
     | IFormColor
     | IFormCheckbox
-    | IFormVector3D;
+    | IFormVector3D
+    | IFormAlert;
 
 interface IFormElement {
     id: string;
@@ -51,6 +53,7 @@ export interface IGenericFormElement extends IFormElement {
     filterFunc?: any;
     enabled?: any;
     isMoleculeInput?: any;
+    alertType?: any;
 }
 
 export interface IFormText extends IFormElement {
@@ -100,4 +103,10 @@ export interface IFormGroup extends IFormElement {
 
 export interface IFormMoleculeInputParams extends IFormElement {
     val: MoleculeInput;
+}
+
+export interface IFormAlert extends IFormElement {
+    // Use description (not label!) as message.
+    alertType: string;  // warning, info, etc.
+    description: string;  // Required
 }

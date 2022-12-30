@@ -1,41 +1,31 @@
 import { slugify } from "@/Core/Utils";
-import {
-    IAtom,
-    IMolContainer,
-    MolType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { convertMolContainers } from "../ConvertMolModels/ConvertMolContainer";
+import { IAtom, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
-import {
-    extractFlattenedContainers,
-    getTerminalNodes,
-    keepUniqueMolContainers,
-} from "@/UI/Navigation/TreeView/TreeUtils";
 import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
  *
- * @param  {IMolContainer[]} molContainers  All compounds.
+ * @param  {TreeNodeList} treeNodeList  All compounds.
  * @returns {any}  The terminal nodes, separated into
  *     compounds and non-compounds.
  */
 export function separateCompoundNonCompoundTerminalNodes(
-    molContainers: IMolContainer[]
-): { [key: string]: IMolContainer[] } {
-    let terminalNodes = getTerminalNodes(molContainers);
+    treeNodeList: TreeNodeList
+): { [key: string]: TreeNodeList } {
+    let terminalNodes = treeNodeList.filters.onlyTerminal;
 
     // Keep only terminal nodes with unique ids
-    terminalNodes = keepUniqueMolContainers(terminalNodes);
+    terminalNodes = terminalNodes.filters.onlyUnique;
 
-    const compoundNodes = extractFlattenedContainers(terminalNodes, {
-        type: MolType.Compound,
-    });
+    const compoundNodes = terminalNodes.filters.keepType(MolType.Compound);
+    // TODO: Do keepAllButType
     const nonCompoundNodes = terminalNodes.filter(
-        // mol_filter_ok
-        (node) => node.type !== MolType.Compound
+        (node: TreeNode) => node.type !== MolType.Compound
     );
     return { compoundNodes, nonCompoundNodes };
 }
@@ -43,41 +33,40 @@ export function separateCompoundNonCompoundTerminalNodes(
 /**
  * Given a list of molecules, collect text for saving.
  *
- * @param  {IMolContainer[]} nodes       The molecules.
- * @param  {string}          targetExt   The target extension (format).
- * @param  {boolean}         merge       Whether to merge all molecules into
- *                                       one.
- * @param  {string}          [filename]  The fileame to use. Will be generated
- *                                       if not given.
+ * @param  {TreeNodeList} nodes       The molecules.
+ * @param  {string}   targetExt   The target extension (format).
+ * @param  {boolean}  merge       Whether to merge all molecules into one.
+ * @param  {string}   [filename]  The fileame to use. Will be generated if not
+ *                                       given.
  * @returns {Promise<FileInfo[]>}  A promise that resolves to a list of FileInfo
  *     containing the texts for saving.
  */
 export function getConvertedTxts(
-    nodes: IMolContainer[],
+    nodes: TreeNodeList,
     targetExt: string,
     merge: boolean,
     filename?: string
 ): Promise<FileInfo[]> {
     // Remove shapes from nodes. These can never be converted.
-    nodes = extractFlattenedContainers(nodes, { shape: false});
+    nodes = nodes.filters.keepShapes(false);
 
     // If no nodes left, nothing to convert.
     if (nodes.length === 0) {
         return Promise.resolve([]);
     }
 
-    return convertMolContainers(nodes, targetExt, merge).then(
+    return nodes.toFileInfos(targetExt, merge).then(
         (molFileInfos: FileInfo[]) => {
             return molFileInfos.map((molFileInfo, idx) => {
                 // Prepend the chain
-                const molEntry = nodes[idx] as IMolContainer;
+                const molEntry = nodes.get(idx);
 
                 // molFileInfo is pretty incomplete. Update some of the values.
                 molFileInfo.name =
                     filename === undefined
                         ? getFilename(molEntry, targetExt)
                         : `${filename}.${targetExt}`;
-                molFileInfo.molContainer = molEntry;
+                molFileInfo.treeNode = molEntry;
                 return molFileInfo;
             });
         }
@@ -99,14 +88,14 @@ export function getPrimaryExt(format: string): string {
 /**
  * Get a filename appropriate for a given node (molecule).
  *
- * @param {IMolContainer} molContainer  The molecule.
+ * @param {TreeNode} treeNode  The molecule.
  * @param {string} ext  The extension to use.
  * @returns {string} The filename.
  */
-function getFilename(molContainer: IMolContainer, ext: string): string {
-    let txtPrts = [getFileNameParts(molContainer.src as string).basename];
-    const firstAtom: IAtom = (molContainer.model as any).selectedAtoms({})[0];
-    if (molContainer.type === MolType.Compound) {
+function getFilename(treeNode: TreeNode, ext: string): string {
+    let txtPrts = [getFileNameParts(treeNode.src as string).basename];
+    const firstAtom: IAtom = (treeNode.model as any).selectedAtoms({})[0];
+    if (treeNode.type === MolType.Compound) {
         const resn = firstAtom.resn ? firstAtom.resn.trim() : "";
         const resi = firstAtom.resi ? firstAtom.resi.toString().trim() : "";
         txtPrts.push(resn);
@@ -115,7 +104,7 @@ function getFilename(molContainer: IMolContainer, ext: string): string {
 
     const chain = firstAtom.chain ? firstAtom.chain.trim() : "";
     txtPrts.push(chain);
-    txtPrts.push(molContainer.type as string);
+    txtPrts.push(treeNode.type as string);
 
     // remove undefined or ""
     txtPrts = txtPrts.filter((x) => x);

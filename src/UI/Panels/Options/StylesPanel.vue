@@ -7,9 +7,9 @@
 
     <!-- For molecules -->
     <Section title="Molecules">
-        <div v-if="visibleMoleculeContainers.length === 0" class="pb-2">
+        <div v-if="visibleTreeNodes.length === 0" class="pb-2">
             <p style="font-size: 14px">
-                <span v-if="moleculeContainers.length === 0">
+                <span v-if="treeNodesWithModel.length === 0">
                     The workspace contains no molecules.
                 </span>
                 <span v-else>No molecules are currently visible.</span>
@@ -21,11 +21,11 @@
     </Section>
 
     <!-- For shapes -->
-    <div v-if="numSelectedShapes !== 1 || shapeContainers.length === 0">
+    <div v-if="numSelectedShapes !== 1 || treeNodesWithShapes.length === 0">
         <hr class="mt-4" />
         <Section title="Shape" class="pb-2">
             <p style="font-size: 14px">
-                <span v-if="shapeContainers.length === 0">
+                <span v-if="treeNodesWithShapes.length === 0">
                     The workspace contains no shapes.
                 </span>
                 <span v-else-if="numSelectedShapes === 0">
@@ -48,14 +48,8 @@ import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import Section from "@/UI/Layout/Section.vue";
 import StylesAllMolTypes from "./Styles/StylesAllMolTypes.vue";
 import {
-extractFlattenedContainers,
-    getAllNodesFlattened,
-} from "@/UI/Navigation/TreeView/TreeUtils";
-import {
     IBox,
-    IMolContainer,
     ISphere,
-    SelectedType,
     ShapeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
@@ -69,6 +63,8 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { analyzeColor } from "./Styles/ColorSelect/ColorConverter";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * StylesPanel component
@@ -88,22 +84,21 @@ export default class StylesPanel extends Vue {
     /**
      * Get all molecule containers.
      *
-     * @returns {IMolContainer[]} All molcontainers that have a model
-     *     (molecule).
+     * @returns {TreeNodeList} All tree nodes that have a model (molecule).
      */
-    get moleculeContainers(): IMolContainer[] {
-        const allNodes = getAllNodesFlattened(this.$store.state.molecules);
-        return extractFlattenedContainers(allNodes, { model: true });
+    get treeNodesWithModel(): TreeNodeList {
+        const allNodes = (this.$store.state.molecules as TreeNodeList).flattened;
+        return allNodes.filters.keepModels();
     }
 
     /**
      * Get all visible molecule containers.
      *
-     * @returns {IMolContainer[]} All molcontainers that have a model (molecule)
+     * @returns {TreeNodeList} All tree nodes that have a model (molecule)
      *     and are visible.
      */
-    get visibleMoleculeContainers(): IMolContainer[] {
-        return extractFlattenedContainers(this.moleculeContainers, { visible: true });
+    get visibleTreeNodes(): TreeNodeList {
+        return this.treeNodesWithModel.filters.keepVisible();
     }
 
     /**
@@ -112,40 +107,40 @@ export default class StylesPanel extends Vue {
      * @returns {number} The number of selected shapes.
      */
     get numSelectedShapes(): number {
-        return this.selectedShapeContainers.length;
+        return this.treeNodesWithSelectedShapes.length;
     }
 
     /**
      * Get all mol containers associated with shapes.
      *
-     * @returns {IMolContainer[]} All molcontainers that have a shape.
+     * @returns {TreeNodeList} All tree nodes that have a shape.
      */
-    get shapeContainers(): IMolContainer[] {
-        const allNodes = getAllNodesFlattened(this.$store.state.molecules);
-        return extractFlattenedContainers(allNodes, {shape: true});
+    get treeNodesWithShapes(): TreeNodeList {
+        const allNodes = (this.$store.state.molecules as TreeNodeList).flattened;
+        return allNodes.filters.keepShapes();
     }
 
     /**
      * Get all mol containers associated with shapes that are selected..
      *
-     * @returns {IMolContainer[]} All molcontainers that have a shape and are
+     * @returns {TreeNodeList} All tree nodes that have a shape and are
      *     selected.
      */
-    get selectedShapeContainers(): IMolContainer[] {
-        return extractFlattenedContainers(this.shapeContainers, {selected: true});
+    get treeNodesWithSelectedShapes(): TreeNodeList {
+        return this.treeNodesWithShapes.filters.keepSelected();
     }
 
     /**
      * Get the first selected shape container.
      *
-     * @returns {IMolContainer | undefined} The selected shape container.
+     * @returns {TreeNode | undefined} The selected shape container.
      *     Undefined if none is selected.
      */
-    get selectedShapeContainer(): IMolContainer | undefined {
-        if (this.selectedShapeContainers === undefined) {
+    get firstSelectedTreeNodeWithShape(): TreeNode | undefined {
+        if (this.treeNodesWithSelectedShapes === undefined) {
             return undefined;
         }
-        return this.selectedShapeContainers[0];
+        return this.treeNodesWithSelectedShapes.get(0);
     }
 
     /**
@@ -154,7 +149,7 @@ export default class StylesPanel extends Vue {
      * @param {FormElement[]} vals  The form data to set.
      */
     set constructedShapeForm(vals: FormElement[]) {
-        const shapeContainer = this.selectedShapeContainer;
+        const shapeContainer = this.firstSelectedTreeNodeWithShape;
         if (!shapeContainer || !shapeContainer.shape) {
             return;
         }
@@ -189,7 +184,7 @@ export default class StylesPanel extends Vue {
      * @returns {FormElement[]} The form data for the selected shape.
      */
     get constructedShapeForm(): FormElement[] {
-        let color = this.selectedShapeContainer?.shape?.color;
+        let color = this.firstSelectedTreeNodeWithShape?.shape?.color;
         // If color doesn't start with #, convert to Hex.
         if (color && color[0] !== "#") {
             color = analyzeColor(color).hex;
@@ -198,7 +193,7 @@ export default class StylesPanel extends Vue {
             {
                 id: "nameAndType",
                 type: FormElemType.Text,
-                val: `${this.selectedShapeContainer?.title} (${this.selectedShapeContainer?.shape?.type})`,
+                val: `${this.firstSelectedTreeNodeWithShape?.title} (${this.firstSelectedTreeNodeWithShape?.shape?.type})`,
                 enabled: false,
             } as IFormText,
             {
@@ -213,17 +208,17 @@ export default class StylesPanel extends Vue {
                 min: 0,
                 max: 1,
                 step: 0.01,
-                val: this.selectedShapeContainer?.shape?.opacity,
+                val: this.firstSelectedTreeNodeWithShape?.shape?.opacity,
             } as IFormRange,
         ] as FormElement[];
 
-        if (this.selectedShapeContainer?.shape?.movable) {
-            if (this.selectedShapeContainer?.shape?.type === ShapeType.Sphere) {
+        if (this.firstSelectedTreeNodeWithShape?.shape?.movable) {
+            if (this.firstSelectedTreeNodeWithShape?.shape?.type === ShapeType.Sphere) {
                 frm.push({
                     id: "radius",
                     type: FormElemType.Number,
                     label: "Radius",
-                    val: (this.selectedShapeContainer?.shape as ISphere).radius,
+                    val: (this.firstSelectedTreeNodeWithShape?.shape as ISphere).radius,
                 } as IFormRange);
             } else {
                 // Assuming it's a box, because arrows, cylinders, etc. will never
@@ -232,7 +227,7 @@ export default class StylesPanel extends Vue {
                     id: "dimensions",
                     type: FormElemType.Vector3D,
                     label: "Dimensions (X, Y, Z)",
-                    val: (this.selectedShapeContainer?.shape as IBox)
+                    val: (this.firstSelectedTreeNodeWithShape?.shape as IBox)
                         ?.dimensions,
                     filterFunc: (val: number) => (val < 0 ? 0 : val),
                 } as IFormVector3D);
@@ -241,7 +236,7 @@ export default class StylesPanel extends Vue {
                 id: "center",
                 type: FormElemType.Vector3D,
                 label: "Center (X, Y, Z)",
-                val: this.selectedShapeContainer?.shape?.center,
+                val: this.firstSelectedTreeNodeWithShape?.shape?.center,
                 description: "(Click atom to center)",
             } as IFormVector3D);
         }

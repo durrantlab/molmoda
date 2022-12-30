@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
-import { getTerminalNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { atomsToModels } from "../Utils";
+import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { treeNodeListDeserialize } from "@/TreeNodes/Deserializers";
 
 /**
  * Loads a molecule from text, using a web worker.
@@ -11,36 +11,37 @@ import { atomsToModels } from "../Utils";
  * @param  {string} molText The text of the molecule.
  * @param  {string} format  The format of the molecule.
  * @param  {string} molName The name of the molecule.
- * @returns {Promise<IMolContainer>} A promise that resolves the molecule.
+ * @returns {Promise<TreeNode>} A promise that resolves the molecule.
  */
 export function parseMolecularModelFromText(
     molText: string,
     format: string,
     molName: string
-): Promise<IMolContainer[]> {
+): Promise<TreeNodeList> {
     const worker = new Worker(
         new URL("./ParseMolecularModels.worker", import.meta.url)
     );
 
     return runWorker(worker, { molText, format, molName })
-        .then((molecularData: IMolContainer[]) => {
-            const promises = molecularData.map(molecularDatum => atomsToModels(molecularDatum));
-            return Promise.all(promises);
+        .then((molecularDataDeserialized: any) => {
+            return treeNodeListDeserialize(molecularDataDeserialized);
+            // const promises = molecularDataNodeList.map(
+            //     (molecularDatum: TreeNode) => atomsToModels(molecularDatum)
+            // );
+            // return Promise.all(promises);
         })
-        .then((molecularData: IMolContainer[]) => {
-            for (const molecularDatum of molecularData) {
+        .then((molecularDataNodeList: TreeNodeList) => {
+            molecularDataNodeList.forEach((molecularDatum: TreeNode) => {
                 // Set molName as src on all terminal nodes
                 molecularDatum.src = molName;
-                if (molecularDatum.nodes) {
-                    getTerminalNodes(molecularDatum.nodes).forEach(
-                        (node: IMolContainer) => {
-                            node.src = molName;
-                        }
-                    );
+                const children = molecularDatum.nodes;
+                if (children) {
+                    children.filters.onlyTerminal.forEach((node: TreeNode) => {
+                        node.src = molName;
+                    });
                 }
-            }
+            });
 
-            return molecularData;
+            return molecularDataNodeList;
         });
 }
-

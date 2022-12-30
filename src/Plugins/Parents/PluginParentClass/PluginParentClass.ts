@@ -14,7 +14,7 @@ import {
     removeTerminalPunctuation,
     timeDiffDescription,
 } from "@/Core/Utils";
-import { alwaysEnabledPlugins, loadedPlugins } from "../../LoadedPlugins";
+import { registerLoadedPlugin } from "../../LoadedPlugins";
 import { createTestCmdsIfTestSpecified } from "@/Testing/ParentPluginTestFuncs";
 import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
@@ -89,11 +89,13 @@ export abstract class PluginParentClass extends mixins(
     /**
      * Optionally define a hotkey (keyboard shortcut) to trigger this plugin.
      * For example, "r". Note that biotite maps "r" to "ctrl+r" and "command+r"
-     * automatically, so no need to specify ctrl/command.
+     * automatically, so no need to specify ctrl/command. If hotkey is not just
+     * one letter (e.g., "backspace"), "ctrl+"" is not added. If a plugin has
+     * multiple hotkeys, specify them as an array of strings.
      *
-     * @type {string}
+     * @type {string | string[]}
      */
-    hotkey = "";
+    hotkey: string | string[] = "";
 
     /**
      * Some jobs are so trivial that there is no need to log them. These run in
@@ -112,7 +114,7 @@ export abstract class PluginParentClass extends mixins(
     // If set to true, this plugin will always load, even if the user specifies
     // one plugin using the "plugin" url parameter. Set to true for core plugins
     // that are not optional.
-    protected alwaysEnabled = false;
+    public alwaysEnabled = false;
 
     /**
      * Runs when the user first starts the plugin. Called when the user clicks
@@ -362,10 +364,7 @@ export abstract class PluginParentClass extends mixins(
         // Do some quick validation
         this._validatePlugin(this.pluginId);
 
-        loadedPlugins[this.pluginId] = this;
-        if (this.alwaysEnabled) {
-            alwaysEnabledPlugins.push(this.pluginId);
-        }
+        registerLoadedPlugin(this);
 
         // Add to menu and credits.
         this.$emit("onPluginSetup", {
@@ -396,25 +395,14 @@ export abstract class PluginParentClass extends mixins(
 
         // Register the hotkey if any.
         if (this.hotkey !== "") {
-            // TODO: Good to access registerHotkeys through api for
-            // consistency's sake?
-
-            // command+ in hotkey? Throw error.
-            if (this.hotkey.indexOf("+") !== -1) {
-                const msg = `Plugin ${this.pluginId} has a hotkey with "+" in it. This is not allowed. Use only the letter.`;
-                throw new Error(msg);
-            }
-
-            const key = this.hotkey.toLowerCase();
-            registerHotkeys(`ctrl+${key}, command+${key}`, (e: KeyboardEvent) => {
-                e.preventDefault()
+            registerHotkeys(this.hotkey, this.pluginId, (e: KeyboardEvent) => {
+                e.preventDefault();
                 const msg = this.checkPluginAllowed();
                 if (msg !== null) {
                     api.messages.popupError(msg);
                 } else {
                     api.plugins.runPlugin(this.pluginId);
                 }
-
             });
         }
 

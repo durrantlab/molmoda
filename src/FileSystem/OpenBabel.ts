@@ -1,5 +1,4 @@
 import { dynamicImports } from "@/Core/DynamicImports";
-import { rejects } from "assert";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -8,6 +7,9 @@ import { rejects } from "assert";
 
 export let FS: any = undefined;
 
+/**
+ * @returns {Promise<any>}  A promise that resolves to the FS object.
+ */
 function getFSPromise(): Promise<any> {
     let fsPromise: Promise<any>;
 
@@ -185,6 +187,7 @@ export function mkdir(obabel: any, path: string) {
 /**
  * A helper function that creates a file in the Open Babel file system.
  *
+ * @param {any}    obabel  The OpenBabel module.
  * @param {string} path    The path to the text file to create.
  * @param {string} text    The text to write to the file.
  */
@@ -224,6 +227,7 @@ export function readDir(obabel: any, path: string): string[] {
 /**
  * A helper function that reads a file on the Open Babel file system.
  *
+ * @param {any}    obabel  The OpenBabel module.
  * @param {string} path    The path to the file to read.
  * @returns {string}  The text in the file.
  */

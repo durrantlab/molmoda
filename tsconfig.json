@@ -18,7 +18,7 @@
             "@/*": ["src/*"]
         },
         "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
-        "resolveJsonModule": true,
+        "resolveJsonModule": true
 
         // "removeComments": false
     },
@@ -29,9 +29,12 @@
         "tests/**/*.ts",
         "tests/**/*.tsx",
         "src/worker.js",
-        "src/UI/Panels/Viewer/3Dmol-nojquery.JDD.js"
-, "src/Plugins/PluginParent.ts.old", "src/UI/Panels/Viewer/Viewer2D.vue.old", "src/UI/Panels/Viewer/ViewerPanelParent.ts.old"    ],
-    "exclude": ["node_modules"],
+        "src/UI/Panels/Viewer/3Dmol-nojquery.JDD.js",
+        // "src/Plugins/PluginParent.ts.old",
+        // "src/UI/Panels/Viewer/Viewer2D.vue.old",
+        // "src/UI/Panels/Viewer/ViewerPanelParent.ts.old",
+    ],
+    "exclude": ["node_modules"]
     // "typedocOptions": {
     //     "entryPoints": ["src/main.ts"],
     //     // "entryPointStrategy": "resolve", // ["resolve", "./src"],

@@ -1,25 +1,27 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { store } from "@/Store";
 import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { treeNodeListDeserialize } from "@/TreeNodes/Deserializers";
+import { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ILog } from "@/UI/Panels/Log/LogUtils";
-import { atomsToModels, biotiteStateKeysToRetain } from "../Utils";
+
+export const biotiteStateKeysToRetain = ["molecules", "log"];
 
 /**
  * Uses biotite to parse the a molecular-model file. For biotite-native files.
  *
  * @param  {FileInfo} fileInfo  The file to parse.
- * @returns {Promise<void | IMolContainer[]>}  A promise that resolves when the
- *    file is parsed. The promise resolves to an array of IMolContainer objects,
- *    one for each frame. Can also resolve void.
+ * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the file is
+ *    parsed. The promise resolves to a TreeNodeList containing the frames. Can also
+ *    resolve void.
  */
 export function parseUsingBiotite(
     fileInfo: FileInfo
-): Promise<void | IMolContainer[]> {
+): Promise<void | TreeNodeList> {
     return jsonStrToState(fileInfo.contents)
         .then((stateFromJson) => {
             // Update vueX store
-            // store.replaceState(state);
             for (const key of biotiteStateKeysToRetain) {
                 pushToStoreList(key, stateFromJson[key]);
             }
@@ -84,14 +86,12 @@ function jsonStrToState(jsonStr: string): Promise<any> {
     // Now convert it to an object.
     const obj = JSON.parse(jsonStr);
 
-    const promises = (obj.molecules as IMolContainer[]).map((mol) =>
-        atomsToModels(mol)
-    );
-
-    return Promise.all(promises).then((mols: IMolContainer[]) => {
-        for (const i in mols) {
-            obj.molecules[i] = mols[i];
-        }
-        return obj;
-    });
+    return treeNodeListDeserialize(obj.molecules as ITreeNode[])
+        .then((mols: TreeNodeList) => {
+            obj.molecules = mols;
+            return obj;
+        })
+        .catch((err: any) => {
+            throw err;
+        });
 }

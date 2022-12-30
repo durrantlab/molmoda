@@ -1,5 +1,5 @@
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 export interface ICalcMolProps {
     lipinski: any[][];
@@ -19,14 +19,14 @@ export const otherTitle = "Other Chemical Properties";
  *                                                             molecules to
  *                                                             calculate the
  *                                                             properties for.
- * @param  {(IMolContainer|undefined)[]} [associatedMolCntrs]  The associated
+ * @param  {(TreeNode|undefined)[]} [associatedTreeNodes]  The associated
  *                                                             molecule
  *                                                             containers.
  * @returns {Promise<ICalcMolProps[]>}  The calculated molecular properties.
  */
 export function calcMolProps(
     smilesStrs: string[],
-    associatedMolCntrs?: (IMolContainer | undefined)[]
+    associatedTreeNodes?: (TreeNode | undefined)[]
 ): Promise<ICalcMolProps[]> {
     // Create the list of properties, currently full of undefineds.
     const molDescriptors: (ICalcMolProps | undefined)[] = [];
@@ -34,28 +34,28 @@ export function calcMolProps(
         molDescriptors.push(undefined);
     }
 
-    const formatForMolContainer = associatedMolCntrs !== undefined;
+    const formatForTreeNode = associatedTreeNodes !== undefined;
 
     // Identify any ones that have already been calculated.
-    if (formatForMolContainer) {
+    if (formatForTreeNode) {
         // Filter out those containers that already have calculated data.
-        for (let i = 0; i < associatedMolCntrs.length; i++) {
-            const associatedMolContainer = associatedMolCntrs[i];
-            if (!associatedMolContainer) {
+        for (let i = 0; i < associatedTreeNodes.length; i++) {
+            const associatedTreeNode = associatedTreeNodes[i];
+            if (!associatedTreeNode) {
                 continue;
             }
 
             if (
-                associatedMolContainer.data &&
-                associatedMolContainer.data[lipinskiTitle] &&
-                associatedMolContainer.data[countsTitle] &&
-                associatedMolContainer.data[otherTitle]
+                associatedTreeNode.data &&
+                associatedTreeNode.data[lipinskiTitle] &&
+                associatedTreeNode.data[countsTitle] &&
+                associatedTreeNode.data[otherTitle]
             ) {
                 // Already calculated.
                 molDescriptors[i] = {
-                    lipinski: associatedMolContainer.data[lipinskiTitle] as any,
-                    counts: associatedMolContainer.data[countsTitle] as any,
-                    other: associatedMolContainer.data[otherTitle] as any,
+                    lipinski: associatedTreeNode.data[lipinskiTitle] as any,
+                    counts: associatedTreeNode.data[countsTitle] as any,
+                    other: associatedTreeNode.data[otherTitle] as any,
                 } as ICalcMolProps;
             }
         }
@@ -86,20 +86,20 @@ export function calcMolProps(
 
     return runWorker(worker, {
         smilesStrs: smilesToCalculate,
-        formatForMolContainer,
+        formatForTreeNode: formatForTreeNode,
     })
         .then((calculatedProps: any[]) => {
             for (let i = 0; i < calculatedProps.length; i++) {
                 const calculatedProp = calculatedProps[i];
                 const descriptors = calculatedProp.descriptors;
-                const molContainerData = calculatedProp.molContainerData;
+                const treeNodeData = calculatedProp.treeNodeData;
                 const idx = indexesToCalculate[i];
 
                 // Add to the associated container if appropriate.
-                if (formatForMolContainer) {
-                    (associatedMolCntrs[idx] as IMolContainer).data = {
-                        ...(associatedMolCntrs[idx] as IMolContainer).data,
-                        ...molContainerData,
+                if (formatForTreeNode) {
+                    (associatedTreeNodes[idx] as TreeNode).data = {
+                        ...(associatedTreeNodes[idx] as TreeNode).data,
+                        ...treeNodeData,
                     };
                 }
 

@@ -113,17 +113,14 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
-import {
-    IMolContainer,
-    MolType,
-    SelectedType,
-} from "../TreeView/TreeInterfaces";
-import { getNodeOfId, getAllNodesFlattened } from "../TreeView/TreeUtils";
+import { MolType, SelectedType } from "../TreeView/TreeInterfaces";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as api from "@/Api";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 interface IIconsToDisplay {
     visible?: boolean;
@@ -144,9 +141,9 @@ interface IIconsToDisplay {
     },
 })
 export default class TitleBar extends Vue {
-    @Prop({ required: true }) treeDatum!: IMolContainer;
+    @Prop({ required: true }) treeDatum!: TreeNode;
     @Prop({ default: 0 }) depth!: number;
-    @Prop({ default: undefined }) treeData!: IMolContainer[];
+    @Prop({ default: undefined }) treeData!: TreeNodeList;
 
     /**
      * Get the id of the molecule (node).
@@ -231,6 +228,9 @@ export default class TitleBar extends Vue {
      */
     selectedclass(id: string): string {
         let node = this.getNode(id);
+        if (node === null) {
+            return "";
+        }
         return node.selected !== SelectedType.False ? " selected" : "";
     }
 
@@ -249,6 +249,9 @@ export default class TitleBar extends Vue {
      */
     isSelected(id: string): boolean {
         let node = this.getNode(id);
+        if (node === null) {
+            return false;
+        }
         return node.selected === SelectedType.True;
     }
 
@@ -258,8 +261,8 @@ export default class TitleBar extends Vue {
      * @param {string} id  The id of the node.
      * @returns {any}  The node with the given id.
      */
-    getNode(id: string): any {
-        return getNodeOfId(id, this.getLocalTreeData);
+    getNode(id: string): TreeNode | null {
+        return (this.getLocalTreeData as TreeNodeList).filters.onlyId(id);
     }
 
     /**
@@ -297,11 +300,12 @@ export default class TitleBar extends Vue {
             let newVisible = !node.visible;
             node.visible = newVisible;
             node.viewerDirty = true;
-            if (node.nodes) {
-                for (let node2 of getAllNodesFlattened(node.nodes)) {
+            const children = node.nodes;
+            if (children) {
+                children.flattened.forEach((node2: TreeNode) => {
                     node2.visible = newVisible;
                     node2.viewerDirty = true;
-                }
+                });
             }
         }
     }
@@ -312,15 +316,15 @@ export default class TitleBar extends Vue {
      * @param {string} id  The id of the molecule (node).
      */
     toggleFocused(id: string) {
-        let allData = this.$store.state["molecules"];
-        if (this.getNode(id).focused) {
+        let allData = this.$store.state["molecules"] as TreeNodeList;
+        if (this.getNode(id)?.focused) {
             // If the one you're clicking is already focused, then unfocus all.
             this.$store.commit("clearFocusedMolecule");
         } else {
             // Otherwise, focus on the one you clicked.
-            for (let node of getAllNodesFlattened(allData)) {
+            allData.flattened.forEach((node: TreeNode) => {
                 node.focused = node.id === id;
-            }
+            });
         }
     }
 

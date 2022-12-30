@@ -2,12 +2,12 @@
 // any conversion. See https://3dmol.csb.pitt.edu/doc/types.html#FileFormats
 
 import * as api from "@/Api";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { parseUsing3DMolJs } from "./ParseUsing3DMolJs";
-import { parseUsingOpenBabel } from "./ParseUsingOpenBabel";
-import { parseUsingBiotite } from "./ParseUsingBiotite";
+import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { parseUsing3DMolJs } from "./_ParseUsing3DMolJs";
+import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
+import { parseUsingBiotite } from "./_ParseUsingBiotite";
 import { getFormatInfoGivenType, molFormatInformation, MolLoader } from "../Types/MolFormats";
-import { FileInfo } from "@/FileSystem/FileInfo";
+import type { FileInfo } from "@/FileSystem/FileInfo";
 import { getFileType } from "@/FileSystem/Utils2";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
@@ -27,16 +27,18 @@ export const fileTypesAccepts = _allAcceptableFileTypes
     .join(",") + ",.zip";
 
 /**
- * Given an IFileInfo object (name, contents, type), load the molecule.
+ * Given an IFileInfo object (name, contents, type), load the molecule. Should
+ * call only from TreeNodeList.load.
  *
  * @param  {FileInfo} fileInfo The file info object.
- * @returns {Promise<string>}  A promise that resolves when the molecule is
- *     loaded.
+ * @param  {boolean} addToTree  Whether to add the molecule to the tree.
+ * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the
+ *     molecule is loaded.
  */
-export function parseMoleculeFile(
+export function _parseMoleculeFile(
     fileInfo: FileInfo,
     addToTree = true
-): Promise<void | IMolContainer[]> {
+): Promise<void | TreeNodeList> {
     api.messages.waitSpinner(true);
 
     const ext = getFileType(fileInfo);

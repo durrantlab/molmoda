@@ -38,7 +38,8 @@ import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
 import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
-import { IMolContainer } from "./TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 /**
  * TreeView component
@@ -52,7 +53,7 @@ import { IMolContainer } from "./TreeInterfaces";
 })
 export default class TreeView extends Vue {
   @Prop({ default: 0 }) depth!: number;
-  @Prop({ default: undefined }) treeData!: IMolContainer[] | undefined;
+  @Prop({ default: undefined }) treeData!: TreeNodeList | undefined;
   @Prop({ default: undefined }) styleToUse!: string;
 
   /**
@@ -85,20 +86,21 @@ export default class TreeView extends Vue {
    *
    * @returns {any} The molecules from the vuex store.
    */
-  get storeMolecules(): IMolContainer[] {
+  get storeMolecules(): TreeNodeList {
     return this.$store.state["molecules"];
   }
 
   /**
    * Get the local tree data.
    *
-   * @returns {IMolContainer[]} The local tree data.
+   * @returns {TreeNode[]} The local tree data. Needs to be converted to
+   *     TreeNode[] to be interable in vue.js.
    */
-  get getLocalTreeData(): IMolContainer[] {
+  get getLocalTreeData(): TreeNode[] {
     if (!this.treeData) {
-      return this.storeMolecules as IMolContainer[];
+      return (this.storeMolecules as TreeNodeList).toArray();
     }
-    return this.treeData as IMolContainer[];
+    return (this.treeData as TreeNodeList).toArray();
   }
 
   // fixTitle(title: string): string {
@@ -113,7 +115,7 @@ export default class TreeView extends Vue {
   //   return title;
   // }
 
-  // treeChildNodeToUse(curMolCont: IMolContainer): IMolContainer | null {
+  // treeChildNodeToUse(curMolCont: TreeNode): TreeNode | null {
 
   //   return curMolCont;
 

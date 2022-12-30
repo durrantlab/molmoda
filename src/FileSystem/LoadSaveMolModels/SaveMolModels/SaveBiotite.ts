@@ -1,9 +1,9 @@
 import { store } from "@/Store";
 import { setStoreIsDirty } from "@/Store/LoadAndSaveStore";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
-import { biotiteStateKeysToRetain, modelsToAtoms } from "../Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { biotiteStateKeysToRetain } from "../ParseMolModels/_ParseUsingBiotite";
 
 /**
  * Runs the job when the user wants to save in the .biotite format.
@@ -34,9 +34,7 @@ export function saveBiotite(filename: string): Promise<undefined> {
 function saveState(filename: string, state: any): Promise<any> {
     // To save state to json, GLModel must be converted to IAtom[]. This makes
     // copies (not in place).
-    const newMolData = state.molecules.map((mol: IMolContainer) => {
-        return modelsToAtoms(mol);
-    });
+    const newMolData = (state.molecules as TreeNodeList).serialize();
 
     const newState: { [key: string]: any } = {};
     for (const key in state) {

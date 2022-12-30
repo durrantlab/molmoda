@@ -33,13 +33,13 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
-import { IMolContainer } from "../../Navigation/TreeView/TreeInterfaces";
 import FormWrapper from "../FormWrapper.vue";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import FormCheckBox from "../FormCheckBox.vue";
 import { MoleculeInput } from "./MoleculeInput";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * CombineProteins component
@@ -63,9 +63,9 @@ export default class MoleculeInputParams extends Vue {
   /**
    * Gets the molecules from the store.
    *
-   * @returns {IMolContainer[]}  The molecules from the store.
+   * @returns {TreeNodeList}  The molecules from the store.
    */
-  get molecules(): IMolContainer[] {
+  get molecules(): TreeNodeList {
     return this.$store.state.molecules;
   }
 
@@ -163,10 +163,10 @@ export default class MoleculeInputParams extends Vue {
   /**
    * Lists the molecules in string format, at most two.
    *
-   * @param {IMolContainer[] | undefined} mols  The molecules to list.
+   * @param {TreeNodeList | undefined} mols  The molecules to list.
    * @returns {string}  The molecules in string format, at most two.
    */
-  // listMols(mols: IMolContainer[] | undefined): string {
+  // listMols(mols: TreeNodeList | undefined): string {
   //   if (mols === undefined) {
   //     return "";
   //   }

@@ -13,7 +13,7 @@
           :tableData="jobStatusesForTable[idx]"
           :caption="jobManagerNames[idx]"
           @cancelJob="cancelJob"
-          :allowTextWrap="false"
+          :noFixedTable="false"
         >
           <template #afterHeader>
             <div
@@ -103,7 +103,7 @@ const headers: IHeader[] = [
   },
 })
 export default class JobManager extends Vue {
-  // @Prop({ default: true }) allowTextWrap!: boolean;
+  // @Prop({ default: true }) noFixedTable!: boolean;
 
   // jobManagers: JobManagerParent[] = [];
   jobManagerNames: string[] = [];

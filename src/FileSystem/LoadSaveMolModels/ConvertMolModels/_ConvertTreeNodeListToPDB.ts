@@ -1,5 +1,6 @@
-import { IAtom, IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { extractFlattenedContainers } from "@/UI/Navigation/TreeView/TreeUtils";
+import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import {
     standardProteinResidues,
@@ -246,20 +247,19 @@ function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
 
 /**
  * Given a list of mol containers, convert them to PDB format. Prefer the
- * convertMolContainer() to this one. Probably should not call this function
- * directly.
+ * TreeNodeList.toFileInfos() to this one. Do not call this function directly.
  *
- * @param  {IMolContainer[]} molContainers  The list of mol containers.
+ * @param  {TreeNodeList} treeNodeList  The list of mol containers.
  * @param  {boolean}         [merge=false]  Whether to merge the models into a
  *                                          single PDB string.
  * @returns {string[]} The PDB strings.
  */
-export function convertMolContainersToPDB(
-    molContainers: IMolContainer[],
+export function _convertTreeNodeListToPDB(
+    treeNodeList: TreeNodeList,
     merge = false
 ): string[] {
-    let mols = extractFlattenedContainers(molContainers, { model: true }).map(
-        (molContainer) => molContainer.model as GLModel | IAtom[]
+    let mols = treeNodeList.filters.keepModels().map(
+        (treeNode: TreeNode) => treeNode.model as GLModel | IAtom[]
     );
     // .filhter((mol) => Array.isArray(mol) && mol.length > 0);
     // mol is 3dmoljs molecule object.

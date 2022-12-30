@@ -1,14 +1,11 @@
 import { controlKeyDown, shiftKeyDown } from "@/Core/HotKeys";
-import { getStoreVar } from "@/Store/StoreExternalAccess";
-import { SelectedType, IMolContainer } from "../TreeView/TreeInterfaces";
-import {
-    getAllNodesFlattened,
-    getNodeAncestory,
-    getNodeOfId,
-} from "../TreeView/TreeUtils";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { TreeNode } from "../../../TreeNodes/TreeNode/TreeNode";
+import { SelectedType } from "../TreeView/TreeInterfaces";
+import { TreeNodeList } from "../../../TreeNodes/TreeNodeList/TreeNodeList";
 
 export const selectInstructionsBrief =
-    "Click + Ctrl/Shift/Cmd to select multiple";
+    "Ctrl/Shift/Cmd + Click to select multiple";
 export const selectInstructionsLong =
     "Click while holding down the Control, Command (Mac), or Shift key to select multiple molecules.";
 
@@ -17,10 +14,10 @@ export const selectInstructionsLong =
  * (ctrl, shift, cmd).
  *
  * @param  {string}          id           The id of the last node selected.
- * @param  {IMolContainer[]} molTreeData  The molecule tree data.
+ * @param  {TreeNodeList} molTreeData  The molecule tree data.
  */
-export function doSelecting(id: string, molTreeData: IMolContainer[]) {
-    const node = getNodeOfId(id, molTreeData);
+export function doSelecting(id: string, molTreeData: TreeNodeList) {
+    const node = molTreeData.filters.onlyId(id);
 
     if (node === null) {
         // Not much you can do.
@@ -42,10 +39,11 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
 
     // If shift key is down, selecting multiple items.
     if (shiftKeyDown) {
-        const flattened = getAllNodesFlattened(getStoreVar("molecules"));
+        const flattened = getMoleculesFromStore().flattened;
         // Go through flattened, save the node if it is selected.
-        let mostRecentSelected: IMolContainer | null = null;
-        for (const nd of flattened) {
+        let mostRecentSelected: TreeNode | null = null;
+        for (let idx = 0; idx < flattened.length; idx++) {
+            const nd = flattened.get(idx);
             if (nd.selected !== SelectedType.False) {
                 mostRecentSelected = nd;
             }
@@ -61,14 +59,18 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
             // Note that if it is null, will treat as if shift not pressed (no
             // return outside of associated if statement).
             let selecting = false;
-            for (const nd of flattened) {
-                if (nd.id === mostRecentSelected.id || nd.id === id) {
+            flattened.forEach((nd: TreeNode) => {
+                if (
+                    (mostRecentSelected !== null &&
+                        nd.id === mostRecentSelected.id) ||
+                    nd.id === id
+                ) {
                     selecting = !selecting;
                 }
                 if (selecting) {
                     setSelectWithChildren(nd, SelectedType.True);
                 }
-            }
+            });
             setSelectWithChildren(node, SelectedType.True);
             // debugger;
             return;
@@ -77,9 +79,10 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
 
     // No control or shift pressed if you get here.
 
-    const allNodesFlattened = getAllNodesFlattened(getStoreVar("molecules"));
+    const allNodesFlattened = getMoleculesFromStore().flattened;
     const numSelected = allNodesFlattened.reduce(
-        (acc, nd) => acc + (nd.selected === SelectedType.True ? 1 : 0),
+        (acc: number, nd: TreeNode) =>
+            acc + (nd.selected === SelectedType.True ? 1 : 0),
         0
     );
     const currentlySelected = node.selected;
@@ -97,39 +100,40 @@ export function doSelecting(id: string, molTreeData: IMolContainer[]) {
 /**
  * Unselects all nodes.
  *
- * @param  {IMolContainer[]} flattenedNodes  The nodes to consider, flattened.
+ * @param  {TreeNodeList} flattenedNodes  The nodes to consider, flattened.
  */
-function unselectAll(flattenedNodes: IMolContainer[]) {
+function unselectAll(flattenedNodes: TreeNodeList) {
     // Unselect all nodes.
-    for (const nd of flattenedNodes) {
+    flattenedNodes.forEach((nd) => {
         nd.selected = SelectedType.False;
-    }
+    });
 }
 
 /**
  * Sets the selected property of a node and its children.
  *
- * @param  {IMolContainer} node                          The node to set.
+ * @param  {TreeNode} node                          The node to set.
  * @param  {SelectedType}  [selected=SelectedType.True]  The selected property
  *                                                       to set.
  */
-function setSelectWithChildren(
-    node: IMolContainer,
-    selected = SelectedType.True
-) {
+function setSelectWithChildren(node: TreeNode, selected = SelectedType.True) {
     node.selected = selected;
+    const children = node.nodes;
 
     // Children too
-    if (node.nodes) {
+    if (children) {
         const childrenSelection =
             selected === SelectedType.True
                 ? SelectedType.ChildOfTrue
                 : SelectedType.False;
-        for (const nd of getAllNodesFlattened(node.nodes)) {
+        children.flattened.forEach((nd: TreeNode) => {
             nd.selected = childrenSelection;
-        }
+        });
     }
 }
+
+let waitForScollInterval: any = null;
+let waitForScrollStart = 0;
 
 /**
  * Selects a given node programatically.
@@ -137,28 +141,50 @@ function setSelectWithChildren(
  * @param  {string} id  The id of the node to select.
  */
 export function selectProgramatically(id: string) {
-    const allMols = getStoreVar("molecules");
-    const node = getNodeOfId(id, allMols);
+    const allMols = getMoleculesFromStore();
+    const node = allMols.filters.onlyId(id);
     if (!node) {
         // null?
         return;
     }
 
-    unselectAll(getAllNodesFlattened(allMols));
+    unselectAll(allMols.flattened);
     setSelectWithChildren(node, SelectedType.True);
 
     // Expand all parents.
-    const ancestors = getNodeAncestory(node, allMols);
-    for (const anc of ancestors) {
+    const ancestors = node.getAncestry(allMols);
+    ancestors.forEach((anc: TreeNode) => {
         anc.treeExpanded = true;
+    });
+
+    if (waitForScollInterval) {
+        clearInterval(waitForScollInterval);
     }
 
-    setTimeout(() => {
-        const selected = document.getElementsByClassName("selected")[0];
+    waitForScrollStart = new Date().getTime();
+    waitForScollInterval = setInterval(() => {
+        const selected = document.getElementsByClassName(
+            "selected"
+        )[0] as HTMLElement;
         if (selected) {
             // selected.scrollIntoView();
             // scroll gradually over 1 sec
-            selected.scrollIntoView({ behavior: "smooth", block: "center" });
+            // selected.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            // Helpful: https://stackoverflow.com/questions/51618548/scrollintoview-is-not-working-does-not-taking-in-account-fixed-element
+            const wrapper = document.getElementById("navigator")
+                ?.parentElement as HTMLElement;
+            const count =
+                selected.offsetTop -
+                wrapper.scrollTop -
+                0.5 * wrapper.offsetHeight; // xx = any extra distance from top ex. 60
+
+            wrapper.scrollBy({ top: count, left: 0, behavior: "smooth" });
+
+            clearInterval(waitForScollInterval);
+        } else if (new Date().getTime() - waitForScrollStart > 3000) {
+            // Give up after a bit.
+            clearInterval(waitForScollInterval);
         }
     }, 500);
 }

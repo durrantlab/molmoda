@@ -9,13 +9,9 @@ import { Options } from "vue-class-component";
 
 import * as api from "@/Api/";
 
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
-import {
-    getTerminalNodes,
-    getAllNodesFlattened,
-} from "@/UI/Navigation/TreeView/TreeUtils";
 import { Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { ViewerNGL } from "./Viewers/ViewerNGL";
@@ -24,6 +20,7 @@ import {
     loadViewerLibPromise,
     setLoadViewerLibPromise,
 } from "./Viewers/ViewerParent";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 /**
  * ViewerPanel component
@@ -39,9 +36,9 @@ export default class ViewerPanel extends Vue {
      * Get the molecules from the store. All viewers of any type will need to
      * react to changes in the molecules.
      *
-     * @returns {IMolContainer[]} the molecules.
+     * @returns {TreeNodeList} the molecules.
      */
-    get treeview(): IMolContainer[] {
+    get treeview(): TreeNodeList {
         return this.$store.state["molecules"];
     }
 
@@ -84,10 +81,10 @@ export default class ViewerPanel extends Vue {
     /**
      * Checks if the treeview has changed.
      *
-     * @param {IMolContainer[]} allMolecules  The new molecules.
+     * @param {TreeNodeList} allMolecules  The new molecules.
      */
     @Watch("treeview", { immediate: false, deep: true })
-    onTreeviewChanged(allMolecules: IMolContainer[]) {
+    onTreeviewChanged(allMolecules: TreeNodeList) {
         if (loadViewerLibPromise === undefined) {
             if (api.visualization.viewer !== undefined) {
                 // Molecular library already loaded.
@@ -165,15 +162,15 @@ export default class ViewerPanel extends Vue {
     /**
      * Remove models no longer present in the vuex store molecules variables.
      *
-     * @param {IMolContainer[]} terminalNodes  The terminal nodes of the treeview.
+     * @param {TreeNodeList} terminalNodes  The terminal nodes of the treeview.
      */
-    private _removeOldModels(terminalNodes: IMolContainer[]) {
+    private _removeOldModels(terminalNodes: TreeNodeList) {
         // Remove any molecules not presently in the terminal nodes.
 
         // Get the ids of the actual terminal nodes (should have deleted element
         // already removed)
         const idsOfTerminalNodes = terminalNodes.map(
-            (node) => node.id
+            (node: TreeNode) => node.id
         ) as string[];
 
         api.visualization.viewer?.removeObjects(idsOfTerminalNodes);
@@ -192,45 +189,45 @@ export default class ViewerPanel extends Vue {
         }
 
         const visibleTerminalNodeModelsIds: string[] = [];
-        const terminalNodes = getTerminalNodes(this.treeview);
+        const terminalNodes = this.treeview.filters.onlyTerminal;
 
         this._removeOldModels(terminalNodes);
 
         // Add all the models and put them in the cache.
         const addMolPromises =
-            api.visualization.viewer?.addMolContainers(terminalNodes);
+            api.visualization.viewer?.addTreeNodeList(terminalNodes);
 
         // All models now loaded. Style them appropriately.
         return Promise.all(addMolPromises)
-            .then((molContainers: IMolContainer[]) => {
+            .then((treeNodes: TreeNode[]) => {
                 const surfacePromises: Promise<any>[] = [];
 
-                for (const molContainer of molContainers) {
-                    if (molContainer.visible) {
+                for (const treeNode of treeNodes) {
+                    if (treeNode.visible) {
                         visibleTerminalNodeModelsIds.push(
-                            molContainer.id as string
+                            treeNode.id as string
                         );
                     }
 
-                    if (!molContainer.viewerDirty) {
+                    if (!treeNode.viewerDirty) {
                         // If the container isn't dirty, there's no need to apply a
                         // new style.
                         continue;
                     }
 
                     // You're about to update the style, so mark it as not dirty.
-                    molContainer.viewerDirty = false;
+                    treeNode.viewerDirty = false;
 
                     // If mol is not visible, hide it.
-                    if (!molContainer.visible) {
+                    if (!treeNode.visible) {
                         // hide it.
                         api.visualization.viewer?.hideObject(
-                            molContainer.id as string
+                            treeNode.id as string
                         );
 
                         // Clear any surfaces associated with this molecule.
                         api.visualization.viewer?.clearSurfacesOfMol(
-                            molContainer.id as string
+                            treeNode.id as string
                         );
 
                         continue;
@@ -238,35 +235,35 @@ export default class ViewerPanel extends Vue {
 
                     // Make sure visible
                     api.visualization.viewer?.showObject(
-                        molContainer.id as string
+                        treeNode.id as string
                     );
 
                     // There are styles to apply. Apply them.
-                    if (molContainer.styles) {
+                    if (treeNode.styles) {
                         // Styles to apply, so make sure it's visible.
 
                         // Clear current styles
                         api.visualization.viewer?.clearMoleculeStyles(
-                            molContainer.id as string
+                            treeNode.id as string
                         );
 
                         // Clear any surfaces associated with this molecule.
                         api.visualization.viewer?.clearSurfacesOfMol(
-                            molContainer.id as string
+                            treeNode.id as string
                         );
 
                         // Add new styles
                         let spheresUsed = false;
-                        for (const style of molContainer.styles) {
+                        for (const style of treeNode.styles) {
                             if (!style["surface"]) {
                                 // It's a style, not a surface.
                                 const convertedStyle =
                                     api.visualization.viewer?.convertStyle(
                                         style,
-                                        molContainer
+                                        treeNode
                                     );
                                 api.visualization.viewer?.setMolecularStyle(
-                                    molContainer.id as string,
+                                    treeNode.id as string,
                                     api.visualization.viewer?.convertSelection(
                                         {}
                                     ),
@@ -283,11 +280,11 @@ export default class ViewerPanel extends Vue {
                             const convertedStyle =
                                 api.visualization.viewer?.convertStyle(
                                     style,
-                                    molContainer
+                                    treeNode
                                 );
                             surfacePromises.push(
                                 api.visualization.viewer?.addSurface(
-                                    molContainer.id as string,
+                                    treeNode.id as string,
                                     convertedStyle
                                 ) as Promise<any>
                             );
@@ -295,16 +292,16 @@ export default class ViewerPanel extends Vue {
 
                         // Regardless of specified style, anything not bound to other molecule
                         // should be visible.
-                        if (molContainer.styles.length > 0 && !spheresUsed) {
+                        if (treeNode.styles.length > 0 && !spheresUsed) {
                             // If there's any style, no style is spheres, make sure unbonded
                             // atoms are visible.
                             const convertedStyle =
                                 api.visualization.viewer?.convertStyle(
                                     unbondedAtomsStyle,
-                                    molContainer
+                                    treeNode
                                 );
                             api.visualization.viewer?.setMolecularStyle(
-                                molContainer.id as string,
+                                treeNode.id as string,
                                 api.visualization.viewer?.convertSelection({
                                     bonds: 0,
                                 }),
@@ -317,21 +314,21 @@ export default class ViewerPanel extends Vue {
                     }
 
                     // Visible, but no style specified. Is it a shape?
-                    if (molContainer.shape) {
+                    if (treeNode.shape) {
                         api.visualization.viewer?.updateShapeStyle(
-                            molContainer.id as string,
-                            molContainer.shape
+                            treeNode.id as string,
+                            treeNode.shape
                         );
                     }
 
                     // Visible, no styles, not a shape. This should never
                     // happen.
                     api.visualization.viewer?.setMolecularStyle(
-                        molContainer.id as string,
+                        treeNode.id as string,
                         api.visualization.viewer?.convertSelection({}),
                         api.visualization.viewer?.convertStyle(
                             { line: {} },
-                            molContainer
+                            treeNode
                         )
                     );
                     console.warn("error?");
@@ -354,13 +351,16 @@ export default class ViewerPanel extends Vue {
      */
     private _zoomPerFocus(visibleTerminalNodeModelsIds: string[]) {
         let molsToFocusIds: string[] = [];
-        for (const molContainer of getAllNodesFlattened(this.treeview)) {
-            if (molContainer.focused) {
-                if (!molContainer.nodes) {
+        const flatNodes = this.treeview.flattened;
+        for (let idx = 0; idx < flatNodes.length; idx++) {
+            const treeNode = flatNodes.get(idx);
+            if (treeNode.focused) {
+                if (!treeNode.nodes) {
                     // Already terminal
-                    molsToFocusIds = [molContainer.id as string];
+                    molsToFocusIds = [treeNode.id as string];
                 } else {
-                    molsToFocusIds = getTerminalNodes(molContainer.nodes).map(
+                    const children = treeNode.nodes;
+                    molsToFocusIds = children.filters.onlyTerminal.map(
                         (n) => n.id as string
                     ) as string[];
                 }

@@ -49,21 +49,26 @@ export function describeParameters(params: any): string {
     // It's just an object.
     const keys = Object.keys(params);
     keys.sort();
-    let txt = "";
-    for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        const val = params[key];
-        let paramDesc = describeParameters(val);
 
-        // Does paramDesc not represent a number? If so, put it in quotes.
-        if (!paramDesc.match(/^-?\d+(\.\d+)?$/)) {
-            paramDesc = `"${paramDesc}"`;
-        }
+    // eslint-disable-next-line sonarjs/prefer-immediate-return
+    const txt = "";
 
-        txt += `--${key} ${paramDesc}`;
-        if (i < keys.length - 1) {
-            txt += " ";
-        }
-    }
+    // TODO: Infinite recursion in some cases. Need to fix this.
+
+    // for (let i = 0; i < keys.length; i++) {
+    //     const key = keys[i];
+    //     const val = params[key];
+    //     let paramDesc = describeParameters(val);
+
+    //     // Does paramDesc not represent a number? If so, put it in quotes.
+    //     if (!paramDesc.match(/^-?\d+(\.\d+)?$/)) {
+    //         paramDesc = `"${paramDesc}"`;
+    //     }
+
+    //     txt += `--${key} ${paramDesc}`;
+    //     if (i < keys.length - 1) {
+    //         txt += " ";
+    //     }
+    // }
     return txt;
 }

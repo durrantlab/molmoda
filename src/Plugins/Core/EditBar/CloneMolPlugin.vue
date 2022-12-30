@@ -1,32 +1,29 @@
 <template>
-  <PluginComponent
-    ref="pluginComponent"
-    v-model="open"
-    title="Clone Molecule"
-    :intro="intro"
-    actionBtnTxt="Clone"
-    :userArgs="userArgs"
-    :pluginId="pluginId"
-    @onPopupDone="onPopupDone"
-    :hideIfDisabled="true"
-  ></PluginComponent>
+    <PluginComponent
+        ref="pluginComponent"
+        v-model="open"
+        title="Clone Molecule"
+        :intro="intro"
+        actionBtnTxt="Clone"
+        :userArgs="userArgs"
+        :pluginId="pluginId"
+        @onPopupDone="onPopupDone"
+        :hideIfDisabled="true"
+    ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import {
-  IContributorCredit,
-  ISoftwareCredit,
+    IContributorCredit,
+    ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
-import {
-  cloneMols,
-  getNodeAncestory,
-} from "@/UI/Navigation/TreeView/TreeUtils";
+import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
@@ -37,198 +34,191 @@ import { ITest } from "@/Testing/ParentPluginTestFuncs";
 
 /** CloneMolPlugin */
 @Options({
-  components: {
-    FormInput,
-    FormCheckBox,
-    FormWrapper,
-    PluginComponent,
-  },
+    components: {
+        FormInput,
+        FormCheckBox,
+        FormWrapper,
+        PluginComponent,
+    },
 })
 export default class CloneMolPlugin extends PluginParentClass {
-  menuPath = ["Edit", "Molecules", "Clone..."];
-  softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
-  ];
-  pluginId = "clonemol";
-  intro = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
+    menuPath = ["Edit", "Molecules", "Clone..."];
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [
+        {
+            name: "Jacob D. Durrant",
+            url: "http://durrantlab.com/",
+        },
+    ];
+    pluginId = "clonemol";
+    intro = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
 
-  userArgs: FormElement[] = [
-    {
-      id: "newName",
-      label: "",
-      val: "",
-      placeHolder: "Name of new cloned molecule",
-      validateFunc: (newName: string): boolean => {
-        return newName.length > 0;
-      },
-    } as IFormText,
-  ];
+    userArgs: FormElement[] = [
+        {
+            id: "newName",
+            label: "",
+            val: "",
+            placeHolder: "Name of new cloned molecule",
+            validateFunc: (newName: string): boolean => {
+                return newName.length > 0;
+            },
+        } as IFormText,
+    ];
 
-  nodesToActOn: IMolContainer[] = [getDefaultNodeToActOn()];
-  alwaysEnabled = true;
-  logJob = false;
+    nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
+    alwaysEnabled = true;
+    logJob = false;
 
-  /**
-   * Runs before the popup opens. Good for initializing/resenting variables
-   * (e.g., clear inputs from previous open).
-   */
-  public onBeforePopupOpen(): void {
-    setNodesToActOn(this);
+    /**
+     * Runs before the popup opens. Good for initializing/resenting variables
+     * (e.g., clear inputs from previous open).
+     */
+    public onBeforePopupOpen(): void {
+        setNodesToActOn(this);
 
-    const nodeToActOn = (this.nodesToActOn as IMolContainer[])[0];
+        const nodeToActOn = (this.nodesToActOn as TreeNodeList).get(0);
 
-    // Get top of molecule title.
-    let title = getNodeAncestory(
-      nodeToActOn.id as string,
-      this.$store.state.molecules
-    )[0].title;
+        // Get top of molecule title.
+        let title = nodeToActOn
+            .getAncestry(this.$store.state.molecules)
+            .get(0).title;
 
-    this.updateUserArgs([
-      {
-        name: "newName",
-        // val: title + ":" + nodeToActOn.title + " (cloned)",
-        val: title + " (cloned)",
-      } as IUserArg,
-    ]);
-  }
-
-  /**
-   * Check if this plugin can currently be used.
-   *
-   * @returns {string | null}  If it returns a string, show that as an error
-   *     message. If null, proceed to run the plugin.
-   */
-  checkPluginAllowed(): string | null {
-    return checkOneMolSelected(this as any);
-  }
-
-  /**
-   * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
-   */
-  runJobInBrowser(userArgs: IUserArg[]) {
-    if (!this.nodesToActOn) {
-      // Nothing to do.
-      return;
+        this.updateUserArgs([
+            {
+                name: "newName",
+                // val: title + ":" + nodeToActOn.title + " (cloned)",
+                val: title + " (cloned)",
+            } as IUserArg,
+        ]);
     }
 
-    // debugging below
-    cloneMols(this.nodesToActOn, true)
-      .then((molContainers: IMolContainer[]) => {
-        const node = molContainers[0];
-        node.title = this.getArg(userArgs, "newName");
-        this.$store.commit("pushToList", {
-          name: "molecules",
-          val: node,
-        });
-        return;
-      })
-      .catch((err) => {
-        throw err;
-      });
+    /**
+     * Check if this plugin can currently be used.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
+    checkPluginAllowed(): string | null {
+        return checkOneMolSelected();
+    }
 
-    // debugger  // Replace below with cloneMols when ready.
+    /**
+     * Every plugin runs some job. This is the function that does the job running.
+     *
+     * @param {IUserArg[]} userArgs  The user arguments.
+     */
+    runJobInBrowser(userArgs: IUserArg[]) {
+        if (!this.nodesToActOn) {
+            // Nothing to do.
+            return;
+        }
 
-    // let nodeToActOn: IMolContainer;
-    // let clonedNode: Promise<IMolContainer>;
+        // debugging below
+        cloneMolsWithAncestry(this.nodesToActOn, true)
+            .then((treeNodeList: TreeNodeList) => {
+                const node = treeNodeList.get(0);
+                node.title = this.getArg(userArgs, "newName");
+                this.$store.commit("pushToMolecules", node);
+                return;
+            })
+            .catch((err) => {
+                throw err;
+            });
 
-    // // Cloning the molecule. Make a deep copy of the node.
-    // nodeToActOn = modelsToAtoms(this.nodesToActOn[0]);
-    // clonedNode = atomsToModels(nodeToActOn).then((newestNode) => {
-    //   return newestNode;
-    // });
+        // debugger  // Replace below with cloneMolsWithAncestry when ready.
 
-    // clonedNode
-    //   .then((node) => {
-    //     // Get the nodes ancestory
-    //     let nodeGenealogy: IMolContainer[] = getNodeAncestory(
-    //       node.id as string,
-    //       this.$store.state.molecules
-    //     );
+        // let nodeToActOn: TreeNode;
+        // let clonedNode: Promise<TreeNode>;
 
-    //     // Make copies of all the nodes in the ancestory, emptying the nodes
-    //     // except for the last one.
-    //     for (let i = 0; i < nodeGenealogy.length; i++) {
-    //       nodeGenealogy[i] = {
-    //         ...nodeGenealogy[i],
-    //       };
+        // // Cloning the molecule. Make a deep copy of the node.
+        // nodeToActOn = modelsToAtoms(this.nodesToActOn[0]);
+        // clonedNode = atomsToModels(nodeToActOn).then((newestNode) => {
+        //   return newestNode;
+        // });
 
-    //       if (i < nodeGenealogy.length - 1) {
-    //         nodeGenealogy[i].nodes = [];
-    //       }
-    //     }
+        // clonedNode
+        //   .then((node) => {
+        //     // Get the nodes ancestory
+        //     let nodeGenealogy: TreeNode[] = getNodeAncestory(
+        //       node.id as string,
+        //       this.$store.state.molecules
+        //     );
 
-    //     // Place each node in the ancestory under the next node.
-    //     for (let i = 0; i < nodeGenealogy.length - 1; i++) {
-    //       nodeGenealogy[i].nodes?.push(nodeGenealogy[i + 1]);
+        //     // Make copies of all the nodes in the ancestory, emptying the nodes
+        //     // except for the last one.
+        //     for (let i = 0; i < nodeGenealogy.length; i++) {
+        //       nodeGenealogy[i] = {
+        //         ...nodeGenealogy[i],
+        //       };
 
-    //       // Also, parentId
-    //       nodeGenealogy[i + 1].parentId = nodeGenealogy[i].id;
-    //     }
+        //       if (i < nodeGenealogy.length - 1) {
+        //         nodeGenealogy[i].nodes = [];
+        //       }
+        //     }
 
-    //     const topNode = nodeGenealogy[0];
+        //     // Place each node in the ancestory under the next node.
+        //     for (let i = 0; i < nodeGenealogy.length - 1; i++) {
+        //       nodeGenealogy[i].nodes?.push(nodeGenealogy[i + 1]);
 
-    //     // Now you must redo all ids because they could be distinct from the
-    //     // original copy.
-    //     const allNodesFlattened = [topNode];
-    //     if (topNode.nodes) {
-    //       allNodesFlattened.push(...getAllNodesFlattened(topNode.nodes));
-    //     }
-    //     const oldIdToNewId = new Map<string, string>();
-    //     for (const node of allNodesFlattened) {
-    //       oldIdToNewId.set(node.id as string, randomID());
-    //     }
-    //     for (const node of allNodesFlattened) {
-    //       node.id = oldIdToNewId.get(node.id as string);
-    //       if (node.parentId) {
-    //         node.parentId = oldIdToNewId.get(node.parentId);
-    //       }
-    //       node.selected = SelectedType.False;
-    //       node.viewerDirty = true;
-    //       node.focused = false;
-    //     }
+        //       // Also, parentId
+        //       nodeGenealogy[i + 1].parentId = nodeGenealogy[i].id;
+        //     }
 
-    //     // Update title of new node tree.
-    //     topNode.title = this.getArg(userArgs, "newName");
+        //     const topNode = nodeGenealogy[0];
 
-    //     this.$store.commit("pushToList", {
-    //       name: "molecules",
-    //       val: topNode,
-    //     });
-    //     return;
-    //   })
-    //   .catch((err: any) => {
-    //     throw err;
-    //   });
-  }
+        //     // Now you must redo all ids because they could be distinct from the
+        //     // original copy.
+        //     const allNodesFlattened = [topNode];
+        //     if (topNode.nodes) {
+        //       allNodesFlattened.push(...getAllNodesFlattened(topNode.nodes));
+        //     }
+        //     const oldIdToNewId = new Map<string, string>();
+        //     for (const node of allNodesFlattened) {
+        //       oldIdToNewId.set(node.id as string, randomID());
+        //     }
+        //     for (const node of allNodesFlattened) {
+        //       node.id = oldIdToNewId.get(node.id as string);
+        //       if (node.parentId) {
+        //         node.parentId = oldIdToNewId.get(node.parentId);
+        //       }
+        //       node.selected = SelectedType.False;
+        //       node.viewerDirty = true;
+        //       node.focused = false;
+        //     }
 
-  /**
-   * Gets the selenium test commands for the plugin. For advanced use.
-   *
-   * @gooddefault
-   * @document
-   * @returns {ITest[]}  The selenium test commandss.
-   */
-  getTests(): ITest[] {
-    return [
-      // First test cloning
-      {
-        beforePluginOpens: [
-          this.testLoadExampleProtein(),
-          ...this.testExpandMoleculesTree("4WP4"),
-          this.testSelectMoleculeInTree("Protein"),
-        ],
-        afterPluginCloses: [
-          this.testWaitForRegex("#navigator", ".cloned."),
-        ],
-      },
-    ];
-  }
+        //     // Update title of new node tree.
+        //     topNode.title = this.getArg(userArgs, "newName");
+
+        //     this.$store.commit("pushToMolecules", topNode);
+        //     return;
+        //   })
+        //   .catch((err: any) => {
+        //     throw err;
+        //   });
+    }
+
+    /**
+     * Gets the selenium test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commandss.
+     */
+    getTests(): ITest[] {
+        return [
+            // First test cloning
+            {
+                beforePluginOpens: [
+                    this.testLoadExampleProtein(),
+                    ...this.testExpandMoleculesTree("4WP4"),
+                    this.testSelectMoleculeInTree("Protein"),
+                ],
+                afterPluginCloses: [
+                    this.testWaitForRegex("#navigator", ".cloned."),
+                ],
+            },
+        ];
+    }
 }
 </script>
 

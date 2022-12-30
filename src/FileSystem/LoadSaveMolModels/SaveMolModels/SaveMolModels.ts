@@ -9,6 +9,7 @@ import {
     ICmpdNonCmpdFileInfos,
 } from "./Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * Compiles (organizes) all the molecules, separating compounds if appropriate.
@@ -59,7 +60,7 @@ export function convertCompiledMolModelsToIFileInfos(
     if (compiledNodes.compoundsNodes) {
         compoundPromises = compiledNodes.compoundsNodes.map((node) =>
             // Note that compounds never merged
-            getConvertedTxts([node], compoundTargetExt, false)
+            getConvertedTxts(new TreeNodeList([node]), compoundTargetExt, false)
         );
     }
 

@@ -1,7 +1,5 @@
-import {
-    IMolContainer,
-    SelectedType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // /**
 //  * Whether a given molsToUse variable includes visible molecules. (Basically,
@@ -37,13 +35,12 @@ import {
  * Whether a given molecule is selected. It can be directly selected, or the
  * child of a selected molecule.
  *
- * @param  {IMolContainer} mol  The molecule to check.
+ * @param  {TreeNode} mol  The molecule to check.
  * @returns {boolean}  Whether the molecule is selected.
  */
-function isMolSelected(mol: IMolContainer): boolean {
+function isMolSelected(mol: TreeNode): boolean {
     return (
         [SelectedType.ChildOfTrue, SelectedType.True].indexOf(mol.selected) !==
         -1
     );
 }
-

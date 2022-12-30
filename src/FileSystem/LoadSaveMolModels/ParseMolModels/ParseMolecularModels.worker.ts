@@ -6,15 +6,10 @@ import {
 
 import {
     IAtom,
-    IMolContainer,
     IStyle,
     MolType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    getAllNodesFlattened,
-    getTerminalNodes,
-} from "@/UI/Navigation/TreeView/TreeUtils";
 import { randomID } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import {
@@ -37,6 +32,8 @@ import {
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 let glviewer: any;
 
@@ -54,12 +51,12 @@ const COLLAPSE_ONE_NODE_LEVELS = false;
  *                                                           container.
  * @param  {NodesOrModel} [nodesOrModel=NodesOrModel.NODES]  Whether to generate
  *                                                           nodes or model.
- * @returns {IMolContainer}  The default mol container.
+ * @returns {TreeNode}  The default mol container.
  */
-function _getDefaultMolContainer(
+function _getDefaultTreeNode(
     molName: string,
     nodesOrModel = NodesOrModel.Nodes
-): IMolContainer {
+): TreeNode {
     let obj = {
         title: molName,
         viewerDirty: true,
@@ -73,10 +70,10 @@ function _getDefaultMolContainer(
         ...obj,
         ...(nodesOrModel === NodesOrModel.Model
             ? { model: [] }
-            : { nodes: [] }),
+            : { nodes: new TreeNodeList() }),
     };
 
-    return obj as IMolContainer;
+    return new TreeNode(obj);
 }
 
 /**
@@ -88,13 +85,9 @@ function _getDefaultMolContainer(
  *                           specified by sel end up getting removed, because
  *                           the function moves them into their own molecules.
  * @param  {string}  molName The name of the entry.
- * @returns {IMolContainer} The molecule with the chains.
+ * @returns {TreeNode} The molecule with the chains.
  */
-function organizeSelByChain(
-    sel: any,
-    mol: GLModel,
-    molName: string
-): IMolContainer {
+function organizeSelByChain(sel: any, mol: GLModel, molName: string): TreeNode {
     let selectedAtoms = mol.selectedAtoms(sel);
 
     // If chain is " " for any atom, set it to "X"
@@ -105,47 +98,49 @@ function organizeSelByChain(
         return atom;
     });
 
-    const molContainer: IMolContainer = _getDefaultMolContainer(molName);
+    const treeNode = _getDefaultTreeNode(molName);
     let lastChainID = "";
     selectedAtoms.forEach((atom: IAtom) => {
-        const nodes = molContainer.nodes as IMolContainer[];
+        const nodeList = treeNode.nodes as TreeNodeList;
         if (atom.chain !== lastChainID) {
-            nodes.push({
-                title: atom.chain,
-                model: [],
-                viewerDirty: true,
-                treeExpanded: false,
-                visible: true,
-                selected: SelectedType.False,
-                focused: false,
-            });
+            nodeList.push(
+                new TreeNode({
+                    title: atom.chain,
+                    model: [],
+                    viewerDirty: true,
+                    treeExpanded: false,
+                    visible: true,
+                    selected: SelectedType.False,
+                    focused: false,
+                })
+            );
             lastChainID = atom.chain;
         }
 
-        (nodes[nodes.length - 1].model as IAtom[]).push(atom);
+        (nodeList.get(nodeList.length - 1).model as IAtom[]).push(atom);
     });
     mol.removeAtoms(selectedAtoms);
 
-    return molContainer;
+    return treeNode;
 }
 
 /**
  * Some molecular components don't need chains (e.g., solvents and ions). This
  * function flattens chains.
  *
- * @param  {IMolContainer} molContainer The molecule (with chains) to flatten.
- * @returns {IMolContainer} The flattened molecule.
+ * @param  {TreeNode} treeNode The molecule (with chains) to flatten.
+ * @returns {TreeNode} The flattened molecule.
  */
-function flattenChains(molContainer: IMolContainer): IMolContainer {
-    if (!molContainer.nodes) {
-        throw new Error("No nodes found in molContainer.");
+function flattenChains(treeNode: TreeNode): TreeNode {
+    if (!treeNode.nodes) {
+        throw new Error("No nodes found in treeNode.");
     }
-    const flattened: IMolContainer = _getDefaultMolContainer(
-        molContainer.title,
+    const flattened = _getDefaultTreeNode(
+        treeNode.title,
         NodesOrModel.Model
     );
 
-    molContainer.nodes.forEach((chain: IMolContainer) => {
+    treeNode.nodes.forEach((chain: TreeNode) => {
         if (!chain.model) {
             throw new Error("No atoms found in chain.");
         }
@@ -169,27 +164,25 @@ function residueID(atom: IAtom): string {
  * In some cases, it's useful to further divide chains into residues (e.g.,
  * small-molecule compounds).
  *
- * @param  {IMolContainer} molContainer The molecule to divide.
- * @returns {IMolContainer} The divided molecule.
+ * @param  {TreeNode} treeNode The molecule to divide.
+ * @returns {TreeNode} The divided molecule.
  */
-function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
-    if (!molContainer.nodes) {
-        return molContainer;
+function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
+    if (!treeNode.nodes) {
+        return treeNode;
     }
 
-    const dividedMolEntry: IMolContainer = _getDefaultMolContainer(
-        molContainer.title
-    );
+    const dividedMolEntry = _getDefaultTreeNode(treeNode.title);
 
     let lastChainID = "";
-    molContainer.nodes.forEach((chain: IMolContainer) => {
+    treeNode.nodes.forEach((chain: TreeNode) => {
         if (!chain.model) {
             // Already divided apparently.
             return;
         }
 
         if (chain.title !== lastChainID) {
-            dividedMolEntry.nodes?.push(_getDefaultMolContainer(chain.title));
+            dividedMolEntry.nodes?.push(_getDefaultTreeNode(chain.title));
             lastChainID = chain.title;
         }
 
@@ -199,7 +192,7 @@ function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
             if (!chains) {
                 throw new Error("No chains found in dividedMolEntry.");
             }
-            const residues = chains[chains.length - 1].nodes;
+            const residues = chains.get(chains.length - 1).nodes;
             if (!residues) {
                 // Always exists. This here for typechecker.
                 throw new Error("No residues found in dividedMolEntry.");
@@ -208,11 +201,11 @@ function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
             const newKey = residueID(atom);
             if (newKey !== lastResidueID) {
                 residues.push(
-                    _getDefaultMolContainer(newKey, NodesOrModel.Model)
+                    _getDefaultTreeNode(newKey, NodesOrModel.Model)
                 );
                 lastResidueID = newKey;
             }
-            const atoms = residues[residues.length - 1].model as IAtom[];
+            const atoms = residues.get(residues.length - 1).model as IAtom[];
             if (atoms) {
                 atoms.push(atom);
             }
@@ -225,27 +218,27 @@ function divideChainsIntoResidues(molContainer: IMolContainer): IMolContainer {
  * If any molecule has a list of 1 submolecules, collapse it so one molecule,
  * merging the titles.
  *
- * @param  {IMolContainer} molContainer            The molecule to collapse.
+ * @param  {TreeNode} treeNode            The molecule to collapse.
  * @param  {boolean}       [childTitleFirst=false] When creating the merged
  *                                                 title, but the name of the
  *                                                 child molecule first.
- * @returns {IMolContainer} The collapsed molecule.
+ * @returns {TreeNode} The collapsed molecule.
  */
 function collapseSingles(
-    molContainer: IMolContainer,
+    treeNode: TreeNode,
     childTitleFirst = false
-): IMolContainer {
-    if (molContainer.nodes) {
+): TreeNode {
+    if (treeNode.nodes) {
         let anyNodeMerged = true;
         while (anyNodeMerged) {
             anyNodeMerged = false;
 
-            const allNodes = getAllNodesFlattened([molContainer]);
-            allNodes.forEach((anyNode: IMolContainer) => {
-                const anyNodeNodes = anyNode.nodes as IMolContainer[];
+            const allNodes = new TreeNodeList([treeNode]).flattened;
+            allNodes.forEach((anyNode: TreeNode) => {
+                const anyNodeNodes = anyNode.nodes as TreeNodeList;
                 if (anyNode.nodes && anyNodeNodes.length === 1) {
                     // 1 child node
-                    const childNode = anyNodeNodes[0];
+                    const childNode = anyNodeNodes.get(0);
                     anyNode.title = childTitleFirst
                         ? `${childNode.title}:${anyNode.title}`
                         : `${anyNode.title}:${childNode.title}`;
@@ -267,47 +260,47 @@ function collapseSingles(
     // Now for some purly cosmetic changes to the top-level menu items. (test
     // 1HU4, 1XDN, and 2HU4).
 
-    if (molContainer.title.endsWith(":Compound")) {
-        if (!molContainer.nodes || molContainer.nodes.length === 0) {
+    if (treeNode.title.endsWith(":Compound")) {
+        if (!treeNode.nodes || treeNode.nodes.length === 0) {
             // It has no children. Remove the "Compound" suffix.
-            molContainer.title = molContainer.title.substring(
+            treeNode.title = treeNode.title.substring(
                 0,
-                molContainer.title.length - 9
+                treeNode.title.length - 9
             );
         } else {
             // It has children. Probably looks like "X:Compound"
-            molContainer.title = molContainer.title.split(":")[1];
+            treeNode.title = treeNode.title.split(":")[1];
         }
     } else {
         // Looks like "Protein:A". Remove chain.
-        molContainer.title = molContainer.title.split(":")[0];
+        treeNode.title = treeNode.title.split(":")[0];
     }
 
-    return molContainer;
+    return treeNode;
 }
 
 /**
  * Adds the molecule type, style, and selections.
  *
- * @param  {IMolContainer}  molContainer  The molecule to add the type and style
+ * @param  {TreeNode}  treeNode  The molecule to add the type and style
  *                                        to.
  * @param  {IStyle[]} stylesAndSels The styles and selections to add.
  */
-function addMolTypeAndStyle(
-    molContainer: IMolContainer,
-    stylesAndSels: IStyle[]
-) {
-    const molType = molContainer.type;
-    for (const mol of getTerminalNodes([molContainer])) {
+function addMolTypeAndStyle(treeNode: TreeNode, stylesAndSels: IStyle[]) {
+    const molType = treeNode.type;
+    new TreeNodeList([treeNode]).filters.onlyTerminal.forEach((mol: TreeNode) => {
         mol.type = molType;
         mol.styles = stylesAndSels;
-    }
-    for (const mol of getAllNodesFlattened([molContainer])) {
-        mol.id = randomID();
-        mol.treeExpanded = false;
-        mol.visible = true;
-        mol.viewerDirty = true;
-    }
+    });
+
+    new TreeNodeList([treeNode]).flattened.forEach(
+        (mol: TreeNode) => {
+            mol.id = randomID();
+            mol.treeExpanded = false;
+            mol.visible = true;
+            mol.viewerDirty = true;
+        }
+    );
 }
 
 /**
@@ -418,15 +411,15 @@ function divideMolTxtIntoFrames(
 // }
 
 /**
- * Given molecular data from the main thread, convert it into a IMolContainer
- * object divided by component (protien, compound, solvent, etc.).
+ * Given molecular data from the main thread, convert it into a TreeNode object
+ * divided by component (protien, compound, solvent, etc.).
  *
  * @param  {IMolData} data The molecular data.
- * @returns {Promise<IMolContainer>} The divided molecule.
+ * @returns {Promise<TreeNode>} The divided molecule.
  */
 function divideAtomsIntoDistinctComponents(
     data: IMolData
-): Promise<IMolContainer[]> {
+): Promise<TreeNodeList> {
     // Any molecules that share bonds are the same component.
 
     // Get the format
@@ -439,7 +432,7 @@ function divideAtomsIntoDistinctComponents(
             glviewer = $3Dmol.createViewer("", {});
         }
 
-        const fileContentsAllFrames: IMolContainer[] = [];
+        const fileContentsAllFrames: TreeNodeList = new TreeNodeList();
 
         for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
             const frame = frames[frameIdx];
@@ -477,10 +470,8 @@ function divideAtomsIntoDistinctComponents(
             compoundsByChain = divideChainsIntoResidues(compoundsByChain);
 
             // You don't need to divide solvent and ions by chain.
-            const solventAtomsNoChain: IMolContainer =
-                flattenChains(solventAtomsByChain);
-            const ionAtomsNoChain: IMolContainer =
-                flattenChains(ionAtomsByChain);
+            const solventAtomsNoChain = flattenChains(solventAtomsByChain);
+            const ionAtomsNoChain = flattenChains(ionAtomsByChain);
 
             // For everything else, if given chain has one item, collapse it.
             if (COLLAPSE_ONE_NODE_LEVELS) {
@@ -514,14 +505,14 @@ function divideAtomsIntoDistinctComponents(
             // }
 
             // Page into single object
-            let fileContents: IMolContainer = {
+            let fileContents = new TreeNode({
                 title: molName,
                 viewerDirty: true,
                 treeExpanded: false,
                 visible: true,
                 focused: false,
                 selected: SelectedType.False,
-                nodes: [
+                nodes: new TreeNodeList([
                     proteinAtomsByChain,
                     nucleicAtomsByChain,
                     compoundsByChain,
@@ -529,8 +520,8 @@ function divideAtomsIntoDistinctComponents(
                     lipidAtomsByChain,
                     ionAtomsNoChain,
                     solventAtomsNoChain,
-                ],
-            };
+                ]),
+            });
 
             fileContents = cleanUpFileContents(fileContents);
 
@@ -542,18 +533,18 @@ function divideAtomsIntoDistinctComponents(
 }
 
 /**
- * Clean up the molContainer in preparation for sending it back to the main
+ * Clean up the treeNode in preparation for sending it back to the main
  * worker.
  *
- * @param  {IMolContainer} molContainer The molContainer to clean up.
- * @returns {IMolContainer} The cleaned up molContainer.
+ * @param  {TreeNode} treeNode The treeNode to clean up.
+ * @returns {TreeNode} The cleaned up treeNode.
  */
-function cleanUpFileContents(molContainer: IMolContainer): IMolContainer {
-    if (molContainer.nodes) {
+function cleanUpFileContents(treeNode: TreeNode): TreeNode {
+    if (treeNode.nodes) {
         // Iterate through organizedAtoms. If object and has no keys, remove it.
         // If list and has length 0, remove it.
         // mol_filter_ok
-        molContainer.nodes = molContainer.nodes.filter((m: IMolContainer) => {
+        treeNode.nodes = treeNode.nodes.filter((m: TreeNode) => {
             let totalSubItems = 0;
             totalSubItems += m.nodes ? m.nodes.length : 0;
             totalSubItems += m.model ? (m.model as IAtom[]).length : 0;
@@ -562,7 +553,7 @@ function cleanUpFileContents(molContainer: IMolContainer): IMolContainer {
 
         // Clean up issues. If it's text has "undefined:", replace that with "".
         // If it has more than one node, add plural to text in some cases.
-        for (const m of molContainer.nodes) {
+        treeNode.nodes?.forEach((m: TreeNode) => {
             if (
                 m.nodes &&
                 m.nodes.length > 0 &&
@@ -576,26 +567,26 @@ function cleanUpFileContents(molContainer: IMolContainer): IMolContainer {
                 m.title = m.title.replace(/undefined:/g, "");
             }
             m.title = m.title.replace(/undefined /g, "");
-        }
+        });
     }
 
     if (COLLAPSE_ONE_NODE_LEVELS) {
-        molContainer = collapseSingles(molContainer);
+        treeNode = collapseSingles(treeNode);
     }
 
-    return molContainer;
+    return treeNode;
 }
 
 /**
  * Adds the parent ids to the nodes.
  *
- * @param  {IMolContainer} molContainer The molContainer to add the ids to.
+ * @param  {TreeNode} treeNode  The treeNode to add the ids to.
  */
-function addParentIds(molContainer: IMolContainer) {
-    const allNodes = getAllNodesFlattened([molContainer]);
-    allNodes.forEach((anyNode: IMolContainer) => {
+function addParentIds(treeNode: TreeNode) {
+    const allNodes = new TreeNodeList([treeNode]).flattened;
+    allNodes.forEach((anyNode: TreeNode) => {
         if (anyNode.nodes && anyNode.nodes.length > 0) {
-            anyNode.nodes.forEach((node: IMolContainer) => {
+            anyNode.nodes.forEach((node: TreeNode) => {
                 node.parentId = anyNode.id;
             });
         }
@@ -605,8 +596,8 @@ function addParentIds(molContainer: IMolContainer) {
         // const title = Math.random() < 0.5 ? "Atoms" : "Atomz";
         // anyNode.data[title] = {
         //     data: { x: Math.random() },
-        //     type: MolContainerDataType.Table,
-        // } as IMolContainerData;
+        //     type: TreeNodeDataType.Table,
+        // } as ITreeNodeData;
 
         // if (Math.random() < 0.5) {
         //     anyNode.data[title].data.y = Math.random();
@@ -618,17 +609,17 @@ function addParentIds(molContainer: IMolContainer) {
 
 waitForDataFromMainThread()
     .then((data: IMolData) => divideAtomsIntoDistinctComponents(data))
-    .then((organizedAtomsFrames: IMolContainer[]) => {
-        let organizedAtomsFramesFixed: IMolContainer[] = [];
-        for (const organizedAtoms of organizedAtomsFrames) {
+    .then((organizedAtomsFrames: TreeNodeList) => {
+        let organizedAtomsFramesFixed = new TreeNodeList();
+        organizedAtomsFrames.forEach((organizedAtoms: TreeNode) => {
             organizedAtoms.id = randomID();
 
-            const nodesToConsider: IMolContainer[] = [organizedAtoms];
+            const nodesToConsider = new TreeNodeList([organizedAtoms]);
             if (organizedAtoms.nodes) {
-                nodesToConsider.push(...organizedAtoms.nodes);
+                nodesToConsider.extend(organizedAtoms.nodes);
             }
 
-            for (const node of nodesToConsider) {
+            nodesToConsider.forEach((node) => {
                 switch (node.type) {
                     case MolType.Protein:
                         addMolTypeAndStyle(node, proteinStyle);
@@ -652,20 +643,23 @@ waitForDataFromMainThread()
                         addMolTypeAndStyle(node, solventStyle);
                         break;
                 }
-            }
+            });
 
             addParentIds(organizedAtoms);
 
             organizedAtomsFramesFixed.push(organizedAtoms);
-        }
+        });
 
         organizedAtomsFramesFixed = organizedAtomsFramesFixed.filter(
-            (o) =>
-                (o.nodes && o.nodes.length > 0) ||
-                (o.model && (o.model as IAtom[]).length > 0)
+            (o: TreeNode) => {
+                const hasNodes = o.nodes !== undefined && o.nodes.length > 0;
+                const hasModel =
+                    o.model !== undefined && (o.model as IAtom[]).length > 0;
+                return hasNodes || hasModel;
+            }
         );
 
-        sendResponseToMainThread(organizedAtomsFramesFixed);
+        sendResponseToMainThread(organizedAtomsFramesFixed.serialize());
 
         return;
     })

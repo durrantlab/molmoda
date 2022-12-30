@@ -12,8 +12,8 @@ export interface IUserArg {
 
 /**
  * Converts the data structure used to render forms into a flat array of
- * IUserArg.
- * 
+ * IUserArg. Also removes any alert messages.
+ *
  * @param  {FormElement[]} formElements The form elements to convert.
  * @returns {IUserArg[]} The converted array of IUserArg.
  */
@@ -23,6 +23,11 @@ export function collapseFormElementArray(
     const data: IUserArg[] = [];
 
     const getData = (elems: FormElement[]) => {
+        // No need to keep the alerts.
+        elems = elems.filter((elem) => {
+            return elem.type !== FormElemType.Alert;
+        });
+
         for (const elem of elems) {
             if (elem.type === FormElemType.Group) {
                 getData((elem as IFormGroup).childElements);

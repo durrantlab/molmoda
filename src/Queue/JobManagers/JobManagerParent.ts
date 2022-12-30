@@ -2,9 +2,9 @@
 // commands to the EndPoint API (whether a remote url or the in-browser queue
 // system).
 
-import { parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { getFileType } from "@/FileSystem/Utils2";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import {
     EndpointResponseStatus,
     IEndpointResponse,
@@ -72,7 +72,7 @@ export abstract class JobManagerParent {
                                 // Is it some sort of loadable file?
                                 if (getFormatInfoGivenType(ext) !== undefined) {
                                     // It's a molecule format. Load it.
-                                    parseMoleculeFile(outputFile);
+                                    getMoleculesFromStore().load(outputFile)
                                 }
                             }
                         }

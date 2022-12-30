@@ -2,7 +2,7 @@ import {
     sendResponseToMainThread,
     waitForDataFromMainThread,
 } from "@/Core/WebWorkers/WorkerHelper";
-import { MolContainerDataType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeDataType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     lipinskiTitle,
     countsTitle,
@@ -31,8 +31,20 @@ waitForDataFromMainThread()
         const resps = [];
 
         for (const smiles of smilesStrs) {
+            // If * in smiles, skip
+            if (smiles.indexOf("*") !== -1) {
+                return;
+            }
+
             const mol = RDKitModule.get_mol(smiles);
-            const descriptors = JSON.parse(mol.get_descriptors());
+            let descriptors: {[key: string]: any} = {};
+            try {
+                descriptors = JSON.parse(mol.get_descriptors());
+            } catch (err) {
+                // This happens if bad SMILES is provided.
+                return;
+            }
+
             const descriptorsSorted = Object.keys(descriptors)
                 .sort(function (a, b) {
                     return a.localeCompare(b, undefined, {
@@ -170,9 +182,9 @@ waitForDataFromMainThread()
 
             // Map onto object, where keyes are first element, vals, are second.
             // const descriptorsObj = Object.fromEntries(descriptorsFiltered);
-            const molContainerData: { [key: string]: any } = {};
+            const treeNodeData: { [key: string]: any } = {};
 
-            if (params.formatForMolContainer) {
+            if (params.formatForTreeNode) {
                 const lipinskiData: { [key: string]: any } = {};
                 for (const d of lipinskiDescriptors) {
                     lipinskiData[d[0] as string] = d[1];
@@ -188,19 +200,19 @@ waitForDataFromMainThread()
                     otherData[d[0] as string] = d[1];
                 }
 
-                molContainerData[lipinskiTitle] = {
+                treeNodeData[lipinskiTitle] = {
                     data: lipinskiData,
-                    type: MolContainerDataType.Table,
+                    type: TreeNodeDataType.Table,
                 };
 
-                molContainerData[countsTitle] = {
+                treeNodeData[countsTitle] = {
                     data: countsData,
-                    type: MolContainerDataType.Table,
+                    type: TreeNodeDataType.Table,
                 };
 
-                molContainerData[otherTitle] = {
+                treeNodeData[otherTitle] = {
                     data: otherData,
-                    type: MolContainerDataType.Table,
+                    type: TreeNodeDataType.Table,
                 };
             }
 
@@ -210,7 +222,7 @@ waitForDataFromMainThread()
                     counts: countsDescriptors,
                     other: otherDescriptors,
                 } as ICalcMolProps,
-                molContainerData,
+                treeNodeData,
             });
         }
 

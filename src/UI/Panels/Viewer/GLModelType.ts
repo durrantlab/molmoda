@@ -6,4 +6,6 @@ export interface GLModel {
     hide: Function;
     show: Function;
     setStyle: Function;
+    setClickable: Function;
+    setHoverable: Function;
 }

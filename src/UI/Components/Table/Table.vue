@@ -1,6 +1,6 @@
 <template>
   <div style="border: 1px solid #dfe2e6" class="mb-3">
-    <span v-if="tableDataToUse.headers.length > 0" class="table-title ps-1">
+    <span v-if="tableDataToUse.headers.length > 0" class="table-title px-2">
       {{ caption }}
     </span>
     <slot name="afterHeader"></slot>
@@ -10,7 +10,7 @@
       <table
         :class="
           'table table-striped table-hover table-sm mb-0 pb-0 table-borderless' +
-          (allowTextWrap ? '' : ' fixed-table')
+          (noFixedTable ? '' : ' fixed-table')
         "
       >
         <!-- style="border-top: 1px solid #dfe2e6;" -->
@@ -23,9 +23,9 @@
             <th
               v-for="header of tableDataToUse.headers"
               v-bind:key="header.text"
-              class="sticky-header pe-3"
+              class="sticky-header px-2 cell"
               :style="
-                'font-weight: 550; white-space: nowrap;' +
+                'font-weight: 550;' +
                 (header.width ? 'width:' + header.width + 'px;' : '') +
                 (isHeaderSortable(header) ? 'cursor: pointer;' : '')
               "
@@ -46,7 +46,7 @@
         </thead>
         <tfoot>
           <tr>
-            <td :colspan="tableData.headers.length">
+            <td :colspan="tableData.headers.length" class="px-2">
               Download as <a @click.prevent="download('csv')" href="#">CSV</a>,
               <a @click.prevent="download('xlsx')" href="#">XLSX</a>, or
               <a @click.prevent="download('json')" href="#">JSON</a>
@@ -59,6 +59,7 @@
               v-for="header of tableDataToUse.headers"
               v-bind:key="header.text"
               @click="rowClicked(rowIdx)"
+              class="cell px-2"
               :style="clickableRows ? 'cursor: pointer;' : ''"
             >
               {{ getCell(row[header.text]).val }}
@@ -103,7 +104,7 @@ export default class Table extends Vue {
   @Prop({ default: { headers: [], rows: [] } }) tableData!: ITableData;
   @Prop({ default: 2 }) precision!: number;
   @Prop({ default: "" }) caption!: string;
-  @Prop({ default: true }) allowTextWrap!: boolean;
+  @Prop({ default: true }) noFixedTable!: boolean;
   @Prop({ default: false }) clickableRows!: boolean;
 
   sortColumnName = "";
@@ -384,6 +385,10 @@ table {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.cell {
+  white-space: nowrap;
 }
 </style>
   

@@ -1,50 +1,41 @@
-import { convertMolContainers } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/ConvertMolContainer";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import {
-    IMolContainer,
-    MolType,
-    SelectedType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
-import {
-    extractFlattenedContainers,
-    getTerminalNodes,
-} from "@/UI/Navigation/TreeView/TreeUtils";
+import { MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * Gets the first of all the selected molecules.
  *
- * @param  {IMolContainer[]} molecules  The molecules to consider.
- * @returns {IMolContainer | null}  The first selected molecule, or null if none
+ * @param  {TreeNodeList} molecules  The molecules to consider.
+ * @returns {TreeNode | null}  The first selected molecule, or null if none
  *    are selected.
  */
-export function getFirstSelected(
-    molecules: IMolContainer[]
-): IMolContainer | null {
+export function getFirstSelected(molecules: TreeNodeList): TreeNode | null {
     // Get any terminal node that is selected and a compound
-    const terminalNodes = getTerminalNodes(molecules);
-    const selectedTerminalNodes = extractFlattenedContainers(terminalNodes, {
-        selected: true,
-        type: MolType.Compound,
-    });
+    const terminalNodes = molecules.filters.onlyTerminal;
+    let selectedTerminalNodes = terminalNodes.filters.keepSelected();
+    selectedTerminalNodes = selectedTerminalNodes.filters.keepType(
+        MolType.Compound
+    );
     if (selectedTerminalNodes.length === 0) {
         return null;
     }
-    return selectedTerminalNodes[0];
+    return selectedTerminalNodes.get(0);
 }
 
 /**
- * Get the SMILES string of the provided IMolContainer.
+ * Get the SMILES string of the provided TreeNode.
  *
- * @param  {IMolContainer} molContainer  The IMolContainer.
+ * @param  {TreeNode} treeNode  The TreeNode.
  * @returns {Promise<string>}  A promise that resolves to the SMILES string.
  */
-export function getSmilesOfMolContainer(
-    molContainer: IMolContainer
+export function getSmilesOfTreeNode(
+    treeNode: TreeNode
 ): Promise<string> {
     // Get it as a smiles string
-    return convertMolContainers([molContainer], "can", false)
-        .then((fileInfos: FileInfo[]) => {
-            return fileInfos[0].contents.trim();
+    return treeNode.toFileInfo("can")
+        .then((fileInfo: FileInfo) => {
+            return fileInfo.contents.trim();
         })
         .catch((error) => {
             throw error;

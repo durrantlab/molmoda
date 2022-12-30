@@ -14,7 +14,7 @@ let clickDetected = false;
 document.addEventListener("click", () => {
     if (!clickDetected) {
         clickDetected = true;
-        hotkeysPromise()
+        hotkeyslibPromise()
             .then((hotkeys) => {
                 hotkeys("*", { keyup: true }, (event: any) => {
                     if (hotkeys.shift) {
@@ -43,10 +43,10 @@ window.addEventListener("blur", () => {
 
 /**
  * Get the hotkeys object (library). If it is not yet loaded, load it.
- * 
+ *
  * @returns {Promise<any>}  A promise that resolves to the hotkeys object.
  */
-function hotkeysPromise(): Promise<any> {
+function hotkeyslibPromise(): Promise<any> {
     return hotkeys === undefined
         ? dynamicImports.hotkeys.module.then((mod) => {
               hotkeys = mod;
@@ -58,20 +58,50 @@ function hotkeysPromise(): Promise<any> {
 /**
  * Adds a hotkey to the hotkey list.
  *
- * @param {string}   hotkey    The hotkey to add.
- * @param {Function} callback  The function to run when the hotkey is pressed.
+ * @param {string | string[]}  hotkeys   The hotkeys to add.
+ * @param {string}             pluginId  The plugin ID.
+ * @param {Function}           callback  The function to run when the hotkey is
+ *                                       pressed.
  */
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function registerHotkeys(hotkey: string, callback: Function) {
-    if (hotkeysUsed.has(hotkey)) {
-        const msg = `Two plugins are trying to use the same hotkey: ${hotkey}`;
-        throw new Error(msg);
+export function registerHotkeys(
+    hotkeys: string | string[],
+    pluginId: string,
+    callback: (e: KeyboardEvent) => void
+) {
+    // If hotkeys is a string, make it an array.
+    if (typeof hotkeys === "string") {
+        hotkeys = [hotkeys];
     }
-    hotkeysUsed.add(hotkey);
 
-    hotkeysPromise()
-        .then((hotkeys) => {
-            hotkeys(hotkey, callback);
+    // Now process/validate each of the items in hotkeys.
+    for (let i = 0; i < hotkeys.length; i++) {
+        const hotkey = hotkeys[i];
+        if (hotkeysUsed.has(hotkey)) {
+            const msg = `Two plugins are trying to use the same hotkey: ${hotkey}`;
+            throw new Error(msg);
+        }
+
+        // command+ in hotkey? Throw error.
+        if (hotkey.indexOf("+") !== -1) {
+            const msg = `Plugin ${pluginId} has a hotkey with "+" in it. This is not allowed. Use only the letter.`;
+            throw new Error(msg);
+        }
+
+        let key = hotkey.toLowerCase();
+        if (key.length === 1) {
+            key = `ctrl+${key}, command+${key}`;
+        }
+
+        hotkeys[i] = key;
+    }
+
+    // Now convert to a string
+    hotkeys = hotkeys.join(", ");
+
+    hotkeyslibPromise()
+        .then((hotkeysLib) => {
+            hotkeysUsed.add(hotkeys as string);
+            hotkeysLib(hotkeys, callback);
             return;
         })
         .catch((err) => {

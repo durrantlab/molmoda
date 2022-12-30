@@ -9,9 +9,9 @@ import {
     calcMolProps,
     ICalcMolProps,
 } from "@/Plugins/Optional/MolProps/CalcMolProps";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { IMolContainer } from "../Navigation/TreeView/TreeInterfaces";
 import Table from "./Table/Table.vue";
 import { ITableData } from "./Table/Types";
 
@@ -25,7 +25,7 @@ import { ITableData } from "./Table/Types";
 })
 export default class MolProps extends Vue {
     @Prop({ default: "" }) smiles!: string;
-    @Prop({ default: undefined }) molContainer!: IMolContainer | undefined;
+    @Prop({ default: undefined }) treeNode!: TreeNode | undefined;
 
     lipinskiTableData: ITableData = { headers: [], rows: [] };
     countsTableData: ITableData = { headers: [], rows: [] };
@@ -39,7 +39,7 @@ export default class MolProps extends Vue {
      */
     @Watch("smiles")
     onSmiles() {
-        calcMolProps([this.smiles], [this.molContainer])
+        calcMolProps([this.smiles], [this.treeNode])
             .then((resps: ICalcMolProps[]) => {
                 // Only one molecule.
                 const resp = resps[0];

@@ -20,7 +20,7 @@ import {
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IMolContainer } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
@@ -58,7 +58,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     } as IFormText,
   ];
 
-  nodesToActOn: IMolContainer[] = [getDefaultNodeToActOn()];
+  nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
   alwaysEnabled = true;
   logJob = false;
 
@@ -69,7 +69,7 @@ export default class RenameMolPlugin extends PluginParentClass {
    *     message. If null, proceed to run the plugin.
    */
   checkPluginAllowed(): string | null {
-    return checkOneMolSelected(this as any);
+    return checkOneMolSelected();
   }
 
   /**
@@ -81,7 +81,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     this.updateUserArgs([
       {
         name: "newName",
-        val: (this.nodesToActOn as IMolContainer[])[0].title,
+        val: this.nodesToActOn.get(0).title,
       } as IUserArg,
     ]);
   }
@@ -93,7 +93,7 @@ export default class RenameMolPlugin extends PluginParentClass {
    */
   runJobInBrowser(userArgs: IUserArg[]) {
     if (this.nodesToActOn) {
-      this.nodesToActOn[0].title = this.getArg(userArgs, "newName");
+      this.nodesToActOn.get(0).title = this.getArg(userArgs, "newName");
     }
   }
 
