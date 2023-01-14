@@ -17,7 +17,10 @@ import {
     GenericShapeType,
 } from "./Types";
 import * as api from "@/Api/";
-import { getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
+import {
+    getMoleculesFromStore,
+    setStoreVar,
+} from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
@@ -176,11 +179,7 @@ export abstract class ViewerParent {
             // Get the original TreeNode to find the target opacity.
             const treeNode = getMoleculesFromStore().filters.onlyId(id);
             let opacity = 1;
-            if (
-                treeNode &&
-                treeNode.shape &&
-                treeNode.shape.opacity
-            ) {
+            if (treeNode && treeNode.shape && treeNode.shape.opacity) {
                 opacity = treeNode.shape.opacity;
             }
 
@@ -315,43 +314,41 @@ export abstract class ViewerParent {
      * @returns {GenericShapeType}  The shape that was added.
      */
     addShape(shape: IShape): Promise<GenericShapeType> {
-        return new Promise((resolve) => {
-            const shapeFull = {
-                color: "red",
-                opacity: 0.8,
-                ...shape,
-            };
-            switch (shape.type) {
-                case ShapeType.Sphere: {
-                    const genericShape = this.addSphere(shapeFull as ISphere);
-                    resolve(genericShape);
-                    return;
-                }
-                case ShapeType.Box: {
-                    const genericShape = this.addBox(shapeFull as IBox);
-                    resolve(genericShape);
-                    return;
-                }
-                case ShapeType.Arrow: {
-                    const genericShape = this.addArrow({
-                        radius: 0.5,
-                        radiusRatio: 1.618034,
-                        ...shapeFull,
-                    } as IArrow);
-                    resolve(genericShape);
-                    return;
-                }
-                case ShapeType.Cylinder: {
-                    const genericShape = this.addCylinder({
-                        radius: 0.5,
-                        dashed: false,
-                        ...shapeFull,
-                    } as ICylinder);
-                    resolve(genericShape);
-                    return;
-                }
+        const shapeFull = {
+            color: "red",
+            opacity: 0.8,
+            ...shape,
+        };
+        let genericShape: Promise<GenericShapeType>;
+        switch (shape.type) {
+            case ShapeType.Sphere: {
+                genericShape = this.addSphere(shapeFull as ISphere);
+                break;
             }
-        });
+            case ShapeType.Box: {
+                genericShape = this.addBox(shapeFull as IBox);
+                break;
+            }
+            case ShapeType.Arrow: {
+                genericShape = this.addArrow({
+                    radius: 0.5,
+                    radiusRatio: 1.618034,
+                    ...shapeFull,
+                } as IArrow);
+                break;
+            }
+            case ShapeType.Cylinder: {
+                genericShape = this.addCylinder({
+                    radius: 0.5,
+                    dashed: false,
+                    ...shapeFull,
+                } as ICylinder);
+                break;
+            }
+        }
+
+        return genericShape;
+
     }
 
     /**
@@ -378,9 +375,7 @@ export abstract class ViewerParent {
             } else {
                 // Not in cache.
                 if (treeNode.model) {
-                    addObjPromise = this.addGLModel(
-                        treeNode.model as GLModel
-                    )
+                    addObjPromise = this.addGLModel(treeNode.model as GLModel)
                         .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
                             this._makeAtomsHoverableAndClickable(visMol);
@@ -392,10 +387,23 @@ export abstract class ViewerParent {
                             // return treeNode;
                         });
                 } else if (treeNode.shape) {
+                    // Make the shape as pending because otherwise sometimes a
+                    // second copy of the shape gets added before the promise
+                    // resolves.
+                    this.shapeCache[id] = "pending";
+                    console.log(id + ":OPACITY4: ");  // Sets opacity
                     addObjPromise = this.addShape(
                         treeNode.shape as IShape
                     ).then((shape: GenericShapeType) => {
                         this.shapeCache[id] = shape;
+
+                        // Hide it if it should be invisible.  Handled elsewhere
+                        // (up chain).
+                        // if (treeNode && !treeNode.visible) {
+                        //     console.log("Hiding:" + treeNode.id)
+                        //     this.hideShape(treeNode.id as string);
+                        // }
+
                         return treeNode;
                     });
                 } else {
@@ -527,10 +535,7 @@ export abstract class ViewerParent {
      *                                      is available in the model itself.
      * @returns {GenericStyleType}  The converted style.
      */
-    abstract convertStyle(
-        style: IStyle,
-        treeNode: TreeNode
-    ): GenericStyleType;
+    abstract convertStyle(style: IStyle, treeNode: TreeNode): GenericStyleType;
 
     /**
      * Converts a 3DMoljs selection to the selection format compatible with this
@@ -560,11 +565,9 @@ export abstract class ViewerParent {
 
         // All tree nodes are now dirty (so will be rerendered if new viewer
         // loaded).
-        getMoleculesFromStore().flattened.forEach(
-            (treeNode: TreeNode) => {
-                treeNode.viewerDirty = true;
-            }
-        );
+        getMoleculesFromStore().flattened.forEach((treeNode: TreeNode) => {
+            treeNode.viewerDirty = true;
+        });
     }
 
     /**
@@ -688,6 +691,8 @@ export abstract class ViewerParent {
         // Rather than update the shape, we remove it and re-add it. This is
         // because the 3DMoljs viewer does not have a way to update the position
         // as best I can tell.
+        console.log(id + ":OPACITY3: ");  // Sets opacity
+
         this.addShape(shapeStyle)
             .then((shape: GenericShapeType) => {
                 this._removeShape(id);

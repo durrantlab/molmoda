@@ -14,7 +14,7 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWait } from "@/Testing/ParentPluginTestFuncs";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Options } from "vue-class-component";
 import { switchToGoldenLayoutPanel } from "./Common";
@@ -59,7 +59,7 @@ export default class StylesWindowPlugin extends PluginParentClass {
   getTests(): ITest {
     return {
       closePlugin: [],
-      afterPluginCloses: [this.testWait(3)],
+      afterPluginCloses: [new TestWait(3).cmd],
     };
   }
 }

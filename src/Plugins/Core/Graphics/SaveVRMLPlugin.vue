@@ -23,12 +23,13 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWait, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import {
   fileNameFilter,
   matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { correctFilenameExt } from "@/FileSystem/Utils";
 
 /**
  * SaveVRMLPlugin
@@ -104,8 +105,10 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     let vrmlTxt = api.visualization.viewer?.exportVRML();
     api.visualization.viewer?.renderAll();
 
+    // If fileame doesn't end in vrml (case insensitive), end it.
+    filename = correctFilenameExt(filename, "vrml");
+
     if (vrmlTxt !== "") {
-      debugger
       api.fs.saveTxt(new FileInfo({
         name: filename,
         contents: vrmlTxt
@@ -125,8 +128,8 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       beforePluginOpens: [this.testLoadExampleProtein()],
       pluginOpen: [this.testSetUserArg("filename", "test")],
       afterPluginCloses: [
-        this.testWaitForRegex("#log", 'Job "savevrml:.+?" ended'),
-        this.testWait(3),
+        new TestWaitUntilRegex("#log", 'Job "savevrml:.+?" ended').cmd,
+        new TestWait(3).cmd,
       ],
     };
   }

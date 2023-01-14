@@ -23,7 +23,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWait, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import {
   fileNameFilter,
   matchesFilename,
@@ -118,8 +118,8 @@ export default class SavePNGPlugin extends PluginParentClass {
       beforePluginOpens: [this.testLoadExampleProtein()],
       pluginOpen: [this.testSetUserArg("filename", "test")],
       afterPluginCloses: [
-        this.testWaitForRegex("#log", 'Job "savepng:.+?" ended'),
-        this.testWait(3),
+        new TestWaitUntilRegex("#log", 'Job "savepng:.+?" ended').cmd,
+        new TestWait(3).cmd
       ],
     };
   }

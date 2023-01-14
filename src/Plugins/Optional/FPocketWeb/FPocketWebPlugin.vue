@@ -47,12 +47,15 @@ import {
     ITreeNodeData,
     IStyle,
     TreeNodeDataType,
-    MolType,
+    TreeNodeType,
+    IBox,
+    SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { IFpocketParams } from "./FPocketWebTypes";
 import { messagesApi } from "@/Api/Messages";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * FPocketWebPlugin
@@ -75,6 +78,9 @@ export default class FPocketWebPlugin extends PluginParentClass {
     pluginId = "fpocketweb";
 
     intro = `This plugin identifies small-molecule compounds and calculates their molecular properties.`;
+
+    msgOnJobsFinished =
+        "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
     userArgs: FormElement[] = [
         {
@@ -132,7 +138,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 {
                     id: "warning",
                     type: FormElemType.Alert,
-                    description: "Unless you are an expert user, these advanced parameters that are best left unmodified.",
+                    description:
+                        "Unless you are an expert user, these advanced parameters that are best left unmodified.",
                     alertType: "warning",
                 } as IFormAlert,
                 {
@@ -333,10 +340,14 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     return;
                 }
 
+                const numInitiallyVisible = 5;
+
                 // Update the compounds (names, style)
                 let firstNodeId = "";
+                const boxes: IBox[] = [];
+
                 outPdbFileTreeNode.nodes
-                    ?.lookup([MolType.Compound, "*", "*"])
+                    ?.lookup([TreeNodeType.Compound, "*", "*"])
                     ?.forEach((node: TreeNode, idx: number) => {
                         // Should be surface
                         node.styles = [
@@ -352,7 +363,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                         node.title = "Pocket" + (idx + 1);
 
                         // Hide unless it's the first few ones.
-                        if (idx > 5) {
+                        if (idx >= numInitiallyVisible) {
                             node.visible = false;
                         }
 
@@ -361,9 +372,11 @@ export default class FPocketWebPlugin extends PluginParentClass {
                             "FPocketWeb Properties": {
                                 data: pocketProps[idx],
                                 type: TreeNodeDataType.Table,
-                                treeNode: node,
+                                treeNodeId: node.id,
                             } as ITreeNodeData,
                         };
+
+                        boxes.push(node.getBoxShape());
 
                         if (idx === 0) {
                             firstNodeId = node.id as string;
@@ -373,7 +386,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 if (outPdbFileTreeNode.nodes) {
                     // Update the compound chain name.
                     const pockets = outPdbFileTreeNode.nodes
-                        .lookup(MolType.Compound)
+                        .lookup(TreeNodeType.Compound)
                         .get(0);
                     pockets.title = "Pockets";
                     if (pockets.nodes) {
@@ -383,10 +396,43 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     // Hide the protein, since it's probably also in another
                     // molecule.
                     outPdbFileTreeNode.nodes
-                        .lookup(MolType.Protein)
+                        .lookup(TreeNodeType.Protein)
                         .flattened.forEach((node: TreeNode) => {
                             node.visible = false;
                         });
+
+                    // Add the shape list. Create the shape list node.
+                    const shapeList = new TreeNodeList();
+                    for (let i = 0; i < boxes.length; i++) {
+                        const box = boxes[i];
+                        box.opacity = 0.9;
+                        // const newNode = new TreeNode({
+                        //     title: "PocketBox" + (i + 1).toString(),
+                        //     type: TreeNodeType.Shape,
+                        //     shape: box,
+                        //     treeExpanded: false,
+                        //     visible: i < numInitiallyVisible,
+                        //     selected: SelectedType.False,
+                        //     focused: false,
+                        //     viewerDirty: true
+                        // });
+                        // shapeList.push(newNode);
+                    }
+                    const shapeNode = new TreeNode({
+                        title: "S",
+                        type: TreeNodeType.Shape,
+                        treeExpanded: true,
+                        visible: true,
+                        selected: SelectedType.False,
+                        focused: false,
+                        viewerDirty: true,
+                        nodes: shapeList,
+                    });
+
+                    const ps = outPdbFileTreeNode.nodes.lookup(["Pockets"]).get(0);
+                    if (ps.nodes) {
+                        ps.nodes.push(shapeNode);
+                    }
                 }
 
                 this.$store.commit("pushToMolecules", outPdbFileTreeNode);

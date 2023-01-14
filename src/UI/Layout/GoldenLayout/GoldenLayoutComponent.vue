@@ -37,7 +37,7 @@ export default class GoldenLayoutComponent extends Vue {
   @Prop() height!: number;
   @Prop() style!: string;
   @Prop({ default: "" }) extraClass!: string;
-  @Prop({ default: 3 }) paddingSize!: number;
+  @Prop({ default: 2 }) paddingSize!: number;
 
   /**
    * get the computed slugID.

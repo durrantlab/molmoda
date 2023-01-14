@@ -1,6 +1,6 @@
 // Only called from TreeNodeList.
 
-import { MolType, SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType, SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import type { TreeNode } from "../TreeNode/TreeNode";
 import type { TreeNodeList } from "./TreeNodeList";
 
@@ -9,7 +9,7 @@ import type { TreeNodeList } from "./TreeNodeList";
 // If you can't pass anything, start with "only".
 // Use get if no parameters.
 
-export type EasyCriterion = string | number | MolType;
+export type EasyCriterion = string | number | TreeNodeType;
 
 /**
  * TreeNodeListFilters class
@@ -180,13 +180,13 @@ export class TreeNodeListFilters {
     /**
      * Returns a list of nodes that have (or do not have) a given type.
      *
-     * @param  {MolType} type                    The type to filter by.
+     * @param  {TreeNodeType} type                    The type to filter by.
      * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that have (or do not have) a
      *     given type.
      */
-    public keepType(type: MolType, deepAndFlatten = false): TreeNodeList {
+    public keepType(type: TreeNodeType, deepAndFlatten = false): TreeNodeList {
         const treeNodeList = this.getFlattenedIfAppropriate(deepAndFlatten);
 
         // mol_filter_ok

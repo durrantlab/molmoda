@@ -1,5 +1,5 @@
 import { slugify } from "@/Core/Utils";
-import { IAtom, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IAtom, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
 import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
@@ -22,10 +22,10 @@ export function separateCompoundNonCompoundTerminalNodes(
     // Keep only terminal nodes with unique ids
     terminalNodes = terminalNodes.filters.onlyUnique;
 
-    const compoundNodes = terminalNodes.filters.keepType(MolType.Compound);
+    const compoundNodes = terminalNodes.filters.keepType(TreeNodeType.Compound);
     // TODO: Do keepAllButType
     const nonCompoundNodes = terminalNodes.filter(
-        (node: TreeNode) => node.type !== MolType.Compound
+        (node: TreeNode) => node.type !== TreeNodeType.Compound
     );
     return { compoundNodes, nonCompoundNodes };
 }
@@ -95,7 +95,7 @@ export function getPrimaryExt(format: string): string {
 function getFilename(treeNode: TreeNode, ext: string): string {
     let txtPrts = [getFileNameParts(treeNode.src as string).basename];
     const firstAtom: IAtom = (treeNode.model as any).selectedAtoms({})[0];
-    if (treeNode.type === MolType.Compound) {
+    if (treeNode.type === TreeNodeType.Compound) {
         const resn = firstAtom.resn ? firstAtom.resn.trim() : "";
         const resi = firstAtom.resi ? firstAtom.resi.toString().trim() : "";
         txtPrts.push(resn);

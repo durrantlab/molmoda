@@ -7,7 +7,7 @@ import {
 import {
     IAtom,
     IStyle,
-    MolType,
+    TreeNodeType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomID } from "@/Core/Utils";
@@ -482,13 +482,13 @@ function divideAtomsIntoDistinctComponents(
                 lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
             }
 
-            proteinAtomsByChain.type = MolType.Protein;
-            nucleicAtomsByChain.type = MolType.Nucleic;
-            compoundsByChain.type = MolType.Compound;
-            metalAtomsByChain.type = MolType.Metal;
-            lipidAtomsByChain.type = MolType.Lipid;
-            ionAtomsNoChain.type = MolType.Ions;
-            solventAtomsNoChain.type = MolType.Solvent;
+            proteinAtomsByChain.type = TreeNodeType.Protein;
+            nucleicAtomsByChain.type = TreeNodeType.Nucleic;
+            compoundsByChain.type = TreeNodeType.Compound;
+            metalAtomsByChain.type = TreeNodeType.Metal;
+            lipidAtomsByChain.type = TreeNodeType.Lipid;
+            ionAtomsNoChain.type = TreeNodeType.Ions;
+            solventAtomsNoChain.type = TreeNodeType.Solvent;
 
             let molName = data.molName;
 
@@ -621,25 +621,25 @@ waitForDataFromMainThread()
 
             nodesToConsider.forEach((node) => {
                 switch (node.type) {
-                    case MolType.Protein:
+                    case TreeNodeType.Protein:
                         addMolTypeAndStyle(node, proteinStyle);
                         break;
-                    case MolType.Nucleic:
+                    case TreeNodeType.Nucleic:
                         addMolTypeAndStyle(node, nucleicStyle);
                         break;
-                    case MolType.Compound:
+                    case TreeNodeType.Compound:
                         addMolTypeAndStyle(node, ligandsStyle);
                         break;
-                    case MolType.Metal:
+                    case TreeNodeType.Metal:
                         addMolTypeAndStyle(node, metalsStyle);
                         break;
-                    case MolType.Lipid:
+                    case TreeNodeType.Lipid:
                         addMolTypeAndStyle(node, lipidStyle);
                         break;
-                    case MolType.Ions:
+                    case TreeNodeType.Ions:
                         addMolTypeAndStyle(node, ionsStyle);
                         break;
-                    case MolType.Solvent:
+                    case TreeNodeType.Solvent:
                         addMolTypeAndStyle(node, solventStyle);
                         break;
                 }

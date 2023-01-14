@@ -21,7 +21,7 @@ export interface IAtom {
     bondOrder: number[];
 }
 
-export enum MolType {
+export enum TreeNodeType {
     Protein = "protein",
     Nucleic = "nucleic",
     Compound = "compound",
@@ -45,6 +45,42 @@ export enum ShapeType {
     Arrow = "Arrow",
     Cylinder = "Cylinder",
 }
+
+
+// export class Shape {
+//     // All shapes can have these properties
+//     type: ShapeType;
+//     center: [number, number, number];
+//     opacity?: number;
+//     color?: string;
+//     movable?: boolean; // Whether you can move or resize
+
+//     // Spheres and arrows have radius
+//     radius?: number;
+
+//     // x/y/z size for box
+//     dimensions?: [number, number, number];
+
+//     // arrow only (uses radius too). Also cylinder.
+//     endPt?: [number, number, number]; // center is start pt
+//     radiusRatio?: number; // Radius of arrow head is radiusRatio * radius
+
+//     // Cylinder only
+//     dashed?: boolean;
+
+//     constructor(params: IShape | ISphere | IBox | IArrow | ICylinder) {
+//         this.type = params.type;
+//         this.center = params.center;
+//         this.opacity = params.opacity;
+//         this.color = params.color;
+//         this.movable = params.movable;
+//         this.radius = (params as ISphere).radius;
+//         this.dimensions = (params as IBox).dimensions;
+//         this.endPt = (params as IArrow).endPt;
+//         this.radiusRatio = (params as IArrow).radiusRatio;
+//         this.dashed = (params as ICylinder).dashed;
+//     }
+// }
 
 export interface IShape {
     type: ShapeType;
@@ -75,6 +111,8 @@ export interface ICylinder extends IShape {
     dashed?: boolean;
 }
 
+
+
 export enum TreeNodeDataType {
     Table,
     Graph,
@@ -86,8 +124,9 @@ export interface ITreeNodeData {
 
     type: TreeNodeDataType;
 
-    // The TreeNode that this data is associated with.
-    treeNode?: TreeNode;
+    // The TreeNode that this data is associated with. It's the id to avoid
+    // circular references when serializing.
+    treeNodeId?: string;
 }
 
 // export interface IResidue extends TreeNode {}

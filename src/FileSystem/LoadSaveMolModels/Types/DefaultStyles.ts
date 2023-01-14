@@ -1,4 +1,4 @@
-import { IStyle, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export const unbondedAtomsStyle: IStyle = {
     sphere: {
@@ -37,13 +37,13 @@ export const solventStyle: IStyle[] = [_stickStyle];
 // Empty on purpose to satisfy typescript
 const shapeStyle: IStyle[] = [];
 
-export const defaultStyles: { [key in MolType]: IStyle[] } = {
-    [MolType.Protein]: proteinStyle,
-    [MolType.Nucleic]: nucleicStyle,
-    [MolType.Compound]: ligandsStyle,
-    [MolType.Metal]: metalsStyle,
-    [MolType.Lipid]: lipidStyle,
-    [MolType.Ions]: ionsStyle,
-    [MolType.Solvent]: solventStyle,
-    [MolType.Shape]: shapeStyle,
+export const defaultStyles: { [key in TreeNodeType]: IStyle[] } = {
+    [TreeNodeType.Protein]: proteinStyle,
+    [TreeNodeType.Nucleic]: nucleicStyle,
+    [TreeNodeType.Compound]: ligandsStyle,
+    [TreeNodeType.Metal]: metalsStyle,
+    [TreeNodeType.Lipid]: lipidStyle,
+    [TreeNodeType.Ions]: ionsStyle,
+    [TreeNodeType.Solvent]: solventStyle,
+    [TreeNodeType.Shape]: shapeStyle,
 };

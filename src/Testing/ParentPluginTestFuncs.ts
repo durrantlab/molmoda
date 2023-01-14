@@ -8,14 +8,107 @@ export enum TestCommand {
     Wait = "wait",
     WaitUntilRegex = "waitUntilRegex",
     Upload = "upload",
-    AddTests = "addTests",
-    CheckBox = "checkBox",
+    AddTests = "addTests",  // TODO: Not a class yet
+    CheckBox = "checkBox",  // TODO: Not a class yet
 }
 
 export interface ITestCommand {
     selector?: string;
     cmd: TestCommand;
     data?: any;
+}
+
+export class TestClick {
+    private selector: string;
+    private shiftPressed: boolean;
+
+    constructor(selector: string, shiftPressed = false) {
+        this.selector = selector;
+        this.shiftPressed = shiftPressed;
+    }
+
+    get cmd(): ITestCommand {
+        return {
+            selector: this.selector,
+            cmd: TestCommand.Click,
+            data: this.shiftPressed,
+        };
+    }
+}
+
+export class TestWait {
+    private duration: number;
+
+    constructor(duration = 1) {
+        this.duration = duration;
+    }
+
+    get cmd(): ITestCommand {
+        return {
+            cmd: TestCommand.Wait,
+            data: this.duration,
+        };
+    }
+}
+
+export class TestText {
+    private selector: string;
+    private text: string;
+
+    constructor(selector: string, text: string) {
+        this.selector = selector;
+        this.text = text;
+    }
+
+    get cmd(): ITestCommand {
+        return {
+            selector: this.selector,
+            cmd: TestCommand.Text,
+            data: this.text,
+        };
+    }
+}
+
+export class TestWaitUntilRegex {
+    private selector: string;
+    private regex: string;
+
+    constructor(selector: string, regex: string) {
+        this.selector = selector;
+        this.regex = regex;
+    }
+
+    get cmd(): ITestCommand {
+        return {
+            selector: this.selector,
+            cmd: TestCommand.WaitUntilRegex,
+            data: this.regex,
+        };
+    }
+}
+
+
+export class TestUpload {
+    private selector: string;
+    private filePath: string;
+
+    constructor(selector: string, filePath: string) {
+        this.selector = selector;
+
+        if (filePath.startsWith("file://")) {
+            filePath = filePath.substring(7)
+        }
+
+        this.filePath = filePath;
+    }
+
+    get cmd(): ITestCommand {
+        return {
+            selector: this.selector,
+            cmd: TestCommand.Upload,
+            data: this.filePath,
+        };
+    }
 }
 
 export interface ITest {
@@ -75,27 +168,13 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
         getComputedStyle(hamburgerButton).display !== "none";
 
     if (hamburgerButtonVisible) {
-        cmds.push({
-            selector: "#hamburger-button",
-            cmd: TestCommand.Click,
-        } as ITestCommand);
+        cmds.push(new TestClick("#hamburger-button").cmd);
     }
 
     cmds.push(
-        ...sels.map((sel) => {
-            return {
-                selector: `${sel}`,
-                cmd: TestCommand.Click,
-            } as ITestCommand;
-        }),
-        {
-            selector: `${lastSel}`,
-            cmd: TestCommand.Click,
-        } as ITestCommand,
-        {
-            cmd: TestCommand.Wait,
-            data: 1,
-        } as ITestCommand
+        ...sels.map((sel) => new TestClick(sel).cmd),
+        new TestClick(lastSel).cmd,
+        new TestWait(1).cmd
     );
 
     return cmds;
@@ -122,20 +201,16 @@ function addTestDefaults(plugin: any): ITest[] {
         test.beforePluginOpens = test.beforePluginOpens || [];
         test.pluginOpen = test.pluginOpen || [];
         test.closePlugin = test.closePlugin || [
-            {
-                cmd: TestCommand.Click,
-                selector: `#modal-${pluginId} .action-btn`,
-            },
+            new TestClick(`#modal-${pluginId} .action-btn`).cmd,
         ];
         test.afterPluginCloses =
             test.afterPluginCloses ||
             (plugin.logJob
                 ? [
-                      {
-                          cmd: TestCommand.WaitUntilRegex,
-                          selector: "#log",
-                          data: 'Job "' + pluginId + ':.+?" ended',
-                      },
+                      new TestWaitUntilRegex(
+                          "#log",
+                          'Job "' + pluginId + ':.+?" ended'
+                      ).cmd,
                   ]
                 : []);
     }
@@ -162,6 +237,7 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
             plugin.$store.commit("setVar", {
                 name: "cmds",
                 val: JSON.stringify([
+                    // TODO: Needs to be a class?
                     {
                         cmd: TestCommand.AddTests,
                         data: tests.length,
@@ -179,16 +255,10 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
             ...(test.beforePluginOpens as ITestCommand[]), // Defined in each plugin
             ..._openPluginCmds(plugin),
             ...(test.pluginOpen as ITestCommand[]), // Defined in each plugin
-            {
-                cmd: TestCommand.Wait,
-                data: 1,
-            },
+            new TestWait(1).cmd,
             ...(test.closePlugin as ITestCommand[]), // Defined in each plugin
             ...(test.afterPluginCloses as ITestCommand[]), // Defined in each plugin
-            {
-                cmd: TestCommand.Wait,
-                data: 0.5,
-            },
+            new TestWait(0.5).cmd,
         ] as ITestCommand[];
 
         plugin.$store.commit("setVar", {

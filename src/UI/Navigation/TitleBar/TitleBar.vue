@@ -49,6 +49,7 @@
         <IconBar
             :width="24 * Object.keys(iconsToDisplay).length"
             extraClasses="me-2 selected"
+            style="margin-right:8px;"
         >
             <!-- the eye icon should always be farthest to the right, so list it first -->
             <IconSwitcher
@@ -113,7 +114,7 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
-import { MolType, SelectedType } from "../TreeView/TreeInterfaces";
+import { TreeNodeType, SelectedType } from "../TreeView/TreeInterfaces";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as api from "@/Api";
@@ -150,8 +151,8 @@ export default class TitleBar extends Vue {
      *
      * @returns {string} The id of the molecule (node).
      */
-    get treeDatumID(): MolType {
-        return this.treeDatum.id as MolType;
+    get treeDatumID(): TreeNodeType {
+        return this.treeDatum.id as TreeNodeType;
     }
 
     /**

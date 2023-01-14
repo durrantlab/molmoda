@@ -35,6 +35,7 @@ system uses these to autopopulate with plugins. -->
 
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
+    <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <!-- TEMPLATE1 END -->
   </div>
@@ -78,6 +79,7 @@ import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
+import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 // TEMPLATE2 END
 
@@ -119,8 +121,15 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
     FPocketWebPlugin,
     MolPropsPlugin,
+    QueSystemTestPlugin,
     TestPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
 
 
 

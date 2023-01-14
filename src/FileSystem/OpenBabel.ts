@@ -5,23 +5,31 @@ import { dynamicImports } from "@/Core/DynamicImports";
 // import OpenBabel from "@/libs/ToCopy/obabel-wasm/obabel";
 // import { initOpenBabel } from "@/libs/ToCopy/obabel-wasm/obabel";
 
-export let FS: any = undefined;
+export let BFS: any = undefined;
 
-/**
- * @returns {Promise<any>}  A promise that resolves to the FS object.
- */
 function getFSPromise(): Promise<any> {
     let fsPromise: Promise<any>;
 
     // Load BFS
-    if (FS === undefined) {
+    if (BFS === undefined) {
         fsPromise = dynamicImports.browserfs.module.then((browserfs: any) => {
-            browserfs.initialize(new browserfs.FileSystem.InMemory());
-            FS = new browserfs.EmscriptenFS() as any;
-            return FS;
+        // fsPromise = dynamicImports.memfs.module.then((browserfs: any) => {
+                //browserfs.initialize(new browserfs.FileSystem.InMemory());
+            browserfs.configure({ fs: "InMemory" }, (e: any) => {
+                if (e) {
+                    throw e;
+                }
+            });
+            BFS = new browserfs.EmscriptenFS() as any;
+            // debugger;
+            //FS.createFolder(FS.root, 'data', true, true);
+
+            //FS.mount(FS, {root: '/'}, '/data');
+            debugger;
+            return BFS;
         });
     } else {
-        fsPromise = Promise.resolve(FS);
+        fsPromise = Promise.resolve(BFS);
     }
     return fsPromise;
 }
@@ -50,124 +58,194 @@ export function runOpenBabel(
     return (
         getFSPromise()
             .then(() => {
+                /* eslint-disable @typescript-eslint/no-var-requires */
+                // const Module = {
+                //     arguments: "-L formats",
+                // };
                 return dynamicImports.obabelwasm.module;
             })
             .then((obabelModule: any): Promise<string> => {
-                return new Promise((resolve, reject) => {
-                    // https://emscripten.org/docs/api_reference/module.html
-                    obabelModule({
-                        arguments: args,
-                        fs: FS,
-                        logReadFiles: true,
-                        // noInitialRun: true,
-                        locateFile: (path: string) => {
-                            return "js/obabel-wasm/" + path;
-                        },
-                        print: (text: string) => {
-                            txtBuf += text + "\n";
-                        },
-                        printErr: (text: string) => {
-                            txtBuf += text + "\n";
-                        },
-                        preRun: [
-                            (This: any) => {
-                                // console.log("preRun");
-                                // console.log(WEBOBABEL_Module.FS);
+                const Module = {
+                    //arguments: args,
+                    arguments: ["-L", "formats"],
+                    //fs: FS,
+                    logReadFiles: true,
+                    noInitialRun: false,
+                    locateFile: (path: string) => {
+                        return "js/obabel-wasm/" + path;
+                    },
+                    print: (text: string) => {
+                        txtBuf += text + "\n";
+                    },
+                    printErr: (text: string) => {
+                        txtBuf += text + "\n";
+                    },
+                    preRun: [
+                        (This: any) => {
+                            // This.FS.mkdir("/data");
+                            // This.FS.mount(BFS, { root: "/" }, "/data");
+                            debugger;
+                            This.FS.mkdir("/data");
+                            This.FS.mount(BFS, { root: "/" }, "/data");
 
-                                try {
-                                    if (onBeforeRun) {
-                                        onBeforeRun(This);
-                                    }
-                                } catch (err) {
-                                    reject(err);
-                                }
-                            },
-                        ],
-                        onRuntimeInitialized: () => {
-                            // console.log("onRuntimeInitialized");
+                            console.log("preRun");
+                            //console.log(WEBOBABEL_Module.FS);
+
+                            if (onBeforeRun) {
+                                onBeforeRun(This);
+                            }
                         },
-                        postRun: [
-                            (This: any) => {
-                                // Note: This runs when Wasm loaded and initialized, not after program
-                                // executed. IS THAT TRUE?
+                    ],
+                    onRuntimeInitialized: (This: any) => {
+                        // TODO: Never called?
 
-                                // Yes, I think above is true. Need to wait for obabel to finish executing. But how?
+                        console.log("onRuntimeInitialized");
+                    },
+                    postRun: [
+                        () => {
+                            console.log("postRun");
+                        },
 
-                                try {
-                                    if (onAfterRun) {
-                                        onAfterRun(This);
-                                    }
-                                    resolve(txtBuf);
-                                } catch (err) {
-                                    reject(err);
-                                }
-                            },
-                        ],
-                    });
-                });
+                        console.log("postRun"),
+
+                        (This: any) => {
+                            //debugger;
+                            const tmp = This.FS.readdir("/");
+
+                            console.log("readDir:", tmp);
+
+                            //debugger;
+                            // Note: This runs when Wasm loaded and initialized, not after program
+                            // executed. IS THAT TRUE?
+
+                            // Yes, I think above is true. Need to wait for obabel to finish executing. But how?
+
+                            if (onAfterRun) {
+                                onAfterRun(This);
+                            }
+                            //resolve(txtBuf);
+                            //debugger;
+                        },
+                    ],
+                }
+
+                return new obabelModule(Module);
+            })
+            .then((myModule: any) => {
+                debugger;
+                console.log(txtBuf);
+                return;
+                //return Promise.resolve("test");
+                //debugger;
+                // return new Promise((resolve) => {
+                //     // https://emscripten.org/docs/api_reference/module.html
+                //     obabelModule({
+                //         //arguments: args,
+                //         arguments: ["-L", "formats"],
+                //         fs: FS,
+                //         logReadFiles: true,
+                //         noInitialRun: true,
+                //         locateFile: (path: string) => {
+                //             return "js/obabel-wasm/" + path;
+                //         },
+                //         print: (text: string) => {
+                //             txtBuf += text + "\n";
+                //         },
+                //         printErr: (text: string) => {
+                //             txtBuf += text + "\n";
+                //         },
+                //         preRun: [
+                //             (This: any) => {
+                //                  console.log("preRun");
+                //                  //console.log(WEBOBABEL_Module.FS);
+
+                //                 if (onBeforeRun) {
+                //                     onBeforeRun(This);
+                //                 }
+                //             },
+                //         ],
+                //         onRuntimeInitialized: () => {
+                //              console.log("onRuntimeInitialized");
+                //         },
+                //         postRun: [
+                //             (This: any) => {
+                //                 // Note: This runs when Wasm loaded and initialized, not after program
+                //                 // executed. IS THAT TRUE?
+
+                //                 // Yes, I think above is true. Need to wait for obabel to finish executing. But how?
+
+                //                 if (onAfterRun) {
+                //                     onAfterRun(This);
+                //                 }
+                //                 resolve(txtBuf);
+                //             },
+                //         ],
+                //     });
+                // });
             })
             // .then((output: string) => {
-            //     debugger;
-            //     // return obabel.ready;
-            //     return output;
+            //     console.log("output");
+            // //     debugger;
+            // //     // return obabel.ready;
+            //      return output;
 
-            //     // obabel.FS.mkdir("/data", true, true);
-            //     // //obabel.FS.mount(BFS, {root: '/'}, '/data');
-            //     // // write file with permission 0777
-            //     // obabel.FS.writeFile("input1.smi", "C1=CC=CC=C1", {
-            //     //   encoding: "utf-8",
-            //     //   mode: 0o777,
-            //     // });
+            // //     // obabel.FS.mkdir("/data", true, true);
+            // //     // //obabel.FS.mount(BFS, {root: '/'}, '/data');
+            // //     // // write file with permission 0777
+            // //     // obabel.FS.writeFile("input1.smi", "C1=CC=CC=C1", {
+            // //     //   encoding: "utf-8",
+            // //     //   mode: 0o777,
+            // //     // });
 
-            //     // if (beforeRunFuncs) {
-            //     //     beforeRunFuncs(obabel);
-            //     // }
+            // //     // if (beforeRunFuncs) {
+            // //     //     beforeRunFuncs(obabel);
+            // //     // }
 
-            //     // // resolve the promise to write the file
-            //     // return new Promise((resolve) => {
-            //     //     // obabel.FS.syncfs(false, () => {
-            //     //         //   console.log("syncfs");
-            //     //         // debugger
+            // //     // // resolve the promise to write the file
+            // //     // return new Promise((resolve) => {
+            // //     //     // obabel.FS.syncfs(false, () => {
+            // //     //         //   console.log("syncfs");
+            // //     //         // debugger
 
-            //     //         // callMain with the arguments
-            //     //         // obabel.callMain(obabel.arguments);
-            //     //         debugger;
-            //     //         obabel.callMain("-L", "formats");
+            // //     //         // callMain with the arguments
+            // //     //         // obabel.callMain(obabel.arguments);
+            // //     //         debugger;
+            // //     //         obabel.callMain("-L", "formats");
 
-            //     //         if (afterRunFuncs) {
-            //     //             afterRunFuncs(obabel);
-            //     //         }
+            // //     //         if (afterRunFuncs) {
+            // //     //             afterRunFuncs(obabel);
+            // //     //         }
 
-            //     //         resolve(txtBuf);
-            //     //     // });
-            //     // });
+            // //     //         resolve(txtBuf);
+            // //     //     // });
+            // //     // });
 
-            //     // obabel.FS.writeFile(
-            //     //   "input.smi",
-            //     //   "O1C=C[C@H]([C@H]1O2)c3c2cc(OC)c4c3OC(=O)C5=C4CCC(=O)5"
-            //     // );
-            //     // //
-            //     // //obabel.run();
+            // //     // obabel.FS.writeFile(
+            // //     //   "input.smi",
+            // //     //   "O1C=C[C@H]([C@H]1O2)c3c2cc(OC)c4c3OC(=O)C5=C4CCC(=O)5"
+            // //     // );
+            // //     // //
+            // //     // //obabel.run();
 
-            //     // //obabel.FS.writeFile("input1.smi", "C1=CC=CC=C1");
-            //     // //obabel.FS.writeFile('input.smi', "O1C=C[C@H]([C@H]1O2)c3c2cc(OC)c4c3OC(=O)C5=C4CCC(=O)5");
-            //     // //obabel.run();
-            //     // //obabel.FS.mkdir('/data', true, true);
-            //     // console.log("Reading files", obabel.FS.readdir("/"));
-            //     // // console.log(
-            //     // //   new TextDecoder("utf-8").decode(obabel.FS.readFile("out.sdf"))
-            //     // // );
-            //     // console.log(
-            //     //   new TextDecoder("utf-8").decode(obabel.FS.readFile("input.smi"))
-            //     // );
-            //     // console.log(
-            //     //   new TextDecoder("utf-8").decode(obabel.FS.readFile("input1.smi"))
-            //     // );
-            //     // console.log(obabel.FS.stat("input.smi").mode & parseInt("777", 8));
-            //     // console.log(obabel.FS.stat("input1.smi").mode & parseInt("777", 8));
-            //     // // console.log(obabel.FS.stat("out.sdf").mode & parseInt("777", 8));
+            // //     // //obabel.FS.writeFile("input1.smi", "C1=CC=CC=C1");
+            // //     // //obabel.FS.writeFile('input.smi', "O1C=C[C@H]([C@H]1O2)c3c2cc(OC)c4c3OC(=O)C5=C4CCC(=O)5");
+            // //     // //obabel.run();
+            // //     // //obabel.FS.mkdir('/data', true, true);
+            // //     // console.log("Reading files", obabel.FS.readdir("/"));
+            // //     // // console.log(
+            // //     // //   new TextDecoder("utf-8").decode(obabel.FS.readFile("out.sdf"))
+            // //     // // );
+            // //     // console.log(
+            // //     //   new TextDecoder("utf-8").decode(obabel.FS.readFile("input.smi"))
+            // //     // );
+            // //     // console.log(
+            // //     //   new TextDecoder("utf-8").decode(obabel.FS.readFile("input1.smi"))
+            // //     // );
+            // //     // console.log(obabel.FS.stat("input.smi").mode & parseInt("777", 8));
+            // //     // console.log(obabel.FS.stat("input1.smi").mode & parseInt("777", 8));
+            // //     // // console.log(obabel.FS.stat("out.sdf").mode & parseInt("777", 8));
 
-            // })
+            //  })
             .catch((err: any) => {
                 throw err;
             })
@@ -187,7 +265,6 @@ export function mkdir(obabel: any, path: string) {
 /**
  * A helper function that creates a file in the Open Babel file system.
  *
- * @param {any}    obabel  The OpenBabel module.
  * @param {string} path    The path to the text file to create.
  * @param {string} text    The text to write to the file.
  */
@@ -227,7 +304,6 @@ export function readDir(obabel: any, path: string): string[] {
 /**
  * A helper function that reads a file on the Open Babel file system.
  *
- * @param {any}    obabel  The OpenBabel module.
  * @param {string} path    The path to the file to read.
  * @returns {string}  The text in the file.
  */

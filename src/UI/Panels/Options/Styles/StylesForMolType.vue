@@ -83,7 +83,7 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { IStyle, MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorSelect from "./ColorSelect/ColorSelect.vue";
@@ -93,7 +93,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 export interface IStyleForMolType {
     style: IStyle;
-    molType: MolType;
+    molType: TreeNodeType;
 }
 
 /**
@@ -110,7 +110,7 @@ export interface IStyleForMolType {
 })
 export default class StylesForMolType extends Vue {
     @Prop({ required: true }) style!: IStyle;
-    @Prop({ required: true }) molType!: MolType;
+    @Prop({ required: true }) molType!: TreeNodeType;
 
     isVisible = true;
     atomsOption = "atoms-hidden";
@@ -169,9 +169,9 @@ export default class StylesForMolType extends Vue {
     /**
      * Toggle the visibility of a molecule.
      *
-     * @param {MolType} type  The type of molecule to toggle.
+     * @param {TreeNodeType} type  The type of molecule to toggle.
      */
-    toggleVisible(type: MolType) {
+    toggleVisible(type: TreeNodeType) {
         this.isVisible = !this.isVisible;
         let nodesOfThisType = (
             this.$store.state.molecules as TreeNodeList

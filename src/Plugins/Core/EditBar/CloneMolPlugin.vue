@@ -30,7 +30,7 @@ import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 
 /** CloneMolPlugin */
 @Options({
@@ -214,7 +214,7 @@ export default class CloneMolPlugin extends PluginParentClass {
                     this.testSelectMoleculeInTree("Protein"),
                 ],
                 afterPluginCloses: [
-                    this.testWaitForRegex("#navigator", ".cloned."),
+                    new TestWaitUntilRegex("#navigator", ".cloned.").cmd,
                 ],
             },
         ];

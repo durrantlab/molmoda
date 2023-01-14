@@ -1,5 +1,5 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { MolType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
@@ -15,7 +15,7 @@ export function getFirstSelected(molecules: TreeNodeList): TreeNode | null {
     const terminalNodes = molecules.filters.onlyTerminal;
     let selectedTerminalNodes = terminalNodes.filters.keepSelected();
     selectedTerminalNodes = selectedTerminalNodes.filters.keepType(
-        MolType.Compound
+        TreeNodeType.Compound
     );
     if (selectedTerminalNodes.length === 0) {
         return null;

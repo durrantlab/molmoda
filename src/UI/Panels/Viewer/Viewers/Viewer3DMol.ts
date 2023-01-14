@@ -77,6 +77,7 @@ export class Viewer3DMol extends ViewerParent {
     hideShape(id: string) {
         const shape = this.lookup(id);
         if (shape) {
+            console.log(id + ":OPACITY1: 0");
             shape.opacity = 0;
         }
     }
@@ -102,6 +103,7 @@ export class Viewer3DMol extends ViewerParent {
     showShape(id: string, opacity: number) {
         const shape = this.lookup(id);
         if (shape) {
+            console.log(id + ":OPACITY2: " + opacity);
             shape.opacity = opacity;
         }
     }
@@ -200,6 +202,7 @@ export class Viewer3DMol extends ViewerParent {
      * @returns {GenericShapeType}  The box that was added.
      */
     addBox(shape: IBox): Promise<GenericShapeType> {
+        console.log("Adding box");
         const dimens = shape.dimensions as number[];
         const center = shape.center as number[];
         const box = this._mol3dObj.addBox({
@@ -215,6 +218,7 @@ export class Viewer3DMol extends ViewerParent {
             },
             color: shape.color,
         });
+
         this._setShapeOpacity(box, shape?.opacity);
         return Promise.resolve(box);
     }

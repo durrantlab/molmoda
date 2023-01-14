@@ -44,11 +44,11 @@ Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
 Integrate Yuri OpenBabel. See if you can get it to work in web worker.
 
-# Ongoing: Important
-
 Current version of openbabel (tmp version) converts only first fframe of file
 (e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
 openmolecules to check for three molecules when you get that fixed.
+
+# Ongoing: Important
 
 When change colors and things, shouldn't refocus.
 
@@ -70,16 +70,26 @@ Multiframe files, still put under one molecule. And if more than a fixed number,
 autohide all but first few. Can use merge feature if needed. Tick box on open:
     Option to merge as separte files, or all together.
 
-*** SaveVRMLPlugin not working on 3DMoljs. Not adding vrml to filename.
+*** Test elements could be restructured as objects. Would be better to put
+functions on each one. Then, Tutorial based on tests (first one). Started to do
+this. See ParentPluginTestFuncs.ts
 
-*** When saving file to single pdb, it's ackwardly named. Fix that.
+FPocketWeb throws error, queue says its was incorporated.
 
-*** Test elements could be restructured as objects. Would be better to put functions
-on each one. Then, Tutorial based on tests (first one).
+Queue table looks bad.
 
-*** Would be good if there were a message that was displayed when all calculations finish.
+FPocketWeb: Add shape, can't hide it. I wonder if the shape is being added twice
+somehow. I think it is. Need to investigate this.
+
+Bootstrap Tour
 
 # DONE
+
+Would be good if there were a message that was displayed when all calculations finish.
+
+When saving file to single pdb, it's ackwardly named. Fix that.
+
+SaveVRMLPlugin not working on 3DMoljs. Not adding vrml to filename.
 
 Many docstrings
 

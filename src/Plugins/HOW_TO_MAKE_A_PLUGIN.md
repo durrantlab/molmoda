@@ -130,7 +130,7 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves a result (object) when the job is done. The object is a FileInfo object, or a list of FileInfo objects. You can also return such an object directly, without using a promise, if the job is synchronous. Return void or undefined if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 32](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L32).
+| `(returns)` | `RunJobReturn` | A promise that resolves a result (object) when the job is done. The object is a FileInfo object, or a list of FileInfo objects. You can also return such an object directly, without using a promise, if the job is synchronous. Return void or undefined if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 33](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L33).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 
@@ -226,16 +226,6 @@ If running a selenium test, this function will generate the command to test a sp
 | `argVal` | `any` | The value of the specific user argument.
 | `(returns)` | `ITestCommand` | The command to test the specific user argument. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L15).
 
-#### `testWaitForRegex` (function) <a id="testWaitForRegex"></a>
-
-If running a selenium test, this function will generate the command to wait until a given DOM element contains specified text.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `selector` | `string` | The selector of the DOM element.
-| `regex` | `string` | The regex to wait for, as a string.
-| `(returns)` | `ITestCommand` | The command to wait until the DOM element contains the specified text. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L15).
-
 #### `updateUserArgs` (function) <a id="updateUserArgs"></a>
 
 Programmatically update user arguments. Necessary because [`userArgs`](#userArgs) is NOT reactive. Useful to do things like (1) prepopulate a [`userArgs`](#userArgs) value or (2) modify one [`userArgs`](#userArgs) value based on the value of another (see also `<PluginComponent>`'s `onDataChanged` function). For [`updateUserArgs`](#updateUserArgs) to work, the plugin's `<PluginComponent>` must have `ref="pluginComponent"`.
@@ -258,7 +248,7 @@ Gets the selenium test commands for the plugin. For advanced use.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [ParentPluginTestFuncs.ts, line 21](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L21). `ITest` is defined in [ParentPluginTestFuncs.ts, line 21](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L21).
+| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [ParentPluginTestFuncs.ts, line 114](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L114). `ITest` is defined in [ParentPluginTestFuncs.ts, line 114](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L114).
 
 #### `onEndJobLogMsg` (function) <a id="onEndJobLogMsg"></a>
 

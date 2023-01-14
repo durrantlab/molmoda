@@ -30,7 +30,7 @@ import {
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
@@ -181,15 +181,15 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                     ),
                 ],
                 afterPluginCloses: [
-                    this.testWaitForRegex("#styles", "Atoms"),
-                    this.testWaitForRegex(
+                    new TestWaitUntilRegex("#styles", "Atoms").cmd,
+                    new TestWaitUntilRegex(
                         "#navigator",
                         "data.idx.." + count.toString() + "."
-                    ),
-                    this.testWaitForRegex(
+                    ).cmd,
+                    new TestWaitUntilRegex(
                         "#log",
                         'Job "openmolecules:.+?" ended'
-                    ),
+                    ).cmd,
                 ],
             };
         });

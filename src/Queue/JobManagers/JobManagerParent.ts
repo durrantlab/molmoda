@@ -16,6 +16,7 @@ import {
     IJobInfoToEndpoint,
     EndpointAction,
 } from "../Types/TypesToEndpoint";
+import { checkAllJobsFinishedMsgs } from "./AllJobsFinishedMsgs";
 
 export const jobManagers: JobManagerParent[] = [];
 
@@ -43,7 +44,7 @@ export abstract class JobManagerParent {
      */
     onJobStatusChange(jobId: string, jobStatus: IJobStatusInfo): void {
         if (jobStatus.status === JobStatus.Done) {
-            // The job is done. Get te output files.
+            // The job is done. Get the output files.
             this.sendRequest({
                 action: EndpointAction.GetDoneJobsOutput,
                 jobIds: [jobId],
@@ -196,6 +197,10 @@ export abstract class JobManagerParent {
                     // currently support that. Items can only be added to
                     // this._jobStatuses, not removed.
                 }
+
+                // Check if all jobs are done, and if there are messages to
+                // show. If so, show them.
+                checkAllJobsFinishedMsgs(jobStatuses);
 
                 return jobStatuses;
             })

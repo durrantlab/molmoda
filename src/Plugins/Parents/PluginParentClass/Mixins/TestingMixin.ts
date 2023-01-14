@@ -2,7 +2,11 @@
 import {
     ITest,
     ITestCommand,
+    TestClick,
     TestCommand,
+    TestText,
+    TestUpload,
+    TestWaitUntilRegex,
 } from "@/Testing/ParentPluginTestFuncs";
 import { Vue } from "vue-class-component";
 import * as api from "@/Api";
@@ -27,10 +31,10 @@ export class TestingMixin extends Vue {
         const afterPluginCloses =
             (this as any).logJob === true
                 ? [
-                      this.testWaitForRegex(
+                      new TestWaitUntilRegex(
                           "#log",
                           'Job "' + (this as any).pluginId + ':.+?" ended'
-                      ),
+                      ).cmd,
                   ]
                 : [];
         return [
@@ -59,61 +63,19 @@ export class TestingMixin extends Vue {
         }-item`;
 
         if (typeof argVal === "string" && argVal.startsWith("file://")) {
-            return {
-                cmd: TestCommand.Upload,
-                selector,
-                data: argVal.substring(7),
-            };
+            return new TestUpload(selector, argVal.substring(7)).cmd;
         }
 
         if (typeof argVal === "boolean") {
             return {
                 cmd: TestCommand.CheckBox,
                 selector,
-                data: argVal
+                data: argVal,
             };
         }
 
         // TODO: Only works for text currently!
-        return {
-            selector,
-            cmd: TestCommand.Text,
-            data: argVal,
-        };
-    }
-
-    /**
-     * If running a selenium test, this function will generate the command to wait
-     * until a given DOM element contains specified text.
-     *
-     * @param  {string} selector  The selector of the DOM element.
-     * @param  {string} regex     The regex to wait for, as a string.
-     * @helper
-     * @document
-     * @returns {ITestCommand}  The command to wait until the DOM element contains
-     *     the specified text.
-     */
-    testWaitForRegex(selector: string, regex: string): ITestCommand {
-        return {
-            cmd: TestCommand.WaitUntilRegex,
-            selector,
-            data: regex,
-        };
-    }
-
-    /**
-     * If running a selenium test, this function will generate the command to
-     * wait for a user-specified number of seconds.
-     *
-     * @param {number} seconds  The number of seconds to wait.
-     * @returns {ITestCommand}  The command to wait for the specified number of
-     *    seconds.
-     */
-    testWait(seconds: number): ITestCommand {
-        return {
-            cmd: TestCommand.Wait,
-            data: seconds,
-        };
+        return new TestText(selector, argVal).cmd;
     }
 
     /**
@@ -125,10 +87,8 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand}  The command to run.
      */
     testPressButton(selector: string): ITestCommand {
-        return {
-            cmd: TestCommand.Click,
-            selector: `#modal-${(this as any).pluginId} ${selector}`,
-        };
+        return new TestClick(`#modal-${(this as any).pluginId} ${selector}`)
+            .cmd;
     }
 
     /**
@@ -155,7 +115,7 @@ export class TestingMixin extends Vue {
 
         // TODO: testWaitForRegex("#styles", "Protein") used elsewhere. Could make
         // "wait for file load" command.
-        return this.testWaitForRegex("#styles", "Protein");
+        return new TestWaitUntilRegex("#styles", "Protein").cmd;
     }
 
     /**
@@ -175,10 +135,11 @@ export class TestingMixin extends Vue {
 
         const cmds: ITestCommand[] = [];
         for (const treeTitle of treeTitles) {
-            cmds.push({
-                cmd: TestCommand.Click,
-                selector: `#navigator div[data-label="${treeTitle}"] .expand-icon`,
-            });
+            cmds.push(
+                new TestClick(
+                    `#navigator div[data-label="${treeTitle}"] .expand-icon`
+                ).cmd
+            );
         }
 
         return cmds;
@@ -195,11 +156,13 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand} The command to select the specified molecule in
      *     the tree.
      */
-    testSelectMoleculeInTree(treeTitle: string, shiftPressed = false): ITestCommand {
-        return {
-            cmd: TestCommand.Click,
-            selector: `#navigator div[data-label="${treeTitle}"] .title-text`,
-            data: shiftPressed
-        };
+    testSelectMoleculeInTree(
+        treeTitle: string,
+        shiftPressed = false
+    ): ITestCommand {
+        return new TestClick(
+            `#navigator div[data-label="${treeTitle}"] .title-text`,
+            shiftPressed
+        ).cmd;
     }
 }

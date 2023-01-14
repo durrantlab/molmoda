@@ -22,7 +22,7 @@ import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
@@ -125,8 +125,8 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     return {
       pluginOpen: [this.testSetUserArg("uniprot", "P86927")],
       afterPluginCloses: [
-        this.testWaitForRegex("#styles", "Protein"),
-        this.testWaitForRegex("#log", 'Job "loadalphafold:.+?" ended'),
+        new TestWaitUntilRegex("#styles", "Protein").cmd,
+        new TestWaitUntilRegex("#log", 'Job "loadalphafold:.+?" ended').cmd,
       ],
     };
   }

@@ -26,7 +26,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
@@ -194,7 +194,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
                 ],
                 // closePlugin: [],
                 afterPluginCloses: [
-                    this.testWaitForRegex("#navigator", ".merged."),
+                    new TestWaitUntilRegex("#navigator", ".merged.").cmd,
                 ],
             },
         ];

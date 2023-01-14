@@ -25,7 +25,7 @@ import {
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
@@ -119,8 +119,8 @@ export default class LoadPDBPlugin extends PluginParentClass {
         return {
             pluginOpen: [this.testSetUserArg("pdbId", "1XDN")],
             afterPluginCloses: [
-                this.testWaitForRegex("#styles", "Protein"),
-                this.testWaitForRegex("#log", 'Job "loadpdb:.+?" ended'),
+                new TestWaitUntilRegex("#styles", "Protein").cmd,
+                new TestWaitUntilRegex("#log", 'Job "loadpdb:.+?" ended').cmd,
             ],
         };
     }

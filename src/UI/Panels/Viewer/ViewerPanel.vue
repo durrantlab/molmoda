@@ -176,6 +176,76 @@ export default class ViewerPanel extends Vue {
         api.visualization.viewer?.removeObjects(idsOfTerminalNodes);
     }
 
+    private _clearAndSetStyle(
+        treeNode: TreeNode,
+        surfacePromises: Promise<any>[]
+    ): boolean {
+        if (treeNode.styles) {
+            // Styles to apply, so make sure it's visible.
+
+            // Clear current styles
+            api.visualization.viewer?.clearMoleculeStyles(
+                treeNode.id as string
+            );
+
+            // Clear any surfaces associated with this molecule.
+            api.visualization.viewer?.clearSurfacesOfMol(treeNode.id as string);
+
+            // Add new styles
+            let spheresUsed = false;
+            for (const style of treeNode.styles) {
+                if (!style["surface"]) {
+                    // It's a style, not a surface.
+                    const convertedStyle =
+                        api.visualization.viewer?.convertStyle(style, treeNode);
+                    api.visualization.viewer?.setMolecularStyle(
+                        treeNode.id as string,
+                        api.visualization.viewer?.convertSelection({}),
+                        convertedStyle,
+                        true
+                    );
+                    if (style.sphere) {
+                        spheresUsed = true;
+                    }
+                    continue;
+                }
+
+                // It's a surface. Mark it for adding later.
+                const convertedStyle = api.visualization.viewer?.convertStyle(
+                    style,
+                    treeNode
+                );
+                surfacePromises.push(
+                    api.visualization.viewer?.addSurface(
+                        treeNode.id as string,
+                        convertedStyle
+                    ) as Promise<any>
+                );
+            }
+
+            // Regardless of specified style, anything not bound to other molecule
+            // should be visible.
+            if (treeNode.styles.length > 0 && !spheresUsed) {
+                // If there's any style, no style is spheres, make sure unbonded
+                // atoms are visible.
+                const convertedStyle = api.visualization.viewer?.convertStyle(
+                    unbondedAtomsStyle,
+                    treeNode
+                );
+                api.visualization.viewer?.setMolecularStyle(
+                    treeNode.id as string,
+                    api.visualization.viewer?.convertSelection({
+                        bonds: 0,
+                    }),
+                    convertedStyle,
+                    true
+                );
+            }
+        }
+
+        return treeNode.styles !== undefined;
+    }
+
     /**
      * Updates any style changes.
      *
@@ -188,12 +258,13 @@ export default class ViewerPanel extends Vue {
             return Promise.resolve([]);
         }
 
-        const visibleTerminalNodeModelsIds: string[] = [];
+        let visibleTerminalNodeModelsIds: string[] = [];
         const terminalNodes = this.treeview.filters.onlyTerminal;
 
         this._removeOldModels(terminalNodes);
 
-        // Add all the models and put them in the cache.
+        // Add all the models and put them in the cache. This also hides the
+        // shapes if visible == false on the node.
         const addMolPromises =
             api.visualization.viewer?.addTreeNodeList(terminalNodes);
 
@@ -202,114 +273,56 @@ export default class ViewerPanel extends Vue {
             .then((treeNodes: TreeNode[]) => {
                 const surfacePromises: Promise<any>[] = [];
 
-                for (const treeNode of treeNodes) {
-                    if (treeNode.visible) {
-                        visibleTerminalNodeModelsIds.push(
-                            treeNode.id as string
-                        );
-                    }
+                // Keep track of visible molecules so you can zoom on them
+                // later.
+                visibleTerminalNodeModelsIds = treeNodes
+                    .filter((treeNode: TreeNode) => treeNode.visible)
+                    .map((treeNode: TreeNode) => treeNode.id as string);
 
-                    if (!treeNode.viewerDirty) {
-                        // If the container isn't dirty, there's no need to apply a
-                        // new style.
-                        continue;
-                    }
+                // Get only the dirty nodes. If the node isn't dirty, there's no
+                // need to apply a new style.
+                const dirtyNodes = treeNodes.filter(
+                    (treeNode: TreeNode) => treeNode.viewerDirty
+                );
 
-                    // You're about to update the style, so mark it as not dirty.
+                // You're about to update the style, so mark it as not dirty.
+                dirtyNodes.forEach((treeNode: TreeNode) => {
                     treeNode.viewerDirty = false;
+                });
 
-                    // If mol is not visible, hide it.
-                    if (!treeNode.visible) {
-                        // hide it.
-                        api.visualization.viewer?.hideObject(
-                            treeNode.id as string
-                        );
+                const visibleDirtyNodes = dirtyNodes.filter(
+                    (treeNode: TreeNode) => {
+                        const isVisible = treeNode.visible;
 
-                        // Clear any surfaces associated with this molecule.
-                        api.visualization.viewer?.clearSurfacesOfMol(
-                            treeNode.id as string
-                        );
+                        if (!isVisible) {
+                            // Since not supposed to be visible, we won't keep
+                            // it in the list. But make sure it's hidden here.
 
-                        continue;
+                            // hide it.
+                            console.log("Hiding:" + treeNode.id);
+                            api.visualization.viewer?.hideObject(
+                                treeNode.id as string
+                            );
+
+                            // Clear any surfaces associated with this molecule.
+                            api.visualization.viewer?.clearSurfacesOfMol(
+                                treeNode.id as string
+                            );
+                        } else {
+                            // Make sure actually visible
+                            console.log("Showing:" + treeNode.id);
+                            api.visualization.viewer?.showObject(
+                                treeNode.id as string
+                            );
+                        }
+
+                        return isVisible;
                     }
+                );
 
-                    // Make sure visible
-                    api.visualization.viewer?.showObject(
-                        treeNode.id as string
-                    );
-
+                for (const treeNode of visibleDirtyNodes) {
                     // There are styles to apply. Apply them.
-                    if (treeNode.styles) {
-                        // Styles to apply, so make sure it's visible.
-
-                        // Clear current styles
-                        api.visualization.viewer?.clearMoleculeStyles(
-                            treeNode.id as string
-                        );
-
-                        // Clear any surfaces associated with this molecule.
-                        api.visualization.viewer?.clearSurfacesOfMol(
-                            treeNode.id as string
-                        );
-
-                        // Add new styles
-                        let spheresUsed = false;
-                        for (const style of treeNode.styles) {
-                            if (!style["surface"]) {
-                                // It's a style, not a surface.
-                                const convertedStyle =
-                                    api.visualization.viewer?.convertStyle(
-                                        style,
-                                        treeNode
-                                    );
-                                api.visualization.viewer?.setMolecularStyle(
-                                    treeNode.id as string,
-                                    api.visualization.viewer?.convertSelection(
-                                        {}
-                                    ),
-                                    convertedStyle,
-                                    true
-                                );
-                                if (style.sphere) {
-                                    spheresUsed = true;
-                                }
-                                continue;
-                            }
-
-                            // It's a surface. Mark it for adding later.
-                            const convertedStyle =
-                                api.visualization.viewer?.convertStyle(
-                                    style,
-                                    treeNode
-                                );
-                            surfacePromises.push(
-                                api.visualization.viewer?.addSurface(
-                                    treeNode.id as string,
-                                    convertedStyle
-                                ) as Promise<any>
-                            );
-                        }
-
-                        // Regardless of specified style, anything not bound to other molecule
-                        // should be visible.
-                        if (treeNode.styles.length > 0 && !spheresUsed) {
-                            // If there's any style, no style is spheres, make sure unbonded
-                            // atoms are visible.
-                            const convertedStyle =
-                                api.visualization.viewer?.convertStyle(
-                                    unbondedAtomsStyle,
-                                    treeNode
-                                );
-                            api.visualization.viewer?.setMolecularStyle(
-                                treeNode.id as string,
-                                api.visualization.viewer?.convertSelection({
-                                    bonds: 0,
-                                }),
-                                convertedStyle,
-                                true
-                            );
-                        }
-
+                    if (this._clearAndSetStyle(treeNode, surfacePromises)) {
                         continue;
                     }
 
@@ -319,6 +332,7 @@ export default class ViewerPanel extends Vue {
                             treeNode.id as string,
                             treeNode.shape
                         );
+                        continue;
                     }
 
                     // Visible, no styles, not a shape. This should never

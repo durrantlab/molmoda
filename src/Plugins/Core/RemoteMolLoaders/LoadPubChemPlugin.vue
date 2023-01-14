@@ -53,7 +53,7 @@ import {
   RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TestCommand } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, TestText, TestWait, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
@@ -253,18 +253,14 @@ export default class LoadPubChemPlugin extends PluginParentClass {
   getTests(): ITest {
     return {
       pluginOpen: [
-        {
-          selector: "#modal-loadpubchem #formMolName",
-          cmd: TestCommand.Text,
-          data: "Aspirin",
-        },
+        new TestText("#modal-loadpubchem #formMolName", "Aspirin").cmd,
         // TODO: Below could wait until value populated. Hoping it will take
         // less than 3 secs is hackish.
-        this.testWait(5),
+        new TestWait(5).cmd,
       ],
       afterPluginCloses: [
-        this.testWaitForRegex("#styles", "Compound"),
-        this.testWaitForRegex("#log", 'Job "loadpubchem:.+?" ended'),
+        new TestWaitUntilRegex("#styles", "Compound").cmd,
+        new TestWaitUntilRegex("#log", 'Job "loadpubchem:.+?" ended').cmd,
       ],
     };
   }

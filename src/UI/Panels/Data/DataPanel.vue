@@ -115,7 +115,7 @@ export default class DataPanel extends Vue {
                 }
                 dataByTitle[title].push({
                     ...data,
-                    treeNode: node,
+                    treeNodeId: node.id,
                 });
             }
         }
@@ -167,16 +167,19 @@ export default class DataPanel extends Vue {
 
             tableData.rows = dataByTitle[title].map((data: ITreeNodeData) => {
                 // The title should reflect ancestors.
-                let title = data.treeNode?.title;
-                if (data.treeNode) {
-                    title = this.nodePathName(data.treeNode, allMols);
+                const treeNode = allMols.flattened.filters.onlyId(
+                    data.treeNodeId as string
+                );
+                let title = treeNode?.title;
+                if (treeNode) {
+                    title = this.nodePathName(treeNode, allMols);
                 }
 
                 return {
                     ...defaultRow,
                     ...data.data,
                     Entry: title,
-                    id: data.treeNode?.id,
+                    id: treeNode?.id,
                 };
             });
 

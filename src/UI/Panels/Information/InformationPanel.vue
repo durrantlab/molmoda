@@ -53,6 +53,8 @@ export default class InformationPanel extends Vue {
         return this.$store.state.molecules;
     }
 
+    getSmilesTimeout: any = undefined;
+
     /**
      * Watches the molecules in the vuex store. If the molecules change, set the
      * smiles of the selected molecule.
@@ -67,15 +69,23 @@ export default class InformationPanel extends Vue {
             return;
         }
 
-        getSmilesOfTreeNode(firstSelected)
-            .then((smi) => {
-                this.smiles = smi;
-                this.treeNode = firstSelected;
-                return;
-            })
-            .catch((err) => {
-                throw err;
-            });
+        // Wrapping it in a cancellable timeout like this to prevent multiple
+        // ones in succession and improve responsiveness.
+        if (this.getSmilesTimeout !== undefined) {
+            clearTimeout(this.getSmilesTimeout);
+        }
+
+        this.getSmilesTimeout = setTimeout(() => {
+            getSmilesOfTreeNode(firstSelected)
+                .then((smi) => {
+                    this.smiles = smi;
+                    this.treeNode = firstSelected;
+                    return;
+                })
+                .catch((err) => {
+                    throw err;
+                });
+        }, 500);
     }
 }
 </script>

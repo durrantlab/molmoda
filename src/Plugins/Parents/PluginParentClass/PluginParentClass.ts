@@ -27,6 +27,7 @@ import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
 import { registerHotkeys } from "@/Core/HotKeys";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { addOnJobsDoneMsgs } from "@/Queue/JobManagers/AllJobsFinishedMsgs";
 
 export type RunJob = FileInfo[] | FileInfo | undefined | void;
 export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -107,14 +108,26 @@ export abstract class PluginParentClass extends mixins(
      */
     logJob = true;
 
+    /**
+     * The message to show when all jobs have finished. If empty, no message is
+     * shown.
+     *
+     * @type {string}
+     */
+    msgOnJobsFinished = "";
+
+    /**
+     * If alwaysEnabled is set to true, this plugin will always load, even if
+     * the user specifies one plugin using the "plugin" url parameter. Set to
+     * true for core plugins that are not optional.
+     *
+     * @type {boolean}
+     */
+    alwaysEnabled = false;
+
     // In some cases, must pass information to the plugin when it opens.
     // Typicaly when using the plugin outside the menu system.
     protected payload: any = undefined;
-
-    // If set to true, this plugin will always load, even if the user specifies
-    // one plugin using the "plugin" url parameter. Set to true for core plugins
-    // that are not optional.
-    public alwaysEnabled = false;
 
     /**
      * Runs when the user first starts the plugin. Called when the user clicks
@@ -242,6 +255,11 @@ export abstract class PluginParentClass extends mixins(
         }
 
         JobQueue.submitJobs(jobs);
+
+        if (this.msgOnJobsFinished !== "") {
+            // Message to show when all jobs finished.
+            addOnJobsDoneMsgs(this.msgOnJobsFinished);
+        }
     }
 
     /**

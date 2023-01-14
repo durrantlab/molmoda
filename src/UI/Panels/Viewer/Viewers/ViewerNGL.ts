@@ -555,7 +555,10 @@ export class ViewerNGL extends ViewerParent {
 
         const encompassingBox = models[0].getBox();
         for (let i = 1; i < models.length; i++) {
-            encompassingBox.union(models[i].getBox());
+            if (models[i].getBox) {
+                // Shapes don't have getBox methods.
+                encompassingBox.union(models[i].getBox());
+            }
         }
 
         // Make the box a bit bigger.,
