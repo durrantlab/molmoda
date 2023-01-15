@@ -1,30 +1,25 @@
 <template>
-  <PluginComponent
-    :userArgs="userArgs"
-    v-model="open"
-    title="Load Molecule from PubChem"
-    :intro="intro"
-    @onPopupDone="onPopupDone"
-    :pluginId="pluginId"
-  ></PluginComponent>
+    <PluginComponent
+        :userArgs="userArgs"
+        v-model="open"
+        title="Load Molecule from PubChem"
+        :intro="intro"
+        @onPopupDone="onPopupDone"
+        :pluginId="pluginId"
+    ></PluginComponent>
 </template>
 
 <script lang="ts">
+import { runOpenBabel } from "@/FileSystem/OpenBabel";
 import {
-  writeFile,
-  readDir,
-  readFile,
-  runOpenBabel,
-} from "@/FileSystem/OpenBabel";
-import {
-  IContributorCredit,
-  ISoftwareCredit,
+    IContributorCredit,
+    ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import {
-  FormElement,
-  IFormGroup,
-  IFormMoleculeInputParams,
-  IFormNumber,
+    FormElement,
+    IFormGroup,
+    IFormMoleculeInputParams,
+    IFormNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
@@ -35,151 +30,110 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
  * TestPlugin
  */
 @Options({
-  components: {
-    PluginComponent,
-  },
+    components: {
+        PluginComponent,
+    },
 })
 export default class TestPlugin extends PluginParentClass {
-  menuPath = "Test/Test Component";
-  softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
-  ];
-  pluginId = "testplugin";
-
-  intro = `This is a <b>test</b> component.`;
-
-  userArgs: FormElement[] = [
-    {
-      // type: FormElemType.Number,
-      id: "moose",
-      label: "Moose",
-      val: 0,
-    } as IFormNumber,
-    {
-      // type: FormElemType.MoleculeInputParams,
-      id: "makemolinputparams",
-      val: new MoleculeInput({ compoundFormat: "can" }),
-    } as IFormMoleculeInputParams,
-    {
-      id: "group",
-      // type: FormElemType.Group,
-      label: "Labelme",
-      childElements: [
+    menuPath = "Test/Test Component";
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [
         {
-          // type: FormElemType.Number,
-          id: "moose2",
-          label: "Moose2",
-          val: 0,
+            name: "Jacob D. Durrant",
+            url: "http://durrantlab.com/",
         },
+    ];
+    pluginId = "testplugin";
+
+    intro = `This is a <b>test</b> component.`;
+
+    userArgs: FormElement[] = [
         {
-          // type: FormElemType.Text,
-          id: "moose3",
-          label: "Moose3",
-          val: "face",
-        },
-      ],
-      startOpened: true,
-    } as IFormGroup,
-  ];
+            // type: FormElemType.Number,
+            id: "moose",
+            label: "Moose",
+            val: 0,
+        } as IFormNumber,
+        {
+            // type: FormElemType.MoleculeInputParams,
+            id: "makemolinputparams",
+            val: new MoleculeInput({ compoundFormat: "can" }),
+        } as IFormMoleculeInputParams,
+        {
+            id: "group",
+            // type: FormElemType.Group,
+            label: "Labelme",
+            childElements: [
+                {
+                    // type: FormElemType.Number,
+                    id: "moose2",
+                    label: "Moose2",
+                    val: 0,
+                },
+                {
+                    // type: FormElemType.Text,
+                    id: "moose3",
+                    label: "Moose3",
+                    val: "face",
+                },
+            ],
+            startOpened: true,
+        } as IFormGroup,
+    ];
 
-  /**
-   * Runs when the user presses the action button and the popup closes.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
-   */
-  onPopupDone(/* userArgs: IUserArg[] */) {
-    // * @param {IUserArg[]} userArgs  The user arguments.
-    // debugger;
-    // this.submitJobs([userArgs]);
-    const jobParams = [];
-    for (let i = 0; i < 1; i++) {
-      const jobParam = {
-        delay: Math.random() * 10000, // ms
-      };
-      jobParams.push(jobParam);
-    }
-    this.submitJobs(jobParams, Math.round(Math.random() * 2)); // , 10000);
-  }
-
-  /**
-   * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
-   */
-  runJobInBrowser(_args: any): Promise<undefined> {
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     resolve(undefined);
-    //   }, _args.delay);
-    // });
-
-    // console.log(_args);
-
-    // Submit some jobs that delay randomly.
-
-    // debugger;
-    // return Promise.resolve(undefined);
-
-    // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
-    // let args: string[] = ['-H'];
-
-    let beforeOBFunc = (obabel: any) => {
-      console.log("h");
-      // writeFile(obabel, "/test.can", "c1cccccc1");
-      // console.log(readDir(obabel, "/"));
-      // const txt = readFile(obabel, "testfile.txt");
-      // debugger;
-    };
-
-    let afterOBFunc = (obabel: any) => {
-      // try {
-        throw "dog";  // TODO: Why is this not caught unless in try statement?
-      // } catch(e) {
-      //   console.log(e);
-      //   debugger;
-      // }
-      // console.log("h2");
-      // console.log(readDir(obabel, "."));
-      // console.log(readDir(obabel, "/"));
-      // setTimeout(() => {
-        // const txt = readFile(obabel, "test.pdb");
+    /**
+     * Runs when the user presses the action button and the popup closes.
+     *
+     * @param {IUserArg[]} userArgs  The user arguments.
+     */
+    onPopupDone(/* userArgs: IUserArg[] */) {
+        // * @param {IUserArg[]} userArgs  The user arguments.
         // debugger;
-      // }, 500);
-    };
+        // this.submitJobs([userArgs]);
+        const jobParams = [];
+        for (let i = 0; i < 1; i++) {
+            const jobParam = {
+                delay: Math.random() * 10000, // ms
+            };
+            jobParams.push(jobParam);
+        }
+        this.submitJobs(jobParams, Math.round(Math.random() * 2)); // , 10000);
+    }
 
-    // writeFile("/moose/txt.txt", "I cam a cat")
-    //   .then(() => {
-    //     return readFile("/moose/txt.txt");
-    //   })
-    //   .then((txt) => {
-    //     debugger;
-    //     return;
-    //   })
-    //   .catch((err) => {
-    //     throw err;
-    //   });
+    /**
+     * Every plugin runs some job. This is the function that does the job running.
+     *
+     * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
+     * @returns {Promise<undefined>}  A promise that resolves when the job is
+     *     done.
+     */
+    runJobInBrowser(_args: any): Promise<undefined> {
+        // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
+        // let args: string[] = ['-H'];
 
-    return runOpenBabel(
-      // ["-:CO(=O)", "-ocan", "-p", "7.4", "--gen2D"],
-      ["-:CO(=O)", "-O", "/test.pdb", "-p", "7.4"],
-      beforeOBFunc,
-      afterOBFunc
-    )
-      .then((res: any) => {
-        debugger;
-        // console.log(res);
-        return undefined;
-      })
-      .catch((err: any) => {
-        throw err;
-      });
-  }
+        let beforeOBFunc = (openbabel: any) => {
+            openbabel.files.writeFile("/test.can", "c1cccccc1");
+        };
+
+        let afterOBFunc = (openbabel: any) => {
+            return openbabel.files.readFile("test.pdb");
+        };
+
+        return runOpenBabel(
+            // ["-:CO(=O)", "-ocan", "-p", "7.4", "--gen2D"],
+            ["-:CO(=O)", "-O", "/test.pdb", "-p", "7.4"],
+            beforeOBFunc,
+            afterOBFunc
+        )
+            .then((res: any) => {
+                debugger;
+                // console.log(res);
+                return undefined;
+            })
+            .catch((err: any) => {
+                throw err;
+            });
+    }
 }
 </script>
 
