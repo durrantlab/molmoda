@@ -10,7 +10,8 @@
 </template>
 
 <script lang="ts">
-import { runOpenBabel } from "@/FileSystem/OpenBabel";
+import { FileInfo } from "@/FileSystem/FileInfo";
+import { runOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import {
     IContributorCredit,
     ISoftwareCredit,
@@ -122,8 +123,13 @@ export default class TestPlugin extends PluginParentClass {
         return runOpenBabel(
             // ["-:CO(=O)", "-ocan", "-p", "7.4", "--gen2D"],
             ["-:CO(=O)", "-O", "/test.pdb", "-p", "7.4"],
-            beforeOBFunc,
-            afterOBFunc
+            [
+                new FileInfo({
+                    name: "test.can",
+                    contents: "c1cccccc1",
+                }),
+            ],
+            "test.pdb"
         )
             .then((res: any) => {
                 debugger;

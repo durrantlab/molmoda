@@ -1,9 +1,9 @@
-import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabelTmp";
 import { store } from "@/Store";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseMolecularModelFromText } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * Uses OpenBabel to parse the a molecular-model file.

@@ -1,6 +1,5 @@
 <template>
     <div ref="smiles-container" class="mb-4" :style="containerStyles">
-        <!-- {{smilesToUse}} -->
         <!-- THIS GOOD IF IN VIEWER: class="mb-2 ms-2" -->
         <svg
             @click="onClick"
@@ -125,7 +124,7 @@ export default class Viewer2D extends Vue {
      * @returns {string} The smiles to use.
      */
     get smilesToUse(): string {
-        return this.smiles.trim();
+        return this.smiles.replace(/\t/g, " ").split(" ")[0].trim();
         // if (!this.getSmilesFromSelected) {
         // }
 
@@ -144,10 +143,11 @@ export default class Viewer2D extends Vue {
      * Draws the molecule.
      */
     draw() {
+        
         if (!this.readyToUse) {
             return;
         }
-
+        
         dynamicImports.smilesdrawer.module
             .then((SmilesDrawer) => {
                 // Give time for canvas to be resized.

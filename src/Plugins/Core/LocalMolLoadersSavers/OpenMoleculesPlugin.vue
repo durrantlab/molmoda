@@ -89,9 +89,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * @returns {boolean | Promise<boolean>}  Whether to open the popup.
      */
     onBeforePopupOpen(): boolean | Promise<boolean> {
-        // Good chance you'll need open babel, so start loading now.
-        dynamicImports.openbabeljs.module;
-
         // Below is hackish...
         (this.$refs.formFile as FormFile).clearFile();
 

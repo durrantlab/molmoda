@@ -93,7 +93,7 @@ export default class MolPropsPlugin extends PluginParentClass {
   onBeforePopupOpen() {
     // You're probably going to need open babel and rdkitjs
     // dynamicImports.rdkitjs.module;
-    dynamicImports.openbabeljs.module;
+    // dynamicImports.openbabeljs.module;
   }
 
   /**

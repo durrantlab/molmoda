@@ -45,10 +45,6 @@ module.exports = defineConfig({
                         to: "js/fpocketweb",
                     },
                     {
-                        from: "src/libs/ToCopy/openbabeljs",
-                        to: "js/openbabeljs",
-                    },
-                    {
                         from: "src/Testing/mols/4WP4.pdb",
                         to: "4WP4.pdb",
                     },

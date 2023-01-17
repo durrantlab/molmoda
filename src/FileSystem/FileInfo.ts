@@ -1,7 +1,7 @@
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType, IFormatInfo } from "./LoadSaveMolModels/Types/MolFormats";
-import { convertMolFormatOpenBabel } from "./OpenBabelTmp";
+import { convertMolFormatOpenBabel } from "./OpenBabel/OpenBabel";
 import { IFileInfo } from "./Types";
 
 /**

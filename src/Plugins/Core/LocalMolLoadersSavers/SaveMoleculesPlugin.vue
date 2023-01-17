@@ -194,9 +194,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      * (e.g., clear inputs from previous open).
      */
     onBeforePopupOpen() {
-        // Good chance you'll need open babel, so start loading now.
-        dynamicImports.openbabeljs.module;
-
         this.appClosing = this.payload !== undefined;
 
         // Reset some form values
