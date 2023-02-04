@@ -176,6 +176,13 @@ export default class ViewerPanel extends Vue {
         api.visualization.viewer?.removeObjects(idsOfTerminalNodes);
     }
 
+    /**
+     * Update the styles of the molecules.
+     * 
+     * @param {TreeNode} treeNode  The tree node to update.
+     * @param {Promise<any>[]} surfacePromises  The promises for the surfaces.
+     * @returns {boolean}  True if styles is defined in the end. False otherwise.
+     */
     private _clearAndSetStyle(
         treeNode: TreeNode,
         surfacePromises: Promise<any>[]

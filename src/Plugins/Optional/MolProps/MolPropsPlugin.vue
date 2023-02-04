@@ -19,7 +19,6 @@
 </template>
 
 <script lang="ts">
-import { dynamicImports } from "@/Core/DynamicImports";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { checkAnyMolLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";

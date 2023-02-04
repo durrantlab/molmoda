@@ -18,6 +18,7 @@ export interface IFormatInfo {
     description: string;
     hasBondOrders: boolean; // So formats do, some don't.
     loader: MolLoader;
+    lacks3D?: boolean;
     frameSeparators?: IFrameSeparator[];
     // In some cases, you can extract a title from the file itself.
     namesRegex?: RegExp[];
@@ -170,6 +171,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         frameSeparators: smiLikeSeparators,
         namesRegex: smiLikeNames,
         saveWarning: "SMI" + noCoordinatesWarning,
+        lacks3D: true
     },
     CAN: {
         primaryExt: "can",
@@ -180,6 +182,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         frameSeparators: smiLikeSeparators,
         namesRegex: smiLikeNames,
         saveWarning: "CAN" + noCoordinatesWarning,
+        lacks3D: true
     },
     XYZ: {
         primaryExt: "xyz",

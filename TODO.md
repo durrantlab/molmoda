@@ -66,11 +66,11 @@ molecule was generated.
 When adding new molecule, make sure filename is not already in list. Append (#).
 You could now easily build this into extend and push on TreeNode classes.
 
-Multiframe files, still put under one molecule. And if more than a fixed number,
+*** Multiframe files, still put under one molecule. And if more than a fixed number,
 autohide all but first few. Can use merge feature if needed. Tick box on open:
     Option to merge as separte files, or all together.
 
-*** Test elements could be restructured as objects. Would be better to put
+Test elements could be restructured as objects. Would be better to put
 functions on each one. Then, Tutorial based on tests (first one). Started to do
 this. See ParentPluginTestFuncs.ts
 
@@ -83,7 +83,13 @@ somehow. I think it is. Need to investigate this.
 
 Bootstrap Tour
 
+Load CAN. Takes a long time to assign 3D coordinates. Would to be good to add as
+ready.
+
 # DONE
+
+Load CAN with multiple files. Then visualize structures. They are wrong. Good to
+always assign 3D coordinates to certain files?
 
 Would be good if there were a message that was displayed when all calculations finish.
 

@@ -18,15 +18,28 @@ export interface ITestCommand {
     data?: any;
 }
 
+/** A class to generate the command to click a selector. */
 export class TestClick {
     private selector: string;
     private shiftPressed: boolean;
 
+    /**
+     * Creates an instance of TestClick.
+     *
+     * @param  {string}  selector              The selector to click.
+     * @param  {boolean} [shiftPressed=false]  If true, the shift key will be
+     *                                         pressed while clicking.
+     */
     constructor(selector: string, shiftPressed = false) {
         this.selector = selector;
         this.shiftPressed = shiftPressed;
     }
 
+    /**
+     * Generates the command to click the selector.
+     * 
+     * @returns {ITestCommand}  The command to click the selector.
+     */
     get cmd(): ITestCommand {
         return {
             selector: this.selector,
@@ -36,13 +49,24 @@ export class TestClick {
     }
 }
 
+/** A class to generate the command to wait for a specified duration. */
 export class TestWait {
     private duration: number;
 
+    /**
+     * Creates an instance of TestWait.
+     * 
+     * @param  {number} [duration=1]  The duration to wait, in seconds.
+     */
     constructor(duration = 1) {
         this.duration = duration;
     }
 
+    /**
+     * Generates the command to wait for the specified duration.
+     *
+     * @returns {ITestCommand}  The command to wait for the specified duration.
+     */
     get cmd(): ITestCommand {
         return {
             cmd: TestCommand.Wait,
@@ -51,15 +75,29 @@ export class TestWait {
     }
 }
 
+/** A class to generate the command to type text into a selector. */
 export class TestText {
     private selector: string;
     private text: string;
 
+    /**
+     * Creates an instance of TestText.
+     * 
+     * @param  {string} selector  The selector to type into.
+     * @param  {string} text      The text to type.
+     */
     constructor(selector: string, text: string) {
         this.selector = selector;
         this.text = text;
     }
 
+    /**
+     * Generates the command to type the specified text into the specified
+     * selector.
+     *
+     * @returns {ITestCommand}  The command to type the specified text into the
+     *     specified selector.
+     */
     get cmd(): ITestCommand {
         return {
             selector: this.selector,
@@ -69,15 +107,33 @@ export class TestText {
     }
 }
 
+/** 
+ * A class to generate the command to wait until the specified regex is found in
+ * the specified selector. 
+ */
 export class TestWaitUntilRegex {
     private selector: string;
     private regex: string;
 
+    /**
+     * Creates an instance of TestWaitUntilRegex.
+     * 
+     * @param  {string} selector  The selector to monitor.
+     * @param  {string} regex     The regex to wait for.
+     */
     constructor(selector: string, regex: string) {
         this.selector = selector;
         this.regex = regex;
     }
 
+    
+    /**
+     * Generates the command to wait until the specified regex is found in the
+     * specified selector.
+     *
+     * @returns {ITestCommand}  The command to wait until the specified regex is
+     *    found in the specified selector.
+     */
     get cmd(): ITestCommand {
         return {
             selector: this.selector,
@@ -88,10 +144,17 @@ export class TestWaitUntilRegex {
 }
 
 
+/** A class to generate the command to upload a file. */
 export class TestUpload {
     private selector: string;
     private filePath: string;
 
+    /**
+     * Creates an instance of TestUpload.
+     * 
+     * @param  {string} selector  The selector to upload to.
+     * @param  {string} filePath  The file path to upload.
+     */
     constructor(selector: string, filePath: string) {
         this.selector = selector;
 
@@ -102,6 +165,13 @@ export class TestUpload {
         this.filePath = filePath;
     }
 
+    /**
+     * Generates the command to upload the specified file to the specified
+     * selector.
+     * 
+     * @returns {ITestCommand}  The command to upload the specified file to the
+     *    specified selector.
+     */
     get cmd(): ITestCommand {
         return {
             selector: this.selector,

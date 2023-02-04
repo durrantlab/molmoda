@@ -5,7 +5,7 @@ interface IDynamicImport {
     module: Promise<any>;
 }
 
-const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
+// const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
 
 /**
  * Adds a js file to the header. This is useful when you can't do a legitimate
@@ -17,38 +17,38 @@ const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
  * @returns {Promise<undefined>}  A promise that resolves when the script is
  *     loaded.
  */
-function addJsToHeader(
-    id: string,
-    url: string,
-    callback: () => Promise<any>
-): Promise<undefined> {
-    if (modulesAlreadyAddedToHeader[id] !== undefined) {
-        // Already loaded;
-        // (window as any)["OpenBabel"] =
-        //     modulesAlreadyAddedToHeader[id];
-        return Promise.resolve(modulesAlreadyAddedToHeader[id]);
-    }
+// function addJsToHeader(
+//     id: string,
+//     url: string,
+//     callback: () => Promise<any>
+// ): Promise<undefined> {
+//     if (modulesAlreadyAddedToHeader[id] !== undefined) {
+//         // Already loaded;
+//         // (window as any)["OpenBabel"] =
+//         //     modulesAlreadyAddedToHeader[id];
+//         return Promise.resolve(modulesAlreadyAddedToHeader[id]);
+//     }
 
-    modulesAlreadyAddedToHeader[id] = new Promise((resolve) => {
-        const script = document.createElement("script");
-        script.src = url;
-        script.onload = () => {
-            setTimeout(() => {
-                callback() // custom callback returns a promise
-                    .then((module) => {
-                        resolve(module);
-                        return;
-                    })
-                    .catch((err) => {
-                        throw err;
-                    });
-            }, 5000);
-        };
-        document.head.appendChild(script);
-    });
+//     modulesAlreadyAddedToHeader[id] = new Promise((resolve) => {
+//         const script = document.createElement("script");
+//         script.src = url;
+//         script.onload = () => {
+//             setTimeout(() => {
+//                 callback() // custom callback returns a promise
+//                     .then((module) => {
+//                         resolve(module);
+//                         return;
+//                     })
+//                     .catch((err) => {
+//                         throw err;
+//                     });
+//             }, 5000);
+//         };
+//         document.head.appendChild(script);
+//     });
 
-    return modulesAlreadyAddedToHeader[id];
-}
+//     return modulesAlreadyAddedToHeader[id];
+// }
 
 export const dynamicImports = {
     jsZip: {

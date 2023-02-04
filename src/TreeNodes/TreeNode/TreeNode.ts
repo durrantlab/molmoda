@@ -352,6 +352,12 @@ export class TreeNode {
         getMoleculesFromStore().push(this);
     }
 
+    /**
+     * Gets the box surrounding the model.
+     * 
+     * @param  {number} [padding=3.4]  The padding to add to the box.
+     * @returns {IBox}  The box.
+     */
     public getBoxShape(padding = 3.4): IBox {
         // Note 3.4 is approximate vdw diameter of carbon.
 

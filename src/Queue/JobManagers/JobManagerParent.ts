@@ -68,10 +68,8 @@ export abstract class JobManagerParent {
                                     );
                                 }
 
-                                const ext = getFileType(outputFile);
-
                                 // Is it some sort of loadable file?
-                                if (getFormatInfoGivenType(ext) !== undefined) {
+                                if (outputFile.getFormatInfo() !== undefined) {
                                     // It's a molecule format. Load it.
                                     getMoleculesFromStore().load(outputFile)
                                 }

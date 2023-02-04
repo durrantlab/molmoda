@@ -248,7 +248,7 @@ Gets the selenium test commands for the plugin. For advanced use.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [ParentPluginTestFuncs.ts, line 114](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L114). `ITest` is defined in [ParentPluginTestFuncs.ts, line 114](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L114).
+| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [ParentPluginTestFuncs.ts, line 184](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L184). `ITest` is defined in [ParentPluginTestFuncs.ts, line 184](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L184).
 
 #### `onEndJobLogMsg` (function) <a id="onEndJobLogMsg"></a>
 

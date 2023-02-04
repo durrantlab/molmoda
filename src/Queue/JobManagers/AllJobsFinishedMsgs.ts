@@ -31,6 +31,11 @@ function _checkAllJobsDone(jobStatuses: IJobStatusInfo[]): boolean {
     return true;
 }
 
+/**
+ * Checks if all jobs are done and displays a message if they are.
+ * 
+ * @param  {IJobStatusInfo[]} jobStatuses  The job statuses to check.
+ */
 export function checkAllJobsFinishedMsgs(jobStatuses: IJobStatusInfo[]): void {
     if (_msgs.length === 0) {
         // No messages to display

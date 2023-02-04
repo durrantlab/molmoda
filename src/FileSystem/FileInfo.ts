@@ -3,6 +3,7 @@ import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType, IFormatInfo } from "./LoadSaveMolModels/Types/MolFormats";
 import { convertMolFormatOpenBabel } from "./OpenBabel/OpenBabel";
 import { IFileInfo } from "./Types";
+import { getFileType } from "./Utils2";
 
 /**
  * Class FileInfo
@@ -24,6 +25,29 @@ export class FileInfo {
         this.contents = fileInfo.contents;
         this.compressedName = fileInfo.compressedName;
         this.treeNode = fileInfo.treeNode;
+    }
+
+    /**
+     * Serializes this FileInfo object.
+     * 
+     * @returns {IFileInfo}  The serialized object.
+     */
+    public serialize(): IFileInfo {
+        return {
+            name: this.name,
+            contents: this.contents,
+            compressedName: this.compressedName,
+            treeNode: this.treeNode,
+        } as IFileInfo;
+    }
+
+    public getFileType(): string {
+        return getFileType(this);
+    }
+
+    public getFormatInfo(): IFormatInfo | undefined {
+        const typ = this.getFileType();
+        return getFormatInfoGivenType(typ);
     }
 
     /**

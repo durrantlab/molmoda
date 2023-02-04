@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { runOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
+import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import {
     IContributorCredit,
     ISoftwareCredit,
@@ -112,26 +112,13 @@ export default class TestPlugin extends PluginParentClass {
         // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
         // let args: string[] = ['-H'];
 
-        let beforeOBFunc = (openbabel: any) => {
-            openbabel.files.writeFile("/test.can", "c1cccccc1");
-        };
+        const canFile = new FileInfo({
+            name: "test.can",
+            contents: "CCCCC(=O)O",
+        });
 
-        let afterOBFunc = (openbabel: any) => {
-            return openbabel.files.readFile("test.pdb");
-        };
-
-        return runOpenBabel(
-            // ["-:CO(=O)", "-ocan", "-p", "7.4", "--gen2D"],
-            ["-:CO(=O)", "-O", "/test.pdb", "-p", "7.4"],
-            [
-                new FileInfo({
-                    name: "test.can",
-                    contents: "c1cccccc1",
-                }),
-            ],
-            "test.pdb"
-        )
-            .then((res: any) => {
+        return convertMolFormatOpenBabel(canFile, "smi", false, 15)
+            .then((/* res: any */) => {
                 debugger;
                 // console.log(res);
                 return undefined;
@@ -139,6 +126,34 @@ export default class TestPlugin extends PluginParentClass {
             .catch((err: any) => {
                 throw err;
             });
+
+        // let beforeOBFunc = (openbabel: any) => {
+        //     openbabel.files.writeFile("/test.can", "c1cccccc1");
+        // };
+
+        // let afterOBFunc = (openbabel: any) => {
+        //     return openbabel.files.readFile("test.pdb");
+        // };
+
+        // return runOpenBabel(
+        //     // ["-:CO(=O)", "-ocan", "-p", "7.4", "--gen2D"],
+        //     ["-:CO(=O)", "-O", "/test.pdb", "-p", "7.4"],
+        //     [
+        //         new FileInfo({
+        //             name: "test.can",
+        //             contents: "c1cccccc1",
+        //         }),
+        //     ],
+        //     "test.pdb"
+        // )
+        //     .then((res: any) => {
+        //         debugger;
+        //         // console.log(res);
+        //         return undefined;
+        //     })
+        //     .catch((err: any) => {
+        //         throw err;
+        //     });
     }
 }
 </script>

@@ -24,6 +24,14 @@ waitForDataFromMainThread()
 
         // These functions aim to make it easier to access the file system.
         const fsHelperFuncs = {
+            /**
+             * A helper function that binds the fsHelperFuncs functions to the
+             * Module object. This is so you can use "this" rather than pass it
+             * the Module object.
+             *
+             * @param {any} Module  The Module object.
+             * @returns {void}
+             */
             _bindModule(Module: any) {
                 // Bind fsHelp functions to this module. This is
                 // so you can use "this" rather than pass it the
@@ -102,9 +110,10 @@ waitForDataFromMainThread()
                         for (const file of inputFiles) {
                             This.files.writeFile(file.name, file.contents);
                         }
+                        This.ENV.BABEL_DATADIR = "/data";
                     },
                 ],
-                onRuntimeInitialized: (This: any) => {
+                onRuntimeInitialized: (/* This: any */) => {
                     // TODO: Never called?
                     console.log("onRuntimeInitialized");
                 },

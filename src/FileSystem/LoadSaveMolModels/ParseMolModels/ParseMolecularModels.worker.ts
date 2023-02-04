@@ -590,20 +590,6 @@ function addParentIds(treeNode: TreeNode) {
                 node.parentId = anyNode.id;
             });
         }
-
-        // Below for debugging. TODO: remove
-        // anyNode.data = {};
-        // const title = Math.random() < 0.5 ? "Atoms" : "Atomz";
-        // anyNode.data[title] = {
-        //     data: { x: Math.random() },
-        //     type: TreeNodeDataType.Table,
-        // } as ITreeNodeData;
-
-        // if (Math.random() < 0.5) {
-        //     anyNode.data[title].data.y = Math.random();
-        // } else {
-        //     anyNode.data[title].data.z = Math.random();
-        // }
     });
 }
 

@@ -157,6 +157,7 @@ export default class Viewer2D extends Vue {
                         width: this.measuredContainerWidth,
                         height: this.measuredContainerWidth, // this.containerHeight,
                         bondThickness: 1,
+                        compactDrawing: false
                     };
 
                     const svgDrawer = new SmilesDrawer.SvgDrawer(options);

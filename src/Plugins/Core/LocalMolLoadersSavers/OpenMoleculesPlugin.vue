@@ -34,7 +34,6 @@ import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**

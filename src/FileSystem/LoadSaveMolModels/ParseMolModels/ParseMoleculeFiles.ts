@@ -6,9 +6,8 @@ import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseUsing3DMolJs } from "./_ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
 import { parseUsingBiotite } from "./_ParseUsingBiotite";
-import { getFormatInfoGivenType, molFormatInformation, MolLoader } from "../Types/MolFormats";
+import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import type { FileInfo } from "@/FileSystem/FileInfo";
-import { getFileType } from "@/FileSystem/Utils2";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -41,8 +40,7 @@ export function _parseMoleculeFile(
 ): Promise<void | TreeNodeList> {
     api.messages.waitSpinner(true);
 
-    const ext = getFileType(fileInfo);
-    const formatInfo = getFormatInfoGivenType(ext);
+    const formatInfo = fileInfo.getFormatInfo();
     if (formatInfo === undefined) {
         return Promise.reject();
     }

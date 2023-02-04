@@ -1,4 +1,3 @@
-import { dynamicImports } from "@/Core/DynamicImports";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { FileInfo } from "../FileInfo";
 
@@ -39,10 +38,8 @@ import { FileInfo } from "../FileInfo";
 /**
  *
  * @param {string[]}   args            The arguments to pass to OpenBabel.
- * @param {Function} [onBeforeRun]  Function to run before running OpenBabel.
- *                                     Good for creating files. Optional.
- * @param {Function} [onAfterRun]   Function to run after running OpenBabel.
- *                                     Good for reading files. Optional.
+ * @param {FileInfo[]} inputFiles      The input files to pass to OpenBabel.
+ * @param {string}     outputFilePath  The path to the output file.
  * @returns {Promise<string | void>}  A promise that resolves to the output of
  *     the program. Void if there is an error?
  */
@@ -55,7 +52,7 @@ export function runOpenBabel(
 
     return runWorker(worker, {
         args,
-        inputFiles,
+        inputFiles: inputFiles.map((f) => f.serialize()),
         outputFilePath,
     });
 }
@@ -63,21 +60,50 @@ export function runOpenBabel(
 /**
  * Converts a molecule to another format using OpenBabel.
  *
- * @param  {FileInfo} srcFileInfo  The information about the file to convert.
- * @param  {string} targetFormat    The target extension.
+ * @param  {FileInfo} srcFileInfo   The information about the file to convert.
+ * @param  {string}   targetFormat  The target extension.
+ * @param  {boolean}  [gen3D]       Whether to assign 3D coordinates.
+ * @param  {number}   [pH]          The pH to use for protonation.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */
 export function convertMolFormatOpenBabel(
     srcFileInfo: FileInfo,
-    targetFormat: string
+    targetFormat: string,
+    gen3D?: boolean,
+    pH?: number
 ): Promise<string> {
-    return runOpenBabel(
-        [srcFileInfo.name, "-O", "tmp." + targetFormat],
-        [srcFileInfo],
-        "tmp." + targetFormat
-    )
+    const cmds = [srcFileInfo.name];
+
+    // Get info about the file
+    const formatInfo = srcFileInfo.getFormatInfo();
+
+    // If the file required 3D generation, first divide it into separate files.
+    // if (
+    //     gen3D === true ||
+    //     (formatInfo !== undefined && formatInfo.lacks3D === true)
+    // ) {
+
+    // }
+
+    if (
+        gen3D === true ||
+        (formatInfo !== undefined && formatInfo.lacks3D === true)
+    ) {
+        cmds.push(...["--gen3D"]);
+    }
+    if (pH !== undefined) {
+        cmds.push(...["-p", pH.toString()]);
+    }
+    cmds.push(...["-O", "tmp." + targetFormat]);
+
+    console.log(cmds);
+
+    // debugger;
+
+    return runOpenBabel(cmds, [srcFileInfo], "tmp." + targetFormat)
         .then((res: any) => {
+            debugger;
             return res.outputFile;
         })
         .catch((err: any) => {

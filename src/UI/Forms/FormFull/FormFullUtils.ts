@@ -48,7 +48,7 @@ export function collapseFormElementArray(
 
 /**
  * Converts a list of user-specified arguments into a command-line string. TODO:
- * Not currently used. TODO: Not currently used.
+ * Not currently used.
  *
  * @param  {IUserArg[]} userArgs        The user-specified arguments.
  * @param  {string}     [namePrefix="--"] The prefix for each argument name.

@@ -118,7 +118,6 @@ import { TreeNodeType, SelectedType } from "../TreeView/TreeInterfaces";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as api from "@/Api";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
