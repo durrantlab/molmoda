@@ -1,8 +1,12 @@
+import { messagesApi } from "@/Api/Messages";
 import type { FileInfo } from "@/FileSystem/FileInfo";
 import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
+import { newTreeNode } from "../TreeNodeMakers";
 import { TreeNodeListCopies } from "./_Copy";
 import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
@@ -278,15 +282,50 @@ export class TreeNodeList {
      *     list of nodes, or undefined on failure.
      */
     public load(fileInfo: FileInfo): Promise<void | TreeNodeList> {
+        const fileName = fileInfo.name;
         return _parseMoleculeFile(
             fileInfo,
             false // don't add to tree
         )
             .then((treeNodeList: void | TreeNodeList) => {
-                if (treeNodeList) {
-                    this.extend(treeNodeList);
+                if (!treeNodeList) {
+                    // Apparently wasn't possible to parse molecule.
+                    // TODO: Show error message?
+                    return;
                 }
-                return treeNodeList;
+
+                // Rename the nodes in treeNodeList and make some of them
+                // invisible.
+                for (let i = 0; i < treeNodeList.length; i++) {
+                    const node = treeNodeList.get(i);
+                    node.title = fileName + ":" + (i + 1).toString();
+                    node.visible = i < 5;
+                    node.treeExpanded = false;
+                }
+
+                // If there are more than 5 nodes, let user know some not visible.
+                if (treeNodeList.length > 5) {
+                    messagesApi.popupMessage("Some Molecules not Visible", `The ${fileName} file contained ${treeNodeList.length} molecules. Only five are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`, PopupVariant.Info)
+                }
+
+                // Place all these nodes under a single root node.
+                const treeNodeListWithRootNode = new TreeNodeList();
+                const rootNode = newTreeNode({
+                    title: fileName,
+                    visible: true,
+                    treeExpanded: true,
+                    viewerDirty: true,
+                    selected: SelectedType.False,
+                    focused: false
+                } as TreeNode)
+                treeNodeListWithRootNode.push(rootNode)
+                rootNode.nodes = treeNodeList;
+
+                if (treeNodeList) {
+                    this.extend(treeNodeListWithRootNode);
+                }
+
+                return treeNodeListWithRootNode;
             })
             .catch((error: Error) => {
                 throw error;

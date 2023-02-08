@@ -82,8 +82,12 @@ export class FileInfo {
         );
 
         return Promise.all(convertedTxtPromises).then(
-            (convertedTxts: string[]) => {
-                return convertedTxts;
+            (convertedTxts: string[][]) => {
+                // Flatten
+                return convertedTxts.reduce(
+                    (acc, val) => acc.concat(val),
+                    []
+                );
             }
         );
     }

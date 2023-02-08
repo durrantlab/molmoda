@@ -1,6 +1,6 @@
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import * as api from "@/Api";
-import { parseMolecularModelFromText } from "./Utils";
+import { parseMolecularModelFromTexts } from "./Utils";
 import { store } from "@/Store";
 import type { IFormatInfo } from "../Types/MolFormats";
 import type { FileInfo } from "@/FileSystem/FileInfo";
@@ -21,10 +21,9 @@ export function parseUsing3DMolJs(
     formatInfo: IFormatInfo,
     addToTree = true
 ): Promise<void | TreeNodeList> {
-    return parseMolecularModelFromText(
-        fileInfo.contents,
-        formatInfo.primaryExt,
-        fileInfo.name
+    return parseMolecularModelFromTexts(
+        [fileInfo],
+        formatInfo.primaryExt
     )
         .then((treeNodeList: TreeNodeList) => {
             if (addToTree) {

@@ -1,11 +1,12 @@
 // All your workers should use this.
 
+import type { FileInfo } from "@/FileSystem/FileInfo";
+
 const ctx: Worker = self as any;
 
 export interface IMolData {
     format: string;
-    molName: string;
-    molText: string;
+    fileInfo: FileInfo;
 }
 
 /**
@@ -14,7 +15,7 @@ export interface IMolData {
  * @returns {Promise} A promise that resolves with the data from the main thread
  *                    when available.
  */
-export function waitForDataFromMainThread(): Promise<IMolData> {
+export function waitForDataFromMainThread(): Promise<IMolData[]> {
     return new Promise((resolve) => {
         self.onmessage = (payload: MessageEvent) => {
             resolve(payload.data);

@@ -54,7 +54,7 @@ export class TreeNode {
     parentId?: string; // parent id for tree
     src?: string; // typically, the file name
     treeExpanded: boolean;
-    visible: boolean;
+    _visible: boolean;
     selected: SelectedType; // Not bool (string enum). "false" vs. false.
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
@@ -89,7 +89,7 @@ export class TreeNode {
         this.parentId = params.parentId;
         this.src = params.src;
         this.treeExpanded = params.treeExpanded;
-        this.visible = params.visible;
+        this._visible = params.visible;
         this.selected = params.selected;
         this.focused = params.focused;
         this.viewerDirty = params.viewerDirty;
@@ -101,6 +101,18 @@ export class TreeNode {
 
         this._descriptions = new TreeNodeDescriptions(this);
         this._ancestry = new TreeNodeAncestry(this);
+    }
+
+    public get visible(): boolean {
+        return this._visible;
+    }
+
+    public set visible(val: boolean) {
+        // Make this one visible as well as all its children.
+        this.nodes?.flattened.forEach((nd) => {
+            nd._visible = val;
+        });
+        this._visible = val;
     }
 
     /**

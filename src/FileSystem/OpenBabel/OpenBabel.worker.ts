@@ -18,7 +18,7 @@ waitForDataFromMainThread()
     .then((params: any) => {
         const args = params.args as string[];
         const inputFiles = params.inputFiles as FileInfo[];
-        const outputFilePath = params.outputFilePath as string;
+        // const outputFilePath = params.outputFilePath as string;
 
         stdOutOrErr = "";
 
@@ -93,6 +93,7 @@ waitForDataFromMainThread()
                 arguments: args,
                 // arguments: ["-L", "formats"],
                 files: fsHelperFuncs,
+                filesBeforeRun: [],
                 logReadFiles: true,
                 noInitialRun: false,
                 locateFile: (path: string) => {
@@ -111,11 +112,14 @@ waitForDataFromMainThread()
                             This.files.writeFile(file.name, file.contents);
                         }
                         This.ENV.BABEL_DATADIR = "/data";
+
+                        This.filesBeforeRun = This.files.readDir("/");
                     },
                 ],
                 onRuntimeInitialized: (/* This: any */) => {
                     // TODO: Never called?
-                    console.log("onRuntimeInitialized");
+                    // console.log("onRuntimeInitialized");
+                    return;
                 },
                 postRun: [
                     (This: any) => {
@@ -125,7 +129,20 @@ waitForDataFromMainThread()
                         // Yes, I think above is true. Need to wait for
                         // obabel to finish executing. But how?
 
-                        const contents = This.files.readFile(outputFilePath);
+                        console.log(This.filesBeforeRun);
+                        const filesAfterRun = This.files.readDir("/");
+
+                        // Keep those files in filesAfterRun that are not in
+                        // This.filesBeforeRun. These are the new files.
+                        const newFiles = filesAfterRun.filter(
+                            (fileName: string) =>
+                                !This.filesBeforeRun.includes(fileName)
+                        );
+
+                        const contents: string[] = newFiles.map((fileName: string) => {
+                            return This.files.readFile(fileName);
+                        });
+                        
                         resolve(contents);
                     },
                 ],
@@ -137,9 +154,9 @@ waitForDataFromMainThread()
             new Webobabel(Module);
         });
     })
-    .then((outputFile: any) => {
+    .then((outputFiles: any) => {
         sendResponseToMainThread({
-            outputFile,
+            outputFiles,
             stdOutOrErr,
         });
         return;

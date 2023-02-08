@@ -327,6 +327,10 @@ function divideMolTxtIntoFrames(
 ): string[] {
     let frames: string[] = [molText];
 
+    // NOTE: If the file has been loaded through OpenBabel, it's already been
+    // separated. But to keep the code organized, let's just process all
+    // molecules the same way.
+
     if (molFormatInfo && molFormatInfo.frameSeparators) {
         for (const frameSeparator of molFormatInfo.frameSeparators) {
             // const txt = frameSeparator.text.replace(/\$/g, "\\$");
@@ -424,7 +428,7 @@ function divideAtomsIntoDistinctComponents(
 
     // Get the format
     const molFormatInfo = getFormatInfo(data);
-    const frames = divideMolTxtIntoFrames(data.molText, molFormatInfo);
+    const frames = divideMolTxtIntoFrames(data.fileInfo.contents, molFormatInfo);
 
     // glviewer for use in webworker.
     return dynamicImports.mol3d.module.then(($3Dmol: any) => {
@@ -490,7 +494,7 @@ function divideAtomsIntoDistinctComponents(
             ionAtomsNoChain.type = TreeNodeType.Ions;
             solventAtomsNoChain.type = TreeNodeType.Solvent;
 
-            let molName = data.molName;
+            let molName = data.fileInfo.name;
 
             // Remove extension from name
             molName = getFileNameParts(molName).basename;
@@ -594,8 +598,17 @@ function addParentIds(treeNode: TreeNode) {
 }
 
 waitForDataFromMainThread()
-    .then((data: IMolData) => divideAtomsIntoDistinctComponents(data))
-    .then((organizedAtomsFrames: TreeNodeList) => {
+    .then((data: IMolData[]) => {
+        const promises = data.map(d => divideAtomsIntoDistinctComponents(d))
+        return Promise.all(promises);
+    })
+    .then((organizedAtomsFramesList: TreeNodeList[]) => {
+        // Merge into one list
+        const organizedAtomsFrames = organizedAtomsFramesList[0];
+        for (let i = 1; i < organizedAtomsFramesList.length; i++) {
+            organizedAtomsFrames.extend(organizedAtomsFramesList[i]);
+        }
+
         let organizedAtomsFramesFixed = new TreeNodeList();
         organizedAtomsFrames.forEach((organizedAtoms: TreeNode) => {
             organizedAtoms.id = randomID();

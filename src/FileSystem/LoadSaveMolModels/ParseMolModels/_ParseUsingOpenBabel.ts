@@ -1,6 +1,6 @@
 import { store } from "@/Store";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { parseMolecularModelFromText } from "./Utils";
+import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { parseMolecularModelFromTexts } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
@@ -25,17 +25,21 @@ export function parseUsingOpenBabel(
 
     // Convert it to MOL2 format and load that using 3dmoljs.
     return convertMolFormatOpenBabel(fileInfo, targetFormat)
-        .then((contents: string) => {
-            return contents;
-        })
-        .then((contents: string) => {
-            return parseMolecularModelFromText(
-                contents,
-                targetFormat,
-                fileInfo.name
-            );
+        .then((contents: string[]) => {
+            const fileInfos = contents.map((c, i) => {
+                return new FileInfo({
+                    contents: c,
+                    name: `${fileInfo.name} (frame ${i + 1})`,
+                });
+            });
+            return parseMolecularModelFromTexts(fileInfos, targetFormat);
         })
         .then((treeNodeList: TreeNodeList) => {
+            // Merge the TreeNodeLists into one
+            // for (let i = 1; i < treeNodeLists.length; i++) {
+            //     treeNodeList.extend(treeNodeLists[i]);
+            // }
+
             if (addToTree) {
                 // Update VueX store
                 store.commit("pushToMolecules", treeNodeList);

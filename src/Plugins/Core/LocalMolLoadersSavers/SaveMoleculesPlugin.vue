@@ -56,6 +56,7 @@ import {
     IMolsToConsider,
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 import { correctFilenameExt } from "@/FileSystem/Utils";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * SaveMoleculesPlugin
@@ -133,7 +134,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             enabled: false,
         } as IFormCheckbox,
         {
-            label: "File format (one)",
+            label: "File format for all molecules, saved to a single file",
             id: "oneMolFileFormat",
             val: "pdb",
             options: getFormatDescriptions(false).filter(
@@ -142,7 +143,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             enabled: false,
         } as IFormSelect,
         {
-            label: "File format",
+            label: "File format for macromolecules, solvent, etc.",
             id: "nonCompoundFormat",
             val: "pdb",
             options: getFormatDescriptions(false),
@@ -264,6 +265,24 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         );
     }
 
+    private _ensureAllFileNamesAreUnique(fileInfos: FileInfo[]): FileInfo[] {
+        const fileNamesAlreadyUsed: {[key: string]: number} = {};
+        return fileInfos.map((fileInfo, index) => {
+            const fileName = fileInfo.name;
+            if (fileNamesAlreadyUsed[fileName] === undefined) {
+                fileNamesAlreadyUsed[fileName] = 1;
+            } else {
+                fileNamesAlreadyUsed[fileName] += 1;
+
+                // Divide fileName into name and extension
+                const prts = getFileNameParts(fileName);
+                const newFileName = `${prts.basename}-${fileNamesAlreadyUsed[fileName]}.${prts.ext}`;
+                fileInfos[index].name = newFileName;
+            }
+            return fileInfo;
+        });
+    }
+
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
@@ -325,6 +344,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             hiddenAndUnselected: saveHiddenAndUnselected,
         } as IMolsToConsider;
 
+        debugger
+
         // Divide terminal nodes into compound and non-compound, per the mols to
         // consider.
         const compiledMolModels = compileMolModels(
@@ -339,6 +360,13 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             nonCompoundFormat
         )
             .then((compoundNonCompoundFileInfos: ICmpdNonCmpdFileInfos) => {
+                compoundNonCompoundFileInfos.compoundFileInfos = this._ensureAllFileNamesAreUnique(
+                    compoundNonCompoundFileInfos.compoundFileInfos
+                );
+                compoundNonCompoundFileInfos.nonCompoundFileInfos = this._ensureAllFileNamesAreUnique(
+                    compoundNonCompoundFileInfos.nonCompoundFileInfos
+                );
+
                 // Now save the molecules
                 if (separateCompounds === false) {
                     // Saving to one file, so update the filename to be that one

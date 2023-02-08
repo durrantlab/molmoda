@@ -1,4 +1,6 @@
+import { messagesApi } from "@/Api/Messages";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { FileInfo } from "../FileInfo";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -39,21 +41,15 @@ import { FileInfo } from "../FileInfo";
  *
  * @param {string[]}   args            The arguments to pass to OpenBabel.
  * @param {FileInfo[]} inputFiles      The input files to pass to OpenBabel.
- * @param {string}     outputFilePath  The path to the output file.
  * @returns {Promise<string | void>}  A promise that resolves to the output of
  *     the program. Void if there is an error?
  */
-export function runOpenBabel(
-    args: string[],
-    inputFiles: FileInfo[],
-    outputFilePath: string
-): any {
+export function runOpenBabel(args: string[], inputFiles: FileInfo[]): any {
     const worker = new Worker(new URL("./OpenBabel.worker", import.meta.url));
 
     return runWorker(worker, {
         args,
-        inputFiles: inputFiles.map((f) => f.serialize()),
-        outputFilePath,
+        inputFiles: inputFiles.map((f) => (f.serialize ? f.serialize() : f)),
     });
 }
 
@@ -72,8 +68,8 @@ export function convertMolFormatOpenBabel(
     targetFormat: string,
     gen3D?: boolean,
     pH?: number
-): Promise<string> {
-    const cmds = [srcFileInfo.name];
+): Promise<string[]> {
+    const cmds = [srcFileInfo.name, "-m"]; // Note always dividing into multiple files.
 
     // Get info about the file
     const formatInfo = srcFileInfo.getFormatInfo();
@@ -90,6 +86,14 @@ export function convertMolFormatOpenBabel(
         gen3D === true ||
         (formatInfo !== undefined && formatInfo.lacks3D === true)
     ) {
+        if (formatInfo !== undefined && formatInfo.lacks3D === true) {
+            // Warn user
+            messagesApi.popupMessage(
+                "Warning",
+                "The file does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.",
+                PopupVariant.Warning
+            );
+        }
         cmds.push(...["--gen3D"]);
     }
     if (pH !== undefined) {
@@ -97,14 +101,10 @@ export function convertMolFormatOpenBabel(
     }
     cmds.push(...["-O", "tmp." + targetFormat]);
 
-    console.log(cmds);
-
-    // debugger;
-
-    return runOpenBabel(cmds, [srcFileInfo], "tmp." + targetFormat)
-        .then((res: any) => {
-            debugger;
-            return res.outputFile;
+    return runOpenBabel(cmds, [srcFileInfo])
+        .then((convertedFileContents: any) => {
+            messagesApi.closePopupMessage();
+            return convertedFileContents.outputFiles;
         })
         .catch((err: any) => {
             throw err;
