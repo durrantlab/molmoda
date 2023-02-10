@@ -20,6 +20,10 @@ export class TreeNodeList {
     private _nodeActions: TreeNodeListNodeActions;
     private _copy: TreeNodeListCopies;
 
+    // This is to keep track of titles. It takes a surprisingly long time to
+    // generate this set on the fly.
+    // private _titles: Set<string> = new Set<string>();
+
     /**
      * Constructor.
      *
@@ -28,12 +32,20 @@ export class TreeNodeList {
     constructor(nodes?: TreeNode[]) {
         if (nodes) {
             this._nodes = nodes;
+            // this._updateTitles();
         }
 
         this._filters = new TreeNodeListFilters(this);
         this._nodeActions = new TreeNodeListNodeActions(this);
         this._copy = new TreeNodeListCopies(this);
     }
+
+    // private _updateTitles(): void {
+    //     this._titles = new Set<string>();
+    //     this._nodes.forEach((node) => {
+    //         this._titles.add(node.title);
+    //     });
+    // }
 
     /**
      * Gets the filters.
@@ -46,7 +58,7 @@ export class TreeNodeList {
 
     /**
      * Gets the copy actions.
-     * 
+     *
      * @returns {TreeNodeListCopies}  The copy actions.
      */
     public get copy(): TreeNodeListCopies {
@@ -69,6 +81,7 @@ export class TreeNodeList {
      */
     public set nodes(nodes: TreeNode[]) {
         this._nodes = nodes;
+        // this._updateTitles();
     }
 
     /**
@@ -86,16 +99,30 @@ export class TreeNodeList {
 
     /**
      * Add a node to the list.
-     * 
+     *
      * @param  {TreeNode} node  The node to add.
      */
     public push(node: TreeNode) {
+        // let newTitle = node.title;
+
+        // if (this._titles.size > 0) {
+        //     debugger;
+        //     // Does node.title already exist in this list? If so, rename it.
+        //     let idx = 0;
+        //     while (this._titles.has(newTitle)) {
+        //         newTitle = node.title + " (" + ++idx + ")";
+        //     }
+        //     this._titles.add(newTitle);
+        // }
+
+        // node.title = newTitle;
+
         this._nodes.push(node);
     }
 
     /**
      * Gets the number of nodes in this list.
-     * 
+     *
      * @returns {number}  The number of nodes.
      */
     public get length(): number {
@@ -104,7 +131,7 @@ export class TreeNodeList {
 
     /**
      * Gets the node at the specified index.
-     * 
+     *
      * @param  {number} index  The index.
      * @returns {TreeNode}  The node.
      */
@@ -114,7 +141,7 @@ export class TreeNodeList {
 
     /**
      * Sets the node at the specified index.
-     * 
+     *
      * @param  {number}   index  The index.
      * @param  {TreeNode} node   The node.
      */
@@ -124,7 +151,7 @@ export class TreeNodeList {
 
     /**
      * Iterates through the nodes.
-     * 
+     *
      * @param {Function} func  The function to call for each node.
      */
     public forEach(func: (node: TreeNode, index: number) => void) {
@@ -146,8 +173,6 @@ export class TreeNodeList {
     ): TreeNodeList {
         return new TreeNodeList(this._nodes.filter(func));
     }
-
-    
 
     /**
      * Gets the first node in the list that matches the specified criteria.
@@ -184,17 +209,22 @@ export class TreeNodeList {
      *     the list is empty.
      */
     public shift(): TreeNode | undefined {
+        // const firstElement = this._nodes.shift();
+        // if (firstElement !== undefined) {
+        //     this._titles.delete(firstElement.title);
+        // }
         return this._nodes.shift();
     }
 
     /**
      * Inserts new elements at the start of the list, and returns the new length
      * of the list.
-     * 
+     *
      * @param  {TreeNode} node  The node to insert.
      * @returns {number}  The new length of the list.
      */
     public unshift(node: TreeNode): number {
+        // this._titles.add(node.title);
         return this._nodes.unshift(node);
     }
 
@@ -206,6 +236,10 @@ export class TreeNodeList {
      *     the list is empty.
      */
     public pop(): TreeNode | undefined {
+        // const lastElement = this._nodes.pop();
+        // if (lastElement !== undefined) {
+        //     this._titles.delete(lastElement.title);
+        // }
         return this._nodes.pop();
     }
 
@@ -218,7 +252,7 @@ export class TreeNodeList {
      */
     public extend(nodeList: TreeNodeList): TreeNodeList {
         nodeList.forEach((node: TreeNode) => {
-            this._nodes.push(node);
+            this.push(node);
         });
         return this;
     }
@@ -248,7 +282,7 @@ export class TreeNodeList {
 
     /**
      * Gets the nodes as an array.
-     * 
+     *
      * @returns {TreeNode[]}  The nodes.
      */
     public toArray(): TreeNode[] {
@@ -272,6 +306,7 @@ export class TreeNodeList {
      */
     public clear() {
         this._nodes = [];
+        // this._titles.clear();
     }
 
     /**
@@ -305,24 +340,35 @@ export class TreeNodeList {
 
                 // If there are more than 5 nodes, let user know some not visible.
                 if (treeNodeList.length > 5) {
-                    messagesApi.popupMessage("Some Molecules not Visible", `The ${fileName} file contained ${treeNodeList.length} molecules. Only five are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`, PopupVariant.Info)
+                    messagesApi.popupMessage(
+                        "Some Molecules not Visible",
+                        `The ${fileName} file contained ${treeNodeList.length} molecules. Only five are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+                        PopupVariant.Info
+                    );
                 }
 
-                // Place all these nodes under a single root node.
-                const treeNodeListWithRootNode = new TreeNodeList();
-                const rootNode = newTreeNode({
-                    title: fileName,
-                    visible: true,
-                    treeExpanded: true,
-                    viewerDirty: true,
-                    selected: SelectedType.False,
-                    focused: false
-                } as TreeNode)
-                treeNodeListWithRootNode.push(rootNode)
-                rootNode.nodes = treeNodeList;
+                // Place all these nodes under a single root node if necessary.
+                debugger;
+                let treeNodeListWithRootNode: TreeNodeList;
+                if (treeNodeList.length === 1) {
+                    // This part of if then makes 1xdn not load. Need to investigate.
+                    treeNodeListWithRootNode = treeNodeList;
+                } else {
+                    treeNodeListWithRootNode = new TreeNodeList();
+                    const rootNode = newTreeNode({
+                        title: fileName,
+                        visible: true,
+                        treeExpanded: true,
+                        viewerDirty: true,
+                        selected: SelectedType.False,
+                        focused: false,
+                    } as TreeNode);
+                    treeNodeListWithRootNode.push(rootNode);
+                    rootNode.nodes = treeNodeList;
 
-                if (treeNodeList) {
-                    this.extend(treeNodeListWithRootNode);
+                    if (treeNodeListWithRootNode) {
+                        this.extend(treeNodeListWithRootNode);
+                    }
                 }
 
                 return treeNodeListWithRootNode;
@@ -340,6 +386,13 @@ export class TreeNodeList {
      *                                          the node itself.
      */
     public removeNode(node: string | TreeNode | null) {
+        // if (typeof node === "string") {
+        //     // If it's a string
+        //     this._titles.delete(node);
+        // } else if (node) {
+        //     // It's a TreeNode
+        //     this._titles.delete(node.title);
+        // }
         this._nodeActions.remove(node);
     }
 

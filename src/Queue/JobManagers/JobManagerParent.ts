@@ -71,6 +71,7 @@ export abstract class JobManagerParent {
                                 // Is it some sort of loadable file?
                                 if (outputFile.getFormatInfo() !== undefined) {
                                     // It's a molecule format. Load it.
+                                    debugger;
                                     getMoleculesFromStore().load(outputFile)
                                 }
                             }

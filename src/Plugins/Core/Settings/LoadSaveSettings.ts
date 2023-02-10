@@ -1,7 +1,8 @@
+import { visualizationApi } from "@/Api/Visualization";
 import { jobManagers } from "@/Queue/JobManagers/JobManagerParent";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import * as api from "@/Api/";
+// import * as api from "@/Api/";
 
 /**
  * Saves settings to local storage.
@@ -73,7 +74,7 @@ export function applySettings(settings: IUserArg[]) {
         ?.updateMaxNumProcessors(maxProcs);
 
     const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
-    api.visualization.viewer?.unLoadViewer();
+    visualizationApi.viewer?.unLoadViewer();
     setStoreVar("molViewer", molViewer);
 }
 

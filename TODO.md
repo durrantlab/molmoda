@@ -63,9 +63,6 @@ Add graphs to data too. Plotly? Also, you should be able to download graphs
 (png, svg, xlsx, csv). And text too. And should auto keep track of how the
 molecule was generated.
 
-When adding new molecule, make sure filename is not already in list. Append (#).
-You could now easily build this into extend and push on TreeNode classes.
-
 Test elements could be restructured as objects. Would be better to put
 functions on each one. Then, Tutorial based on tests (first one). Started to do
 this. See ParentPluginTestFuncs.ts
@@ -75,15 +72,26 @@ FPocketWeb throws error, queue says its was incorporated.
 Queue table looks bad.
 
 FPocketWeb: Add shape, can't hide it. I wonder if the shape is being added twice
-somehow. I think it is. Need to investigate this.
+somehow. I think it is. Need to investigate this. Search for "// TODO: Below
+causes problems!!!"" See also "This part of if then makes 1xdn not load. Need to
+investigate."
 
 Bootstrap Tour
+
+Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
+
+How useful is log really?
+
+Load 1XDN. There's an extra layer in there. Why?
+
+# DONE
+
+When adding new molecule, make sure filename is not already in list. Append (#).
+You could now easily build this into extend and push on TreeNode classes.
 
 Would it be possible to convert molecules to 3D using multiple processors? Maybe
 there's a herd of openbabel workers always available, and incoming molecules are
 automatically sent to them (queue system).
-
-# DONE
 
 Multiframe files, still put under one molecule. And if more than a fixed number,
 autohide all but first few. Can use merge feature if needed. Tick box on open:

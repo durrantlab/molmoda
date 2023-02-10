@@ -6,13 +6,22 @@
  * @returns {Promise<any>}  A promise that resolves the data that the webworker
  *     returns.
  */
-export function runWorker(worker: Worker, data: any): Promise<any> {
+export function runWorker(
+    worker: Worker,
+    data: any,
+    autoTerminate = true
+): Promise<any> {
     // Promise to wait for webworker to return data.
     const returnPromise = new Promise((resolve) => {
+        // Remove previous onmessage, if any
+        worker.onmessage = null;
+
         worker.onmessage = (resp: MessageEvent) => {
-          // terminate the worker after use.
-          worker.terminate();
-          resolve(resp.data);
+            if (autoTerminate) {
+                // terminate the worker after use.
+                worker.terminate();
+            }
+            resolve(resp.data);
         };
     });
 

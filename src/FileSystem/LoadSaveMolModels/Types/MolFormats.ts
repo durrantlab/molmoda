@@ -132,7 +132,9 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["sdf", "mol", "sd"],
         description: "MDL MOL",
         hasBondOrders: true,
-        loader: MolLoader.Mol3D,
+        // 3dmol.js sdf parser seems to be broken for some sdf files. So use
+        // openbabel.
+        loader: MolLoader.OpenBabel,
         frameSeparators: [
             {
                 text: "\n$$$$\n",

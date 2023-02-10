@@ -346,44 +346,47 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 let firstNodeId = "";
                 const boxes: IBox[] = [];
 
-                outPdbFileTreeNode.nodes
-                    ?.lookup([TreeNodeType.Compound, "*", "*"])
-                    ?.forEach((node: TreeNode, idx: number) => {
-                        // Should be surface
-                        node.styles = [
-                            {
-                                surface: {
-                                    color: randomPastelColor(),
-                                    opacity: 0.9,
-                                } as IColorStyle,
-                            } as IStyle,
-                        ];
-
-                        // Rename it too
-                        node.title = "Pocket" + (idx + 1);
-
-                        // Hide unless it's the first few ones.
-                        if (idx >= numInitiallyVisible) {
-                            node.visible = false;
-                        }
-
-                        // Add the pocket properties as data.
-                        node.data = {
-                            "FPocketWeb Properties": {
-                                data: pocketProps[idx],
-                                type: TreeNodeDataType.Table,
-                                treeNodeId: node.id,
-                            } as ITreeNodeData,
-                        };
-
-                        boxes.push(node.getBoxShape());
-
-                        if (idx === 0) {
-                            firstNodeId = node.id as string;
-                        }
-                    });
+                // Make everything visible to start.
+                outPdbFileTreeNode.visible = true;
 
                 if (outPdbFileTreeNode.nodes) {
+                    outPdbFileTreeNode.nodes
+                        .lookup([TreeNodeType.Compound, "*", "*"])
+                        ?.forEach((node: TreeNode, idx: number) => {
+                            // Should be surface
+                            node.styles = [
+                                {
+                                    surface: {
+                                        color: randomPastelColor(),
+                                        opacity: 0.9,
+                                    } as IColorStyle,
+                                } as IStyle,
+                            ];
+
+                            // Rename it too
+                            node.title = "Pocket" + (idx + 1);
+
+                            // Hide unless it's the first few ones.
+                            if (idx >= numInitiallyVisible) {
+                                node.visible = false;
+                            }
+
+                            // Add the pocket properties as data.
+                            node.data = {
+                                "FPocketWeb Properties": {
+                                    data: pocketProps[idx],
+                                    type: TreeNodeDataType.Table,
+                                    treeNodeId: node.id,
+                                } as ITreeNodeData,
+                            };
+
+                            boxes.push(node.getBoxShape());
+
+                            if (idx === 0) {
+                                firstNodeId = node.id as string;
+                            }
+                        });
+
                     // Update the compound chain name.
                     const pockets = outPdbFileTreeNode.nodes
                         .lookup(TreeNodeType.Compound)
@@ -406,6 +409,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     for (let i = 0; i < boxes.length; i++) {
                         const box = boxes[i];
                         box.opacity = 0.9;
+                        // TODO: Below causes problems!!!
                         // const newNode = new TreeNode({
                         //     title: "PocketBox" + (i + 1).toString(),
                         //     type: TreeNodeType.Shape,
@@ -429,7 +433,9 @@ export default class FPocketWebPlugin extends PluginParentClass {
                         nodes: shapeList,
                     });
 
-                    const ps = outPdbFileTreeNode.nodes.lookup(["Pockets"]).get(0);
+                    const ps = outPdbFileTreeNode.nodes
+                        .lookup(["Pockets"])
+                        .get(0);
                     if (ps.nodes) {
                         ps.nodes.push(shapeNode);
                     }

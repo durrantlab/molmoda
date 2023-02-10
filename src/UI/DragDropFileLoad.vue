@@ -26,7 +26,7 @@ export default class DragDropFileLoad extends Vue {
 
   accept = fileTypesAccepts;
   showDrag = false;
-  timeoutId: any;
+  timeoutId: any = null;
 
   /**
    * Mounted function.
@@ -43,7 +43,11 @@ export default class DragDropFileLoad extends Vue {
         e.preventDefault();
         e.stopPropagation();
         this.showDrag = true;
-        clearInterval(this.timeoutId);
+        if (this.timeoutId !== null) {
+          clearInterval(this.timeoutId);
+          this.timeoutId = null;
+        }
+
       },
       false
     );
@@ -66,7 +70,10 @@ export default class DragDropFileLoad extends Vue {
         e.preventDefault();
         e.stopPropagation();
         this.showDrag = true;
-        clearInterval(this.timeoutId);
+        if (this.timeoutId !== null) {
+          clearInterval(this.timeoutId);
+          this.timeoutId = null;
+        }
       },
       false
     );
@@ -76,7 +83,11 @@ export default class DragDropFileLoad extends Vue {
       (e) => {
         e.preventDefault();
         e.stopPropagation();
-        clearInterval(this.timeoutId);
+
+        if (this.timeoutId !== null) {
+          clearInterval(this.timeoutId);
+          this.timeoutId = null;
+        }
         this.showDrag = false;
 
         let dt = e.dataTransfer as DataTransfer;

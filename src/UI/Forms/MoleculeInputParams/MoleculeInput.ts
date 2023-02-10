@@ -3,8 +3,8 @@ import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { batchify } from "@/Core/Utils2";
 
 export interface IMoleculeInputParams {
     molsToConsider?: IMolsToConsider;
@@ -191,15 +191,6 @@ export class MoleculeInput {
             return lst;
         }
 
-        if (this.batchSize === null) {
-            // Batch per the number of available processors
-            this.batchSize = Math.ceil(lst.length / getSetting("maxProcs"));
-        }
-
-        const batches: Type[][] = [];
-        for (let i = 0; i < lst.length; i += this.batchSize) {
-            batches.push(lst.slice(i, i + this.batchSize));
-        }
-        return batches;
+        return batchify(lst, this.batchSize);
     }
 }

@@ -10,7 +10,9 @@ export interface IMolData {
 }
 
 /**
- * A function that waits for a message from the main thread.
+ * A function that waits for a message from the main thread. NOTE: This only
+ * runs once, and then the promise is resolved. So if you hope to reuse a
+ * webworker (it's not auto terminating), this is not the function for you.
  *
  * @returns {Promise} A promise that resolves with the data from the main thread
  *                    when available.
