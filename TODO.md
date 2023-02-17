@@ -73,8 +73,7 @@ Queue table looks bad.
 
 FPocketWeb: Add shape, can't hide it. I wonder if the shape is being added twice
 somehow. I think it is. Need to investigate this. Search for "// TODO: Below
-causes problems!!!"" See also "This part of if then makes 1xdn not load. Need to
-investigate."
+causes problems!!!""
 
 Bootstrap Tour
 
@@ -82,9 +81,11 @@ Search for "// TODO: You're sending all inputFiles for each runBabel call, becau
 
 How useful is log really?
 
+# DONE
+
 Load 1XDN. There's an extra layer in there. Why?
 
-# DONE
+See also "This part of if then makes 1xdn not load. Need to investigate."
 
 When adding new molecule, make sure filename is not already in list. Append (#).
 You could now easily build this into extend and push on TreeNode classes.

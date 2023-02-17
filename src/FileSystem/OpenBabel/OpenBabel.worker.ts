@@ -80,68 +80,86 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
         },
     };
 
-    return new Promise((resolve) => {
-        const Module = {
-            arguments: args,
-            // arguments: ["-L", "formats"],
-            files: fsHelperFuncs,
-            filesBeforeRun: [],
-            logReadFiles: true,
-            noInitialRun: false,
-            locateFile: (path: string) => {
-                return "obabel-wasm/" + path;
+    const Module = {
+        arguments: args,
+        // arguments: ["-L", "formats"],
+        files: fsHelperFuncs,
+        filesBeforeRun: [],
+        logReadFiles: true,
+        noInitialRun: true,
+        // noExitRuntime: true,
+        locateFile: (path: string) => {
+            return "obabel-wasm/" + path;
+        },
+        print: (text: string) => {
+            stdOutOrErr += text + "\n";
+        },
+        printErr: (text: string) => {
+            stdOutOrErr += text + "\n";
+        },
+        preRun: [
+            function (This: any) {
+                // Save any input files
+                for (const file of inputFiles) {
+                    This.files.writeFile(file.name, file.contents);
+                }
+                This.ENV.BABEL_DATADIR = "/data";
+
+                This.filesBeforeRun = This.files.readDir("/");
             },
-            print: (text: string) => {
-                stdOutOrErr += text + "\n";
-            },
-            printErr: (text: string) => {
-                stdOutOrErr += text + "\n";
-            },
-            preRun: [
-                function (This: any) {
-                    // Save any input files
-                    for (const file of inputFiles) {
-                        This.files.writeFile(file.name, file.contents);
+        ],
+        postRun: [
+            (This: any) => {
+                // Note: This runs when Wasm loaded and initialized,
+                // not after program executed. IS THAT TRUE?
+
+                // Yes, I think above is true. Need to wait for
+                // obabel to finish executing. But how?
+
+                console.log(This.filesBeforeRun);
+                const filesAfterRun = This.files.readDir("/");
+
+                // Keep those files in filesAfterRun that are not in
+                // This.filesBeforeRun. These are the new files.
+                const newFiles = filesAfterRun.filter(
+                    (fileName: string) =>
+                        !This.filesBeforeRun.includes(fileName)
+                );
+
+                const contents: string[] = newFiles.map(
+                    (fileName: string) => {
+                        return This.files.readFile(fileName);
                     }
-                    This.ENV.BABEL_DATADIR = "/data";
+                );
 
-                    This.filesBeforeRun = This.files.readDir("/");
-                },
-            ],
-            postRun: [
-                (This: any) => {
-                    // Note: This runs when Wasm loaded and initialized,
-                    // not after program executed. IS THAT TRUE?
+                debugger;
+                // resolve(contents);
+            },
+        ],
+    };
 
-                    // Yes, I think above is true. Need to wait for
-                    // obabel to finish executing. But how?
-
-                    console.log(This.filesBeforeRun);
-                    const filesAfterRun = This.files.readDir("/");
-
-                    // Keep those files in filesAfterRun that are not in
-                    // This.filesBeforeRun. These are the new files.
-                    const newFiles = filesAfterRun.filter(
-                        (fileName: string) =>
-                            !This.filesBeforeRun.includes(fileName)
-                    );
-
-                    const contents: string[] = newFiles.map(
-                        (fileName: string) => {
-                            return This.files.readFile(fileName);
-                        }
-                    );
-
-                    resolve(contents);
-                },
-            ],
-        };
-
+    return new Promise(() => {
         // Bind Module to all the fs functions.
         Module.files._bindModule(Module);
 
-        new Webobabel(Module);
+        debugger;
+
+        return Webobabel(Module)
+        // .then(() => {
+        //     // eslint-disable-next-line promise/no-return-wrap
+        //     return Module;
+        // });
+
+        // return Promise.all([modReady, Promise.resolve(Module)]);
     })
+        .then((test: any) => {
+            debugger;
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            Module.run(args);
+            return;
+        })
         .then((outputFiles: any) => {
             return {
                 outputFiles,

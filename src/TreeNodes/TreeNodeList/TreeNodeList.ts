@@ -348,7 +348,6 @@ export class TreeNodeList {
                 }
 
                 // Place all these nodes under a single root node if necessary.
-                debugger;
                 let treeNodeListWithRootNode: TreeNodeList;
                 if (treeNodeList.length === 1) {
                     // This part of if then makes 1xdn not load. Need to investigate.
@@ -366,11 +365,11 @@ export class TreeNodeList {
                     treeNodeListWithRootNode.push(rootNode);
                     rootNode.nodes = treeNodeList;
 
-                    if (treeNodeListWithRootNode) {
-                        this.extend(treeNodeListWithRootNode);
-                    }
                 }
-
+                
+                if (treeNodeListWithRootNode) {
+                    this.extend(treeNodeListWithRootNode);
+                }
                 return treeNodeListWithRootNode;
             })
             .catch((error: Error) => {
