@@ -206,6 +206,9 @@ import TestPlugin from "./Optional/TestPlugin.vue";
 
 
 
+
+
+
   },
 })
 export default class AllPlugins extends Vue {

@@ -1,4 +1,5 @@
 import { messagesApi } from "@/Api/Messages";
+import { randomID } from "@/Core/Utils";
 import { batchify } from "@/Core/Utils2";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
