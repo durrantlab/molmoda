@@ -132,7 +132,6 @@ export function convertFileInfosOpenBabel(
 ): Promise<string[]> {
     // Get info about the file
     const formatInfos = srcFileInfos.map(f => f.getFormatInfo());
-
     const warningNeeded = formatInfos.some(f => f !== undefined && f.lacks3D === true);
 
     if (warningNeeded) {
@@ -159,32 +158,39 @@ export function convertFileInfosOpenBabel(
     ]);
 
     return runOpenBabel(separateFileCmds, srcFileInfos)
-        .then((convertedFileContents: any[]) => {
-            // You've only run one command, so there's only one item in the
-            // array.
-            debugger;
-            return convertedFileContents[0].outputFiles;
+        .then((fileContentsFromInputs: any[][]) => {
+            // Note that a given input molecule can yield multiple outputs if it
+            // contained many molecules (e.g., multi-molecule SDF file)
+            
+            return fileContentsFromInputs.map((f: any) => f.outputFiles);
         })
-        .then((outputFileContents: string[]) => {
+        .then((individualMolFiles: string[][]) => {
             // Convert it to a FileInfo
-            return outputFileContents.map((fileContent, i) => {
-                return {
-                    name: "TODO:",  // `tmp${i}.${srcFileInfos.getFormatInfo()?.primaryExt}`,
-                    contents: fileContent,
-                } as IFileInfo;
+            let fileInfoIdx = -1;
+            const nestedFileInfos = individualMolFiles.map((fileContent: string[], i) => {
+                return fileContent.map((f: string) => {
+                    fileInfoIdx++;
+                    return {
+                        name: `tmp${fileInfoIdx}.${srcFileInfos[i].getFormatInfo()?.primaryExt}`,
+                        contents: f,
+                        auxData: formatInfos[i]
+                    } as IFileInfo;
+                });
             });
-        })
-        .then((outputFileInfos: IFileInfo[]) => {
-            const cmdsList = outputFileInfos.map((outputFileInfo) => {
-                const cmds = [outputFileInfo.name, "-m"]; // Note always dividing into multiple files.
 
-                // TODO:
-                // if (
-                //     gen3D === true ||
-                //     (formatInfo !== undefined && formatInfo.lacks3D === true)
-                // ) {
-                //     cmds.push(...["--gen3D"]);
-                // }
+            return nestedFileInfos.flat();
+        })
+        .then((fileInfos: IFileInfo[]) => {
+            const cmdsList = fileInfos.map((fileInfo) => {
+                const cmds = [fileInfo.name, "-m"]; // Note always dividing into multiple files.
+
+                if (
+                    gen3D === true ||
+                    (fileInfo.auxData !== undefined && fileInfo.auxData.lacks3D === true)
+                ) {
+                    cmds.push(...["--gen3D"]);
+                }
+
                 if (pH !== undefined) {
                     cmds.push(...["-p", pH.toString()]);
                 }
@@ -192,7 +198,8 @@ export function convertFileInfosOpenBabel(
 
                 return cmds;
             });
-            return runOpenBabel(cmdsList, outputFileInfos);
+            debugger;
+            return runOpenBabel(cmdsList, fileInfos);
         })
         .then((convertedFileContents: any[]): string[] => {
             // The output files are located in the .outputFiles properties.

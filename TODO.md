@@ -98,8 +98,8 @@ molprops should be moved into its own menu item.
 Mol filter could be similar plugin, might be helpful.
 
 convertMolFormatOpenBabel() should accept multiple input files at once, all sent
-to webworker simultaneously. Maybe ability to chain commands, so divide and
-convert at once?
+to webworker simultaneously (DONE). Maybe ability to chain commands, so divide and
+convert at once? Currently divides, then converts each separately. (transfer back and forth from worker).
     Conversion from 3dmol to PDB in same webworker (at least optional).
 
 # DONE

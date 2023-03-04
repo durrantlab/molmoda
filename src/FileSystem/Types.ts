@@ -20,5 +20,7 @@ export interface IFileInfo {
 
     // Only actually works if using FileInfo class, but here for typescript.
     convertFromPDBTxt?: (targetExt: string) => Promise<IFileInfo>;
+
+    auxData?: any;
 }
 

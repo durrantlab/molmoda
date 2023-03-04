@@ -17,6 +17,7 @@ export class FileInfo {
     compressedName?: string;
     treeNode?: TreeNode;
     cachedConvertText: { [key: string]: string } = {};
+    auxData: any;
 
     /**
      * The constructor.
