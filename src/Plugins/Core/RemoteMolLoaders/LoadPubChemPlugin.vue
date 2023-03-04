@@ -53,9 +53,10 @@ import {
   RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TestText, TestWait, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, _TestText, _TestWait, _TestWaitUntilRegex } from "@/Testing/TestCmd";
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * LoadPubChemPlugin
@@ -244,7 +245,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
@@ -252,16 +253,14 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      pluginOpen: [
-        new TestText("#modal-loadpubchem #formMolName", "Aspirin").cmd,
+      pluginOpen: new TestCmdList()
+        .text("#modal-loadpubchem #formMolName", "Aspirin")
         // TODO: Below could wait until value populated. Hoping it will take
         // less than 3 secs is hackish.
-        new TestWait(5).cmd,
-      ],
-      afterPluginCloses: [
-        new TestWaitUntilRegex("#styles", "Compound").cmd,
-        new TestWaitUntilRegex("#log", 'Job "loadpubchem:.+?" ended').cmd,
-      ],
+        .wait(5).cmds,
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#styles", "Compound")
+        .waitUntilRegex("#log", 'Job "loadpubchem:.+?" ended').cmds
     };
   }
 }

@@ -22,7 +22,7 @@ import {
   IFormOption,
   IFormSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -36,6 +36,7 @@ import {
   saveSettings,
 } from "./LoadSaveSettings";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /** SettingsPlugin */
 @Options({
@@ -136,18 +137,17 @@ export default class SettingsPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
    * @returns {ITest[]}  The selenium tests commands.
    */
   getTests(): ITest[] {
-    return [];
-    // return {
-    //   closePlugin: [this.testPressButton(".cancel-btn")],
-    //   afterPluginCloses: [],
-    // };
+    return [{
+      closePlugin: new TestCmdList()
+        .click("#modal-settings .cancel-btn").cmds
+    }];
   }
 }
 </script>

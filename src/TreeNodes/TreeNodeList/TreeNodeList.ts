@@ -15,7 +15,7 @@ import { TreeNodeListNodeActions } from "./_NodeActions";
  * TreeNodeList class
  */
 export class TreeNodeList {
-    private _nodes: TreeNode[] = [];
+    public _nodes: TreeNode[] = [];
     private _filters: TreeNodeListFilters;
     private _nodeActions: TreeNodeListNodeActions;
     private _copy: TreeNodeListCopies;
@@ -364,9 +364,8 @@ export class TreeNodeList {
                     } as TreeNode);
                     treeNodeListWithRootNode.push(rootNode);
                     rootNode.nodes = treeNodeList;
-
                 }
-                
+
                 if (treeNodeListWithRootNode) {
                     this.extend(treeNodeListWithRootNode);
                 }
@@ -424,7 +423,14 @@ export class TreeNodeList {
      * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
      */
     public toFileInfos(targetExt: string, merge = true): Promise<FileInfo[]> {
-        return _convertTreeNodeList(this, targetExt, merge);
+        // Start spinner
+        messagesApi.waitSpinner(true);
+        return _convertTreeNodeList(this, targetExt, merge).then(
+            (fileInfos: FileInfo[]) => {
+                messagesApi.waitSpinner(false);
+                return fileInfos;
+            }
+        );
     }
 
     /**

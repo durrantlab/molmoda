@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
+import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import {
     IContributorCredit,
     ISoftwareCredit,
@@ -117,7 +117,7 @@ export default class TestPlugin extends PluginParentClass {
             contents: "CCCCC(=O)O",
         });
 
-        return convertMolFormatOpenBabel(canFile, "smi", false, 15)
+        return convertFileInfosOpenBabel([canFile], "smi", false, 15)
             .then((/* res: any */) => {
                 debugger;
                 // console.log(res);

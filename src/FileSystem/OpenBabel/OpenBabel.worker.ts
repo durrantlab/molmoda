@@ -12,8 +12,8 @@ declare let Webobabel: any;
 // @ts-ignore
 importScripts("obabel-wasm/obabel.js");
 
-let stdOutOrErr = "";
 let oBabelModReady: any = undefined;
+let stdOutOrErr = "";
 
 function runBabel(args: string[], inputFiles: FileInfo[]) {
 
@@ -126,8 +126,6 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
         oBabelModReady = Webobabel(Module);
     }
 
-    // debugger;
-
     return oBabelModReady
         .then((mod: any) => {
             // Create a temorary working directory.
@@ -216,9 +214,3 @@ self.onmessage = (params: MessageEvent) => {
             throw err;
         });
 };
-
-// sendResponseToMainThread({
-//     outputFiles,
-//     stdOutOrErr,
-// });
-// return;

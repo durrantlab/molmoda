@@ -19,9 +19,10 @@ import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /** SelectAllPlugin */
 @Options({
@@ -68,7 +69,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
@@ -76,11 +77,10 @@ export default class SelectAllPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            beforePluginOpens: [
-                this.testLoadExampleProtein(),
+            beforePluginOpens: new TestCmdList()
+                .loadExampleProtein(true).cmds,
                 // ...this.testExpandMoleculesTree("4WP4"),
                 // this.testSelectMoleculeInTree("Protein"),
-            ],
             closePlugin: [],
             afterPluginCloses: [],
         };

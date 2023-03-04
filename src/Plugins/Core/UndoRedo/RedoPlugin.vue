@@ -14,7 +14,8 @@ import { redo, redoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TestClick, TestWait } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * RedoPlugin
@@ -64,7 +65,7 @@ export default class RedoPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
@@ -72,17 +73,14 @@ export default class RedoPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      beforePluginOpens: [
-        this.testLoadExampleProtein(),
-        new TestClick("#menu1-edit").cmd,
-        new TestClick("#menu-plugin-undo").cmd,
-        new TestWait(3).cmd,
-      ],
-      closePlugin: [],
-      afterPluginCloses: [
-        // new TestWaitUntilRegex("#log", 'Job "redo:.+?" ended'),
-        new TestWait(3).cmd,
-      ],
+      beforePluginOpens: new TestCmdList()
+        .loadExampleProtein()
+        .click("#menu1-edit")
+        .click("#menu-plugin-undo")
+        .wait(3).cmds,
+      closePlugin: [],      
+      afterPluginCloses: new TestCmdList()
+        .wait(3).cmds
     };
   }
 }

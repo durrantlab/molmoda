@@ -154,8 +154,10 @@ export abstract class ViewerParent {
      * @returns {void}
      */
     hideObject(id: string) {
-        if (this.molCache[id]) {
+        const model = this.molCache[id];
+        if (model) {
             this.hideMolecule(id);
+            this._makeAtomsNotHoverableAndClickable(model);
             return;
         }
 
@@ -170,8 +172,10 @@ export abstract class ViewerParent {
      * @param  {string} id  The id of the model or shape to show.
      */
     showObject(id: string) {
-        if (this.molCache[id]) {
+        const model = this.molCache[id];
+        if (model) {
             this.showMolecule(id);
+            this._makeAtomsHoverableAndClickable(model);
             return;
         }
 
@@ -348,7 +352,6 @@ export abstract class ViewerParent {
         }
 
         return genericShape;
-
     }
 
     /**
@@ -378,7 +381,10 @@ export abstract class ViewerParent {
                     addObjPromise = this.addGLModel(treeNode.model as GLModel)
                         .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
-                            this._makeAtomsHoverableAndClickable(visMol);
+
+                            // Below now handled elsewhere (when showMolecule or
+                            // hideMolecule)
+                            // this._makeAtomsHoverableAndClickable(visMol);
 
                             return treeNode;
                         })
@@ -391,7 +397,7 @@ export abstract class ViewerParent {
                     // second copy of the shape gets added before the promise
                     // resolves.
                     this.shapeCache[id] = "pending";
-                    console.log(id + ":OPACITY4: ");  // Sets opacity
+                    console.log(id + ":OPACITY4: "); // Sets opacity
                     addObjPromise = this.addShape(
                         treeNode.shape as IShape
                     ).then((shape: GenericShapeType) => {
@@ -419,7 +425,18 @@ export abstract class ViewerParent {
     }
 
     /**
-     * Makes atoms responsible to mouse hovering and clicking.
+     * Makes atoms NOT responsive to mouse hovering and clicking.
+     *
+     * @param {GenericModelType} model  The model to make atoms NOT hoverable
+     *                                  and clickable.
+     */
+    private _makeAtomsNotHoverableAndClickable(model: GenericModelType) {
+        this.makeAtomsNotHoverable(model);
+        this.makeAtomsNotClickable(model);
+    }
+
+    /**
+     * Makes atoms responsive to mouse hovering and clicking.
      *
      * @param {GenericModelType} model  The model to make atoms hoverable and
      *                                  clickable.
@@ -653,6 +670,13 @@ export abstract class ViewerParent {
     }
 
     /**
+     * Makes atoms NOT react when clicked.
+     *
+     * @param {GenericModelType} model     The model to make NOT clickable.
+     */
+    abstract makeAtomsNotClickable(model: GenericModelType): void;
+
+    /**
      * Makes atoms react when clicked.
      *
      * @param {GenericModelType} model     The model to make clickable.
@@ -682,6 +706,13 @@ export abstract class ViewerParent {
     ): void;
 
     /**
+     * Makes atoms NOT react when mouse moves over then (NOT hoverable).
+     *
+     * @param {GenericModelType} model  The model to make NOT hoverable.
+     */
+    abstract makeAtomsNotHoverable(model: GenericModelType): void;
+
+    /**
      * Sets (updates) the style of an existing shape.
      *
      * @param {string} id  The id of the shape.
@@ -691,7 +722,7 @@ export abstract class ViewerParent {
         // Rather than update the shape, we remove it and re-add it. This is
         // because the 3DMoljs viewer does not have a way to update the position
         // as best I can tell.
-        console.log(id + ":OPACITY3: ");  // Sets opacity
+        console.log(id + ":OPACITY3: "); // Sets opacity
 
         this.addShape(shapeStyle)
             .then((shape: GenericShapeType) => {

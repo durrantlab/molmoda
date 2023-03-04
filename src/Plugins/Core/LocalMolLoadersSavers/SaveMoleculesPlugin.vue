@@ -34,11 +34,7 @@ import {
     IFormText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import {
-    ITest,
-    TestWait,
-    TestWaitUntilRegex,
-} from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
 import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { saveBiotite } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveBiotite";
 import {
@@ -57,6 +53,7 @@ import {
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * SaveMoleculesPlugin
@@ -266,7 +263,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     }
 
     private _ensureAllFileNamesAreUnique(fileInfos: FileInfo[]): FileInfo[] {
-        const fileNamesAlreadyUsed: {[key: string]: number} = {};
+        const fileNamesAlreadyUsed: { [key: string]: number } = {};
         return fileInfos.map((fileInfo, index) => {
             const fileName = fileInfo.name;
             if (fileNamesAlreadyUsed[fileName] === undefined) {
@@ -344,7 +341,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             hiddenAndUnselected: saveHiddenAndUnselected,
         } as IMolsToConsider;
 
-        debugger
+        debugger;
 
         // Divide terminal nodes into compound and non-compound, per the mols to
         // consider.
@@ -360,12 +357,14 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             nonCompoundFormat
         )
             .then((compoundNonCompoundFileInfos: ICmpdNonCmpdFileInfos) => {
-                compoundNonCompoundFileInfos.compoundFileInfos = this._ensureAllFileNamesAreUnique(
-                    compoundNonCompoundFileInfos.compoundFileInfos
-                );
-                compoundNonCompoundFileInfos.nonCompoundFileInfos = this._ensureAllFileNamesAreUnique(
-                    compoundNonCompoundFileInfos.nonCompoundFileInfos
-                );
+                compoundNonCompoundFileInfos.compoundFileInfos =
+                    this._ensureAllFileNamesAreUnique(
+                        compoundNonCompoundFileInfos.compoundFileInfos
+                    );
+                compoundNonCompoundFileInfos.nonCompoundFileInfos =
+                    this._ensureAllFileNamesAreUnique(
+                        compoundNonCompoundFileInfos.nonCompoundFileInfos
+                    );
 
                 // Now save the molecules
                 if (separateCompounds === false) {
@@ -390,7 +389,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
@@ -398,17 +397,17 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      */
     getTests(): ITest[] {
         const biotiteJob = {
-            beforePluginOpens: [
-                this.testLoadExampleProtein(),
-                ...this.testExpandMoleculesTree("4WP4"),
-                this.testSelectMoleculeInTree("Protein"),
-            ],
-            pluginOpen: [this.testSetUserArg("filename", "test")],
-            afterPluginCloses: [
-                new TestWaitUntilRegex("#log", 'Job "savemolecules:.+?" ended')
-                    .cmd,
-                new TestWait(3).cmd,
-            ],
+            beforePluginOpens: new TestCmdList()
+                .loadExampleProtein(true)
+                .selectMoleculeInTree("Protein").cmds,
+            pluginOpen: new TestCmdList().setUserArg(
+                "filename",
+                "test",
+                this.pluginId
+            ).cmds,
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex("#log", 'Job "savemolecules:.+?" ended')
+                .wait(3).cmds,
         };
 
         const jobs = [
@@ -433,17 +432,21 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
             idx++;
 
-            const pluginOpen = [
-                this.testSetUserArg("filename", "test"),
-                this.testSetUserArg("useBiotiteFormat", false),
-                this.testSetUserArg("saveVisible", visible),
-                this.testSetUserArg("saveSelected", selected),
-                this.testSetUserArg(
+            const pluginOpen = new TestCmdList()
+                .setUserArg("filename", "test", this.pluginId)
+                .setUserArg("useBiotiteFormat", false, this.pluginId)
+                .setUserArg("saveVisible", visible, this.pluginId)
+                .setUserArg("saveSelected", selected, this.pluginId)
+                .setUserArg(
                     "saveHiddenAndUnselected",
-                    hiddenAndUnselected
-                ),
-                this.testSetUserArg("separateCompounds", idx % 2 === 0),
-            ];
+                    hiddenAndUnselected,
+                    this.pluginId
+                )
+                .setUserArg(
+                    "separateCompounds",
+                    idx % 2 === 0,
+                    this.pluginId
+                ).cmds;
 
             // Note that the PDB and MOL2 formats (defaults) require OpenBabel and
             // non-OpenBabel, respectively. So already good testing without varying

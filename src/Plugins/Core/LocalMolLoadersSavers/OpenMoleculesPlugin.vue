@@ -30,11 +30,12 @@ import {
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * OpenMoleculesPlugin
@@ -140,7 +141,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
@@ -170,23 +171,22 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             const name = fileToTest[0];
             const count = (fileToTest[1] as number) - 1;
             return {
-                pluginOpen: [
-                    this.testSetUserArg(
+                pluginOpen: new TestCmdList()
+                    .setUserArg(
                         "formFile",
-                        "file://./src/Testing/mols/" + name
-                    ),
-                ],
-                afterPluginCloses: [
-                    new TestWaitUntilRegex("#styles", "Atoms").cmd,
-                    new TestWaitUntilRegex(
+                        "file://./src/Testing/mols/" + name,
+                        this.pluginId
+                    ).cmds,
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#styles", "Atoms")
+                    .waitUntilRegex(
                         "#navigator",
                         "data.idx.." + count.toString() + "."
-                    ).cmd,
-                    new TestWaitUntilRegex(
+                    )
+                    .waitUntilRegex(
                         "#log",
                         'Job "openmolecules:.+?" ended'
-                    ).cmd,
-                ],
+                    ).cmds,
             };
         });
     }

@@ -25,8 +25,9 @@ import {
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * LoadPDBPlugin
@@ -109,7 +110,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
@@ -117,11 +118,11 @@ export default class LoadPDBPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            pluginOpen: [this.testSetUserArg("pdbId", "1XDN")],
-            afterPluginCloses: [
-                new TestWaitUntilRegex("#styles", "Protein").cmd,
-                new TestWaitUntilRegex("#log", 'Job "loadpdb:.+?" ended').cmd,
-            ],
+            pluginOpen: new TestCmdList()
+                .setUserArg("pdbId", "1XDN", this.pluginId).cmds,
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex("#styles", "Protein")
+                .waitUntilRegex("#log", 'Job "loadpdb:.+?" ended').cmds
         };
     }
 }

@@ -205,7 +205,7 @@ Adds a selenium test command to load a sample molecule (small protein and ligand
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITestCommand` | The command to wait for the molecule to load. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L15).
+| `(returns)` | `ITestCommand` | The command to wait for the molecule to load. `ITestCommand` is defined in [TestCmd.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L15).
 
 #### `testPressButton` (function) <a id="testPressButton"></a>
 
@@ -214,7 +214,7 @@ Adds a selenium test command to press a plugin (popup) button.
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `selector` | `string` | The css selector of the button.
-| `(returns)` | `ITestCommand` | The command to run. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L15).
+| `(returns)` | `ITestCommand` | The command to run. `ITestCommand` is defined in [TestCmd.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L15).
 
 #### `testSetUserArg` (function) <a id="testSetUserArg"></a>
 
@@ -224,7 +224,7 @@ If running a selenium test, this function will generate the command to test a sp
 | --------- | ---- | -----------
 | `argName` | `string` | The name of the specific user argument.
 | `argVal` | `any` | The value of the specific user argument.
-| `(returns)` | `ITestCommand` | The command to test the specific user argument. `ITestCommand` is defined in [ParentPluginTestFuncs.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L15).
+| `(returns)` | `ITestCommand` | The command to test the specific user argument. `ITestCommand` is defined in [TestCmd.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L15).
 
 #### `updateUserArgs` (function) <a id="updateUserArgs"></a>
 
@@ -244,11 +244,11 @@ plugin classes should not define them. But they can be defined if needed
 
 #### `getTests` (function) <a id="getTests"></a>
 
-Gets the selenium test commands for the plugin. For advanced use.
+Gets the test commands for the plugin. For advanced use.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [ParentPluginTestFuncs.ts, line 184](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L184). `ITest` is defined in [ParentPluginTestFuncs.ts, line 184](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/ParentPluginTestFuncs.ts#L184).
+| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [TestCmd.ts, line 215](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L215). `ITest` is defined in [TestCmd.ts, line 215](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L215).
 
 #### `onEndJobLogMsg` (function) <a id="onEndJobLogMsg"></a>
 

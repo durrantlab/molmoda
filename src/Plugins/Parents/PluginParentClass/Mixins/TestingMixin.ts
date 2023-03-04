@@ -2,12 +2,12 @@
 import {
     ITest,
     ITestCommand,
-    TestClick,
+    _TestClick,
     TestCommand,
-    TestText,
-    TestUpload,
-    TestWaitUntilRegex,
-} from "@/Testing/ParentPluginTestFuncs";
+    _TestText,
+    _TestUpload,
+    _TestWaitUntilRegex,
+} from "@/Testing/TestCmd";
 import { Vue } from "vue-class-component";
 import * as api from "@/Api";
 import { loadRemote } from "@/Plugins/Core/RemoteMolLoaders/Utils";
@@ -21,7 +21,7 @@ export class TestingMixin extends Vue {
     private testProteinLoadRequested = false;
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
@@ -31,7 +31,7 @@ export class TestingMixin extends Vue {
         const afterPluginCloses =
             (this as any).logJob === true
                 ? [
-                      new TestWaitUntilRegex(
+                      new _TestWaitUntilRegex(
                           "#log",
                           'Job "' + (this as any).pluginId + ':.+?" ended'
                       ).cmd,
@@ -58,12 +58,13 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand}  The command to test the specific user argument.
      */
     testSetUserArg(argName: string, argVal: any): ITestCommand {
+        // TODO: Depreciation in favor of class-based system
         const selector = `#modal-${(this as any).pluginId} #${argName}-${
             (this as any).pluginId
         }-item`;
 
         if (typeof argVal === "string" && argVal.startsWith("file://")) {
-            return new TestUpload(selector, argVal.substring(7)).cmd;
+            return new _TestUpload(selector, argVal.substring(7)).cmd;
         }
 
         if (typeof argVal === "boolean") {
@@ -75,7 +76,7 @@ export class TestingMixin extends Vue {
         }
 
         // TODO: Only works for text currently!
-        return new TestText(selector, argVal).cmd;
+        return new _TestText(selector, argVal).cmd;
     }
 
     /**
@@ -87,7 +88,8 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand}  The command to run.
      */
     testPressButton(selector: string): ITestCommand {
-        return new TestClick(`#modal-${(this as any).pluginId} ${selector}`)
+        // TODO: Depreciation in favor of class-based system
+        return new _TestClick(`#modal-${(this as any).pluginId} ${selector}`)
             .cmd;
     }
 
@@ -100,6 +102,7 @@ export class TestingMixin extends Vue {
      * @returns {ITestCommand}  The command to wait for the molecule to load.
      */
     testLoadExampleProtein(): ITestCommand {
+        // TODO: Depreciation in favor of class-based system
         if (!this.testProteinLoadRequested) {
             loadRemote("4WP4.pdb", false)
                 .then((fileInfo: FileInfo) => {
@@ -115,7 +118,7 @@ export class TestingMixin extends Vue {
 
         // TODO: testWaitForRegex("#styles", "Protein") used elsewhere. Could make
         // "wait for file load" command.
-        return new TestWaitUntilRegex("#styles", "Protein").cmd;
+        return new _TestWaitUntilRegex("#styles", "Protein").cmd;
     }
 
     /**
@@ -128,6 +131,8 @@ export class TestingMixin extends Vue {
      *     visible in the tree.
      */
     testExpandMoleculesTree(treeTitles: string[] | string): ITestCommand[] {
+        // TODO: Depreciation in favor of class-based system
+
         // If treeTitles is not array, make it one.
         if (!Array.isArray(treeTitles)) {
             treeTitles = [treeTitles];
@@ -136,7 +141,7 @@ export class TestingMixin extends Vue {
         const cmds: ITestCommand[] = [];
         for (const treeTitle of treeTitles) {
             cmds.push(
-                new TestClick(
+                new _TestClick(
                     `#navigator div[data-label="${treeTitle}"] .expand-icon`
                 ).cmd
             );
@@ -160,7 +165,8 @@ export class TestingMixin extends Vue {
         treeTitle: string,
         shiftPressed = false
     ): ITestCommand {
-        return new TestClick(
+        // TODO: Depreciation in favor of class-based system
+        return new _TestClick(
             `#navigator div[data-label="${treeTitle}"] .title-text`,
             shiftPressed
         ).cmd;

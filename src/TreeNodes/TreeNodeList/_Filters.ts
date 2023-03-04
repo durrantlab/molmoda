@@ -226,6 +226,54 @@ export class TreeNodeListFilters {
         );
     }
 
+    // The findNode function is very expensive, per profiler. Going to try
+    // caching the results for a speedup.
+    private cache = new Map();
+
+    /**
+     * A recursive function to find the node of id.
+     *
+     * @param  {TreeNodeList} mls  The array of TreeNode to search.
+     * @param  {string}          i    The id of the node to find.
+     * @returns {TreeNode | null}  The node with the given id, or null if
+     *                                  not.
+     */
+    private findNode(mls: TreeNodeList, i: string): TreeNode | null {
+        // Caching result for speed.
+        if (this.cache.has(i)) {
+            return this.cache.get(i);
+        }
+
+        const _nodes = mls._nodes;
+
+        // Calculate only once for speed. Not using length property for
+        // speed.
+        const mlsLength = _nodes.length;
+
+        // Use while loop because might be faster.
+        let idx = 0;
+        while (idx < mlsLength) {
+            
+            // Generally good to use .get() instead of [], but this function
+            // is a bottle neck, so access array directly.
+            const mol = _nodes[idx];
+
+            if (mol.id === i) {
+                this.cache.set(i, mol);
+                return mol;
+            }
+            if (mol.nodes) {
+                const node = this.findNode(mol.nodes, i);
+                if (node !== null) {
+                    this.cache.set(i, node);
+                    return node;
+                }
+            }
+            idx++;
+        }
+        return null;
+    }
+
     /**
      * Find a node with a given id.
      *
@@ -234,30 +282,7 @@ export class TreeNodeListFilters {
      *     found.
      */
     public onlyId(id: string): TreeNode | null {
-        /**
-         * A recursive function to find the node of id.
-         *
-         * @param  {TreeNodeList} mls  The array of TreeNode to search.
-         * @param  {string}          i    The id of the node to find.
-         * @returns {TreeNode | null}  The node with the given id, or null if
-         *                                  not.
-         */
-        function findNode(mls: TreeNodeList, i: string): TreeNode | null {
-            for (let idx = 0; idx < mls.length; idx++) {
-                const mol = mls.get(idx);
-                if (mol.id === i) {
-                    return mol;
-                }
-                if (mol.nodes) {
-                    const node = findNode(mol.nodes, i);
-                    if (node !== null) {
-                        return node;
-                    }
-                }
-            }
-            return null;
-        }
-        return findNode(this.parentTreeNodeList, id);
+        return this.findNode(this.parentTreeNodeList, id);
     }
 
     /**

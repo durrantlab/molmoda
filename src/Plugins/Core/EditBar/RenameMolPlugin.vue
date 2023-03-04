@@ -24,7 +24,8 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * RenameMolPlugin
@@ -98,7 +99,7 @@ export default class RenameMolPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
@@ -106,14 +107,11 @@ export default class RenameMolPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      beforePluginOpens: [
-        this.testLoadExampleProtein(),
-        ...this.testExpandMoleculesTree("4WP4"),
-        this.testSelectMoleculeInTree("Protein"),
-      ],
-      pluginOpen: [this.testSetUserArg("newName", "2")],
-      // closePlugin: [],
-      // afterPluginCloses: [],
+      beforePluginOpens: new TestCmdList()
+        .loadExampleProtein(true)
+        .selectMoleculeInTree("Protein").cmds,
+      pluginOpen: new TestCmdList()
+        .setUserArg("newName", "2", this.pluginId).cmds,
     };
   }
 }

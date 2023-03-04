@@ -22,8 +22,9 @@ import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * LoadAlphaFoldPlugin
@@ -115,7 +116,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
@@ -123,11 +124,11 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      pluginOpen: [this.testSetUserArg("uniprot", "P86927")],
-      afterPluginCloses: [
-        new TestWaitUntilRegex("#styles", "Protein").cmd,
-        new TestWaitUntilRegex("#log", 'Job "loadalphafold:.+?" ended').cmd,
-      ],
+      pluginOpen: new TestCmdList()
+        .setUserArg("uniprot", "P86927", this.pluginId).cmds,
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#styles", "Protein")
+        .waitUntilRegex("#log", 'Job "loadalphafold:.+?" ended').cmds
     };
   }
 }

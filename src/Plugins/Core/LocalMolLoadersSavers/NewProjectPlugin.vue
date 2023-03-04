@@ -28,14 +28,9 @@ import * as api from "@/Api";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import {
-    ITest,
-    TestClick,
-    TestText,
-    TestWait,
-    TestWaitUntilRegex,
-} from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * NewProjectPlugin
@@ -107,7 +102,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
@@ -117,32 +112,28 @@ export default class NewProjectPlugin extends PluginParentClass {
         return [
             // First test without saving first
             {
-                beforePluginOpens: [this.testLoadExampleProtein()],
-                // pluginOpen: [],
-                // closePlugin: [],
-                afterPluginCloses: [new TestWait(1).cmd],
+                beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
+                afterPluginCloses: new TestCmdList().wait(1).cmds,
             },
 
             // Test with saving first (secondary button)
             {
-                beforePluginOpens: [
-                    new TestWaitUntilRegex("#styles", "Protein").cmd,
-                ],
-                // pluginOpen: [],
-                closePlugin: [
-                    new TestClick("#modal-newproject .action-btn2").cmd,
-                    new TestWait(3).cmd,
-                ],
-                afterPluginCloses: [
-                    new TestText(
+                beforePluginOpens: new TestCmdList().waitUntilRegex(
+                    "#styles",
+                    "Protein"
+                ).cmds,
+                closePlugin: new TestCmdList()
+                    .click("#modal-newproject .action-btn2")
+                    .wait(3).cmds,
+                afterPluginCloses: new TestCmdList()
+                    .text(
                         "#modal-savemolecules #filename-savemolecules-item",
                         "test"
-                    ).cmd,
-                    new TestClick("#modal-savemolecules .action-btn").cmd,
-                    new TestWait(5).cmd,
-                    new TestClick("#modal-simplemsg .cancel-btn").cmd,
-                    new TestWait(1).cmd,
-                ],
+                    )
+                    .click("#modal-savemolecules .action-btn")
+                    .wait(5)
+                    .click("#modal-simplemsg .cancel-btn")
+                    .wait(1).cmds,
             },
         ];
     }

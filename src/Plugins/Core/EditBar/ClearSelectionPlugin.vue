@@ -20,8 +20,9 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /** ClearSelectionPlugin */
 @Options({
@@ -68,19 +69,19 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.
      */
     getTests(): ITest {
+        const beforePluginOpens = new TestCmdList()
+            .loadExampleProtein(true)
+            .selectMoleculeInTree("Protein");
+
         return {
-            beforePluginOpens: [
-                this.testLoadExampleProtein(),
-                ...this.testExpandMoleculesTree("4WP4"),
-                this.testSelectMoleculeInTree("Protein"),
-            ],
+            beforePluginOpens: beforePluginOpens.cmds,
             closePlugin: [],
             afterPluginCloses: [],
         };

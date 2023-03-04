@@ -446,6 +446,16 @@ export class Viewer3DMol extends ViewerParent {
     }
 
     /**
+     * Makes atoms NOT responsive to mouse hovering and clicking.
+     *
+     * @param {GLModel} model  The model to make atoms NOT hoverable and
+     *                         clickable.
+     */
+    makeAtomsNotClickable(model: GLModel) {
+        model.setClickable({}, false);
+    }
+
+    /**
      * Makes atoms react when clicked.
      *
      * @param {GLModel}  model     The model to make clickable.
@@ -465,6 +475,15 @@ export class Viewer3DMol extends ViewerParent {
                 callBack(atom.x, atom.y, atom.z);
             }
         );
+    }
+
+    /**
+     * Makes atoms NOT react when mouse moves over then (NOT hoverable).
+     *
+     * @param {GLModel} model  The model to make NOT hoverable.
+     */
+    makeAtomsNotHoverable(model: GLModel) {
+        model.setHoverable({}, false);
     }
 
     /**

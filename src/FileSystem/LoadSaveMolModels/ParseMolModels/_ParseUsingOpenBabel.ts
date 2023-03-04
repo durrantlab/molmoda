@@ -3,7 +3,7 @@ import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseMolecularModelFromTexts } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { convertMolFormatOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
+import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * Uses OpenBabel to parse the a molecular-model file.
@@ -24,7 +24,7 @@ export function parseUsingOpenBabel(
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
 
     // Convert it to MOL2 format and load that using 3dmoljs.
-    return convertMolFormatOpenBabel(fileInfo, targetFormat)
+    return convertFileInfosOpenBabel([fileInfo], targetFormat)
         .then((contents: string[]) => {
             const fileInfos = contents.map((c, i) => {
                 return new FileInfo({

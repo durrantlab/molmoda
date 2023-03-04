@@ -30,7 +30,8 @@ import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
-import { ITest, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /** CloneMolPlugin */
 @Options({
@@ -198,24 +199,25 @@ export default class CloneMolPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commandss.
      */
     getTests(): ITest[] {
+        const beforePluginOpens = new TestCmdList()
+            .loadExampleProtein(true)
+            .selectMoleculeInTree("Protein");
+
+        const afterPluginCloses = new TestCmdList()
+            .waitUntilRegex("#navigator", ".cloned.");
+
         return [
             // First test cloning
             {
-                beforePluginOpens: [
-                    this.testLoadExampleProtein(),
-                    ...this.testExpandMoleculesTree("4WP4"),
-                    this.testSelectMoleculeInTree("Protein"),
-                ],
-                afterPluginCloses: [
-                    new TestWaitUntilRegex("#navigator", ".cloned.").cmd,
-                ],
+                beforePluginOpens: beforePluginOpens.cmds,
+                afterPluginCloses: afterPluginCloses.cmds,
             },
         ];
     }

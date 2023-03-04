@@ -12,6 +12,8 @@ function stopPreviousTimeout() {
     }
 }
 
+let waitSpinnerDepth = 0;
+
 /**
  * Start or stop the wait spinner.
  * 
@@ -24,14 +26,24 @@ export function waitSpinner(show: boolean, timeOut = 30000) {
         body = document.getElementsByTagName("body")[0];
     }
 
-    if (show) {
+    const origWaitSpinnerDepth = waitSpinnerDepth;
+    waitSpinnerDepth += show ? 1 : -1;
+
+    if (waitSpinnerDepth < 0) {
+        waitSpinnerDepth = 0;
+    }
+
+    if (origWaitSpinnerDepth === 0 && waitSpinnerDepth > 0) {
+        // We are starting the spinner
         body.classList.add("waiting");
         stopPreviousTimeout();
         timeoutId = setTimeout(() => {
+            waitSpinnerDepth = 0;
             waitSpinner(false, 0);
         }, timeOut);
-    } else {
+    } else if (origWaitSpinnerDepth > 0 && waitSpinnerDepth === 0) {
+        // We are stopping the spinner
         body.classList.remove("waiting");
         stopPreviousTimeout();
-    }
+    }    
 }

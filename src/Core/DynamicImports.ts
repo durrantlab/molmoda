@@ -259,7 +259,7 @@ export const dynamicImports = {
                 /* webpackMode: "lazy" */
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                "@/libs/ToCopy/obabel-wasm/obabel"
+                "@/libs/ToCopy/obabel-wasm.run_not_exported/obabel"
             ).then((obabelModule) => {
                 return obabelModule.default; // (module);
             });

@@ -15,7 +15,8 @@ import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, TestWait } from "@/Testing/ParentPluginTestFuncs";
+import { ITest, _TestWait } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * UndoPlugin
@@ -72,7 +73,7 @@ export default class UndoPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
@@ -80,13 +81,12 @@ export default class UndoPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      beforePluginOpens: [this.testLoadExampleProtein()],
+      beforePluginOpens: new TestCmdList()
+        .loadExampleProtein().cmds,
       // pluginOpen: [this.testSetUserArg("filename", "test")],
       closePlugin: [],
-      afterPluginCloses: [
-        // new TestWaitUntilRegex("#log", 'Job "undo:.+?" ended'),
-        new TestWait(3).cmd,
-      ],
+      afterPluginCloses: new TestCmdList()
+        .wait(3).cmds
     };
   }
 }

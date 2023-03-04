@@ -26,7 +26,8 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * DeleteMolPlugin
@@ -112,32 +113,29 @@ export default class DeleteMolPlugin extends PluginParentClass {
     }
 
     /**
-     * Gets the selenium test commands for the plugin. For advanced use.
+     * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
     getTests(): ITest[] {
+        const beforePluginOpensDelChild = new TestCmdList()
+            .loadExampleProtein(true)
+            .selectMoleculeInTree("Protein");
+
+        const beforePluginOpensDelRoot = new TestCmdList()
+            .loadExampleProtein(true)
+            .selectMoleculeInTree("4WP4.pdb:1");
+
         return [
+            // Test deleting a child node.
             {
-                beforePluginOpens: [
-                    this.testLoadExampleProtein(),
-                    ...this.testExpandMoleculesTree("4WP4"),
-                    this.testSelectMoleculeInTree("Protein"),
-                ],
-                // closePlugin: [],
-                afterPluginCloses: [],
+                beforePluginOpens: beforePluginOpensDelChild.cmds,
             },
+            // Also test deleting a root node.
             {
-                // Also test deleting a root node.
-                beforePluginOpens: [
-                    this.testLoadExampleProtein(),
-                    ...this.testExpandMoleculesTree("4WP4"),
-                    this.testSelectMoleculeInTree("4WP4"),
-                ],
-                // closePlugin: [],
-                afterPluginCloses: [],
+                beforePluginOpens: beforePluginOpensDelRoot.cmds,
             },
         ];
     }

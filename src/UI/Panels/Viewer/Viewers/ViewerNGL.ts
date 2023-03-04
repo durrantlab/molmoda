@@ -89,6 +89,9 @@ export class ViewerNGL extends ViewerParent {
     hideMolecule(id: string) {
         const model = this.lookup(id);
         model.setVisibility(false);
+
+        // Adding a hidden property
+        model.hidden = true;
     }
 
     /**
@@ -99,6 +102,9 @@ export class ViewerNGL extends ViewerParent {
     showMolecule(id: string) {
         const model = this.lookup(id);
         model.setVisibility(true);
+
+        // Adding a hidden property
+        model.hidden = false;
     }
 
     /**
@@ -758,6 +764,25 @@ export class ViewerNGL extends ViewerParent {
                 callBack(coors[0], coors[1], coors[2]);
             }
         });
+    }
+
+
+    /**
+     * Makes atoms NOT react when mouse moves over then (NOT hoverable).
+     *
+     * @param {any} model  The model to make NOT hoverable.
+     */
+    makeAtomsNotHoverable(model: any) {
+        alert("TODO: NOT IMPLEMENTED!");
+    }
+
+    /**
+     * Makes atoms NOT responsive to mouse hovering and clicking.
+     *
+     * @param {any} model  The model to make atoms NOT hoverable and clickable.
+     */
+    makeAtomsNotClickable(model: any) {
+        alert("TODO: NOT IMPLEMENTED!");
     }
 
     currentMouseHoverState = 1;

@@ -18,19 +18,37 @@ export interface ITestCommand {
     data?: any;
 }
 
-/** A class to generate the command to click a selector. */
-export class TestClick {
+/**
+ * A class to generate the command to type text into a selector.  Should only be
+ * called from class TestCmdList. The parent that all test commands should
+ * inherit from.
+ */
+export abstract class _TestCmdParent {
+    /**
+     * Generates the command.
+     *
+     * @returns {ITestCommand}  The command.
+     */
+    abstract get cmd(): ITestCommand;
+}
+
+/**
+ * A class to generate the command to click a selector. Should only be called
+ * from class TestCmdList. 
+ */
+export class _TestClick extends _TestCmdParent {
     private selector: string;
     private shiftPressed: boolean;
 
     /**
-     * Creates an instance of TestClick.
+     * Creates an instance of _TestClick.
      *
      * @param  {string}  selector              The selector to click.
      * @param  {boolean} [shiftPressed=false]  If true, the shift key will be
      *                                         pressed while clicking.
      */
     constructor(selector: string, shiftPressed = false) {
+        super();
         this.selector = selector;
         this.shiftPressed = shiftPressed;
     }
@@ -49,17 +67,21 @@ export class TestClick {
     }
 }
 
-/** A class to generate the command to wait for a specified duration. */
-export class TestWait {
+/** 
+ * A class to generate the command to wait for a specified duration.  Should
+ * only be called from class TestCmdList.
+ */
+export class _TestWait extends _TestCmdParent {
     private duration: number;
 
     /**
-     * Creates an instance of TestWait.
+     * Creates an instance of _TestWait.
      * 
-     * @param  {number} [duration=1]  The duration to wait, in seconds.
+     * @param  {number} [durationInSecs=1]  The duration to wait, in seconds.
      */
-    constructor(duration = 1) {
-        this.duration = duration;
+    constructor(durationInSecs = 1) {
+        super();
+        this.duration = durationInSecs;
     }
 
     /**
@@ -75,18 +97,22 @@ export class TestWait {
     }
 }
 
-/** A class to generate the command to type text into a selector. */
-export class TestText {
+/** 
+ * A class to generate the command to type text into a selector.  Should only be
+ * called from class TestCmdList.
+ */
+export class _TestText extends _TestCmdParent {
     private selector: string;
     private text: string;
 
     /**
-     * Creates an instance of TestText.
+     * Creates an instance of _TestText.
      * 
      * @param  {string} selector  The selector to type into.
      * @param  {string} text      The text to type.
      */
     constructor(selector: string, text: string) {
+        super();
         this.selector = selector;
         this.text = text;
     }
@@ -109,19 +135,20 @@ export class TestText {
 
 /** 
  * A class to generate the command to wait until the specified regex is found in
- * the specified selector. 
+ * the specified selector. Should only be called from class TestCmdList.
  */
-export class TestWaitUntilRegex {
+export class _TestWaitUntilRegex extends _TestCmdParent {
     private selector: string;
     private regex: string;
 
     /**
-     * Creates an instance of TestWaitUntilRegex.
+     * Creates an instance of _TestWaitUntilRegex.
      * 
      * @param  {string} selector  The selector to monitor.
      * @param  {string} regex     The regex to wait for.
      */
     constructor(selector: string, regex: string) {
+        super();
         this.selector = selector;
         this.regex = regex;
     }
@@ -144,8 +171,11 @@ export class TestWaitUntilRegex {
 }
 
 
-/** A class to generate the command to upload a file. */
-export class TestUpload {
+/** 
+ * A class to generate the command to upload a file. Should only be called from
+ * class TestCmdList.
+ */
+export class _TestUpload extends _TestCmdParent {
     private selector: string;
     private filePath: string;
 
@@ -156,6 +186,7 @@ export class TestUpload {
      * @param  {string} filePath  The file path to upload.
      */
     constructor(selector: string, filePath: string) {
+        super();
         this.selector = selector;
 
         if (filePath.startsWith("file://")) {
@@ -189,7 +220,8 @@ export interface ITest {
     // plugin action button.
     pluginOpen?: ITestCommand[];
 
-    // Clicks the popup button to close the plugin.
+    // Clicks the popup button to close the plugin. Set to [] explicitly for
+    // those rare plugins that have no popups.
     closePlugin?: ITestCommand[];
 
     // Run after the plugin popup is closed, and the job is running.
@@ -238,13 +270,13 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
         getComputedStyle(hamburgerButton).display !== "none";
 
     if (hamburgerButtonVisible) {
-        cmds.push(new TestClick("#hamburger-button").cmd);
+        cmds.push(new _TestClick("#hamburger-button").cmd);
     }
 
     cmds.push(
-        ...sels.map((sel) => new TestClick(sel).cmd),
-        new TestClick(lastSel).cmd,
-        new TestWait(1).cmd
+        ...sels.map((sel) => new _TestClick(sel).cmd),
+        new _TestClick(lastSel).cmd,
+        new _TestWait(1).cmd
     );
 
     return cmds;
@@ -271,13 +303,13 @@ function addTestDefaults(plugin: any): ITest[] {
         test.beforePluginOpens = test.beforePluginOpens || [];
         test.pluginOpen = test.pluginOpen || [];
         test.closePlugin = test.closePlugin || [
-            new TestClick(`#modal-${pluginId} .action-btn`).cmd,
+            new _TestClick(`#modal-${pluginId} .action-btn`).cmd,
         ];
         test.afterPluginCloses =
             test.afterPluginCloses ||
             (plugin.logJob
                 ? [
-                      new TestWaitUntilRegex(
+                      new _TestWaitUntilRegex(
                           "#log",
                           'Job "' + pluginId + ':.+?" ended'
                       ).cmd,
@@ -325,10 +357,10 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
             ...(test.beforePluginOpens as ITestCommand[]), // Defined in each plugin
             ..._openPluginCmds(plugin),
             ...(test.pluginOpen as ITestCommand[]), // Defined in each plugin
-            new TestWait(1).cmd,
+            new _TestWait(1).cmd,
             ...(test.closePlugin as ITestCommand[]), // Defined in each plugin
             ...(test.afterPluginCloses as ITestCommand[]), // Defined in each plugin
-            new TestWait(0.5).cmd,
+            new _TestWait(0.5).cmd,
         ] as ITestCommand[];
 
         plugin.$store.commit("setVar", {

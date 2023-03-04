@@ -1,7 +1,10 @@
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getFileNameParts } from "./FilenameManipulation";
-import { getFormatInfoGivenType, IFormatInfo } from "./LoadSaveMolModels/Types/MolFormats";
-import { convertMolFormatOpenBabel } from "./OpenBabel/OpenBabel";
+import {
+    getFormatInfoGivenType,
+    IFormatInfo,
+} from "./LoadSaveMolModels/Types/MolFormats";
+import { convertFileInfosOpenBabel } from "./OpenBabel/OpenBabel";
 import { IFileInfo } from "./Types";
 import { getFileType } from "./Utils2";
 
@@ -13,11 +16,11 @@ export class FileInfo {
     contents: any;
     compressedName?: string;
     treeNode?: TreeNode;
-    cachedConvertText: {[key: string]: string} = {};
+    cachedConvertText: { [key: string]: string } = {};
 
     /**
      * The constructor.
-     * 
+     *
      * @param {IFileInfo} fileInfo  The IFileInfo object.
      */
     constructor(fileInfo: IFileInfo) {
@@ -29,7 +32,7 @@ export class FileInfo {
 
     /**
      * Serializes this FileInfo object.
-     * 
+     *
      * @returns {IFileInfo}  The serialized object.
      */
     public serialize(): IFileInfo {
@@ -52,7 +55,7 @@ export class FileInfo {
 
     /**
      * Given a list of PDB texts, convert them to the target format.
-     * 
+     *
      * @param {string[]} molTxts  The PDB texts.
      * @param {string} targetExt  The target extension.
      * @returns {Promise<string[]>}  A promise that resolves to the converted texts.
@@ -72,11 +75,13 @@ export class FileInfo {
 
         // Since intermediary is not the destination format, convert to the required format.
         const convertedTxtPromises = molTxts.map((molTxt: string) =>
-            convertMolFormatOpenBabel(
-                new FileInfo({
-                    name: "tmp." + intermediaryExt,
-                    contents: molTxt,
-                }),
+            convertFileInfosOpenBabel(
+                [
+                    new FileInfo({
+                        name: "tmp." + intermediaryExt,
+                        contents: molTxt,
+                    }),
+                ],
                 targetExt
             )
         );
@@ -84,10 +89,7 @@ export class FileInfo {
         return Promise.all(convertedTxtPromises).then(
             (convertedTxts: string[][]) => {
                 // Flatten
-                return convertedTxts.reduce(
-                    (acc, val) => acc.concat(val),
-                    []
-                );
+                return convertedTxts.reduce((acc, val) => acc.concat(val), []);
             }
         );
     }

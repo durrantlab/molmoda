@@ -15,7 +15,7 @@ import {
     timeDiffDescription,
 } from "@/Core/Utils";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
-import { createTestCmdsIfTestSpecified } from "@/Testing/ParentPluginTestFuncs";
+import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";

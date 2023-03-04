@@ -36,7 +36,7 @@ export const messagesApi = {
             variant,
             neverClose,
             callBack,
-            open: true // open
+            open: true, // open
         } as ISimpleMsg);
     },
 
@@ -47,7 +47,7 @@ export const messagesApi = {
         pluginsApi.runPlugin("simplemsg", {
             title: "",
             message: "",
-            open: false // close
+            open: false, // close
         } as ISimpleMsg);
     },
 

@@ -81,7 +81,35 @@ Search for "// TODO: You're sending all inputFiles for each runBabel call, becau
 
 How useful is log really?
 
+Load a molecule, clone protein portion, it's hidden. Why? Same with merging, BTW.
+
+Return to openmolecules test. Not passing.
+
+Check savemolecules test. It's very complicated.
+
+NEED TO TEST: DelayedJobPopupPlugin.vue, MoveShapesOnClickPlugin.vue, SimpleMsgPlugin.vue
+
+Test FPocketWeb when it's finalized.
+
+molprops, after done, should switch to data tab for you.
+
+molprops should be moved into its own menu item.
+
+Mol filter could be similar plugin, might be helpful.
+
+convertMolFormatOpenBabel() should accept multiple input files at once, all sent
+to webworker simultaneously. Maybe ability to chain commands, so divide and
+convert at once?
+    Conversion from 3dmol to PDB in same webworker (at least optional).
+
 # DONE
+
+With spinner, good to keep track of hierarchies. Could have show/hide withing
+larger show/hide. Track nested calls like that with index.
+
+Are labels being placed over molecules that are invisible? Need to investigate. (Definitely true... confirmed)
+
+When you drop a large file, start spining. A good one for testing (that fails): /Users/jdurrant/Documents/Work/Laty/restart/virtual_library/LC_5k_Pre_Plated_Diversity_Set_PS7.sdf  
 
 Load 1XDN. There's an extra layer in there. Why?
 

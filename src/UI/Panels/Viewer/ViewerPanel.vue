@@ -85,57 +85,61 @@ export default class ViewerPanel extends Vue {
      */
     @Watch("treeview", { immediate: false, deep: true })
     onTreeviewChanged(allMolecules: TreeNodeList) {
-        if (loadViewerLibPromise === undefined) {
-            if (api.visualization.viewer !== undefined) {
-                // Molecular library already loaded.
-                setLoadViewerLibPromise(
-                    Promise.resolve(api.visualization.viewer)
-                );
-            } else {
-                // Need to load the molecular library.
-                if (this.$store.state.molViewer === "3dmol") {
-                    api.visualization.viewer = new Viewer3DMol();
-                } else if (this.$store.state.molViewer === "ngl") {
-                    api.visualization.viewer = new ViewerNGL();
+        setTimeout(() => {
+            // Putting it in setTimeout so some components of UI will react
+            // immediately. Below can be time consuming in some cases.
+            if (loadViewerLibPromise === undefined) {
+                if (api.visualization.viewer !== undefined) {
+                    // Molecular library already loaded.
+                    setLoadViewerLibPromise(
+                        Promise.resolve(api.visualization.viewer)
+                    );
                 } else {
-                    throw new Error("Unknown viewer");
+                    // Need to load the molecular library.
+                    if (this.$store.state.molViewer === "3dmol") {
+                        api.visualization.viewer = new Viewer3DMol();
+                    } else if (this.$store.state.molViewer === "ngl") {
+                        api.visualization.viewer = new ViewerNGL();
+                    } else {
+                        throw new Error("Unknown viewer");
+                    }
+
+                    const promise = api.visualization.viewer
+                        .loadAndSetupViewerLibrary(
+                            "mol-viewer",
+                            (classes: string) => {
+                                this.containerClass = classes;
+                            }
+                        )
+                        .then((viewer: any) => {
+                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                            // @ts-ignore
+                            window["viewer"] = viewer;
+
+                            api.visualization.viewer = viewer;
+                            this.$emit("onViewerLoaded");
+                            return viewer;
+                        });
+
+                    setLoadViewerLibPromise(promise);
                 }
-
-                const promise = api.visualization.viewer
-                    .loadAndSetupViewerLibrary(
-                        "mol-viewer",
-                        (classes: string) => {
-                            this.containerClass = classes;
-                        }
-                    )
-                    .then((viewer: any) => {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
-                        window["viewer"] = viewer;
-
-                        api.visualization.viewer = viewer;
-                        this.$emit("onViewerLoaded");
-                        return viewer;
-                    });
-
-                setLoadViewerLibPromise(promise);
             }
-        }
 
-        (loadViewerLibPromise as Promise<any>)
-            .then(() => {
-                if (allMolecules.length === 0) {
-                    // No molecules present
-                    api.visualization.viewer?.clearCache();
-                    return;
-                }
+            (loadViewerLibPromise as Promise<any>)
+                .then(() => {
+                    if (allMolecules.length === 0) {
+                        // No molecules present
+                        api.visualization.viewer?.clearCache();
+                        return;
+                    }
 
-                // Update and zoom
-                return this._updateStylesAndZoom();
-            })
-            .catch((err) => {
-                throw err;
-            });
+                    // Update and zoom
+                    return this._updateStylesAndZoom();
+                })
+                .catch((err) => {
+                    throw err;
+                });
+        }, 0);
     }
 
     /**

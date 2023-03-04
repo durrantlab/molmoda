@@ -23,13 +23,14 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest, TestWait, TestWaitUntilRegex } from "@/Testing/ParentPluginTestFuncs";
+import { ITest } from "@/Testing/TestCmd";
 import {
   fileNameFilter,
   matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { correctFilenameExt } from "@/FileSystem/Utils";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * SaveVRMLPlugin
@@ -117,7 +118,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   }
 
   /**
-   * Gets the selenium test commands for the plugin. For advanced use.
+   * Gets the test commands for the plugin. For advanced use.
    *
    * @gooddefault
    * @document
@@ -125,12 +126,13 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      beforePluginOpens: [this.testLoadExampleProtein()],
-      pluginOpen: [this.testSetUserArg("filename", "test")],
-      afterPluginCloses: [
-        new TestWaitUntilRegex("#log", 'Job "savevrml:.+?" ended').cmd,
-        new TestWait(3).cmd,
-      ],
+      beforePluginOpens: new TestCmdList()
+        .loadExampleProtein().cmds,
+      pluginOpen: new TestCmdList()
+        .setUserArg("filename", "test", this.pluginId).cmds,
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#log", 'Job "savevrml:.+?" ended')
+        .wait(3).cmds,
     };
   }
 }

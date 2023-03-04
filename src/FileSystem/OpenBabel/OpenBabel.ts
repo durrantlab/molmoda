@@ -1,5 +1,4 @@
 import { messagesApi } from "@/Api/Messages";
-import { randomID } from "@/Core/Utils";
 import { batchify } from "@/Core/Utils2";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
@@ -117,57 +116,60 @@ export function runOpenBabel(
 /**
  * Converts a molecule to another format using OpenBabel.
  *
- * @param  {FileInfo} srcFileInfo   The information about the file to convert.
- * @param  {string}   targetFormat  The target extension.
- * @param  {boolean}  [gen3D]       Whether to assign 3D coordinates.
- * @param  {number}   [pH]          The pH to use for protonation.
+ * @param  {FileInfo[]}  srcFileInfos   The information about the file to
+ *                                      convert.
+ * @param  {string}      targetFormat   The target extension.
+ * @param  {boolean}     [gen3D]        Whether to assign 3D coordinates.
+ * @param  {number}      [pH]           The pH to use for protonation.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */
-export function convertMolFormatOpenBabel(
-    srcFileInfo: FileInfo,
+export function convertFileInfosOpenBabel(
+    srcFileInfos: FileInfo[],  // Can be multiple-model SDF file, for example.
     targetFormat: string,
     gen3D?: boolean,
     pH?: number
 ): Promise<string[]> {
     // Get info about the file
-    const formatInfo = srcFileInfo.getFormatInfo();
+    const formatInfos = srcFileInfos.map(f => f.getFormatInfo());
 
-    if (formatInfo !== undefined && formatInfo.lacks3D === true) {
+    const warningNeeded = formatInfos.some(f => f !== undefined && f.lacks3D === true);
+
+    if (warningNeeded) {
         // Warn user
         messagesApi.popupMessage(
             "Warning",
-            "The file does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.",
+            "One or more input molecules does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.",
             PopupVariant.Warning
         );
     }
 
-    // If the file required 3D generation, first divide it into separate files.
-    // if (
-    //     gen3D === true ||
-    //     (formatInfo !== undefined && formatInfo.lacks3D === true)
-    // ) {
-
-    // }
-
     // Always divide into separate files.
-    const separateFileCmds = [
+    // const separateFileCmds = [
+    //     srcFileInfos.name,
+    //     "-m",
+    //     "-O",
+    //     "tmp." + srcFileInfos.getFormatInfo()?.primaryExt,
+    // ];
+    const separateFileCmds = srcFileInfos.map((srcFileInfo, i) => [
         srcFileInfo.name,
         "-m",
         "-O",
-        "tmp." + srcFileInfo.getFormatInfo()?.primaryExt,
-    ];
-    return runOpenBabel([separateFileCmds], [srcFileInfo])
+        `tmp${i}.${srcFileInfo.getFormatInfo()?.primaryExt}`,
+    ]);
+
+    return runOpenBabel(separateFileCmds, srcFileInfos)
         .then((convertedFileContents: any[]) => {
             // You've only run one command, so there's only one item in the
             // array.
+            debugger;
             return convertedFileContents[0].outputFiles;
         })
         .then((outputFileContents: string[]) => {
             // Convert it to a FileInfo
             return outputFileContents.map((fileContent, i) => {
                 return {
-                    name: `tmp${i}.${srcFileInfo.getFormatInfo()?.primaryExt}`,
+                    name: "TODO:",  // `tmp${i}.${srcFileInfos.getFormatInfo()?.primaryExt}`,
                     contents: fileContent,
                 } as IFileInfo;
             });
@@ -176,12 +178,13 @@ export function convertMolFormatOpenBabel(
             const cmdsList = outputFileInfos.map((outputFileInfo) => {
                 const cmds = [outputFileInfo.name, "-m"]; // Note always dividing into multiple files.
 
-                if (
-                    gen3D === true ||
-                    (formatInfo !== undefined && formatInfo.lacks3D === true)
-                ) {
-                    cmds.push(...["--gen3D"]);
-                }
+                // TODO:
+                // if (
+                //     gen3D === true ||
+                //     (formatInfo !== undefined && formatInfo.lacks3D === true)
+                // ) {
+                //     cmds.push(...["--gen3D"]);
+                // }
                 if (pH !== undefined) {
                     cmds.push(...["-p", pH.toString()]);
                 }
