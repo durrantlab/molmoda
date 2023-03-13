@@ -39,8 +39,11 @@ export default class MolProps extends Vue {
      */
     @Watch("smiles")
     onSmiles() {
+        console.log("====================================");
+        console.log(this.smiles, this.treeNode);
         calcMolProps([this.smiles], [this.treeNode])
             .then((resps: ICalcMolProps[]) => {
+                console.log(resps)
                 // Only one molecule.
                 const resp = resps[0];
                 this.lipinskiTableData = this.convertDescriptorsToTableData(
@@ -65,7 +68,11 @@ export default class MolProps extends Vue {
      * @param {any[][]} descriptors  List of descriptors
      * @returns {ITableData}         Table data
      */
-    convertDescriptorsToTableData(descriptors: any[][]): ITableData {
+    convertDescriptorsToTableData(descriptors: [string, number, string][]): ITableData {
+        if (!descriptors.map) {
+            console.trace();
+            debugger;
+        }
         const headers = descriptors.map((d: any[]) => {
             return { text: d[0], note: d[2] };
         });

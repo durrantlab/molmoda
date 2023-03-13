@@ -16,34 +16,76 @@ import * as api from "@/Api";
 
 let exampleLoaded = false;
 
+/**
+ * A container for test commmands, with added functions for common tasks.
+ */
 export class TestCmdList {
     private tests: _TestCmdParent[] = [];
 
+    /**
+     * Click a button as if the user had clicked it.
+     *
+     * @param {string}  selector              The CSS selector for the button.
+     * @param {boolean} [shiftPressed=false]  Whether the shift key was pressed.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
     public click(selector: string, shiftPressed = false): TestCmdList {
         this.tests.push(new _TestClick(selector, shiftPressed));
         return this;
     }
 
+    /**
+     * Wait for a specified number of seconds.
+     * 
+     * @param {number} [durationInSecs=1]  The number of seconds to wait.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
     public wait(durationInSecs = 1): TestCmdList {
         this.tests.push(new _TestWait(durationInSecs));
         return this;
     }
 
+    /**
+     * Type text into a text box.
+     * 
+     * @param {string} selector  The CSS selector for the text box.
+     * @param {string} text      The text to type.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
     public text(selector: string, text: string): TestCmdList {
         this.tests.push(new _TestText(selector, text));
         return this;
     }
 
+    /**
+     * Wait until a given regex matches the text of an element.
+     * 
+     * @param {string} selector  The CSS selector for the element.
+     * @param {string} regex     The regex to match.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
     public waitUntilRegex(selector: string, regex: string): TestCmdList {
         this.tests.push(new _TestWaitUntilRegex(selector, regex));
         return this;
     }
 
+    /**
+     * Upload a file.
+     * 
+     * @param {string} selector  The CSS selector for the file input.
+     * @param {string} filePath  The path to the file to upload.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
     public upload(selector: string, filePath: string): TestCmdList {
         this.tests.push(new _TestUpload(selector, filePath));
         return this;
     }
 
+    /**
+     * Returns the list of test commands.
+     * 
+     * @returns {ITestCommand[]} The list of test commands.
+     */
     public get cmds(): ITestCommand[] {
         return this.tests.map((test: _TestCmdParent) => test.cmd);
     }
@@ -51,6 +93,11 @@ export class TestCmdList {
     /**
      * Adds a test to load a sample molecule (small protein and ligand) for
      * testing.
+     *
+     * @param {boolean} [expandInMoleculeTree=false]  Whether to expand the
+     *                                                molecule tree to show the
+     *                                                molecule.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public loadExampleProtein(expandInMoleculeTree = false): TestCmdList {
         if (exampleLoaded) {
@@ -82,6 +129,7 @@ export class TestCmdList {
      *
      * @param {string[] | string} treeTitles  The title(s) of the molecule to
      *                                        make visible in the molecule tree.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public expandMoleculesTree(treeTitles: string[] | string): TestCmdList {
         // If treeTitles is not array, make it one.
@@ -106,6 +154,7 @@ export class TestCmdList {
      *                                        select in the molecule tree.
      * @param {boolean} [shiftPressed=false]  Whether the shift key should be
      *                                        pressed.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public selectMoleculeInTree(
         treeTitle: string,
@@ -124,6 +173,8 @@ export class TestCmdList {
      *
      * @param  {string} argName   The name of the specific user argument.
      * @param  {any}    argVal    The value of the specific user argument.
+     * @param  {string} pluginId  The ID of the plugin.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public setUserArg(
         argName: string,
@@ -160,6 +211,8 @@ export class TestCmdList {
      * `testPressButton`.
      *
      * @param {string} selector  The css selector of the button.
+     * @param {string} pluginId  The ID of the plugin.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public pressPopupButton(selector: string, pluginId: string): TestCmdList {
         this.click(`#modal-${pluginId} ${selector}`);

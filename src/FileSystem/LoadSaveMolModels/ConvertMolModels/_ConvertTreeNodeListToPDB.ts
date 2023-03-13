@@ -272,6 +272,8 @@ export function _convertTreeNodeListToPDB(
     const conectTxts: string[] = [];
 
     if (merge) {
+        // Note that this converts mols from array to models (GLModel), to
+        // arrays of atoms. But should still work.
         mols = [_mergeMols(mols as GLModel[] | IAtom[][])];
     }
 

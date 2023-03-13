@@ -30,7 +30,7 @@ import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
-import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
 /** CloneMolPlugin */

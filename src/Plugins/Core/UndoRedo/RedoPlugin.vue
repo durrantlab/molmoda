@@ -29,7 +29,7 @@ export default class RedoPlugin extends PluginParentClass {
   // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
-  menuPath = ["[5] Edit", "Revisions", "[2] Redo"];
+  menuPath = ["Edit", "Revisions", "[2] Redo"];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

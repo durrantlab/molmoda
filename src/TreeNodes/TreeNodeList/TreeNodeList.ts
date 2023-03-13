@@ -329,47 +329,45 @@ export class TreeNodeList {
                     return;
                 }
 
+                const MAX_VISIBLE = 10;
+
+                // Expand some of the nodes so the user can see what was loaded.
+                treeNodeList._nodes[0].visible = true;
+
+                // Get all the terminal nodes.
+                const terminalNodes = treeNodeList.terminals;
+
+
                 // Rename the nodes in treeNodeList and make some of them
                 // invisible.
-                for (let i = 0; i < treeNodeList.length; i++) {
-                    const node = treeNodeList.get(i);
+                for (let i = 0; i < terminalNodes.length; i++) {
+                    const node = terminalNodes.get(i);
                     node.title = fileName + ":" + (i + 1).toString();
-                    node.visible = i < 5;
-                    node.treeExpanded = false;
+                    node.visible = i < MAX_VISIBLE;
+                    // node.treeExpanded = false;
                 }
 
-                // If there are more than 5 nodes, let user know some not visible.
-                if (treeNodeList.length > 5) {
+                // If there are more than MAX_VISIBLE nodes, let user know some not visible.
+                if (terminalNodes.length > MAX_VISIBLE) {
+                    // Expand trees to make the user aware of hidden molecules.
+                    treeNodeList._nodes[0].treeExpanded = true;
+                    treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
+                        node.treeExpanded = true;
+                    });
+                    treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
+                        node.treeExpanded = true;
+                    });
+
+                    // A message helps too.
                     messagesApi.popupMessage(
                         "Some Molecules not Visible",
-                        `The ${fileName} file contained ${treeNodeList.length} molecules. Only five are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+                        `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${MAX_VISIBLE} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
                         PopupVariant.Info
                     );
                 }
 
-                // Place all these nodes under a single root node if necessary.
-                let treeNodeListWithRootNode: TreeNodeList;
-                if (treeNodeList.length === 1) {
-                    // This part of if then makes 1xdn not load. Need to investigate.
-                    treeNodeListWithRootNode = treeNodeList;
-                } else {
-                    treeNodeListWithRootNode = new TreeNodeList();
-                    const rootNode = newTreeNode({
-                        title: fileName,
-                        visible: true,
-                        treeExpanded: true,
-                        viewerDirty: true,
-                        selected: SelectedType.False,
-                        focused: false,
-                    } as TreeNode);
-                    treeNodeListWithRootNode.push(rootNode);
-                    rootNode.nodes = treeNodeList;
-                }
-
-                if (treeNodeListWithRootNode) {
-                    this.extend(treeNodeListWithRootNode);
-                }
-                return treeNodeListWithRootNode;
+                this.extend(treeNodeList);
+                return treeNodeList;
             })
             .catch((error: Error) => {
                 throw error;
@@ -451,5 +449,20 @@ export class TreeNodeList {
     public newTreeNodeList(nodes: TreeNode[] = []): TreeNodeList {
         // To avoid circular dependencies
         return new TreeNodeList(nodes);
+    }
+
+    /**
+     * Merges all the nodes in this list into a single node. This is useful for
+     * converting a list of molecules into a single molecule.
+     * 
+     * @returns {TreeNodeList}  The new list.
+     */
+    public merge(): TreeNodeList {
+        const firstNode = this._nodes[0].shallowCopy();
+        for (let i = 1; i < this._nodes.length; i++) {
+            const node = this._nodes[i];
+            firstNode.mergeInto(node);
+        }
+        return new TreeNodeList([firstNode]);
     }
 }

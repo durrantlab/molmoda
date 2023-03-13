@@ -5,8 +5,6 @@ https://github.com/BabylonJS/Babylon.js/blob/master/packages/dev/core/src/Meshes
 
 vue-chartjs (or V Chart Plugin better?)
 
-Make ViewerPanel library agnostic (not just 3dmoljs). Is this worth it?
-
 Allow user to select themes from option menu?
 
 https://github.com/davidjbradshaw/eslint-config-adjunct (see list)
@@ -28,9 +26,6 @@ https://getbootstrap.com/docs/5.0/components/toasts/
 
 Create demo (minimal) plugin to illustrate. Once API settles.
 
-Once Yuri version of Open Babel ready, get rid of old version. Would be good if
-you could put it in a web worker using import (rather than adding to head).
-
 https://github.com/rdkit/rdkit-js can also draw from smiles. Maybe get rid of
 smiles drawer?
 
@@ -42,13 +37,15 @@ Get slurm/Docker working?
 
 Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
-Integrate Yuri OpenBabel. See if you can get it to work in web worker.
+Bootstrap Tour
+
+How useful is log really?
+
+# Ongoing: Important
 
 Current version of openbabel (tmp version) converts only first fframe of file
 (e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
 openmolecules to check for three molecules when you get that fixed.
-
-# Ongoing: Important
 
 When change colors and things, shouldn't refocus.
 
@@ -67,42 +64,78 @@ Test elements could be restructured as objects. Would be better to put
 functions on each one. Then, Tutorial based on tests (first one). Started to do
 this. See ParentPluginTestFuncs.ts
 
-FPocketWeb throws error, queue says its was incorporated.
+FPocket: blank modal flashes. Why?
 
 Queue table looks bad.
 
-FPocketWeb: Add shape, can't hide it. I wonder if the shape is being added twice
-somehow. I think it is. Need to investigate this. Search for "// TODO: Below
-causes problems!!!""
-
-Bootstrap Tour
-
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
-
-How useful is log really?
 
 Load a molecule, clone protein portion, it's hidden. Why? Same with merging, BTW.
 
-Return to openmolecules test. Not passing.
-
-Check savemolecules test. It's very complicated.
-
-NEED TO TEST: DelayedJobPopupPlugin.vue, MoveShapesOnClickPlugin.vue, SimpleMsgPlugin.vue
-
-Test FPocketWeb when it's finalized.
+Tests
+    Return to openmolecules test. Not passing.
+    Check savemolecules test. It's very complicated.
+    NEED TO TEST: DelayedJobPopupPlugin.vue, MoveShapesOnClickPlugin.vue, SimpleMsgPlugin.vue
+    Test FPocketWeb when it's finalized.
 
 molprops, after done, should switch to data tab for you.
 
-molprops should be moved into its own menu item.
-
 Mol filter could be similar plugin, might be helpful.
+
+Conversion from 3dmol to PDB in same webworker (at least optional).
+
+Search for // TODO: Note that only one webworker is used here. You could multithread
+When you calculate properties, why does it create and destroy the webworker
+before launching another one? Wouldn't it be easier just to deal with this
+outside the plugin system? You'll want to repurpose it anyway for filtering,
+etc. Also, you could standardie how webworkers are used for multiprocessing
+(keeping track of order automatically). Reuse convert w/ obabel code.
+    But when you go to do remote calculations...
+
+// TODO: Error when click on compound
+
+Open options: add 3D coordinates, frames to separate molecules, etc.
+
+TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form element.
+
+Load 1XDN, click on compound, there's an error.
+
+Queue shouldn't automatically add mols to viewer. You should do that explicitly.
+runInBrowser (?) always returns promise. for consistency (no multiple options).
+
+# DONE
+
+If clicking on a shape, don't try to generate smiles string in info panel.
+
+FPocketWeb throws error, queue says its was incorporated.
+
+FPocketWeb: Add shape, can't hide it. I wonder if the shape is being added twice
+somehow. I think it is. Need to investigate this. Search for "// TODO: Below
+causes problems!!!"" ::: // TODO: Below causes problems!!!
+
+Make ViewerPanel library agnostic (not just 3dmoljs). Is this worth it?
+
+Once Yuri version of Open Babel ready, get rid of old version. Would be good if
+you could put it in a web worker using import (rather than adding to head).
+
+Integrate Yuri OpenBabel. See if you can get it to work in web worker.
+
+renderAll on time to prevent rapid fire?
+
+Broken: Selecting molecules in a row with (shift?)
+
+Props molecule name is wrong "undefined:undefined".
+
+When you load a CAN file, for example, maintain Protein/Compound/etc. organization. Currently messed up.
+
+Can you use timeouts to prevent one render right after another? I think that
+delays things quite a bit when there are many molecules being loaded.
+
+molprops should be moved into its own menu item.
 
 convertMolFormatOpenBabel() should accept multiple input files at once, all sent
 to webworker simultaneously (DONE). Maybe ability to chain commands, so divide and
 convert at once? Currently divides, then converts each separately. (transfer back and forth from worker).
-    Conversion from 3dmol to PDB in same webworker (at least optional).
-
-# DONE
 
 With spinner, good to keep track of hierarchies. Could have show/hide withing
 larger show/hide. Track nested calls like that with index.

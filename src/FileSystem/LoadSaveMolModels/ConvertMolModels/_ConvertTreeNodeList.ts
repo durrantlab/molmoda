@@ -1,4 +1,5 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { _convertTreeNodeListToPDB } from "./_ConvertTreeNodeListToPDB";
 
@@ -61,16 +62,31 @@ export function _convertTreeNodeList(
     // string.
     molTxts = _convertTreeNodeListToPDB(treeNodeList, merge);
 
-    const fileInfos = molTxts.map((molTxt: string) =>
+    const fileInfos = molTxts.map((molTxt: string, idx: number) =>
         new FileInfo({
-            name: "tmp.pdb",
+            name: `tmp${idx}.pdb`,
             contents: molTxt
         })
     );
 
-    const promises = fileInfos.map((fileInfo: FileInfo) =>
-        fileInfo.convertFromPDBTxt(targetExt)
-    );
+    console.log("MOOSE2");
 
-    return Promise.all(promises);
+    return convertFileInfosOpenBabel(
+        fileInfos,
+        targetExt
+    ).then((contents: string[]) => {
+        return contents.map((content: string) => {
+            return new FileInfo({
+                name: `tmp.${targetExt}`,
+                contents: content
+            });
+        });
+    })
+
+
+    // const promises = fileInfos.map((fileInfo: FileInfo) =>
+    //     fileInfo.convertFromPDBTxt(targetExt)
+    // );
+
+    // return Promise.all(promises);
 }

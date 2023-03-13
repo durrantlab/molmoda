@@ -2,8 +2,6 @@
 // commands to the EndPoint API (whether a remote url or the in-browser queue
 // system).
 
-import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { getFileType } from "@/FileSystem/Utils2";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import {
     EndpointResponseStatus,

@@ -262,6 +262,13 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         );
     }
 
+    /**
+     * Makes sure all the file names are unique.
+     *
+     * @param {FileInfo[]} fileInfos  The file infos to check.
+     * @returns {FileInfo[]}  The file infos with any names changed so they are
+     *     all unique.
+     */
     private _ensureAllFileNamesAreUnique(fileInfos: FileInfo[]): FileInfo[] {
         const fileNamesAlreadyUsed: { [key: string]: number } = {};
         return fileInfos.map((fileInfo, index) => {

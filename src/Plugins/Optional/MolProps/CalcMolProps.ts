@@ -2,9 +2,9 @@ import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 export interface ICalcMolProps {
-    lipinski: any[][];
-    counts: any[][];
-    other: any[][];
+    lipinski: [string, number, string][];
+    counts: [string, number, string][];
+    other: [string, number, string][];
 }
 
 export const lipinskiTitle = "Lipinski Chemical Properties";
@@ -28,6 +28,7 @@ export function calcMolProps(
     smilesStrs: string[],
     associatedTreeNodes?: (TreeNode | undefined)[]
 ): Promise<ICalcMolProps[]> {
+    debugger;
     // Create the list of properties, currently full of undefineds.
     const molDescriptors: (ICalcMolProps | undefined)[] = [];
     for (let i = 0; i < smilesStrs.length; i++) {
@@ -79,6 +80,10 @@ export function calcMolProps(
     for (const index of indexesToCalculate) {
         smilesToCalculate.push(smilesStrs[index]);
     }
+
+    // TODO: Note that only one webworker is used here. You could multithread
+    // this thing. In fact, would be good to have a general framework for
+    // multithreading calculations. Could then apply it to OpenBabel too.
 
     const worker = new Worker(
         new URL("./CalcMolProps.worker", import.meta.url)

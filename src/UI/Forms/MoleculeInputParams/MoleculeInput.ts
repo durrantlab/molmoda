@@ -3,7 +3,6 @@ import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { batchify } from "@/Core/Utils2";
 
 export interface IMoleculeInputParams {
@@ -115,25 +114,34 @@ export class MoleculeInput {
             }
         );
 
-        let cmpdFileInfoPromises: Promise<FileInfo>[] = [];
+        // let cmpdFileInfoPromises: Promise<FileInfo>[] = [];
+        let cmpdFileInfoPromise: Promise<any> = Promise.resolve();
         if (compiledMols.compoundsNodes) {
-            cmpdFileInfoPromises = compiledMols.compoundsNodes.map(
-                (cmpds: TreeNode) => {
-                    // TODO: Is PDB the right format for a compound?
-                    return getConvertedTxts(new TreeNodeList([cmpds]), "pdb", true).then(
-                        (fileInfos: FileInfo[]) => {
-                            // There's only one
-                            return fileInfos[0];
-                        }
-                    );
-                }
-            );
+            cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, "pdb", false);
+            // .then(
+            //     (fileInfos: FileInfo[]) => {
+            //         // There's only one
+            //         return fileInfos[0];
+            //     }
+            // );
+
+            // cmpdFileInfoPromises = compiledMols.compoundsNodes.map(
+            //     (cmpds: TreeNode) => {
+            //         // TODO: Is PDB the right format for a compound?
+            //         return getConvertedTxts(new TreeNodeList([cmpds]), "pdb", true).then(
+            //             (fileInfos: FileInfo[]) => {
+            //                 // There's only one
+            //                 return fileInfos[0];
+            //             }
+            //         );
+            //     }
+            // );
         }
 
         const allProtPromises = Promise.all(protFileInfoPromises);
-        const allCmpdPromises = Promise.all(cmpdFileInfoPromises);
+        // const allCmpdPromises = Promise.all(cmpdFileInfoPromises);
 
-        return Promise.all([allProtPromises, allCmpdPromises])
+        return Promise.all([allProtPromises, cmpdFileInfoPromise])
             .then((payload: FileInfo[][]) => {
                 let [prots, cmpds] = payload;
 

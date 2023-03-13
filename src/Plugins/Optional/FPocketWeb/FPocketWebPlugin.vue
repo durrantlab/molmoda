@@ -67,7 +67,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
     },
 })
 export default class FPocketWebPlugin extends PluginParentClass {
-    menuPath = "Test/FPocketWeb";
+    menuPath = "Proteins/Detect Pockets";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         {
@@ -77,7 +77,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     ];
     pluginId = "fpocketweb";
 
-    intro = `This plugin identifies small-molecule compounds and calculates their molecular properties.`;
+    intro = `This plugin uses fpocket to (1) identify small-molecule binding pockets on protein surfaces and (2) calculate pocket properties.`;
 
     msgOnJobsFinished =
         "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
@@ -409,18 +409,17 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     for (let i = 0; i < boxes.length; i++) {
                         const box = boxes[i];
                         box.opacity = 0.9;
-                        // TODO: Below causes problems!!!
-                        // const newNode = new TreeNode({
-                        //     title: "PocketBox" + (i + 1).toString(),
-                        //     type: TreeNodeType.Shape,
-                        //     shape: box,
-                        //     treeExpanded: false,
-                        //     visible: i < numInitiallyVisible,
-                        //     selected: SelectedType.False,
-                        //     focused: false,
-                        //     viewerDirty: true
-                        // });
-                        // shapeList.push(newNode);
+                        const newNode = new TreeNode({
+                            title: "PocketBox" + (i + 1).toString(),
+                            type: TreeNodeType.Shape,
+                            shape: box,
+                            treeExpanded: false,
+                            visible: i < numInitiallyVisible,
+                            selected: SelectedType.False,
+                            focused: false,
+                            viewerDirty: true
+                        });
+                        shapeList.push(newNode);
                     }
                     const shapeNode = new TreeNode({
                         title: "S",

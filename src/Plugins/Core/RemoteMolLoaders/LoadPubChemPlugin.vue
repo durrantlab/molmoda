@@ -53,7 +53,7 @@ import {
   RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, _TestText, _TestWait, _TestWaitUntilRegex } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestCmd";
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";

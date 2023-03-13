@@ -22,7 +22,7 @@ import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 

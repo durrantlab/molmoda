@@ -14,9 +14,18 @@ importScripts("obabel-wasm/obabel.js");
 
 let oBabelModReady: any = undefined;
 let stdOutOrErr = "";
+let stdErr = "";
 
-function runBabel(args: string[], inputFiles: FileInfo[]) {
 
+/**
+ * Runs the Open Babel command line program.
+ *
+ * @param {string[]}   args        The arguments to pass to Open Babel.
+ * @param {FileInfo[]} inputFiles  The input files.
+ * @returns {Promise<any>}  A promise that resolves to an object that describes
+ *     the result and execution.
+ */
+function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
     // Create the oBabelMod only once per webworker
     if (oBabelModReady === undefined) {
         // These functions aim to make it easier to access the file system.
@@ -84,14 +93,31 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
                 return (this as any).FS.readdir(path);
             },
 
+            /**
+             * A helper function that changes the permissions of a file on the Open Babel
+             * file system.
+             * 
+             * @param {string} path  The path to the file to change.
+             * @param {string} mode  The mode to change to.
+             */
             chmod(path: string, mode: string) {
                 (this as any).FS.chmod(path, mode);
             },
 
+            /**
+             * A helper function that deletes a file on the Open Babel file system.
+             * 
+             * @param {string} path  The path to the file to delete.
+             */
             unlink(path: string) {
                 (this as any).FS.unlink(path);
             },
 
+            /**
+             * A helper function that deletes a directory on the Open Babel file system.
+             * 
+             * @param {string} path  The path to the directory to delete.
+             */
             rmdir(path: string) {
                 // Directory must be empty
                 (this as any).FS.rmdir(path);
@@ -114,6 +140,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
             },
             printErr: (text: string) => {
                 stdOutOrErr += text + "\n";
+                stdErr += text + "\n";
             },
             preRun: [
                 function (This: any) {
@@ -131,20 +158,33 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
             // Create a temorary working directory.
             const tmpDir = "/tmp_" + randomID() + "/";
             mod.files.mkdir(tmpDir);
-            mod.files.chmod(tmpDir, 0o777)
+            mod.files.chmod(tmpDir, 0o777);
+
+            // Verify that the names of each inputFile are unique. Throw an
+            // error otherwise.
+            const inputFileNameSet = new Set(inputFiles.map((file) => file.name));
+            if (inputFileNameSet.size !== inputFiles.length) {
+                console.log("Uniq names:", inputFileNameSet, ". Size != ", inputFiles.length);
+                throw new Error("Input file names must be unique.");
+            }
 
             // Save the input files to the virtual file system.
             for (const file of inputFiles) {
                 mod.files.writeFile(tmpDir + file.name, file.contents);
             }
 
+            // You're copying over many input files. You need to know which one
+            // was actually used.
+            let inputFileActuallUsed: FileInfo | undefined = undefined;
+
             // Modify the arguments to you're readying and writing from the new
             // temporary directory.
-            const inputFileNames = new Set(inputFiles.map((file) => file.name));
             for (let i = 0; i < args.length; i++) {
                 if (args[i] === "-O") {
                     args[i + 1] = tmpDir + args[i + 1];
-                } else if (inputFileNames.has(args[i])) {
+                } else if (inputFileNameSet.has(args[i])) {
+                    // debugger;
+                    inputFileActuallUsed = inputFiles.find((file) => file.name === args[i]);
                     args[i] = tmpDir + args[i];
                 }
             }
@@ -165,6 +205,12 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
                     !filesBeforeRun.includes(fileName)
             );
 
+            // console.log("MOO", filesBeforeRun, filesAfterRun, newFiles);
+
+            // if (newFiles[0].indexOf(".can") !== -1) {
+            //     debugger;
+            // }
+
             const contents: string[] = newFiles.map(
                 (fileName: string) => {
                     fileName = tmpDir + fileName;
@@ -173,18 +219,20 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
             );
 
             // Remove the temporary directory.
-            const filesToDelete = [...newFiles, ...inputFileNames];
+            const filesToDelete = [...newFiles, ...inputFileNameSet];
             for (const fileName of filesToDelete) {
                 mod.files.unlink(tmpDir + fileName);
             }
             mod.files.rmdir(tmpDir);
 
-            return contents;
+            return [inputFileActuallUsed?.auxData, contents];
         })
-        .then((outputFiles: any) => {
+        .then((outputFilesData: [any, string[]]) => {
             return {
-                outputFiles,
+                orderIdxs: outputFilesData[0],
+                outputFiles: outputFilesData[1],
                 stdOutOrErr,
+                stdErr
             };
         })
         .catch((err: Error) => {
@@ -192,7 +240,15 @@ function runBabel(args: string[], inputFiles: FileInfo[]) {
         });
 }
 
+let currentlyRunning = false;
+
 self.onmessage = (params: MessageEvent) => {
+    if (currentlyRunning) {
+        throw new Error("Already running");
+    } else {
+        console.warn("OKOKOK");
+    }
+    currentlyRunning = true;
     const argsSets = params.data.argsSets as string[][];
     const inputFiles = params.data.inputFiles as FileInfo[];
     // const outputFilePath = params.outputFilePath as string;
@@ -208,6 +264,7 @@ self.onmessage = (params: MessageEvent) => {
     Promise.all(promises)
         .then((results: any) => {
             sendResponseToMainThread(results);
+            currentlyRunning = false;
             return;
         })
         .catch((err: Error) => {

@@ -31,3 +31,4 @@ icons
 # Remove these in time
 src/libs/ToCopy/obabel-wasm
 
+docker_compiling

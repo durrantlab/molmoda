@@ -310,7 +310,7 @@ export default class ViewerPanel extends Vue {
                             // it in the list. But make sure it's hidden here.
 
                             // hide it.
-                            console.log("Hiding:" + treeNode.id);
+                            // console.log("Hiding:" + treeNode.id);
                             api.visualization.viewer?.hideObject(
                                 treeNode.id as string
                             );
@@ -321,7 +321,7 @@ export default class ViewerPanel extends Vue {
                             );
                         } else {
                             // Make sure actually visible
-                            console.log("Showing:" + treeNode.id);
+                            // console.log("Showing:" + treeNode.id);
                             api.visualization.viewer?.showObject(
                                 treeNode.id as string
                             );

@@ -1,4 +1,3 @@
-import { store } from "@/Store";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseMolecularModelFromTexts } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
@@ -23,6 +22,8 @@ export function parseUsingOpenBabel(
 ): Promise<void | TreeNodeList> {
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
 
+    console.log("MOOSE1");
+
     // Convert it to MOL2 format and load that using 3dmoljs.
     return convertFileInfosOpenBabel([fileInfo], targetFormat)
         .then((contents: string[]) => {
@@ -40,12 +41,17 @@ export function parseUsingOpenBabel(
             //     treeNodeList.extend(treeNodeLists[i]);
             // }
 
+            // Merge the tree nodes into one (so all compounds of multi-compound
+            // file under single "Compounds").
+            const mergedTreeNodeList = treeNodeList.merge();
+
             if (addToTree) {
+                mergedTreeNodeList.addToMainTree();
                 // Update VueX store
-                store.commit("pushToMolecules", treeNodeList);
+                // store.commit("pushToMolecules", treeNodeList);
             }
 
-            return treeNodeList;
+            return mergedTreeNodeList;
         })
         .catch((err) => {
             // It's a catch block for the promise returned by

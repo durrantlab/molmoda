@@ -61,13 +61,19 @@ export default class InformationPanel extends Vue {
      *
      * @param {TreeNodeList} allMolecules  The new value of the molecules.
      */
-    @Watch("molecules", { immediate: false, deep: true })
+    //  @Watch("molecules", { immediate: false, deep: true })
+    @Watch("molecules", { immediate: true, deep: true })
     onMolecules(allMolecules: TreeNodeList) {
         const firstSelected = getFirstSelected(allMolecules);
 
         if (firstSelected === null) {
             return;
         }
+
+        // If firstSelected doesn't have model, then cancel.
+        // if (firstSelected.model === undefined) {
+        //     return;
+        // }
 
         // Wrapping it in a cancellable timeout like this to prevent multiple
         // ones in succession and improve responsiveness.
@@ -78,6 +84,11 @@ export default class InformationPanel extends Vue {
         this.getSmilesTimeout = setTimeout(() => {
             getSmilesOfTreeNode(firstSelected)
                 .then((smi) => {
+                    // If smi has more than 5 "*", it's probably not valid.
+                    if (smi.split("*").length > 5) {
+                        return;
+                    }
+
                     this.smiles = smi;
                     this.treeNode = firstSelected;
                     return;

@@ -44,11 +44,14 @@ const openBabelWorkers: Worker[] = [];
 
 /**
  *
- * @param {string[][]}   argsLists    The arguments to pass to OpenBabel. Each
- *                                    set of arguments is a string[], so passing
- *                                    multiple argument sets (e.g., one for each
- *                                    input file), requires string[][].
- * @param {FileInfo[]} inputFiles     The input files to pass to OpenBabel.
+ * @param {string[][]}   argsLists               The arguments to pass to
+ *                                               OpenBabel. Each set of
+ *                                               arguments is a string[], so
+ *                                               passing multiple argument sets
+ *                                               (e.g., one for each input
+ *                                               file), requires string[][].
+ * @param {FileInfo[] | IFileInfo[]} inputFiles  The input files to pass to
+ *                                               OpenBabel.
  * @returns {Promise<string | void>}  A promise that resolves to the output of
  *     the program. Void if there is an error?
  */
@@ -75,10 +78,16 @@ export function runOpenBabel(
         openBabelWorkers.push(worker);
     }
 
+    // Associate an index with each inputFile so you can reorder them after
+    // finishing.
+    inputFiles.forEach((f, i) => {
+        f.auxData = i;
+    });
+
     // Divide the inputFiles between the workers.
     const filesPerWorker = batchify(inputFiles, nprocs);
 
-    // Similarly divide the arguments amoung the workers.
+    // Similarly divide the arguments among the workers.
     const argsPerWorker = batchify(argsLists, nprocs);
 
     const promises: Promise<any>[] = [];
@@ -106,7 +115,12 @@ export function runOpenBabel(
     return Promise.all(promises)
         .then((results: any[][]) => {
             // Flatten the results.
-            return results.flat();
+            const flat = results.flat();
+
+            // Order the output by each items orderIdxs property.
+            flat.sort((a, b) => a.orderIdx - b.orderIdx);
+
+            return flat;
         })
         .catch((e: any) => {
             throw e;
@@ -128,9 +142,11 @@ export function convertFileInfosOpenBabel(
     srcFileInfos: FileInfo[],  // Can be multiple-model SDF file, for example.
     targetFormat: string,
     gen3D?: boolean,
-    pH?: number
+    pH?: number,
+    // debug?: boolean
 ): Promise<string[]> {
     // Get info about the file
+    // if (debug) {debugger;}
     const formatInfos = srcFileInfos.map(f => f.getFormatInfo());
     const warningNeeded = formatInfos.some(f => f !== undefined && f.lacks3D === true);
 
@@ -142,20 +158,22 @@ export function convertFileInfosOpenBabel(
             PopupVariant.Warning
         );
     }
+    
+    // Note that the approach here is to divide the file into multiple files
+    // (since one input SDF can have multiple molecules), and then to separate
+    // the individual models into grousp to run on separate webworkers. You
+    // incur some overhead by shuttling the split file back to main thread only
+    // to be redistributed to multiple web workers, but it's the best approach
+    // in terms of speed.
 
-    // Always divide into separate files.
-    // const separateFileCmds = [
-    //     srcFileInfos.name,
-    //     "-m",
-    //     "-O",
-    //     "tmp." + srcFileInfos.getFormatInfo()?.primaryExt,
-    // ];
     const separateFileCmds = srcFileInfos.map((srcFileInfo, i) => [
         srcFileInfo.name,
         "-m",
         "-O",
         `tmp${i}.${srcFileInfo.getFormatInfo()?.primaryExt}`,
     ]);
+
+    // let tmpPass: any;
 
     return runOpenBabel(separateFileCmds, srcFileInfos)
         .then((fileContentsFromInputs: any[][]) => {
@@ -198,7 +216,8 @@ export function convertFileInfosOpenBabel(
 
                 return cmds;
             });
-            debugger;
+
+            // tmpPass = [cmdsList, fileInfos.map(f => JSON.parse(JSON.stringify(f)))];
             return runOpenBabel(cmdsList, fileInfos);
         })
         .then((convertedFileContents: any[]): string[] => {
@@ -207,6 +226,8 @@ export function convertFileInfosOpenBabel(
             const outputFiles = convertedFileContents
                 .map((c) => c.outputFiles)
                 .flat();
+
+            // debugger;
 
             // TODO: Report what's in the .stdOutAndErr property? Not sure needed.
 

@@ -14,7 +14,7 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { ITest, _TestWait } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Options } from "vue-class-component";

@@ -20,6 +20,8 @@ import {
  */
 export class Viewer3DMol extends ViewerParent {
     private _mol3dObj: any;
+    private _zoomToModelsTimeout: any;
+    private _renderAllTimeout: any;
 
     /**
      * Removes a model from the viewer.
@@ -54,6 +56,8 @@ export class Viewer3DMol extends ViewerParent {
      * @param  {GenericSurfaceType} surface  The surface to remove.
      */
     removeSurface(surface: GenericSurfaceType) {
+        // Note: This is also used when you hide the associated molecule (to
+        // remove the surface).
         this._mol3dObj.removeSurface(surface);
     }
 
@@ -77,8 +81,7 @@ export class Viewer3DMol extends ViewerParent {
     hideShape(id: string) {
         const shape = this.lookup(id);
         if (shape) {
-            console.log(id + ":OPACITY1: 0");
-            shape.opacity = 0;
+            shape.hidden = true;
         }
     }
 
@@ -103,7 +106,7 @@ export class Viewer3DMol extends ViewerParent {
     showShape(id: string, opacity: number) {
         const shape = this.lookup(id);
         if (shape) {
-            console.log(id + ":OPACITY2: " + opacity);
+            shape.hidden = false;
             shape.opacity = opacity;
         }
     }
@@ -296,7 +299,17 @@ export class Viewer3DMol extends ViewerParent {
      * Render all the molecules and surfaces currently added to the viewer.
      */
     renderAll() {
-        this._mol3dObj.render();
+        // This is pretty expensive, I think. Be sure to not call it too often.
+
+        // Clear any existing timeout
+        if (this._renderAllTimeout) {
+            clearTimeout(this._renderAllTimeout);
+        }
+
+        // Set a new timeout
+        this._renderAllTimeout = setTimeout(() => {
+            this._mol3dObj.render();
+        }, 500);
     }
 
     /**
@@ -305,19 +318,30 @@ export class Viewer3DMol extends ViewerParent {
      * @param  {string[]} ids  The models to zoom in on.
      */
     zoomToModels(ids: string[]) {
-        let models = ids.map((id) => this.lookup(id));
-        models = models.filter((model) => model !== undefined);
+        // This zooming is quite expensive. Use a timeout to avoid doing it
+        // too often.
 
-        // Remove ones that aren't molecules
-        models = models.filter((model) => model.selectedAtoms !== undefined);
-
-        if (models.length > 0) {
-            this._mol3dObj.zoomTo({ model: models }, 500, true);
-        } else {
-            // Zoom to all as backup option. Commented out because if there are
-            // shapes, this causes problems.
-            // this._mol3dObj.zoomTo();
+        // Clear any existing timeout
+        if (this._zoomToModelsTimeout) {
+            clearTimeout(this._zoomToModelsTimeout);
         }
+
+        // Set a new timeout
+        this._zoomToModelsTimeout = setTimeout(() => {
+            let models = ids.map((id) => this.lookup(id));
+            models = models.filter((model) => model !== undefined);
+
+            // Remove ones that aren't molecules
+            models = models.filter((model) => model.selectedAtoms !== undefined);
+
+            if (models.length > 0) {
+                this._mol3dObj.zoomTo({ model: models }, 500, true);
+            } else {
+                // Zoom to all as backup option. Commented out because if there are
+                // shapes, this causes problems.
+                // this._mol3dObj.zoomTo();
+            }
+        }, 500);
     }
 
     /**

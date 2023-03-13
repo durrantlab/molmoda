@@ -103,10 +103,20 @@ export class TreeNode {
         this._ancestry = new TreeNodeAncestry(this);
     }
 
+    /**
+     * Get whether this node is visible.
+     * 
+     * @returns {boolean}  Whether this node is visible.
+     */
     public get visible(): boolean {
         return this._visible;
     }
 
+    /**
+     * Set whether this node is visible.
+     * 
+     * @param {boolean} val  Whether this node is visible.
+     */
     public set visible(val: boolean) {
         // Make this one visible as well as all its children.
         this.nodes?.flattened.forEach((nd) => {

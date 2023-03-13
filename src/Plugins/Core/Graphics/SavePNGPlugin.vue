@@ -23,7 +23,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { ITest, _TestWait, _TestWaitUntilRegex } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestCmd";
 import {
   fileNameFilter,
   matchesFilename,

@@ -181,6 +181,11 @@ function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
             return;
         }
 
+        if (chain.title === undefined) {
+            // Default to chain A if not specified
+            chain.title = "A";
+        }
+
         if (chain.title !== lastChainID) {
             dividedMolEntry.nodes?.push(_getDefaultTreeNode(chain.title));
             lastChainID = chain.title;

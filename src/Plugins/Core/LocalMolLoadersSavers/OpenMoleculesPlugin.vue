@@ -29,13 +29,18 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, _TestWaitUntilRegex } from "@/Testing/TestCmd";
+import {
+    FormElement,
+    IFormCheckbox,
+    IFormGroup,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * OpenMoleculesPlugin
@@ -58,7 +63,28 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     filesToLoad: FileInfo[] = [];
     pluginId = "openmolecules";
 
-    userArgs: FormElement[] = [];
+    userArgs: FormElement[] = [
+        // {
+        //     id: "group",
+        //     // type: FormElemType.Group,
+        //     label: "Advanced",
+        //     childElements: [
+        //         {
+        //             id: "gen3D",
+        //             label: "Calculate 3D atomic coordinates (compounds)",
+        //             val: false,
+        //             description: "Compounds are 2D-formatted (e.g., 2D SDF)? Calculate 3D atomic coordinates."
+        //         } as IFormCheckbox,
+        //         {
+        //             id: "separateFrames",
+        //             label: "Load multiple molecules separately",
+        //             val: false,
+        //             description: "File contains multiple molecules/frames? Load each as a separate molecule."
+        //         } as IFormCheckbox,
+        //     ],
+        //     startOpened: false,
+        // } as IFormGroup,
+    ];
     alwaysEnabled = true;
     accept = fileTypesAccepts;
     hotkey = "o";
@@ -77,6 +103,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      */
     onPopupDone() {
         this.closePopup();
+
         if (this.filesToLoad.length > 0) {
             this.submitJobs(this.filesToLoad);
         }
@@ -171,22 +198,19 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             const name = fileToTest[0];
             const count = (fileToTest[1] as number) - 1;
             return {
-                pluginOpen: new TestCmdList()
-                    .setUserArg(
-                        "formFile",
-                        "file://./src/Testing/mols/" + name,
-                        this.pluginId
-                    ).cmds,
+                pluginOpen: new TestCmdList().setUserArg(
+                    "formFile",
+                    "file://./src/Testing/mols/" + name,
+                    this.pluginId
+                ).cmds,
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#styles", "Atoms")
                     .waitUntilRegex(
                         "#navigator",
                         "data.idx.." + count.toString() + "."
                     )
-                    .waitUntilRegex(
-                        "#log",
-                        'Job "openmolecules:.+?" ended'
-                    ).cmds,
+                    .waitUntilRegex("#log", 'Job "openmolecules:.+?" ended')
+                    .cmds,
             };
         });
     }

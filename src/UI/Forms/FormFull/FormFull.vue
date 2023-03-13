@@ -91,6 +91,7 @@
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
+                    :description="makeGeneric(formElem).description"
                 />
                 <!-- :placeHolder="makeGeneric(formElem).placeHolder" -->
                 <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->

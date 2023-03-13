@@ -18,7 +18,9 @@
 </template>
 
 <script lang="ts">
+import { batchify } from "@/Core/Utils2";
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { checkAnyMolLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -53,7 +55,7 @@ import {
     },
 })
 export default class MolPropsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Properties";
+    menuPath = "Compounds/Calculate Properties";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         {
@@ -110,13 +112,42 @@ export default class MolPropsPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      *
      * @param {IUserArg[]} userArgs  The user arguments.
+     * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
-    onPopupDone(userArgs: IUserArg[]) {
+    onPopupDone(userArgs: IUserArg[]): Promise<void> {
         const compoundBatches: FileInfo[][] = this.getArg(
             userArgs,
             "makemolinputparams"
         );
-        this.submitJobs(compoundBatches); // , 10000);
+
+        // Be default, compoundBatches is a list of lists of fileInfos. But I
+        // want to convert all these into smiles strings in bulk, so I'm going
+        // to flatten the list.
+        const origNumBatches = compoundBatches.length;
+        const flattened: FileInfo[] = [];
+        for (const batch of compoundBatches) {
+            flattened.push(...batch);
+        }
+
+        // Make sure the filenames are unique.
+        for (let i = 0; i < flattened.length; i++) {
+            flattened[i].name = i.toString() + "_" + flattened[i].name;
+        }
+
+        return convertFileInfosOpenBabel(
+            flattened, // Can be multiple-model SDF file, for example.
+            "can"
+        ).then((contents: string[]) => {
+            // Update contents of each flattened fileInfo
+            for (let i = 0; i < flattened.length; i++) {
+                flattened[i].contents = contents[i];
+            }
+
+            // Rebatch the results and submit.
+            const compoundBatches = batchify(flattened, origNumBatches);
+            this.submitJobs(compoundBatches); // , 10000);
+            return;
+        });
     }
 
     /**
@@ -128,17 +159,11 @@ export default class MolPropsPlugin extends PluginParentClass {
      *     done.
      */
     runJobInBrowser(compoundBatch: FileInfo[]): Promise<undefined | void> {
-        // Convert all the fileInfos to the can format.
-        const canPromises = compoundBatch.map((fileInfo) =>
-            fileInfo.convertFromPDBTxt("can")
-        );
-
-        return Promise.all(canPromises)
-            .then((fileInfos: FileInfo[]) => {
-                calcMolProps(
-                    fileInfos.map((f) => f.contents),
-                    fileInfos.map((f) => f.treeNode)
-                );
+        return calcMolProps(
+            compoundBatch.map((f) => f.contents),
+            compoundBatch.map((f) => f.treeNode)
+        )
+            .then(() => {
                 return;
             })
             .catch((err: any): void => {
@@ -155,8 +180,7 @@ export default class MolPropsPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            beforePluginOpens: new TestCmdList()
-              .loadExampleProtein(true).cmds,
+            beforePluginOpens: new TestCmdList().loadExampleProtein(true).cmds,
             // closePlugin: [],
             afterPluginCloses: [],
         };
