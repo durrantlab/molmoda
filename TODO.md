@@ -103,7 +103,12 @@ Load 1XDN, click on compound, there's an error.
 Queue shouldn't automatically add mols to viewer. You should do that explicitly.
 runInBrowser (?) always returns promise. for consistency (no multiple options).
 
+https://vuejs.org/guide/components/async.html#basic-usage
+
 # DONE
+
+Check to make sure all dynamic imports happen through central place. Important.
+Bootstrap stuff, axios, etc.
 
 If clicking on a shape, don't try to generate smiles string in info panel.
 

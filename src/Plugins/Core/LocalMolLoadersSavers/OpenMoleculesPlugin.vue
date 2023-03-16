@@ -31,8 +31,6 @@ import {
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     FormElement,
-    IFormCheckbox,
-    IFormGroup,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
@@ -40,7 +38,6 @@ import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 
 /**
  * OpenMoleculesPlugin

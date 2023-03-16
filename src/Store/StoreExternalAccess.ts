@@ -48,7 +48,7 @@ export function pushToStoreList(name: string, value: any) {
  * @param  {string} [module=""]  The module. Optional.
  * @returns {any}  The value of the variable.
  */
-export function getStoreVar(name: string, module = ""): any {
+function getStoreVar(name: string, module = ""): any {
     if (module === "") {
         return store.state[name];
     } else {

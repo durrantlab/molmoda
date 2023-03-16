@@ -4,9 +4,7 @@ import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolM
 import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
-import { newTreeNode } from "../TreeNodeMakers";
 import { TreeNodeListCopies } from "./_Copy";
 import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";

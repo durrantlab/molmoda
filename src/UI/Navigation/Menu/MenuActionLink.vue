@@ -13,11 +13,7 @@
             :id="'menu-plugin-' + idSlug"
         >
             {{ menuData._text }}
-            <div
-                v-if="showHotkey"
-                style="float: right"
-                class="text-muted"
-            >
+            <div v-if="showHotkey" style="float: right" class="text-muted">
                 {{ hotkeyPrefix }}{{ menuData.hotkey?.toUpperCase() }}
             </div>
         </a>
@@ -30,11 +26,7 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
-// @ts-ignore
-import Dropdown from "bootstrap/js/dist/dropdown";
-import Collapse from "bootstrap/js/dist/collapse";
-
-import "bootstrap/js/dist/collapse";
+// import "bootstrap/js/dist/collapse";
 import { IMenuItem } from "./Menu";
 import { slugify } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
@@ -56,7 +48,7 @@ export default class MenuActionLink extends Vue {
 
     /**
      * Whether to show the hot key in the menu.
-     * 
+     *
      * @returns {boolean}  Whether to show the hot-key text.
      */
     get showHotkey(): boolean {
@@ -91,9 +83,17 @@ export default class MenuActionLink extends Vue {
         const dropdownElementList = document.querySelectorAll(
             ".top-level-menu-item"
         );
-        dropdownElementList.forEach((dropdownToggleEl) =>
-            new Dropdown(dropdownToggleEl).hide()
-        );
+
+        dynamicImports.bootstrapDropdown.module
+            .then((Dropdown: any) => {
+                dropdownElementList.forEach((dropdownToggleEl) =>
+                    new Dropdown(dropdownToggleEl).hide()
+                );
+                return;
+            })
+            .catch((err) => {
+                throw err;
+            });
     }
 
     /**
@@ -107,16 +107,23 @@ export default class MenuActionLink extends Vue {
         }
 
         if (hamburgerMenu.offsetWidth > 0 && hamburgerMenu.offsetHeight > 0) {
-            // Hamburger menu is visible
-            if (!collapseHamburger) {
-                collapseHamburger = new Collapse(
-                    document.getElementById(
-                        "navbarSupportedContent"
-                    ) as HTMLElement
-                );
-            }
+            dynamicImports.bootstrapCollapse.module
+                .then((Collapse: any) => {
+                    // Hamburger menu is visible
+                    if (!collapseHamburger) {
+                        collapseHamburger = new Collapse(
+                            document.getElementById(
+                                "navbarSupportedContent"
+                            ) as HTMLElement
+                        );
+                    }
 
-            collapseHamburger.toggle();
+                    collapseHamburger.toggle();
+                    return;
+                })
+                .catch((err) => {
+                    throw err;
+                });
         }
     }
 

@@ -87,7 +87,7 @@ import { Options, Vue } from "vue-class-component";
 import { ComponentContainer } from "golden-layout";
 import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
-import "bootstrap/js/dist/tab";
+// import "bootstrap/js/dist/tab";
 import { addBootstrapColorClasses } from "./GoldenLayoutBootstrapCompatibility";
 import StylesPanel from "@/UI/Panels/Options/StylesPanel.vue";
 import TreeView from "@/UI/Navigation/TreeView/TreeView.vue";

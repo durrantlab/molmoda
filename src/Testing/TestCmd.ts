@@ -2,7 +2,7 @@ import { slugify } from "@/Core/Utils";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import * as PluginToTest from "./PluginToTest";
 
-export enum TestCommand {
+enum TestCommand {
     Click = "click",
     Text = "text",
     Wait = "wait",

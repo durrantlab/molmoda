@@ -55,7 +55,7 @@ const openBabelWorkers: Worker[] = [];
  * @returns {Promise<string | void>}  A promise that resolves to the output of
  *     the program. Void if there is an error?
  */
-export function runOpenBabel(
+function runOpenBabel(
     argsLists: string[][],
     inputFiles: FileInfo[] | IFileInfo[]
 ): any {
@@ -85,7 +85,7 @@ export function runOpenBabel(
     });
 
     // Divide the inputFiles between the workers.
-    const filesPerWorker = batchify(inputFiles, nprocs);
+    const filesPerWorker = batchify(inputFiles as FileInfo[], nprocs);
 
     // Similarly divide the arguments among the workers.
     const argsPerWorker = batchify(argsLists, nprocs);

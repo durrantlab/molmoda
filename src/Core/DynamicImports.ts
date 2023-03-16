@@ -249,7 +249,7 @@ export const dynamicImports = {
          *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
-         get module(): Promise<any> {
+        get module(): Promise<any> {
             // NOTE: Unfortunately, the only way I could get this to work was by
             // attaching it to the main window. A promise that resolves the
             // module is not effective for some reason.
@@ -318,6 +318,27 @@ export const dynamicImports = {
             });
         },
     },
+    axios: {
+        credit: {
+            name: "axios",
+            url: "https://github.com/axios/axios",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "axios" */
+                /* webpackMode: "lazy" */
+                "axios"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
     rdkitjs: {
         // Always called from webworker
         credit: {
@@ -348,12 +369,99 @@ export const dynamicImports = {
         },
     },
 
+    bootstrapModal: {
+        credit: {
+            name: "Bootstrap",
+            url: "https://getbootstrap.com/",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "bootstrap-modal" */
+                /* webpackMode: "lazy" */
+                "bootstrap/js/dist/modal"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
+
+    bootstrapTooltip: {
+        credit: {
+            name: "Bootstrap",
+            url: "https://getbootstrap.com/",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "bootstrap-tooltip" */
+                /* webpackMode: "lazy" */
+                "bootstrap/js/dist/tooltip"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
+
+    bootstrapCollapse: {
+        credit: {
+            name: "Bootstrap",
+            url: "https://getbootstrap.com/",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "bootstrap-collapse" */
+                /* webpackMode: "lazy" */
+                "bootstrap/js/dist/collapse"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
+    bootstrapDropdown: {
+        credit: {
+            name: "Bootstrap",
+            url: "https://getbootstrap.com/",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "bootstrap-dropdown" */
+                /* webpackMode: "lazy" */
+                "bootstrap/js/dist/dropdown"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
+
     fpocketweb: {
         // Called directly from webworker
         credit: {
             name: "fpocketweb",
             url: "https://git.durrantlab.pitt.edu/jdurrant/fpocketweb",
             license: Licenses.APACHE2,
-        }
+        },
     },
 };

@@ -78,10 +78,10 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import Modal from "bootstrap/js/dist/modal";
 import { randomID } from "@/Core/Utils";
 import { PopupVariant } from "./InterfacesAndEnums";
 import { FORM_INPUT_DELAY_UPDATE_DEFAULT } from "@/UI/Forms/FormInput.vue";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * Popup component
@@ -107,7 +107,7 @@ export default class Popup extends Vue {
 
     idToUse = "";
 
-    modal: any;
+    modal: any = undefined;
 
     // 0 or 1, depending on how you want to set the style. TODO: Good to settle on
     // one or the other.
@@ -120,11 +120,19 @@ export default class Popup extends Vue {
      */
     @Watch("modelValue")
     onModelValueChange(newValue: boolean) {
-        if (newValue) {
-            this.modal.show();
-        } else {
-            this.modal.hide();
-        }
+        this.setupModal()
+            .then(() => {
+                if (newValue) {
+                    this.modal.show();
+                } else {
+                    this.modal.hide();
+                }
+                return;
+            })
+            .catch((err) => {
+                // Throw the error
+                throw err;
+            });
     }
 
     /**
@@ -201,35 +209,53 @@ export default class Popup extends Vue {
         }
     }
 
-    /** mounted function */
-    mounted() {
-        let modalElem = document.getElementById(this.getId) as HTMLElement;
-        this.modal = new Modal(modalElem, {});
+    setupModal() {
+        // Dynamic import of bootstrap modal.
+        if (this.modal !== undefined) {
+            return Promise.resolve(this.modal);
+        }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        modalElem.addEventListener("shown.bs.modal", (_event) => {
-            if (this.onShown) {
-                this.onShown();
-            }
-            this.$emit("update:modelValue", true);
-        });
+        return dynamicImports.bootstrapModal.module
+            .then((Modal) => {
+                let modalElem = document.getElementById(
+                    this.getId
+                ) as HTMLElement;
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        modalElem.addEventListener("show.bs.modal", (_event) => {
-            if (this.beforeShown) {
-                this.beforeShown();
-            }
-        });
+                this.modal = new Modal(modalElem, {});
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        modalElem.addEventListener("hidden.bs.modal", (_event) => {
-            this.$emit("update:modelValue", false);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                modalElem.addEventListener("shown.bs.modal", (_event) => {
+                    if (this.onShown) {
+                        this.onShown();
+                    }
+                    this.$emit("update:modelValue", true);
+                });
 
-            // Below fires regardless of how closed. In contrast, onDone fires if
-            // click on actionBtn.
-            this.$emit("onClosed");
-        });
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                modalElem.addEventListener("show.bs.modal", (_event) => {
+                    if (this.beforeShown) {
+                        this.beforeShown();
+                    }
+                });
+
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                modalElem.addEventListener("hidden.bs.modal", (_event) => {
+                    this.$emit("update:modelValue", false);
+
+                    // Below fires regardless of how closed. In contrast, onDone fires if
+                    // click on actionBtn.
+                    this.$emit("onClosed");
+                });
+
+                return this.modal;
+            })
+            .catch((err) => {
+                throw "Error loading bootstrap modal: " + err;
+            });
     }
+
+    /** mounted function */
+    // mounted() {}
 }
 </script>
 

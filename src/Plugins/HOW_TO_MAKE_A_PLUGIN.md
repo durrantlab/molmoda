@@ -199,33 +199,6 @@ Submits multiple jobs to the queue system. [`submitJobs`](#submitJobs) is typica
 | `[numProcessorsPerJob=1]` | `number` | The number of processors to use per job. Defaults to 1.
 | `[delayBetweenJobsMS]` | `number` | The number of milliseconds to wait between running jobs. A modal appears during this time giving the user the opportunity to cancel all jobs. Optional.
 
-#### `testLoadExampleProtein` (function) <a id="testLoadExampleProtein"></a>
-
-Adds a selenium test command to load a sample molecule (small protein and ligand) for testing.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `ITestCommand` | The command to wait for the molecule to load. `ITestCommand` is defined in [TestCmd.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L15).
-
-#### `testPressButton` (function) <a id="testPressButton"></a>
-
-Adds a selenium test command to press a plugin (popup) button.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `selector` | `string` | The css selector of the button.
-| `(returns)` | `ITestCommand` | The command to run. `ITestCommand` is defined in [TestCmd.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L15).
-
-#### `testSetUserArg` (function) <a id="testSetUserArg"></a>
-
-If running a selenium test, this function will generate the command to test a specific user argument.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `argName` | `string` | The name of the specific user argument.
-| `argVal` | `any` | The value of the specific user argument.
-| `(returns)` | `ITestCommand` | The command to test the specific user argument. `ITestCommand` is defined in [TestCmd.ts, line 15](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L15).
-
 #### `updateUserArgs` (function) <a id="updateUserArgs"></a>
 
 Programmatically update user arguments. Necessary because [`userArgs`](#userArgs) is NOT reactive. Useful to do things like (1) prepopulate a [`userArgs`](#userArgs) value or (2) modify one [`userArgs`](#userArgs) value based on the value of another (see also `<PluginComponent>`'s `onDataChanged` function). For [`updateUserArgs`](#updateUserArgs) to work, the plugin's `<PluginComponent>` must have `ref="pluginComponent"`.

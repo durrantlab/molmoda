@@ -36,8 +36,11 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+
+// Need below for menu to work. No need to lazy load. Always available.
 import "bootstrap/js/dist/dropdown";
 import "bootstrap/js/dist/collapse";
+
 import MenuLevel1 from "./MenuLevel1.vue";
 import { IMenuEntry, menuDataSorted } from "./Menu";
 

@@ -32,8 +32,8 @@
 import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 
-import "bootstrap/js/dist/dropdown";
-import "bootstrap/js/dist/collapse";
+// import "bootstrap/js/dist/dropdown";
+// import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
 import MenuLevel2 from "./MenuLevel2.vue";
 import {

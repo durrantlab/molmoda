@@ -1,6 +1,6 @@
 import * as api from "@/Api";
+import { dynamicImports } from "@/Core/DynamicImports";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import axios from "axios";
 
 /**
  * Loads a remote file and sends it to the relevant Vue component.
@@ -23,9 +23,11 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
             reject(`The URL should start with http:// or https://.`);
             return;
         }
-
-        axios
-            .get(url)
+        
+        dynamicImports.axios.module
+            .then((axios) => {
+                return axios.get(url);
+            })
             .then((resp) => {
                 const flnm = url.split("/").pop() as string;
                 api.messages.waitSpinner(false);
@@ -37,9 +39,9 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
                 );
             })
             .catch((err) => {
+                throw err;
                 reject(`Could not load the URL ${url}: ` + err.message);
                 api.messages.waitSpinner(false);
-                // throw err;
             });
     });
 }
