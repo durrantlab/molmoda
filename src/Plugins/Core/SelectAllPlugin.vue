@@ -66,6 +66,7 @@ export default class SelectAllPlugin extends PluginParentClass {
         allNodes.forEach((n) => {
             n.selected = SelectedType.True;
         });
+        return;
     }
 
     /**

@@ -47,7 +47,7 @@ export function compileByMolecule(
                 separatedNodes.nonCompoundNodes
             );
 
-            // Remove undefineds, shapes
+            // Remove undefineds, regions
             terminalNodes = terminalNodes.filters.removeUndefined();
             terminalNodes = terminalNodes.filters.keepShapes(false);
 
@@ -60,7 +60,7 @@ export function compileByMolecule(
             );
             termNodes = termNodes.filters.onlyUnique;
 
-            // Removed undefineds, shapes
+            // Removed undefineds, regions
             termNodes = termNodes.filters.removeUndefined();
             termNodes = termNodes.filters.keepShapes(false);
 

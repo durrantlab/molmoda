@@ -338,7 +338,7 @@ export class Viewer3DMol extends ViewerParent {
                 this._mol3dObj.zoomTo({ model: models }, 500, true);
             } else {
                 // Zoom to all as backup option. Commented out because if there are
-                // shapes, this causes problems.
+                // regions, this causes problems.
                 // this._mol3dObj.zoomTo();
             }
         }, 500);

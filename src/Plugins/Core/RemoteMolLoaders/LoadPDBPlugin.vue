@@ -100,7 +100,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
             `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
         )
             .then((fileInfo: FileInfo): any => {
-                return fileInfo;
+                return this.addFileInfoToViewer(fileInfo);
             })
             .catch((err: string) => {
                 // TODO: Check if CIF exists?

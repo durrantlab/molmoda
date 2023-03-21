@@ -1,4 +1,8 @@
 <template>
+    <!-- modelValue="a" -->
+    <FormSelectShape v-model="test"></FormSelectShape>
+    [[ {{test}} ]]
+
     <!-- Iterate through key, pair of allTableData -->
     <h5>Data: Visible/Selected Molecules</h5>
 
@@ -60,6 +64,7 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { slugify } from "@/Core/Utils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import FormSelectShape from "@/UI/Forms/FormSelectShape/FormSelectShape.vue";
 
 /**
  * DataPanel component
@@ -67,9 +72,12 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 @Options({
     components: {
         Table,
+        FormSelectShape
     },
 })
 export default class DataPanel extends Vue {
+    public test = null;
+
     /**
      * Whether the table should be allowed to wrap text.
      *

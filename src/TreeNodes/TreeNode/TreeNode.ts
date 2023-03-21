@@ -101,6 +101,9 @@ export class TreeNode {
 
         this._descriptions = new TreeNodeDescriptions(this);
         this._ancestry = new TreeNodeAncestry(this);
+
+        // For chaining
+        return this;
     }
 
     /**

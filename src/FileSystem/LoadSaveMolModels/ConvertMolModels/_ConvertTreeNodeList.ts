@@ -69,8 +69,6 @@ export function _convertTreeNodeList(
         })
     );
 
-    console.log("MOOSE2");
-
     return convertFileInfosOpenBabel(
         fileInfos,
         targetExt

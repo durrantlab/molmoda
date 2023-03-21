@@ -47,7 +47,7 @@ export abstract class ViewerParent {
     // Note that a given molecule can have multiple surfaces.
     surfaces: { [id: string]: GenericSurfaceType[] } = {};
 
-    // Keep track of the shapes.
+    // Keep track of the regions.
     shapeCache: { [id: string]: GenericShapeType } = {};
 
     // This function is called to add a class to the a div surrounding the
@@ -72,7 +72,7 @@ export abstract class ViewerParent {
     abstract _removeShape(id: string): void;
 
     /**
-     * Removes multiple objects (models or shapes).
+     * Removes multiple objects (models or regions).
      *
      * @param {string[]} remainingMolIds  The ids of the models that remain.
      */
@@ -371,7 +371,7 @@ export abstract class ViewerParent {
             // If it's not in the cache, the system has probably not yet loaded the
             // molecule. Always load it.
             let addObjPromise: Promise<TreeNode>;
-            // TODO: Currently doesn't account for shapes.
+            // TODO: Currently doesn't account for regions.
             if (this.molCache[id] || this.shapeCache[id]) {
                 // Already in molecule cache
                 addObjPromise = Promise.resolve(treeNode);
@@ -657,7 +657,7 @@ export abstract class ViewerParent {
     }
 
     /**
-     * Clear the cache of molecules, shapes, and surfaces.
+     * Clear the cache of molecules, regions, and surfaces.
      */
     clearCache() {
         for (const id in this.molCache) {

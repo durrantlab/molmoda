@@ -46,7 +46,7 @@ export enum ShapeType {
 
 
 // export class Shape {
-//     // All shapes can have these properties
+//     // All regions can have these properties
 //     type: ShapeType;
 //     center: [number, number, number];
 //     opacity?: number;
@@ -142,4 +142,11 @@ export interface IStyle {
     line?: IColorStyle;
     cartoon?: IColorStyle;
     surface?: IColorStyle; // NOTE: Not how 3dmoljs handles surface.
+}
+
+// Below is used by the FormSelectShape component in its emits.
+export interface ISphereOrBox {
+    center: [number, number, number];
+    radius?: number;
+    dimensions?: [number, number, number];
 }

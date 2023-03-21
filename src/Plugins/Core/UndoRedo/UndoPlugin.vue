@@ -70,6 +70,7 @@ export default class UndoPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     undo(this.$store);
+    return;
   }
 
   /**

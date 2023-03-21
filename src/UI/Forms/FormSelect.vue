@@ -11,6 +11,7 @@
       v-for="opt in optionsToUse"
       :value="opt.val"
       v-bind:key="opt.val"
+      :disabled="opt.disabled === true"
     >
       {{opt.description}}
     </option>

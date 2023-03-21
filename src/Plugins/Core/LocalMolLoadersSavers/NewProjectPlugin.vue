@@ -99,6 +99,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     runJobInBrowser(/* fileInfo: IFileInfo */) {
         setStoreIsDirty(false);
         window.location.reload();
+        return;
     }
 
     /**

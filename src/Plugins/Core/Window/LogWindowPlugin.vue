@@ -48,6 +48,7 @@ export default class LogWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Log");
+    return;
   }
 
   /**

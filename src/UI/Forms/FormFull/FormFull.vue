@@ -127,6 +127,18 @@
                         {{ formElem.description }}
                     </span>
                 </Alert>
+
+                <!-- extraClasses="mt-2 mb-0" -->
+                <!-- :placeHolder="makeGeneric(formElem).placeHolder" -->
+                <!-- @onChange="onDataUpdated" -->
+                <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->
+                <FormSelectShape
+                    v-else-if="formElem.type === FormElementType.SelectShape"
+                    v-model="makeGeneric(formElem).val"
+                    :id="itemId(formElem)"
+                    :disabled="disabled(formElem)"
+                    :description="makeGeneric(formElem).description"
+                ></FormSelectShape>
             </FormWrapper>
         </span>
     </span>
@@ -154,6 +166,7 @@ import MoleculeInputParams from "../MoleculeInputParams/MoleculeInputParams.vue"
 import FormCheckBox from "../FormCheckBox.vue";
 import FormVector3D from "../FormVector3D.vue";
 import Alert from "@/UI/Layout/Alert.vue";
+import FormSelectShape from "../FormSelectShape/FormSelectShape.vue";
 
 /**
  * FormFull
@@ -169,6 +182,7 @@ import Alert from "@/UI/Layout/Alert.vue";
         FormCheckBox,
         FormVector3D,
         Alert,
+        FormSelectShape
     },
 })
 export default class FormFull extends Vue {

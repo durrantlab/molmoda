@@ -36,6 +36,9 @@ export class TreeNodeList {
         this._filters = new TreeNodeListFilters(this);
         this._nodeActions = new TreeNodeListNodeActions(this);
         this._copy = new TreeNodeListCopies(this);
+
+        // For chaining
+        return this;
     }
 
     // private _updateTitles(): void {
@@ -278,6 +281,13 @@ export class TreeNodeList {
         return this._nodes.reduce(func, initialValue);
     }
 
+    public sort(
+        func: (a: TreeNode, b: TreeNode) => number
+    ): TreeNodeList {
+        this._nodes.sort(func);
+        return this;
+    }
+
     /**
      * Gets the nodes as an array.
      *
@@ -312,9 +322,9 @@ export class TreeNodeList {
      *
      * @param  {FileInfo} fileInfo  The file to load.
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
-     *     list of nodes, or undefined on failure.
+     *     list of new nodes, or undefined on failure.
      */
-    public load(fileInfo: FileInfo): Promise<void | TreeNodeList> {
+    public loadFromFileInfo(fileInfo: FileInfo): Promise<void | TreeNodeList> {
         const fileName = fileInfo.name;
         return _parseMoleculeFile(
             fileInfo,
@@ -340,7 +350,10 @@ export class TreeNodeList {
                 // invisible.
                 for (let i = 0; i < terminalNodes.length; i++) {
                     const node = terminalNodes.get(i);
-                    node.title = fileName + ":" + (i + 1).toString();
+                    // If "undefined" in title, rename
+                    if (node.title.indexOf("undefined") >= 0) {
+                        node.title = fileName + ":" + (i + 1).toString();
+                    }
                     node.visible = i < MAX_VISIBLE;
                     // node.treeExpanded = false;
                 }

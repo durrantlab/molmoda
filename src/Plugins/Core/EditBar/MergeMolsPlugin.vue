@@ -127,7 +127,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         // We need to collect all the ids of the ones to keep. This includes the
         // ones in this.nodesToActOn, which are terminal nodes. It should also
         // include all their direct ancestors.
-        treeNodeListDeepClone(getMoleculesFromStore())
+        return treeNodeListDeepClone(getMoleculesFromStore())
             .then((allNodes: TreeNodeList) => {
                 let idsToKeep: string[] = this.nodesToActOn.map((node) => {
                     return node.id;
@@ -152,7 +152,9 @@ export default class MergeMolsPlugin extends PluginParentClass {
                 );
             })
             .then((mergedTreeNode: TreeNode) => {
-                this.$store.commit("pushToMolecules", mergedTreeNode);
+                // this.$store.commit("pushToMolecules", mergedTreeNode);
+                mergedTreeNode.visible = true;
+                mergedTreeNode.addToMainTree();
                 return;
             })
             .catch((err) => {

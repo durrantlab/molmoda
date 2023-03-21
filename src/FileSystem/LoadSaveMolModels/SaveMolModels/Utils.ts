@@ -47,7 +47,7 @@ export function getConvertedTxts(
     merge: boolean,
     filename?: string
 ): Promise<FileInfo[]> {
-    // Remove shapes from nodes. These can never be converted.
+    // Remove regions from nodes. These can never be converted.
     nodes = nodes.filters.keepShapes(false);
 
     // If no nodes left, nothing to convert.

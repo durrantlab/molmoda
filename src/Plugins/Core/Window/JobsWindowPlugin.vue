@@ -48,6 +48,7 @@ export default class JobsWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Jobs");
+    return;
   }
 
   /**

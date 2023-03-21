@@ -107,19 +107,22 @@ export default class CloneMolPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job running.
      *
      * @param {IUserArg[]} userArgs  The user arguments.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(userArgs: IUserArg[]) {
+    runJobInBrowser(userArgs: IUserArg[]): Promise<void> {
         if (!this.nodesToActOn) {
             // Nothing to do.
-            return;
+            return Promise.resolve();
         }
 
         // debugging below
-        cloneMolsWithAncestry(this.nodesToActOn, true)
+        return cloneMolsWithAncestry(this.nodesToActOn, true)
             .then((treeNodeList: TreeNodeList) => {
                 const node = treeNodeList.get(0);
                 node.title = this.getArg(userArgs, "newName");
-                this.$store.commit("pushToMolecules", node);
+                node.visible = true;
+                treeNodeList.addToMainTree();
+                // this.$store.commit("pushToMolecules", node);
                 return;
             })
             .catch((err) => {

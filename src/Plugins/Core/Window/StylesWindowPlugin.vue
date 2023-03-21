@@ -48,6 +48,7 @@ export default class StylesWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Styles");
+    return;
   }
 
   /**

@@ -110,6 +110,8 @@ export default class DeleteMolPlugin extends PluginParentClass {
             //   this.$store.commit("updateMolecules", molecules);
             // }
         }
+
+        return;
     }
 
     /**

@@ -1,3 +1,4 @@
+import { ISphereOrBox } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { MoleculeInput } from "../MoleculeInputParams/MoleculeInput";
 
 export enum FormElemType {
@@ -10,7 +11,8 @@ export enum FormElemType {
     MoleculeInputParams,
     Checkbox,
     Vector3D,
-    Alert
+    Alert,
+    SelectShape
 }
 
 export type FormElement =
@@ -23,7 +25,8 @@ export type FormElement =
     | IFormColor
     | IFormCheckbox
     | IFormVector3D
-    | IFormAlert;
+    | IFormAlert
+    | IFormSelectShape;
 
 interface IFormElement {
     id: string;
@@ -88,6 +91,7 @@ export interface IFormVector3D extends IFormElement {
 export interface IFormOption {
     description: string;
     val: any;
+    disabled?: boolean;
 }
 
 export interface IFormSelect extends IFormElement {
@@ -109,4 +113,8 @@ export interface IFormAlert extends IFormElement {
     // Use description (not label!) as message.
     alertType: string;  // warning, info, etc.
     description: string;  // Required
+}
+
+export interface IFormSelectShape extends IFormElement {
+    val: ISphereOrBox | null
 }

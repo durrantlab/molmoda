@@ -115,6 +115,8 @@ export default class SaveVRMLPlugin extends PluginParentClass {
         contents: vrmlTxt
       }));
     }
+
+    return;
   }
 
   /**

@@ -1,7 +1,9 @@
-import { RunJob } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { JobStatus } from "../Types/TypesEndpointResponse";
 import { InBrowserEndpoint, IJobInfoQueueEntry } from "./InBrowserEndpoint";
 import { registeredInBrowserJobFuncs } from "./RegisteredInBrowserJobFuncs";
+
+type RunJob = FileInfo[] | FileInfo | undefined | void;
 
 /**
  * Gets the next job to run, subject to constraints.

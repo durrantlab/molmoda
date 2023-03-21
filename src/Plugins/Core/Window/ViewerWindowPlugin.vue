@@ -48,6 +48,7 @@ export default class ViewerWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Viewer");
+    return;
   }
 
   /**

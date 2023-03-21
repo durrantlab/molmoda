@@ -41,6 +41,8 @@ Bootstrap Tour
 
 How useful is log really?
 
+NOT REALLY NEEDED YET: https://vuejs.org/guide/components/async.html#basic-usage
+
 # Ongoing: Important
 
 Current version of openbabel (tmp version) converts only first fframe of file
@@ -52,25 +54,21 @@ When change colors and things, shouldn't refocus.
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-Search for "TODO: Would be nice if there were a separate function"
-
 updateAppName not used anywhere, but I think it should be.
 
 Add graphs to data too. Plotly? Also, you should be able to download graphs
 (png, svg, xlsx, csv). And text too. And should auto keep track of how the
 molecule was generated.
 
-Test elements could be restructured as objects. Would be better to put
-functions on each one. Then, Tutorial based on tests (first one). Started to do
-this. See ParentPluginTestFuncs.ts
+Test elements could be restructured as objects. Would be better to put functions
+on each one. Then, Tutorial based on tests (first one). Started to do this. See
+ParentPluginTestFuncs.ts
 
 FPocket: blank modal flashes. Why?
 
 Queue table looks bad.
 
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
-
-Load a molecule, clone protein portion, it's hidden. Why? Same with merging, BTW.
 
 Tests
     Return to openmolecules test. Not passing.
@@ -92,20 +90,32 @@ etc. Also, you could standardie how webworkers are used for multiprocessing
 (keeping track of order automatically). Reuse convert w/ obabel code.
     But when you go to do remote calculations...
 
-// TODO: Error when click on compound
-
 Open options: add 3D coordinates, frames to separate molecules, etc.
 
-TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form element.
+TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form
+element.
+
+Need widget to select shape (or specify X, Y, Z, dimens).
+
+https://firebase.google.com/docs/auth
+
+# DONE
+
+// TODO: Error when click on compound
 
 Load 1XDN, click on compound, there's an error.
 
+Load a molecule, clone protein portion, it's hidden. Why? Same with merging, BTW.
+
+Load 1XDN. Look at ligand name. What?
+
+Search for "TODO: Would be nice if there were a separate function"
+
+Clone molecule. Not visible. Make it visible on clone. Hide original? Same with
+merge.
+
 Queue shouldn't automatically add mols to viewer. You should do that explicitly.
 runInBrowser (?) always returns promise. for consistency (no multiple options).
-
-https://vuejs.org/guide/components/async.html#basic-usage
-
-# DONE
 
 Check to make sure all dynamic imports happen through central place. Important.
 Bootstrap stuff, axios, etc.

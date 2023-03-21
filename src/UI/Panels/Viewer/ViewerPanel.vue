@@ -275,7 +275,7 @@ export default class ViewerPanel extends Vue {
         this._removeOldModels(terminalNodes);
 
         // Add all the models and put them in the cache. This also hides the
-        // shapes if visible == false on the node.
+        // regions if visible == false on the node.
         const addMolPromises =
             api.visualization.viewer?.addTreeNodeList(terminalNodes);
 

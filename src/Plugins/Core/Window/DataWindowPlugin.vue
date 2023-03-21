@@ -48,6 +48,7 @@ export default class DataWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Data");
+    return;
   }
 
   /**

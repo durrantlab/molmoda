@@ -96,6 +96,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     if (this.nodesToActOn) {
       this.nodesToActOn.get(0).title = this.getArg(userArgs, "newName");
     }
+    return;
   }
 
   /**

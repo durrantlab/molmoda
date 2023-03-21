@@ -49,7 +49,11 @@ export class UserInputsMixin extends Vue {
                         }
                         break;
                     case "object":
+                        // if (_userArg.val.center !== undefined) {
+                        //     userArg.type = FormElemType.SelectShape;
+                        // } else {
                         userArg.type = FormElemType.MoleculeInputParams;
+                        // }
                         break;
                     case "boolean":
                         userArg.type = FormElemType.Checkbox;

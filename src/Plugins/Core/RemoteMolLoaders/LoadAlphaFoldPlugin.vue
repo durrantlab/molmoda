@@ -106,8 +106,8 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         // Throw error
         throw new Error("No PDB file found.");
       })
-      .then((fileInf: FileInfo): any => {
-        return fileInf;
+      .then((fileInfo: FileInfo): any => {
+        return this.addFileInfoToViewer(fileInfo);
       })
       .catch((err: string) => {
         api.messages.popupError(err);

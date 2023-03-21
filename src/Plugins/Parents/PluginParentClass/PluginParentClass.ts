@@ -28,9 +28,11 @@ import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
 import { registerHotkeys } from "@/Core/HotKeys";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { addOnJobsDoneMsgs } from "@/Queue/JobManagers/AllJobsFinishedMsgs";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
-export type RunJob = FileInfo[] | FileInfo | undefined | void;
-export type RunJobReturn = Promise<RunJob> | RunJob;
+// export type RunJob = FileInfo[] | FileInfo | undefined | void;
+// export type RunJobReturn = Promise<RunJob> | RunJob;
+export type RunJobReturn = Promise<void> | void;
 
 /**
  * PluginParentClass
@@ -271,11 +273,8 @@ export abstract class PluginParentClass extends mixins(
      *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
-     * @returns {RunJobReturn}  A promise that resolves a result (object) when
-     *     the job is done. The object is a FileInfo object, or a list of
-     *     FileInfo objects. You can also return such an object directly,
-     *     without using a promise, if the job is synchronous. Return void or
-     *     undefined if there's nothing to return.
+     * @returns {RunJobReturn}  A promise that resolves when the job is done.
+     *     Return void if there's nothing to return.
      */
     abstract runJobInBrowser(parameterSet: any): RunJobReturn;
 
@@ -287,10 +286,9 @@ export abstract class PluginParentClass extends mixins(
      * @param {any}    [parameterSet]  The same parameterSets submitted via the
      *                                 submitJobs function, but one at a time.
      *                                 Optional.
-     * @returns {RunJobReturn}  A promise that resolves when the job is done,
-     *     with the result (string), or a string itself (if the job is
-     *     synchronous), or undefined if there's nothing to return (so user not
-     *     required to use).
+     * @returns {RunJobReturn}  A promise that resolves when the job is done.
+     *     Return void if there's nothing to return (so user not required to
+     *     use).
      */
     private _runJobInBrowser(jobId?: string, parameterSet?: any): RunJobReturn {
         if (this.runJobInBrowser === null) {
@@ -310,9 +308,7 @@ export abstract class PluginParentClass extends mixins(
 
         const startTime = new Date().getTime();
 
-        const jobResultFiles = this.runJobInBrowser(
-            parameterSet
-        ) as RunJobReturn;
+        const jobResultFiles = this.runJobInBrowser(parameterSet);
 
         let endLogTxt = "";
         if (this.logJob) {
@@ -320,14 +316,8 @@ export abstract class PluginParentClass extends mixins(
             endLogTxt = removeTerminalPunctuation(endLogTxt);
         }
 
-        // TODO: Would be nice if there were a separate function (perhaps in
-        // serparate file with RunJobReturn defs) that would convert all
-        // possible outputs into Promise<IFileInfo[]>. Would also remove any
-        // undefines. You might use this in InBrowserEndpoint.ts or thereabouts
-        // too, so would be good to reuse code. Make this cleaner.
-
-        // It's a promise
-        if (jobResultFiles instanceof Promise) {
+        if (jobResultFiles !== undefined) {
+            // It's a promise
             return jobResultFiles
                 .then((files: FileInfo[] | FileInfo | void | undefined) => {
                     if (files === undefined) {
@@ -348,22 +338,29 @@ export abstract class PluginParentClass extends mixins(
                         api.messages.log(endLogTxt, undefined, jobId);
                     }
 
-                    return files;
+                    return; //  files;
                 })
                 .catch((error: Error) => {
                     throw error;
                 });
+        } else {
+            // Proabably returned void.
+            if (this.logJob) {
+                endLogTxt +=
+                    " " + timeDiffDescription(new Date().getTime(), startTime);
+                api.messages.log(endLogTxt, undefined, jobId);
+            }
         }
 
         // It's an object or undefined
-        if (this.logJob) {
-            endLogTxt +=
-                " " + timeDiffDescription(new Date().getTime(), startTime);
-            api.messages.log(endLogTxt, undefined, jobId);
-        }
+        // if (this.logJob) {
+        //     endLogTxt +=
+        //         " " + timeDiffDescription(new Date().getTime(), startTime);
+        //     api.messages.log(endLogTxt, undefined, jobId);
+        // }
 
         // Make it an array
-        return jobResultFiles;
+        // return jobResultFiles;
     }
 
     /**
@@ -427,5 +424,24 @@ export abstract class PluginParentClass extends mixins(
         this.onMounted();
 
         createTestCmdsIfTestSpecified(this);
+    }
+
+    /**
+     * The runJobInBrowser() function receives a fileInfo object. Often, you
+     * want to create a molecule from this object and add it to the main tree.
+     * This is a helper function to do that.
+     * 
+     * @param {FileInfo} fileInfo  The fileInfo object.
+     * @returns {Promise<void>}  A promise that resolves when the molecule is
+     */
+    protected addFileInfoToViewer(fileInfo: FileInfo): Promise<void> {
+        return new TreeNodeList()
+            .loadFromFileInfo(fileInfo)
+            .then((newTreeNodeList) => {
+                if (newTreeNodeList) {
+                    return newTreeNodeList.addToMainTree();
+                }
+                return;
+            });
     }
 }

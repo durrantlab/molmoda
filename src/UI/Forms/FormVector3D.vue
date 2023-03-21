@@ -1,6 +1,6 @@
 <template>
     <span>
-        <div class="container-fluid">
+        <div :class="'container-fluid ' + cls" :style="styl">
             <div class="row">
                 <div
                     :class="'col px-0' + (axisIdx === 1 ? ' px-1' : '')"
@@ -54,6 +54,8 @@ export default class FormVector3D extends Vue {
     @Prop({}) description!: string;
     @Prop({ default: false }) readonly!: boolean;
     @Prop({ required: false }) filterFunc!: Function;
+    @Prop({ default: "" }) cls!: string;
+    @Prop({ default: "" }) styl!: string;
 
     axesIdxs = [0, 1, 2];
     axes = ["x", "y", "z"];

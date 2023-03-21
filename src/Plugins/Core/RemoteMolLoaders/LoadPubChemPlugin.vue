@@ -1,36 +1,36 @@
 <template>
-  <PluginComponent
-    :userArgs="userArgs"
-    title="Load Molecule from PubChem"
-    v-model="open"
-    cancelBtnTxt="Cancel"
-    actionBtnTxt="Load"
-    @onPopupDone="onPopupDone"
-    :pluginId="pluginId"
-    :isActionBtnEnabled="isBtnEnabled()"
-    :intro="intro"
-  >
-    <FormWrapper>
-      <FormInput
-        ref="formMolName"
-        id="formMolName"
-        v-model="molName"
-        placeHolder="(Optional) Enter the Chemical Name (e.g., Aspirin)"
-        @onChange="searchByName"
-        :delayBetweenChangesDetected="2000"
-        :description="molNameRespDescription"
-      ></FormInput>
-    </FormWrapper>
-    <FormWrapper
-      ><FormInput
-        ref="formCID"
-        v-model="cid"
-        placeHolder="Enter the CID (e.g., 2244)"
-        :filterFunc="filterUserData"
-        @onKeyDown="onCIDKeyDown"
-      ></FormInput>
-    </FormWrapper>
-  </PluginComponent>
+    <PluginComponent
+        :userArgs="userArgs"
+        title="Load Molecule from PubChem"
+        v-model="open"
+        cancelBtnTxt="Cancel"
+        actionBtnTxt="Load"
+        @onPopupDone="onPopupDone"
+        :pluginId="pluginId"
+        :isActionBtnEnabled="isBtnEnabled()"
+        :intro="intro"
+    >
+        <FormWrapper>
+            <FormInput
+                ref="formMolName"
+                id="formMolName"
+                v-model="molName"
+                placeHolder="(Optional) Enter the Chemical Name (e.g., Aspirin)"
+                @onChange="searchByName"
+                :delayBetweenChangesDetected="2000"
+                :description="molNameRespDescription"
+            ></FormInput>
+        </FormWrapper>
+        <FormWrapper
+            ><FormInput
+                ref="formCID"
+                v-model="cid"
+                placeHolder="Enter the CID (e.g., 2244)"
+                :filterFunc="filterUserData"
+                @onKeyDown="onCIDKeyDown"
+            ></FormInput>
+        </FormWrapper>
+    </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -175,17 +175,18 @@ export default class LoadPubChemPlugin extends PluginParentClass {
    * @param {string} filename  The filename to use.
    * @returns {RunJobReturn} A promise that resolves when it is loaded.
    */
-  get2DVersion(filename: string): RunJobReturn {
+  get2DVersion(filename: string): Promise<void> {
     return loadRemote(
       `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
     )
       .then((fileInfo: FileInfo) => {
         fileInfo.name = correctFilenameExt(filename, "SDF");
-        return fileInfo;
+        return;
       })
       .catch((err: string) => {
         api.messages.popupError(err);
         // throw err;
+        return;
       });
   }
 
@@ -233,13 +234,13 @@ export default class LoadPubChemPlugin extends PluginParentClass {
       )
         .then((fileInfo: FileInfo) => {
           fileInfo.name = correctFilenameExt(filename, "SDF");
-          return fileInfo;
+          return this.addFileInfoToViewer(fileInfo);
         })
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .catch((_err: string) => {
           // If it failed, it could be because there's no 3D coordinates. Try 2D.
           // throw err;
-          return this.get2DVersion(filename);
+          return this.get2DVersion(filename)
         })
     );
   }
@@ -268,7 +269,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
 <style scoped lang="scss">
 .inverse-indent {
-  text-indent: -1em;
-  padding-left: 1em;
+    text-indent: -1em;
+    padding-left: 1em;
 }
 </style>

@@ -41,6 +41,7 @@ import { Options } from "vue-class-component";
 import {
     calcMolProps,
     countsTitle,
+    ICalcMolProps,
     lipinskiTitle,
     otherTitle,
 } from "./CalcMolProps";
@@ -158,7 +159,7 @@ export default class MolPropsPlugin extends PluginParentClass {
      * @returns {Promise<undefined>}  A promise that resolves when the job is
      *     done.
      */
-    runJobInBrowser(compoundBatch: FileInfo[]): Promise<undefined | void> {
+    runJobInBrowser(compoundBatch: FileInfo[]): Promise<void> {
         return calcMolProps(
             compoundBatch.map((f) => f.contents),
             compoundBatch.map((f) => f.treeNode)

@@ -48,6 +48,7 @@ export default class NavigatorWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Navigator");
+    return;
   }
 
   /**

@@ -62,16 +62,16 @@ export class TreeNodeListFilters {
     }
 
     /**
-     * Returns a list of nodes that have (or do not have) shapes.
+     * Returns a list of nodes that have (or do not have) regions.
      *
      * @param  {boolean} [keepShape=true]        Whether to create a list of
-     *                                           nodes that have shapes, or a
+     *                                           nodes that have regions, or a
      *                                           list of nodes that don't have
-     *                                           shapes.
+     *                                           regions.
      * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that have (or do not have)
-     *    shapes.
+     *    regions.
      */
     public keepShapes(keepShape = true, deepAndFlatten = false): TreeNodeList {
         const treeNodeList = this.getFlattenedIfAppropriate(deepAndFlatten);

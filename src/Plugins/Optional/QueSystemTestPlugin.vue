@@ -10,6 +10,7 @@
 </template>
 
 <script lang="ts">
+import { FileInfo } from "@/FileSystem/FileInfo";
 import {
   IContributorCredit,
   ISoftwareCredit,
@@ -108,10 +109,10 @@ export default class QueSystemTestPlugin extends PluginParentClass {
    * @returns {Promise<undefined>}  A promise that resolves when the job is
    *     done.
    */
-  runJobInBrowser(_args: any): Promise<undefined> {
+  runJobInBrowser(_args: any): Promise<void> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(undefined);
+        resolve();
       }, _args.delay);
     });
 

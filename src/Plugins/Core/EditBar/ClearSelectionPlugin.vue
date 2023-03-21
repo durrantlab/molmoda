@@ -66,6 +66,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
                 n.selected = SelectedType.False;
             }
         });
+        return;
     }
 
     /**

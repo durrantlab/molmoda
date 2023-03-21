@@ -48,6 +48,7 @@ export default class InformationWindowPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     switchToGoldenLayoutPanel("Information");
+    return;
   }
 
   /**

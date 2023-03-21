@@ -3,7 +3,7 @@
         <label
             v-if="label !== ''"
             :for="randomID"
-            :class="'form-label mb-0' + (disabled ? ' disabled-txt' : '')"
+            :class="'form-label mb-0' + (disabled ? ' disabled-txt' : '') + (useSubLabelFormatting ? ' fst-italic fw-light' : '')"
         >
             <small v-if="smallLabel">{{ label }}</small>
             <span v-else>{{ label }}</span>
@@ -29,6 +29,7 @@ export default class FormWrapper extends Vue {
     @Prop({ default: false }) smallLabel!: boolean;
     @Prop({ default: "mb-2" }) cls!: string;
     @Prop({ default: false }) disabled!: boolean;
+    @Prop({ default: false }) useSubLabelFormatting!: boolean;
 
     /**
      * Get a random ID.
@@ -50,4 +51,5 @@ export default class FormWrapper extends Vue {
 .disabled-txt {
     opacity: 0.5;
 }
+
 </style>

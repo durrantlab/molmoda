@@ -92,6 +92,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     if (this.callBack) {
       this.callBack();
     }
+    return;
   }
 }
 </script>

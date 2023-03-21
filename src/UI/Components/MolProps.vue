@@ -8,6 +8,7 @@
 import {
     calcMolProps,
     ICalcMolProps,
+    lipinskiTitle,
 } from "@/Plugins/Optional/MolProps/CalcMolProps";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { Options, Vue } from "vue-class-component";
@@ -39,11 +40,15 @@ export default class MolProps extends Vue {
      */
     @Watch("smiles")
     onSmiles() {
-        console.log("====================================");
-        console.log(this.smiles, this.treeNode);
+        // Don't calculate twice! If it has lipinskiTitle, assume it also has
+        // countsTitle and otherTitle.
+        if (this.treeNode?.data && this.treeNode.data[lipinskiTitle]) {
+            // console.log("Already calculated.");
+            return;
+        }
+        
         calcMolProps([this.smiles], [this.treeNode])
             .then((resps: ICalcMolProps[]) => {
-                console.log(resps)
                 // Only one molecule.
                 const resp = resps[0];
                 this.lipinskiTableData = this.convertDescriptorsToTableData(

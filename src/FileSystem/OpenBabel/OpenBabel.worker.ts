@@ -245,9 +245,8 @@ let currentlyRunning = false;
 self.onmessage = (params: MessageEvent) => {
     if (currentlyRunning) {
         throw new Error("Already running");
-    } else {
-        console.warn("OKOKOK");
     }
+
     currentlyRunning = true;
     const argsSets = params.data.argsSets as string[][];
     const inputFiles = params.data.inputFiles as FileInfo[];

@@ -29,15 +29,15 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import {
-    FormElement,
-} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * OpenMoleculesPlugin
@@ -157,11 +157,11 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      *
      * @param {FileInfo} fileInfo  Information about the molecules to save.
      * @returns {Promise<undefined>}  A promise that resolves when the job is
-     *     done.
+     *     done. TODO: These are wrong throughout.
      */
     runJobInBrowser(fileInfo: FileInfo): RunJobReturn {
         // It's not a biotite file (e.g., a PDB file).
-        return fileInfo;
+        return this.addFileInfoToViewer(fileInfo);
     }
 
     /**

@@ -108,7 +108,7 @@ export class TestCmdList {
         exampleLoaded = true;
         loadRemote("4WP4.pdb", false)
             .then((fileInfo: FileInfo) => {
-                getMoleculesFromStore().load(fileInfo);
+                getMoleculesFromStore().loadFromFileInfo(fileInfo);
                 return;
             })
             .catch((err: string) => {

@@ -57,6 +57,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /** AboutPlugin */
 @Options({
@@ -143,7 +144,7 @@ export default class AboutPlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the
    * job running. About plugin does not have a job.
    */
-  runJobInBrowser() {
+  runJobInBrowser(): void {
     return;
   }
 

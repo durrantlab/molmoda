@@ -28,7 +28,6 @@ export function calcMolProps(
     smilesStrs: string[],
     associatedTreeNodes?: (TreeNode | undefined)[]
 ): Promise<ICalcMolProps[]> {
-    debugger;
     // Create the list of properties, currently full of undefineds.
     const molDescriptors: (ICalcMolProps | undefined)[] = [];
     for (let i = 0; i < smilesStrs.length; i++) {

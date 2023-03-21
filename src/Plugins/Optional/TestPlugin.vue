@@ -18,9 +18,11 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
     FormElement,
+    FormElemType,
     IFormGroup,
     IFormMoleculeInputParams,
     IFormNumber,
+    IFormSelectShape,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
@@ -49,6 +51,21 @@ export default class TestPlugin extends PluginParentClass {
     intro = `This is a <b>test</b> component.`;
 
     userArgs: FormElement[] = [
+        {
+            id: "group2",
+            // type: FormElemType.Group,
+            label: "Shape Test",
+            childElements: [
+                {
+                    id: "shape",
+                    // label: "Shape test",
+                    val: null,  // To use default
+                    type: FormElemType.SelectShape,
+                } as IFormSelectShape,
+            ],
+            startOpened: true,
+        } as IFormGroup,
+
         {
             // type: FormElemType.Number,
             id: "moose",
@@ -108,7 +125,7 @@ export default class TestPlugin extends PluginParentClass {
      * @returns {Promise<undefined>}  A promise that resolves when the job is
      *     done.
      */
-    runJobInBrowser(_args: any): Promise<undefined> {
+    runJobInBrowser(_args: any): Promise<void> {
         // let args: string[] = ['-:CO(=O)', '--gen2D', '-osdf', '-p', '7.4'];
         // let args: string[] = ['-H'];
 
@@ -121,7 +138,7 @@ export default class TestPlugin extends PluginParentClass {
             .then((/* res: any */) => {
                 debugger;
                 // console.log(res);
-                return undefined;
+                return;
             })
             .catch((err: any) => {
                 throw err;

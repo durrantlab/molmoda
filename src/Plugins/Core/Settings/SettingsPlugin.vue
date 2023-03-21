@@ -127,13 +127,11 @@ export default class SettingsPlugin extends PluginParentClass {
    * Every plugin runs some job. This is the function that does the job running.
    *
    * @param {IUserArg[]} args  The user arguments to pass to the "executable."
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
    */
-  runJobInBrowser(args: IUserArg[]): Promise<undefined> {
+  runJobInBrowser(args: IUserArg[]) {
     saveSettings(args);
     applySettings(args);
-    return Promise.resolve(undefined);
+    return;
   }
 
   /**

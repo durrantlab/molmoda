@@ -62,6 +62,7 @@ export default class RedoPlugin extends PluginParentClass {
    */
   runJobInBrowser() {
     redo(this.$store);
+    return;
   }
 
   /**

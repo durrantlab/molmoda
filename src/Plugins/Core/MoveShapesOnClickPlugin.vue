@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Move shapes?"
+        title="Move regions?"
         cancelBtnTxt="Cancel"
         actionBtnTxt="Move"
         :intro="intro"
@@ -51,7 +51,7 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
         },
     ];
     pluginId = "moveshapesonclick";
-    intro = `Do you wish to move all selected shapes to this atom's position? Selected shapes:`;
+    intro = `Do you wish to move all selected regions to this atom's position? Selected regions:`;
 
     userArgs: FormElement[] = [];
     alwaysEnabled = true;
@@ -68,24 +68,24 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
     }
 
     /**
-     * Get the selected shapes.
+     * Get the selected regions.
      *
-     * @returns {TreeNodeList}  The selected shapes.
+     * @returns {TreeNodeList}  The selected regions.
      */
     get selectedShapes(): TreeNodeList {
         // Get terminal nodes
         let terminalNodes = (this.$store.state.molecules as TreeNodeList).filters.onlyTerminal;
 
-        // Get the ones that are selected and shapes
+        // Get the ones that are selected and regions
         terminalNodes = terminalNodes.filters.keepSelected();
         terminalNodes = terminalNodes.filters.keepShapes();
         return terminalNodes;
     }
 
     /**
-     * Get the titles of the selected shapes.
+     * Get the titles of the selected regions.
      *
-     * @returns {string[]}  The titles of the selected shapes.
+     * @returns {string[]}  The titles of the selected regions.
      */
     get selectedShapesTitles(): string[] {
         const selectedShapes = this.selectedShapes;
@@ -113,6 +113,8 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
         } as IShape;
         treeNode.shape = newShape;
         treeNode.viewerDirty = true;
+
+        return;
     }
 }
 </script>

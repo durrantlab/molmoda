@@ -139,7 +139,7 @@ export function setupVueXStore(): Store<any> {
                 //     nodes: [
                 //         {
                 //             title: "Shapes",
-                //             id: "shapes",
+                //             id: "regions",
                 //             parentId: "test",
                 //             treeExpanded: true,
                 //             visible: true,
@@ -150,7 +150,7 @@ export function setupVueXStore(): Store<any> {
                 //                 {
                 //                     title: "Shapes2",
                 //                     id: "shapes2",
-                //                     parentId: "shapes",
+                //                     parentId: "regions",
                 //                     treeExpanded: true,
                 //                     visible: true,
                 //                     selected: SelectedType.False,
@@ -168,7 +168,7 @@ export function setupVueXStore(): Store<any> {
                 //                 {
                 //                     title: "Shapes3",
                 //                     id: "shapes3",
-                //                     parentId: "shapes",
+                //                     parentId: "regions",
                 //                     treeExpanded: true,
                 //                     visible: true,
                 //                     selected: SelectedType.False,
@@ -186,7 +186,7 @@ export function setupVueXStore(): Store<any> {
                 //                 {
                 //                     title: "Shapes4",
                 //                     id: "shapes4",
-                //                     parentId: "shapes",
+                //                     parentId: "regions",
                 //                     treeExpanded: true,
                 //                     visible: true,
                 //                     selected: SelectedType.False,
@@ -204,7 +204,7 @@ export function setupVueXStore(): Store<any> {
                 //                 {
                 //                     title: "Shapes5",
                 //                     id: "shapes5",
-                //                     parentId: "shapes",
+                //                     parentId: "regions",
                 //                     treeExpanded: true,
                 //                     visible: true,
                 //                     selected: SelectedType.False,

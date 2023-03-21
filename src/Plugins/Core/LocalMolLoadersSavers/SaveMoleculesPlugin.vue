@@ -315,7 +315,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         const saveSelected = this.getArg(userArgs, "saveSelected") as boolean;
 
         if (useBiotiteFormat) {
-            return saveBiotite(filename)
+            saveBiotite(filename)
                 .then(() => {
                     if (this.appClosing) {
                         api.messages.popupMessage(
@@ -333,6 +333,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 .catch((err: any) => {
                     throw err;
                 });
+
+            return Promise.resolve();
         }
 
         // If saving to a single molecule and not separating out compounds,
@@ -358,7 +360,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         );
 
         // Perform any file conversion needed
-        convertCompiledMolModelsToIFileInfos(
+        return convertCompiledMolModelsToIFileInfos(
             compiledMolModels,
             compoundFormat,
             nonCompoundFormat

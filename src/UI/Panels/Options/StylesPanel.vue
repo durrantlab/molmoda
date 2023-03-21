@@ -1,5 +1,5 @@
 <template>
-    <!-- For shapes -->
+    <!-- For regions -->
     <Section title="Shape" v-if="numSelectedShapes === 1">
         <FormFull v-model="constructedShapeForm" id="shape-style"></FormFull>
         <hr class="mt-4" />
@@ -20,13 +20,13 @@
         </div>
     </Section>
 
-    <!-- For shapes -->
+    <!-- For regions -->
     <div v-if="numSelectedShapes !== 1 || treeNodesWithShapes.length === 0">
         <hr class="mt-4" />
         <Section title="Shape" class="pb-2">
             <p style="font-size: 14px">
                 <span v-if="treeNodesWithShapes.length === 0">
-                    The workspace contains no shapes.
+                    The workspace contains no regions.
                 </span>
                 <span v-else-if="numSelectedShapes === 0">
                     No shape selected (clicked) in the Navigator panel
@@ -102,16 +102,16 @@ export default class StylesPanel extends Vue {
     }
 
     /**
-     * Get the number of selected shapes.
+     * Get the number of selected regions.
      *
-     * @returns {number} The number of selected shapes.
+     * @returns {number} The number of selected regions.
      */
     get numSelectedShapes(): number {
         return this.treeNodesWithSelectedShapes.length;
     }
 
     /**
-     * Get all mol containers associated with shapes.
+     * Get all mol containers associated with regions.
      *
      * @returns {TreeNodeList} All tree nodes that have a shape.
      */
@@ -121,7 +121,7 @@ export default class StylesPanel extends Vue {
     }
 
     /**
-     * Get all mol containers associated with shapes that are selected..
+     * Get all mol containers associated with regions that are selected..
      *
      * @returns {TreeNodeList} All tree nodes that have a shape and are
      *     selected.
