@@ -12,7 +12,7 @@ import {
     GenericSurfaceType,
     GenericStyleType,
     GenericLabelType,
-    GenericShapeType,
+    GenericRegionType,
 } from "./Types";
 
 /**
@@ -37,16 +37,16 @@ export class Viewer3DMol extends ViewerParent {
     }
 
     /**
-     * Removes a shape from the viewer.
+     * Removes a region from the viewer.
      *
-     * @param  {string} id  The id of the shape to remove.
+     * @param  {string} id  The id of the region to remove.
      * @returns {void}
      */
-    _removeShape(id: string) {
+    _removeRegion(id: string) {
         // remove from viewer
-        const shape = this.lookup(id);
-        if (shape) {
-            this._mol3dObj.removeShape(shape);
+        const region = this.lookup(id);
+        if (region) {
+            this._mol3dObj.removeShape(region);
         }
     }
 
@@ -74,14 +74,14 @@ export class Viewer3DMol extends ViewerParent {
     }
 
     /**
-     * Hide a shape.
+     * Hide a region.
      *
-     * @param  {string} id  The shape to hide.
+     * @param  {string} id  The region to hide.
      */
-    hideShape(id: string) {
-        const shape = this.lookup(id);
-        if (shape) {
-            shape.hidden = true;
+    hideRegion(id: string) {
+        const region = this.lookup(id);
+        if (region) {
+            region.hidden = true;
         }
     }
 
@@ -98,16 +98,16 @@ export class Viewer3DMol extends ViewerParent {
     }
 
     /**
-     * Show a shape.
+     * Show a region.
      *
-     * @param  {string} id  The id of the shape to show.
-     * @param  {number} opacity  The opacity to show the shape at.
+     * @param  {string} id  The id of the region to show.
+     * @param  {number} opacity  The opacity to show the region at.
      */
-    showShape(id: string, opacity: number) {
-        const shape = this.lookup(id);
-        if (shape) {
-            shape.hidden = false;
-            shape.opacity = opacity;
+    showRegion(id: string, opacity: number) {
+        const region = this.lookup(id);
+        if (region) {
+            region.hidden = false;
+            region.opacity = opacity;
         }
     }
 
@@ -181,33 +181,33 @@ export class Viewer3DMol extends ViewerParent {
     /**
      * Adds a sphere to the viewer.
      *
-     * @param  {ISphere} shape  The sphere to add.
-     * @returns {GenericShapeType}  The sphere that was added.
+     * @param  {ISphere} region  The sphere to add.
+     * @returns {GenericRegionType}  The sphere that was added.
      */
-    addSphere(shape: ISphere): Promise<GenericShapeType> {
+    addSphere(region: ISphere): Promise<GenericRegionType> {
         const sphere = this._mol3dObj.addSphere({
             center: {
-                x: shape.center[0],
-                y: shape.center[1],
-                z: shape.center[2],
+                x: region.center[0],
+                y: region.center[1],
+                z: region.center[2],
             },
-            radius: shape.radius,
-            color: shape.color,
+            radius: region.radius,
+            color: region.color,
         });
-        this._setShapeOpacity(sphere, shape?.opacity);
+        this._setRegionOpacity(sphere, region?.opacity);
         return Promise.resolve(sphere);
     }
 
     /**
      * Adds a box to the viewer.
      *
-     * @param  {IBox} shape  The box to add.
-     * @returns {GenericShapeType}  The box that was added.
+     * @param  {IBox} region  The box to add.
+     * @returns {GenericRegionType}  The box that was added.
      */
-    addBox(shape: IBox): Promise<GenericShapeType> {
+    addBox(region: IBox): Promise<GenericRegionType> {
         console.log("Adding box");
-        const dimens = shape.dimensions as number[];
-        const center = shape.center as number[];
+        const dimens = region.dimensions as number[];
+        const center = region.center as number[];
         const box = this._mol3dObj.addBox({
             corner: {
                 x: center[0] - 0.5 * dimens[0],
@@ -219,78 +219,78 @@ export class Viewer3DMol extends ViewerParent {
                 h: dimens[1],
                 d: dimens[2],
             },
-            color: shape.color,
+            color: region.color,
         });
 
-        this._setShapeOpacity(box, shape?.opacity);
+        this._setRegionOpacity(box, region?.opacity);
         return Promise.resolve(box);
     }
 
     /**
      * Adds a arrow to the viewer.
      *
-     * @param  {IArrow} shape  The arrow to add.
-     * @returns {GenericShapeType}  The arrow that was added.
+     * @param  {IArrow} region  The arrow to add.
+     * @returns {GenericRegionType}  The arrow that was added.
      */
-    addArrow(shape: IArrow): Promise<GenericShapeType> {
+    addArrow(region: IArrow): Promise<GenericRegionType> {
         const arrow = this._mol3dObj.addArrow({
             start: {
-                x: shape.center[0],
-                y: shape.center[1],
-                z: shape.center[2],
+                x: region.center[0],
+                y: region.center[1],
+                z: region.center[2],
             },
             end: {
-                x: shape.endPt[0],
-                y: shape.endPt[1],
-                z: shape.endPt[2],
+                x: region.endPt[0],
+                y: region.endPt[1],
+                z: region.endPt[2],
             },
-            radius: shape.radius,
-            color: shape.color,
-            radiusRatio: shape.radiusRatio,
+            radius: region.radius,
+            color: region.color,
+            radiusRatio: region.radiusRatio,
         });
-        this._setShapeOpacity(arrow, shape?.opacity);
+        this._setRegionOpacity(arrow, region?.opacity);
         return Promise.resolve(arrow);
     }
 
     /**
      * Adds a cylinder to the viewer.
      *
-     * @param  {ICylinder} shape  The cylinder to add.
-     * @returns {GenericShapeType}  The cylinder that was added.
+     * @param  {ICylinder} region  The cylinder to add.
+     * @returns {GenericRegionType}  The cylinder that was added.
      */
-    addCylinder(shape: ICylinder): Promise<GenericShapeType> {
+    addCylinder(region: ICylinder): Promise<GenericRegionType> {
         const cylinder = this._mol3dObj.addCylinder({
             start: {
-                x: shape.center[0],
-                y: shape.center[1],
-                z: shape.center[2],
+                x: region.center[0],
+                y: region.center[1],
+                z: region.center[2],
             },
             end: {
-                x: shape.endPt[0],
-                y: shape.endPt[1],
-                z: shape.endPt[2],
+                x: region.endPt[0],
+                y: region.endPt[1],
+                z: region.endPt[2],
             },
-            radius: shape.radius,
-            color: shape.color,
+            radius: region.radius,
+            color: region.color,
             fromCap: 2,
             toCap: 2,
-            dashed: shape.dashed,
+            dashed: region.dashed,
         });
-        this._setShapeOpacity(cylinder, shape?.opacity);
+        this._setRegionOpacity(cylinder, region?.opacity);
         return Promise.resolve(cylinder);
     }
 
     /**
-     * Sets the opacity of a shape.
+     * Sets the opacity of a region.
      *
-     * @param {any}                shape    The shape to set the opacity of.
+     * @param {any}                region    The region to set the opacity of.
      * @param {number | undefined} opacity  The opacity to set.
      */
-    private _setShapeOpacity(shape: any, opacity: number | undefined) {
+    private _setRegionOpacity(region: any, opacity: number | undefined) {
         setTimeout(() => {
             // Not sure why, but this needs to be in a setTimeout for the
             // opacity to actually change.
-            shape.opacity = opacity || 0.8;
+            region.opacity = opacity || 0.8;
             this.renderAll();
         }, 0);
     }
@@ -415,10 +415,6 @@ export class Viewer3DMol extends ViewerParent {
                 this._mol3dObj = viewer;
 
                 console.warn('viewer.setViewStyle({style:"outline"})');
-
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                // window["shapeCache"] = this.shapeCache;
 
                 return this as ViewerParent;
             })

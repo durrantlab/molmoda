@@ -49,7 +49,7 @@ export function compileByMolecule(
 
             // Remove undefineds, regions
             terminalNodes = terminalNodes.filters.removeUndefined();
-            terminalNodes = terminalNodes.filters.keepShapes(false);
+            terminalNodes = terminalNodes.filters.keepRegions(false);
 
             nonCompoundNodesByMolecule.push(terminalNodes);
         } else {
@@ -62,14 +62,14 @@ export function compileByMolecule(
 
             // Removed undefineds, regions
             termNodes = termNodes.filters.removeUndefined();
-            termNodes = termNodes.filters.keepShapes(false);
+            termNodes = termNodes.filters.keepRegions(false);
 
             nonCompoundNodesByMolecule.push(termNodes);
         }
     });
 
     compoundNodes = compoundNodes.filters.removeUndefined();
-    compoundNodes = compoundNodes.filters.keepShapes(false);
+    compoundNodes = compoundNodes.filters.keepRegions(false);
 
     return {
         // mol_filter_ok

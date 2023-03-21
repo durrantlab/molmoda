@@ -10,9 +10,9 @@ import {
     ITreeNodeData,
     IAtom,
     IStyle,
-    IShape,
+    IRegion,
     IBox,
-    ShapeType,
+    RegionType,
 } from "../../UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "../TreeNodeList/TreeNodeList";
 import { newTreeNodeList, setupMakerFuncs } from "../TreeNodeMakers";
@@ -37,7 +37,7 @@ export interface ITreeNode {
     // These are specifically for terminal nodes
     styles?: IStyle[]; // styles and selections for this node
     model?: IAtom[] | GLModel;
-    shape?: IShape;
+    region?: IRegion;
 
     // These are specifically for non-terminal nodes
     nodes?: TreeNodeList; // Next level down in menu. So if molecule,
@@ -66,7 +66,7 @@ export class TreeNode {
     // These are specifically for terminal nodes
     model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
     styles?: IStyle[]; // styles and selections for this node
-    shape?: IShape;
+    region?: IRegion;
 
     private _descriptions: TreeNodeDescriptions;
     private _ancestry: TreeNodeAncestry;
@@ -97,7 +97,7 @@ export class TreeNode {
         this.nodes = params.nodes;
         this.model = params.model;
         this.styles = params.styles;
-        this.shape = params.shape;
+        this.region = params.region;
 
         this._descriptions = new TreeNodeDescriptions(this);
         this._ancestry = new TreeNodeAncestry(this);
@@ -383,7 +383,7 @@ export class TreeNode {
      * @param  {number} [padding=3.4]  The padding to add to the box.
      * @returns {IBox}  The box.
      */
-    public getBoxShape(padding = 3.4): IBox {
+    public getBoxRegion(padding = 3.4): IBox {
         // Note 3.4 is approximate vdw diameter of carbon.
 
         // Get all the nodes and subnodes with models (including this one).
@@ -440,7 +440,7 @@ export class TreeNode {
         }
 
         return {
-            type: ShapeType.Box,
+            type: RegionType.Box,
             center: [centerX, centerY, centerZ],
             opacity: 0.5,
             color: color,

@@ -50,7 +50,7 @@ export class UserInputsMixin extends Vue {
                         break;
                     case "object":
                         // if (_userArg.val.center !== undefined) {
-                        //     userArg.type = FormElemType.SelectShape;
+                        //     userArg.type = FormElemType.SelectRegion;
                         // } else {
                         userArg.type = FormElemType.MoleculeInputParams;
                         // }

@@ -64,7 +64,7 @@ export class TreeNodeListFilters {
     /**
      * Returns a list of nodes that have (or do not have) regions.
      *
-     * @param  {boolean} [keepShape=true]        Whether to create a list of
+     * @param  {boolean} [keepRegion=true]       Whether to create a list of
      *                                           nodes that have regions, or a
      *                                           list of nodes that don't have
      *                                           regions.
@@ -73,13 +73,13 @@ export class TreeNodeListFilters {
      * @returns {TreeNodeList}  The list of nodes that have (or do not have)
      *    regions.
      */
-    public keepShapes(keepShape = true, deepAndFlatten = false): TreeNodeList {
+    public keepRegions(keepRegion = true, deepAndFlatten = false): TreeNodeList {
         const treeNodeList = this.getFlattenedIfAppropriate(deepAndFlatten);
 
         // mol_filter_ok
         return treeNodeList.filter((treeNode) => {
-            const hasShape = treeNode.shape !== undefined;
-            return hasShape === keepShape;
+            const hasRegion = treeNode.region !== undefined;
+            return hasRegion === keepRegion;
         });
     }
 

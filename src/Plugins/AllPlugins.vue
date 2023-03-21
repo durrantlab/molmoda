@@ -17,7 +17,7 @@ system uses these to autopopulate with plugins. -->
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
     <LogWindowPlugin @onPluginSetup="onPluginSetup"></LogWindowPlugin>
     <MergeMolsPlugin @onPluginSetup="onPluginSetup"></MergeMolsPlugin>
-    <MoveShapesOnClickPlugin @onPluginSetup="onPluginSetup"></MoveShapesOnClickPlugin>
+    <MoveRegionsOnClickPlugin @onPluginSetup="onPluginSetup"></MoveRegionsOnClickPlugin>
     <NavigatorWindowPlugin @onPluginSetup="onPluginSetup"></NavigatorWindowPlugin>
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
     <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
@@ -61,7 +61,7 @@ import LoadPDBPlugin from "./Core/RemoteMolLoaders/LoadPDBPlugin.vue";
 import LoadPubChemPlugin from "./Core/RemoteMolLoaders/LoadPubChemPlugin.vue";
 import LogWindowPlugin from "./Core/Window/LogWindowPlugin.vue";
 import MergeMolsPlugin from "./Core/EditBar/MergeMolsPlugin.vue";
-import MoveShapesOnClickPlugin from "./Core/MoveShapesOnClickPlugin.vue";
+import MoveRegionsOnClickPlugin from "./Core/MoveRegionsOnClickPlugin.vue";
 import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
 import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
 import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
@@ -103,7 +103,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     LoadPubChemPlugin,
     LogWindowPlugin,
     MergeMolsPlugin,
-    MoveShapesOnClickPlugin,
+    MoveRegionsOnClickPlugin,
     NavigatorWindowPlugin,
     NewProjectPlugin,
     OpenMoleculesPlugin,
@@ -124,6 +124,7 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     QueSystemTestPlugin,
     TestPlugin,
     // TEMPLATE3 END
+
 
 
 

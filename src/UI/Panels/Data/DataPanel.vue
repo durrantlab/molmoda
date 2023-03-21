@@ -1,6 +1,6 @@
 <template>
     <!-- modelValue="a" -->
-    <FormSelectShape v-model="test"></FormSelectShape>
+    <FormSelectRegion v-model="test"></FormSelectRegion>
     [[ {{test}} ]]
 
     <!-- Iterate through key, pair of allTableData -->
@@ -64,7 +64,7 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { slugify } from "@/Core/Utils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import FormSelectShape from "@/UI/Forms/FormSelectShape/FormSelectShape.vue";
+import FormSelectRegion from "@/UI/Forms/FormSelectRegion/FormSelectRegion.vue";
 
 /**
  * DataPanel component
@@ -72,7 +72,7 @@ import FormSelectShape from "@/UI/Forms/FormSelectShape/FormSelectShape.vue";
 @Options({
     components: {
         Table,
-        FormSelectShape
+        FormSelectRegion
     },
 })
 export default class DataPanel extends Vue {

@@ -22,7 +22,7 @@ import {
     IFormGroup,
     IFormMoleculeInputParams,
     IFormNumber,
-    IFormSelectShape,
+    IFormSelectRegion,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
@@ -54,14 +54,14 @@ export default class TestPlugin extends PluginParentClass {
         {
             id: "group2",
             // type: FormElemType.Group,
-            label: "Shape Test",
+            label: "Region Test",
             childElements: [
                 {
-                    id: "shape",
-                    // label: "Shape test",
+                    id: "region",
+                    // label: "Region test",
                     val: null,  // To use default
-                    type: FormElemType.SelectShape,
-                } as IFormSelectShape,
+                    type: FormElemType.SelectRegion,
+                } as IFormSelectRegion,
             ],
             startOpened: true,
         } as IFormGroup,

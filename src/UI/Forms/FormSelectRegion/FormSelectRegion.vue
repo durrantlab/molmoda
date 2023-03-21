@@ -6,15 +6,15 @@
         <!-- cls="border-0 mt-2" -->
         <!-- cls="px-3" -->
         <FormWrapper
-            :label="shapesInTree ? 'Load from Sphere or Box Shape' : undefined"
+            :label="regionsInTree ? 'Load from Sphere or Box Region' : undefined"
             :disabled="disabled"
         >
             <FormSelect
-                v-if="shapesInTree"
+                v-if="regionsInTree"
                 :disabled="disabled"
-                :options="shapesInTree"
-                :modelValue="selectedShapeId"
-                @onChange="onShapeSelected"
+                :options="regionsInTree"
+                :modelValue="selectedRegionId"
+                @onChange="onRegionSelected"
             >
             </FormSelect>
             <Alert v-else type="warning" extraClasses="mb-0">
@@ -98,7 +98,7 @@ import {
     IBox,
     ISphere,
     ISphereOrBox,
-    ShapeType,
+    RegionType,
 } from "../../Navigation/TreeView/TreeInterfaces";
 import FormInput from "../FormInput.vue";
 
@@ -119,7 +119,7 @@ const defaultVals = {
 } as ISphereOrBox;
 
 /**
- * FormSelectShape component
+ * FormSelectRegion component
  */
 @Options({
     components: {
@@ -131,7 +131,7 @@ const defaultVals = {
         FormInput,
     },
 })
-export default class FormSelectShape extends Vue {
+export default class FormSelectRegion extends Vue {
     @Prop({ required: true }) modelValue!: ISphereOrBox | null | undefined;
     @Prop({ default: randomID() }) id!: string;
     // @Prop({ default: "placeholder" }) placeHolder!: string;
@@ -140,7 +140,7 @@ export default class FormSelectShape extends Vue {
     @Prop({ default: false }) readonly!: boolean;
     // @Prop({ required: false }) filterFunc!: Function;
 
-    selectedShapeId = "noneSelected";
+    selectedRegionId = "noneSelected";
     modelValueToUse = defaultVals;
     isBox = true;
 
@@ -165,33 +165,33 @@ export default class FormSelectShape extends Vue {
     }
 
     resetSelected() {
-        this.selectedShapeId = "noneSelected";
+        this.selectedRegionId = "noneSelected";
     }
 
-    onShapeSelected(id: string) {
+    onRegionSelected(id: string) {
         if (id === "noneSelected") {
-            this.selectedShapeId = "noneSelected";
+            this.selectedRegionId = "noneSelected";
             return;
         }
 
         const sigFigFactor = 10000;
 
         // Get the node corresponding to that id
-        const shape = this.$store.state["molecules"].filters.onlyId(id)
-            .shape as ISphere | IBox;
-        this.modelValueToUse.center = shape.center.map(
+        const region = this.$store.state["molecules"].filters.onlyId(id)
+            .region as ISphere | IBox;
+        this.modelValueToUse.center = region.center.map(
             (v) => Math.round(sigFigFactor * v) / sigFigFactor
         ) as [number, number, number];
 
-        if (shape.type === ShapeType.Sphere) {
-            this.modelValueToUse.radius = (shape as ISphere).radius;
+        if (region.type === RegionType.Sphere) {
+            this.modelValueToUse.radius = (region as ISphere).radius;
             const dimen =
                 Math.round(sigFigFactor * 2 * this.modelValueToUse.radius) /
                 sigFigFactor;
             this.modelValueToUse.dimensions = [dimen, dimen, dimen];
             this.isBox = false;
         } else {
-            this.modelValueToUse.dimensions = (shape as IBox).dimensions.map(
+            this.modelValueToUse.dimensions = (region as IBox).dimensions.map(
                 (v) => Math.round(sigFigFactor * v) / sigFigFactor
             ) as [number, number, number];
             const halfDimens = this.modelValueToUse.dimensions.map(
@@ -209,29 +209,29 @@ export default class FormSelectShape extends Vue {
             this.isBox = true;
         }
 
-        this.selectedShapeId = id;
+        this.selectedRegionId = id;
         this.handleInput();
     }
 
-    get shapesInTree(): IFormOption[] | undefined {
+    get regionsInTree(): IFormOption[] | undefined {
         let treeNodeList: TreeNodeList = this.$store.state["molecules"];
-        treeNodeList = treeNodeList.filters.keepShapes(true, true);
+        treeNodeList = treeNodeList.filters.keepRegions(true, true);
 
         // Keep only spheres and boxes.
         treeNodeList = treeNodeList.filter((node) => {
-            if (node.shape === undefined) {
+            if (node.region === undefined) {
                 return false;
             }
             return (
-                node.shape.type === ShapeType.Sphere ||
-                node.shape.type === ShapeType.Box
+                node.region.type === RegionType.Sphere ||
+                node.region.type === RegionType.Box
             );
         });
 
-        const visibleNotSelectedShapes: TreeNodeList = treeNodeList.filters
+        const visibleNotselectedRegions: TreeNodeList = treeNodeList.filters
             .keepVisible(true, true)
             .filters.keepSelected(false, true);
-        const visibleSelectedShapes: TreeNodeList = treeNodeList.filters
+        const visibleselectedRegions: TreeNodeList = treeNodeList.filters
             .keepVisible(true, true)
             .filters.keepSelected(true, true);
         const selectedNotVisible: TreeNodeList = treeNodeList.filters
@@ -242,8 +242,8 @@ export default class FormSelectShape extends Vue {
             .filters.keepSelected(false, true);
 
         if (
-            visibleSelectedShapes.length +
-                visibleNotSelectedShapes.length +
+            visibleselectedRegions.length +
+                visibleNotselectedRegions.length +
                 selectedNotVisible.length +
                 notVisibleNotSelected.length ===
             0
@@ -251,58 +251,48 @@ export default class FormSelectShape extends Vue {
             return undefined;
         }
 
-        // Sort visibleNotSelectedShapes
-        visibleNotSelectedShapes.sort(sortFunc);
-        visibleSelectedShapes.sort(sortFunc);
+        // Sort visibleNotselectedRegions
+        visibleNotselectedRegions.sort(sortFunc);
+        visibleselectedRegions.sort(sortFunc);
         selectedNotVisible.sort(sortFunc);
         notVisibleNotSelected.sort(sortFunc);
 
         const options = [] as IFormOption[];
 
         options.push({
-            description: "Select a shape to load...",
+            description: "Select a region to load...",
             val: "noneSelected",
             // disabled: true,
         });
 
-        if (visibleSelectedShapes.length > 0) {
+        if (visibleselectedRegions.length > 0) {
             options.push({
                 description: "Visible, selected regions",
                 val: undefined,
                 disabled: true,
             });
 
-            visibleSelectedShapes.forEach((node) => {
+            visibleselectedRegions.forEach((node) => {
                 options.push({
                     description: node.title,
                     val: node.id,
                 });
             });
-
-            // if (this.selectedShapeId === undefined) {
-            //     this.selectedShapeId = visibleSelectedShapes._nodes[0].id;
-            //     this.onShapeSelected(this.selectedShapeId as string);
-            // }
         }
 
-        if (visibleNotSelectedShapes.length > 0) {
+        if (visibleNotselectedRegions.length > 0) {
             options.push({
                 description: "Visible regions",
                 val: undefined,
                 disabled: true,
             });
 
-            visibleNotSelectedShapes.forEach((node) => {
+            visibleNotselectedRegions.forEach((node) => {
                 options.push({
                     description: node.title,
                     val: node.id,
                 });
             });
-
-            // if (this.selectedShapeId === undefined) {
-            //     this.selectedShapeId = visibleNotSelectedShapes._nodes[0].id;
-            //     this.onShapeSelected(this.selectedShapeId as string);
-            // }
         }
 
         if (selectedNotVisible.length > 0) {
@@ -318,11 +308,6 @@ export default class FormSelectShape extends Vue {
                     val: node.id,
                 });
             });
-
-            // if (this.selectedShapeId === undefined) {
-            //     this.selectedShapeId = selectedNotVisible._nodes[0].id;
-            //     this.onShapeSelected(this.selectedShapeId as string);
-            // }
         }
 
         if (notVisibleNotSelected.length > 0) {
@@ -338,16 +323,11 @@ export default class FormSelectShape extends Vue {
                     val: node.id,
                 });
             });
-
-            // if (this.selectedShapeId === undefined) {
-            //     this.selectedShapeId = notVisibleNotSelected._nodes[0].id;
-            //     this.onShapeSelected(this.selectedShapeId as string);
-            // }
         }
 
-        if (this.selectedShapeId === undefined) {
-            this.selectedShapeId = options[0].val;
-            this.onShapeSelected(this.selectedShapeId as string);
+        if (this.selectedRegionId === undefined) {
+            this.selectedRegionId = options[0].val;
+            this.onRegionSelected(this.selectedRegionId as string);
         }
 
         return options;

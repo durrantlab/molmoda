@@ -1,7 +1,7 @@
 import {
     IStyle,
-    IShape,
-    ShapeType,
+    IRegion,
+    RegionType,
     ISphere,
     IBox,
     IArrow,
@@ -14,7 +14,7 @@ import {
     GenericStyleType,
     GenericLabelType,
     GenericViewerType,
-    GenericShapeType,
+    GenericRegionType,
 } from "./Types";
 import * as api from "@/Api/";
 import {
@@ -48,7 +48,7 @@ export abstract class ViewerParent {
     surfaces: { [id: string]: GenericSurfaceType[] } = {};
 
     // Keep track of the regions.
-    shapeCache: { [id: string]: GenericShapeType } = {};
+    regionCache: { [id: string]: GenericRegionType } = {};
 
     // This function is called to add a class to the a div surrounding the
     // viewer. For example, to change the style on the cursor depending on
@@ -64,12 +64,12 @@ export abstract class ViewerParent {
     abstract _removeModel(id: string): void;
 
     /**
-     * Removes a shape from the viewer.
+     * Removes a region from the viewer.
      *
-     * @param  {string} id  The id of the shape to remove.
+     * @param  {string} id  The id of the region to remove.
      * @returns {void}
      */
-    abstract _removeShape(id: string): void;
+    abstract _removeRegion(id: string): void;
 
     /**
      * Removes multiple objects (models or regions).
@@ -79,30 +79,30 @@ export abstract class ViewerParent {
     removeObjects(remainingMolIds: string[]) {
         // Find the ids that are still present in the cache. These should be
         // removed.
-        const idsOfMolsOrShapesToDelete: string[] = [];
+        const idsOfMolsOrRegionsToDelete: string[] = [];
         for (const molCacheId in this.molCache) {
             if (remainingMolIds.indexOf(molCacheId) === -1) {
                 // There's an id in the cache that isn't in the tree.
-                idsOfMolsOrShapesToDelete.push(molCacheId);
+                idsOfMolsOrRegionsToDelete.push(molCacheId);
             }
         }
-        for (const shapeCacheId in this.shapeCache) {
-            if (remainingMolIds.indexOf(shapeCacheId) === -1) {
+        for (const regionCacheId in this.regionCache) {
+            if (remainingMolIds.indexOf(regionCacheId) === -1) {
                 // There's an id in the cache that isn't in the tree.
-                idsOfMolsOrShapesToDelete.push(shapeCacheId);
+                idsOfMolsOrRegionsToDelete.push(regionCacheId);
             }
         }
 
         // Remove them from the cache, viewer, etc.
-        idsOfMolsOrShapesToDelete.forEach((id: string) => {
+        idsOfMolsOrRegionsToDelete.forEach((id: string) => {
             this.removeObject(id);
         });
     }
 
     /**
-     * Removes a single model or shape from the viewer.
+     * Removes a single model or region from the viewer.
      *
-     * @param {string} id  The id of the model or shape to remove.
+     * @param {string} id  The id of the model or region to remove.
      */
     removeObject(id: string) {
         // Clear any surfaces
@@ -112,8 +112,8 @@ export abstract class ViewerParent {
             this._removeModel(id);
         }
 
-        if (this.shapeCache[id]) {
-            this._removeShape(id);
+        if (this.regionCache[id]) {
+            this._removeRegion(id);
         }
 
         // Remove from cache
@@ -140,17 +140,17 @@ export abstract class ViewerParent {
     abstract hideMolecule(id: string): void;
 
     /**
-     * Hide a shape.
+     * Hide a region.
      *
-     * @param  {string} id  The shape to hide.
+     * @param  {string} id  The region to hide.
      * @returns {void}
      */
-    abstract hideShape(id: string): void;
+    abstract hideRegion(id: string): void;
 
     /**
-     * Hide a model or shape.
+     * Hide a model or region.
      *
-     * @param  {string} id  The model or shape to hide.
+     * @param  {string} id  The model or region to hide.
      * @returns {void}
      */
     hideObject(id: string) {
@@ -161,15 +161,15 @@ export abstract class ViewerParent {
             return;
         }
 
-        if (this.shapeCache[id]) {
-            this.hideShape(id);
+        if (this.regionCache[id]) {
+            this.hideRegion(id);
         }
     }
 
     /**
-     * Show a model or shape.
+     * Show a model or region.
      *
-     * @param  {string} id  The id of the model or shape to show.
+     * @param  {string} id  The id of the model or region to show.
      */
     showObject(id: string) {
         const model = this.molCache[id];
@@ -179,15 +179,15 @@ export abstract class ViewerParent {
             return;
         }
 
-        if (this.shapeCache[id]) {
+        if (this.regionCache[id]) {
             // Get the original TreeNode to find the target opacity.
             const treeNode = getMoleculesFromStore().filters.onlyId(id);
             let opacity = 1;
-            if (treeNode && treeNode.shape && treeNode.shape.opacity) {
-                opacity = treeNode.shape.opacity;
+            if (treeNode && treeNode.region && treeNode.region.opacity) {
+                opacity = treeNode.region.opacity;
             }
 
-            this.showShape(id, opacity);
+            this.showRegion(id, opacity);
         }
     }
 
@@ -200,13 +200,13 @@ export abstract class ViewerParent {
     abstract showMolecule(id: string): void;
 
     /**
-     * Show a shape.
+     * Show a region.
      *
-     * @param  {string} id       The id of the shape to show.
-     * @param  {number} opacity  The opacity to show the shape at.
+     * @param  {string} id       The id of the region to show.
+     * @param  {number} opacity  The opacity to show the region at.
      * @returns {void}
      */
-    abstract showShape(id: string, opacity: number): void;
+    abstract showRegion(id: string, opacity: number): void;
 
     /**
      * Clear the current molecular styles.
@@ -282,76 +282,76 @@ export abstract class ViewerParent {
     /**
      * Adds a sphere to the viewer.
      *
-     * @param  {ISphere} shape  The sphere to add.
-     * @returns {GenericShapeType}  The sphere that was added.
+     * @param  {ISphere} region  The sphere to add.
+     * @returns {GenericRegionType}  The sphere that was added.
      */
-    abstract addSphere(shape: ISphere): Promise<GenericShapeType>;
+    abstract addSphere(region: ISphere): Promise<GenericRegionType>;
 
     /**
      * Adds a box to the viewer.
      *
-     * @param  {IBox} shape  The box to add.
-     * @returns {GenericShapeType}  The box that was added.
+     * @param  {IBox} region  The box to add.
+     * @returns {GenericRegionType}  The box that was added.
      */
-    abstract addBox(shape: IBox): Promise<GenericShapeType>;
+    abstract addBox(region: IBox): Promise<GenericRegionType>;
 
     /**
      * Adds a arrow to the viewer.
      *
-     * @param  {IArrow} shape  The arrow to add.
-     * @returns {GenericShapeType}  The arrow that was added.
+     * @param  {IArrow} region  The arrow to add.
+     * @returns {GenericRegionType}  The arrow that was added.
      */
-    abstract addArrow(shape: IArrow): Promise<GenericShapeType>;
+    abstract addArrow(region: IArrow): Promise<GenericRegionType>;
 
     /**
      * Adds a cylinder to the viewer.
      *
-     * @param  {ICylinder} shape  The cylinder to add.
-     * @returns {GenericShapeType}  The cylinder that was added.
+     * @param  {ICylinder} region  The cylinder to add.
+     * @returns {GenericRegionType}  The cylinder that was added.
      */
-    abstract addCylinder(shape: ICylinder): Promise<GenericShapeType>;
+    abstract addCylinder(region: ICylinder): Promise<GenericRegionType>;
 
     /**
-     * Adds a shape to the viewer.
+     * Adds a region to the viewer.
      *
-     * @param  {IShape} shape  The shape to add.
-     * @returns {GenericShapeType}  The shape that was added.
+     * @param  {IRegion} region  The region to add.
+     * @returns {GenericRegionType}  The region that was added.
      */
-    addShape(shape: IShape): Promise<GenericShapeType> {
-        const shapeFull = {
+    addRegion(region: IRegion): Promise<GenericRegionType> {
+        const regionFull = {
             color: "red",
             opacity: 0.8,
-            ...shape,
+            ...region,
         };
-        let genericShape: Promise<GenericShapeType>;
-        switch (shape.type) {
-            case ShapeType.Sphere: {
-                genericShape = this.addSphere(shapeFull as ISphere);
+        let genericRegion: Promise<GenericRegionType>;
+        switch (region.type) {
+            case RegionType.Sphere: {
+                genericRegion = this.addSphere(regionFull as ISphere);
                 break;
             }
-            case ShapeType.Box: {
-                genericShape = this.addBox(shapeFull as IBox);
+            case RegionType.Box: {
+                genericRegion = this.addBox(regionFull as IBox);
                 break;
             }
-            case ShapeType.Arrow: {
-                genericShape = this.addArrow({
+            case RegionType.Arrow: {
+                genericRegion = this.addArrow({
                     radius: 0.5,
                     radiusRatio: 1.618034,
-                    ...shapeFull,
+                    ...regionFull,
                 } as IArrow);
                 break;
             }
-            case ShapeType.Cylinder: {
-                genericShape = this.addCylinder({
+            case RegionType.Cylinder: {
+                genericRegion = this.addCylinder({
                     radius: 0.5,
                     dashed: false,
-                    ...shapeFull,
+                    ...regionFull,
                 } as ICylinder);
                 break;
             }
         }
 
-        return genericShape;
+        return genericRegion;
     }
 
     /**
@@ -372,7 +372,7 @@ export abstract class ViewerParent {
             // molecule. Always load it.
             let addObjPromise: Promise<TreeNode>;
             // TODO: Currently doesn't account for regions.
-            if (this.molCache[id] || this.shapeCache[id]) {
+            if (this.molCache[id] || this.regionCache[id]) {
                 // Already in molecule cache
                 addObjPromise = Promise.resolve(treeNode);
             } else {
@@ -392,29 +392,29 @@ export abstract class ViewerParent {
                             throw err;
                             // return treeNode;
                         });
-                } else if (treeNode.shape) {
-                    // Make the shape as pending because otherwise sometimes a
-                    // second copy of the shape gets added before the promise
+                } else if (treeNode.region) {
+                    // Make the region as pending because otherwise sometimes a
+                    // second copy of the region gets added before the promise
                     // resolves.
-                    this.shapeCache[id] = "pending";
+                    this.regionCache[id] = "pending";
                     console.log(id + ":OPACITY4: "); // Sets opacity
-                    addObjPromise = this.addShape(
-                        treeNode.shape as IShape
-                    ).then((shape: GenericShapeType) => {
-                        this.shapeCache[id] = shape;
+                    addObjPromise = this.addRegion(
+                        treeNode.region as IRegion
+                    ).then((region: GenericRegionType) => {
+                        this.regionCache[id] = region;
 
                         // Hide it if it should be invisible.  Handled elsewhere
                         // (up chain).
                         // if (treeNode && !treeNode.visible) {
                         //     console.log("Hiding:" + treeNode.id)
-                        //     this.hideShape(treeNode.id as string);
+                        //     this.hideRegion(treeNode.id as string);
                         // }
 
                         return treeNode;
                     });
                 } else {
                     throw new Error(
-                        "TreeNode must have either a model or a shape."
+                        "TreeNode must have either a model or a region."
                     );
                 }
             }
@@ -443,7 +443,7 @@ export abstract class ViewerParent {
      */
     private _makeAtomsHoverableAndClickable(model: GenericModelType) {
         this.makeAtomsClickable(model, (x: number, y: number, z: number) => {
-            api.plugins.runPlugin("moveshapesonclick", [x, y, z]);
+            api.plugins.runPlugin("moveregionsonclick", [x, y, z]);
             setStoreVar("clearFocusedMolecule", false);
         });
 
@@ -609,36 +609,36 @@ export abstract class ViewerParent {
     abstract exportVRML(): string;
 
     /**
-     * A helper function that looks up a model or shape in cache (in the
+     * A helper function that looks up a model or region in cache (in the
      * viewer-appropriate format) given a molecule container.
      *
-     * @param  {string} id  The molecule or shape id.
-     * @returns {GenericModelType | undefined}  The model or shape, or undefined if it
+     * @param  {string} id  The molecule or region id.
+     * @returns {GenericModelType | undefined}  The model or region, or undefined if it
      *    is not in the cache.
      */
     protected lookup(
         id: string
-    ): GenericModelType | GenericShapeType | undefined {
+    ): GenericModelType | GenericRegionType | undefined {
         if (id === undefined) {
             return undefined;
         }
         if (this.molCache[id]) {
             return this.molCache[id];
         }
-        return this.shapeCache[id];
+        return this.regionCache[id];
     }
 
     /**
-     * Removes a model or shape from the cache.
+     * Removes a model or region from the cache.
      *
-     * @param {string} id  The id of the model or shape to remove.
+     * @param {string} id  The id of the model or region to remove.
      */
     removeFromCache(id: string): void {
         if (this.molCache[id]) {
             delete this.molCache[id];
         }
-        if (this.shapeCache[id]) {
-            delete this.shapeCache[id];
+        if (this.regionCache[id]) {
+            delete this.regionCache[id];
         }
     }
 
@@ -663,7 +663,7 @@ export abstract class ViewerParent {
         for (const id in this.molCache) {
             this.removeObject(id);
         }
-        for (const id in this.shapeCache) {
+        for (const id in this.regionCache) {
             this.removeObject(id);
         }
         this.renderAll();
@@ -713,21 +713,21 @@ export abstract class ViewerParent {
     abstract makeAtomsNotHoverable(model: GenericModelType): void;
 
     /**
-     * Sets (updates) the style of an existing shape.
+     * Sets (updates) the style of an existing region.
      *
-     * @param {string} id  The id of the shape.
-     * @param {IShape | ISphere | IBox} shapeStyle  The style to set.
+     * @param {string} id  The id of the region.
+     * @param {IRegion | ISphere | IBox} regionStyle  The style to set.
      */
-    updateShapeStyle(id: string, shapeStyle: IShape | ISphere | IBox) {
-        // Rather than update the shape, we remove it and re-add it. This is
+    updateRegionStyle(id: string, regionStyle: IRegion | ISphere | IBox) {
+        // Rather than update the region, we remove it and re-add it. This is
         // because the 3DMoljs viewer does not have a way to update the position
         // as best I can tell.
         console.log(id + ":OPACITY3: "); // Sets opacity
 
-        this.addShape(shapeStyle)
-            .then((shape: GenericShapeType) => {
-                this._removeShape(id);
-                this.shapeCache[id] = shape;
+        this.addRegion(regionStyle)
+            .then((region: GenericRegionType) => {
+                this._removeRegion(id);
+                this.regionCache[id] = region;
                 return;
             })
             .catch((err: Error) => {

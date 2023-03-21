@@ -132,13 +132,13 @@
                 <!-- :placeHolder="makeGeneric(formElem).placeHolder" -->
                 <!-- @onChange="onDataUpdated" -->
                 <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->
-                <FormSelectShape
-                    v-else-if="formElem.type === FormElementType.SelectShape"
+                <FormSelectRegion
+                    v-else-if="formElem.type === FormElementType.SelectRegion"
                     v-model="makeGeneric(formElem).val"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
-                ></FormSelectShape>
+                ></FormSelectRegion>
             </FormWrapper>
         </span>
     </span>
@@ -166,7 +166,7 @@ import MoleculeInputParams from "../MoleculeInputParams/MoleculeInputParams.vue"
 import FormCheckBox from "../FormCheckBox.vue";
 import FormVector3D from "../FormVector3D.vue";
 import Alert from "@/UI/Layout/Alert.vue";
-import FormSelectShape from "../FormSelectShape/FormSelectShape.vue";
+import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
 
 /**
  * FormFull
@@ -182,7 +182,7 @@ import FormSelectShape from "../FormSelectShape/FormSelectShape.vue";
         FormCheckBox,
         FormVector3D,
         Alert,
-        FormSelectShape
+        FormSelectRegion
     },
 })
 export default class FormFull extends Vue {

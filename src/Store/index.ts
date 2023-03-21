@@ -129,7 +129,7 @@ export function setupVueXStore(): Store<any> {
         state: {
             molecules: newTreeNodeList([
                 // {
-                //     title: "Shape group",
+                //     title: "Region group",
                 //     id: "test",
                 //     treeExpanded: true,
                 //     visible: true,
@@ -156,9 +156,9 @@ export function setupVueXStore(): Store<any> {
                 //                     selected: SelectedType.False,
                 //                     focused: true,
                 //                     viewerDirty: true,
-                //                     shape: {
-                //                         type: ShapeType.Sphere,
-                //                         id: "My shape",
+                //                     region: {
+                //                         type: RegionType.Sphere,
+                //                         id: "My region",
                 //                         center: [0, 0, 0],
                 //                         radius: 10,
                 //                         opacity: 0.2,
@@ -174,8 +174,8 @@ export function setupVueXStore(): Store<any> {
                 //                     selected: SelectedType.False,
                 //                     focused: true,
                 //                     viewerDirty: true,
-                //                     shape: {
-                //                         type: ShapeType.Box,
+                //                     region: {
+                //                         type: RegionType.Box,
                 //                         center: [0, 0, 0],
                 //                         dimensions: [30, 10, 10],
                 //                         color: "green",
@@ -192,8 +192,8 @@ export function setupVueXStore(): Store<any> {
                 //                     selected: SelectedType.False,
                 //                     focused: true,
                 //                     viewerDirty: true,
-                //                     shape: {
-                //                         type: ShapeType.Arrow,
+                //                     region: {
+                //                         type: RegionType.Arrow,
                 //                         center: [0, 5, 0],
                 //                         endPt: [10, 10, 10],
                 //                         color: "green",
@@ -210,8 +210,8 @@ export function setupVueXStore(): Store<any> {
                 //                     selected: SelectedType.False,
                 //                     focused: true,
                 //                     viewerDirty: true,
-                //                     shape: {
-                //                         type: ShapeType.Cylinder,
+                //                     region: {
+                //                         type: RegionType.Cylinder,
                 //                         center: [5, 0, 0],
                 //                         endPt: [-10, 10, 10],
                 //                         color: "green",

@@ -1,7 +1,7 @@
 <template>
     <!-- For regions -->
-    <Section title="Shape" v-if="numSelectedShapes === 1">
-        <FormFull v-model="constructedShapeForm" id="shape-style"></FormFull>
+    <Section title="Region" v-if="numselectedRegions === 1">
+        <FormFull v-model="constructedRegionForm" id="region-style"></FormFull>
         <hr class="mt-4" />
     </Section>
 
@@ -21,18 +21,18 @@
     </Section>
 
     <!-- For regions -->
-    <div v-if="numSelectedShapes !== 1 || treeNodesWithShapes.length === 0">
+    <div v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0">
         <hr class="mt-4" />
-        <Section title="Shape" class="pb-2">
+        <Section title="Region" class="pb-2">
             <p style="font-size: 14px">
-                <span v-if="treeNodesWithShapes.length === 0">
+                <span v-if="treeNodesWithRegions.length === 0">
                     The workspace contains no regions.
                 </span>
-                <span v-else-if="numSelectedShapes === 0">
-                    No shape selected (clicked) in the Navigator panel
+                <span v-else-if="numselectedRegions === 0">
+                    No region selected (clicked) in the Navigator panel
                 </span>
-                <span v-else-if="numSelectedShapes > 1">
-                    Select only one shape in the Navigator panel
+                <span v-else-if="numselectedRegions > 1">
+                    Select only one region in the Navigator panel
                 </span>
             </p>
         </Section>
@@ -50,7 +50,7 @@ import StylesAllMolTypes from "./Styles/StylesAllMolTypes.vue";
 import {
     IBox,
     ISphere,
-    ShapeType,
+    RegionType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     FormElement,
@@ -106,51 +106,51 @@ export default class StylesPanel extends Vue {
      *
      * @returns {number} The number of selected regions.
      */
-    get numSelectedShapes(): number {
-        return this.treeNodesWithSelectedShapes.length;
+    get numselectedRegions(): number {
+        return this.treeNodesWithselectedRegions.length;
     }
 
     /**
      * Get all mol containers associated with regions.
      *
-     * @returns {TreeNodeList} All tree nodes that have a shape.
+     * @returns {TreeNodeList} All tree nodes that have a region.
      */
-    get treeNodesWithShapes(): TreeNodeList {
+    get treeNodesWithRegions(): TreeNodeList {
         const allNodes = (this.$store.state.molecules as TreeNodeList).flattened;
-        return allNodes.filters.keepShapes();
+        return allNodes.filters.keepRegions();
     }
 
     /**
      * Get all mol containers associated with regions that are selected..
      *
-     * @returns {TreeNodeList} All tree nodes that have a shape and are
+     * @returns {TreeNodeList} All tree nodes that have a region and are
      *     selected.
      */
-    get treeNodesWithSelectedShapes(): TreeNodeList {
-        return this.treeNodesWithShapes.filters.keepSelected();
+    get treeNodesWithselectedRegions(): TreeNodeList {
+        return this.treeNodesWithRegions.filters.keepSelected();
     }
 
     /**
-     * Get the first selected shape container.
+     * Get the first selected region container.
      *
-     * @returns {TreeNode | undefined} The selected shape container.
+     * @returns {TreeNode | undefined} The selected region container.
      *     Undefined if none is selected.
      */
-    get firstSelectedTreeNodeWithShape(): TreeNode | undefined {
-        if (this.treeNodesWithSelectedShapes === undefined) {
+    get firstSelectedTreeNodeWithRegion(): TreeNode | undefined {
+        if (this.treeNodesWithselectedRegions === undefined) {
             return undefined;
         }
-        return this.treeNodesWithSelectedShapes.get(0);
+        return this.treeNodesWithselectedRegions.get(0);
     }
 
     /**
-     * Sets the form data for the selected shape.
+     * Sets the form data for the selected region.
      *
      * @param {FormElement[]} vals  The form data to set.
      */
-    set constructedShapeForm(vals: FormElement[]) {
-        const shapeContainer = this.firstSelectedTreeNodeWithShape;
-        if (!shapeContainer || !shapeContainer.shape) {
+    set constructedRegionForm(vals: FormElement[]) {
+        const regionContainer = this.firstSelectedTreeNodeWithRegion;
+        if (!regionContainer || !regionContainer.region) {
             return;
         }
 
@@ -159,32 +159,32 @@ export default class StylesPanel extends Vue {
             valsObj[val.id] = (val as IGenericFormElement).val;
         }
 
-        shapeContainer.shape.color = valsObj["color"];
-        shapeContainer.shape.opacity = valsObj["opacity"];
+        regionContainer.region.color = valsObj["color"];
+        regionContainer.region.opacity = valsObj["opacity"];
 
-        if (shapeContainer.shape.movable) {
-            shapeContainer.shape.center = valsObj["center"];
+        if (regionContainer.region.movable) {
+            regionContainer.region.center = valsObj["center"];
 
-            if (shapeContainer.shape.type === ShapeType.Sphere) {
-                (shapeContainer.shape as ISphere).radius = valsObj["radius"];
+            if (regionContainer.region.type === RegionType.Sphere) {
+                (regionContainer.region as ISphere).radius = valsObj["radius"];
             } else {
                 // Assuming it's a box, because arrows, cylinders, etc. will never
                 // be movable.
-                (shapeContainer.shape as IBox).dimensions =
+                (regionContainer.region as IBox).dimensions =
                     valsObj["dimensions"];
             }
         }
 
-        shapeContainer.viewerDirty = true;
+        regionContainer.viewerDirty = true;
     }
 
     /**
-     * Create the form data for the selected shape.
+     * Create the form data for the selected region.
      *
-     * @returns {FormElement[]} The form data for the selected shape.
+     * @returns {FormElement[]} The form data for the selected region.
      */
-    get constructedShapeForm(): FormElement[] {
-        let color = this.firstSelectedTreeNodeWithShape?.shape?.color;
+    get constructedRegionForm(): FormElement[] {
+        let color = this.firstSelectedTreeNodeWithRegion?.region?.color;
         // If color doesn't start with #, convert to Hex.
         if (color && color[0] !== "#") {
             color = analyzeColor(color).hex;
@@ -193,7 +193,7 @@ export default class StylesPanel extends Vue {
             {
                 id: "nameAndType",
                 type: FormElemType.Text,
-                val: `${this.firstSelectedTreeNodeWithShape?.title} (${this.firstSelectedTreeNodeWithShape?.shape?.type})`,
+                val: `${this.firstSelectedTreeNodeWithRegion?.title} (${this.firstSelectedTreeNodeWithRegion?.region?.type})`,
                 enabled: false,
             } as IFormText,
             {
@@ -208,17 +208,17 @@ export default class StylesPanel extends Vue {
                 min: 0,
                 max: 1,
                 step: 0.01,
-                val: this.firstSelectedTreeNodeWithShape?.shape?.opacity,
+                val: this.firstSelectedTreeNodeWithRegion?.region?.opacity,
             } as IFormRange,
         ] as FormElement[];
 
-        if (this.firstSelectedTreeNodeWithShape?.shape?.movable) {
-            if (this.firstSelectedTreeNodeWithShape?.shape?.type === ShapeType.Sphere) {
+        if (this.firstSelectedTreeNodeWithRegion?.region?.movable) {
+            if (this.firstSelectedTreeNodeWithRegion?.region?.type === RegionType.Sphere) {
                 frm.push({
                     id: "radius",
                     type: FormElemType.Number,
                     label: "Radius",
-                    val: (this.firstSelectedTreeNodeWithShape?.shape as ISphere).radius,
+                    val: (this.firstSelectedTreeNodeWithRegion?.region as ISphere).radius,
                 } as IFormRange);
             } else {
                 // Assuming it's a box, because arrows, cylinders, etc. will never
@@ -227,7 +227,7 @@ export default class StylesPanel extends Vue {
                     id: "dimensions",
                     type: FormElemType.Vector3D,
                     label: "Dimensions (X, Y, Z)",
-                    val: (this.firstSelectedTreeNodeWithShape?.shape as IBox)
+                    val: (this.firstSelectedTreeNodeWithRegion?.region as IBox)
                         ?.dimensions,
                     filterFunc: (val: number) => (val < 0 ? 0 : val),
                 } as IFormVector3D);
@@ -236,7 +236,7 @@ export default class StylesPanel extends Vue {
                 id: "center",
                 type: FormElemType.Vector3D,
                 label: "Center (X, Y, Z)",
-                val: this.firstSelectedTreeNodeWithShape?.shape?.center,
+                val: this.firstSelectedTreeNodeWithRegion?.region?.center,
                 description: "(Click atom to center)",
             } as IFormVector3D);
         }

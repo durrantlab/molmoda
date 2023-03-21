@@ -35,7 +35,7 @@ export const ionsStyle: IStyle[] = [_sphereStyle];
 export const solventStyle: IStyle[] = [_stickStyle];
 
 // Empty on purpose to satisfy typescript
-const shapeStyle: IStyle[] = [];
+const regionStyle: IStyle[] = [];
 
 export const defaultStyles: { [key in TreeNodeType]: IStyle[] } = {
     [TreeNodeType.Protein]: proteinStyle,
@@ -45,5 +45,5 @@ export const defaultStyles: { [key in TreeNodeType]: IStyle[] } = {
     [TreeNodeType.Lipid]: lipidStyle,
     [TreeNodeType.Ions]: ionsStyle,
     [TreeNodeType.Solvent]: solventStyle,
-    [TreeNodeType.Shape]: shapeStyle,
+    [TreeNodeType.Region]: regionStyle,
 };

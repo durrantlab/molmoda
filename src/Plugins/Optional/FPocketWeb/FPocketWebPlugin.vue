@@ -380,7 +380,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                                 } as ITreeNodeData,
                             };
 
-                            boxes.push(node.getBoxShape());
+                            boxes.push(node.getBoxRegion());
 
                             if (idx === 0) {
                                 firstNodeId = node.id as string;
@@ -404,39 +404,39 @@ export default class FPocketWebPlugin extends PluginParentClass {
                             node.visible = false;
                         });
 
-                    // Add the shape list. Create the shape list node.
-                    const shapeList = new TreeNodeList();
+                    // Add the region list. Create the region list node.
+                    const regionList = new TreeNodeList();
                     for (let i = 0; i < boxes.length; i++) {
                         const box = boxes[i];
                         box.opacity = 0.9;
                         const newNode = new TreeNode({
                             title: "PocketBox" + (i + 1).toString(),
-                            type: TreeNodeType.Shape,
-                            shape: box,
+                            type: TreeNodeType.Region,
+                            region: box,
                             treeExpanded: false,
                             visible: i < numInitiallyVisible,
                             selected: SelectedType.False,
                             focused: false,
                             viewerDirty: true
                         });
-                        shapeList.push(newNode);
+                        regionList.push(newNode);
                     }
-                    const shapeNode = new TreeNode({
+                    const regionNode = new TreeNode({
                         title: "S",
-                        type: TreeNodeType.Shape,
+                        type: TreeNodeType.Region,
                         treeExpanded: true,
                         visible: true,
                         selected: SelectedType.False,
                         focused: false,
                         viewerDirty: true,
-                        nodes: shapeList,
+                        nodes: regionList,
                     });
 
                     const ps = outPdbFileTreeNode.nodes
                         .lookup(["Pockets"])
                         .get(0);
                     if (ps.nodes) {
-                        ps.nodes.push(shapeNode);
+                        ps.nodes.push(regionNode);
                     }
                 }
 

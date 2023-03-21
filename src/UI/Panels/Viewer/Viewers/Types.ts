@@ -5,4 +5,4 @@ export type GenericSurfaceType = any;
 export type GenericViewerType = any;
 export type GenericLabelType = any;
 export type GenericStyleType = any;
-export type GenericShapeType = any;
+export type GenericRegionType = any;

@@ -3,7 +3,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     IStyle,
     IColorStyle,
-    IShape,
+    IRegion,
     IBox,
     ISphere,
     ICylinder,
@@ -21,7 +21,7 @@ import {
     GenericStyleType,
     GenericLabelType,
     GenericViewerType,
-    GenericShapeType,
+    GenericRegionType,
 } from "./Types";
 import { ViewerParent } from "./ViewerParent";
 import * as api from "@/Api";
@@ -52,15 +52,15 @@ export class ViewerNGL extends ViewerParent {
     }
 
     /**
-     * Removes a shape from the viewer.
+     * Removes a region from the viewer.
      *
-     * @param  {string} id  The id of the shape to remove.
+     * @param  {string} id  The id of the region to remove.
      */
-    _removeShape(id: string) {
-        const shape = this.lookup(id);
-        if (shape) {
-            shape.associatedShapeComponent.dispose();
-            shape.dispose();
+    _removeRegion(id: string) {
+        const region = this.lookup(id);
+        if (region) {
+            region.associatedRegionComponent.dispose();
+            region.dispose();
         }
     }
 
@@ -108,30 +108,30 @@ export class ViewerNGL extends ViewerParent {
     }
 
     /**
-     * Hide a shape.
+     * Hide a region.
      *
-     * @param  {string} id  The shape to hide.
+     * @param  {string} id  The region to hide.
      */
-    hideShape(id: string) {
-        const shape = this.lookup(id);
-        if (shape) {
-            shape.associatedShapeComponent.addRepresentation("buffer", {
+    hideRegion(id: string) {
+        const region = this.lookup(id);
+        if (region) {
+            region.associatedRegionComponent.addRepresentation("buffer", {
                 opacity: 0,
             });
         }
     }
 
     /**
-     * Show a shape.
+     * Show a region.
      *
-     * @param  {string} id  The id of the shape to show.
-     * @param  {number} opacity  The opacity to show the shape at.
+     * @param  {string} id  The id of the region to show.
+     * @param  {number} opacity  The opacity to show the region at.
      */
-    showShape(id: string, opacity: number) {
+    showRegion(id: string, opacity: number) {
         // debugger;
-        const shape = this.lookup(id);
-        if (shape) {
-            shape.associatedShapeComponent.addRepresentation("buffer", {
+        const region = this.lookup(id);
+        if (region) {
+            region.associatedRegionComponent.addRepresentation("buffer", {
                 opacity,
             });
         }
@@ -316,7 +316,7 @@ export class ViewerNGL extends ViewerParent {
         }
 
         if (!model.removeAllRepresentations) {
-            // It's a shape, not a molecule
+            // It's a region, not a molecule
             return;
         }
 
@@ -429,39 +429,39 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Adds a sphere to the viewer.
      *
-     * @param  {ISphere} shape  The sphere to add.
-     * @returns {GenericShapeType}  The sphere that was added.
+     * @param  {ISphere} region  The sphere to add.
+     * @returns {GenericRegionType}  The sphere that was added.
      */
-    addSphere(shape: ISphere): Promise<GenericShapeType> {
+    addSphere(region: ISphere): Promise<GenericRegionType> {
         return dynamicImports.ngl.module.then((ngl: any) => {
-            const colorVec = this._getColorVec(shape);
-            const sphere = new ngl.Shape("sphere", { disableImpostor: true });
-            sphere.addSphere(shape.center, colorVec, shape.radius);
-            this._addShapeToViewer(sphere, shape.opacity as number);
+            const colorVec = this._getColorVec(region);
+            const sphere = new ngl.Region("sphere", { disableImpostor: true });
+            sphere.addSphere(region.center, colorVec, region.radius);
+            this._addRegionToViewer(sphere, region.opacity as number);
             return sphere;
         });
     }
 
     /**
-     * Adds a shape to the viewer.
+     * Adds a region to the viewer.
      *
-     * @param  {GenericShapeType} shape    The shape to add.
-     * @param  {number}           opacity  The opacity of the shape.
+     * @param  {GenericRegionType} region    The region to add.
+     * @param  {number}           opacity  The opacity of the region.
      */
-    private _addShapeToViewer(shape: GenericShapeType, opacity: number) {
-        const shapeComp = this._nglObj.addComponentFromObject(shape);
-        shape.associatedShapeComponent = shapeComp;
-        shapeComp.addRepresentation("buffer", { opacity });
+    private _addRegionToViewer(region: GenericRegionType, opacity: number) {
+        const regionComp = this._nglObj.addComponentFromObject(region);
+        region.associatedRegionComponent = regionComp;
+        regionComp.addRepresentation("buffer", { opacity });
     }
 
     /**
-     * Gets a normalized color vector from a shape.
+     * Gets a normalized color vector from a region.
      *
-     * @param  {IShape} shape  The shape to get the color from.
+     * @param  {IRegion} region  The region to get the color from.
      * @returns {number[]}  The color vector.
      */
-    private _getColorVec(shape: IShape): [number, number, number] {
-        return analyzeColor(shape.color as string).rgb?.map((c) => c / 255) as [
+    private _getColorVec(region: IRegion): [number, number, number] {
+        return analyzeColor(region.color as string).rgb?.map((c) => c / 255) as [
             number,
             number,
             number
@@ -471,22 +471,22 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Adds a box to the viewer.
      *
-     * @param  {IBox} shape  The box to add.
-     * @returns {GenericShapeType}  The box that was added.
+     * @param  {IBox} region  The box to add.
+     * @returns {GenericRegionType}  The box that was added.
      */
-    addBox(shape: IBox): Promise<GenericShapeType> {
+    addBox(region: IBox): Promise<GenericRegionType> {
         return dynamicImports.ngl.module.then((ngl: any) => {
-            const colorVec = this._getColorVec(shape);
-            const box = new ngl.Shape("box", { disableImpostor: true });
+            const colorVec = this._getColorVec(region);
+            const box = new ngl.Region("box", { disableImpostor: true });
             box.addBox(
-                shape.center,
+                region.center,
                 colorVec,
                 // TODO: I'm not 100% sure below is correct.
-                shape.dimensions[0],
-                [0, shape.dimensions[1], 0],
-                [0, 0, shape.dimensions[2]]
+                region.dimensions[0],
+                [0, region.dimensions[1], 0],
+                [0, 0, region.dimensions[2]]
             );
-            this._addShapeToViewer(box, shape.opacity as number);
+            this._addRegionToViewer(box, region.opacity as number);
             return box;
         });
     }
@@ -494,15 +494,15 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Adds a arrow to the viewer.
      *
-     * @param  {IArrow} shape  The arrow to add.
-     * @returns {GenericShapeType}  The arrow that was added.
+     * @param  {IArrow} region  The arrow to add.
+     * @returns {GenericRegionType}  The arrow that was added.
      */
-    addArrow(shape: IArrow): Promise<GenericShapeType> {
+    addArrow(region: IArrow): Promise<GenericRegionType> {
         return dynamicImports.ngl.module.then((ngl: any) => {
-            const colorVec = this._getColorVec(shape);
-            const arrow = new ngl.Shape("arrow", { disableImpostor: true });
-            arrow.addArrow(shape.center, shape.endPt, colorVec, shape.radius);
-            this._addShapeToViewer(arrow, shape.opacity as number);
+            const colorVec = this._getColorVec(region);
+            const arrow = new ngl.Region("arrow", { disableImpostor: true });
+            arrow.addArrow(region.center, region.endPt, colorVec, region.radius);
+            this._addRegionToViewer(arrow, region.opacity as number);
             return arrow;
         });
     }
@@ -510,22 +510,22 @@ export class ViewerNGL extends ViewerParent {
     /**
      * Adds a cylinder to the viewer.
      *
-     * @param  {ICylinder} shape  The cylinder to add.
-     * @returns {GenericShapeType}  The cylinder that was added.
+     * @param  {ICylinder} region  The cylinder to add.
+     * @returns {GenericRegionType}  The cylinder that was added.
      */
-    addCylinder(shape: ICylinder): Promise<GenericShapeType> {
+    addCylinder(region: ICylinder): Promise<GenericRegionType> {
         return dynamicImports.ngl.module.then((ngl: any) => {
-            const colorVec = this._getColorVec(shape);
-            const cylinder = new ngl.Shape("cylinder", {
+            const colorVec = this._getColorVec(region);
+            const cylinder = new ngl.Region("cylinder", {
                 disableImpostor: true,
             });
             cylinder.addCylinder(
-                shape.center,
-                shape.endPt,
+                region.center,
+                region.endPt,
                 colorVec,
-                shape.radius
+                region.radius
             );
-            this._addShapeToViewer(cylinder, shape.opacity as number);
+            this._addRegionToViewer(cylinder, region.opacity as number);
             return cylinder;
         });
     }
@@ -562,7 +562,7 @@ export class ViewerNGL extends ViewerParent {
         const encompassingBox = models[0].getBox();
         for (let i = 1; i < models.length; i++) {
             if (models[i].getBox) {
-                // Shapes don't have getBox methods.
+                // Regions don't have getBox methods.
                 encompassingBox.union(models[i].getBox());
             }
         }

@@ -27,7 +27,7 @@ export enum TreeNodeType {
     Lipid = "lipid",
     Ions = "ions",
     Solvent = "solvent",
-    Shape = "shape",
+    Region = "region",
 }
 
 export enum SelectedType {
@@ -37,7 +37,7 @@ export enum SelectedType {
 }
 
 
-export enum ShapeType {
+export enum RegionType {
     Sphere = "Sphere",
     Box = "Box",
     Arrow = "Arrow",
@@ -45,9 +45,9 @@ export enum ShapeType {
 }
 
 
-// export class Shape {
+// export class Region {
 //     // All regions can have these properties
-//     type: ShapeType;
+//     type: RegionType;
 //     center: [number, number, number];
 //     opacity?: number;
 //     color?: string;
@@ -66,7 +66,7 @@ export enum ShapeType {
 //     // Cylinder only
 //     dashed?: boolean;
 
-//     constructor(params: IShape | ISphere | IBox | IArrow | ICylinder) {
+//     constructor(params: IRegion | ISphere | IBox | IArrow | ICylinder) {
 //         this.type = params.type;
 //         this.center = params.center;
 //         this.opacity = params.opacity;
@@ -80,30 +80,30 @@ export enum ShapeType {
 //     }
 // }
 
-export interface IShape {
-    type: ShapeType;
+export interface IRegion {
+    type: RegionType;
     center: [number, number, number];
     opacity?: number;
     color?: string;
     movable?: boolean; // Whether you can move or resize
 }
 
-export interface ISphere extends IShape {
+export interface ISphere extends IRegion {
     radius: number;
 }
 
-export interface IBox extends IShape {
+export interface IBox extends IRegion {
     // x/y/z size for box
     dimensions: [number, number, number];
 }
 
-export interface IArrow extends IShape {
+export interface IArrow extends IRegion {
     endPt: [number, number, number]; // center is start pt
     radius?: number;
     radiusRatio?: number; // Radius of arrow head is radiusRatio * radius
 }
 
-export interface ICylinder extends IShape {
+export interface ICylinder extends IRegion {
     endPt: [number, number, number]; // center is start pt
     radius?: number;
     dashed?: boolean;
@@ -144,7 +144,7 @@ export interface IStyle {
     surface?: IColorStyle; // NOTE: Not how 3dmoljs handles surface.
 }
 
-// Below is used by the FormSelectShape component in its emits.
+// Below is used by the FormSelectRegion component in its emits.
 export interface ISphereOrBox {
     center: [number, number, number];
     radius?: number;

@@ -48,7 +48,7 @@ export function getConvertedTxts(
     filename?: string
 ): Promise<FileInfo[]> {
     // Remove regions from nodes. These can never be converted.
-    nodes = nodes.filters.keepShapes(false);
+    nodes = nodes.filters.keepRegions(false);
 
     // If no nodes left, nothing to convert.
     if (nodes.length === 0) {

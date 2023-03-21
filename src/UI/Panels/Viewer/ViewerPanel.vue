@@ -337,16 +337,16 @@ export default class ViewerPanel extends Vue {
                         continue;
                     }
 
-                    // Visible, but no style specified. Is it a shape?
-                    if (treeNode.shape) {
-                        api.visualization.viewer?.updateShapeStyle(
+                    // Visible, but no style specified. Is it a region?
+                    if (treeNode.region) {
+                        api.visualization.viewer?.updateRegionStyle(
                             treeNode.id as string,
-                            treeNode.shape
+                            treeNode.region
                         );
                         continue;
                     }
 
-                    // Visible, no styles, not a shape. This should never
+                    // Visible, no styles, not a region. This should never
                     // happen.
                     api.visualization.viewer?.setMolecularStyle(
                         treeNode.id as string,

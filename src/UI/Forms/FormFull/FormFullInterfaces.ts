@@ -12,7 +12,7 @@ export enum FormElemType {
     Checkbox,
     Vector3D,
     Alert,
-    SelectShape
+    SelectRegion
 }
 
 export type FormElement =
@@ -26,7 +26,7 @@ export type FormElement =
     | IFormCheckbox
     | IFormVector3D
     | IFormAlert
-    | IFormSelectShape;
+    | IFormSelectRegion;
 
 interface IFormElement {
     id: string;
@@ -115,6 +115,6 @@ export interface IFormAlert extends IFormElement {
     description: string;  // Required
 }
 
-export interface IFormSelectShape extends IFormElement {
+export interface IFormSelectRegion extends IFormElement {
     val: ISphereOrBox | null
 }

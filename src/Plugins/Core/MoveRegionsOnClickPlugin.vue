@@ -10,13 +10,13 @@
         :pluginId="pluginId"
     >
         <ul>
-            <li v-for="title of selectedShapesTitles" :key="title">
+            <li v-for="title of selectedRegionsTitles" :key="title">
                 {{ title }}
             </li>
         </ul>
 
         <Alert type="info">
-            You can also change a shape's position and other properties (e.g.,
+            You can also change a region's position and other properties (e.g.,
             size) by selecting it in the Navigator panel and editing in the
             Styles panel.
         </Alert>
@@ -29,7 +29,7 @@ import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IShape } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IRegion } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
@@ -41,7 +41,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
         Alert,
     },
 })
-export default class MoveShapesOnClickPlugin extends PluginParentClass {
+export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     menuPath = null; // Not available through menu system
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
@@ -50,7 +50,7 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
             url: "http://durrantlab.com/",
         },
     ];
-    pluginId = "moveshapesonclick";
+    pluginId = "moveregionsonclick";
     intro = `Do you wish to move all selected regions to this atom's position? Selected regions:`;
 
     userArgs: FormElement[] = [];
@@ -64,7 +64,7 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
      * @returns {boolean}  True if popup should open, false if not.
      */
     onBeforePopupOpen(): boolean {
-        return !(this.selectedShapesTitles.length === 0);
+        return !(this.selectedRegionsTitles.length === 0);
     }
 
     /**
@@ -72,13 +72,13 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
      *
      * @returns {TreeNodeList}  The selected regions.
      */
-    get selectedShapes(): TreeNodeList {
+    get selectedRegions(): TreeNodeList {
         // Get terminal nodes
         let terminalNodes = (this.$store.state.molecules as TreeNodeList).filters.onlyTerminal;
 
         // Get the ones that are selected and regions
         terminalNodes = terminalNodes.filters.keepSelected();
-        terminalNodes = terminalNodes.filters.keepShapes();
+        terminalNodes = terminalNodes.filters.keepRegions();
         return terminalNodes;
     }
 
@@ -87,16 +87,16 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
      *
      * @returns {string[]}  The titles of the selected regions.
      */
-    get selectedShapesTitles(): string[] {
-        const selectedShapes = this.selectedShapes;
-        return selectedShapes.map((node) => node.descriptions.pathName(" > ", 0));
+    get selectedRegionsTitles(): string[] {
+        const selectedRegions = this.selectedRegions;
+        return selectedRegions.map((node) => node.descriptions.pathName(" > ", 0));
     }
 
     /**
      * Runs when the popup closes via done button. Here, does nothing.
      */
     onPopupDone() {
-        this.submitJobs(this.selectedShapes.toArray() as TreeNode[]);
+        this.submitJobs(this.selectedRegions.toArray() as TreeNode[]);
     }
 
     /**
@@ -104,14 +104,14 @@ export default class MoveShapesOnClickPlugin extends PluginParentClass {
      * running.
      *
      * @param {TreeNode} treeNode  The molecule container associated
-     *     with the shape.
+     *     with the region.
      */
     runJobInBrowser(treeNode: TreeNode) {
-        const newShape = {
-            ...treeNode.shape,
+        const newRegion = {
+            ...treeNode.region,
             center: this.payload,
-        } as IShape;
-        treeNode.shape = newShape;
+        } as IRegion;
+        treeNode.region = newRegion;
         treeNode.viewerDirty = true;
 
         return;
