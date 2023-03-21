@@ -95,11 +95,13 @@ Open options: add 3D coordinates, frames to separate molecules, etc.
 TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form
 element.
 
-Need widget to select shape (or specify X, Y, Z, dimens).
-
 https://firebase.google.com/docs/auth
 
+Use pubic/ dir instad of copying things over.
+
 # DONE
+
+Need widget to select shape (or specify X, Y, Z, dimens).
 
 // TODO: Error when click on compound
 

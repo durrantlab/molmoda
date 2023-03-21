@@ -35,15 +35,9 @@ module.exports = defineConfig({
         config.plugins.push(
             new CopyPlugin({
                 patterns: [
-                    { from: "src/libs/ToCopy/jquery-3.6.0.min.js", to: "js/" },
-                    {
-                        from: "src/libs/ToCopy/obabel-wasm",
-                        to: "js/obabel-wasm",
-                    },
-                    {
-                        from: "src/libs/ToCopy/fpocketweb",
-                        to: "js/fpocketweb",
-                    },
+                    // Rather than copy files in node_modules to public, just
+                    // copy here. This is so if you update via npm, you'll still
+                    // get the latest versions.
                     {
                         from: "src/Testing/mols/4WP4.pdb",
                         to: "4WP4.pdb",
@@ -52,6 +46,7 @@ module.exports = defineConfig({
                         from: "node_modules/@rdkit/rdkit/dist",
                         to: "js/rdkitjs",
                     },
+
                     // Below is for webworker
                     {
                         from: "node_modules/@rdkit/rdkit/dist/RDKit_minimal.wasm",
