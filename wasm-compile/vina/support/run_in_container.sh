@@ -141,6 +141,8 @@ tail -n 1 compile.out | sed "s|-o vina|-o out/vina.js|g" | bash
 # Clean up
 make clean
 
-# Copy index.html and .htaccess (apache) to the out directory to finish the demo
+# Copy index.html, .htaccess (apache), and pdbqt files to the out directory to
+# finish the demo
 cp /support/index.html out/
 cp /support/htaccess  out/.htaccess
+cp /support/*.pdbqt out/
