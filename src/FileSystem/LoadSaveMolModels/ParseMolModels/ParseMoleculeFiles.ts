@@ -21,9 +21,9 @@ const _allAcceptableFileTypes = Object.values(molFormatInformation).reduce(
 _allAcceptableFileTypes.sort();
 
 // And list of extensions for use in input file type "accept" parameter.
-export const fileTypesAccepts = _allAcceptableFileTypes
-    .map((f) => `.${f.toLowerCase()}`)
-    .join(",") + ",.zip";
+export const fileTypesAccepts =
+    _allAcceptableFileTypes.map((f) => `.${f.toLowerCase()}`).join(",") +
+    ",.zip";
 
 /**
  * Given an IFileInfo object (name, contents, type), load the molecule. Should
@@ -45,12 +45,18 @@ export function _parseMoleculeFile(
         return Promise.reject();
     }
 
+    // For 3dmoljs and openbabel loading, models should be merged. So save the
+    // promise instead of returning immediately.
+    let promise: Promise<TreeNodeList>;
+
     switch (formatInfo.loader) {
         case MolLoader.Mol3D: {
-            return parseUsing3DMolJs(fileInfo, formatInfo, addToTree);
+            promise = parseUsing3DMolJs(fileInfo, formatInfo);
+            break;
         }
         case MolLoader.OpenBabel: {
-            return parseUsingOpenBabel(fileInfo, formatInfo, addToTree);
+            promise = parseUsingOpenBabel(fileInfo, formatInfo);
+            break;
         }
         case MolLoader.Biotite: {
             return parseUsingBiotite(fileInfo);
@@ -60,6 +66,28 @@ export function _parseMoleculeFile(
         // }
     }
 
-    // Should never get here...
-    return Promise.resolve();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return promise
+        .then((treeNodeList: TreeNodeList) => {
+            // Merge the TreeNodeLists into one
+            // for (let i = 1; i < treeNodeLists.length; i++) {
+            //     treeNodeList.extend(treeNodeLists[i]);
+            // }
+
+            // Merge the tree nodes into one (so all compounds of multi-compound
+            // file under single "Compounds").
+            const mergedTreeNodeList = treeNodeList.merge();
+
+            if (addToTree) {
+                mergedTreeNodeList.addToMainTree();
+            }
+
+            api.messages.waitSpinner(false);
+
+            return mergedTreeNodeList;
+        })
+        .catch((err) => {
+            throw err;
+        });
 }

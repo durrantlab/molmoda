@@ -281,6 +281,13 @@ export class TreeNodeList {
         return this._nodes.reduce(func, initialValue);
     }
 
+    /**
+     * Sorts the nodes.
+     * 
+     * @param {Function} func  The function to call for each node. The function
+     *                         should return a number indicating the sort order.
+     * @returns {TreeNodeList}  This list, sorted (for chaining).
+     */
     public sort(
         func: (a: TreeNode, b: TreeNode) => number
     ): TreeNodeList {

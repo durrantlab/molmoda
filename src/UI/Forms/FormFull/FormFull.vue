@@ -138,6 +138,7 @@
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
+                    :regionName="makeGeneric(formElem).regionName"
                 ></FormSelectRegion>
             </FormWrapper>
         </span>

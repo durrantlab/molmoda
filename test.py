@@ -21,7 +21,7 @@ import os
 # from selenium.webdriver.logging import LogEntries
 # from selenium.webdriver.logging import LogType
 
-
+localhost_port = "8081"
 class el:
     def __init__(self, selector, timeout=20):
         self.selector = selector
@@ -83,7 +83,7 @@ class el:
 
             self.check_errors()
         except ElementNotInteractableException as e:
-            print(e)
+            # print(e)
             self.throw_error(f"{self.selector} not clickable")
 
     def upload_file(self, file_path):
@@ -99,9 +99,14 @@ class el:
             self.el.click()
 
     def wait_until_contains_regex(self, regex):
-        self.el = WebDriverWait(driver, self.timeout).until(
-            lambda driver: re.search(regex, self.el.get_attribute("innerHTML"))
-        )
+        try:
+            self.el = WebDriverWait(driver, self.timeout).until(
+                lambda driver: re.search(regex, self.el.get_attribute("innerHTML"))
+            )
+        except TimeoutException as e:
+            self.throw_error(
+                f"{self.selector} does not contain [[{regex}]] after {self.timeout} seconds"
+            )
 
     def check_errors(self):
         # Run after every action
@@ -119,6 +124,13 @@ class el:
         if not msg.endswith("."):
             msg += "."
 
+        print("\nLOGS:")
+        print("=====\n")
+        logs = driver.get_log('browser')
+        for log in logs:
+            print(log["level"] + " :: " + log["message"])
+        print("\n=====\n")
+
         # Run alert in browser with msg
         driver.execute_script(f"alert('ERROR: {msg} See terminal for more details.')")
 
@@ -132,11 +144,18 @@ class el:
 # options.BinaryLocation = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 # driver_path = "/usr/bin/chromedriver"
 # driver = webdriver.Chrome(options=options, service=Service(driver_path))
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+
+options = webdriver.ChromeOptions()
+# options.add_argument("--window-size=3840,2160")
+# options.add_argument("--auto-open-devtools-for-tabs")
+# options.add_argument("--start-maximized")
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
 # If first argument given, use that as plugin_id
 if len(sys.argv) > 1:
-    plugin_ids = [(sys.argv[1], None)]
+    # job index also given.
+    subjob_idx = int(sys.argv[2]) - 1 if len(sys.argv) > 2 else None
+    plugin_ids = [(sys.argv[1], subjob_idx)]
 else:
     # Get ID's of all plugins
     plugin_ids = []
@@ -158,15 +177,17 @@ plugin_ids.sort()
 while plugin_ids:
     plugin_id, plugin_idx = plugin_ids.pop(0)
 
-    url = f"http://localhost:8080/?test={plugin_id}"
+    url = f"http://localhost:{localhost_port}/?test={plugin_id}"
     if plugin_idx is not None:
         url += f"&index={str(plugin_idx)}"
 
     # driver.get("https://www.selenium.dev/selenium/web/web-form.html")
-    # driver.get("http://localhost:8080/?test=loadpdb")
+    # driver.get(f"http://localhost:{localhost_port}/?test=loadpdb")
     driver.get(url)
 
-    cmds = json.loads(el("#test-cmds").text)
+    cmds_str = el("#test-cmds").text
+    print(cmds_str)
+    cmds = json.loads(cmds_str)
     plugin_idx_str = f" #{str(plugin_idx + 1)}" if plugin_idx is not None else ""
     print(f"Running test {plugin_id}{plugin_idx_str}...")
     for cmd in cmds:

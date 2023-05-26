@@ -118,7 +118,7 @@ export class TestCmdList {
 
         this.waitUntilRegex("#styles", "Protein");
         if (expandInMoleculeTree) {
-            this.expandMoleculesTree("4WP4.pdb:1");
+            this.expandMoleculesTree("4WP4");
         }
         return this;
     }
@@ -141,10 +141,23 @@ export class TestCmdList {
             this.click(
                 `#navigator div[data-label="${treeTitle}"] .expand-icon`
             );
+            this.wait(0.5);
         }
 
         return this;
     }
+
+    // public expandEntireMoleculesTree(): TestCmdList {
+    //     debugger;
+    //     const treeNodeList = getMoleculesFromStore();
+    //     treeNodeList.flattened.forEach((node) => {
+    //         node.treeExpanded = true;
+    //         node.title = "moo";
+    //     });
+    //     setStoreVar("molecules", treeNodeList);
+    //     return this;
+    // }
+        
 
     /**
      * If running a selenium test, this function will generate the command to
@@ -181,7 +194,6 @@ export class TestCmdList {
         argVal: any,
         pluginId: string
     ): TestCmdList {
-        debugger;
         const selector = `#modal-${pluginId} #${argName}-${pluginId}-item`;
 
         if (typeof argVal === "string" && argVal.startsWith("file://")) {
@@ -191,15 +203,19 @@ export class TestCmdList {
 
         // TODO: Add support for other types of user arguments. For example,
         // there doesn't seem to be a command for clicking checkbox below.
-        console.warn("Look here");
 
-        // if (typeof argVal === "boolean") {
-        //     return {
-        //         cmd: TestCommand.CheckBox,
-        //         selector,
-        //         data: argVal,
-        //     };
-        // }
+        if (typeof argVal === "boolean") {
+            // Throw an error saying to use clicks instead.
+            const msg = "Use clicks instead of setUserArg for boolean user arguments.";
+            alert(msg);
+            throw new Error(msg);
+
+            // return {
+            //     cmd: TestCommand.CheckBox,
+            //     selector,
+            //     data: argVal,
+            // };
+        }
 
         // TODO: Only works for text currently!
         this.text(selector, argVal);

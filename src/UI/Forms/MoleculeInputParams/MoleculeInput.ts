@@ -4,6 +4,8 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { batchify } from "@/Core/Utils2";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export interface IMoleculeInputParams {
     molsToConsider?: IMolsToConsider;
@@ -11,6 +13,7 @@ export interface IMoleculeInputParams {
     considerCompounds?: boolean;
     proteinFormat?: string;
     compoundFormat?: string;
+    includeMetalsSolventAsProtein?: boolean;
 
     // Below is useful if running things in webworkers. Sends input molecules or
     // molecule pairs in batches. If not specified, batching not applied (just
@@ -18,7 +21,7 @@ export interface IMoleculeInputParams {
     batchSize?: number | null | undefined;
 }
 
-interface IProtCmpdTreeNodePair {
+export interface IProtCmpdTreeNodePair {
     prot: FileInfo;
     cmpd: FileInfo;
 }
@@ -34,6 +37,7 @@ export class MoleculeInput {
     } as IMolsToConsider;
     considerProteins = true;
     considerCompounds = true;
+    includeMetalsSolventAsProtein = true;
     proteinFormat = "pdb";
     compoundFormat = "mol2";
 
@@ -70,6 +74,9 @@ export class MoleculeInput {
         if (params.compoundFormat !== undefined) {
             this.compoundFormat = params.compoundFormat;
         }
+        if (params.includeMetalsSolventAsProtein !== undefined) {
+            this.includeMetalsSolventAsProtein = params.includeMetalsSolventAsProtein;
+        }
 
         // If not specified, use the default batch size.
         if (params.batchSize !== undefined) {
@@ -82,7 +89,7 @@ export class MoleculeInput {
      *
      * @returns {Promise<IProtCmpdTreeNodePair[]>}  The protein, compound pairs.
      */
-    public getProtCompounds(): Promise<
+    public getProtAndCompoundPairsAsBatches(): Promise<
         | IProtCmpdTreeNodePair[]
         | FileInfo[]
         | IProtCmpdTreeNodePair[][]
@@ -105,7 +112,15 @@ export class MoleculeInput {
 
         const protFileInfoPromises = compiledMols.nodeGroups.map(
             (prots: TreeNodeList) => {
-                return getConvertedTxts(prots, "pdb", true).then(
+                // Keep only protein if so specified.
+                if (!this.includeMetalsSolventAsProtein) {
+                    prots = prots.filter((p: TreeNode) => {
+                        return p.type === TreeNodeType.Protein
+                    });
+                }
+
+                // return getConvertedTxts(prots, "pdb", true).then(
+                return getConvertedTxts(prots, this.proteinFormat, true).then(
                     (fileInfos: FileInfo[]) => {
                         // There's only one
                         return fileInfos[0];
@@ -117,25 +132,8 @@ export class MoleculeInput {
         // let cmpdFileInfoPromises: Promise<FileInfo>[] = [];
         let cmpdFileInfoPromise: Promise<any> = Promise.resolve();
         if (compiledMols.compoundsNodes) {
-            cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, "pdb", false);
-            // .then(
-            //     (fileInfos: FileInfo[]) => {
-            //         // There's only one
-            //         return fileInfos[0];
-            //     }
-            // );
-
-            // cmpdFileInfoPromises = compiledMols.compoundsNodes.map(
-            //     (cmpds: TreeNode) => {
-            //         // TODO: Is PDB the right format for a compound?
-            //         return getConvertedTxts(new TreeNodeList([cmpds]), "pdb", true).then(
-            //             (fileInfos: FileInfo[]) => {
-            //                 // There's only one
-            //                 return fileInfos[0];
-            //             }
-            //         );
-            //     }
-            // );
+            // cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, "pdb", false);
+            cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, this.compoundFormat, false);
         }
 
         const allProtPromises = Promise.all(protFileInfoPromises);
@@ -167,23 +165,12 @@ export class MoleculeInput {
                 if (cmpds.length > 0) {
                     // Just compounds.
                     return this._makeBatches(cmpds);
-                    // .map((c: FileInfo) => {
-                    //     return {
-                    //         cmpd: c,
-                    //     } as IProtCmpdTreeNodePair;
-                    // });
                 }
 
                 return this._makeBatches(prots);
-                // .map((p) => {
-                //     return {
-                //         prot: p,
-                //     } as IProtCmpdTreeNodePair;
-                // });
             })
             .catch((err: Error) => {
                 throw err;
-                // return [];
             });
     }
 

@@ -41,7 +41,6 @@ import { Options } from "vue-class-component";
 import {
     calcMolProps,
     countsTitle,
-    ICalcMolProps,
     lipinskiTitle,
     otherTitle,
 } from "./CalcMolProps";

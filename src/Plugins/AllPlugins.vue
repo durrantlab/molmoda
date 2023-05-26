@@ -33,10 +33,12 @@ system uses these to autopopulate with plugins. -->
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
+    <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
+    <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
   </div>
 </template>
@@ -77,10 +79,12 @@ import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
+import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
+import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
 
 /**
@@ -119,11 +123,73 @@ import TestPlugin from "./Optional/TestPlugin.vue";
     UndoPlugin,
     ViewerWindowPlugin,
 
+    AddRegionPlugin,
     FPocketWebPlugin,
     MolPropsPlugin,
     QueSystemTestPlugin,
     TestPlugin,
+    WebinaPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

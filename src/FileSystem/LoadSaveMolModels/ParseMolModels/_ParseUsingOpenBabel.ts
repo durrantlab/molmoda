@@ -9,20 +9,15 @@ import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
  *
  * @param  {FileInfo}    fileInfo           The file to parse.
  * @param  {IFormatInfo} formatInfo         The format of the file.
- * @param  {boolean}     [addToTree=true]   Whether to add the parsed file to
- *                                          the tree.
- * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the
- *    file is parsed. The promise resolves to an array of TreeNode objects, one
- *    for each frame. Can also resolve void.
+ * @returns {Promise<TreeNodeList>}  A promise that resolves when the file is
+ *    parsed. The promise resolves to an array of TreeNode objects, one for each
+ *    frame. Can also resolve void.
  */
 export function parseUsingOpenBabel(
     fileInfo: FileInfo,
     formatInfo: IFormatInfo,
-    addToTree = true
-): Promise<void | TreeNodeList> {
+): Promise<TreeNodeList> {
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
-
-    console.log("MOOSE1");
 
     // Convert it to MOL2 format and load that using 3dmoljs.
     return convertFileInfosOpenBabel([fileInfo], targetFormat)
@@ -34,24 +29,6 @@ export function parseUsingOpenBabel(
                 });
             });
             return parseMolecularModelFromTexts(fileInfos, targetFormat);
-        })
-        .then((treeNodeList: TreeNodeList) => {
-            // Merge the TreeNodeLists into one
-            // for (let i = 1; i < treeNodeLists.length; i++) {
-            //     treeNodeList.extend(treeNodeLists[i]);
-            // }
-
-            // Merge the tree nodes into one (so all compounds of multi-compound
-            // file under single "Compounds").
-            const mergedTreeNodeList = treeNodeList.merge();
-
-            if (addToTree) {
-                mergedTreeNodeList.addToMainTree();
-                // Update VueX store
-                // store.commit("pushToMolecules", treeNodeList);
-            }
-
-            return mergedTreeNodeList;
         })
         .catch((err) => {
             // It's a catch block for the promise returned by

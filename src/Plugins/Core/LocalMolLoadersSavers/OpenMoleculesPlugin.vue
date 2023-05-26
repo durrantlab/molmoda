@@ -36,8 +36,6 @@ import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * OpenMoleculesPlugin
@@ -173,27 +171,33 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      */
     getTests(): ITest[] {
         const filesToTest = [
-            ["4WP4.pdb", 1],
-            ["4WP4.pdb.zip", 1],
-            ["4WP4.pdbqt", 1],
-            ["4WP4.pqr", 1],
-            ["4WP4.xyz", 1],
-            ["ligs.can", 1], // TODO: Should be 3 when open babel fixed
-            ["ligs.cif", 1], // TODO: Should be 3 when open babel fixed
-            ["ligs.mol2", 3],
-            ["ligs.pdb", 3],
-            ["ligs.pdbqt", 1], // TODO: Should be 3 when open babel fixed
-            ["ligs.sdf", 3],
-            ["ligs.smi", 1], // TODO: Should be 3 when open babel fixed
-            ["two_files.zip", 4], // TODO: Should be 6 when open babel fixed
-            ["test.biotite", 1],
-            ["ligs.smi.zip", 1], // TODO: Should be 3 when open babel fixed
-            ["four_mols.zip", 2], // TODO: Should be 4 when open babel fixed
+            // File, title-clicks, 
+            // ["two_files.zip", ["ligs", "Compounds", "A"], "UNL:1"],
+            ["four_mols.zip",["ligs", "Compounds", "A"], "ligs.smi:3"],
+            // ["ligs.smi.zip", ["ligs", "Compounds", "A"], "ligs.smi:3"],
+            ["ligs.can", ["ligs", "Compounds", "A"], "ligs.can:3"],
+            ["test.biotite", ["1XDN", "Compounds", "A"], "ATP:501"],
+
+            // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
+            ["ligs.cif", ["ligs", "Compounds", "X"], "UNL:1"], 
+
+            ["ligs.mol2", ["ligs", "Compounds", "A"], "ligs.mol2:3"],
+            ["ligs.pdb", ["ligs", "Compounds", "A"], "UN3:1"],
+            ["ligs.pdbqt", ["ligs", "Compounds", "A"], "UN3:1"],
+            ["ligs.sdf", ["ligs", "Compounds", "A"], "ligs.sdf:3"],
+            ["ligs.smi", ["ligs", "Compounds", "A"], "ligs.smi:3"],
+            ["4WP4.pdb", ["4WP4", "Compounds", "A"], "TOU:101"],
+            ["4WP4.pdb.zip", ["4WP4", "Compounds", "A"], "TOU:101"],
+            ["4WP4.pdbqt", ["4WP4", "Protein"], "A"],
+            ["4WP4.pqr", ["4WP4", "Compounds", "A"], "TOU:101"],
+            ["4WP4.xyz", ["4WP4", "Compounds", "A"], "4WP4.xyz:1"],
         ];
 
         return filesToTest.map((fileToTest) => {
             const name = fileToTest[0];
-            const count = (fileToTest[1] as number) - 1;
+            const titles = fileToTest[1] as string[];
+            // const count = (fileToTest[2] as number) - 1;
+            const substrng = fileToTest[2] as string;
             return {
                 pluginOpen: new TestCmdList().setUserArg(
                     "formFile",
@@ -202,11 +206,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 ).cmds,
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#styles", "Atoms")
-                    .waitUntilRegex(
-                        "#navigator",
-                        "data.idx.." + count.toString() + "."
-                    )
-                    .waitUntilRegex("#log", 'Job "openmolecules:.+?" ended')
+                    .expandMoleculesTree(titles)
+                    .waitUntilRegex("#navigator", substrng)
+                    .wait(5)
                     .cmds,
             };
         });

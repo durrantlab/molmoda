@@ -209,7 +209,13 @@ export default class Popup extends Vue {
         }
     }
 
-    setupModal() {
+    /**
+     * Sets up the modal. Dynamic imports, etc.
+     *
+     * @returns {Promise<any>}  A promise that resolves the modal when it is set
+     *     up.
+     */
+    setupModal(): Promise<any> {
         // Dynamic import of bootstrap modal.
         if (this.modal !== undefined) {
             return Promise.resolve(this.modal);

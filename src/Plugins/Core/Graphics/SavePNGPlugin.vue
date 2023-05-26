@@ -29,7 +29,6 @@ import {
     matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * SavePNGPlugin
@@ -99,6 +98,7 @@ export default class SavePNGPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job running.
      *
      * @param {any} parameters  Information about the PNG file to save.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(parameters: any): Promise<void> {
         let filename = parameters.filename;

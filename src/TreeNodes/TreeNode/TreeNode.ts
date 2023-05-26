@@ -183,6 +183,11 @@ export class TreeNode {
                 }
             }
         }
+
+        // You must add "visible" manually because it's a getter, not a
+        // property.
+        obj["visible"] = this.visible;
+
         return obj as ITreeNode;
     }
 

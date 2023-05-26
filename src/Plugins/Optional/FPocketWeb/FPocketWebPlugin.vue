@@ -8,20 +8,13 @@
         :pluginId="pluginId"
         actionBtnTxt="Detect"
     >
-        <!-- <template #afterForm>
-      <Alert type="info"
-        >Once calculated, the molecular properties will appear in the Data tab{{
-          tableNames
-        }}</Alert
-      >
-    </template> -->
     </PluginComponent>
 </template>
 
 <script lang="ts">
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { checkAnyMolLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkProteinLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -56,6 +49,8 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { IFpocketParams } from "./FPocketWebTypes";
 import { messagesApi } from "@/Api/Messages";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * FPocketWebPlugin
@@ -92,44 +87,6 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 proteinFormat: "pdb",
             }),
         } as IFormMoleculeInputParams,
-        // {
-        //     id: "outputParams",
-        //     type: FormElemType.Group,
-        //     label: "Optional Output Parameters",
-        //     childElements: [
-        //         {
-        //             // Struggled to figure out what exactly this does in
-        //             // fpocket documentaiton. I vote for disabling.
-        //             id: "calculate_interaction_grids",
-        //             type: FormElemType.Checkbox,
-        //             label: "Calculate VdW and Coulomb grids for each pocket",
-        //             val: false,
-        //         } as IFormCheckbox,
-        //         {
-        //             // Not necessary for use in browser
-        //             id: "pocket_descr_stdout",
-        //             type: FormElemType.Checkbox,
-        //             label: "Write fpocket descriptors to the standard output",
-        //             val: false,
-        //         } as IFormCheckbox,
-        //     ],
-        //     startOpened: false,
-        // } as IFormGroup,
-        // {
-        //     id: "inputParams",
-        //     type: FormElemType.Group,
-        //     label: "Optional Input Parameters",
-        //     childElements: [
-        //         {
-        //             // Not necessary for in-browser use
-        //             id: "model_number",
-        //             type: FormElemType.Number,
-        //             label: "Number of model to analyze",
-        //             val: false,
-        //         } as IFormCheckbox,
-        //     ],
-        //     startOpened: false,
-        // } as IFormGroup,
         {
             id: "pocketDetectionParams",
             type: FormElemType.Group,
@@ -139,7 +96,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     id: "warning",
                     type: FormElemType.Alert,
                     description:
-                        "Unless you are an expert user, these advanced parameters that are best left unmodified.",
+                        "Unless you are an expert user, these advanced parameters are best left unmodified.",
                     alertType: "warning",
                 } as IFormAlert,
                 {
@@ -227,16 +184,6 @@ export default class FPocketWebPlugin extends PluginParentClass {
         } as IFormGroup,
     ];
 
-    // /**
-    //  * Get the names of the tables that will be created
-    //  *
-    //  * @returns {string} The names of the tables that will be created
-    //  */
-    // get tableNames(): string {
-    //   // return `, in tables named "${lipinskiTitle}," "${countsTitle}," and "${otherTitle}."`;
-    //   return "";
-    // }
-
     /**
      * Runs before the popup opens. Starts importing the modules needed for the
      * plugin.
@@ -253,8 +200,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        // TODO: Should be protein only
-        return checkAnyMolLoaded();
+        return checkProteinLoaded();
     }
 
     /**
@@ -417,7 +363,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                             visible: i < numInitiallyVisible,
                             selected: SelectedType.False,
                             focused: false,
-                            viewerDirty: true
+                            viewerDirty: true,
                         });
                         regionList.push(newNode);
                     }
@@ -453,6 +399,22 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
                 );
             });
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest}  The selenium test commands.
+     */
+    getTests(): ITest {
+        return {
+            beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex("#navigator", "PocketBox1")
+                .wait(5).cmds,
+        };
     }
 }
 </script>

@@ -57,6 +57,7 @@ export interface IGenericFormElement extends IFormElement {
     enabled?: any;
     isMoleculeInput?: any;
     alertType?: any;
+    regionName?: any;
 }
 
 export interface IFormText extends IFormElement {
@@ -116,5 +117,6 @@ export interface IFormAlert extends IFormElement {
 }
 
 export interface IFormSelectRegion extends IFormElement {
-    val: ISphereOrBox | null
+    val: ISphereOrBox | null,
+    regionName?: string;
 }

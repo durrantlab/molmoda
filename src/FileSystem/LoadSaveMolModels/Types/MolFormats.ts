@@ -23,6 +23,12 @@ export interface IFormatInfo {
     // In some cases, you can extract a title from the file itself.
     namesRegex?: RegExp[];
     saveWarning?: string;
+    extraObabelArgs?: string[];
+
+    // Whenever possible, don't set this variable. Use primaryExt instead. But
+    // there are rare occasions when the format name for obabel might differ
+    // than the primary extension.
+    obabelFormatName?: string;
 }
 
 const pdbLikeSeparators = [
@@ -90,7 +96,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["cif"],
         description: "Crystallographic Information File",
         hasBondOrders: false,
-        loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken.
+        loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken. Actually, open babel too. Doesn't do multi-frame CIF files.
         frameSeparators: cifLikeSeparators,
         namesRegex: cifLikeNames,
     },
@@ -154,6 +160,20 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.OpenBabel,
         frameSeparators: pdbLikeSeparators,
         namesRegex: pdbLikeNames,
+        extraObabelArgs: ["-xr"],  // Rigid (for receptor)
+    },
+    PDBQTLIG: {
+        // NOTE: This is meant for ligands converted to PDBQT. Let's just
+        // pretend it's a different format to simplify the code.
+        primaryExt: "pdbqtlig",
+        exts: ["pdbqtlig"],
+        description: "AutoDock PDBQT",
+        hasBondOrders: false,
+        loader: MolLoader.OpenBabel,
+        frameSeparators: pdbLikeSeparators,
+        namesRegex: pdbLikeNames,
+        obabelFormatName: "pdbqt",
+        // extraObabelArgs: ["-xr"],  // Rigid (for receptor)
     },
     PQR: {
         primaryExt: "pqr",

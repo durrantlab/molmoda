@@ -191,10 +191,17 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             const filesBeforeRun = mod.files.readDir(tmpDir);
 
-            // I believe callMain is synchronous.
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            mod.callMain(args);
+            try {
+                // I believe callMain is synchronous.
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                mod.callMain(args);
+            } catch (err) {
+                console.log("ERR", err);
+                console.log(args);
+                console.log(inputFiles[0].contents);
+                debugger;
+            }
 
             const filesAfterRun = mod.files.readDir(tmpDir);
 
@@ -247,12 +254,14 @@ self.onmessage = (params: MessageEvent) => {
         throw new Error("Already running");
     }
 
+    // console.log(params)
+
     currentlyRunning = true;
-    const argsSets = params.data.argsSets as string[][];
-    const inputFiles = params.data.inputFiles as FileInfo[];
+    const argsSets = params.data.map((d: any) => d.args);  // params.data.argsSets as string[][];
+    const inputFiles = params.data.map((d: any) => d.inputFile);  // params.data.inputFiles as FileInfo[];
     // const outputFilePath = params.outputFilePath as string;
 
-    const promises = argsSets.map((args) => {
+    const promises = argsSets.map((args: any) => {
         // TODO: You're sending all inputFiles for each runBabel call, because
         // you can't know which files are needed for each call. It would be
         // better to somehow persist the files/OpenBabel module and call it

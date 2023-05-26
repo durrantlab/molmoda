@@ -64,19 +64,21 @@ Test elements could be restructured as objects. Would be better to put functions
 on each one. Then, Tutorial based on tests (first one). Started to do this. See
 ParentPluginTestFuncs.ts
 
-FPocket: blank modal flashes. Why?
+**** FPocket: blank modal flashes. Why?
 
-Queue table looks bad.
+**** Queue table looks bad.
 
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
 
-Tests
+Search for "Use clicks instead of setUserArg for boolean user arguments." Would
+be good to implement this. Need to detect value of checkbox before clicking. But
+if students are going to design these tests, make that happen.
+
+**** Tests
     Return to openmolecules test. Not passing.
     Check savemolecules test. It's very complicated.
-    NEED TO TEST: DelayedJobPopupPlugin.vue, MoveShapesOnClickPlugin.vue, SimpleMsgPlugin.vue
-    Test FPocketWeb when it's finalized.
 
-molprops, after done, should switch to data tab for you.
+**** molprops, after done, should switch to data tab for you.
 
 Mol filter could be similar plugin, might be helpful.
 
@@ -95,11 +97,43 @@ Open options: add 3D coordinates, frames to separate molecules, etc.
 TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form
 element.
 
+WorkerPool elsewhere?
+
 https://firebase.google.com/docs/auth
 
-Use pubic/ dir instad of copying things over.
+ligs.cif shows only one
+biotite format surizingly works, but I'd like to resave it to make sure.
+
+See // TODO: Need to use timeout here.
+
+Need to check if hydrogen atoms added to protein and ligand befor eWebina.
+
+Search for "// Select not input not textarea" and consider using this more
+judiciously.
+
+Draw molecule. (See biotite)
 
 # DONE
+
+There needs to be an option when loading proteins to not include water/MG, etc.
+
+You've got an error caught. Looks like when it fails, it fails with a protein
+tht has water and MG. Need to figure out why. If good reason, might need to just
+catch error.
+
+testtta.biotite is a good test file to use for webina. It doesn' thave the
+memory error.
+
+Can't edit region on sidebar. Color, wrong. No center, dimens, etc.
+
+Test FPocketWeb when it's finalized.
+
+NEED TO TEST: MoveShapesOnClickPlugin.vue, SimpleMsgPlugin.vue, DelayedJobPopupPlugin.vue
+
+ligs.mol2 shows three, not grouped
+ligs.pdb too
+
+Use pubic/ dir instad of copying things over.
 
 Need widget to select shape (or specify X, Y, Z, dimens).
 

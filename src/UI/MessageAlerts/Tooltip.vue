@@ -29,6 +29,9 @@ export default class Tooltip extends Vue {
 
     private tipLoaded = false;
 
+    /**
+     * Sets up the tooltip. Dynamic imports, etc.
+     */
     loadTip() {
         if (!this.tipLoaded) {
             this.tipLoaded = true;

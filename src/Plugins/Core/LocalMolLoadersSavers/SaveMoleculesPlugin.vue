@@ -408,7 +408,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         const biotiteJob = {
             beforePluginOpens: new TestCmdList()
                 .loadExampleProtein(true)
-                .selectMoleculeInTree("Protein").cmds,
+                .selectMoleculeInTree("Protein")
+                .cmds,
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",
                 "test",
@@ -427,10 +428,12 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         let idx = 0;
 
         for (let toConsider of [
+            // visible, selected, hiddenAndUnselected checkboxes
             [true, false, false],
             [false, true, false],
             [true, true, false],
             [true, true, true],
+
             // Not going to consider below for simplicity's sake.
             // [false, false, true],
             // [true, false, true],
@@ -441,21 +444,33 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
             idx++;
 
-            const pluginOpen = new TestCmdList()
+            let pluginOpen = new TestCmdList()
                 .setUserArg("filename", "test", this.pluginId)
-                .setUserArg("useBiotiteFormat", false, this.pluginId)
-                .setUserArg("saveVisible", visible, this.pluginId)
-                .setUserArg("saveSelected", selected, this.pluginId)
-                .setUserArg(
-                    "saveHiddenAndUnselected",
-                    hiddenAndUnselected,
-                    this.pluginId
-                )
-                .setUserArg(
-                    "separateCompounds",
-                    idx % 2 === 0,
-                    this.pluginId
-                ).cmds;
+                // .setUserArg("useBiotiteFormat", false, this.pluginId)
+                .click("#modal-savemolecules #useBiotiteFormat-savemolecules-item");
+            
+            if (visible === false) {
+                // True by default, so must click
+                pluginOpen = pluginOpen
+                    .click("#modal-savemolecules #saveVisible-savemolecules-item");
+            }
+
+            if (selected === false) {
+                // True by default, so must click
+                pluginOpen = pluginOpen
+                    .click("#modal-savemolecules #saveSelected-savemolecules-item");
+            }
+            
+            if (hiddenAndUnselected === true) {
+                // False by default, so must click
+                pluginOpen = pluginOpen
+                    .click("#modal-savemolecules #saveHiddenAndUnselected-savemolecules-item");
+            }
+
+            if (idx % 2 === 0) {
+                pluginOpen = pluginOpen
+                    .click("#modal-savemolecules #separateCompounds-savemolecules-item");
+            }
 
             // Note that the PDB and MOL2 formats (defaults) require OpenBabel and
             // non-OpenBabel, respectively. So already good testing without varying
@@ -463,7 +478,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
             jobs.push({
                 ...biotiteJob,
-                pluginOpen: pluginOpen,
+                pluginOpen: pluginOpen.cmds,
             });
         }
 

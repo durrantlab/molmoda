@@ -1,10 +1,10 @@
 import { messagesApi } from "@/Api/Messages";
-import { batchify } from "@/Core/Utils2";
-import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import type { FileInfo } from "../FileInfo";
 import { IFileInfo } from "../Types";
+import { WorkerPool } from "./WorkerPool";
+import { getFormatInfoGivenType } from "../LoadSaveMolModels/Types/MolFormats";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -40,7 +40,11 @@ import { IFileInfo } from "../Types";
 //     return fsPromise;
 // }
 
-const openBabelWorkers: Worker[] = [];
+// const openBabelWorkers: Worker[] = [];
+
+const openBabelWorkerPool = new WorkerPool(
+    () => new Worker(new URL("./OpenBabel.worker", import.meta.url))
+);
 
 /**
  *
@@ -59,24 +63,13 @@ function runOpenBabel(
     argsLists: string[][],
     inputFiles: FileInfo[] | IFileInfo[]
 ): any {
+    // Quick validation to make sure argsLists is in right format.
+    if (argsLists.length > 0 && !Array.isArray(argsLists[0])) {
+        throw new Error("argsLists must be an array of arrays.");
+    }
+
     // Get the number of open babel workers that should be running.
     const nprocs = getSetting("maxProcs");
-
-    // Termiante and remove workers that are no longer needed.
-    while (openBabelWorkers.length > nprocs) {
-        const worker = openBabelWorkers.pop();
-        if (worker) {
-            worker.terminate();
-        }
-    }
-
-    // Create new workers if needed.
-    while (openBabelWorkers.length < nprocs) {
-        const worker = new Worker(
-            new URL("./OpenBabel.worker", import.meta.url)
-        );
-        openBabelWorkers.push(worker);
-    }
 
     // Associate an index with each inputFile so you can reorder them after
     // finishing.
@@ -84,47 +77,67 @@ function runOpenBabel(
         f.auxData = i;
     });
 
-    // Divide the inputFiles between the workers.
-    const filesPerWorker = batchify(inputFiles as FileInfo[], nprocs);
+    inputFiles = inputFiles.map((f) =>
+        (f as FileInfo).serialize ? (f as FileInfo).serialize() : f
+    );
 
-    // Similarly divide the arguments among the workers.
-    const argsPerWorker = batchify(argsLists, nprocs);
-
-    const promises: Promise<any>[] = [];
-
-    for (let i = 0; i < filesPerWorker.length; i++) {
-        const args = argsPerWorker[i];
-        const inpFiles = filesPerWorker[i];
-        const wrker = openBabelWorkers[i];
-        promises.push(
-            runWorker(
-                wrker,
-                {
-                    argsSets: args,
-                    inputFiles: inpFiles.map((f) =>
-                        (f as FileInfo).serialize
-                            ? (f as FileInfo).serialize()
-                            : f
-                    ),
-                },
-                false // don't auto terminate the worker.
-            )
-        );
+    // Construct payloads by "zipping" the inputFiles and argsLists together.
+    const payloads: any[] = [];
+    for (let i = 0; i < inputFiles.length; i++) {
+        payloads.push({
+            args: argsLists[i],
+            inputFile: inputFiles[i],
+        });
     }
 
-    return Promise.all(promises)
-        .then((results: any[][]) => {
-            // Flatten the results.
-            const flat = results.flat();
-
-            // Order the output by each items orderIdxs property.
-            flat.sort((a, b) => a.orderIdx - b.orderIdx);
-
-            return flat;
+    return openBabelWorkerPool.runJobs(payloads, nprocs)
+        .then((results: any) => {
+            // Reorder the results based on the auxData field.
+            results.sort((a: any, b: any) => a.auxData - b.auxData);
+            return results;
         })
-        .catch((e: any) => {
-            throw e;
-        });
+
+    // // Divide the inputFiles between the workers.
+    // const filesPerWorker = batchify(inputFiles as FileInfo[], nprocs);
+
+    // // Similarly divide the arguments among the workers.
+    // const argsPerWorker = batchify(argsLists, nprocs);
+
+    // const promises: Promise<any>[] = [];
+
+    // for (let i = 0; i < filesPerWorker.length; i++) {
+    //     const args = argsPerWorker[i];
+    //     const inpFiles = filesPerWorker[i];
+    //     const wrker = openBabelWorkers[i];
+    //     promises.push(
+    //         runWorker(
+    //             wrker,
+    //             {
+    //                 argsSets: args,
+    //                 inputFiles: inpFiles.map((f) =>
+    //                     (f as FileInfo).serialize
+    //                         ? (f as FileInfo).serialize()
+    //                         : f
+    //                 ),
+    //             },
+    //             false // don't auto terminate the worker.
+    //         )
+    //     );
+    // }
+
+    // return Promise.all(promises)
+    //     .then((results: any[][]) => {
+    //         // Flatten the results.
+    //         const flat = results.flat();
+
+    //         // Order the output by each items orderIdxs property.
+    //         flat.sort((a, b) => a.orderIdx - b.orderIdx);
+
+    //         return flat;
+    //     })
+    //     .catch((e: any) => {
+    //         throw e;
+    //     });
 }
 
 /**
@@ -139,16 +152,18 @@ function runOpenBabel(
  *     molecule.
  */
 export function convertFileInfosOpenBabel(
-    srcFileInfos: FileInfo[],  // Can be multiple-model SDF file, for example.
+    srcFileInfos: FileInfo[], // Can be multiple-model SDF file, for example.
     targetFormat: string,
     gen3D?: boolean,
-    pH?: number,
+    pH?: number
     // debug?: boolean
 ): Promise<string[]> {
     // Get info about the file
     // if (debug) {debugger;}
-    const formatInfos = srcFileInfos.map(f => f.getFormatInfo());
-    const warningNeeded = formatInfos.some(f => f !== undefined && f.lacks3D === true);
+    const formatInfos = srcFileInfos.map((f) => f.getFormatInfo());
+    const warningNeeded = formatInfos.some(
+        (f) => f !== undefined && f.lacks3D === true
+    );
 
     if (warningNeeded) {
         // Warn user
@@ -158,7 +173,7 @@ export function convertFileInfosOpenBabel(
             PopupVariant.Warning
         );
     }
-    
+
     // Note that the approach here is to divide the file into multiple files
     // (since one input SDF can have multiple molecules), and then to separate
     // the individual models into grousp to run on separate webworkers. You
@@ -179,22 +194,26 @@ export function convertFileInfosOpenBabel(
         .then((fileContentsFromInputs: any[][]) => {
             // Note that a given input molecule can yield multiple outputs if it
             // contained many molecules (e.g., multi-molecule SDF file)
-            
+
             return fileContentsFromInputs.map((f: any) => f.outputFiles);
         })
         .then((individualMolFiles: string[][]) => {
             // Convert it to a FileInfo
             let fileInfoIdx = -1;
-            const nestedFileInfos = individualMolFiles.map((fileContent: string[], i) => {
-                return fileContent.map((f: string) => {
-                    fileInfoIdx++;
-                    return {
-                        name: `tmp${fileInfoIdx}.${srcFileInfos[i].getFormatInfo()?.primaryExt}`,
-                        contents: f,
-                        auxData: formatInfos[i]
-                    } as IFileInfo;
-                });
-            });
+            const nestedFileInfos = individualMolFiles.map(
+                (fileContent: string[], i) => {
+                    return fileContent.map((f: string) => {
+                        fileInfoIdx++;
+                        return {
+                            name: `tmp${fileInfoIdx}.${
+                                srcFileInfos[i].getFormatInfo()?.primaryExt
+                            }`,
+                            contents: f,
+                            auxData: formatInfos[i],
+                        } as IFileInfo;
+                    });
+                }
+            );
 
             return nestedFileInfos.flat();
         })
@@ -204,7 +223,8 @@ export function convertFileInfosOpenBabel(
 
                 if (
                     gen3D === true ||
-                    (fileInfo.auxData !== undefined && fileInfo.auxData.lacks3D === true)
+                    (fileInfo.auxData !== undefined &&
+                        fileInfo.auxData.lacks3D === true)
                 ) {
                     cmds.push(...["--gen3D"]);
                 }
@@ -212,7 +232,16 @@ export function convertFileInfosOpenBabel(
                 if (pH !== undefined) {
                     cmds.push(...["-p", pH.toString()]);
                 }
-                cmds.push(...["-O", "tmp." + targetFormat]);
+
+                // Are there additional arguments to pass to OpenBabel?
+                const formatInfo = getFormatInfoGivenType(targetFormat);
+
+                const extToUse = formatInfo?.obabelFormatName ?? targetFormat;
+                cmds.push(...["-O", "tmp." + extToUse]);
+
+                if (formatInfo?.extraObabelArgs !== undefined) {
+                    cmds.push(...formatInfo.extraObabelArgs);
+                }
 
                 return cmds;
             });

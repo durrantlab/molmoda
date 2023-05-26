@@ -113,7 +113,7 @@ export const dynamicImports = {
                 /* webpackMode: "lazy" */
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                "@/libs/ToImport/3Dmol-nojquery.JDD"
+                "@/libs/3Dmol-nojquery.JDD"
             ).then(($3Dmol) => {
                 return $3Dmol;
             });
@@ -238,61 +238,11 @@ export const dynamicImports = {
         },
     },
     obabelwasm: {
+        // This is just to give credit to open babel.
         credit: {
-            name: "obabelwasm",
-            url: "", // TODO: Get your url here?
+            name: "Open Babel",
+            url: "https://openbabel.org/wiki/Main_Page",
             license: Licenses.GPL2,
-        },
-
-        /**
-         * Gets the module.
-         *
-         * @returns {Promise<any>}  A promise that resolves to the module.
-         */
-        get module(): Promise<any> {
-            // NOTE: Unfortunately, the only way I could get this to work was by
-            // attaching it to the main window. A promise that resolves the
-            // module is not effective for some reason.
-
-            return import(
-                /* webpackChunkName: "obabelwasm" */
-                /* webpackMode: "lazy" */
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                "@/libs/ToCopy/obabel-wasm.run_not_exported/obabel"
-            ).then((obabelModule) => {
-                return obabelModule.default; // (module);
-            });
-            // .then((obabelObj: any) => {
-            //     debugger;
-            //     return obabelObj.ready;
-            // });
-
-            // return addJsToHeader(
-            //     "obabelwasm",
-            //     "js/obabel-wasm/obabel.js",
-            //     () => {
-            //         return Promise.resolve((window as any)["ObabelModule"]);
-            //         // const prom1 = new Promise((resolve) => {
-            //         //     OpenBabel.onRuntimeInitialized = () => {
-            //         //         resolve(undefined);
-            //         //     };
-            //         // });
-            //         // return new Promise(function (resolve) {
-            //         //     const checkReady = () => {
-            //         //         if (ObabelModule) {
-            //         //             (window as any)["ObabelModule"] = ObabelModule;
-            //         //             resolve(ObabelModule);
-            //         //         } else {
-            //         //             setTimeout(checkReady, 500);
-            //         //         }
-            //         //     };
-            //         //     checkReady();
-            //         // });
-            //         // return Promise.all([prom2]);
-            //         // return Promise.resolve(undefined);
-            //     }
-            // );
         },
     },
     smilesdrawer: {

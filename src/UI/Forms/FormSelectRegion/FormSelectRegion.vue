@@ -17,14 +17,10 @@
                 @onChange="onRegionSelected"
             >
             </FormSelect>
-            <Alert v-else type="warning" extraClasses="mb-0">
-                No sphere or box regions in workspace. Please define a box center
-                and dimensions below.
-            </Alert>
         </FormWrapper>
 
         <FormWrapper
-            label="Dimensions (X, Y, Z)"
+            :label="regionNameToUse + 'Dimensions (X, Y, Z)'"
             :disabled="disabled"
             v-if="isBox"
         >
@@ -40,7 +36,7 @@
             />
         </FormWrapper>
         <FormWrapper
-            label="Radius"
+            :label="regionNameToUse + 'Radius'"
             :disabled="disabled"
             v-else
         >
@@ -57,7 +53,7 @@
         </FormWrapper>
 
         <FormWrapper
-            label="Center (X, Y, Z)"
+            :label="regionNameToUse + 'Center (X, Y, Z)'"
             :disabled="disabled"
         >
             <!-- :placeHolder="placeHolder" -->
@@ -77,6 +73,10 @@
             v-if="description !== undefined"
             :htmlDescription="description"
         ></FormElementDescription>
+        <!-- <FormElementDescription
+            v-if="regionsInTree === undefined"
+            htmlDescription="No sphere or box regions in workspace. Please define a box center and dimensions below."
+        ></FormElementDescription> -->
     </span>
 </template>
 
@@ -138,13 +138,29 @@ export default class FormSelectRegion extends Vue {
     @Prop({ default: false }) disabled!: boolean;
     @Prop({}) description!: string;
     @Prop({ default: false }) readonly!: boolean;
+    @Prop({ default: "" }) regionName!: string;
     // @Prop({ required: false }) filterFunc!: Function;
 
     selectedRegionId = "noneSelected";
     modelValueToUse = defaultVals;
     isBox = true;
 
-    // Watch modelValueToUse
+    /**
+     * Get the name of the region to use.
+     * 
+     * @returns {string} The name of the region to use.
+     */
+    get regionNameToUse(): string {
+        // If doesn't end in " ", add " " to end.
+        if (this.regionName.length > 0 && this.regionName.slice(-1) !== " ") {
+            return this.regionName + " ";
+        }
+        return this.regionName;
+    }
+
+    /**
+     * When modelValueToUse changes, emit "update:modelValue" and "onChange".
+     */
     @Watch("modelValueToUse", { deep: true, immediate: true })
     onModelValueToUseChanged() {
         this.$emit("update:modelValue", this.modelValueToUse);
@@ -154,7 +170,9 @@ export default class FormSelectRegion extends Vue {
         this.$emit("onChange");
     }
 
-    // Watch modelValue
+    /**
+     * When modelValue changes, update modelValueToUse.
+     */
     @Watch("modelValue", { deep: true, immediate: true })
     onModelValueChanged() {
         if (this.modelValue === null || this.modelValue === undefined) {
@@ -164,10 +182,19 @@ export default class FormSelectRegion extends Vue {
         this.modelValueToUse = this.modelValue;
     }
 
+    /**
+     * If you change the values in the form, reset the selected region to be
+     * none selected.
+     */
     resetSelected() {
         this.selectedRegionId = "noneSelected";
     }
 
+    /**
+     * Runs when the region is selected.
+     *
+     * @param {string} id  The id of the region that was selected.
+     */
     onRegionSelected(id: string) {
         if (id === "noneSelected") {
             this.selectedRegionId = "noneSelected";
@@ -213,6 +240,12 @@ export default class FormSelectRegion extends Vue {
         this.handleInput();
     }
 
+    /**
+     * Get all the regions in the tree. Return as options for the select.
+     *
+     * @returns {IFormOption[] | undefined} The regions in the tree. Undefined
+     *    if there are no regions in the tree.
+     */
     get regionsInTree(): IFormOption[] | undefined {
         let treeNodeList: TreeNodeList = this.$store.state["molecules"];
         treeNodeList = treeNodeList.filters.keepRegions(true, true);

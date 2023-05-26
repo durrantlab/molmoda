@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Test</title>
+</head>
+
+<body>
+    <div id="counter"></div>
+    <script type="module">
+        function runWebina(args, receptorPDBQT, ligandPDBQT) {
+            // Do some quick validation. --receptor and --ligand should not be in args
+            if (args["receptor"] || args["--receptor"]) {
+                throw new Error("Arguments should not include --receptor. Pass the receptor as the second argument to runWebina().");
+            }
+
+            if (args["ligand"] || args["--ligand"]) {
+                throw new Error("Arguments should not include --ligand. Pass the ligand as the third argument to runWebina().");
+            }
+
+            if (args["out"] || args["--out"]) {
+                throw new Error("Arguments should not include --out. The output will be returned as a string.");
+            }
+
+            // Args is an object that maps the argument name to the value,
+            // because that seems more intuitive to me. But need to convert it
+            // here.
+            const argsList = [];
+            for (let [key, value] of Object.entries(args)) {
+                // If the key starts with --, remove that.
+                if (key.startsWith("--")) {
+                    key = key.substring(2);
+                }
+
+                argsList.push("--" + key);
+                argsList.push(value.toString());
+            }
+
+            // Add the receptor and ligand to the args
+            argsList.push("--receptor", "/receptor.pdbqt");
+            argsList.push("--ligand", "/ligand.pdbqt");
+            argsList.push("--out", "/output.pdbqt");
+
+            const startTime = performance.now();
+
+            return new Promise((resolve, reject) => {
+                import('./vina.js').then(result => {
+                    const WEBINA_MODULE = result.default;
+
+                    let std = "";
+                    let stdOut = "";
+                    let stdErr = "";
+
+                    // https://emscripten.org/docs/api_reference/module.html
+
+                    const moduleInstance = WEBINA_MODULE({
+                        noInitialRun: true,
+
+                        // stderr will log when any file is read.
+                        logReadFiles: true,
+
+                        // onRuntimeInitialized() { console.log("Runtime initialized"); },
+
+                        // preInit() { console.log("Pre-init"); },
+
+                        preRun: [
+                            (mod) => {
+                                // Save the contents of the files to the virtual file system
+                                mod.FS.writeFile('/receptor.pdbqt', receptorPDBQT);
+                                mod.FS.writeFile('/ligand.pdbqt', ligandPDBQT);
+                            }
+                        ],
+
+                        onExit(code) {
+                            // Read the contents of the output file
+                            const output = this.FS.readFile('/output.pdbqt', { encoding: 'utf8' });
+
+                            // Resolve the promise with the output
+                            resolve({
+                                std: std.trim(),
+                                stdOut: stdOut.trim(),
+                                stdErr: stdErr.trim(),
+                                output: output,
+                                time: performance.now() - startTime
+                            });
+                        },
+
+                        // Monitor stdout and stderr output
+                        print(text) {
+                            console.log(text);
+                            stdOut += text + "\n";
+                            std += text + "\n";
+                        },
+
+                        printErr(text) {
+                            console.log(text);
+                            stdErr += text + "\n";
+                            std += text + "\n";
+                        },
+                    });
+
+                    moduleInstance.then(instance => {
+                        // Probably not needed, but just in case
+                        return instance.ready;
+                    })
+                        .then(instance => {
+                            instance.callMain(argsList);
+                        });
+                });
+            })
+        }
+
+        // Start the counter to prove main thread is not frozen
+        let counter = 0;
+        const counterDiv = document.getElementById("counter");
+        setInterval(() => {
+            counterDiv.innerText = counter++;
+        }, 500);
+
+        // Fetch the contents of 1xdn.pdbqt
+        const receptor = fetch('1xdn.pdbqt')
+            .then(response => response.text());
+
+        // And ATP.pdbqt
+        const ligand = fetch('ATP.pdbqt')
+            .then(response => response.text());
+
+        // When you've got the files, run webina
+        Promise.all([receptor, ligand])
+            .then(([receptorPDBQT, ligandPDBQT]) => {
+                return runWebina({ 
+                    "center_x": 41.03, "center_y": 18.98, "center_z": 14.03, 
+                    "cpu": 4, "exhaustiveness": 8, 
+                    "size_x": 20, "size_y": 20, "size_z": 20
+                }, receptorPDBQT, ligandPDBQT);
+            })
+            .then((output) => {
+                console.log(output);
+                debugger;
+            });
+
+        // BENCHMARKS:
+
+        // 1 processor: 182175.06000000238 ms
+        // 2 processors: 99467.65000003576 ms
+        // 4 processors: 55364.40000003576 ms
+        // 5 processors: 50985.79000002146 ms
+    </script>
+</body>
+
+</html>

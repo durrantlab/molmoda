@@ -1,6 +1,6 @@
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { selectInstructionsLong } from "@/UI/Navigation/TitleBar/MolSelecting";
-import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { SelectedType, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
@@ -105,4 +105,55 @@ export function checkAnyMolLoaded(treeNodeList?: TreeNodeList): string | null {
     }
 
     return null;
+}
+
+/**
+ * Checks whether the user has loaded any molecule of the given type.
+ *
+ * @param  {TreeNodeType} type            The type of molecule to check for.
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *                                        Ultimately defaults to all molecules
+ *                                        if not specified.
+ * @returns {string | null}  An error if the user hasn't selected any molecules,
+ *    null otherwise.
+ */
+export function checkTypeLoaded(type: TreeNodeType, treeNodeList?: TreeNodeList): string | null {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
+    }
+
+    const proteins = treeNodeList.flattened.filters.keepType(type);
+
+    if (proteins.length === 0) {
+        return `No ${type} is currently loaded. Try adding a ${type} first.`;
+    }
+
+    return null;
+}
+
+/**
+ * Checks whether the user has loaded any protein.
+ *
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *                                        Ultimately defaults to all molecules
+ *                                        if not specified.
+ * @returns {string | null}  An error if the user hasn't selected any molecules,
+ *   null otherwise.
+ */
+export function checkProteinLoaded(treeNodeList?: TreeNodeList): string | null {
+    return checkTypeLoaded(TreeNodeType.Protein, treeNodeList);
+}
+
+
+/**
+ * Checks whether the user has loaded any compound.
+ *
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *                                        Ultimately defaults to all molecules
+ *                                        if not specified.
+ * @returns {string | null}  An error if the user hasn't selected any molecules,
+ *     null otherwise.
+ */
+export function checkCompoundLoaded(treeNodeList?: TreeNodeList): string | null {
+    return checkTypeLoaded(TreeNodeType.Compound, treeNodeList);
 }

@@ -91,7 +91,10 @@ export default class FormInput extends Vue {
 
       // Set carot location after vue nexttick
       this.$nextTick(() => {
-        e.target.setSelectionRange(carot, carot);
+        if (this.type !== "number") {
+          // Number doesn't support selection
+          e.target.setSelectionRange(carot, carot);
+        }
       });
     }
 
@@ -105,9 +108,15 @@ export default class FormInput extends Vue {
 
     this.lastHandleInputTimeStamp = Date.now();
     this.timeOutLastHandleInput = setTimeout(() => {
-      let val = e.target.value;
+      let val = e.target.value; 
       if (this.type === "number") {
         val = parseFloat(val);
+
+        // If val is NaN, abandon effort.
+        if (isNaN(val)) {
+          return;
+        }
+
         if (val === null) {
           val = 0;
         }

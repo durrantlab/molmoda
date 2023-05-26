@@ -57,7 +57,6 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { FileInfo } from "@/FileSystem/FileInfo";
 
 /** AboutPlugin */
 @Options({

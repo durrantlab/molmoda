@@ -1,5 +1,5 @@
 <template>
-  <Alert type="light" class="lh-2" style="padding: 0; margin: 0; line-height: 1.2em;">
+  <Alert type="light" class="lh-2" style="padding: 0; margin: 0; line-height: 1.1em;">
     <small>
       <slot></slot>
       <span

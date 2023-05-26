@@ -2,8 +2,16 @@
 const { defineConfig } = require("@vue/cli-service");
 const CopyPlugin = require("copy-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
+const webpack = require("webpack");
 
 module.exports = defineConfig({
+    devServer: {
+        headers: {
+            "Cross-Origin-Opener-Policy": "same-origin",
+            "Cross-Origin-Embedder-Policy": "require-corp",
+        },
+    },
+    // publicPath: "./",
     transpileDependencies: true,
     productionSourceMap: true,
     parallel: 4,
@@ -30,6 +38,8 @@ module.exports = defineConfig({
             https: false,
             stream: false,
             crypto: false,
+            os: require.resolve('os-browserify/browser'),
+            perf_hooks: false
         };
         config.resolve.symlinks = false;
         config.plugins.push(

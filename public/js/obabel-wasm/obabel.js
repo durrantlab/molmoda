@@ -1,4 +1,3 @@
-/* eslint-disable */
 var Webobabel = (() => {
     var _scriptDir =
         typeof document !== "undefined" && document.currentScript
@@ -1062,7 +1061,7 @@ var Webobabel = (() => {
                 TOTAL_STACK === Module["TOTAL_STACK"],
                 "the stack size can no longer be determined at runtime"
             );
-        var INITIAL_MEMORY = Module["INITIAL_MEMORY"] || 16777216;
+        var INITIAL_MEMORY = Module["INITIAL_MEMORY"] || 104857600;
         legacyModuleProp("INITIAL_MEMORY", "INITIAL_MEMORY");
         assert(
             INITIAL_MEMORY >= TOTAL_STACK,
@@ -1084,7 +1083,7 @@ var Webobabel = (() => {
             "Use of `wasmMemory` detected.  Use -sIMPORTED_MEMORY to define wasmMemory externally"
         );
         assert(
-            INITIAL_MEMORY == 16777216,
+            INITIAL_MEMORY == 104857600,
             "Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically"
         );
         var wasmTable;
@@ -5524,7 +5523,7 @@ var Webobabel = (() => {
         var dynCall_iiiiiijj = (Module["dynCall_iiiiiijj"] =
             createExportWrapper("dynCall_iiiiiijj"));
         Module["run"] = run;
-        Module["callMain"] = callMain;
+        Module["callMain"] = callMain
         Module["addRunDependency"] = addRunDependency;
         Module["removeRunDependency"] = removeRunDependency;
         Module["FS_createPath"] = FS.createPath;

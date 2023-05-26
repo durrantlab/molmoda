@@ -102,7 +102,8 @@ export class UserInputsMixin extends Vue {
             // Add filter function if necessary
             const _userInput = userArg as IGenericFormElement;
             if (
-                [FormElemType.Text, FormElemType.Number].includes(
+                // NOTE: Don't put FormElemType.Number below.
+                [FormElemType.Text].includes(
                     _userInput.type as FormElemType
                 ) &&
                 _userInput.filterFunc === undefined
@@ -113,7 +114,13 @@ export class UserInputsMixin extends Vue {
 
             // Add validation function if necessary
             if (userArg.validateFunc === undefined) {
-                userArg.validateFunc = () => true;
+                if (_userInput.type === FormElemType.Number) {
+                    userArg.validateFunc = (v: number) => {
+                        return !isNaN(v);
+                    };
+                } else {
+                    userArg.validateFunc = () => true;
+                }
             }
 
             // Enabled by default

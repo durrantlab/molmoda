@@ -10,7 +10,6 @@
 </template>
 
 <script lang="ts">
-import { FileInfo } from "@/FileSystem/FileInfo";
 import {
   IContributorCredit,
   ISoftwareCredit,
@@ -35,7 +34,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
   },
 })
 export default class QueSystemTestPlugin extends PluginParentClass {
-  menuPath = "Test/Test Component Queue System";
+  menuPath = "[7] Test/Test Component Queue System";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

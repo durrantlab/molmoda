@@ -114,11 +114,14 @@ export default class MergeMolsPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
      *
      * @param {IUserArg[]} userArgs  The user arguments.
+     * @returns {Promise<void> | undefined}  If the job is asynchronous, return
+     *     a promise. Otherwise, return undefined.
      */
-    runJobInBrowser(userArgs: IUserArg[]) {
+    runJobInBrowser(userArgs: IUserArg[]): Promise<void> | undefined {
         if (!this.nodesToActOn) {
             // Nothing to do.
             return;
