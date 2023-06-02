@@ -56,7 +56,8 @@ else
     echo "Compiling boost_1_82_0"
     cd boost_1_82_0
     ./bootstrap.sh
-    emconfigure ./b2 toolset=emscripten link=static --with-program_options --with-system --with-serialization --with-thread --with-filesystem
+    # emconfigure ./b2 toolset=emscripten link=static --with-program_options --with-system --with-serialization --with-thread --with-filesystem
+    emconfigure ./b2 toolset=emscripten cxxflags=-O3 link=static --with-program_options --with-system --with-serialization --with-thread --with-filesystem
     cd ..
 fi
 
@@ -109,18 +110,24 @@ sed -i "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE
 sed -i "s|++11|++11 -s EXPORTED_RUNTIME_METHODS='[\"callMain\", \"FS\"]'|g" Makefile
 sed -i "s|++11|++11 -s INVOKE_RUN=0|g" Makefile
 
-# Try a slightly different optimization. Smaller filesize.
-sed -i "s/-O3/-Os/g" Makefile
+# Os makes for smaller filesize, but O3 is faster. File size difference isn't
+# that big.
+# sed -i "s/-O3/-Os/g" Makefile
 
 # This flag avoids an error in the browser and makes it so the onExit() function
 # gets called.
 sed -i "s|++11|++11 -s EXIT_RUNTIME=1|g" Makefile
 
+# No need to include NODEJS code.
+sed -i "s|++11|++11 -sENVIRONMENT=web,worker|g" Makefile
+
 # Add some files to the precache to experiment with
 # sed -i "s|++11|++11 --preload-file /support/1xdn.pdbqt@/receptor.pdbqt --preload-file /support/ATP.pdbqt@/ligand.pdbqt|g" Makefile
 
-# Below is for debugging only
+# Below is for debugging only. It slows things down a bit, so good not to use in
+# production.
 # sed -i "s|++11|++11 -sASSERTIONS|g" Makefile
+# sed -i "s|++11|++11 -sNO_DISABLE_EXCEPTION_CATCHING|g" Makefile
 
 # Now we will modify the makefile_common file
 
@@ -137,6 +144,14 @@ emmake make -j8 vina | tee compile.out
 # Repeat the last command, but outputing to out/vina.html instead of just vina.
 mkdir -p out
 tail -n 1 compile.out | sed "s|-o vina|-o out/vina.js|g" | bash
+
+# Add "/* eslint-disable */" as the first line of the ./out/vina.js and
+# ./out/vina.worker.js files.
+echo '/* eslint-disable */' | cat - ./out/vina.js > temp && mv temp ./out/vina.js
+echo '/* eslint-disable */' | cat - ./out/vina.worker.js > temp && mv temp ./out/vina.worker.js
+
+# Remove the string "use strict"; from ./out/vina.worker.js
+sed -i "s|.use strict..||g" ./out/vina.worker.js
 
 # Clean up
 make clean

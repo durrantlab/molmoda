@@ -113,6 +113,34 @@ judiciously.
 
 Draw molecule. (See biotite)
 
+# NEW QUEUE SYSTEM
+
+Current system is excessively complex. Trying to keep track of total number of
+processors used, etc. If users wants to overuser their processors, just let
+them. You keep track only of each job, to make sure it says in the processor
+limit.
+
+For this, adapt WorkerPool. If you're not using a worker, no reason to use the
+queue system (because will block main thread anyway, perhaps because very
+short).
+
+Perhaps these files should be named worker_job.ts. They should inherit a common
+parent so they have to implement certain functions.
+
+setup(): Sets up the worker pool, etc.
+
+start(): Starts a job. Parent class also adds it to visible queue. Throws a
+warning if a job currently running (just so user knows).
+
+subJobFinish(): One of the subjobs finishes (e.g., vina VS).
+
+finish(): All subjobs finish. Also updates queue.
+
+Perhaps only show message letting user know job is running if job doesn't finish
+quickly (e.g., in 5 secs). But this message could let user know they can check
+the queue.
+
+
 # DONE
 
 There needs to be an option when loading proteins to not include water/MG, etc.

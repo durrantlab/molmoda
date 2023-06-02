@@ -19,7 +19,7 @@ import {
 // @ts-ignore
 // importScripts("webina/vina.min.js");
 
-import * as WEBINA_Module from "../../../../public/js/webina/vina.min.js";
+import * as WEBINA_Module from "../../../../public/js/webina/vina.js";
 
 waitForDataFromMainThread()
     .then((params: any) => {

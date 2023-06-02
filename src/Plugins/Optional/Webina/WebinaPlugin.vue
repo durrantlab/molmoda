@@ -14,7 +14,10 @@
 <script lang="ts">
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { checkCompoundLoaded, checkProteinLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import {
+    checkCompoundLoaded,
+    checkProteinLoaded,
+} from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -32,26 +35,16 @@ import {
     IFormSelectRegion,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
-import { IMoleculeInputParams, IProtCmpdTreeNodePair, MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
+import {
+    IMoleculeInputParams,
+    IProtCmpdTreeNodePair,
+    MoleculeInput,
+} from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import {
-    IColorStyle,
-    ITreeNodeData,
-    IStyle,
-    TreeNodeDataType,
-    TreeNodeType,
-    IBox,
-    SelectedType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
-import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
-// import { IFpocketParams } from "./WebinaTypes";
-import { messagesApi } from "@/Api/Messages";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * WebinaPlugin
@@ -86,7 +79,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 considerCompounds: true,
                 considerProteins: true,
                 proteinFormat: "pdbqt",
-                compoundFormat: "pdbqtlig",  // Will include torsions
+                compoundFormat: "pdbqtlig", // Will include torsions
                 includeMetalsSolventAsProtein: false,
             } as IMoleculeInputParams),
         } as IFormMoleculeInputParams,
@@ -116,7 +109,8 @@ export default class WebinaPlugin extends PluginParentClass {
             filterFunc: (val: number) => {
                 return Math.round(val);
             },
-            description: "How thoroughly to search for the pose. Roughly proportional to time."
+            description:
+                "How thoroughly to search for the pose. Roughly proportional to time.",
         } as IFormNumber,
         {
             id: "score_only",
@@ -146,7 +140,8 @@ export default class WebinaPlugin extends PluginParentClass {
                     filterFunc: (val: number) => {
                         return Math.round(val);
                     },
-                    description: "The explicit random seed. Useful if reproducibility is critical."
+                    description:
+                        "The explicit random seed. Useful if reproducibility is critical.",
                 } as IFormNumber,
                 {
                     id: "num_modes",
@@ -156,14 +151,15 @@ export default class WebinaPlugin extends PluginParentClass {
                     filterFunc: (val: number) => {
                         return Math.round(val);
                     },
-                    description: "The maximum number of binding poses to show."
+                    description: "The maximum number of binding poses to show.",
                 } as IFormNumber,
                 {
                     id: "energy_range",
                     type: FormElemType.Number,
                     label: "Energy Range",
                     val: 3,
-                    description: "The maximum energy difference between the best and worst pose."
+                    description:
+                        "The maximum energy difference between the best and worst pose.",
                 } as IFormNumber,
             ],
             startOpened: false,
@@ -221,16 +217,17 @@ export default class WebinaPlugin extends PluginParentClass {
         webinaParams["size_x"] = region.dimensions[0];
         webinaParams["size_y"] = region.dimensions[1];
         webinaParams["size_z"] = region.dimensions[2];
-        webinaParams["receptor"] = "receptor.pdbqt";
-        webinaParams["ligand"] = "ligand.pdbqt";
+        webinaParams["receptor"] = "/receptor.pdbqt";
+        webinaParams["ligand"] = "/ligand.pdbqt";
+        webinaParams["out"] = "/output.pdbqt";
 
         const payloads: any = filePairs.map((filePair) => {
-            filePair.prot.name = "receptor.pdbqt";
-            filePair.cmpd.name = "ligand.pdbqt";
+            filePair.prot.name = "/receptor.pdbqt";
+            filePair.cmpd.name = "/ligand.pdbqt";
             return {
                 pdbFiles: filePair,
                 webinaParams: webinaParams,
-            }
+            };
         });
 
         this.submitJobs(payloads); // , 10000);
@@ -245,171 +242,278 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(payload: any): Promise<any> {
-        const pdbFiles = payload.pdbFiles as IProtCmpdTreeNodePair;
-        const userArgs = payload.webinaParams;
+        return new Promise((resolve, reject) => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            return import("../../../../public/js/webina/vina.js") // TODO: chucks
+                .then((mod: any) => {
+                    const WEBINA_MODULE = mod.default;
+                    const startTime = performance.now();
+                    let std = "";
+                    let stdOut = "";
+                    let stdErr = "";
+                    const ligandPDBQT = payload.pdbFiles.cmpd.contents;
+                    const receptorPDBQT = payload.pdbFiles.prot.contents;
 
-        const pdbFilesSerialized = {
-            prot: pdbFiles.prot.serialize(),
-            cmpd: pdbFiles.cmpd.serialize(),
-        };
+                    // https://emscripten.org/docs/api_reference/module.html
 
-        // remove treeNodes (not serialized)
-        delete pdbFilesSerialized.prot.treeNode;
-        delete pdbFilesSerialized.cmpd.treeNode;
+                    return WEBINA_MODULE({
+                        noInitialRun: true,
 
-        const worker = new Worker(new URL("./Webina.worker", import.meta.url));
+                        // stderr will log when any file is read.
+                        logReadFiles: true,
 
-        return runWorker(worker, {
-            pdbFiles: pdbFilesSerialized,
-            // pdbContents: pdbFiles.contents,
-            userArgs,
-        })
-            .then((payload: any) => {
-                debugger;
-                if (payload.error) {
-                    throw new Error(payload.error);
-                }
-                // const outPdbFileTxt = payload.outPdbFileTxt;
-                // const stdOut = payload.stdOut;
-                const stdErr = payload.stdErr;
-                const pocketProps = payload.pocketProps;
+                        // onRuntimeInitialized() { console.log("Runtime initialized"); },
 
-                if (stdErr !== "") {
-                    console.warn(stdErr);
-                }
-                const promises = [
-                    // TreeNode.loadFromFileInfo(
-                    //     new FileInfo({
-                    //         name: "Pockets:" + pdbFiles.name,
-                    //         contents: outPdbFileTxt,
-                    //     })
-                    // ),
-                    Promise.resolve(pocketProps),
-                ];
+                        // preInit() { console.log("Pre-init"); },
 
-                return Promise.all(promises);
-            })
-            .then((payload: any[]) => {
-                const outPdbFileTreeNode = payload[0] as TreeNode | void;
-                const pocketProps = payload[1] as any[];
+                        preRun: [
+                            (mod: any) => {
+                                // Save the contents of the files to the virtual
+                                // file system
+                                mod.FS.writeFile(
+                                    "/receptor.pdbqt",
+                                    receptorPDBQT
+                                );
+                                mod.FS.writeFile("/ligand.pdbqt", ligandPDBQT);
+                            },
+                        ],
 
-                if (outPdbFileTreeNode === undefined) {
-                    return;
-                }
+                        locateFile(path: string) {
+                            // This is where the emscripten compiled files are
+                            // located
+                            return `./js/webina/` + path;
+                        },
 
-                const numInitiallyVisible = 5;
-
-                // Update the compounds (names, style)
-                let firstNodeId = "";
-                const boxes: IBox[] = [];
-
-                // Make everything visible to start.
-                outPdbFileTreeNode.visible = true;
-
-                if (outPdbFileTreeNode.nodes) {
-                    outPdbFileTreeNode.nodes
-                        .lookup([TreeNodeType.Compound, "*", "*"])
-                        ?.forEach((node: TreeNode, idx: number) => {
-                            // Should be surface
-                            node.styles = [
+                        onExit(/* code */) {
+                            // Read the contents of the output file
+                            const output = (this as any).FS.readFile(
+                                "/output.pdbqt",
                                 {
-                                    surface: {
-                                        color: randomPastelColor(),
-                                        opacity: 0.9,
-                                    } as IColorStyle,
-                                } as IStyle,
-                            ];
+                                    encoding: "utf8",
+                                }
+                            );
 
-                            // Rename it too
-                            node.title = "Pocket" + (idx + 1);
+                            // Resolve the promise with the output
+                            resolve({
+                                std: std.trim(),
+                                stdOut: stdOut.trim(),
+                                stdErr: stdErr.trim(),
+                                output: output,
+                                time: performance.now() - startTime,
+                            });
+                        },
 
-                            // Hide unless it's the first few ones.
-                            if (idx >= numInitiallyVisible) {
-                                node.visible = false;
-                            }
+                        // Monitor stdout and stderr output
+                        print(text: string) {
+                            console.log(text);
+                            stdOut += text + "\n";
+                            std += text + "\n";
+                        },
 
-                            // Add the pocket properties as data.
-                            node.data = {
-                                "FPocketWeb Properties": {
-                                    data: pocketProps[idx],
-                                    type: TreeNodeDataType.Table,
-                                    treeNodeId: node.id,
-                                } as ITreeNodeData,
-                            };
-
-                            boxes.push(node.getBoxRegion());
-
-                            if (idx === 0) {
-                                firstNodeId = node.id as string;
-                            }
-                        });
-
-                    // Update the compound chain name.
-                    const pockets = outPdbFileTreeNode.nodes
-                        .lookup(TreeNodeType.Compound)
-                        .get(0);
-                    pockets.title = "Pockets";
-                    if (pockets.nodes) {
-                        pockets.nodes.get(0).title = "P";
-                    }
-
-                    // Hide the protein, since it's probably also in another
-                    // molecule.
-                    outPdbFileTreeNode.nodes
-                        .lookup(TreeNodeType.Protein)
-                        .flattened.forEach((node: TreeNode) => {
-                            node.visible = false;
-                        });
-
-                    // Add the region list. Create the region list node.
-                    const regionList = new TreeNodeList();
-                    for (let i = 0; i < boxes.length; i++) {
-                        const box = boxes[i];
-                        box.opacity = 0.9;
-                        const newNode = new TreeNode({
-                            title: "PocketBox" + (i + 1).toString(),
-                            type: TreeNodeType.Region,
-                            region: box,
-                            treeExpanded: false,
-                            visible: i < numInitiallyVisible,
-                            selected: SelectedType.False,
-                            focused: false,
-                            viewerDirty: true,
-                        });
-                        regionList.push(newNode);
-                    }
-                    const regionNode = new TreeNode({
-                        title: "S",
-                        type: TreeNodeType.Region,
-                        treeExpanded: true,
-                        visible: true,
-                        selected: SelectedType.False,
-                        focused: false,
-                        viewerDirty: true,
-                        nodes: regionList,
+                        printErr(text: string) {
+                            console.log(text);
+                            stdErr += text + "\n";
+                            std += text + "\n";
+                        },
                     });
+                })
 
-                    const ps = outPdbFileTreeNode.nodes
-                        .lookup(["Pockets"])
-                        .get(0);
-                    if (ps.nodes) {
-                        ps.nodes.push(regionNode);
+                .then((instance: any) => {
+                    // Probably not needed, but just in case
+                    return instance.ready;
+                })
+                .then((instance: any) => {
+                    const argsList = [];
+                    for (const key in payload.webinaParams) {
+                        const val = payload.webinaParams[key];
+                        if ([true, "true"].indexOf(val) !== -1) {
+                            argsList.push(`--${key}`);
+                        } else if ([false, "false"].indexOf(val) !== -1) {
+                            // do nothing
+                        } else {
+                            argsList.push(`--${key}`);
+                            argsList.push(val.toString());
+                        }
                     }
-                }
 
-                this.$store.commit("pushToMolecules", outPdbFileTreeNode);
-
-                this.$nextTick(() => {
-                    selectProgramatically(firstNodeId);
+                    return instance.callMain(argsList);
                 });
-                return;
-            })
-            .catch((err: Error) => {
-                // Intentionally not rethrowing error here.
-                messagesApi.popupError(
-                    `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
-                );
-            });
+        })
+        .then((resp: any) => {
+            debugger;
+            return resp;
+        })
+        .catch((err) => {
+            console.error(err);
+            throw err;
+        });
+
+        // const pdbFiles = payload.pdbFiles as IProtCmpdTreeNodePair;
+        // const userArgs = payload.webinaParams;
+
+        // const pdbFilesSerialized = {
+        //     prot: pdbFiles.prot.serialize(),
+        //     cmpd: pdbFiles.cmpd.serialize(),
+        // };
+
+        // // remove treeNodes (not serialized)
+        // delete pdbFilesSerialized.prot.treeNode;
+        // delete pdbFilesSerialized.cmpd.treeNode;
+
+        // const worker = new Worker(new URL("./Webina.worker", import.meta.url));
+
+        // return runWorker(worker, {
+        //     pdbFiles: pdbFilesSerialized,
+        //     // pdbContents: pdbFiles.contents,
+        //     userArgs,
+        // })
+        //     .then((payload: any) => {
+        //         debugger;
+        //         if (payload.error) {
+        //             throw new Error(payload.error);
+        //         }
+        //         // const outPdbFileTxt = payload.outPdbFileTxt;
+        //         // const stdOut = payload.stdOut;
+        //         const stdErr = payload.stdErr;
+        //         const pocketProps = payload.pocketProps;
+
+        //         if (stdErr !== "") {
+        //             console.warn(stdErr);
+        //         }
+        //         const promises = [
+        //             // TreeNode.loadFromFileInfo(
+        //             //     new FileInfo({
+        //             //         name: "Pockets:" + pdbFiles.name,
+        //             //         contents: outPdbFileTxt,
+        //             //     })
+        //             // ),
+        //             Promise.resolve(pocketProps),
+        //         ];
+
+        //         return Promise.all(promises);
+        //     })
+        //     .then((payload: any[]) => {
+        //         const outPdbFileTreeNode = payload[0] as TreeNode | void;
+        //         const pocketProps = payload[1] as any[];
+
+        //         if (outPdbFileTreeNode === undefined) {
+        //             return;
+        //         }
+
+        //         const numInitiallyVisible = 5;
+
+        //         // Update the compounds (names, style)
+        //         let firstNodeId = "";
+        //         const boxes: IBox[] = [];
+
+        //         // Make everything visible to start.
+        //         outPdbFileTreeNode.visible = true;
+
+        //         if (outPdbFileTreeNode.nodes) {
+        //             outPdbFileTreeNode.nodes
+        //                 .lookup([TreeNodeType.Compound, "*", "*"])
+        //                 ?.forEach((node: TreeNode, idx: number) => {
+        //                     // Should be surface
+        //                     node.styles = [
+        //                         {
+        //                             surface: {
+        //                                 color: randomPastelColor(),
+        //                                 opacity: 0.9,
+        //                             } as IColorStyle,
+        //                         } as IStyle,
+        //                     ];
+
+        //                     // Rename it too
+        //                     node.title = "Pocket" + (idx + 1);
+
+        //                     // Hide unless it's the first few ones.
+        //                     if (idx >= numInitiallyVisible) {
+        //                         node.visible = false;
+        //                     }
+
+        //                     // Add the pocket properties as data.
+        //                     node.data = {
+        //                         "FPocketWeb Properties": {
+        //                             data: pocketProps[idx],
+        //                             type: TreeNodeDataType.Table,
+        //                             treeNodeId: node.id,
+        //                         } as ITreeNodeData,
+        //                     };
+
+        //                     boxes.push(node.getBoxRegion());
+
+        //                     if (idx === 0) {
+        //                         firstNodeId = node.id as string;
+        //                     }
+        //                 });
+
+        //             // Update the compound chain name.
+        //             const pockets = outPdbFileTreeNode.nodes
+        //                 .lookup(TreeNodeType.Compound)
+        //                 .get(0);
+        //             pockets.title = "Pockets";
+        //             if (pockets.nodes) {
+        //                 pockets.nodes.get(0).title = "P";
+        //             }
+
+        //             // Hide the protein, since it's probably also in another
+        //             // molecule.
+        //             outPdbFileTreeNode.nodes
+        //                 .lookup(TreeNodeType.Protein)
+        //                 .flattened.forEach((node: TreeNode) => {
+        //                     node.visible = false;
+        //                 });
+
+        //             // Add the region list. Create the region list node.
+        //             const regionList = new TreeNodeList();
+        //             for (let i = 0; i < boxes.length; i++) {
+        //                 const box = boxes[i];
+        //                 box.opacity = 0.9;
+        //                 const newNode = new TreeNode({
+        //                     title: "PocketBox" + (i + 1).toString(),
+        //                     type: TreeNodeType.Region,
+        //                     region: box,
+        //                     treeExpanded: false,
+        //                     visible: i < numInitiallyVisible,
+        //                     selected: SelectedType.False,
+        //                     focused: false,
+        //                     viewerDirty: true,
+        //                 });
+        //                 regionList.push(newNode);
+        //             }
+        //             const regionNode = new TreeNode({
+        //                 title: "S",
+        //                 type: TreeNodeType.Region,
+        //                 treeExpanded: true,
+        //                 visible: true,
+        //                 selected: SelectedType.False,
+        //                 focused: false,
+        //                 viewerDirty: true,
+        //                 nodes: regionList,
+        //             });
+
+        //             const ps = outPdbFileTreeNode.nodes
+        //                 .lookup(["Pockets"])
+        //                 .get(0);
+        //             if (ps.nodes) {
+        //                 ps.nodes.push(regionNode);
+        //             }
+        //         }
+
+        //         this.$store.commit("pushToMolecules", outPdbFileTreeNode);
+
+        //         this.$nextTick(() => {
+        //             selectProgramatically(firstNodeId);
+        //         });
+        //         return;
+        //     })
+        //     .catch((err: Error) => {
+        //         // Intentionally not rethrowing error here.
+        //         messagesApi.popupError(
+        //             `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+        //         );
+        //     });
     }
 
     /**
