@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Test</title>
+</head>
+
+<body>
+    <h1>Test</h1>
+    <p>Test</p>
+    <div>
+        <p id="status"></p>
+    </div>
+    <div>
+        <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
+    <div>
+        <textarea id=output rows=8></textarea>
+    </div>
+    <script>
+        var Webobabel = {
+            preRun: [],
+            postRun: [],
+            print: function() {
+                var e = document.getElementById("output");
+                return e && (e.value = ""),
+                    function(t) {
+                        arguments.length > 1 && (t = Array.prototype.slice.call(arguments).join(" ")), console.log(t), e && (e.value += t + "\n", e.scrollTop = e.scrollHeight)
+                    }
+            }(),
+            canvas: function() {
+                var e = document.getElementById("canvas");
+                return e.addEventListener("webglcontextlost", (function(e) {
+                    alert("WebGL context lost. You will need to reload the page."), e.preventDefault()
+                }), !1), e
+            }(),
+            setStatus: function(e) {
+                var t = document.getElementById("status");
+                t && (t.innerHTML = e)
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(e) {
+                this.totalDependencies = Math.max(this.totalDependencies, e), Webobabel.setStatus(e ? "Preparing... (" + (this.totalDependencies - e) + "/" + this.totalDependencies + ")" : "All downloads complete.")
+            }
+        };
+    </script>
+    <script>
+        require Webobabel from "./webobabel.js";
+    </script>
+</body>
+
+</html>
