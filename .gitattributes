@@ -1,5 +1,6 @@
 public/js/obabel-wasm filter=lfs diff=lfs merge=lfs -text
 public/js/webina filter=lfs diff=lfs merge=lfs -text
+*.wasm filter=lfs diff=lfs merge=lfs -text
 *.wasm !text !filter !merge !diff
 *.data !text !filter !merge !diff
 *.png !text !filter !merge !diff
