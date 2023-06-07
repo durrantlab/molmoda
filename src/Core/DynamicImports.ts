@@ -145,6 +145,31 @@ export const dynamicImports = {
         },
     } as IDynamicImport,
 
+    webina: {
+        credit: {
+            name: "AutoDock Vina",
+            url: "https://vina.scripps.edu/",
+            license: Licenses.APACHE2,
+        },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "webina" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "../../public/js/webina/vina.js"
+            ).then((mod) => {
+                return mod.default;
+            });
+        },
+    } as IDynamicImport,
+
     hotkeys: {
         credit: {
             name: "HotKeys.js",
