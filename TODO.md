@@ -111,7 +111,11 @@ Need to check if hydrogen atoms added to protein and ligand befor eWebina.
 Search for "// Select not input not textarea" and consider using this more
 judiciously.
 
-Draw molecule. (See biotite)
+Draw molecule. (Yuri working on this)
+
+is logging needed?
+
+api system seems convoluted.
 
 # NEW QUEUE SYSTEM
 

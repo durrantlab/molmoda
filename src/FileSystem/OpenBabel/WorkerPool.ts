@@ -1,7 +1,5 @@
 // This is for managing groups of workers performing the same task (e.g.,
-// OpenBabel mass conversions). If there's a chance you'll ever be doing a
-// calculate through a remote server, use the Queue system, not this system.
-// TODO: Can these two systems be unified somehow?
+// OpenBabel mass conversions).
 
 import { randomID } from "@/Core/Utils";
 import { batchify } from "@/Core/Utils2";
