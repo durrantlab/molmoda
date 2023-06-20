@@ -19,6 +19,7 @@ import { OpenBabelQueue } from "./OpenBabelQueue";
  *     the program. Void if there is an error?
  */
 function runOpenBabel(
+    appId: string,
     argsLists: string[][],
     inputFiles: FileInfo[] | IFileInfo[]
 ): any {
@@ -47,20 +48,15 @@ function runOpenBabel(
     }
 
     return new Promise((resolve, reject) => {
-        return new OpenBabelQueue("obabel", payloads, undefined, 1, 5, {
-            onJobDone: (jobInfo) => {
-                console.log("Job done:", jobInfo);
-            },
-            onProgress: (progress) => {
-                console.log("Progress:", progress);
-            },
+        // Batching 25 at a time. This was chosen arbitrarily.
+        return new OpenBabelQueue(appId, payloads, undefined, 1, 25, {
+            // onJobDone: (jobInfo) => {},
+            // onProgress: (progress) => {},
             onQueueDone: (outputs) => {
                 console.log("Queue done:", outputs);
                 resolve(outputs);
             },
-            onError(jobInfos, error) {
-                console.error("Error running jobs:", jobInfos, error);
-            },
+            // onError(jobInfos, error) {},
         });
     });
 
@@ -122,7 +118,7 @@ export function convertFileInfosOpenBabel(
 
     // let tmpPass: any;
 
-    return runOpenBabel(separateFileCmds, srcFileInfos)
+    return runOpenBabel("splitFile", separateFileCmds, srcFileInfos)
         .then((fileContentsFromInputs: any[][]) => {
             // Note that a given input molecule can yield multiple outputs if it
             // contained many molecules (e.g., multi-molecule SDF file)
@@ -179,7 +175,7 @@ export function convertFileInfosOpenBabel(
             });
 
             // tmpPass = [cmdsList, fileInfos.map(f => JSON.parse(JSON.stringify(f)))];
-            return runOpenBabel(cmdsList, fileInfos);
+            return runOpenBabel("convert", cmdsList, fileInfos);
         })
         .then((convertedFileContents: any[]): string[] => {
             // The output files are located in the .outputFiles properties.

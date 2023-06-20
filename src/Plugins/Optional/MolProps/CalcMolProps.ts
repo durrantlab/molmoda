@@ -1,5 +1,6 @@
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { CalcMolPropsQueue } from "./CalcMolPropsQueue";
 
 export interface ICalcMolProps {
     lipinski: [string, number, string][];
@@ -80,23 +81,28 @@ export function calcMolProps(
         smilesToCalculate.push(smilesStrs[index]);
     }
 
-    // TODO: Note that only one webworker is used here. You could multithread
-    // this thing. In fact, would be good to have a general framework for
-    // multithreading calculations. Could then apply it to OpenBabel too.
+    const payloads = smilesToCalculate.map((smilesStr) => {
+        return {
+            smilesStr: smilesStr,
+            formatForTreeNode: formatForTreeNode,
+        };
+    });
 
-    const worker = new Worker(
-        new URL("./CalcMolProps.worker", import.meta.url)
-    );
-
-    return runWorker(worker, {
-        smilesStrs: smilesToCalculate,
-        formatForTreeNode: formatForTreeNode,
+    return new Promise((resolve) => {
+        // Batching 25 at a time. This was chosen arbitrarily.
+        return new CalcMolPropsQueue("molProps", payloads, undefined, 1, 25, {
+            // onJobDone: (jobInfo) => {},
+            // onProgress: (progress) => {},
+            onQueueDone: (outputs) => {
+                resolve(outputs);
+            },
+            // onError(jobInfos, error) {},
+        });
     })
-        .then((calculatedProps: any[]) => {
+        .then((calculatedProps: any) => {
             for (let i = 0; i < calculatedProps.length; i++) {
                 const calculatedProp = calculatedProps[i];
-                const descriptors = calculatedProp.descriptors;
-                const treeNodeData = calculatedProp.treeNodeData;
+                const {descriptors, treeNodeData} = calculatedProp;
                 const idx = indexesToCalculate[i];
 
                 // Add to the associated container if appropriate.

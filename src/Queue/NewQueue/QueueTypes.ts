@@ -6,10 +6,10 @@ export interface IJobInfo {
 }
 
 export interface INewQueueCallbacks {
-    onJobDone: (output: any) => void;
-    onError: (jobs: any[], error: any) => void;
-    onQueueDone: (outputs: any[]) => void;
-    onProgress: (percent: number) => void;
+    onQueueDone?: (outputs: any[]) => void;
+    onJobDone?: (output: any) => void;
+    onError?: (jobs: any[], error: any) => void;
+    onProgress?: (percent: number) => void;
 }
 
 export interface IJobStatusInfo {

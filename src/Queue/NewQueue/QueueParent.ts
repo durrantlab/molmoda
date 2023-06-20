@@ -265,7 +265,9 @@ export abstract class QueueParent {
      * @param {IJobInfo} jobInfo  The job info of the job that is done.
      */
     private _onJobDone(jobInfo: IJobInfo) {
-        this._callbacks.onJobDone(jobInfo.output);
+        if (this._callbacks.onJobDone) {
+            this._callbacks.onJobDone(jobInfo.output);
+        }
     }
 
     /**
@@ -278,7 +280,10 @@ export abstract class QueueParent {
         const payloadsOfBatchThatFailed = jobInfos.map((jobInfo) => {
             return jobInfo.input;
         });
-        this._callbacks.onError(payloadsOfBatchThatFailed, error);
+
+        if (this._callbacks.onError) {
+            this._callbacks.onError(payloadsOfBatchThatFailed, error);
+        }
     }
 
     /**
@@ -295,7 +300,9 @@ export abstract class QueueParent {
 
         doneInQueueStore(this._id);
 
-        this._callbacks.onQueueDone(outputPayloads);
+        if (this._callbacks.onQueueDone) {
+            this._callbacks.onQueueDone(outputPayloads);
+        }
     }
 
     /**
@@ -305,7 +312,9 @@ export abstract class QueueParent {
      */
     private _onProgress(percent: number) {
         updateProgressInQueueStore(this._id, percent);
-        this._callbacks.onProgress(percent);
+        if (this._callbacks.onProgress) {
+            this._callbacks.onProgress(percent);
+        }
     }
 
     /**

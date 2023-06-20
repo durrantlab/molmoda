@@ -137,6 +137,11 @@ export default class JobManagerV2 extends Vue {
         //     return [];
         // }
 
+        // Sort jobStatuses by start time, descending (more recent first)
+        jobStatuses.sort((a, b) => {
+            return (b.startTime as number) - (a.startTime as number);
+        });
+
         let rows = jobStatuses.map((r) => {
             return {
                 "": {

@@ -80,6 +80,8 @@ if students are going to design these tests, make that happen.
 
 **** molprops, after done, should switch to data tab for you.
 
+MolProps... need to neutralize molecule before calculating properties?
+
 Mol filter could be similar plugin, might be helpful.
 
 Conversion from 3dmol to PDB in same webworker (at least optional).
@@ -96,8 +98,6 @@ Open options: add 3D coordinates, frames to separate molecules, etc.
 
 TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form
 element.
-
-WorkerPool elsewhere?
 
 https://firebase.google.com/docs/auth
 
@@ -116,6 +116,12 @@ Draw molecule. (Yuri working on this)
 is logging needed?
 
 api system seems convoluted.
+
+Way to add things to done queue directly. Things that run quickly, but you still
+want a job.
+
+fpocket should still run via new queue system. Could be multiple proteins, time
+could add up.
 
 # NEW QUEUE SYSTEM
 
@@ -148,6 +154,8 @@ the queue.
 
 
 # DONE
+
+WorkerPool elsewhere?
 
 There needs to be an option when loading proteins to not include water/MG, etc.
 

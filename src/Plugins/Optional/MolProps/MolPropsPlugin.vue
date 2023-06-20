@@ -134,34 +134,38 @@ export default class MolPropsPlugin extends PluginParentClass {
             flattened[i].name = i.toString() + "_" + flattened[i].name;
         }
 
-        return convertFileInfosOpenBabel(
-            flattened, // Can be multiple-model SDF file, for example.
-            "can"
-        ).then((contents: string[]) => {
-            // Update contents of each flattened fileInfo
-            for (let i = 0; i < flattened.length; i++) {
-                flattened[i].contents = contents[i];
-            }
+        // return convertFileInfosOpenBabel(
+        //     flattened, // Can be multiple-model SDF file, for example.
+        //     "can"
+        // ).then((contents: string[]) => {
+        //     // Update contents of each flattened fileInfo
+        //     for (let i = 0; i < flattened.length; i++) {
+        //         flattened[i].contents = contents[i];
+        //     }
+            
+        // });
 
-            // Rebatch the results and submit.
-            const compoundBatches = batchify(flattened, origNumBatches);
-            this.submitJobs(compoundBatches); // , 10000);
-            return;
-        });
+        // Rebatch the results and submit.
+        // const compoundBatches = batchify(flattened, origNumBatches);
+        // this.submitJobs(compoundBatches); // , 10000);
+        this.submitJobs([flattened]);
+        return Promise.resolve();
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
      *
-     * @param {FileInfo[]} compoundBatch  The user arguments to pass to the "executable."
-     *                             Contains compound information.
+     * @param {FileInfo[]} allCompounds  The user arguments to pass to the
+     *                                   "executable." Contains compound
+     *                                   information.
      * @returns {Promise<undefined>}  A promise that resolves when the job is
      *     done.
      */
-    runJobInBrowser(compoundBatch: FileInfo[]): Promise<void> {
+    runJobInBrowser(allCompounds: FileInfo[]): Promise<void> {
         return calcMolProps(
-            compoundBatch.map((f) => f.contents),
-            compoundBatch.map((f) => f.treeNode)
+            allCompounds.map((f) => f.contents),
+            allCompounds.map((f) => f.treeNode)
         )
             .then(() => {
                 return;

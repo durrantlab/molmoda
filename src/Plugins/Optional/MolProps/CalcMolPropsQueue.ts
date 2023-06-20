@@ -3,9 +3,9 @@ import { QueueParent } from "@/Queue/NewQueue/QueueParent";
 import { IJobInfo } from "@/Queue/NewQueue/QueueTypes";
 
 /**
- * A convert-with-openbabel queue.
+ * A calculate mol props queue.
  */
-export class OpenBabelQueue extends QueueParent {
+export class CalcMolPropsQueue extends QueueParent {
     /**
      * Run a batch of jobs.
      *
@@ -19,16 +19,14 @@ export class OpenBabelQueue extends QueueParent {
     ): Promise<IJobInfo[]> {
         const inputs = inputBatch.map((jobInfo) => jobInfo.input);
 
-        // Remove any tree node (to avoid serialization issues).
-        for (let i = 0; i < inputs.length; i++) {
-            if (inputs[i].inputFile.treeNode !== undefined) {
-                inputs[i].inputFile.treeNode = undefined;
-            }
+        const inputs2 = {
+            smilesStrs: inputs.map((input) => input.smilesStr),
+            formatForTreeNode: inputs[0].formatForTreeNode,
         }
 
         return runWorker(
-            new Worker(new URL("./OpenBabel.worker.ts", import.meta.url)),
-            inputs,
+            new Worker(new URL("./CalcMolProps.worker", import.meta.url)),
+            inputs2,
             true // auto terminate the worker.
         )
             .then((outputBatch) => {
