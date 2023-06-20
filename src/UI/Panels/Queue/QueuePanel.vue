@@ -1,6 +1,6 @@
 <template>
   <h5>Jobs: Running/Completed</h5>
-  <JobManagerV2 />
+  <JobManager />
 </template>
 
 <script lang="ts">
@@ -11,14 +11,14 @@ import { Options, Vue } from "vue-class-component";
 
 // import JobManager from "@/Queue/JobManagers/JobManager.vue";
 import Section from "@/UI/Layout/Section.vue";
-import JobManagerV2 from "@/Queue/NewQueue/JobManagerV2.vue";
+import JobManager from "@/Queue/JobManager.vue";
 
 /**
  * QueuePanel component
  */
 @Options({
   components: {
-    JobManagerV2,
+    JobManager,
     Section,
   },
 })

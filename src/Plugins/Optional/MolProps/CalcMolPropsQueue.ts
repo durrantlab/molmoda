@@ -1,6 +1,6 @@
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
-import { QueueParent } from "@/Queue/NewQueue/QueueParent";
-import { IJobInfo } from "@/Queue/NewQueue/QueueTypes";
+import { QueueParent } from "@/Queue/QueueParent";
+import { IJobInfo } from "@/Queue/QueueTypes";
 
 /**
  * A calculate mol props queue.

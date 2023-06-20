@@ -107,7 +107,7 @@ const headers: IHeader[] = [
         Table,
     },
 })
-export default class JobManagerV2 extends Vue {
+export default class JobManager extends Vue {
     jobStatusInfos: any[] = [
         ["Running Jobs", [] as IJobStatusInfo[]],
         ["Completed Jobs", [] as IJobStatusInfo[]],

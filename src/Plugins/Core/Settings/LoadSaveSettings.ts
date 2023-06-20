@@ -1,5 +1,4 @@
 import { visualizationApi } from "@/Api/Visualization";
-import { jobManagers } from "@/Queue/JobManagers/JobManagerParent";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 // import * as api from "@/Api/";
@@ -63,15 +62,6 @@ export function applySettings(settings: IUserArg[]) {
         settingsMap.set(setting.name, setting);
     }
     const defaults = defaultSettings();
-
-    // maxProcs in mapping? Use that as maxProcs if so. Otherwise, default.
-    const maxProcs = settingsMap.get("maxProcs")?.val ?? defaults.maxProcs;
-    jobManagers
-        .find(
-            (jobManager) =>
-                jobManager.jobManagerName === "Local (In Browser) Queue"
-        )
-        ?.updateMaxNumProcessors(maxProcs);
 
     const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
     visualizationApi.viewer?.unLoadViewer();

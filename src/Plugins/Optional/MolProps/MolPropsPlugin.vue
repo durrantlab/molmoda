@@ -134,45 +134,28 @@ export default class MolPropsPlugin extends PluginParentClass {
             flattened[i].name = i.toString() + "_" + flattened[i].name;
         }
 
-        // return convertFileInfosOpenBabel(
-        //     flattened, // Can be multiple-model SDF file, for example.
-        //     "can"
-        // ).then((contents: string[]) => {
-        //     // Update contents of each flattened fileInfo
-        //     for (let i = 0; i < flattened.length; i++) {
-        //         flattened[i].contents = contents[i];
-        //     }
-            
-        // });
-
-        // Rebatch the results and submit.
-        // const compoundBatches = batchify(flattened, origNumBatches);
-        // this.submitJobs(compoundBatches); // , 10000);
-        this.submitJobs([flattened]);
-        return Promise.resolve();
+        return calcMolProps(
+            flattened.map((f) => f.contents),
+            flattened.map((f) => f.treeNode)
+        )
+            .then(() => {
+                this.submitJobs();
+                return;
+            })
+            .catch((err: any): void => {
+                throw err;
+            });
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {FileInfo[]} allCompounds  The user arguments to pass to the
-     *                                   "executable." Contains compound
-     *                                   information.
      * @returns {Promise<undefined>}  A promise that resolves when the job is
      *     done.
      */
-    runJobInBrowser(allCompounds: FileInfo[]): Promise<void> {
-        return calcMolProps(
-            allCompounds.map((f) => f.contents),
-            allCompounds.map((f) => f.treeNode)
-        )
-            .then(() => {
-                return;
-            })
-            .catch((err: any): void => {
-                throw err;
-            });
+    runJobInBrowser(): Promise<void> {
+        return Promise.resolve();
     }
 
     /**

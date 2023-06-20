@@ -5,20 +5,16 @@ import App from "./App/App.vue";
 import { setupVueXStore } from "./Store";
 import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { jobQueueSetup } from "./Queue/JobQueue";
 import { setupTests } from "./Testing/SetupTests";
 import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
-import { QueueParent } from "./Queue/NewQueue/QueueParent";
-import { QueueTest } from "./Queue/NewQueue/QueueTest";
 
 // api.sys.loadStatus.started = true;
 
 setOnePluginMode();
 loadFontAwesomeFonts();
-jobQueueSetup();
 setupTests();
 setupWarnSaveOnClose();
 

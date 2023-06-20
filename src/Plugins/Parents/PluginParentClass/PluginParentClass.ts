@@ -1,6 +1,5 @@
 /* eslint-disable jsdoc/check-tag-names */
 // Evey plugin component class must inherit this one.
-import * as JobQueue from "@/Queue/JobQueue";
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { mixins } from "vue-class-component";
 import {
@@ -24,10 +23,8 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
-import { IJobInfoToEndpoint } from "@/Queue/Types/TypesToEndpoint";
 import { registerHotkeys } from "@/Core/HotKeys";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { addOnJobsDoneMsgs } from "@/Queue/JobManagers/AllJobsFinishedMsgs";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
@@ -235,33 +232,33 @@ export abstract class PluginParentClass extends mixins(
             parameterSets = [undefined];
         }
 
-        const jobs: IJobInfoToEndpoint[] = parameterSets.map(
-            (p: IJobInfoToEndpoint) => {
-                return {
-                    commandName: this.pluginId,
-                    params: p,
-                    id: randomID(5),
-                    delayRun: delayBetweenJobsMS,
-                    numProcessors: numProcessorsPerJob,
-                    noResponse: !this.logJob,
-                } as IJobInfoToEndpoint;
-            }
-        );
+        // Run each of the parameter sets through the _runJobInBrowser function.
+        let jobs = parameterSets.map((p: any) => {
+            return this._runJobInBrowser(undefined, p);
+        });
 
-        for (const job of jobs) {
-            let logTxt = this.onSubmitJobLogMsg(this.pluginId);
-            logTxt = removeTerminalPunctuation(logTxt);
-            if (this.logJob) {
-                api.messages.log(logTxt, undefined, job.id);
-            }
-        }
+        // Remove any job that returns nothing.
+        jobs = jobs.filter((j: any) => j !== undefined);
 
-        JobQueue.submitJobs(jobs);
+        // Wait for promises to resolve.
+        Promise.all(jobs).catch((err: any) => {
+            throw err;
+        });
 
-        if (this.msgOnJobsFinished !== "") {
-            // Message to show when all jobs finished.
-            addOnJobsDoneMsgs(this.msgOnJobsFinished);
-        }
+        // const jobs: IJobInfoToEndpoint[] = parameterSets.map(
+        //     (p: IJobInfoToEndpoint) => {
+        //         return {
+        //             commandName: this.pluginId,
+        //             params: p,
+        //             id: randomID(5),
+        //             delayRun: delayBetweenJobsMS,
+        //             numProcessors: numProcessorsPerJob,
+        //             noResponse: !this.logJob,
+        //         } as IJobInfoToEndpoint;
+        //     }
+        // );
+
+        // JobQueue.submitJobs(jobs);
     }
 
     /**
@@ -402,12 +399,6 @@ export abstract class PluginParentClass extends mixins(
             pluginId: this.pluginId,
         } as IPluginSetupInfo);
 
-        // Register with job queue system
-        api.hooks.onJobQueueCommand(
-            this.pluginId,
-            this._runJobInBrowser.bind(this)
-        );
-
         // Register the hotkey if any.
         if (this.hotkey !== "") {
             registerHotkeys(this.hotkey, this.pluginId, (e: KeyboardEvent) => {
@@ -430,7 +421,7 @@ export abstract class PluginParentClass extends mixins(
      * The runJobInBrowser() function receives a fileInfo object. Often, you
      * want to create a molecule from this object and add it to the main tree.
      * This is a helper function to do that.
-     * 
+     *
      * @param {FileInfo} fileInfo  The fileInfo object.
      * @returns {Promise<void>}  A promise that resolves when the molecule is
      */
