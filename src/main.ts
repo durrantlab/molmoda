@@ -54,22 +54,21 @@ createApp(App)
 // obTest();
 
 // Make list of fake inputs, 200 random numbers
-const fakeInputs: number[] = [];
-for (let i = 0; i < 200; i++) {
-    fakeInputs.push(Math.random());
-}
-new QueueTest("test", fakeInputs, 8, 2, 10, {
-    onJobDone: (jobInfo) => {
-        console.log("Job done:", jobInfo);
-    },
-    onProgress: (progress) => {
-        console.log("Progress:", progress);
-    },
-    onQueueDone: (outputs) => {
-        // TODO: NEED TO ORDER.
-        console.log("Queue done:", outputs);
-    },
-    onError(jobInfos, error) {
-        console.error("Error running jobs:", jobInfos, error);
-    },
-});
+// const fakeInputs: number[] = [];
+// for (let i = 0; i < 200; i++) {
+//     fakeInputs.push(Math.random());
+// }
+// new QueueTest("test", fakeInputs, 8, 2, 10, {
+//     onJobDone: (jobInfo) => {
+//         console.log("Job done:", jobInfo);
+//     },
+//     onProgress: (progress) => {
+//         console.log("Progress:", progress);
+//     },
+//     onQueueDone: (outputs) => {
+//         console.log("Queue done:", outputs);
+//     },
+//     onError(jobInfos, error) {
+//         console.error("Error running jobs:", jobInfos, error);
+//     },
+// });

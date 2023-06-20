@@ -110,7 +110,7 @@ export abstract class QueueParent {
             this._inputBatches.push(inputInfos.slice(i, i + batchSize));
         }
 
-        this._reportQueueStatusForDebug();
+        // this._reportQueueStatusForDebug();
 
         this._queueTimer = setInterval(() => {
             // If there are no jobs left in _inputBatches, stop the timer.

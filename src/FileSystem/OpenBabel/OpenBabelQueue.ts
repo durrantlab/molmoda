@@ -1,3 +1,4 @@
+import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { QueueParent } from "@/Queue/NewQueue/QueueParent";
 import { IJobInfo } from "@/Queue/NewQueue/QueueTypes";
 
@@ -7,7 +8,7 @@ import { IJobInfo } from "@/Queue/NewQueue/QueueTypes";
 export class OpenBabelQueue extends QueueParent {
     /**
      * Run a batch of jobs.
-     * 
+     *
      * @param {IJobInfo[]} inputBatch  The input batch.
      * @param {number}     procs       The number of processors to use.
      * @returns {Promise<IJobInfo[]>}  The output batch.
@@ -16,29 +17,22 @@ export class OpenBabelQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        const inputs = inputBatch.map((jobInfo) => jobInfo.input);
 
-        
-        // TODO: Children must define this. Defining it here only for debugging.
-
-        // Start a new job.
-        // console.log("Starting job with input batch:", inputBatch);
-
-        // Simulate a job that takes a random number of seconds to complete.
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                // console.log("Finished job with input batch:", inputBatch);
-                // if (Math.random() < 0.1) {
-                //     // Simulate an error.
-                //     throw new Error("Simulated error");
-                // }
-
-                resolve(
-                    inputBatch.map((jobInfo) => {
-                        jobInfo.output = "A-" + (jobInfo.input * 2).toString();
-                        return jobInfo;
-                    })
-                );
-            }, Math.random() * 25000);
-        });
+        return runWorker(
+            new Worker(new URL("./OpenBabel.worker.ts", import.meta.url)),
+            inputs,
+            true // auto terminate the worker.
+        )
+            .then((outputBatch) => {
+                // Update .output value of each jobInfo.
+                for (let i = 0; i < inputBatch.length; i++) {
+                    inputBatch[i].output = outputBatch[i];
+                }
+                return inputBatch;
+            })
+            .catch((err) => {
+                throw err;
+            });
     }
 }

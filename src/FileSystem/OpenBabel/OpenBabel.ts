@@ -3,12 +3,13 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import type { FileInfo } from "../FileInfo";
 import { IFileInfo } from "../Types";
-import { WorkerPool } from "./WorkerPool";
+// import { WorkerPool } from "./WorkerPool";
 import { getFormatInfoGivenType } from "../LoadSaveMolModels/Types/MolFormats";
+import { OpenBabelQueue } from "./OpenBabelQueue";
 
-const openBabelWorkerPool = new WorkerPool(
-    () => new Worker(new URL("./OpenBabel.worker", import.meta.url))
-);
+// const openBabelWorkerPool = new WorkerPool(
+//     () => new Worker(new URL("./OpenBabel.worker", import.meta.url))
+// );
 
 /**
  *
@@ -32,9 +33,6 @@ function runOpenBabel(
         throw new Error("argsLists must be an array of arrays.");
     }
 
-    // Get the number of open babel workers that should be running.
-    const nprocs = getSetting("maxProcs");
-
     // Associate an index with each inputFile so you can reorder them after
     // finishing.
     inputFiles.forEach((f, i) => {
@@ -54,12 +52,30 @@ function runOpenBabel(
         });
     }
 
-    return openBabelWorkerPool.runJobs(payloads, nprocs)
-        .then((results: any) => {
-            // Reorder the results based on the auxData field.
-            results.sort((a: any, b: any) => a.auxData - b.auxData);
-            return results;
+    return new Promise((resolve, reject) => {
+        return new OpenBabelQueue("obabel", payloads, undefined, 1, 5, {
+            onJobDone: (jobInfo) => {
+                console.log("Job done:", jobInfo);
+            },
+            onProgress: (progress) => {
+                console.log("Progress:", progress);
+            },
+            onQueueDone: (outputs) => {
+                console.log("Queue done:", outputs);
+                resolve(outputs);
+            },
+            onError(jobInfos, error) {
+                console.error("Error running jobs:", jobInfos, error);
+            },
         });
+    });
+
+    // return openBabelWorkerPool.runJobs(payloads, nprocs)
+    //     .then((results: any) => {
+    //         // Reorder the results based on the auxData field.
+    //         results.sort((a: any, b: any) => a.auxData - b.auxData);
+    //         return results;
+    //     });
 }
 
 /**
