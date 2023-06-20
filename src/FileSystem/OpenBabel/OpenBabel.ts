@@ -6,42 +6,6 @@ import { IFileInfo } from "../Types";
 import { WorkerPool } from "./WorkerPool";
 import { getFormatInfoGivenType } from "../LoadSaveMolModels/Types/MolFormats";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// import OpenBabel from "@/libs/ToCopy/obabel-wasm/obabel";
-// import { initOpenBabel } from "@/libs/ToCopy/obabel-wasm/obabel";
-
-// export let BFS: any = undefined;
-
-// function getFSPromise(): Promise<any> {
-//     let fsPromise: Promise<any>;
-
-//     // Load BFS
-//     if (BFS === undefined) {
-//         fsPromise = dynamicImports.browserfs.module.then((browserfs: any) => {
-//             // fsPromise = dynamicImports.memfs.module.then((browserfs: any) => {
-//             //browserfs.initialize(new browserfs.FileSystem.InMemory());
-//             browserfs.configure({ fs: "InMemory" }, (e: any) => {
-//                 if (e) {
-//                     throw e;
-//                 }
-//             });
-//             BFS = new browserfs.EmscriptenFS() as any;
-//             // debugger;
-//             //FS.createFolder(FS.root, 'data', true, true);
-
-//             //FS.mount(FS, {root: '/'}, '/data');
-//             debugger;
-//             return BFS;
-//         });
-//     } else {
-//         fsPromise = Promise.resolve(BFS);
-//     }
-//     return fsPromise;
-// }
-
-// const openBabelWorkers: Worker[] = [];
-
 const openBabelWorkerPool = new WorkerPool(
     () => new Worker(new URL("./OpenBabel.worker", import.meta.url))
 );
@@ -95,49 +59,7 @@ function runOpenBabel(
             // Reorder the results based on the auxData field.
             results.sort((a: any, b: any) => a.auxData - b.auxData);
             return results;
-        })
-
-    // // Divide the inputFiles between the workers.
-    // const filesPerWorker = batchify(inputFiles as FileInfo[], nprocs);
-
-    // // Similarly divide the arguments among the workers.
-    // const argsPerWorker = batchify(argsLists, nprocs);
-
-    // const promises: Promise<any>[] = [];
-
-    // for (let i = 0; i < filesPerWorker.length; i++) {
-    //     const args = argsPerWorker[i];
-    //     const inpFiles = filesPerWorker[i];
-    //     const wrker = openBabelWorkers[i];
-    //     promises.push(
-    //         runWorker(
-    //             wrker,
-    //             {
-    //                 argsSets: args,
-    //                 inputFiles: inpFiles.map((f) =>
-    //                     (f as FileInfo).serialize
-    //                         ? (f as FileInfo).serialize()
-    //                         : f
-    //                 ),
-    //             },
-    //             false // don't auto terminate the worker.
-    //         )
-    //     );
-    // }
-
-    // return Promise.all(promises)
-    //     .then((results: any[][]) => {
-    //         // Flatten the results.
-    //         const flat = results.flat();
-
-    //         // Order the output by each items orderIdxs property.
-    //         flat.sort((a, b) => a.orderIdx - b.orderIdx);
-
-    //         return flat;
-    //     })
-    //     .catch((e: any) => {
-    //         throw e;
-    //     });
+        });
 }
 
 /**

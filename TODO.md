@@ -119,6 +119,8 @@ api system seems convoluted.
 
 # NEW QUEUE SYSTEM
 
+SEE: MultiProcWorkerJob
+
 Current system is excessively complex. Trying to keep track of total number of
 processors used, etc. If users wants to overuser their processors, just let
 them. You keep track only of each job, to make sure it says in the processor
