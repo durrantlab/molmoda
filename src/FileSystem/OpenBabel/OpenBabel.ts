@@ -1,15 +1,9 @@
 import { messagesApi } from "@/Api/Messages";
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import type { FileInfo } from "../FileInfo";
 import { IFileInfo } from "../Types";
-// import { WorkerPool } from "./WorkerPool";
 import { getFormatInfoGivenType } from "../LoadSaveMolModels/Types/MolFormats";
 import { OpenBabelQueue } from "./OpenBabelQueue";
-
-// const openBabelWorkerPool = new WorkerPool(
-//     () => new Worker(new URL("./OpenBabel.worker", import.meta.url))
-// );
 
 /**
  *
