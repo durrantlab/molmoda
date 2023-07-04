@@ -12,7 +12,7 @@ importScripts("fpocketweb/FpocketWeb.min.js");
 
 /**
  * Helper function to convert a field from fpocket output to a number.
- * 
+ *
  * @param  {string} s  The string to convert
  * @returns {number}  The number
  */
@@ -22,7 +22,7 @@ function numConvert(s: string): number {
 
 /**
  * Helper function to convert fpocket output to a table format.
- * 
+ *
  * @param  {string} infoTxt  The fpocket output.
  * @returns {any[]}  The table data.
  */
@@ -34,25 +34,27 @@ function extraInfoTableData(infoTxt: string): any[] {
         if (tmp.length > 1) {
             items.push({
                 // 'pocket': i + 1,  // Leave lower case
-                'Score': numConvert(tmp[1]),
-                'Druggability': numConvert(tmp[2]),
-                'Alpha Spheres': numConvert(tmp[3]),
-                'Total SASA': numConvert(tmp[4]),
-                'Polar SASA': numConvert(tmp[5]),
-                'Apolar SASA': numConvert(tmp[6]),
-                'Volume': numConvert(tmp[7]),
-                'Mean Local Hydrophobic Density': numConvert(tmp[8]),
-                'Mean Alpha Sphere Radius': numConvert(tmp[9]),
-                'Mean Alpha Sphere Solvent Access': numConvert(tmp[10]),
-                'Apolar Alpha Sphere Proportion': numConvert(tmp[11]),
-                'Hydrophobicity Score': numConvert(tmp[12]),
-                'Volume Score': numConvert(tmp[13]),
-                'Polarity Score': numConvert(tmp[14]),
-                'Charge Score': numConvert(tmp[15]),
-                'Proportion of Polar Atoms': numConvert(tmp[16]),
-                'Alpha Sphere Density': numConvert(tmp[17]),
-                'Center of Mass, Alpha Sphere Max Distance': numConvert(tmp[18]),
-                'Flexibility': numConvert(tmp[19]),
+                Score: numConvert(tmp[1]),
+                Druggability: numConvert(tmp[2]),
+                "Alpha Spheres": numConvert(tmp[3]),
+                "Total SASA": numConvert(tmp[4]),
+                "Polar SASA": numConvert(tmp[5]),
+                "Apolar SASA": numConvert(tmp[6]),
+                Volume: numConvert(tmp[7]),
+                "Mean Local Hydrophobic Density": numConvert(tmp[8]),
+                "Mean Alpha Sphere Radius": numConvert(tmp[9]),
+                "Mean Alpha Sphere Solvent Access": numConvert(tmp[10]),
+                "Apolar Alpha Sphere Proportion": numConvert(tmp[11]),
+                "Hydrophobicity Score": numConvert(tmp[12]),
+                "Volume Score": numConvert(tmp[13]),
+                "Polarity Score": numConvert(tmp[14]),
+                "Charge Score": numConvert(tmp[15]),
+                "Proportion of Polar Atoms": numConvert(tmp[16]),
+                "Alpha Sphere Density": numConvert(tmp[17]),
+                "Center of Mass, Alpha Sphere Max Distance": numConvert(
+                    tmp[18]
+                ),
+                Flexibility: numConvert(tmp[19]),
             });
         }
     }
@@ -60,39 +62,56 @@ function extraInfoTableData(infoTxt: string): any[] {
 }
 
 waitForDataFromMainThread()
-    .then((params: any) => {
-        const fPocketParams = params.userArgs;
-        
-        FpocketWeb.start(
-            fPocketParams,  // {} as IFpocketParams, // fPocketParams,
-            params.pdbName,
-            params.pdbContents,
+    .then((paramsBatch: any[]) => {
+        const responsePromises: Promise<any>[] = [];
 
-            // onDone callback
-            (
-                outPdbFileTxt: string,
-                stdOut: string,
-                stdErr: string,
-                infoTxt: string
-            ) => {
-                sendResponseToMainThread({
-                    outPdbFileTxt,
-                    stdOut,
-                    stdErr,
-                    pocketProps: extraInfoTableData(infoTxt),
-                });
-            },
+        for (const params of paramsBatch) {
+            const fPocketParams = params.userArgs;
 
-            // onError callback
-            (errObj: any) => {
-                sendResponseToMainThread({
-                    error: errObj["message"],
-                });
-            },
+            // TODO: You've received a batch of fpocket parameters, but you're
+            // creating a new fpocket object for each one. Would be good to
+            // reuse existing object for slight speedup.
 
-            "fpocketweb/"
-            // Utils.curPath() + "FpocketWeb/"  // TODO: Good to implement something like this in biotite.
-        );
+            responsePromises.push(
+                new Promise((resolve, reject) => {
+                    FpocketWeb.start(
+                        fPocketParams, // {} as IFpocketParams, // fPocketParams,
+                        params.pdbName,
+                        params.pdbContents,
+
+                        // onDone callback
+                        (
+                            outPdbFileTxt: string,
+                            stdOut: string,
+                            stdErr: string,
+                            infoTxt: string
+                        ) => {
+                            resolve({
+                                outPdbFileTxt,
+                                stdOut,
+                                stdErr,
+                                pocketProps: extraInfoTableData(infoTxt),
+                            });
+                        },
+
+                        // onError callback
+                        (errObj: any) => {
+                            resolve({
+                                error: errObj["message"],
+                            });
+                        },
+
+                        "fpocketweb/"
+                        // Utils.curPath() + "FpocketWeb/"  // TODO: Good to implement something like this in biotite.
+                    );
+                })
+            );
+        }
+
+        return Promise.all(responsePromises);
+    })
+    .then((responses: any[]) => {
+        sendResponseToMainThread(responses);
         return;
     })
     .catch((err: Error) => {

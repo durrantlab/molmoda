@@ -115,7 +115,7 @@ export class UserArgsMixin extends Vue {
 
         // Go through each of the arguments, and update.
         for (const userArg of userArgs) {
-            const name = userArg.name;
+            const {name} = userArg;
 
             // Is it in top-level?
             if (topLevelNames.includes(name)) {

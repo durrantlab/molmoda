@@ -115,28 +115,19 @@ export default class MolPropsPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     onPopupDone(userArgs: IUserArg[]): Promise<void> {
-        const compoundBatches: FileInfo[][] = this.getArg(
+        const compounds: FileInfo[] = this.getArg(
             userArgs,
             "makemolinputparams"
         );
 
-        // Be default, compoundBatches is a list of lists of fileInfos. But I
-        // want to convert all these into smiles strings in bulk, so I'm going
-        // to flatten the list.
-        const origNumBatches = compoundBatches.length;
-        const flattened: FileInfo[] = [];
-        for (const batch of compoundBatches) {
-            flattened.push(...batch);
-        }
-
         // Make sure the filenames are unique.
-        for (let i = 0; i < flattened.length; i++) {
-            flattened[i].name = i.toString() + "_" + flattened[i].name;
+        for (let i = 0; i < compounds.length; i++) {
+            compounds[i].name = i.toString() + "_" + compounds[i].name;
         }
 
         return calcMolProps(
-            flattened.map((f) => f.contents),
-            flattened.map((f) => f.treeNode)
+            compounds.map((f) => f.contents),
+            compounds.map((f) => f.treeNode)
         )
             .then(() => {
                 this.submitJobs();

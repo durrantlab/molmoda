@@ -17,7 +17,7 @@ const queueStore: IQueueStore = {
 
 /**
  * Get a copy of the queue store.
- * 
+ *
  * @returns {IQueueStore}  A copy of the queue store.
  */
 export function getQueueStore(): IQueueStore {
@@ -33,12 +33,16 @@ export function getQueueStore(): IQueueStore {
  * @param {Function} cancelFunc  A function that can be called to cancel the
  *                               job.
  */
-export function startInQueueStore(id: string, nprocs: number, cancelFunc: () => void) {
+export function startInQueueStore(
+    id: string,
+    nprocs: number,
+    cancelFunc: () => void
+) {
     queueStore.running.push({
         id: id,
         progress: 0,
         numProcessors: nprocs,
-        startTime: Date.now(),
+        startTime: Date.now() + Math.random(),  // To make sure unique.
         endTime: undefined,
         status: JobStatus.Running,
         cancelFunc: cancelFunc,
@@ -47,11 +51,14 @@ export function startInQueueStore(id: string, nprocs: number, cancelFunc: () => 
 
 /**
  * Update the progress of a job in the queue store.
- * 
+ *
  * @param {string} id        The job ID.
- * @param {number} progress  The progress of the job.
+ * @param {number}             progress  The progress of the job.
  */
 export function updateProgressInQueueStore(id: string, progress: number) {
+    if (id === undefined) {
+        return;
+    }
     const item = queueStore.running.find((item) => item.id === id);
     if (item) {
         item.progress = progress;
@@ -72,16 +79,18 @@ function _moveToDoneInQueueStore(id: string, status: JobStatus) {
 
 /**
  * Mark a job as done in the queue store.
- * 
+ *
  * @param {string} id  The job ID.
  */
 export function doneInQueueStore(id: string) {
-    _moveToDoneInQueueStore(id, JobStatus.Done);
+    if (id !== undefined) {
+        _moveToDoneInQueueStore(id, JobStatus.Done);
+    }
 }
 
 /**
  * Mark a job as cancelled in the queue store.
- * 
+ *
  * @param {string} id  The job ID.
  */
 export function cancelInQueueStore(id: string) {
@@ -92,4 +101,14 @@ export function cancelInQueueStore(id: string) {
     }
 
     _moveToDoneInQueueStore(id, JobStatus.Cancelled);
+}
+
+/**
+ * Make a job Id unique.
+ *
+ * @param {string} id  The job ID.
+ * @returns {string}  The unique job ID.
+ */
+export function makeUniqJobId(id: string) {
+    return id + "-" + Math.round(Math.random() * 1000000).toString();
 }

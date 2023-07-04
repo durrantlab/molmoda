@@ -8,6 +8,7 @@ import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
 import { TreeNodeListCopies } from "./_Copy";
 import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 
 /**
  * TreeNodeList class
@@ -359,7 +360,8 @@ export class TreeNodeList {
                     const node = terminalNodes.get(i);
                     // If "undefined" in title, rename
                     if (node.title.indexOf("undefined") >= 0) {
-                        node.title = fileName + ":" + (i + 1).toString();
+                        const {basename} = getFileNameParts(fileName);
+                        node.title = basename + ":" + (i + 1).toString();
                     }
                     node.visible = i < MAX_VISIBLE;
                     // node.treeExpanded = false;
@@ -368,13 +370,16 @@ export class TreeNodeList {
                 // If there are more than MAX_VISIBLE nodes, let user know some not visible.
                 if (terminalNodes.length > MAX_VISIBLE) {
                     // Expand trees to make the user aware of hidden molecules.
-                    treeNodeList._nodes[0].treeExpanded = true;
-                    treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
-                        node.treeExpanded = true;
-                    });
-                    treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
-                        node.treeExpanded = true;
-                    });
+                    // NOTE: I decided against the below for consistency. Leave
+                    // commented out in case you want to revisit this.
+
+                    // treeNodeList._nodes[0].treeExpanded = true;
+                    // treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
+                    //     node.treeExpanded = true;
+                    // });
+                    // treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
+                    //     node.treeExpanded = true;
+                    // });
 
                     // A message helps too.
                     messagesApi.popupMessage(
@@ -475,8 +480,15 @@ export class TreeNodeList {
      * 
      * @returns {TreeNodeList}  The new list.
      */
-    public merge(): TreeNodeList {
+    public merge(topLevelTitle?: string): TreeNodeList {
+        // This is where the title is being set to first item. Bad if multiple
+        // frames!
         const firstNode = this._nodes[0].shallowCopy();
+
+        if (topLevelTitle) {
+            firstNode.title = topLevelTitle;
+        }
+
         for (let i = 1; i < this._nodes.length; i++) {
             const node = this._nodes[i];
             firstNode.mergeInto(node);

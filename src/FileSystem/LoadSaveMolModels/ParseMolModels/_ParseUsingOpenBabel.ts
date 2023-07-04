@@ -3,6 +3,7 @@ import { parseMolecularModelFromTexts } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 
 /**
  * Uses OpenBabel to parse the a molecular-model file.
@@ -15,20 +16,34 @@ import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
  */
 export function parseUsingOpenBabel(
     fileInfo: FileInfo,
-    formatInfo: IFormatInfo,
+    formatInfo: IFormatInfo
 ): Promise<TreeNodeList> {
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
 
     // Convert it to MOL2 format and load that using 3dmoljs.
     return convertFileInfosOpenBabel([fileInfo], targetFormat)
         .then((contents: string[]) => {
+            const hasMultipleFrames = contents.length > 1;
             const fileInfos = contents.map((c, i) => {
+                // Separate basename and extension.
+
+                // Need to account for multiple frames.
+                let { name } = fileInfo;
+                if (hasMultipleFrames) {
+                    // const prts = getFileNameParts(fileInfo.name);
+                    // name = `(frame ${i + 1}) ${prts.basename}.${prts.ext}`;
+                    name = `(frame ${i + 1}) ${fileInfo.name}`;
+                }
+
                 return new FileInfo({
                     contents: c,
-                    name: `${fileInfo.name} (frame ${i + 1})`,
+                    name: name,
                 });
             });
-            return parseMolecularModelFromTexts(fileInfos, targetFormat);
+            return parseMolecularModelFromTexts(
+                fileInfos,
+                targetFormat
+            );
         })
         .catch((err) => {
             // It's a catch block for the promise returned by

@@ -8,6 +8,7 @@ import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
 import { parseUsingBiotite } from "./_ParseUsingBiotite";
 import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import type { FileInfo } from "@/FileSystem/FileInfo";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -77,7 +78,8 @@ export function _parseMoleculeFile(
 
             // Merge the tree nodes into one (so all compounds of multi-compound
             // file under single "Compounds").
-            const mergedTreeNodeList = treeNodeList.merge();
+            const topLevelName = getFileNameParts(fileInfo.name).basename;
+            const mergedTreeNodeList = treeNodeList.merge(topLevelName);
 
             if (addToTree) {
                 mergedTreeNodeList.addToMainTree();

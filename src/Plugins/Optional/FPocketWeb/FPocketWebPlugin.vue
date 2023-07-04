@@ -12,7 +12,6 @@
 </template>
 
 <script lang="ts">
-import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { checkProteinLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -25,6 +24,7 @@ import {
     FormElement,
     FormElemType,
     IFormAlert,
+    IFormCheckbox,
     IFormGroup,
     IFormMoleculeInputParams,
     IFormNumber,
@@ -34,7 +34,7 @@ import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { ITreeNode, TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     IColorStyle,
     ITreeNodeData,
@@ -51,6 +51,7 @@ import { messagesApi } from "@/Api/Messages";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { FPocketWebQueue } from "./FPocketWebQueue";
 
 /**
  * FPocketWebPlugin
@@ -87,6 +88,12 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 proteinFormat: "pdb",
             }),
         } as IFormMoleculeInputParams,
+        {
+            id: "providePseudoAtoms",
+            type: FormElemType.Checkbox,
+            label: "Provide pocket-filling pseudo atoms for visualization.",
+            val: false,
+        } as IFormCheckbox,
         {
             id: "pocketDetectionParams",
             type: FormElemType.Group,
@@ -209,18 +216,22 @@ export default class FPocketWebPlugin extends PluginParentClass {
      * @param {IUserArg[]} userArgs  The user arguments.
      */
     onPopupDone(userArgs: IUserArg[]) {
-        const pdbFiles: FileInfo[][] = this.getArg(
+        const pdbFiles: FileInfo[] = this.getArg(
             userArgs,
             "makemolinputparams"
         );
 
-        // Remove makemolinputparams from the arguments
-        userArgs = userArgs.filter((arg) => arg.name !== "makemolinputparams");
+        const userArgsNotFpocketArgs = [
+            "providePseudoAtoms",
+            "makemolinputparams",
+        ];
 
         // Convert to IFpocketParams format
         const fpocketParams: { [key: string]: any } = {}; // IFpocketParams
         userArgs.forEach((arg) => {
-            fpocketParams[arg.name] = arg.val;
+            if (userArgsNotFpocketArgs.indexOf(arg.name) === -1) {
+                fpocketParams[arg.name] = arg.val;
+            }
         });
 
         // Combine into payloads
@@ -230,7 +241,28 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 fpocketParams,
             };
         });
-        this.submitJobs(payloads); // , 10000);
+
+        return new FPocketWebQueue("fpocket", payloads, 1).done
+            .then((fpocketOuts: any) => {
+                // Add the original name and whether to return points too. NOTE:
+                // This is per protein.
+                fpocketOuts.forEach((fpocketOut: any, i: number) => {
+                    fpocketOut.origFileName = pdbFiles[i].name;
+                    fpocketOut.label = pdbFiles[i].treeNode?.descriptions.pathName(":");
+                    fpocketOut.providePseudoAtoms = userArgs.filter(
+                        (u) => u.name === "providePseudoAtoms"
+                    )[0].val;
+                });
+
+                this.submitJobs(fpocketOuts);
+                return;
+            })
+            .catch((err: Error) => {
+                // Intentionally not rethrowing error here.
+                messagesApi.popupError(
+                    `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+                );
+            });
     }
 
     /**
@@ -242,162 +274,216 @@ export default class FPocketWebPlugin extends PluginParentClass {
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(payload: any): Promise<any> {
-        const pdbFile = payload.pdbFile as FileInfo;
-        const userArgs = payload.fpocketParams as IFpocketParams;
+        if (payload.stdErr !== "") {
+            throw new Error(payload.stdErr);
+        }
 
-        const worker = new Worker(
-            new URL("./FPocketWeb.worker", import.meta.url)
+        const outPdbFileTxt = payload.outPdbFileTxt;
+        // const stdOut = payload.stdOut;
+        const stdErr = payload.stdErr;
+        const pocketProps = payload.pocketProps;
+        const providePseudoAtoms = payload.providePseudoAtoms;
+
+        if (stdErr !== "") {
+            console.warn(stdErr);
+        }
+        const promises = [
+            TreeNode.loadFromFileInfo(
+                new FileInfo({
+                    name: payload.origFileName,
+                    contents: outPdbFileTxt,
+                })
+            ),
+            Promise.resolve(pocketProps),
+        ];
+
+        return Promise.all(promises).then((payload2: any[]) => {
+            const outPdbFileTreeNode = payload2[0] as TreeNode | void;
+            const pocketProps = payload2[1] as any[];
+
+            if (outPdbFileTreeNode === undefined) {
+                return;
+            }
+            
+            outPdbFileTreeNode.title = "Pockets: " + payload.label;
+
+            const numInitiallyVisible = 5;
+
+            // Update the compounds (names, style)
+            // let firstNodeId = "";
+
+            // Make everything visible to start.
+            outPdbFileTreeNode.visible = true;
+
+            if (outPdbFileTreeNode.nodes) {
+                this._addBoxes(
+                    outPdbFileTreeNode,
+                    numInitiallyVisible,
+                    pocketProps
+                );
+
+                this._processPocketPseudoAtoms(
+                    outPdbFileTreeNode,
+                    numInitiallyVisible,
+                    providePseudoAtoms
+                );
+
+                // Title "Compounds"
+                const compoundsNode = outPdbFileTreeNode.nodes
+                    .lookup([TreeNodeType.Compound])
+                    .get(0);
+                compoundsNode.title = "Pockets";
+                // compoundsNode.visible = true;
+
+                // Hide anything that isn't Pockets, since it's probably also in
+                // another molecule.
+                for (const node of outPdbFileTreeNode.nodes._nodes) {
+                    if (node.title !== "Pockets") {
+                        node.visible = false;
+                    }
+                    // else {
+                    //     firstNodeId = node.id as string;
+                    // }
+                }
+            }
+
+            // Remove protein
+            outPdbFileTreeNode.nodes = outPdbFileTreeNode.nodes?.filter(
+                (treeNode) => treeNode.type !== TreeNodeType.Protein
+            );
+
+            outPdbFileTreeNode.addToMainTree();
+
+            // this.$store.commit("pushToMolecules", outPdbFileTreeNode);
+
+            // this.$nextTick(() => {
+            //     selectProgramatically(firstNodeId);
+            // });
+            return;
+        });
+    }
+
+    _addBoxes(
+        outPdbFileTreeNode: TreeNode,
+        numInitiallyVisible: number,
+        pocketProps: any[]
+    ): TreeNodeList | undefined {
+        const pseudoAtomNodes = outPdbFileTreeNode.nodes?.lookup([
+            TreeNodeType.Compound,
+            "*",
+            "*",
+        ]);
+
+        // Get the pocket-box regions and properties
+        const shapesNode = new TreeNode({
+            title: "Pocket Boxes",
+            type: TreeNodeType.Region,
+            treeExpanded: true,
+            visible: true,
+            selected: SelectedType.False,
+            focused: false,
+            viewerDirty: true,
+            nodes: new TreeNodeList(),
+        });
+
+        pseudoAtomNodes?.forEach((node: TreeNode, idx: number) => {
+            const box = node.getBoxRegion();
+            box.opacity = 0.9;
+            box.color = randomPastelColor();
+            const newNode = new TreeNode({
+                title: "Pocket" + (idx + 1).toString() + "Box",
+                type: TreeNodeType.Region,
+                region: box,
+                treeExpanded: false,
+                visible: idx < numInitiallyVisible,
+                selected: SelectedType.False,
+                focused: false,
+                viewerDirty: true,
+                data: {
+                    "FPocketWeb Properties": {
+                        data: pocketProps[idx],
+                        type: TreeNodeDataType.Table,
+                        treeNodeId: node.id,
+                    } as ITreeNodeData,
+                },
+            });
+            shapesNode.nodes?.push(newNode);
+        });
+
+        const ps = outPdbFileTreeNode.nodes
+            ?.lookup(TreeNodeType.Compound)
+            .get(0);
+        if (ps && ps.nodes) {
+            // Insert at top
+            ps.nodes._nodes.splice(0, 0, shapesNode);
+        }
+
+        return pseudoAtomNodes;
+    }
+
+    _processPocketPseudoAtoms(
+        outPdbFileTreeNode: TreeNode,
+        numInitiallyVisible: number,
+        providePseudoAtoms: boolean
+    ) {
+        if (outPdbFileTreeNode.nodes === undefined) {
+            return;
+        }
+
+        // Get the index of the node with type compound
+        const compoundNodeIdx = outPdbFileTreeNode.nodes._nodes.findIndex(
+            (node: TreeNode) => node.type === TreeNodeType.Compound
         );
 
-        return runWorker(worker, {
-            pdbName: pdbFile.name,
-            pdbContents: pdbFile.contents,
-            userArgs,
-        })
-            .then((payload: any) => {
-                if (payload.error) {
-                    throw new Error(payload.error);
-                }
-                const outPdbFileTxt = payload.outPdbFileTxt;
-                // const stdOut = payload.stdOut;
-                const stdErr = payload.stdErr;
-                const pocketProps = payload.pocketProps;
+        if (!providePseudoAtoms) {
+            // Remove it
+            // debugger;
 
-                if (stdErr !== "") {
-                    console.warn(stdErr);
-                }
-                const promises = [
-                    TreeNode.loadFromFileInfo(
-                        new FileInfo({
-                            name: "Pockets:" + pdbFile.name,
-                            contents: outPdbFileTxt,
-                        })
-                    ),
-                    Promise.resolve(pocketProps),
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore  // TODO: Fix this
+            outPdbFileTreeNode.nodes._nodes[compoundNodeIdx].nodes._nodes =
+                outPdbFileTreeNode.nodes._nodes[
+                    compoundNodeIdx
+                ].nodes?._nodes.slice(0, -1);
+
+            return;
+        }
+
+        // Title "Compounds"
+        const pseudoAtomNodeTree =
+            outPdbFileTreeNode.nodes._nodes[compoundNodeIdx];
+
+        if (!pseudoAtomNodeTree) {
+            return;
+        }
+
+        if (!pseudoAtomNodeTree.nodes) {
+            return;
+        }
+
+        pseudoAtomNodeTree.nodes.get(1).title = "Pocket Pseudo Atoms";
+
+        // eslint-disable-next-line sonarjs/no-empty-collection
+        pseudoAtomNodeTree.nodes
+            .get(1)
+            .nodes?.forEach((node: TreeNode, idx: number) => {
+                // Should be surface
+                node.styles = [
+                    {
+                        surface: {
+                            color: randomPastelColor(),
+                            opacity: 0.9,
+                        } as IColorStyle,
+                    } as IStyle,
                 ];
 
-                return Promise.all(promises);
-            })
-            .then((payload: any[]) => {
-                const outPdbFileTreeNode = payload[0] as TreeNode | void;
-                const pocketProps = payload[1] as any[];
+                // Rename it too. TODO: This should be the region...
+                node.title = "PocketPseudoAtoms" + (idx + 1);
 
-                if (outPdbFileTreeNode === undefined) {
-                    return;
+                // Hide unless it's the first few ones.
+                if (idx >= numInitiallyVisible) {
+                    node.visible = false;
                 }
-
-                const numInitiallyVisible = 5;
-
-                // Update the compounds (names, style)
-                let firstNodeId = "";
-                const boxes: IBox[] = [];
-
-                // Make everything visible to start.
-                outPdbFileTreeNode.visible = true;
-
-                if (outPdbFileTreeNode.nodes) {
-                    outPdbFileTreeNode.nodes
-                        .lookup([TreeNodeType.Compound, "*", "*"])
-                        ?.forEach((node: TreeNode, idx: number) => {
-                            // Should be surface
-                            node.styles = [
-                                {
-                                    surface: {
-                                        color: randomPastelColor(),
-                                        opacity: 0.9,
-                                    } as IColorStyle,
-                                } as IStyle,
-                            ];
-
-                            // Rename it too
-                            node.title = "Pocket" + (idx + 1);
-
-                            // Hide unless it's the first few ones.
-                            if (idx >= numInitiallyVisible) {
-                                node.visible = false;
-                            }
-
-                            // Add the pocket properties as data.
-                            node.data = {
-                                "FPocketWeb Properties": {
-                                    data: pocketProps[idx],
-                                    type: TreeNodeDataType.Table,
-                                    treeNodeId: node.id,
-                                } as ITreeNodeData,
-                            };
-
-                            boxes.push(node.getBoxRegion());
-
-                            if (idx === 0) {
-                                firstNodeId = node.id as string;
-                            }
-                        });
-
-                    // Update the compound chain name.
-                    const pockets = outPdbFileTreeNode.nodes
-                        .lookup(TreeNodeType.Compound)
-                        .get(0);
-                    pockets.title = "Pockets";
-                    if (pockets.nodes) {
-                        pockets.nodes.get(0).title = "P";
-                    }
-
-                    // Hide the protein, since it's probably also in another
-                    // molecule.
-                    outPdbFileTreeNode.nodes
-                        .lookup(TreeNodeType.Protein)
-                        .flattened.forEach((node: TreeNode) => {
-                            node.visible = false;
-                        });
-
-                    // Add the region list. Create the region list node.
-                    const regionList = new TreeNodeList();
-                    for (let i = 0; i < boxes.length; i++) {
-                        const box = boxes[i];
-                        box.opacity = 0.9;
-                        const newNode = new TreeNode({
-                            title: "PocketBox" + (i + 1).toString(),
-                            type: TreeNodeType.Region,
-                            region: box,
-                            treeExpanded: false,
-                            visible: i < numInitiallyVisible,
-                            selected: SelectedType.False,
-                            focused: false,
-                            viewerDirty: true,
-                        });
-                        regionList.push(newNode);
-                    }
-                    const regionNode = new TreeNode({
-                        title: "S",
-                        type: TreeNodeType.Region,
-                        treeExpanded: true,
-                        visible: true,
-                        selected: SelectedType.False,
-                        focused: false,
-                        viewerDirty: true,
-                        nodes: regionList,
-                    });
-
-                    const ps = outPdbFileTreeNode.nodes
-                        .lookup(["Pockets"])
-                        .get(0);
-                    if (ps.nodes) {
-                        ps.nodes.push(regionNode);
-                    }
-                }
-
-                this.$store.commit("pushToMolecules", outPdbFileTreeNode);
-
-                this.$nextTick(() => {
-                    selectProgramatically(firstNodeId);
-                });
-                return;
-            })
-            .catch((err: Error) => {
-                // Intentionally not rethrowing error here.
-                messagesApi.popupError(
-                    `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
-                );
             });
     }
 

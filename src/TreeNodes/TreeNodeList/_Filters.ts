@@ -355,7 +355,7 @@ export class TreeNodeListFilters {
         }
 
         const hits = this.parentTreeNodeList.newTreeNodeList();
-        const newTreeNodeList = this.parentTreeNodeList.newTreeNodeList;
+        const {newTreeNodeList} = this.parentTreeNodeList;
         const recurse = (
             searchCrit: EasyCriterion[],
             treeNodeList: TreeNodeList

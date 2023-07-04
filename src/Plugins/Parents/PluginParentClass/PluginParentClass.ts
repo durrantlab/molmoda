@@ -26,6 +26,7 @@ import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { doneInQueueStore, makeUniqJobId, startInQueueStore } from "@/Queue/QueueStore";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -124,6 +125,14 @@ export abstract class PluginParentClass extends mixins(
      */
     alwaysEnabled = false;
 
+    /**
+     * By default, all jobs are shown in the job queue. You can change this
+     * default behavior by setting showInQueue to false.
+     * 
+     * @type {boolean}
+     */
+    showInQueue = true;
+
     // In some cases, must pass information to the plugin when it opens.
     // Typicaly when using the plugin outside the menu system.
     protected payload: any = undefined;
@@ -215,7 +224,7 @@ export abstract class PluginParentClass extends mixins(
      * @helper
      * @document
      */
-    protected submitJobs(
+    protected async submitJobs(
         parameterSets?: any[],
         numProcessorsPerJob = 1,
         delayBetweenJobsMS?: number
@@ -240,10 +249,22 @@ export abstract class PluginParentClass extends mixins(
         // Remove any job that returns nothing.
         jobs = jobs.filter((j: any) => j !== undefined);
 
+        // Add to job queue table. Also 1 processor, because running on main
+        // thread.
+        const jobId = makeUniqJobId(this.pluginId);
+        if (this.showInQueue) {
+            startInQueueStore(jobId, 1, () => {return;})
+        }
+
         // Wait for promises to resolve.
-        Promise.all(jobs).catch((err: any) => {
+        await Promise.all(jobs).catch((err: any) => {
             throw err;
         });
+
+        // Remove from job queue table.
+        if (this.showInQueue) {
+            doneInQueueStore(jobId);
+        }
 
         // const jobs: IJobInfoToEndpoint[] = parameterSets.map(
         //     (p: IJobInfoToEndpoint) => {
@@ -340,13 +361,11 @@ export abstract class PluginParentClass extends mixins(
                 .catch((error: Error) => {
                     throw error;
                 });
-        } else {
+        } else if (this.logJob) {
             // Proabably returned void.
-            if (this.logJob) {
-                endLogTxt +=
-                    " " + timeDiffDescription(new Date().getTime(), startTime);
-                api.messages.log(endLogTxt, undefined, jobId);
-            }
+            endLogTxt +=
+                " " + timeDiffDescription(new Date().getTime(), startTime);
+            api.messages.log(endLogTxt, undefined, jobId);
         }
 
         // It's an object or undefined

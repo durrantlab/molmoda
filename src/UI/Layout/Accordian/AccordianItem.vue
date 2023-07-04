@@ -18,7 +18,7 @@
       :aria-labelledby="'heading-' + id"
       :data-bs-parent="'#' + id"
     >
-      <div class="accordion-body p-2 pt-0">
+      <div class="accordion-body p-2 pt-0 pb-3">
         <slot></slot>
       </div>
     </div>

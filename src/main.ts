@@ -10,6 +10,7 @@ import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
+import { QueueTest } from "./Queue/QueueTest";
 
 // api.sys.loadStatus.started = true;
 
@@ -54,7 +55,7 @@ createApp(App)
 // for (let i = 0; i < 200; i++) {
 //     fakeInputs.push(Math.random());
 // }
-// new QueueTest("test", fakeInputs, 8, 2, 10, {
+// new QueueTest("test", fakeInputs, 2, {
 //     onJobDone: (jobInfo) => {
 //         console.log("Job done:", jobInfo);
 //     },

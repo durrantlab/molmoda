@@ -118,7 +118,7 @@ export enum TreeNodeDataType {
 
 export interface ITreeNodeData {
     // Varies depending on type. TODO: Make more specific using ||
-    data: any;
+    data: any;  // Should be like {}, I think.
 
     type: TreeNodeDataType;
 

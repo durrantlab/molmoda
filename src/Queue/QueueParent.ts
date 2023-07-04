@@ -3,6 +3,7 @@
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import {
     doneInQueueStore,
+    makeUniqJobId,
     startInQueueStore,
     updateProgressInQueueStore,
 } from "./QueueStore";
@@ -35,7 +36,7 @@ export abstract class QueueParent {
     // How many processors are being currently used by jobs in the queue.
     private _numProcsCurrentlyRunning = 0;
 
-    private _callbacks: INewQueueCallbacks;
+    private _callbacks: INewQueueCallbacks | undefined;
 
     // The total number of jobs
     private _numTotalJobs: number;
@@ -43,13 +44,20 @@ export abstract class QueueParent {
     // An id unique to this queue.
     private _id: string;
 
+    private _showInQueue: boolean;
+
     // If this is true, job will be cancelled as soon as possible.
     protected jobsCancelling: boolean;
+
+    // The done promise is resolved when the queue is finished. Same as the
+    // callback, but promised based if that's your preference.
+    public done: Promise<any>;
+    public _doneResolveFunc: any;
 
     /**
      * The class constructor.
      *
-     * @param {string}             jobTypeId                  A string that
+     * @param {string|undefined}   jobTypeId                  A string that
      *                                                        identifies the
      *                                                        type of job.
      * @param {any[]}              inputs                     An array of inputs
@@ -76,23 +84,46 @@ export abstract class QueueParent {
     constructor(
         jobTypeId: string,
         inputs: any[],
-        maxTotalProcs: number | undefined = undefined,
         procsPerJobBatch = 1,
-        batchSize = 1,
-        callbacks: INewQueueCallbacks
+        callbacks?: INewQueueCallbacks,
+        batchSize: number | undefined = undefined,
+        showInQueue = true
     ) {
-        this._maxTotalProcs =
-            maxTotalProcs === undefined
-                ? getSetting("maxProcs")
-                : maxTotalProcs;
-
+        this._numTotalJobs = inputs.length;
         this._procsPerJobBatch = procsPerJobBatch;
         this._callbacks = callbacks;
-        this._numTotalJobs = inputs.length;
         this.jobsCancelling = false;
+        this._showInQueue = showInQueue;
 
-        this._id =
-            jobTypeId + "-" + Math.round(Math.random() * 1000000).toString();
+        // Adjust max number of processors to be used by the queue if necessary.
+        // Useful if there are very few items in the queue.
+        this._maxTotalProcs = getSetting("maxProcs");
+        this._maxTotalProcs = Math.min(
+            this._maxTotalProcs,
+            this._numTotalJobs * this._procsPerJobBatch
+        );
+        const maxSimultaneousJobs = Math.floor(this._maxTotalProcs / this._procsPerJobBatch);
+        this._maxTotalProcs = Math.min(
+            this._maxTotalProcs,
+            maxSimultaneousJobs * this._procsPerJobBatch
+        );
+
+        // this._maxTotalProcs -= this._maxTotalProcs % batchSize;
+
+        if (batchSize === undefined) {
+            // If batch size isn't defined, make it big enough to use all the
+            // processors. Letting the user define this specifically in case
+            // they want to use the onJobDone callback to do something with the
+            // outputs as they become available, not the onQueueDone callback
+            // (when everything done).
+            batchSize = Math.ceil(inputs.length / maxSimultaneousJobs);
+        }
+
+        this._id = makeUniqJobId(jobTypeId);
+
+        this.done = new Promise((resolve) => {
+            this._doneResolveFunc = resolve;
+        });
 
         this._onQueueStart();
 
@@ -247,16 +278,18 @@ export abstract class QueueParent {
      * The onQueueStart callback to call when the queue starts.
      */
     private _onQueueStart() {
-        startInQueueStore(this._id, this._maxTotalProcs, () => {
-            // This function allows the queue to be cancelled from an external
-            // location.
-
-            // To the extent possible, abort currently running jobs.
-            this.jobsCancelling = true;
-
-            // Stop the timer that will try to submit additional jobs
-            clearInterval(this._queueTimer);
-        });
+        if (this._showInQueue) {
+            startInQueueStore(this._id, this._maxTotalProcs, () => {
+                // This function allows the queue to be cancelled from an external
+                // location.
+    
+                // To the extent possible, abort currently running jobs.
+                this.jobsCancelling = true;
+    
+                // Stop the timer that will try to submit additional jobs
+                clearInterval(this._queueTimer);
+            });
+        }
     }
 
     /**
@@ -265,7 +298,7 @@ export abstract class QueueParent {
      * @param {IJobInfo} jobInfo  The job info of the job that is done.
      */
     private _onJobDone(jobInfo: IJobInfo) {
-        if (this._callbacks.onJobDone) {
+        if (this._callbacks && this._callbacks.onJobDone) {
             this._callbacks.onJobDone(jobInfo.output);
         }
     }
@@ -281,7 +314,7 @@ export abstract class QueueParent {
             return jobInfo.input;
         });
 
-        if (this._callbacks.onError) {
+        if (this._callbacks && this._callbacks.onError) {
             this._callbacks.onError(payloadsOfBatchThatFailed, error);
         }
     }
@@ -298,11 +331,17 @@ export abstract class QueueParent {
         // Get the payloads of the outputs.
         const outputPayloads = outputJobs.map((jobInfo) => jobInfo.output);
 
-        doneInQueueStore(this._id);
+        if (this._showInQueue) {
+            doneInQueueStore(this._id);
+        }
 
-        if (this._callbacks.onQueueDone) {
+        if (this._callbacks && this._callbacks.onQueueDone) {
             this._callbacks.onQueueDone(outputPayloads);
         }
+
+        // Also resolve the promise, in case promise is being used instead of
+        // callbacks.
+        this._doneResolveFunc(outputPayloads);
     }
 
     /**
@@ -311,8 +350,10 @@ export abstract class QueueParent {
      * @param {number} percent  The percent of jobs that have been completed.
      */
     private _onProgress(percent: number) {
-        updateProgressInQueueStore(this._id, percent);
-        if (this._callbacks.onProgress) {
+        if (this._showInQueue) {
+            updateProgressInQueueStore(this._id, percent);
+        }
+        if (this._callbacks && this._callbacks.onProgress) {
             this._callbacks.onProgress(percent);
         }
     }

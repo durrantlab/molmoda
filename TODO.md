@@ -117,13 +117,57 @@ is logging needed?
 
 api system seems convoluted.
 
-Way to add things to done queue directly. Things that run quickly, but you still
-want a job.
+Popups (done, start after delay) need to be built into the queue system.
+
+Whenever new molecule created, create that record be kept of how it was
+obtained. That record can be viewed.
+
+Load molecule, never stops loading (spinner)
+
+Queue system should throw an error if any single job requires more than number
+of processors available.
+
+Need GoogleAnlytics
+
+
+# DONE
+
+Also, load molecule should open loaded molecule in tree. Just keep everything
+closed for consistency.
+
+Docking, when sort, click, wrong molecule selected.
+
+Use same top-level name format for FPocketWeb.
+
+Add docking data to chart. Should include receptor?
+
+NEW QUEUE SYSTEM:
+
+Docking not sorting by number
+
+Webina needs to be redone with new queue system.
+
+As a general design principle, don't add repeated models. So basically, get rid
+of protein of FPocketWeb.
+
+fpocket: output (first five only visible, auto open, etc.) Test both with
+pseudopoints and no.
 
 fpocket should still run via new queue system. Could be multiple proteins, time
 could add up.
 
-# NEW QUEUE SYSTEM
+When id is undefined, don't show it in queue system. Clear out some of the
+things that get logged (msgbox).
+
+Sort by start by default in queue.
+
+Just made so logs of variables can be string | undefined. Think was that if
+undefined, wouldn't appear in queue. But broke everything. Need to fix.
+
+Way to add things to done queue directly. Things that run quickly, but you still
+want a job.
+
+Automatically add to queue (done) for every plugin. That's new log system, essentially.
 
 SEE: MultiProcWorkerJob
 
@@ -152,8 +196,6 @@ Perhaps only show message letting user know job is running if job doesn't finish
 quickly (e.g., in 5 secs). But this message could let user know they can check
 the queue.
 
-
-# DONE
 
 WorkerPool elsewhere?
 

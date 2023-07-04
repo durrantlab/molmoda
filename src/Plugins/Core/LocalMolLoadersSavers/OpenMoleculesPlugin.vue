@@ -158,7 +158,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      *     done. TODO: These are wrong throughout.
      */
     runJobInBrowser(fileInfo: FileInfo): RunJobReturn {
-        // It's not a biotite file (e.g., a PDB file).
+        // It's not a biotite file (e.g., a PDB file). NOTE: When loading a
+        // multi-frame file, this fileInfo contains all frames (not yet
+        // separated).
         return this.addFileInfoToViewer(fileInfo);
     }
 

@@ -89,11 +89,11 @@ export class MoleculeInput {
      *
      * @returns {Promise<IProtCmpdTreeNodePair[]>}  The protein, compound pairs.
      */
-    public getProtAndCompoundPairsAsBatches(): Promise<
+    public getProtAndCompoundPairs(): Promise<
         | IProtCmpdTreeNodePair[]
         | FileInfo[]
-        | IProtCmpdTreeNodePair[][]
-        | FileInfo[][]
+        // | IProtCmpdTreeNodePair[][]
+        // | FileInfo[][]
     > {
         // let proteins: IFileInfo[] = [];
         // let proteinsPromise: Promise<IFileInfo[]> = Promise.resolve([]);
@@ -142,7 +142,7 @@ export class MoleculeInput {
         return Promise.all([allProtPromises, cmpdFileInfoPromise])
             .then((payload: FileInfo[][]) => {
                 let [prots, cmpds] = payload;
-
+                
                 // Remove any undefineds. This happens when there are no
                 // proteins and/or compounds loaded.
                 prots = prots.filter((p: FileInfo) => p !== undefined);
@@ -159,33 +159,36 @@ export class MoleculeInput {
                             } as IProtCmpdTreeNodePair);
                         }
                     }
-                    return this._makeBatches(proteinCompoundPairs);
+                    // return this._makeBatches(proteinCompoundPairs);
+                    return proteinCompoundPairs;
                 }
 
                 if (cmpds.length > 0) {
                     // Just compounds.
-                    return this._makeBatches(cmpds);
+                    // return this._makeBatches(cmpds);
+                    return cmpds;
                 }
 
-                return this._makeBatches(prots);
+                // return this._makeBatches(prots);
+                return prots;
             })
             .catch((err: Error) => {
                 throw err;
             });
     }
 
-    /**
-     * Given a list of items, divide the list into batches.
-     * 
-     * @param {any[]} lst  The list of items.
-     * @returns {any[] | any[][]}  The list of items, divided into batches.
-     */
-    private _makeBatches<Type>(lst: Type[]): Type[] | Type[][] {
-        if (this.batchSize === undefined) {
-            // No batching
-            return lst;
-        }
+    // /**
+    //  * Given a list of items, divide the list into batches.
+    //  * 
+    //  * @param {any[]} lst  The list of items.
+    //  * @returns {any[] | any[][]}  The list of items, divided into batches.
+    //  */
+    // private _makeBatches<Type>(lst: Type[]): Type[] | Type[][] {
+    //     if (this.batchSize === undefined) {
+    //         // No batching
+    //         return lst;
+    //     }
 
-        return batchify(lst, this.batchSize);
-    }
+    //     return batchify(lst, this.batchSize);
+    // }
 }

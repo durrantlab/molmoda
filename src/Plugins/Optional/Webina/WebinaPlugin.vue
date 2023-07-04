@@ -46,6 +46,16 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { messagesApi } from "@/Api/Messages";
+import { WebinaQueue } from "./WebinaQueue";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import {
+    ITreeNodeData,
+    SelectedType,
+    TreeNodeDataType,
+    TreeNodeType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
  * WebinaPlugin
@@ -120,6 +130,13 @@ export default class WebinaPlugin extends PluginParentClass {
             val: false,
             description:
                 "Scores the existing pose, without repositioning the compound.",
+        } as IFormCheckbox,
+        {
+            id: "keep_only_best",
+            type: FormElemType.Checkbox,
+            label: "Keep Only Best",
+            val: true,
+            description: "Keep only the best predicted pose for each compound.",
         } as IFormCheckbox,
         {
             id: "webinaAdvancedParams",
@@ -222,131 +239,181 @@ export default class WebinaPlugin extends PluginParentClass {
         webinaParams["ligand"] = "/ligand.pdbqt";
         webinaParams["out"] = "/output.pdbqt";
 
+        // keep_only_best isn't an actual webina parameter.
+        const keepOnlyBest = webinaParams["keep_only_best"];
+        if (webinaParams["keep_only_best"]) {
+            delete webinaParams["keep_only_best"];
+        }
+
+        const origAssociatedTreeNodes = filePairs.map((filePair) => {
+            return [filePair.prot.treeNode, filePair.cmpd.treeNode];
+        });
+
         const payloads: any = filePairs.map((filePair) => {
             filePair.prot.name = "/receptor.pdbqt";
             filePair.cmpd.name = "/ligand.pdbqt";
             return {
                 pdbFiles: filePair,
                 webinaParams: webinaParams,
+                keepOnlyBest: userArgs.filter(
+                    (u) => u.name === "keep_only_best"
+                )[0].val,
             };
         });
 
-        this.submitJobs(payloads); // , 10000);
+        return new WebinaQueue("webina", payloads, webinaParams["cpu"]).done
+            .then((webinaOuts: any) => {
+                // TODO: Get any stdErr and show errors if they exist.
+
+                // Add keep_only_best and output filename basename to the output
+                webinaOuts.forEach((webinaOut: any, i: number) => {
+                    webinaOut.keepOnlyBest = keepOnlyBest;
+                    webinaOut.origProtTreeNode = origAssociatedTreeNodes[i][0];
+                    webinaOut.origCmpdTreeNode = origAssociatedTreeNodes[i][1];
+                });
+
+                this.submitJobs([webinaOuts]);
+                return;
+            })
+            .catch((err: Error) => {
+                // Intentionally not rethrowing error here. // TODO: fix this
+                messagesApi.popupError(
+                    `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+                );
+            });
+
+        // debugger;
+
+        // this.submitJobs(payloads); // , 10000);
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {any} payload     The user arguments to pass to the "executable."
+     * @param {any[]} payloads     The user arguments to pass to the "executable."
      *                          Contains compound information.
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(payload: any): Promise<any> {
-        return new Promise((resolve, reject) => {
-            return dynamicImports.webina.module
-                .then((WEBINA_MODULE: any) => {
-                    const startTime = performance.now();
-                    let std = "";
-                    let stdOut = "";
-                    let stdErr = "";
-                    const ligandPDBQT = payload.pdbFiles.cmpd.contents;
-                    const receptorPDBQT = payload.pdbFiles.prot.contents;
+    async runJobInBrowser(payloads: any[]): Promise<any> {
+        const protPath = (
+            payloads[0].origProtTreeNode as TreeNode
+        ).descriptions.pathName(":");
+        const ligPath = (
+            payloads[0].origCmpdTreeNode as TreeNode
+        ).descriptions.pathName(":");
 
-                    // https://emscripten.org/docs/api_reference/module.html
+        const treeNodesPromises: Promise<TreeNode>[] = [];
+        for (const payload of payloads) {
+            const pdbqtOuts = payload.output;
 
-                    return WEBINA_MODULE({
-                        noInitialRun: true,
+            // Split on lines that start with "MODEL"
+            let pdbqtOutsSeparate = pdbqtOuts.split(/\n(?=MODEL)/);
 
-                        // stderr will log when any file is read.
-                        logReadFiles: true,
+            if (payload.keepOnlyBest) {
+                pdbqtOutsSeparate = [pdbqtOutsSeparate[0]];
+            }
 
-                        // onRuntimeInitialized() { console.log("Runtime initialized"); },
+            for (const pdbqtOut of pdbqtOutsSeparate) {
+                const pdbqtOutLines = pdbqtOut.split("\n");
 
-                        // preInit() { console.log("Pre-init"); },
+                const model = pdbqtOutLines[0].trim();
 
-                        preRun: [
-                            (mod: any) => {
-                                // Save the contents of the files to the virtual
-                                // file system
-                                mod.FS.writeFile(
-                                    "/receptor.pdbqt",
-                                    receptorPDBQT
-                                );
-                                mod.FS.writeFile("/ligand.pdbqt", ligandPDBQT);
-                            },
-                        ],
+                const data: { [key: string]: ITreeNodeData } = {};
+                const scoreLabel = "Docking Scores: " + protPath;
+                data[scoreLabel] = {
+                    data: {
+                        "Score (kcal/mol)": parseFloat(
+                            pdbqtOutLines
+                                .find((line: string) =>
+                                    line.startsWith("REMARK VINA")
+                                )
+                                .split(/\s+/)[3]
+                        ),
+                    },
+                    type: TreeNodeDataType.Table,
+                    treeNodeId: "", // Fill in later
+                };
 
-                        locateFile(path: string) {
-                            // This is where the emscripten compiled files are
-                            // located
-                            return `./js/webina/` + path;
-                        },
-
-                        onExit(/* code */) {
-                            // Read the contents of the output file
-                            const output = (this as any).FS.readFile(
-                                "/output.pdbqt",
-                                {
-                                    encoding: "utf8",
-                                }
-                            );
-
-                            // Resolve the promise with the output
-                            resolve({
-                                std: std.trim(),
-                                stdOut: stdOut.trim(),
-                                stdErr: stdErr.trim(),
-                                output: output,
-                                time: performance.now() - startTime,
-                            });
-                        },
-
-                        // Monitor stdout and stderr output
-                        print(text: string) {
-                            console.log(text);
-                            stdOut += text + "\n";
-                            std += text + "\n";
-                        },
-
-                        printErr(text: string) {
-                            console.log(text);
-                            stdErr += text + "\n";
-                            std += text + "\n";
-                        },
-                    });
-                })
-                .then((instance: any) => {
-                    debugger;
-                    // Probably not needed, but just in case
-                    return instance.ready;
-                })
-                .then((instance: any) => {
-                    const argsList = [];
-                    for (const key in payload.webinaParams) {
-                        const val = payload.webinaParams[key];
-                        if ([true, "true"].indexOf(val) !== -1) {
-                            argsList.push(`--${key}`);
-                        } else if ([false, "false"].indexOf(val) !== -1) {
-                            // do nothing
-                        } else {
-                            argsList.push(`--${key}`);
-                            argsList.push(val.toString());
-                        }
-                    }
-
-                    return instance.callMain(argsList);
-                })
-                .then((resp: any) => {
-                    debugger;
-                    return resp;
-                })
-                .catch((err) => {
-                    reject(err);
-                    console.error(err);
-                    throw err;
+                // Create fileinfo
+                const modelName = payload.keepOnlyBest
+                    ? ""
+                    : `:${model.replace("MODEL", "model").replace(" ", "")}`;
+                const fileInfo = new FileInfo({
+                    name: payload.origCmpdTreeNode.title + modelName + ".pdbqt",
+                    contents: pdbqtOut,
                 });
-        });
+
+                const treeNodePromise = TreeNode.loadFromFileInfo(fileInfo)
+                    .then((treeNode: TreeNode | void) => {
+                        if (!treeNode) {
+                            throw new Error(
+                                "Could not load file into tree node."
+                            );
+                        }
+
+                        treeNode.src = payload.origCmpdTreeNode.src;
+                        treeNode.data = data;
+                        treeNode.data[scoreLabel].treeNodeId = treeNode.id;
+
+                        return treeNode;
+                    })
+                    .catch((err: Error) => {
+                        // TODO: FIX
+                        throw err;
+                        // messagesApi.popupError(
+                        // `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+                        // );
+                    });
+
+                treeNodesPromises.push(treeNodePromise);
+
+                // this.$store.commit("pushToMolecules", outPdbFileTreeNode);
+
+                // debugger;
+            }
+        }
+
+        return Promise.all(treeNodesPromises)
+            .then((dockedTreeNodes: TreeNode[]) => {
+                // Only first 5 are visible
+                for (let i = 0; i < dockedTreeNodes.length; i++) {
+                    const dockedTreeNode = dockedTreeNodes[i];
+                    dockedTreeNode.visible = i < 5;
+                }
+
+                const compoundTreeNodeList = new TreeNodeList([
+                    new TreeNode({
+                        title: "Compounds",
+                        nodes: new TreeNodeList(dockedTreeNodes),
+                        treeExpanded: true,
+                        visible: true,
+                        selected: SelectedType.ChildOfTrue,
+                        focused: true,
+                        viewerDirty: true,
+                        type: TreeNodeType.Compound,
+                    }),
+                ]);
+
+                // Create a new TreeNodeList
+                const mainTreeNode = new TreeNode({
+                    title: `Docked: ${protPath}, ${ligPath}`,
+                    nodes: compoundTreeNodeList,
+                    treeExpanded: true,
+                    visible: true,
+                    selected: SelectedType.True,
+                    focused: true,
+                    viewerDirty: true,
+                });
+
+                mainTreeNode.addToMainTree();
+
+                return dockedTreeNodes;
+            })
+            .catch((err: Error) => {
+                debugger;
+                throw err;
+            });
     }
 
     // const pdbFiles = payload.pdbFiles as IProtCmpdTreeNodePair;

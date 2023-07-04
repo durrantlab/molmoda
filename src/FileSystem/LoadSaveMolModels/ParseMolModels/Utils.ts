@@ -10,15 +10,17 @@ import { IMolData } from "@/Core/WebWorkers/WorkerHelper";
 /**
  * Loads a molecule from text, using a web worker.
  *
- * @param  {FileInfo} fileInfos The text and name of the molecule.
- * @param  {string}  format    The format of the molecule.
+ * @param  {FileInfo} fileInfos     The text and name of the molecule.
+ * @param  {string}   format        The format of the molecule.
+ * @param  {string}   origFilename  The original filename of the molecule
+ *                                  s(before separated into frames).
  * @returns {Promise<TreeNode>} A promise that resolves the molecule.
  */
 export function parseMolecularModelFromTexts(
     fileInfos: FileInfo[],
     format: string,
 ): Promise<TreeNodeList> {
-    const worker = new Worker(
+    const parseMolecularModelsWorker = new Worker(
         new URL("./ParseMolecularModels.worker", import.meta.url)
     );
 
@@ -26,7 +28,7 @@ export function parseMolecularModelFromTexts(
         return { fileInfo: fi.serialize ? fi.serialize() : fi, format }
     }) as IMolData[];
 
-    return runWorker(worker, workerParams)
+    return runWorker(parseMolecularModelsWorker, workerParams)
         .then((molecularDataDeserialized: any) => {
             return treeNodeListDeserialize(molecularDataDeserialized);
             // const promises = molecularDataNodeList.map(
@@ -35,9 +37,9 @@ export function parseMolecularModelFromTexts(
             // return Promise.all(promises);
         })
         .then((molecularDataNodeList: TreeNodeList) => {
-            molecularDataNodeList.forEach((molecularDatum: TreeNode) => {
+            molecularDataNodeList.forEach((molecularDatum: TreeNode, idx: number) => {
                 // Set name based on first one in fileInfos.
-                const fileName = fileInfos[0].name;
+                const fileName = fileInfos[idx].name;
 
                 // Set molName as src on all terminal nodes
                 molecularDatum.src = fileName;

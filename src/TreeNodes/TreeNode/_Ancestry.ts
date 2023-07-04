@@ -21,10 +21,10 @@ export class TreeNodeAncestry {
      * Get a nodes ancestory. First element is most distant ancestor (greatest
      * grandparent), and last is this node itself.
      *
-     * @param  {TreeNodeList}         mols  The list of molecules to search.
+     * @param  {TreeNodeList}  mols  The list of molecules to search.
      * @returns {TreeNodeList}  The list of nodes in the ancestory.
      */
-    public getAncestory(mols: TreeNodeList): TreeNodeList {
+    public getAncestry(mols: TreeNodeList): TreeNodeList {
         // If you get here, node is of type TreeNode.
 
         let curNode = this.parentTreeNode;

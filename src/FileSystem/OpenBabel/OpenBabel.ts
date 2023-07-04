@@ -47,25 +47,7 @@ function runOpenBabel(
         });
     }
 
-    return new Promise((resolve, reject) => {
-        // Batching 25 at a time. This was chosen arbitrarily.
-        return new OpenBabelQueue(appId, payloads, undefined, 1, 25, {
-            // onJobDone: (jobInfo) => {},
-            // onProgress: (progress) => {},
-            onQueueDone: (outputs) => {
-                console.log("Queue done:", outputs);
-                resolve(outputs);
-            },
-            // onError(jobInfos, error) {},
-        });
-    });
-
-    // return openBabelWorkerPool.runJobs(payloads, nprocs)
-    //     .then((results: any) => {
-    //         // Reorder the results based on the auxData field.
-    //         results.sort((a: any, b: any) => a.auxData - b.auxData);
-    //         return results;
-    //     });
+    return new OpenBabelQueue(appId, payloads).done;
 }
 
 /**
@@ -118,7 +100,7 @@ export function convertFileInfosOpenBabel(
 
     // let tmpPass: any;
 
-    return runOpenBabel("splitFile", separateFileCmds, srcFileInfos)
+    return runOpenBabel("convertPrep", separateFileCmds, srcFileInfos)
         .then((fileContentsFromInputs: any[][]) => {
             // Note that a given input molecule can yield multiple outputs if it
             // contained many molecules (e.g., multi-molecule SDF file)

@@ -153,19 +153,21 @@ export default class PluginComponent extends mixins(
         // If one of the user arguments is of type MoleculeInputParams, replace
         // it with IFileInfo objects.
         let combineIdxs: number[] = [];
-        let combinePromises: Promise<FileInfo[][] | FileInfo[]>[] = [];
+        let combinePromises: Promise<FileInfo[][]>[] = [];
         for (const idx in userArgs) {
             const param = userArgs[idx];
-            if (param.val.molsToConsider) {
+            if (param.val.molsToConsider) {  // MoleculeInputParams
                 combineIdxs.push(parseInt(idx));
                 combinePromises.push(
-                    param.val.getProtAndCompoundPairsAsBatches()
+                    param.val.getProtAndCompoundPairs()
                 );
             }
         }
 
         Promise.all(combinePromises)
-            .then((combinedMols: (FileInfo[] | FileInfo[][])[]) => {
+            .then((combinedMols: (FileInfo[][])[]) => {
+                // If there wasn't a MoleculeInputParams, the list will be
+                // empty.
                 for (let idx = 0; idx < combineIdxs.length; idx++) {
                     let i = combineIdxs[idx];
                     userArgs[i].val = combinedMols[idx];

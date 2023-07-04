@@ -88,21 +88,12 @@ export function calcMolProps(
         };
     });
 
-    return new Promise((resolve) => {
-        // Batching 25 at a time. This was chosen arbitrarily.
-        return new CalcMolPropsQueue("molProps", payloads, undefined, 1, 25, {
-            // onJobDone: (jobInfo) => {},
-            // onProgress: (progress) => {},
-            onQueueDone: (outputs) => {
-                resolve(outputs);
-            },
-            // onError(jobInfos, error) {},
-        });
-    })
+    // Batching 25 at a time. This was chosen arbitrarily.
+    return new CalcMolPropsQueue("molProps", payloads, 1).done
         .then((calculatedProps: any) => {
             for (let i = 0; i < calculatedProps.length; i++) {
                 const calculatedProp = calculatedProps[i];
-                const {descriptors, treeNodeData} = calculatedProp;
+                const { descriptors, treeNodeData } = calculatedProp;
                 const idx = indexesToCalculate[i];
 
                 // Add to the associated container if appropriate.

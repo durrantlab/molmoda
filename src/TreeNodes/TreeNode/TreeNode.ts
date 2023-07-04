@@ -18,6 +18,7 @@ import { TreeNodeList } from "../TreeNodeList/TreeNodeList";
 import { newTreeNodeList, setupMakerFuncs } from "../TreeNodeMakers";
 import { TreeNodeAncestry } from "./_Ancestry";
 import { TreeNodeDescriptions } from "./_Descriptions";
+import { store } from "@/Store";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -137,6 +138,11 @@ export class TreeNode {
         return this._descriptions;
     }
 
+    public get parentTreeNode(): TreeNode | undefined {
+        const ancestors = this.getAncestry(store.state.molecules);
+        return ancestors.get(ancestors.length - 2);
+    }
+
     /**
      * Serialize the TreeNode (removes objects).
      *
@@ -226,7 +232,7 @@ export class TreeNode {
      * @returns {TreeNodeList}  The list of nodes in the ancestory.
      */
     public getAncestry(mols: TreeNodeList): TreeNodeList {
-        return this._ancestry.getAncestory(mols);
+        return this._ancestry.getAncestry(mols);
     }
 
     /**

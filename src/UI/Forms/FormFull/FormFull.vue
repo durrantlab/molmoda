@@ -6,7 +6,7 @@
                     formElem.type === FormElementType.Group &&
                     !disabled(formElem)
                 "
-                cls="border-0 mt-2"
+                :cls="'border-0 mt-' + spacing"
             >
                 <Accordian :id="formElem.id">
                     <AccordianItem
@@ -30,7 +30,7 @@
                         ? ''
                         : formElem.label
                 "
-                cls="border-0 mt-2"
+                :cls="'border-0 mt-' + spacing"
                 :disabled="disabled(formElem)"
             >
                 <FormInput
@@ -190,6 +190,7 @@ export default class FormFull extends Vue {
     @Prop({ required: true }) modelValue!: FormElement[];
     @Prop({ required: true }) id!: FormElement[];
     @Prop({ default: false }) hideIfDisabled!: boolean;
+    @Prop({ default: "3" }) spacing!: string;
 
     FormElementType = FormElemType; // So accessible in template
 

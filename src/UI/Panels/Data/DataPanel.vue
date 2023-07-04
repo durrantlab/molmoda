@@ -1,7 +1,7 @@
 <template>
     <!-- modelValue="a" -->
-    <FormSelectRegion v-model="test"></FormSelectRegion>
-    [[ {{test}} ]]
+    <!-- <FormSelectRegion v-model="test"></FormSelectRegion> -->
+    <!-- [[ {{test}} ]] -->
 
     <!-- Iterate through key, pair of allTableData -->
     <h5>Data: Visible/Selected Molecules</h5>
@@ -218,7 +218,7 @@ export default class DataPanel extends Vue {
      * @returns {string}  The name of the molecule in path-like format.
      */
     nodePathName(treeNode: TreeNode, allMols: TreeNodeList): string {
-        return treeNode.descriptions.pathName(">", 35, allMols);
+        return treeNode.descriptions.pathName(":", 35, allMols);
     }
 
     /**
@@ -227,7 +227,8 @@ export default class DataPanel extends Vue {
      * @param {any} row  The row that was clicked.
      */
     rowClicked(row: { [key: string]: CellValue }) {
-        selectProgramatically(row.id as string);
+        // @ts-ignore
+        selectProgramatically(row.metaData.treeNodeId as string);
         // debugger;
     }
 

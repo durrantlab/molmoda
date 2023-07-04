@@ -56,6 +56,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
   variant = PopupVariant.Primary;
   callBack: any = undefined;
   neverClose = false;
+  showInQueue = false;
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
