@@ -71,11 +71,11 @@
         <!-- </div> -->
         <FormElementDescription
             v-if="description !== undefined"
-            :htmlDescription="description"
+            :description="description"
         ></FormElementDescription>
         <!-- <FormElementDescription
             v-if="regionsInTree === undefined"
-            htmlDescription="No sphere or box regions in workspace. Please define a box center and dimensions below."
+            description="No sphere or box regions in workspace. Please define a box center and dimensions below."
         ></FormElementDescription> -->
     </span>
 </template>

@@ -4,6 +4,7 @@
     title=""
     :pluginId="pluginId"
     :userArgs="userArgs"
+    :intro="intro"
   ></PluginComponent>
 </template>
 
@@ -43,6 +44,7 @@ export default class RedoPlugin extends PluginParentClass {
   alwaysEnabled = true;
   logJob = false;
   hotkey = "y"
+  intro = "Redo the last undo."
 
   /**
    * Check if this plugin can currently be used.

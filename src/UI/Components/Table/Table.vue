@@ -114,6 +114,13 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
 
+// Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
+interface ITableDataInternal {
+    headers: IHeader[];
+    rows: { [key: string]: ICellValue }[];
+}
+
+
 /**
  * Table component
  */
@@ -137,18 +144,18 @@ export default class Table extends Vue {
     /**
      * Get the table data to use.
      *
-     * @returns {ITableData} The table data to use.
+     * @returns {ITableDataInternal} The table data to use.
      */
-    get tableDataToUse(): ITableData {
+    get tableDataToUse(): ITableDataInternal {
         const dataToUse = {
             headers: this.tableData.headers.map((h) => h), // To copy
-            rows: [] as { [key: string]: CellValue }[],
+            rows: [] as { [key: string]: ICellValue }[],
         };
 
         // v-if="showColumn(header, tableDataToUse)"
 
         for (const row of this.tableData.rows) {
-            const newRow: { [key: string]: CellValue } = {};
+            const newRow: { [key: string]: ICellValue } = {};
             for (const header of this.tableData.headers) {
                 let rowVal = row[header.text] as CellValue;
 
@@ -169,13 +176,6 @@ export default class Table extends Vue {
                     // Convert back to number
                     rowVal.val = Number(rowVal.val);
                 }
-
-                // Add id as metadata. Note that id is being associated with
-                // each cell value in a row, not with the row itself. That's
-                // because the row is just a dictionary. It's easier this way.
-                rowVal.metaData = {
-                    treeNodeId: row.id,
-                };
 
                 newRow[header.text] = rowVal;
 
@@ -361,8 +361,11 @@ export default class Table extends Vue {
         if (this.tableDataToUse.rows[rowIdx].metaData.metaData) {
             toEmit = {
                 ...toEmit,
-                metaData: this.tableDataToUse.rows[rowIdx].metaData.metaData,
+                ...this.tableDataToUse.rows[rowIdx].metaData.metaData,
             };
+            if (toEmit.metaData) {
+                delete toEmit.metaData;
+            }
         }
         this.$emit("rowClicked", toEmit);
     }
@@ -415,6 +418,9 @@ export default class Table extends Vue {
         }
     }
 
+    /**
+     * Runs when the component is mounted.
+     */
     mounted() {
         this.sortColumnName = this.initialSortColumnName;
         this.sortOrder = this.initialSortOrder;

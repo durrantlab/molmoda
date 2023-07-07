@@ -28,6 +28,7 @@
                 placeHolder="Enter the CID (e.g., 2244)"
                 :filterFunc="filterUserData"
                 @onKeyDown="onCIDKeyDown"
+                description='The CID number. Search <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem</a> to find the CID yourself.'
             ></FormInput>
         </FormWrapper>
     </PluginComponent>
@@ -86,10 +87,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
   molName = "";
   molNameRespDescription = "";
 
-  intro = `Enter the molecule name or PubChem Chemical Identification (CID) number.
-      ${appName} will look up the CID if you enter the name. Search the
-      <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem
-      Database</a>, a database of small molecules, to find the CID on your own.`;
+  intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a>, a database of small molecules.`
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
@@ -214,6 +212,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
   onBeforePopupOpen() {
     this.cid = "";
     this.molName = "";
+    this.molNameRespDescription = "The name of the molecule. If given, Biotite will automatically search PubChem for the corresponding Chemical Identification (CID) number.";
   }
 
   /**

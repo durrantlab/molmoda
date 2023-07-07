@@ -34,7 +34,7 @@
     </FormWrapper> -->
 
         <FormElementDescription
-            :htmlDescription="summary"
+            :description="summary"
         ></FormElementDescription>
     </span>
 </template>

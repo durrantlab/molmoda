@@ -8,7 +8,6 @@ system uses these to autopopulate with plugins. -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
-    <DelayedJobPopupPlugin @onPluginSetup="onPluginSetup"></DelayedJobPopupPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
     <JobsWindowPlugin @onPluginSetup="onPluginSetup"></JobsWindowPlugin>
@@ -54,7 +53,6 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
-import DelayedJobPopupPlugin from "./Core/DelayedJobPopupPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
 import JobsWindowPlugin from "./Core/Window/JobsWindowPlugin.vue";
@@ -98,7 +96,6 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ClearSelectionPlugin,
     CloneMolPlugin,
     DataWindowPlugin,
-    DelayedJobPopupPlugin,
     DeleteMolPlugin,
     InformationWindowPlugin,
     JobsWindowPlugin,
@@ -130,6 +127,9 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     TestPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
+
+
+
 
 
 

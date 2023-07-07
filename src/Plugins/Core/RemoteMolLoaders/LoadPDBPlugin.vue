@@ -52,10 +52,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
     ];
     pluginId = "loadpdb";
 
-    intro = `Enter the PDB ID of the molecular structure. Search the
-      <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a
-      database of biological molecules (e.g., proteins and nucleic acids), if
-      you're uncertain.`;
+    intro = `Load a molecular structure from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of biological molecules (e.g., proteins and nucleic acids).`;
 
     hotkey = "d";
 
@@ -65,6 +62,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
             label: "",
             val: "",
             placeHolder: "Enter PDB ID (e.g., 1XDN)",
+            description: `The PDB ID of the molecular structure. Search the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a> if you're uncertain.`,
             filterFunc: (pdb: string): string => {
                 pdb = pdb.toUpperCase();
                 pdb = pdb.replace(/[^A-Z\d]/g, ""); // Only nums and lets

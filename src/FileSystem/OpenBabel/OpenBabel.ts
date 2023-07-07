@@ -6,8 +6,10 @@ import { getFormatInfoGivenType } from "../LoadSaveMolModels/Types/MolFormats";
 import { OpenBabelQueue } from "./OpenBabelQueue";
 
 /**
+ * Runs OpenBabel.
  *
- * @param {string[][]}   argsLists               The arguments to pass to
+ * @param {string}       appId                   The app ID.
+ * @param {string[][]}  argsLists                The arguments to pass to
  *                                               OpenBabel. Each set of
  *                                               arguments is a string[], so
  *                                               passing multiple argument sets
@@ -15,14 +17,14 @@ import { OpenBabelQueue } from "./OpenBabelQueue";
  *                                               file), requires string[][].
  * @param {FileInfo[] | IFileInfo[]} inputFiles  The input files to pass to
  *                                               OpenBabel.
- * @returns {Promise<string | void>}  A promise that resolves to the output of
- *     the program. Void if there is an error?
+ * @returns {Promise<any>}  A promise that resolves to the output of the
+ *     program. Void if there is an error?
  */
 function runOpenBabel(
     appId: string,
     argsLists: string[][],
     inputFiles: FileInfo[] | IFileInfo[]
-): any {
+): Promise<any> {
     // Quick validation to make sure argsLists is in right format.
     if (argsLists.length > 0 && !Array.isArray(argsLists[0])) {
         throw new Error("argsLists must be an array of arrays.");

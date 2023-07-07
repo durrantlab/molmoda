@@ -40,8 +40,8 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
             })
             .catch((err) => {
                 throw err;
-                reject(`Could not load the URL ${url}: ` + err.message);
-                api.messages.waitSpinner(false);
+                // reject(`Could not load the URL ${url}: ` + err.message);
+                // api.messages.waitSpinner(false);
             });
     });
 }

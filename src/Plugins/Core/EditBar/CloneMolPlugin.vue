@@ -52,7 +52,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         },
     ];
     pluginId = "clonemol";
-    intro = `The selected molecule will be cloned (copied). Enter the name of the new, cloned molecule.`;
+    intro = `Clone (copy) the selected molecule.`;
 
     userArgs: FormElement[] = [
         {
@@ -60,6 +60,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             label: "",
             val: "",
             placeHolder: "Name of new cloned molecule",
+            description: "The name of the new, cloned molecule.",
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
             },

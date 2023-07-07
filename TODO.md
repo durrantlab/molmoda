@@ -129,8 +129,12 @@ of processors available.
 
 Need GoogleAnlytics
 
-
 # DONE
+
+Little popups sometimes don't disappear. Good to put on timer.
+
+Descriptions and intos should alwaus starts with capital and end with
+puncgtuation. Good to verift rhroughout, with singlefunction.s
 
 Also, load molecule should open loaded molecule in tree. Just keep everything
 closed for consistency.

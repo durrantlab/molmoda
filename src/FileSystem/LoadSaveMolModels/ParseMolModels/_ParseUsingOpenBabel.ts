@@ -3,7 +3,6 @@ import { parseMolecularModelFromTexts } from "./Utils";
 import { IFormatInfo } from "../Types/MolFormats";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
-import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 
 /**
  * Uses OpenBabel to parse the a molecular-model file.

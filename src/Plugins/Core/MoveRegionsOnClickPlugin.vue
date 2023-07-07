@@ -51,7 +51,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
         },
     ];
     pluginId = "moveregionsonclick";
-    intro = `Do you wish to move all selected regions to this atom's position? Selected regions:`;
+    intro = `Move all selected regions to this atom's position:`;
 
     userArgs: FormElement[] = [];
     alwaysEnabled = true;

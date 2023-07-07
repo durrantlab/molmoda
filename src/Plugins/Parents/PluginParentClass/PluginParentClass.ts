@@ -9,7 +9,6 @@ import {
 } from "../../PluginInterfaces";
 import * as api from "@/Api";
 import {
-    randomID,
     removeTerminalPunctuation,
     timeDiffDescription,
 } from "@/Core/Utils";
@@ -77,6 +76,15 @@ export abstract class PluginParentClass extends mixins(
      * @type {string}
      */
     abstract pluginId: string;
+
+    /**
+     * A short description of the plugin. This is shown at the top of the
+     * plugin. It should first describe what the plugin does, then how it does
+     * it. Be brief.
+     * 
+     * @type {string}
+     */
+    abstract intro: string;
 
     /**
      * A list of user arguments. Note that `userArgs` defines the user
@@ -393,7 +401,7 @@ export abstract class PluginParentClass extends mixins(
     /** mounted function */
     mounted() {
         // Do some quick validation
-        this._validatePlugin(this.pluginId);
+        this._validatePlugin(this.pluginId, this.intro);
 
         registerLoadedPlugin(this);
 

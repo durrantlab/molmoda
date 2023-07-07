@@ -4,6 +4,7 @@
         title=""
         :userArgs="userArgs"
         :pluginId="pluginId"
+        :intro="intro"
     ></PluginComponent>
 </template>
 
@@ -44,6 +45,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     userArgs: FormElement[] = [];
     alwaysEnabled = true;
     logJob = false;
+    intro = "Select all molecules in the tree."
 
     hotkey = "a";
 

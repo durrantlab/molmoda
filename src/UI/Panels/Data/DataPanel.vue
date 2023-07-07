@@ -226,10 +226,10 @@ export default class DataPanel extends Vue {
      *
      * @param {any} row  The row that was clicked.
      */
-    rowClicked(row: { [key: string]: CellValue }) {
-        // @ts-ignore
-        selectProgramatically(row.metaData.treeNodeId as string);
-        // debugger;
+    rowClicked(row: any) {
+        // Note that row looks like { [key: string]: CellValue }, but with some
+        // extra properties not present on CellValue.
+        selectProgramatically(row.treeNodeId as string);
     }
 
     /**

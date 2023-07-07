@@ -170,10 +170,7 @@ export class ViewerNGL extends ViewerParent {
             // component is like sphere, stick, line, etc.
             const colorStyle = styleAsDict[component];
 
-            const color = colorStyle.color;
-            const colorscheme = colorStyle.colorscheme;
-            const radius = colorStyle.radius;
-            const opacity = colorStyle.opacity;
+            const {color, colorscheme, radius, opacity} = colorStyle;
 
             switch (color) {
                 case undefined:

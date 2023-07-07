@@ -46,8 +46,12 @@ function fixLog() {
     log = log.sort((a: ILog, b: ILog) => {
         const an = a.timestampSecs as number;
         const bn = b.timestampSecs as number;
-        if (an < bn) return -1;
-        if (an > bn) return 1;
+        if (an < bn) {
+          return -1;
+        }
+        if (an > bn) {
+          return 1;
+        }
         return 0;
     });
 

@@ -1,3 +1,4 @@
+import { isSentence } from "@/Core/Utils";
 import { Vue } from "vue-class-component";
 
 /**
@@ -9,11 +10,19 @@ export class ValidationMixin extends Vue {
      * etc.
      * 
      * @param {string} pluginId  The plugin ID.
+     * @param {string} intro     The plugin intro.
      */
-    protected _validatePlugin(pluginId: string) {
+    protected _validatePlugin(pluginId: string, intro: string) {
         if (pluginId !== pluginId.toLowerCase()) {
             throw new Error(
                 "Plugin id must be lowercase. Plugin id: " + pluginId
+            );
+        }
+
+        // Make sure intro is sentence
+        if (!(isSentence(intro))) {
+            throw new Error(
+                "Plugin intro must be a sentence (start with capital letter, end with punctuation). Plugin id: " + pluginId + ". Intro: " + intro
             );
         }
 

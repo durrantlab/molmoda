@@ -1,7 +1,5 @@
-import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
-import { FileInfo } from "@/FileSystem/FileInfo";
 import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
@@ -27,6 +25,12 @@ export class WebinaQueue extends QueueParent {
         return outputs;
     }
 
+    /**
+     * Run a single job.
+     * 
+     * @param {IJobInfo} jobInfo  The job to run.
+     * @returns {Promise<IJobInfo>}  The output job.
+     */
     private async _runJob(jobInfo: IJobInfo): Promise<IJobInfo> {
         return new Promise((resolve, reject) => {
             return (
@@ -68,12 +72,21 @@ export class WebinaQueue extends QueueParent {
                                 },
                             ],
 
-                            locateFile(path: string) {
+                            /**
+                             * A helper function to locate WASM files.
+                             *
+                             * @param {string} path  The requested path.
+                             * @returns {string}  The actual path to the WASM file.
+                             */
+                            locateFile(path: string): string {
                                 // This is where the emscripten compiled files are
                                 // located
                                 return `./js/webina/` + path;
                             },
 
+                            /**
+                             * A function that runs when the program exits.
+                             */
                             onExit(/* code */) {
                                 // Read the contents of the output file
                                 const output = (this as any).FS.readFile(
@@ -97,12 +110,23 @@ export class WebinaQueue extends QueueParent {
                             },
 
                             // Monitor stdout and stderr output
+                            
+                            /**
+                             * A function that runs when stdout is written to.
+                             * 
+                             * @param {string} text  The text written to stdout.
+                             */
                             print(text: string) {
                                 console.log(text);
                                 stdOut += text + "\n";
                                 std += text + "\n";
                             },
 
+                            /**
+                             * A function that runs when stderr is written to.
+                             * 
+                             * @param {string} text  The text written to stderr.
+                             */
                             printErr(text: string) {
                                 console.log(text);
                                 stdErr += text + "\n";

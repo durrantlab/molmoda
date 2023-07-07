@@ -88,7 +88,7 @@ function _rjust(str: string, width: number): string {
  */
 function _ljust(str: string, width: number): string {
     while (str.length < width) {
-        str = str + " ";
+        str += " ";
     }
     str = str.substring(0, width);
     return str;

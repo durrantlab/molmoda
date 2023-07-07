@@ -4,6 +4,7 @@
     title=""
     :userArgs="userArgs"
     :pluginId="pluginId"
+    :intro="intro"
   ></PluginComponent>
 </template>
 
@@ -44,6 +45,7 @@ export default class UndoPlugin extends PluginParentClass {
   alwaysEnabled = true;
   logJob = false;
   hotkey = "z"
+  intro = "Undo the last action."
 
   /**
    * Check if this plugin can currently be used.

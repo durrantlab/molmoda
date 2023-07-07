@@ -74,8 +74,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     ];
     pluginId = "savemolecules";
 
-    intro = `Please provide the name of the molecule file to save. The
-      file extension will be automatically appended.`;
+    intro = `Save molecules to the disk. The Biotite format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
 
     hotkey = "s";
 
@@ -89,6 +88,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             label: "",
             val: "",
             placeHolder: "Enter Filename (e.g., my_project.biotite)",
+            description: `The name of the molecule file to save. The file extension will be automatically appended.`,
             filterFunc: (filename: string): string => {
                 return fileNameFilter(filename);
             },

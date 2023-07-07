@@ -8,6 +8,7 @@
         :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="filesToLoad.length > 0"
+        :intro="intro"
     >
         <FormFile
             ref="formFile"
@@ -57,6 +58,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     ];
     filesToLoad: FileInfo[] = [];
     pluginId = "openmolecules";
+    intro = "Open (load) molecule file(s)."
 
     userArgs: FormElement[] = [
         // {

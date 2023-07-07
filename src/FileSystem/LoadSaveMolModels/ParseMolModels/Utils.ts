@@ -12,8 +12,6 @@ import { IMolData } from "@/Core/WebWorkers/WorkerHelper";
  *
  * @param  {FileInfo} fileInfos     The text and name of the molecule.
  * @param  {string}   format        The format of the molecule.
- * @param  {string}   origFilename  The original filename of the molecule
- *                                  s(before separated into frames).
  * @returns {Promise<TreeNode>} A promise that resolves the molecule.
  */
 export function parseMolecularModelFromTexts(

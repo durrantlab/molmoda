@@ -52,14 +52,14 @@ export default class MergeMolsPlugin extends PluginParentClass {
         },
     ];
     pluginId = "mergemols";
-    intro =
-        "The selected molecules will be copied and merged into a single new molecule. Enter the name of the new, merged molecule.";
+    intro = "Copy and merge the selected molecules into a single new molecule.";
     userArgs: FormElement[] = [
         {
             id: "newName",
             label: "",
             val: "",
             placeHolder: "Name of new merged molecule",
+            description: "The name of the new, merged molecule.",
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
             },

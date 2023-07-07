@@ -29,9 +29,7 @@ export function waitSpinner(show: boolean, timeOut = 30000) {
     const origWaitSpinnerDepth = waitSpinnerDepth;
     waitSpinnerDepth += show ? 1 : -1;
 
-    if (waitSpinnerDepth < 0) {
-        waitSpinnerDepth = 0;
-    }
+    waitSpinnerDepth = Math.max(waitSpinnerDepth, 0)
 
     if (origWaitSpinnerDepth === 0 && waitSpinnerDepth > 0) {
         // We are starting the spinner

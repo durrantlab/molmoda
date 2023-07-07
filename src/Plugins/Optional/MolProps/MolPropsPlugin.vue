@@ -18,9 +18,7 @@
 </template>
 
 <script lang="ts">
-import { batchify } from "@/Core/Utils2";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { checkAnyMolLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -65,7 +63,7 @@ export default class MolPropsPlugin extends PluginParentClass {
     ];
     pluginId = "molprops";
 
-    intro = `This plugin identifies small-molecule compounds and calculates their molecular properties.`;
+    intro = `Calculates the molecular properties of small-molecule compounds.`;
 
     userArgs: FormElement[] = [
         {

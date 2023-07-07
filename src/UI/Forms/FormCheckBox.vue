@@ -17,7 +17,7 @@
         </div>
         <FormElementDescription
             v-if="description !== undefined"
-            :htmlDescription="description"
+            :description="description"
         ></FormElementDescription>
     </span>
 </template>

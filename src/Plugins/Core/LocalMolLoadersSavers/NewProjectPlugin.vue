@@ -10,10 +10,10 @@
         actionBtnTxt2="Save Project First"
         @onPopupDone2="saveProject"
         :isActionBtnEnabled="true"
+        :intro="intro"
     >
         <p>
-            If you start a new project, your current project will be lost. Would
-            you like to
+            Would you like to
             <a href="#" @click="saveProject">save the project first</a>?
         </p>
     </PluginComponent>
@@ -56,6 +56,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     userArgs: FormElement[] = [];
     alwaysEnabled = true;
     hotkey = "n";
+    intro = "Start a new project. Your current project will be lost."
 
     /**
      * Runs when the user presses the action button and the popup closes.

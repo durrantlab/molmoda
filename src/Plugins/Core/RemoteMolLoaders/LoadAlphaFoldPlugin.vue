@@ -49,10 +49,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
   ];
   pluginId = "loadalphafold";
 
-  intro = `Enter the UniProt Accession of the protein structure. Search the
-      <a href="https://alphafold.ebi.ac.uk/" target="_blank"
-        >AlphaFold Protein Structure Database</a
-      >, a database of predicted protein structures, if you're uncertain.`;
+  intro = `Load a protein from the <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a>, a database of predicted protein structures.`;
 
   userArgs: FormElement[] = [
     {
@@ -60,6 +57,8 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
       label: "",
       val: "",
       placeHolder: "Enter UniProt Accession (e.g., P86927)",
+      description: `The UniProt Accession of the protein structure. Search the
+      <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a> if you're uncertain.`,
       filterFunc: (uniprot: string): string => {
         // https://www.uniprot.org/help/accession_numbers
         uniprot = uniprot.toUpperCase();

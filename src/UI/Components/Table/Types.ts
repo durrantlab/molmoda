@@ -20,11 +20,6 @@ export interface ICellValue {
     metaData?: any;  // Can store anything here, including associated treeNodeId. {}.
 }
 
-Are string a number ever really uwsed here? There are a bunch of ts-ignore necessary because of this.
-Would be better to use ICellValue only if you can. Maybe do conversion in table if needed?
-
-Actually, use use ICellValue instead of CellValue at select locaitons, can likely get rid of ts-ignore that way.
-
 export type CellValue = string | number | ICellValue;
 
 export interface ITableData {

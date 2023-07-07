@@ -163,7 +163,7 @@ export default class Popup extends Vue {
      * @returns {string} The classes to add to the popup header.
      */
     get headerClasses(): string {
-        let styles = "modal-header ";
+        let styles = "modal-header mb-0";
         if (this.styling === 0) {
             return styles + "bg-" + this.variant + " text-white";
         }

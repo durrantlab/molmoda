@@ -113,6 +113,11 @@ Every plugin class must define the following functions and variables.
 A list of people to credit.
  Type: `IContributorCredit[]`.  `IContributorCredit` is defined in [PluginInterfaces.ts, line 69](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L69).
 
+#### `intro` (variable) <a id="intro"></a>
+
+A short description of the plugin. This is shown at the top of the plugin. It should first describe what the plugin does, then how it does it. Be brief.
+ Type: `string`. 
+
 #### `menuPath` (variable) <a id="menuPath"></a>
 
 The menu path for this plugin (e.g., `["[3] Biotite", "[1] About"]` or `"File/Molecules/Import/[4] AlphaFold"`). Note that you can include a priority (number) in brackets. The priority is stripped from the text, but its value is used to order the menu item relative to others. The vast majority of plugins should be accessible from the menu, but set [`menuPath`](#menuPath) to null if you want to create a menu-inaccessible plugin.
@@ -130,7 +135,7 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 33](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L33).
+| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 32](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L32).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 

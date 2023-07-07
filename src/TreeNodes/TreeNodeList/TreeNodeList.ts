@@ -477,7 +477,10 @@ export class TreeNodeList {
     /**
      * Merges all the nodes in this list into a single node. This is useful for
      * converting a list of molecules into a single molecule.
-     * 
+     *
+     * @param  {string} [topLevelTitle=undefined]  The title of the top-level
+     *                                             node. If undefined, the title
+     *                                             of the first node is used.
      * @returns {TreeNodeList}  The new list.
      */
     public merge(topLevelTitle?: string): TreeNodeList {

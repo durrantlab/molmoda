@@ -73,7 +73,7 @@ waitForDataFromMainThread()
             // reuse existing object for slight speedup.
 
             responsePromises.push(
-                new Promise((resolve, reject) => {
+                new Promise((resolve) => {
                     FpocketWeb.start(
                         fPocketParams, // {} as IFpocketParams, // fPocketParams,
                         params.pdbName,

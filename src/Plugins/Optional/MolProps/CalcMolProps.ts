@@ -1,4 +1,3 @@
-import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { CalcMolPropsQueue } from "./CalcMolPropsQueue";
 

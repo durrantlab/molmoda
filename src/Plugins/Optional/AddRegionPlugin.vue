@@ -63,7 +63,7 @@ export default class AddRegionPlugin extends PluginParentClass {
     ];
     pluginId = "addregion";
 
-    intro = `This plugin adds a new box or spherical region to the workspace.`;
+    intro = `Add a new box or spherical region to the workspace.`;
 
     userArgs: FormElement[] = [
         {

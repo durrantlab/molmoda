@@ -45,7 +45,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     },
   ];
   pluginId = "renamemol";
-  intro = `Enter the new name for this molecule.`;
+  intro = `Rename the molecule.`;
 
   userArgs: FormElement[] = [
     {
@@ -53,6 +53,7 @@ export default class RenameMolPlugin extends PluginParentClass {
       label: "",
       val: "",
       placeHolder: "New molecule name",
+      description: "The new name for this molecule.",
       validateFunc: (newName: string): boolean => {
         return newName.length > 0;
       },

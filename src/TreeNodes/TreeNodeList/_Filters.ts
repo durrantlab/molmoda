@@ -244,7 +244,7 @@ export class TreeNodeListFilters {
             return this.cache.get(i);
         }
 
-        const _nodes = mls._nodes;
+        const {_nodes} = mls;
 
         // Calculate only once for speed. Not using length property for
         // speed.

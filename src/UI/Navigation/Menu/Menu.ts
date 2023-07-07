@@ -74,7 +74,7 @@ export class MenuLevelParent extends Vue {
      * @returns {IMenuEntry[]}  The submenu items.
      */
     getItems(item: IMenuEntry): IMenuEntry[] {
-        const items = (item as IMenuSubmenu).items;
+        const {items} = item as IMenuSubmenu;
         menuDataSorted(items);
         return items;
     }
@@ -222,7 +222,7 @@ export function addMenuItem(
     for (let i = 0; i < (menuPathInfo as IMenuPathInfo[]).length; i++) {
         // Get rank and pathName from text.
         const pathNameWithoutRank = (menuPathInfo as IMenuPathInfo[])[i].text;
-        const rank = (menuPathInfo as IMenuPathInfo[])[i].rank;
+        const {rank} = (menuPathInfo as IMenuPathInfo[])[i];
 
         if (
             !_isNameInMenuData(

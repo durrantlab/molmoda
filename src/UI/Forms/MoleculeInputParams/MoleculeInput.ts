@@ -3,7 +3,6 @@ import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { batchify } from "@/Core/Utils2";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 

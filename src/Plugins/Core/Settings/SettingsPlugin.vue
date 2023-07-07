@@ -54,7 +54,7 @@ export default class SettingsPlugin extends PluginParentClass {
     },
   ];
   pluginId = "settings";
-  intro = ``;
+  intro = `Modify Biotite general settings.`;
 
   userArgs: FormElement[] = [
     {

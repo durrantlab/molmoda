@@ -55,8 +55,7 @@ export default class SavePNGPlugin extends PluginParentClass {
     ];
     pluginId = "savepng";
 
-    intro = `Please provide the name of the PNG file to save. The
-    extension ".png" will be automatically appended.`;
+    intro = `Save the current view as a PNG file.`;
 
     userArgs: FormElement[] = [
         {
@@ -64,6 +63,7 @@ export default class SavePNGPlugin extends PluginParentClass {
             label: "",
             val: "",
             placeHolder: "Enter Filename (e.g., my_image.png)",
+            description: `The name of the PNG file to save. The extension ".png" will be automatically appended.`,
             filterFunc: (filename: string): string => {
                 return fileNameFilter(filename);
             },

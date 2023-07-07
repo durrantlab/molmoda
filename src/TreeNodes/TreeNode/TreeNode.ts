@@ -138,6 +138,12 @@ export class TreeNode {
         return this._descriptions;
     }
 
+    /**
+     * Get the parent node of the current node.
+     *
+     * @returns {TreeNode | undefined}  The parent node, or undefined if there
+     *     is no parent.
+     */
     public get parentTreeNode(): TreeNode | undefined {
         const ancestors = this.getAncestry(store.state.molecules);
         return ancestors.get(ancestors.length - 2);

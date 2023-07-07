@@ -84,7 +84,7 @@ export function formatTimestamp(timestamp: number): string {
     if (timestamp === 0) {
         return "";
     }
-    
+
     // Format string like MM/DD HH:MM
     const date = new Date(timestamp);
 
@@ -100,4 +100,36 @@ export function formatTimestamp(timestamp: number): string {
     return `${monthString} ${day}, ${hour}:${minute}`;
 }
 
+/**
+ * Given a string, returns true if it is a sentence.
+ * 
+ * @param {string} txt  The string to check.
+ * @returns {boolean}  True if the string is a sentence.
+ */
+export function isSentence(txt: string): boolean {
+    if (txt === undefined) {
+        return true;
+    }
 
+    if (txt.length === 0) {
+        return true;
+    }
+
+    // Trim whitespace
+    txt = txt.trim();
+
+    // If first letter is not capitalized, it's not a sentence.
+    if (txt[0] !== txt[0].toUpperCase()) {
+        return false;
+    }
+
+    // If last character is not punctuation, it's not a sentence.
+    const lastChar = txt[txt.length - 1];
+    return (
+        lastChar === "." ||
+        lastChar === "?" ||
+        lastChar === "!" ||
+        lastChar === '"' ||
+        lastChar === ":"
+    );
+}

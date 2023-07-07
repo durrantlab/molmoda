@@ -31,6 +31,11 @@ def validate_plugin(ts_file):
             None,
         ),
         (
+            ':intro="intro',
+            'The PluginComponent must define an intro prop like this: :intro="intro"',
+            None,
+        ),
+        (
             'v-model="open"',
             'The PluginComponent must define a v-model like this: v-model="open"',
             [

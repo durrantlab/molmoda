@@ -32,7 +32,7 @@ export class TreeNodeListNodeActions {
             return;
         }
 
-        let id = node.id;
+        let {id} = node;
 
         if (!node.parentId) {
             // It's a root node, without a parent id.

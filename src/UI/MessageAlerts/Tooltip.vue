@@ -1,6 +1,7 @@
 <template>
     <span
         @mouseover="loadTip"
+        @mouseleave="hideTip"
         data-bs-toggle="tooltip"
         :data-bs-placement="placement"
         :title="tip"
@@ -28,6 +29,16 @@ export default class Tooltip extends Vue {
     @Prop({ default: "top" }) placement!: string;
 
     private tipLoaded = false;
+    private tipObj: any = null;
+
+    /**
+     * Hides the tooltip.
+     */
+    hideTip() {
+        if (this.tipLoaded && this.tipObj !== null) {
+            this.tipObj.hide();
+        }
+    }
 
     /**
      * Sets up the tooltip. Dynamic imports, etc.
@@ -38,8 +49,15 @@ export default class Tooltip extends Vue {
 
             dynamicImports.bootstrapTooltip.module
                 .then((BSToolTip: any) => {
-                    const tip = new BSToolTip(this.$refs["tooltip"] as Element);
-                    tip.show();
+                    this.tipObj = new BSToolTip(this.$refs["tooltip"] as Element);
+                    this.tipObj.show();
+
+                    // Always automatically close after 15 seconds. Probably
+                    // buggy by then. NOTE: I think this is solved with
+                    // mouseleave event now.
+                    // setTimeout(() => {
+                    //     this.tipObj.hide();
+                    // }, 15000);
                     return;
                 })
                 .catch((err: any) => {

@@ -39,7 +39,7 @@ export function doSelecting(id: string, molTreeData: TreeNodeList) {
 
     // If shift key is down, selecting multiple items.
     if (shiftKeyDown) {
-        const flattened = getMoleculesFromStore().flattened;
+        const {flattened} = getMoleculesFromStore();
         // Go through flattened, save the node if it is selected.
         let mostRecentSelected: TreeNode | null = null;
         for (let idx = 0; idx < flattened.length; idx++) {

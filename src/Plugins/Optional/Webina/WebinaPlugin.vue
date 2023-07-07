@@ -12,7 +12,6 @@
 </template>
 
 <script lang="ts">
-import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     checkCompoundLoaded,
@@ -44,8 +43,6 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { messagesApi } from "@/Api/Messages";
 import { WebinaQueue } from "./WebinaQueue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
@@ -77,7 +74,7 @@ export default class WebinaPlugin extends PluginParentClass {
     ];
     pluginId = "webina";
 
-    intro = `This plugin uses a version of AutoDock Vina (Webina) to predict (1) the geometry of small-molecule binding (pose), and (2) the strength of binding (score).`;
+    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding. Uses a version of AutoDock Vina (Webina).`;
 
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
@@ -261,7 +258,7 @@ export default class WebinaPlugin extends PluginParentClass {
             };
         });
 
-        return new WebinaQueue("webina", payloads, webinaParams["cpu"]).done
+        new WebinaQueue("webina", payloads, webinaParams["cpu"]).done
             .then((webinaOuts: any) => {
                 // TODO: Get any stdErr and show errors if they exist.
 

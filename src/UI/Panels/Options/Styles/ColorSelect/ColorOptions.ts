@@ -101,7 +101,7 @@ export class ColorOptions {
      * @returns {IColorStyle}  The color style.
      */
     public indexToStyle(index: number): IColorStyle {
-        let colorStyle = this._colorStyles[index].colorStyle;
+        let {colorStyle} = this._colorStyles[index];
         colorStyle = this._addColorToStyle(colorStyle);
         return colorStyle;
     }
@@ -113,7 +113,7 @@ export class ColorOptions {
      * @returns {IColorStyle}  The color style.
      */
     public nameToStyle(name: string): IColorStyle {
-        let colorStyle = this._colorStyles[this.nameToIndex(name)].colorStyle;
+        let {colorStyle} = this._colorStyles[this.nameToIndex(name)];
         colorStyle = this._addColorToStyle(colorStyle);
         return colorStyle;
     }

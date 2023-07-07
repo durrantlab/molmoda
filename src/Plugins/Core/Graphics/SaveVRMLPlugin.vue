@@ -57,8 +57,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   ];
   pluginId = "savevrml";
 
-  intro = `Please provide the name of the VRML file to save. The
-      extension ".vrml" will be automatically appended.`;
+  intro = `Save the current molecular scene as a VRML file (3D model).`;
 
   userArgs: FormElement[] = [
     {
@@ -66,6 +65,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       label: "",
       val: "",
       placeHolder: "Enter Filename (e.g., my_model.vrml)",
+      description: `The name of the VRML file to save. The extension ".vrml" will be automatically appended.`,
       filterFunc: (filename: string): string => {
         return fileNameFilter(filename);
       },

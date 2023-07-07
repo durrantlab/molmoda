@@ -4,6 +4,7 @@
     title=""
     :pluginId="pluginId"
     :userArgs="userArgs"
+    :intro="intro"
   ></PluginComponent>
 </template>
   
@@ -42,6 +43,7 @@ export default class LogWindowPlugin extends PluginParentClass {
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
+  intro = `Switch to the log panel.`;
 
   /**
    * Every plugin runs some job. This is the function that does the job running.

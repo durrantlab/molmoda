@@ -34,19 +34,17 @@ import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
-import { ITreeNode, TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     IColorStyle,
     ITreeNodeData,
     IStyle,
     TreeNodeDataType,
     TreeNodeType,
-    IBox,
+    // IBox,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
-import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
-import { IFpocketParams } from "./FPocketWebTypes";
 import { messagesApi } from "@/Api/Messages";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
@@ -73,7 +71,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     ];
     pluginId = "fpocketweb";
 
-    intro = `This plugin uses fpocket to (1) identify small-molecule binding pockets on protein surfaces and (2) calculate pocket properties.`;
+    intro = `(1) Identify small-molecule binding pockets on protein surfaces and (2) calculate pocket properties using the fpocket algorithm (FPocketWeb).`;
 
     msgOnJobsFinished =
         "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
@@ -242,7 +240,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
             };
         });
 
-        return new FPocketWebQueue("fpocket", payloads, 1).done
+        new FPocketWebQueue("fpocket", payloads, 1).done
             .then((fpocketOuts: any) => {
                 // Add the original name and whether to return points too. NOTE:
                 // This is per protein.
@@ -363,11 +361,18 @@ export default class FPocketWebPlugin extends PluginParentClass {
         });
     }
 
+    /**
+     * Adds boxes surrounding the pockets to the tree.
+     * 
+     * @param {TreeNode} outPdbFileTreeNode    The tree node to add the boxes to.
+     * @param {number} numInitiallyVisible     The number of boxes to make visible.
+     * @param {any[]} pocketProps              The properties of the pockets.
+     */
     _addBoxes(
         outPdbFileTreeNode: TreeNode,
         numInitiallyVisible: number,
         pocketProps: any[]
-    ): TreeNodeList | undefined {
+    ) {
         const pseudoAtomNodes = outPdbFileTreeNode.nodes?.lookup([
             TreeNodeType.Compound,
             "*",
@@ -418,9 +423,16 @@ export default class FPocketWebPlugin extends PluginParentClass {
             ps.nodes._nodes.splice(0, 0, shapesNode);
         }
 
-        return pseudoAtomNodes;
+        // return pseudoAtomNodes;
     }
 
+    /**
+     * Processes the pseudo atoms in the tree.
+     * 
+     * @param {TreeNode} outPdbFileTreeNode    The tree node to process.
+     * @param {number} numInitiallyVisible     The number of pockets to make visible.
+     * @param {boolean} providePseudoAtoms     Whether to provide pseudo atoms.
+     */
     _processPocketPseudoAtoms(
         outPdbFileTreeNode: TreeNode,
         numInitiallyVisible: number,
