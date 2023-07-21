@@ -20,8 +20,8 @@
       :step="step"
     />
     <FormElementDescription
-      v-if="description !== undefined"
-      :description="description"
+      v-if="descriptioToUse !== '' && descriptioToUse !== undefined"
+      :description="descriptioToUse"
     ></FormElementDescription>
   </span>
 </template>
@@ -73,6 +73,19 @@ export default class FormInput extends Vue {
     this.$emit("onKeyDown");
   }
 
+  get descriptioToUse(): string {
+    // return this.description;
+    if (this.type !== "range") {
+      return this.description;
+    }
+
+    // Range
+    let descript = (this.description === undefined ? "" : this.description)
+    descript += " Current value: " + this.modelValue + ".";
+    descript = descript.trim();
+    return descript;
+  }
+
   /**
    * Let the parent component know of any changes, after user has not interacted
    * for a bit (to prevent rapid updates).
@@ -98,7 +111,7 @@ export default class FormInput extends Vue {
       });
     }
 
-    // No filter funciton. Note that it's delayed to prevent rapid reactivity.
+    // No filter function. Note that it's delayed to prevent rapid reactivity.
     // Good for color selector.
 
     // If less 0.5 seconds haven't passed yet, don't try again.

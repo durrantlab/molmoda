@@ -64,10 +64,6 @@ Test elements could be restructured as objects. Would be better to put functions
 on each one. Then, Tutorial based on tests (first one). Started to do this. See
 ParentPluginTestFuncs.ts
 
-**** FPocket: blank modal flashes. Why?
-
-**** Queue table looks bad.
-
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
 
 Search for "Use clicks instead of setUserArg for boolean user arguments." Would
@@ -96,17 +92,13 @@ etc. Also, you could standardie how webworkers are used for multiprocessing
 
 Open options: add 3D coordinates, frames to separate molecules, etc.
 
-TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form
-element.
-
 https://firebase.google.com/docs/auth
 
 ligs.cif shows only one
-biotite format surizingly works, but I'd like to resave it to make sure.
 
 See // TODO: Need to use timeout here.
 
-Need to check if hydrogen atoms added to protein and ligand befor eWebina.
+**** Need to check if hydrogen atoms added to protein and ligand befor eWebina.
 
 Search for "// Select not input not textarea" and consider using this more
 judiciously.
@@ -119,17 +111,33 @@ api system seems convoluted.
 
 Popups (done, start after delay) need to be built into the queue system.
 
-Whenever new molecule created, create that record be kept of how it was
+*** Whenever new molecule created, create that record be kept of how it was
 obtained. That record can be viewed.
 
-Load molecule, never stops loading (spinner)
+Continue compound prepare. Also, search for // TODO: Why does this occasionally happen? . Happens quite a bit.
 
 Queue system should throw an error if any single job requires more than number
 of processors available.
 
 Need GoogleAnlytics
 
+Need easy method (on TreeNodeList) to automatically organize by compound,
+protein, etc. DONE, but use it throughout biotite.
+
+Prep molecules. Option to regenerate 3d geometry too.
+
 # DONE
+
+FPocket: blank modal flashes. Why?
+
+Queue table looks bad.
+
+TRY TO INTEGRATE WEBINA!!! (Also into original app). Will need select-shape form
+element.
+
+biotite format surizingly works, but I'd like to resave it to make sure.
+
+Load molecule, never stops loading (spinner)
 
 Little popups sometimes don't disappear. Good to put on timer.
 

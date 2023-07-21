@@ -77,7 +77,7 @@ export function defaultSettings(): any {
     // Leave one processor free
     const maxProcsAvailable = navigator.hardwareConcurrency || 4;
     const procsToRecommend =
-        maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
-
-    return { maxProcs: procsToRecommend, molViewer: "3dmol" };
+    maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
+    
+    return { maxProcs: procsToRecommend, initialCompoundsVisible: 10, molViewer: "3dmol" };
 }

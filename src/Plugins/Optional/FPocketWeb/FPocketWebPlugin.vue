@@ -50,6 +50,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FPocketWebQueue } from "./FPocketWebQueue";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 /**
  * FPocketWebPlugin
@@ -246,7 +247,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 // This is per protein.
                 fpocketOuts.forEach((fpocketOut: any, i: number) => {
                     fpocketOut.origFileName = pdbFiles[i].name;
-                    fpocketOut.label = pdbFiles[i].treeNode?.descriptions.pathName(":");
+                    fpocketOut.label =
+                        pdbFiles[i].treeNode?.descriptions.pathName(":");
                     fpocketOut.providePseudoAtoms = userArgs.filter(
                         (u) => u.name === "providePseudoAtoms"
                     )[0].val;
@@ -302,7 +304,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
             if (outPdbFileTreeNode === undefined) {
                 return;
             }
-            
+
             outPdbFileTreeNode.title = "Pockets: " + payload.label;
 
             const numInitiallyVisible = 5;
@@ -314,15 +316,10 @@ export default class FPocketWebPlugin extends PluginParentClass {
             outPdbFileTreeNode.visible = true;
 
             if (outPdbFileTreeNode.nodes) {
-                this._addBoxes(
-                    outPdbFileTreeNode,
-                    numInitiallyVisible,
-                    pocketProps
-                );
+                this._addBoxes(outPdbFileTreeNode, pocketProps);
 
                 this._processPocketPseudoAtoms(
                     outPdbFileTreeNode,
-                    numInitiallyVisible,
                     providePseudoAtoms
                 );
 
@@ -363,16 +360,12 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Adds boxes surrounding the pockets to the tree.
-     * 
+     *
      * @param {TreeNode} outPdbFileTreeNode    The tree node to add the boxes to.
-     * @param {number} numInitiallyVisible     The number of boxes to make visible.
      * @param {any[]} pocketProps              The properties of the pockets.
      */
-    _addBoxes(
-        outPdbFileTreeNode: TreeNode,
-        numInitiallyVisible: number,
-        pocketProps: any[]
-    ) {
+    _addBoxes(outPdbFileTreeNode: TreeNode, pocketProps: any[]) {
+        const numInitiallyVisible = getSetting("initialCompoundsVisible");
         const pseudoAtomNodes = outPdbFileTreeNode.nodes?.lookup([
             TreeNodeType.Compound,
             "*",
@@ -428,19 +421,19 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Processes the pseudo atoms in the tree.
-     * 
+     *
      * @param {TreeNode} outPdbFileTreeNode    The tree node to process.
-     * @param {number} numInitiallyVisible     The number of pockets to make visible.
      * @param {boolean} providePseudoAtoms     Whether to provide pseudo atoms.
      */
     _processPocketPseudoAtoms(
         outPdbFileTreeNode: TreeNode,
-        numInitiallyVisible: number,
         providePseudoAtoms: boolean
     ) {
         if (outPdbFileTreeNode.nodes === undefined) {
             return;
         }
+
+        const numInitiallyVisible = getSetting("initialCompoundsVisible");
 
         // Get the index of the node with type compound
         const compoundNodeIdx = outPdbFileTreeNode.nodes._nodes.findIndex(

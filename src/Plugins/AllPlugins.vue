@@ -35,6 +35,7 @@ system uses these to autopopulate with plugins. -->
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
+    <PrepareCompoundsPlugin @onPluginSetup="onPluginSetup"></PrepareCompoundsPlugin>
     <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
@@ -80,6 +81,7 @@ import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
+import PrepareCompoundsPlugin from "./Optional/PrepareCompounds/PrepareCompoundsPlugin.vue";
 import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
@@ -123,10 +125,25 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     AddRegionPlugin,
     FPocketWebPlugin,
     MolPropsPlugin,
+    PrepareCompoundsPlugin,
     QueSystemTestPlugin,
     TestPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

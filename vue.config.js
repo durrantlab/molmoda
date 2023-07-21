@@ -38,8 +38,8 @@ module.exports = defineConfig({
             https: false,
             stream: false,
             crypto: false,
-            os: require.resolve('os-browserify/browser'),
-            perf_hooks: false
+            os: require.resolve("os-browserify/browser"),
+            perf_hooks: false,
         };
         config.resolve.symlinks = false;
         config.plugins.push(
@@ -107,6 +107,25 @@ module.exports = defineConfig({
         //         extractComments: false,
         //     }),
         // ];
+
+        // module.rules = [
+        //     //   {test: require.resolve("jquery"), use: "expose-loader?$"},
+        //     //   {test: require.resolve("jquery"), use: "expose-loader?jQuery"},
+        //     {
+        //         test: require.resolve(
+        //             "./src/assets/MDB5-STANDARD-UI-KIT-Free-6.4.0/js/mdb.min.js"
+        //         ),
+        //         use: [
+        //             {
+        //                 loader: "imports-loader",
+        //                 options: {
+        //                     type: "commonjs",
+        //                     imports: ["single process/browser process"],
+        //                 },
+        //             },
+        //         ],
+        //     },
+        // ];
     },
     pluginOptions: {
         webpackBundleAnalyzer: {
@@ -119,10 +138,7 @@ module.exports = defineConfig({
     //     devtool: 'eval-source-map'
     // }
 
-    // rules: [
-    //   {test: require.resolve("jquery"), use: "expose-loader?$"},
-    //   {test: require.resolve("jquery"), use: "expose-loader?jQuery"},
-    // ]
+
 
     // Use devtools source-map
 

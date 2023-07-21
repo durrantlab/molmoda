@@ -71,6 +71,8 @@ export default class Menu extends Vue {
 <style scoped lang="scss">
 .navbar-expand-md {
   padding-bottom:0;
+  padding-top: 9px;
+  border: 0;
 }
 </style>
 

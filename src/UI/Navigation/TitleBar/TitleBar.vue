@@ -1,6 +1,3 @@
-<!-- <link rel="stylesheet" href="dist/sl-vue-tree-dark.css">
-<script src="dist/sl-vue-tree.js"></script> -->
-
 <template>
     <div
         :class="'title' + selectedclass(treeDatumID)"

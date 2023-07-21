@@ -11,7 +11,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
  *     contents, type).
  */
 export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
-    api.messages.waitSpinner(true);
+    const spinnerId = api.messages.startWaitSpinner();
     return new Promise((resolve, reject) => {
         const urlUpper = url.toUpperCase();
         if (
@@ -19,7 +19,7 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
             urlUpper.slice(0, 7) !== "HTTP://" &&
             urlUpper.slice(0, 8) !== "HTTPS://"
         ) {
-            api.messages.waitSpinner(false);
+            api.messages.stopWaitSpinner(spinnerId);
             reject(`The URL should start with http:// or https://.`);
             return;
         }
@@ -30,7 +30,7 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
             })
             .then((resp) => {
                 const flnm = url.split("/").pop() as string;
-                api.messages.waitSpinner(false);
+                api.messages.stopWaitSpinner(spinnerId);
                 return resolve(
                     new FileInfo({
                         name: flnm,
@@ -39,6 +39,7 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
                 );
             })
             .catch((err) => {
+                api.messages.stopWaitSpinner(spinnerId);
                 throw err;
                 // reject(`Could not load the URL ${url}: ` + err.message);
                 // api.messages.waitSpinner(false);

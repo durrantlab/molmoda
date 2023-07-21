@@ -120,30 +120,30 @@ export const dynamicImports = {
         },
     } as IDynamicImport,
 
-    ngl: {
-        credit: {
-            name: "NGL Viewer",
-            url: "https://github.com/nglviewer/ngl",
-            license: Licenses.MIT,
-        },
+    // ngl: {
+    //     credit: {
+    //         name: "NGL Viewer",
+    //         url: "https://github.com/nglviewer/ngl",
+    //         license: Licenses.MIT,
+    //     },
 
-        /**
-         * Gets the module.
-         *
-         * @returns {Promise<any>}  A promise that resolves to the module.
-         */
-        get module(): Promise<any> {
-            return import(
-                /* webpackChunkName: "ngl" */
-                /* webpackMode: "lazy" */
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                "ngl"
-            ).then((ngl) => {
-                return ngl;
-            });
-        },
-    } as IDynamicImport,
+    //     /**
+    //      * Gets the module.
+    //      *
+    //      * @returns {Promise<any>}  A promise that resolves to the module.
+    //      */
+    //     get module(): Promise<any> {
+    //         return import(
+    //             /* webpackChunkName: "ngl" */
+    //             /* webpackMode: "lazy" */
+    //             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //             // @ts-ignore
+    //             "ngl"
+    //         ).then((ngl) => {
+    //             return ngl;
+    //         });
+    //     },
+    // } as IDynamicImport,
 
     webina: {
         credit: {

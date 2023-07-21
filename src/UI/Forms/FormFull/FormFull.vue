@@ -25,11 +25,7 @@
             </FormWrapper>
             <FormWrapper
                 v-else-if="!hideIfDisabled || makeGeneric(formElem).enabled"
-                :label="
-                    formElem.type === FormElementType.Checkbox
-                        ? ''
-                        : formElem.label
-                "
+                :label="labelToUse(formElem)"
                 :cls="'border-0 mt-' + spacing"
                 :disabled="disabled(formElem)"
             >
@@ -75,6 +71,7 @@
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
+                    :delayBetweenChangesDetected="0"
                 />
                 <FormSelect
                     v-else-if="formElem.type === FormElementType.Select"
@@ -183,7 +180,7 @@ import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
         FormCheckBox,
         FormVector3D,
         Alert,
-        FormSelectRegion
+        FormSelectRegion,
     },
 })
 export default class FormFull extends Vue {
@@ -270,6 +267,20 @@ export default class FormFull extends Vue {
      */
     asGroup(val: FormElement): IFormGroup {
         return val as IFormGroup;
+    }
+
+    labelToUse(formElem: FormElement): string {
+        if (formElem.type === FormElemType.Checkbox) {
+            return "";
+        }
+        if (formElem.label) {
+            // if (formElem.type === FormElemType.Range) {
+            //     return `${formElem.label} (${this.makeGeneric(formElem).val})`;
+            // }
+            return formElem.label;
+        }
+
+        return "";
     }
 
     /**

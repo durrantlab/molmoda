@@ -14,7 +14,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
 import { Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { ViewerNGL } from "./Viewers/ViewerNGL";
+// import { ViewerNGL } from "./Viewers/ViewerNGL";
 import { Viewer3DMol } from "./Viewers/Viewer3DMol";
 import {
     loadViewerLibPromise,
@@ -98,8 +98,8 @@ export default class ViewerPanel extends Vue {
                     // Need to load the molecular library.
                     if (this.$store.state.molViewer === "3dmol") {
                         api.visualization.viewer = new Viewer3DMol();
-                    } else if (this.$store.state.molViewer === "ngl") {
-                        api.visualization.viewer = new ViewerNGL();
+                    // } else if (this.$store.state.molViewer === "ngl") {
+                        // api.visualization.viewer = new ViewerNGL();
                     } else {
                         throw new Error("Unknown viewer");
                     }
@@ -149,16 +149,16 @@ export default class ViewerPanel extends Vue {
      *    zoom have been updated.
      */
     private _updateStylesAndZoom(): Promise<any> {
-        api.messages.waitSpinner(true);
+        const spinnerId = api.messages.startWaitSpinner();
 
         return this._updateStyleChanges()
             .then((visibleTerminalNodeModelsIds) => {
                 this._zoomPerFocus(visibleTerminalNodeModelsIds);
-                api.messages.waitSpinner(false);
+                api.messages.stopWaitSpinner(spinnerId);
                 return;
             })
             .catch((err) => {
-                api.messages.waitSpinner(false);
+                api.messages.stopWaitSpinner(spinnerId);
                 throw err;
             });
     }

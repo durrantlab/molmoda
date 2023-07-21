@@ -1,47 +1,57 @@
-let body: any;
-
-let timeoutId: any = undefined;
+const spinnerMotives: { [key: string]: NodeJS.Timeout } = {};
+let _body: any;
 
 /**
- * If a timeout was previous set to automatically remove the spinner, cancel it.
+ * Returns the body element.
+ * 
+ * @returns {HTMLBodyElement}  The body element.
  */
-function stopPreviousTimeout() {
-    if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = undefined;
+function _getBody(): HTMLBodyElement {
+    if (_body === undefined) {
+        _body = document.getElementsByTagName("body")[0];
+    }
+    return _body;
+}
+
+/**
+ * Stops a wait spinner.
+ * 
+ * @param {string} id  The id of the spinner.
+ */
+export function stopWaitSpinner(id: string) {
+    if (spinnerMotives[id]) {
+        clearTimeout(spinnerMotives[id]);
+        delete spinnerMotives[id];
+    }
+
+    if (Object.keys(spinnerMotives).length === 0) {
+        // We are stopping the spinner
+        const body = _getBody();
+        body.classList.remove("waiting");
     }
 }
 
-let waitSpinnerDepth = 0;
-
 /**
- * Start or stop the wait spinner.
+ * Starts a wait spinner. Returns an id that can be used to stop the spinner.
  * 
- * @param  {boolean} show             Whether to show the spinner.
- * @param  {number}  [timeOut=30000]  The time to wait before hiding the
- *                                    spinner automtically.
+ * @param {number} [timeOut=30000]  The timeout in milliseconds.
+ * @returns {string}  The id of the spinner.
  */
-export function waitSpinner(show: boolean, timeOut = 30000) {
-    if (body === undefined) {
-        body = document.getElementsByTagName("body")[0];
-    }
+export function startWaitSpinner(timeOut = 30000): string {
+    // console.trace("startWaitSpinner");
+    // debugger;
 
-    const origWaitSpinnerDepth = waitSpinnerDepth;
-    waitSpinnerDepth += show ? 1 : -1;
+    // We are starting the spinner
+    const body = _getBody();
+    body.classList.add("waiting");
+    
+    // Keep track of the spinner
+    const id = Math.random().toString(36).substring(2);
+    spinnerMotives[id] = setTimeout(() => {
+        // Stop after a timeout. Just to make sure spinners never keep going
+        // indefinitely.
+        stopWaitSpinner(id);
+    }, timeOut);
 
-    waitSpinnerDepth = Math.max(waitSpinnerDepth, 0)
-
-    if (origWaitSpinnerDepth === 0 && waitSpinnerDepth > 0) {
-        // We are starting the spinner
-        body.classList.add("waiting");
-        stopPreviousTimeout();
-        timeoutId = setTimeout(() => {
-            waitSpinnerDepth = 0;
-            waitSpinner(false, 0);
-        }, timeOut);
-    } else if (origWaitSpinnerDepth > 0 && waitSpinnerDepth === 0) {
-        // We are stopping the spinner
-        body.classList.remove("waiting");
-        stopPreviousTimeout();
-    }    
+    return id;
 }

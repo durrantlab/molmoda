@@ -9,6 +9,7 @@ import { TreeNodeListCopies } from "./_Copy";
 import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 /**
  * TreeNodeList class
@@ -345,7 +346,7 @@ export class TreeNodeList {
                     return;
                 }
 
-                const MAX_VISIBLE = 10;
+                const initialCompoundsVisible = getSetting("initialCompoundsVisible");
 
                 // Expand some of the nodes so the user can see what was loaded.
                 treeNodeList._nodes[0].visible = true;
@@ -363,12 +364,12 @@ export class TreeNodeList {
                         const {basename} = getFileNameParts(fileName);
                         node.title = basename + ":" + (i + 1).toString();
                     }
-                    node.visible = i < MAX_VISIBLE;
+                    node.visible = i < initialCompoundsVisible;
                     // node.treeExpanded = false;
                 }
 
                 // If there are more than MAX_VISIBLE nodes, let user know some not visible.
-                if (terminalNodes.length > MAX_VISIBLE) {
+                if (terminalNodes.length > initialCompoundsVisible) {
                     // Expand trees to make the user aware of hidden molecules.
                     // NOTE: I decided against the below for consistency. Leave
                     // commented out in case you want to revisit this.
@@ -384,7 +385,7 @@ export class TreeNodeList {
                     // A message helps too.
                     messagesApi.popupMessage(
                         "Some Molecules not Visible",
-                        `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${MAX_VISIBLE} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+                        `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
                         PopupVariant.Info
                     );
                 }
@@ -445,10 +446,10 @@ export class TreeNodeList {
      */
     public toFileInfos(targetExt: string, merge = true): Promise<FileInfo[]> {
         // Start spinner
-        messagesApi.waitSpinner(true);
+        const spinnerId = messagesApi.startWaitSpinner();
         return _convertTreeNodeList(this, targetExt, merge).then(
             (fileInfos: FileInfo[]) => {
-                messagesApi.waitSpinner(false);
+                messagesApi.stopWaitSpinner(spinnerId);
                 return fileInfos;
             }
         );

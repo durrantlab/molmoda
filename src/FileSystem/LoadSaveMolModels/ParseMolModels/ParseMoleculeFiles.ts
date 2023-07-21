@@ -39,7 +39,7 @@ export function _parseMoleculeFile(
     fileInfo: FileInfo,
     addToTree = true
 ): Promise<void | TreeNodeList> {
-    api.messages.waitSpinner(true);
+    const spinnerId = api.messages.startWaitSpinner();
 
     const formatInfo = fileInfo.getFormatInfo();
     if (formatInfo === undefined) {
@@ -60,7 +60,10 @@ export function _parseMoleculeFile(
             break;
         }
         case MolLoader.Biotite: {
-            return parseUsingBiotite(fileInfo);
+            return parseUsingBiotite(fileInfo).then((payload: any) => {
+                api.messages.stopWaitSpinner(spinnerId);
+                return payload;
+            });
         }
         // case MolLoader.Zip: {
         //     return parseUsingJsZip(fileInfo);
@@ -85,11 +88,12 @@ export function _parseMoleculeFile(
                 mergedTreeNodeList.addToMainTree();
             }
 
-            api.messages.waitSpinner(false);
+            api.messages.stopWaitSpinner(spinnerId);
 
             return mergedTreeNodeList;
         })
         .catch((err) => {
+            api.messages.stopWaitSpinner(spinnerId);
             throw err;
         });
 }

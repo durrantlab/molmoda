@@ -4,7 +4,10 @@ import {
     ISimpleMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { waitSpinner } from "@/UI/MessageAlerts/WaitSpinner";
+import {
+    startWaitSpinner,
+    stopWaitSpinner,
+} from "@/UI/MessageAlerts/WaitSpinner";
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
 export const messagesApi = {
@@ -61,14 +64,22 @@ export const messagesApi = {
     },
 
     /**
-     * Show or hide the mouse spinner to indicate waiting.
+     * Starts a wait spinner. Returns an id that can be used to stop the spinner.
      *
-     * @param  {boolean} show             Whether to show the spinner.
-     * @param  {number}  [timeOut=30000]  The time to wait before hiding the
-     *                                    spinner automtically.
+     * @param {number} [timeOut=30000]  The timeout in milliseconds.
+     * @returns {string}  The id of the spinner.
      */
-    waitSpinner: function (show: boolean, timeOut = 30000) {
-        waitSpinner(show, timeOut);
+    startWaitSpinner: function (timeOut = 30000): string {
+        return startWaitSpinner(timeOut);
+    },
+
+    /**
+     * Stops a wait spinner.
+     *
+     * @param {string} id  The id of the spinner.
+     */
+    stopWaitSpinner: function (id: string) {
+        stopWaitSpinner(id);
     },
 
     /**

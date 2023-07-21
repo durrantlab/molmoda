@@ -109,7 +109,7 @@ export class TreeNode {
 
     /**
      * Get whether this node is visible.
-     * 
+     *
      * @returns {boolean}  Whether this node is visible.
      */
     public get visible(): boolean {
@@ -118,7 +118,7 @@ export class TreeNode {
 
     /**
      * Set whether this node is visible.
-     * 
+     *
      * @param {boolean} val  Whether this node is visible.
      */
     public set visible(val: boolean) {
@@ -259,6 +259,105 @@ export class TreeNode {
     }
 
     /**
+     * Given a list of file infos, load them all into a tree, but position them
+     * in type/chain categories.
+     *
+     * @param  {TreeNode[]} treeNodes        The tree nodes to organize. Tree
+     *                                       node rather than FileInfo because
+     *                                       the category is needed.
+     * @param  {string}     [chainName="A"]  The name of the chain to use.
+     *                                       Defaults to "A".
+     * @returns {TreeNode}  The root tree node of the loaded tree.
+     */
+    public static loadHierarchicallyFromTreeNodes(
+        treeNodes: TreeNode[],
+        chainName = "A"
+    ): TreeNode {
+        // Consider only the terminal nodes
+        const allTreeNodes: TreeNode[] = [];
+        for (const treeNode of treeNodes) {
+            if (treeNode.nodes) {
+                const terminalNodes = treeNode.nodes.terminals;
+                allTreeNodes.push(...terminalNodes._nodes);
+            } else {
+                // This is a terminal node
+                allTreeNodes.push(treeNode);
+            }
+        }
+
+        // Divide the nodes into categories. For now, supporting
+        // only Protein and Compounds. TODO: Expand to all possible categories.
+        const categories: { [key: string]: TreeNode[] } = {};
+        for (const treeNode of allTreeNodes) {
+            if (treeNode.type === TreeNodeType.Compound) {
+                if (!categories["Compounds"]) {
+                    categories["Compounds"] = [];
+                }
+                categories["Compounds"].push(treeNode);
+            } else if (treeNode.type === TreeNodeType.Protein) {
+                if (!categories["Protein"]) {
+                    categories["Protein"] = [];
+                }
+                categories["Protein"].push(treeNode);
+            }
+        }
+
+        // Create the root node
+        const rootNode = new TreeNode({
+            title: "Root Node", // Should be renamed
+            treeExpanded: false,
+            visible: true,
+            selected: SelectedType.False,
+            focused: false,
+            viewerDirty: true,
+            nodes: new TreeNodeList([]),
+        });
+
+        for (const title of ["Protein", "Compounds"]) {
+            const type =
+                title === "Protein"
+                    ? TreeNodeType.Protein
+                    : TreeNodeType.Compound;
+
+            if (!categories[title]) {
+                continue;
+            }
+
+            if (categories[title].length === 0) {
+                continue;
+            }
+
+            const categoryNode = new TreeNode({
+                title: title,
+                treeExpanded: false,
+                visible: true,
+                selected: SelectedType.False,
+                focused: false,
+                viewerDirty: true,
+                type: type,
+            });
+
+            rootNode.nodes?.push(categoryNode);
+
+            const chainNode = new TreeNode({
+                title: chainName,
+                treeExpanded: false,
+                visible: true,
+                selected: SelectedType.False,
+                focused: false,
+                viewerDirty: true,
+                type: type,
+            });
+
+            categoryNode.nodes = new TreeNodeList([chainNode]);
+
+            chainNode.nodes = new TreeNodeList(categories[title]);
+        }
+
+        return rootNode;
+    }
+
+    /**
      * Get a new TreeNode from a file info object.
      *
      * @param  {FileInfo} fileInfo  The file info object.
@@ -396,7 +495,7 @@ export class TreeNode {
 
     /**
      * Gets the box surrounding the model.
-     * 
+     *
      * @param  {number} [padding=3.4]  The padding to add to the box.
      * @returns {IBox}  The box.
      */

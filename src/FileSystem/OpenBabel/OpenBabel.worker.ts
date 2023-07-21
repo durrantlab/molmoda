@@ -175,7 +175,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             // You're copying over many input files. You need to know which one
             // was actually used.
-            let inputFileActuallUsed: FileInfo | undefined = undefined;
+            let inputFileActualyUsed: FileInfo | undefined = undefined;
 
             // Modify the arguments to you're readying and writing from the new
             // temporary directory.
@@ -184,7 +184,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                     args[i + 1] = tmpDir + args[i + 1];
                 } else if (inputFileNameSet.has(args[i])) {
                     // debugger;
-                    inputFileActuallUsed = inputFiles.find((file) => file.name === args[i]);
+                    inputFileActualyUsed = inputFiles.find((file) => file.name === args[i]);
                     args[i] = tmpDir + args[i];
                 }
             }
@@ -207,10 +207,18 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             // Keep those files in filesAfterRun that are not in
             // mod.filesBeforeRun. These are the new files.
-            const newFiles = filesAfterRun.filter(
+            let newFiles = filesAfterRun.filter(
                 (fileName: string) =>
                     !filesBeforeRun.includes(fileName)
             );
+
+            if (newFiles.length === 0) {
+                // There was no new files for some reason. Output a warning, and
+                // return the input molecule.
+                console.error("No new files were created. Sending back input file.");
+                // TODO: Why does this occasionally happen?
+                newFiles = [inputFileActualyUsed?.name];
+            }
 
             // console.log("MOO", filesBeforeRun, filesAfterRun, newFiles);
 
@@ -225,14 +233,14 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 }
             );
 
-            // Remove the temporary directory.
-            const filesToDelete = [...newFiles, ...inputFileNameSet];
+            // Remove the temporary directory. Keep only unique.
+            const filesToDelete = [...new Set([...newFiles, ...inputFileNameSet])];
             for (const fileName of filesToDelete) {
                 mod.files.unlink(tmpDir + fileName);
             }
             mod.files.rmdir(tmpDir);
 
-            return [inputFileActuallUsed?.auxData, contents];
+            return [inputFileActualyUsed?.auxData, contents];
         })
         .then((outputFilesData: [any, string[]]) => {
             return {
