@@ -83,8 +83,8 @@
                 />
                 <FormCheckBox
                     v-else-if="formElem.type === FormElementType.Checkbox"
-                    v-model.boolean="makeGeneric(formElem).val"
-                    :text="makeGeneric(formElem).label"
+                    v-model="makeGeneric(formElem).val"
+                    :text="validateLabel(makeGeneric(formElem).label)"
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
@@ -269,15 +269,68 @@ export default class FormFull extends Vue {
         return val as IFormGroup;
     }
 
-    labelToUse(formElem: FormElement): string {
+    /**
+     * Validate a label.
+     * 
+     * @param {string | undefined} label  The label to validate.
+     * @returns {string | undefined}  The label to use.
+     */
+    validateLabel(label: string | undefined): string | undefined {
+        if (label === undefined) {
+            return label;
+        }
+
+        // Do some validation on the label. Label should not end in
+        // punctuation
+        if (label.endsWith(".") || label.endsWith("!") || label.endsWith("?")) {
+            throw new Error(
+                `FormFull: Label should not end in punctuation: ${label} Use description for extended explanations.`
+            );
+        }
+
+        // Must start with capital letter
+        if (label[0] !== label[0].toUpperCase()) {
+            throw new Error(
+                `FormFull: Label must start with capital letter: ${label}`
+            );
+        }
+
+        // Words with more than three letters
+        let words = label.split(" ").filter((x) => x.length > 3);
+        if (words.length > 1) {
+            // Percentage of words that are capitalized
+            let pct =
+                words.filter((x) => x[0] === x[0].toUpperCase()).length /
+                words.length;
+            if (pct > 0.6) {
+                throw new Error(
+                    `FormFull: At least 60% of big words in label must be lower case: ${label}. Current percent: ${
+                        100 * pct
+                    }%.`
+                );
+            }
+        }
+
+        return label;
+    }
+
+    /**
+     * Get the label to use for a form element.
+     * 
+     * @param {FormElement} formElem  The form element.
+     * @returns {string | undefined}  The label to use.
+     */
+    labelToUse(formElem: FormElement): string | undefined {
         if (formElem.type === FormElemType.Checkbox) {
+            // For checkbox, label is the text
             return "";
         }
         if (formElem.label) {
             // if (formElem.type === FormElemType.Range) {
             //     return `${formElem.label} (${this.makeGeneric(formElem).val})`;
             // }
-            return formElem.label;
+
+            return this.validateLabel(formElem.label);
         }
 
         return "";

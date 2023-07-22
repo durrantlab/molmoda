@@ -1,50 +1,53 @@
 <template>
-    <!-- modelValue="a" -->
-    <!-- <FormSelectRegion v-model="test"></FormSelectRegion> -->
-    <!-- [[ {{test}} ]] -->
+    <span>
+        <!-- modelValue="a" -->
+        <!-- <FormSelectRegion v-model="test"></FormSelectRegion> -->
+        <!-- [[ {{test}} ]] -->
 
-    <!-- Iterate through key, pair of allTableData -->
-    <h5>Data: Visible/Selected Molecules</h5>
+        <!-- Iterate through key, pair of allTableData -->
+        <h5>Data: Visible/Selected Molecules</h5>
 
-    <p v-if="allTableData.length === 0" style="font-size: 14px">
-        No molecules (visible or selected) currently have any data to display
-    </p>
-    <!-- <span v-else-if="allTableData.length > 1">
+        <p v-if="allTableData.length === 0" style="font-size: 14px">
+            No molecules (visible or selected) currently have any data to
+            display
+        </p>
+        <!-- <span v-else-if="allTableData.length > 1">
     <h6 v-for="tableData in allTableData" v-bind:key="tableData[0]" style="display: inline-block;">
       <span class="badge bg-secondary">{{ tableData[0] }}</span>
     </h6>
   </span> -->
 
-    <!-- class="btn-group btn-group-sm mb-3" -->
-    <!-- style="flex-wrap: wrap" -->
-    <!-- role="group" -->
+        <!-- class="btn-group btn-group-sm mb-3" -->
+        <!-- style="flex-wrap: wrap" -->
+        <!-- role="group" -->
 
-    <!-- style="margin: 1px"
+        <!-- style="margin: 1px"
   class="btn btn-primary btn-sm" -->
-    <p v-else-if="allTableData.length > 1" aria-label="Tables" class="mb-3">
-        Available tables:
-        <span
-            v-for="(tableData, idx) in allTableData"
-            v-bind:key="tableData[0]"
-        >
-            <a href="#" @click.prevent="tocLinkScroll(tableData[0])">
-                {{ tableData[0] }} </a
-            ><span v-if="idx !== allTableData.length - 1">, </span>
-        </span>
-    </p>
+        <p v-else-if="allTableData.length > 1" aria-label="Tables" class="mb-3">
+            Available tables:
+            <span
+                v-for="(tableData, idx) in allTableData"
+                v-bind:key="tableData[0]"
+            >
+                <a href="#" @click.prevent="tocLinkScroll(tableData[0])">
+                    {{ tableData[0] }} </a
+                ><span v-if="idx !== allTableData.length - 1">, </span>
+            </span>
+        </p>
 
-    <div v-for="tableData in allTableData" v-bind:key="tableData[0]">
-        <Table
-            :id="slugify(tableData[0])"
-            :tableData="tableData[1]"
-            :caption="tableData[0]"
-            :noFixedTable="noFixedTable(tableData[1])"
-            @rowClicked="rowClicked"
-            :clickableRows="true"
-        >
-            <!-- <template #afterHeader> After </template> -->
-        </Table>
-    </div>
+        <div v-for="tableData in allTableData" v-bind:key="tableData[0]">
+            <Table
+                :id="slugify(tableData[0])"
+                :tableData="tableData[1]"
+                :caption="tableData[0]"
+                :noFixedTable="noFixedTable(tableData[1])"
+                @rowClicked="rowClicked"
+                :clickableRows="true"
+            >
+                <!-- <template #afterHeader> After </template> -->
+            </Table>
+        </div>
+    </span>
 </template>
 
 <script lang="ts">
@@ -72,7 +75,7 @@ import FormSelectRegion from "@/UI/Forms/FormSelectRegion/FormSelectRegion.vue";
 @Options({
     components: {
         Table,
-        FormSelectRegion
+        FormSelectRegion,
     },
 })
 export default class DataPanel extends Vue {

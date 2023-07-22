@@ -40,7 +40,7 @@ import {
 import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
 import * as compileErrors from "../compile_errors.json";
-import { appName } from "@/Core/AppName";
+import { appName } from "@/Core/AppInfo";
 import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";

@@ -102,7 +102,7 @@ export default class WebinaPlugin extends PluginParentClass {
         {
             id: "cpu",
             type: FormElemType.Number,
-            label: "Number of CPUs",
+            label: "Number of processors",
             val: 1,
             filterFunc: (val: number) => {
                 return Math.round(val);
@@ -124,7 +124,7 @@ export default class WebinaPlugin extends PluginParentClass {
         {
             id: "score_only",
             type: FormElemType.Checkbox,
-            label: "Score Only",
+            label: "Score only",
             val: false,
             description:
                 "Scores the existing pose, without repositioning the compound.",
@@ -132,14 +132,14 @@ export default class WebinaPlugin extends PluginParentClass {
         {
             id: "keep_only_best",
             type: FormElemType.Checkbox,
-            label: "Keep Only Best",
+            label: "Keep only best",
             val: true,
             description: "Keep only the best predicted pose for each compound.",
         } as IFormCheckbox,
         {
             id: "webinaAdvancedParams",
             type: FormElemType.Group,
-            label: "Advanced Docking Parameters",
+            label: "Advanced docking parameters",
             childElements: [
                 {
                     id: "warning",
@@ -151,7 +151,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 {
                     id: "seed",
                     type: FormElemType.Number,
-                    label: "Random Seed",
+                    label: "Random seed",
                     val: 1,
                     filterFunc: (val: number) => {
                         return Math.round(val);
@@ -162,7 +162,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 {
                     id: "num_modes",
                     type: FormElemType.Number,
-                    label: "Number of Modes",
+                    label: "Number of modes",
                     val: 9,
                     filterFunc: (val: number) => {
                         return Math.round(val);
@@ -172,7 +172,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 {
                     id: "energy_range",
                     type: FormElemType.Number,
-                    label: "Energy Range",
+                    label: "Energy range",
                     val: 3,
                     description:
                         "The maximum energy difference between the best and worst pose.",

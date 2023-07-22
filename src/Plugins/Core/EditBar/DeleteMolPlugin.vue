@@ -1,7 +1,7 @@
 <template>
     <PluginComponent
         ref="pluginComponent"
-        v-model:modelValue="open"
+        v-model="open"
         title="Delete Molecule"
         :intro="intro"
         actionBtnTxt="Delete"

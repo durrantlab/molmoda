@@ -62,23 +62,18 @@ export abstract class QueueParent {
      *                                                        type of job.
      * @param {any[]}              inputs                     An array of inputs
      *                                                        to be processed.
-     * @param {number}             [maxTotalProcs=undefined]  The maximum number
-     *                                                        of processors that
-     *                                                        can be used by the
-     *                                                        queue at any given
-     *                                                        time. Defaults to
-     *                                                        undefined, which
-     *                                                        means app settings
-     *                                                        will be used.
      * @param {number}             [procsPerJobBatch=1]       The number of
      *                                                        processors that
      *                                                        can be used by
      *                                                        each batch of
      *                                                        jobs.
-     * @param {number}             [batchSize=1]              The number of jobs
-     *                                                        per batch.
      * @param {INewQueueCallbacks} callbacks                  The callbacks to
      *                                                        be used by the
+     *                                                        queue.
+     * @param {number}             [batchSize=1]              The number of jobs
+     *                                                        per batch.
+     * @param {boolean}            [showInQueue=true]         Whether to show
+     *                                                        this job in the
      *                                                        queue.
      */
     constructor(

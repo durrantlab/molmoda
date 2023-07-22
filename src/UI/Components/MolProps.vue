@@ -1,7 +1,9 @@
 <template>
-    <Table :tableData="lipinskiTableData" caption="Lipinski Properties" />
-    <Table :tableData="otherTableData" caption="Other Properties" />
-    <Table :tableData="countsTableData" caption="Counts" />
+    <span>
+        <Table :tableData="lipinskiTableData" caption="Lipinski Properties" />
+        <Table :tableData="otherTableData" caption="Other Properties" />
+        <Table :tableData="countsTableData" caption="Counts" />
+    </span>
 </template>
 
 <script lang="ts">
@@ -46,7 +48,7 @@ export default class MolProps extends Vue {
             // console.log("Already calculated.");
             return;
         }
-        
+
         calcMolProps([this.smiles], [this.treeNode])
             .then((resps: ICalcMolProps[]) => {
                 // Only one molecule.
@@ -73,7 +75,9 @@ export default class MolProps extends Vue {
      * @param {any[][]} descriptors  List of descriptors
      * @returns {ITableData}         Table data
      */
-    convertDescriptorsToTableData(descriptors: [string, number, string][]): ITableData {
+    convertDescriptorsToTableData(
+        descriptors: [string, number, string][]
+    ): ITableData {
         if (!descriptors.map) {
             console.trace();
             debugger;

@@ -90,7 +90,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
         {
             id: "providePseudoAtoms",
             type: FormElemType.Checkbox,
-            label: "Provide pocket-filling pseudo atoms for visualization.",
+            label: "Provide pocket-filling pseudo atoms for visualization",
             val: false,
         } as IFormCheckbox,
         {
@@ -102,34 +102,34 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     id: "warning",
                     type: FormElemType.Alert,
                     description:
-                        "Unless you are an expert user, these advanced parameters are best left unmodified.",
+                        "Unless you are an expert user, these advanced parameters are best left unmodified",
                     alertType: "warning",
                 } as IFormAlert,
                 {
                     id: "min_alpha_size",
                     type: FormElemType.Number,
-                    label: "Minimum radius of an alpha-sphere.",
+                    label: "Minimum radius of an alpha-sphere",
                     val: 3.4,
                 } as IFormNumber,
 
                 {
                     id: "max_alpha_size",
                     type: FormElemType.Number,
-                    label: "Maximum radius of an alpha-sphere.",
+                    label: "Maximum radius of an alpha-sphere",
                     val: 6.2,
                 } as IFormNumber,
 
                 {
                     id: "clustering_distance",
                     type: FormElemType.Number,
-                    label: "Distance threshold for clustering algorithm.",
+                    label: "Distance threshold for clustering algorithm",
                     val: 2.4,
                 } as IFormNumber,
 
                 {
                     id: "clustering_method",
                     type: FormElemType.Select,
-                    label: "Clustering method for grouping voronoi vertices.",
+                    label: "Clustering method for grouping voronoi vertices",
                     options: [
                         {
                             description: "s : single linkage clustering",
@@ -150,7 +150,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 {
                     id: "clustering_measure",
                     type: FormElemType.Select,
-                    label: "Distance measure for clustering.",
+                    label: "Distance measure for clustering",
                     options: [
                         { description: "e : euclidean distance", val: "e" },
                         { description: "b : Manhattan distance", val: "b" },
@@ -161,7 +161,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 {
                     id: "min_spheres_per_pocket",
                     type: FormElemType.Number,
-                    label: "Minimum number of a-sphere per pocket.",
+                    label: "Minimum number of a-sphere per pocket",
                     val: 15,
                 } as IFormNumber,
 
@@ -175,14 +175,14 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 {
                     id: "number_apol_asph_pocket",
                     type: FormElemType.Number,
-                    label: "Minimum number of apolar neighbor for an a-sphere to be considered as apolar.",
+                    label: "Minimum number of apolar neighbor for an a-sphere to be considered as apolar",
                     val: 3,
                 } as IFormNumber,
 
                 {
                     id: "iterations_volume_mc",
                     type: FormElemType.Number,
-                    label: "Number of Monte-Carlo iterations for calculating each pocket volume.",
+                    label: "Number of Monte-Carlo iterations for calculating each pocket volume",
                     val: 300,
                 } as IFormNumber,
             ],
@@ -307,7 +307,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
             outPdbFileTreeNode.title = "Pockets: " + payload.label;
 
-            const numInitiallyVisible = 5;
+            // const numInitiallyVisible = 5;
 
             // Update the compounds (names, style)
             // let firstNodeId = "";

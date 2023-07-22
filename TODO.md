@@ -121,12 +121,14 @@ of processors available.
 
 Need GoogleAnlytics
 
+Help system. Probably need to make sure title always in plugin itself.
+
+# DONE
+
 Need easy method (on TreeNodeList) to automatically organize by compound,
 protein, etc. DONE, but use it throughout biotite.
 
 Prep molecules. Option to regenerate 3d geometry too.
-
-# DONE
 
 FPocket: blank modal flashes. Why?
 

@@ -128,14 +128,11 @@ function _alignAtomName(atomName: string, element?: string): string {
             // Assume first letter is the element
             return " " + _ljust(atomName, 3);
         }
-    } else {
+    } else if (
+        _twoLetterElems.indexOf(atomName.substring(0, 2).toUpperCase()) !== -1
+    ) {
         // Element is unknown.
-        if (
-            _twoLetterElems.indexOf(atomName.substring(0, 2).toUpperCase()) !==
-            -1
-        ) {
-            return _ljust(atomName, 4);
-        }
+        return _ljust(atomName, 4);
     }
 
     return _rjust(atomName, 4);
@@ -258,9 +255,9 @@ export function _convertTreeNodeListToPDB(
     treeNodeList: TreeNodeList,
     merge = false
 ): string[] {
-    let mols = treeNodeList.filters.keepModels().map(
-        (treeNode: TreeNode) => treeNode.model as GLModel | IAtom[]
-    );
+    let mols = treeNodeList.filters
+        .keepModels()
+        .map((treeNode: TreeNode) => treeNode.model as GLModel | IAtom[]);
     // .filhter((mol) => Array.isArray(mol) && mol.length > 0);
     // mol is 3dmoljs molecule object.
 

@@ -47,7 +47,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import * as api from "@/Api";
-import { appName } from "@/Core/AppName";
+import { appName } from "@/Core/AppInfo";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   PluginParentClass,

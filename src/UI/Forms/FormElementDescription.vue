@@ -17,6 +17,9 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { Prop, Watch } from "vue-property-decorator";
 import { isSentence } from "@/Core/Utils";
 
+/**
+ * FormElementDescription component
+ */
 @Options({
     components: {
         Alert,
@@ -27,6 +30,12 @@ export default class FormElementDescription extends Vue {
     // extra validation.
     @Prop({}) description!: string;
 
+
+    /**
+     * Validate the description when it changes.
+     * 
+     * @param {string} newVal The new description.
+     */
     @Watch("description")
     onDescriptionChanged(newVal: string) {
         if (!isSentence(newVal)) {
@@ -38,6 +47,9 @@ export default class FormElementDescription extends Vue {
         }
     }
 
+    /**
+     * Validate the description when the component is mounted.
+     */
     mounted() {
         this.onDescriptionChanged(this.description);
     }

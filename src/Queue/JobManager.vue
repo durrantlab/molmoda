@@ -89,6 +89,12 @@ export default class JobManager extends Vue {
         return [this.jobStatusesToTableData(0), this.jobStatusesToTableData(1)];
     }
 
+    /**
+     * Determine if the table is visible.
+     *
+     * @param {number} tableIdx  The table index.
+     * @returns {boolean}  True if the table is visible.
+     */
     isTableVisible(tableIdx: number): boolean {
         // const firstTableDataCount = this.jobStatusInfos[0][1].length;
         const secondTableDataCount = this.jobStatusInfos[1][1].length;
@@ -98,10 +104,10 @@ export default class JobManager extends Vue {
     }
 
     /**
-     * Get the job statuses, formatted.
-     *
-     * @param {IJobStatusInfo[]} jobStatuses  The job statuses.
-     * @returns {ITableData[]}.  The job statuses, formatted.
+     * Convert job statuses to table data.
+     * 
+     * @param {number} tableIdx  The table index.
+     * @returns {ITableData}  The table data.
      */
     jobStatusesToTableData(tableIdx: number): ITableData {
         const jobStatuses = this.jobStatusInfos[tableIdx][1];

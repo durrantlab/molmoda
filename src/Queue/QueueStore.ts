@@ -65,6 +65,12 @@ export function updateProgressInQueueStore(id: string, progress: number) {
     }
 }
 
+/**
+ * Move a job from the running queue to the done queue.
+ * 
+ * @param {string} id  The job ID.
+ * @param {JobStatus} status  The status of the job.
+ */
 function _moveToDoneInQueueStore(id: string, status: JobStatus) {
     const item = queueStore.running.find((item) => item.id === id);
     if (item) {

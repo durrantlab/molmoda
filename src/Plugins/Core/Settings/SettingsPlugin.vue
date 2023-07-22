@@ -17,10 +17,7 @@
 import { Options } from "vue-class-component";
 import {
     FormElement,
-    FormElemType,
     IFormNumber,
-    IFormOption,
-    IFormSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
@@ -67,26 +64,27 @@ export default class SettingsPlugin extends PluginParentClass {
             id: "initialCompoundsVisible",
             label: "Molecules initially visible",
             val: 10,
-            description: "Number of molecules initially visible when creating/loading many new molecules.",
+            description:
+                "Number of molecules initially visible when creating/loading many new molecules.",
         } as IFormNumber,
-        {
-            type: FormElemType.Select,
-            id: "molViewer",
-            label: "Molecular viewer library",
-            val: "3dmol",
-            enabled: false,
-            description: "Only 3Dmol.js is currently supported.",
-            options: [
-                {
-                    val: "3dmol",
-                    description: "3Dmol.js",
-                } as IFormOption,
-                {
-                    val: "ngl",
-                    description: "NGL Viewer",
-                } as IFormOption,
-            ],
-        } as IFormSelect,
+        // {
+        //     type: FormElemType.Select,
+        //     id: "molViewer",
+        //     label: "Molecular viewer library",
+        //     val: "3dmol",
+        //     enabled: false,
+        //     description: "Only 3Dmol.js is currently supported.",
+        //     options: [
+        //         {
+        //             val: "3dmol",
+        //             description: "3Dmol.js",
+        //         } as IFormOption,
+        //         {
+        //             val: "ngl",
+        //             description: "NGL Viewer",
+        //         } as IFormOption,
+        //     ],
+        // } as IFormSelect,
     ];
     alwaysEnabled = true;
     logJob = false;

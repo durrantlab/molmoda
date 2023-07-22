@@ -11,6 +11,7 @@ module.exports = {
         "plugin:regexp/recommended",
         "plugin:promise/recommended",
         "plugin:sonarjs/recommended",
+        "plugin:vue/essential"
     ],
     plugins: [
         "jsdoc",
@@ -30,13 +31,26 @@ module.exports = {
         "sonarjs/no-redundant-jump": "off",
         "sonarjs/no-duplicate-string": "off",
         "sonarjs/cognitive-complexity": "off",
-        'jsdoc/require-jsdoc': [1, {'require': {
-            FunctionExpression: true,
-            ClassDeclaration: true,
-            ClassExpression: true,
-            MethodDefinition: true
-        }}],
+        "jsdoc/require-jsdoc": [
+            1,
+            {
+                require: {
+                    FunctionExpression: true,
+                    ClassDeclaration: true,
+                    ClassExpression: true,
+                    MethodDefinition: true,
+                },
+            },
+        ],
         "jsdoc/check-tag-names": "off",
-
     },
+    ignorePatterns: [
+        "**/node_modules/*",
+        "**/dist/*",
+        "**/public/*",
+        "**/docker_compiling/*",
+        "**/docs/*",
+        "**/wasm-compile/*",
+        
+    ],
 };

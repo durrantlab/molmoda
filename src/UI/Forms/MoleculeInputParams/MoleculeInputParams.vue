@@ -3,18 +3,18 @@
         <!-- :label="'Which ' + molNameToUse + ' to consider?'" -->
         <FormWrapper cls="border-0">
             <FormCheckBox
-                v-model.boolean="val.molsToConsider.visible"
+                v-model="val.molsToConsider.visible"
                 :text="'Consider visible ' + molNameToUse"
                 id="visMols"
                 class="mt-2"
             />
             <FormCheckBox
-                v-model.boolean="val.molsToConsider.selected"
+                v-model="val.molsToConsider.selected"
                 :text="'Consider selected ' + molNameToUse"
                 id="selMols"
             />
             <FormCheckBox
-                v-model.boolean="val.molsToConsider.hiddenAndUnselected"
+                v-model="val.molsToConsider.hiddenAndUnselected"
                 :text="
                     'Consider other ' +
                     molNameToUse +
@@ -24,7 +24,7 @@
             />
             <FormCheckBox
                 v-if="val.considerProteins"
-                v-model.boolean="val.includeMetalsSolventAsProtein"
+                v-model="val.includeMetalsSolventAsProtein"
                 text="Count metals/solvent as part of the protein"
                 id="countMetalsSolvent"
             />

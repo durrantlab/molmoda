@@ -1,42 +1,49 @@
 <template>
-    <!-- For regions -->
-    <Section title="Region" v-if="numselectedRegions === 1">
-        <FormFull v-model="constructedRegionForm" id="region-style"></FormFull>
-        <hr class="mt-4" />
-    </Section>
-
-    <!-- For molecules -->
-    <Section title="Molecules">
-        <div v-if="visibleTreeNodes.length === 0" class="pb-2">
-            <p style="font-size: 14px">
-                <span v-if="treeNodesWithModel.length === 0">
-                    The workspace contains no molecules.
-                </span>
-                <span v-else>No molecules are currently visible.</span>
-            </p>
-        </div>
-        <div v-else>
-            <StylesAllMolTypes />
-        </div>
-    </Section>
-
-    <!-- For regions -->
-    <div v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0">
-        <hr class="mt-4" />
-        <Section title="Region" class="pb-2">
-            <p style="font-size: 14px">
-                <span v-if="treeNodesWithRegions.length === 0">
-                    The workspace contains no regions.
-                </span>
-                <span v-else-if="numselectedRegions === 0">
-                    No region selected (clicked) in the Navigator panel
-                </span>
-                <span v-else-if="numselectedRegions > 1">
-                    Select only one region in the Navigator panel
-                </span>
-            </p>
+    <span>
+        <!-- For regions -->
+        <Section title="Region" v-if="numselectedRegions === 1">
+            <FormFull
+                v-model="constructedRegionForm"
+                id="region-style"
+            ></FormFull>
+            <hr class="mt-4" />
         </Section>
-    </div>
+
+        <!-- For molecules -->
+        <Section title="Molecules">
+            <div v-if="visibleTreeNodes.length === 0" class="pb-2">
+                <p style="font-size: 14px">
+                    <span v-if="treeNodesWithModel.length === 0">
+                        The workspace contains no molecules.
+                    </span>
+                    <span v-else>No molecules are currently visible.</span>
+                </p>
+            </div>
+            <div v-else>
+                <StylesAllMolTypes />
+            </div>
+        </Section>
+
+        <!-- For regions -->
+        <div
+            v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0"
+        >
+            <hr class="mt-4" />
+            <Section title="Region" class="pb-2">
+                <p style="font-size: 14px">
+                    <span v-if="treeNodesWithRegions.length === 0">
+                        The workspace contains no regions.
+                    </span>
+                    <span v-else-if="numselectedRegions === 0">
+                        No region selected (clicked) in the Navigator panel
+                    </span>
+                    <span v-else-if="numselectedRegions > 1">
+                        Select only one region in the Navigator panel
+                    </span>
+                </p>
+            </Section>
+        </div>
+    </span>
 </template>
 
 <script lang="ts">
@@ -87,7 +94,8 @@ export default class StylesPanel extends Vue {
      * @returns {TreeNodeList} All tree nodes that have a model (molecule).
      */
     get treeNodesWithModel(): TreeNodeList {
-        const allNodes = (this.$store.state.molecules as TreeNodeList).flattened;
+        const allNodes = (this.$store.state.molecules as TreeNodeList)
+            .flattened;
         return allNodes.filters.keepModels();
     }
 
@@ -116,7 +124,8 @@ export default class StylesPanel extends Vue {
      * @returns {TreeNodeList} All tree nodes that have a region.
      */
     get treeNodesWithRegions(): TreeNodeList {
-        const allNodes = (this.$store.state.molecules as TreeNodeList).flattened;
+        const allNodes = (this.$store.state.molecules as TreeNodeList)
+            .flattened;
         return allNodes.filters.keepRegions();
     }
 
@@ -213,12 +222,17 @@ export default class StylesPanel extends Vue {
         ] as FormElement[];
 
         if (this.firstSelectedTreeNodeWithRegion?.region?.movable) {
-            if (this.firstSelectedTreeNodeWithRegion?.region?.type === RegionType.Sphere) {
+            if (
+                this.firstSelectedTreeNodeWithRegion?.region?.type ===
+                RegionType.Sphere
+            ) {
                 frm.push({
                     id: "radius",
                     type: FormElemType.Number,
                     label: "Radius",
-                    val: (this.firstSelectedTreeNodeWithRegion?.region as ISphere).radius,
+                    val: (
+                        this.firstSelectedTreeNodeWithRegion?.region as ISphere
+                    ).radius,
                 } as IFormRange);
             } else {
                 // Assuming it's a box, because arrows, cylinders, etc. will never

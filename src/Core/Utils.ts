@@ -115,6 +115,9 @@ export function isSentence(txt: string): boolean {
         return true;
     }
 
+    // Strip out html tags
+    txt = txt.replace(/(<([^>]+)>)/g, "");
+
     // Trim whitespace
     txt = txt.trim();
 
@@ -130,6 +133,7 @@ export function isSentence(txt: string): boolean {
         lastChar === "?" ||
         lastChar === "!" ||
         lastChar === '"' ||
-        lastChar === ":"
+        lastChar === ":" ||
+        lastChar === ")"
     );
 }

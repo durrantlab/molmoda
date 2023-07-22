@@ -1,6 +1,8 @@
 <template>
-  <h5>Jobs: Running/Completed</h5>
-  <JobManager />
+    <span>
+        <h5>Jobs: Running/Completed</h5>
+        <JobManager />
+    </span>
 </template>
 
 <script lang="ts">
@@ -17,10 +19,10 @@ import JobManager from "@/Queue/JobManager.vue";
  * QueuePanel component
  */
 @Options({
-  components: {
-    JobManager,
-    Section,
-  },
+    components: {
+        JobManager,
+        Section,
+    },
 })
 export default class QueuePanel extends Vue {}
 </script>
@@ -28,9 +30,9 @@ export default class QueuePanel extends Vue {}
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 #mol-viewer {
-  width: 100%;
-  height: 100%;
-  position: relative;
+    width: 100%;
+    height: 100%;
+    position: relative;
 }
 
 // #mol-viewer canvas {

@@ -1,83 +1,101 @@
 <template>
-    <div ref="golden-layout-data" id="golden-layout-data">
-        <GoldenLayoutContainer type="column">
-            <GoldenLayoutContainer type="row" :height="80">
-                <GoldenLayoutComponent
-                    name="Navigator"
-                    extraClass="sortable-group"
-                    state="{}"
-                    :width="20"
-                >
-                    <div
-                        @click.self="clearSelection"
-                        style="height: 100%; overflow-x: clip"
-                    >
-                        <TreeView />
-                    </div>
-                </GoldenLayoutComponent>
-
-                <GoldenLayoutContainer type="stack" :width="60">
+    <span>
+        <div ref="golden-layout-data" id="golden-layout-data">
+            <GoldenLayoutContainer type="column">
+                <GoldenLayoutContainer type="row" :height="80">
                     <GoldenLayoutComponent
-                        name="Viewer"
-                        state="{}"
-                        :style="'height:100%; padding:0 !important;'"
-                    >
-                        <div v-if="!viewerLoaded" class="splash-screen">
-                            <div class="container-fluid p-2">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <img
-                                            src="img/icons/android-chrome-192x192.png"
-                                            class="rounded mx-auto d-block"
-                                            alt="Logo"
-                                        />
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <p class="text-center">{{appInfo}}</p>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <p>Biotite is such and such a thing, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>. To get started, do such and such a thing.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <ViewerPanel @onViewerLoaded="onViewerLoaded" />
-                    </GoldenLayoutComponent>
-                    <GoldenLayoutComponent name="Jobs" state="{}">
-                        <QueuePanel />
-                    </GoldenLayoutComponent>
-                    <GoldenLayoutComponent name="Data" state="{}">
-                        <DataPanel />
-                    </GoldenLayoutComponent>
-                </GoldenLayoutContainer>
-
-                <GoldenLayoutContainer type="column" :width="20">
-                    <GoldenLayoutComponent name="Styles" state="{}" :width="20">
-                        <StylesPanel />
-                    </GoldenLayoutComponent>
-
-                    <GoldenLayoutComponent
-                        name="Information"
+                        name="Navigator"
+                        extraClass="sortable-group"
                         state="{}"
                         :width="20"
                     >
-                        <InformationPanel />
+                        <div
+                            @click.self="clearSelection"
+                            style="height: 100%; overflow-x: clip"
+                        >
+                            <TreeView />
+                        </div>
+                    </GoldenLayoutComponent>
+
+                    <GoldenLayoutContainer type="stack" :width="60">
+                        <GoldenLayoutComponent
+                            name="Viewer"
+                            state="{}"
+                            :style="'height:100%; padding:0 !important;'"
+                        >
+                            <div v-if="!viewerLoaded" class="splash-screen">
+                                <div class="container-fluid p-2">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <img
+                                                src="img/icons/android-chrome-192x192.png"
+                                                class="rounded mx-auto d-block"
+                                                alt="Logo"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <p class="text-center">
+                                                {{ appInfo }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <p>
+                                                <span
+                                                    v-html="appDescription"
+                                                ></span>
+                                                To get started,
+                                                <b>do such and such a thing</b>.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <ViewerPanel @onViewerLoaded="onViewerLoaded" />
+                        </GoldenLayoutComponent>
+                        <GoldenLayoutComponent name="Jobs" state="{}">
+                            <QueuePanel />
+                        </GoldenLayoutComponent>
+                        <GoldenLayoutComponent name="Data" state="{}">
+                            <DataPanel />
+                        </GoldenLayoutComponent>
+                    </GoldenLayoutContainer>
+
+                    <GoldenLayoutContainer type="column" :width="20">
+                        <GoldenLayoutComponent
+                            name="Styles"
+                            state="{}"
+                            :width="20"
+                        >
+                            <StylesPanel />
+                        </GoldenLayoutComponent>
+
+                        <GoldenLayoutComponent
+                            name="Information"
+                            state="{}"
+                            :width="20"
+                        >
+                            <InformationPanel />
+                        </GoldenLayoutComponent>
+                    </GoldenLayoutContainer>
+                </GoldenLayoutContainer>
+                <GoldenLayoutContainer type="row" :height="20">
+                    <GoldenLayoutComponent
+                        name="Log"
+                        state="{}"
+                        :paddingSize="2"
+                    >
+                        <LogPanel />
                     </GoldenLayoutComponent>
                 </GoldenLayoutContainer>
             </GoldenLayoutContainer>
-            <GoldenLayoutContainer type="row" :height="20">
-                <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
-                    <LogPanel />
-                </GoldenLayoutComponent>
-            </GoldenLayoutContainer>
-        </GoldenLayoutContainer>
-    </div>
+        </div>
 
-    <div id="golden-layout"></div>
+        <div id="golden-layout"></div>
+    </span>
 </template>
 
 <script lang="ts">
@@ -98,7 +116,7 @@ import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
-import { appName, appVersion } from "@/Core/AppName";
+import { appName, appVersion, appDescription } from "@/Core/AppInfo";
 
 /**
  * GoldLayout component
@@ -121,11 +139,20 @@ export default class GoldLayout extends Vue {
 
     /**
      * Gets the app name and version.
-     * 
+     *
      * @returns {string}  The app name and version.
      */
     get appInfo(): string {
-      return appName + " " + appVersion;
+        return appName + " " + appVersion;
+    }
+
+    /**
+     * Gets the app description.
+     *
+     * @returns {string}  The app description.
+     */
+    get appDescription(): string {
+        return appDescription;
     }
 
     /**

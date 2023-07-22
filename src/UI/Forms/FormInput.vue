@@ -73,6 +73,11 @@ export default class FormInput extends Vue {
     this.$emit("onKeyDown");
   }
 
+  /**
+   * Get the description to use.
+   * 
+   * @returns {string}  The description to use.
+   */
   get descriptioToUse(): string {
     // return this.description;
     if (this.type !== "range") {

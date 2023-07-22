@@ -2,18 +2,18 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Prepare Compounds"
+        title="Protonate Compounds"
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Prepare"
     >
-        <template #afterForm>
+        <!-- <template #afterForm>
             <Alert type="info"
                 >Once calculated, the molecular properties will appear in the
                 Data tab</Alert
             >
-        </template>
+        </template> -->
     </PluginComponent>
 </template>
 
@@ -39,7 +39,6 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
     SelectedType,
     TreeNodeType,
@@ -47,7 +46,7 @@ import {
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 /**
- * PrepareCompoundsPlugin
+ * ProtonateCompoundsPlugin
  */
 @Options({
     components: {
@@ -55,8 +54,8 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
         Alert,
     },
 })
-export default class PrepareCompoundsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Prepare";
+export default class ProtonateCompoundsPlugin extends PluginParentClass {
+    menuPath = "Compounds/Protonate";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         {
@@ -66,7 +65,7 @@ export default class PrepareCompoundsPlugin extends PluginParentClass {
     ];
     pluginId = "protonatecomps";
 
-    intro = `TODO: Update here.`;
+    intro = `Protonate compounds at a given pH, in preparation for docking.`;
 
     userArgs: FormElement[] = [
         {
@@ -83,12 +82,21 @@ export default class PrepareCompoundsPlugin extends PluginParentClass {
         {
             type: FormElemType.Range,
             id: "pH",
-            label: "Ionization pH",
+            label: "Protonation pH",
             val: 7.4,
             min: 0,
             max: 14,
             step: 0.1,
+            description: "Physiological pH is 7.4."
         },
+
+        {
+            type: FormElemType.Checkbox,
+            id: "regen3DCoords",
+            label: "Regenerate 3D coordinates",
+            val: false,
+            description: "Whether to regenerate 3D atomic coordinates given the new protonation state.",
+        }
     ];
 
     /**
@@ -124,8 +132,9 @@ export default class PrepareCompoundsPlugin extends PluginParentClass {
         );
 
         const pH = this.getArg(userArgs, "pH");
+        const regen3DCoords = this.getArg(userArgs, "regen3DCoords");
 
-        return convertFileInfosOpenBabel(compounds, "mol2", undefined, pH)
+        return convertFileInfosOpenBabel(compounds, "mol2", regen3DCoords, pH)
             .then((molTexts: string[]) => {
                 // Make new fileinfos with protonated files
                 // const treeNodes: TreeNode[] = [];

@@ -51,7 +51,7 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { appName } from "@/Core/AppName";
+import { appDescription, appName } from "@/Core/AppInfo";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -77,7 +77,7 @@ export default class AboutPlugin extends PluginParentClass {
     },
   ];
   pluginId = "about";
-  intro = `TODO: Info about ${appName} here.`;
+  intro = appDescription;
 
   userArgs: FormElement[] = [];
   alwaysEnabled = true;
