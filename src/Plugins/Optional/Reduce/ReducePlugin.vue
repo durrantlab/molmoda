@@ -1,0 +1,258 @@
+<template>
+    <PluginComponent
+        :userArgs="userArgs"
+        v-model="open"
+        :title="title"
+        :intro="intro"
+        @onPopupDone="onPopupDone"
+        :pluginId="pluginId"
+        actionBtnTxt="Dock"
+    >
+    </PluginComponent>
+</template>
+
+<script lang="ts">
+import { FileInfo } from "@/FileSystem/FileInfo";
+import {
+    checkCompoundLoaded,
+    checkProteinLoaded,
+} from "@/Plugins/Core/CheckUseAllowedUtils";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import {
+    IContributorCredit,
+    ISoftwareCredit,
+    Licenses,
+} from "@/Plugins/PluginInterfaces";
+import {
+    FormElement,
+    FormElemType,
+    IFormAlert,
+    IFormCheckbox,
+    IFormGroup,
+    IFormMoleculeInputParams,
+    IFormNumber,
+    IFormSelectRegion,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import {
+    IMoleculeInputParams,
+    IProtCmpdTreeNodePair,
+    MoleculeInput,
+} from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
+import Alert from "@/UI/Layout/Alert.vue";
+import { Options } from "vue-class-component";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
+import { messagesApi } from "@/Api/Messages";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import {
+    ITreeNodeData,
+    SelectedType,
+    TreeNodeDataType,
+    TreeNodeType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { dynamicImports } from "@/Core/DynamicImports";
+import { ReduceQueue } from "./ReduceQueue";
+
+/**
+ * ReducePlugin
+ */
+@Options({
+    components: {
+        PluginComponent,
+        Alert,
+    },
+})
+export default class ReducePlugin extends PluginParentClass {
+    menuPath = "Proteins/Protonate";
+    title = "Protonate Proteins";
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.reduce.credit];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
+    ];
+    pluginId = "reduce";
+
+    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding. Uses a version of AutoDock Vina (Webina).`;
+
+    // msgOnJobsFinished =
+    //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
+
+    userArgs: FormElement[] = [
+        {
+            type: FormElemType.MoleculeInputParams,
+            id: "makemolinputparams",
+            val: new MoleculeInput({
+                considerCompounds: false,
+                considerProteins: true,
+                proteinFormat: "pdb",
+                // compoundFormat: "pdbqtlig", // Will include torsions
+                includeMetalsSolventAsProtein: false,
+            } as IMoleculeInputParams),
+        } as IFormMoleculeInputParams,
+    ];
+
+    /**
+     * Runs before the popup opens. Starts importing the modules needed for the
+     * plugin.
+     */
+    onBeforePopupOpen() {
+        // You're probably going to need fpocketweb
+        // dynamicImports.fpocketweb.module;
+    }
+
+    /**
+     * Check if this plugin can currently be used.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
+    checkPluginAllowed(): string | null {
+        return checkProteinLoaded();
+    }
+
+    /**
+     * Runs when the user presses the action button and the popup closes.
+     *
+     * @param {IUserArg[]} userArgs  The user arguments.
+     */
+    onPopupDone(userArgs: IUserArg[]) {
+        const fileInfos: FileInfo[] = this.getArg(
+            userArgs,
+            "makemolinputparams"
+        );
+
+        const distantAncestorTitles = fileInfos.map((f) => {
+            if (!f.treeNode) {
+                return undefined;
+            }
+            return f.treeNode.getAncestry().get(0).title
+        });
+
+        new ReduceQueue("reduce", fileInfos, 1).done
+            .then((reduceOuts: any) => {
+                // TODO: Get any stdErr and show errors if they exist.
+
+                for (let i=0; i<reduceOuts.length; i++) {
+                    reduceOuts[i].title = distantAncestorTitles[i];
+                }
+
+                this.submitJobs([reduceOuts]);
+                return;
+            })
+            .catch((err: Error) => {
+                // Intentionally not rethrowing error here. // TODO: fix this
+                messagesApi.popupError(
+                    `<p>Reduce threw an error.</p><p>Error details: ${err.message}</p>`
+                );
+            });
+
+        // debugger;
+
+        // this.submitJobs(payloads); // , 10000);
+    }
+
+    /**
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @param {any[]} payloads  The user arguments to pass to the "executable."
+     *                          Contains compound information.
+     * @returns {Promise<any>}  A promise that resolves when the job is done.
+     */
+    async runJobInBrowser(payloads: any[]): Promise<any> {
+        debugger;
+        const pdbOuts = payloads.map((payload) => payload.output);
+
+        // Make fileInfos
+        const fileInfos = pdbOuts.map((pdbOut) => {
+            return new FileInfo({
+                name: "TMP.pdb",
+                contents: pdbOut,
+            });
+        });
+
+        // Convert to tree nodes
+        const treeNodesPromises: Promise<TreeNode>[] = fileInfos.map(
+            (fileInfo) => {
+                return TreeNode.loadFromFileInfo(fileInfo)
+                    .then((treeNode: TreeNode | void) => {
+                        if (!treeNode) {
+                            throw new Error(
+                                "Could not load file into tree node."
+                            );
+                        }
+
+                        // treeNode.src = payload.origCmpdTreeNode.src;
+                        // treeNode.data = data;
+                        // treeNode.data[scoreLabel].treeNodeId = treeNode.id;
+
+                        return treeNode;
+                    })
+                    .catch((err: Error) => {
+                        // TODO: FIX
+                        throw err;
+                        // messagesApi.popupError(
+                        // `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+                        // );
+                    });
+            }
+        );
+
+        return Promise.all(treeNodesPromises)
+            .then((protProtonatedTreeNodes: TreeNode[]) => {
+                const initialCompoundsVisible = getSetting(
+                    "initialCompoundsVisible"
+                );
+
+                // Only first 5 are visible
+                for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
+                    const protProtonatedTreeNode = protProtonatedTreeNodes[i];
+                    protProtonatedTreeNode.visible = i < initialCompoundsVisible;
+                    
+                    const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([protProtonatedTreeNode]);
+                    // console.log(payloads);
+                    // console.log(pdbOuts);
+                    // debugger;
+                    treeNode.title = payloads[i].title + ":Protonated";
+                    treeNode.addToMainTree();
+                }
+
+                // const treeNode = TreeNode.loadHierarchicallyFromTreeNodes(protProtonatedTreeNodes);
+
+                // treeNode.title = "Moose";
+
+                // treeNode.addToMainTree();
+
+                return protProtonatedTreeNodes;
+            })
+            .catch((err: Error) => {
+                debugger;
+                throw err;
+            });
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest}  The selenium test commands.
+     */
+    getTests(): ITest {
+        return {
+            beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex("#navigator", "PocketBox1")
+                .wait(5).cmds,
+        };
+    }
+}
+</script>
+
+<style scoped lang="scss"></style>

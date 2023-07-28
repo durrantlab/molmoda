@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Calculate Molecular Properties"
+        :title="title"
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
@@ -42,6 +42,7 @@ import {
     lipinskiTitle,
     otherTitle,
 } from "./CalcMolProps";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * TestPlugin
@@ -54,12 +55,15 @@ import {
 })
 export default class MolPropsPlugin extends PluginParentClass {
     menuPath = "Compounds/Calculate Properties";
-    softwareCredits: ISoftwareCredit[] = [];
+    title = "Calculate Molecular Properties";
+    softwareCredits: ISoftwareCredit[] = [
+        dynamicImports.rdkitjs.credit
+    ];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "molprops";
 

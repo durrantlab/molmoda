@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Protonate Compounds"
+        :title="title"
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
@@ -44,6 +44,7 @@ import {
     TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * ProtonateCompoundsPlugin
@@ -56,12 +57,18 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 })
 export default class ProtonateCompoundsPlugin extends PluginParentClass {
     menuPath = "Compounds/Protonate";
-    softwareCredits: ISoftwareCredit[] = [];
+    title = "Protonate Compounds";
+    softwareCredits: ISoftwareCredit[] = [
+        dynamicImports.obabelwasm.credit
+    ];
     contributorCredits: IContributorCredit[] = [
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
         {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+            name: "Yuri Kochnev"
+        }
     ];
     pluginId = "protonatecomps";
 

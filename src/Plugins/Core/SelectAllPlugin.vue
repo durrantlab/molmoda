@@ -1,7 +1,7 @@
 <template>
     <PluginComponent
         v-model="open"
-        title=""
+        :title="title"
         :userArgs="userArgs"
         :pluginId="pluginId"
         :intro="intro"
@@ -33,12 +33,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class SelectAllPlugin extends PluginParentClass {
     menuPath = ["Edit", "Selection", "[0] Select All"];
+    title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "selectall";
     noPopup = true;

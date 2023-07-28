@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Settings"
+        :title="title"
         actionBtnTxt="Save"
         :intro="intro"
         @onPopupDone="onPopupDone"
@@ -43,12 +43,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class SettingsPlugin extends PluginParentClass {
     menuPath = ["[3] Biotite", "[2] Settings"];
+    title = "Settings";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "settings";
     intro = `Modify Biotite general settings.`;

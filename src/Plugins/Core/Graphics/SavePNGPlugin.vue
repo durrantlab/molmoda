@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Save a PNG Image"
+        :title="title"
         actionBtnTxt="Save"
         :intro="intro"
         :pluginId="pluginId"
@@ -29,6 +29,7 @@ import {
     matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * SavePNGPlugin
@@ -40,18 +41,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class SavePNGPlugin extends PluginParentClass {
     menuPath = "File/Graphics/PNG";
-    softwareCredits: ISoftwareCredit[] = [
-        {
-            name: "3Dmol.js",
-            url: "https://3dmol.csb.pitt.edu/",
-            license: Licenses.BSD3,
-        },
-    ];
+    title = "Save a PNG Image";
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "savepng";
 

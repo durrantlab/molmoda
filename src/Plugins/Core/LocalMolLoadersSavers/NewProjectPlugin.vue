@@ -1,7 +1,7 @@
 <template>
     <PluginComponent
         :userArgs="userArgs"
-        title="New Project"
+        :title="title"
         v-model="open"
         cancelBtnTxt="Cancel"
         :pluginId="pluginId"
@@ -43,12 +43,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class NewProjectPlugin extends PluginParentClass {
     menuPath = "File/[1] Project/[0] New...";
+    title = "New Project";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     filesToLoad: FileInfo[] = [];
     pluginId = "newproject";

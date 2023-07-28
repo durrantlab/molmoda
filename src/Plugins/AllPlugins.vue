@@ -3,6 +3,7 @@ system uses these to autopopulate with plugins. -->
 <template>
   <div>
     <AboutPlugin @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
+    <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
 
     <!-- TEMPLATE1 START -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
@@ -37,6 +38,7 @@ system uses these to autopopulate with plugins. -->
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
+    <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
@@ -47,8 +49,10 @@ system uses these to autopopulate with plugins. -->
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
+import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 
 import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
+import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 
 // TEMPLATE2 START
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
@@ -83,6 +87,7 @@ import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
+import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
@@ -93,6 +98,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 @Options({
   components: {
     AboutPlugin,
+    HelpPlugin,
 
     // TEMPLATE3 START
     ClearSelectionPlugin,
@@ -127,220 +133,17 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     MolPropsPlugin,
     ProtonateCompoundsPlugin,
     QueSystemTestPlugin,
+    ReducePlugin,
     TestPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   },
 })
 export default class AllPlugins extends Vue {
   @Prop({ required: true }) softwareCredits!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCredits!: IContributorCredit[];
+  @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
 
   /**
    * Runs when the plugin is setup.

@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Pocket Detection"
+        :title="title"
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
@@ -19,6 +19,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import {
     IContributorCredit,
     ISoftwareCredit,
+    Licenses,
 } from "@/Plugins/PluginInterfaces";
 import {
     FormElement,
@@ -51,6 +52,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FPocketWebQueue } from "./FPocketWebQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * FPocketWebPlugin
@@ -63,12 +65,21 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 })
 export default class FPocketWebPlugin extends PluginParentClass {
     menuPath = "Proteins/Detect Pockets";
-    softwareCredits: ISoftwareCredit[] = [];
-    contributorCredits: IContributorCredit[] = [
+    title = "Pocket Detection";
+    softwareCredits: ISoftwareCredit[] = [
+        dynamicImports.fpocketweb.credit,
         {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
+            name: "fpocket",
+            url: "https://github.com/Discngine/fpocket",
+            license: Licenses.MIT
         },
+
+    ];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "fpocketweb";
 

@@ -1,7 +1,7 @@
 <template>
     <PluginComponent
         :userArgs="userArgs"
-        title="Load Molecule from PubChem"
+        :title="title"
         v-model="open"
         cancelBtnTxt="Cancel"
         actionBtnTxt="Load"
@@ -71,12 +71,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class LoadPubChemPlugin extends PluginParentClass {
   menuPath = "File/Remote Import/[6] PubChem";
+  title = "Load Molecule from PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
     {
       name: "PubChem",
       url: "https://pubchem.ncbi.nlm.nih.gov/",

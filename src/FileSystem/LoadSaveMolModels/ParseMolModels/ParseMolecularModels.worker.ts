@@ -181,7 +181,7 @@ function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
             return;
         }
 
-        if (chain.title === undefined) {
+        if (chain.title === "" || chain.title === undefined) {
             // Default to chain A if not specified
             chain.title = "A";
         }
@@ -216,6 +216,7 @@ function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
             }
         });
     });
+    // debugger;
     return dividedMolEntry;
 }
 

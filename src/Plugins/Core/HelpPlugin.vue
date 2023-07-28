@@ -1,0 +1,183 @@
+<template>
+    <PluginComponent
+        :userArgs="userArgs"
+        v-model="open"
+        :title="title"
+        cancelBtnTxt="Done"
+        actionBtnTxt=""
+        :intro="intro"
+        @onPopupDone="onPopupDone"
+        :pluginId="pluginId"
+    >
+        <span v-for="plugin of loadedPlugins" :key="plugin.pluginId">
+            <span
+                v-if="
+                    plugin.title !== '' && menuPathToUse(plugin.menuPath) !== ''
+                "
+            >
+                <h6 class="mb-1">{{ plugin.title }}</h6>
+
+                <p class="ms-2 mb-0 alert alert-light lh-1 p-0">
+                    <small v-html="menuPathToUse(plugin.menuPath)"></small>
+                </p>
+
+                <p
+                    v-if="creditsToShow(plugin) !== ''"
+                    class="ms-2 mb-0 alert alert-light lh-1 p-0"
+                >
+                    <small v-html="creditsToShow(plugin)"></small>
+                </p>
+
+                <p v-html="plugin.intro" class="ms-2 mt-1"></p>
+            </span>
+        </span>
+    </PluginComponent>
+</template>
+
+<script lang="ts">
+import { Options } from "vue-class-component";
+import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
+import { Prop } from "vue-property-decorator";
+import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
+
+/** HelpPlugin */
+@Options({
+    components: {
+        PluginComponent,
+    },
+})
+export default class HelpPlugin extends PluginParentClass {
+    @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
+
+    menuPath = ["[3] Biotite", "[5] Help"];
+    title = "Help";
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
+    ];
+    pluginId = "help";
+    intro = "List information about each of the loaded plugins.";
+
+    userArgs: FormElement[] = [];
+    alwaysEnabled = true;
+    logJob = false;
+
+    /**
+     * Runs when the popup closes via done button. Here, does nothing.
+     */
+    onPopupDone() {
+        return;
+    }
+
+    /**
+     * Every plugin runs some job. This is the function that does the
+     * job running. About plugin does not have a job.
+     */
+    runJobInBrowser(): void {
+        return;
+    }
+
+    // @Watch("loadedPlugins")
+    // onLoadedPluginsChange(newVal: PluginParentClass[]) {
+    //     console.log(newVal);
+    // }
+
+    /**
+     * Gets the credits to display, html formatted.
+     *
+     * @param {PluginParentClass}  plugin The plugin to get the credits for.
+     * @returns {string} The credits to display, html formatted.
+     */
+    creditsToShow(plugin: PluginParentClass): string {
+        if (
+            plugin.softwareCredits.length + plugin.contributorCredits.length ===
+            0
+        ) {
+            return "";
+        }
+
+        const items: string[] = [];
+
+        for (const credit of plugin.contributorCredits) {
+            if (credit.url) {
+                items.push(
+                    `<a href="${credit.url}" target="_blank">${credit.name}</a>`
+                );
+            } else {
+                items.push(credit.name);
+            }
+        }
+
+        for (const credit of plugin.softwareCredits) {
+            if (credit.url) {
+                items.push(
+                    `<a href="${credit.url}" target="_blank">${credit.name}</a>`
+                );
+            } else {
+                items.push(credit.name);
+            }
+        }
+
+        let html = items.join(", ");
+        html = items.length === 1 ? "Credit: " + html : "Credits: " + html;
+
+        return html;
+    }
+
+    /**
+     * Gets the menu path to display for the plugin.
+     *
+     * @param {string | string[] | null}  menuPath The menu path to display.
+     * @returns {string} The menu path to display, formatted as a string.
+     */
+    menuPathToUse(menuPath: string | string[] | null): string {
+        // If null, return ""
+        if (menuPath === null) {
+            return "";
+        }
+
+        // If it's an array, convert it to a string.
+        if (Array.isArray(menuPath)) {
+            menuPath = menuPath.join("/");
+        }
+
+        // Remove anything like [#], where # is a number
+        menuPath = menuPath.replace(/\[\d+\] /g, "");
+
+        menuPath = menuPath.replace(/\//g, " &rarr; ");
+
+        return "Menu: " + menuPath;
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest}  The selenium test commands.
+     */
+    getTests(): ITest {
+        return {
+            closePlugin: new TestCmdList().pressPopupButton(
+                ".cancel-btn",
+                this.pluginId
+            ).cmds,
+            afterPluginCloses: [],
+        };
+    }
+}
+</script>
+
+<style scoped lang="scss">
+.inverse-indent {
+    text-indent: -1em;
+    padding-left: 1em;
+}
+</style>

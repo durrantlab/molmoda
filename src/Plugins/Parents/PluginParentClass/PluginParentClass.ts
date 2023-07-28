@@ -56,6 +56,13 @@ export abstract class PluginParentClass extends mixins(
     abstract menuPath: string[] | string | null;
 
     /**
+     * The title of the plugin. This is shown at the top of the plugin bar.
+     * 
+     * @type {string}
+     */
+    abstract title: string;
+
+    /**
      * A list of software credits. If the plugin uses no third-party packages,
      * set this to `[]`.
      *

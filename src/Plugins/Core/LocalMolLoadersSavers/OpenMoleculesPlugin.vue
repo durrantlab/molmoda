@@ -1,7 +1,7 @@
 <template>
     <PluginComponent
         :userArgs="userArgs"
-        title="Open Molecule Files"
+        :title="title"
         v-model="open"
         cancelBtnTxt="Cancel"
         actionBtnTxt="Open"
@@ -37,6 +37,7 @@ import { filesToFileInfos } from "@/FileSystem/Utils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * OpenMoleculesPlugin
@@ -49,16 +50,17 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class OpenMoleculesPlugin extends PluginParentClass {
     menuPath = "[3] File/[1] Project/[0] Open...";
-    softwareCredits: ISoftwareCredit[] = [];
+    title = "Open Molecule Files";
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     filesToLoad: FileInfo[] = [];
     pluginId = "openmolecules";
-    intro = "Open (load) molecule file(s)."
+    intro = "Open (load) molecule file(s).";
 
     userArgs: FormElement[] = [
         // {
@@ -175,15 +177,15 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      */
     getTests(): ITest[] {
         const filesToTest = [
-            // File, title-clicks, 
+            // File, title-clicks,
             // ["two_files.zip", ["ligs", "Compounds", "A"], "UNL:1"],
-            ["four_mols.zip",["ligs", "Compounds", "A"], "ligs.smi:3"],
+            ["four_mols.zip", ["ligs", "Compounds", "A"], "ligs.smi:3"],
             // ["ligs.smi.zip", ["ligs", "Compounds", "A"], "ligs.smi:3"],
             ["ligs.can", ["ligs", "Compounds", "A"], "ligs.can:3"],
             ["test.biotite", ["1XDN", "Compounds", "A"], "ATP:501"],
 
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
-            ["ligs.cif", ["ligs", "Compounds", "X"], "UNL:1"], 
+            ["ligs.cif", ["ligs", "Compounds", "X"], "UNL:1"],
 
             ["ligs.mol2", ["ligs", "Compounds", "A"], "ligs.mol2:3"],
             ["ligs.pdb", ["ligs", "Compounds", "A"], "UN3:1"],
@@ -212,8 +214,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                     .waitUntilRegex("#styles", "Atoms")
                     .expandMoleculesTree(titles)
                     .waitUntilRegex("#navigator", substrng)
-                    .wait(5)
-                    .cmds,
+                    .wait(5).cmds,
             };
         });
     }

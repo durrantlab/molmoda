@@ -1,7 +1,7 @@
 <template>
   <PluginComponent
     v-model="open"
-    title=""
+    :title="title"
     :pluginId="pluginId"
     :userArgs="userArgs"
     :intro="intro"
@@ -31,12 +31,13 @@ import { switchToGoldenLayoutPanel } from "./Common";
 })
 export default class InformationWindowPlugin extends PluginParentClass {
   menuPath = ["[9] Window", "Molecules", "[7] Information"];
+  title = "";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "informationwindow";
   noPopup = true;

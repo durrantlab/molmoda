@@ -21,44 +21,44 @@ export class TreeNodeDescriptions {
     /**
      * Gets a description of a molecule. Useful when you want to refer to a
      * molecule in text (not the heirarchical tree). If slugified, could be used
-     * as a filename. TODO: Not currently used.
+     * as a filename. TODO: Not currently used. Use pathName instead.
      *
      * @param  {TreeNode}      mol                 The molecule to describe.
-     * @param  {TreeNodeList}  treeNodeList       The list of all molecules.
+     * @param  {TreeNodeList}  treeNodeList        The list of all molecules.
      * @param  {boolean}       [noCategory=false]  Whether to include the
      *                                             category component of the
      *                                             description ("protein",
      *                                             "compound", "metal", etc.).
      * @returns {string}  The description.
      */
-    public getMolDescription(
-        mol: TreeNode,
-        treeNodeList: TreeNodeList,
-        noCategory = false
-    ): string {
-        // If it has no parent, just return it's title.
-        let curMol: TreeNode | null = mol;
-        const titles = [getFileNameParts(curMol.title as string).basename];
+    // public getMolDescription(
+    //     mol: TreeNode,
+    //     treeNodeList: TreeNodeList,
+    //     noCategory = false
+    // ): string {
+    //     // If it has no parent, just return it's title.
+    //     let curMol: TreeNode | null = mol;
+    //     const titles = [getFileNameParts(curMol.title as string).basename];
 
-        while (curMol.parentId) {
-            curMol = treeNodeList.filters.onlyId(curMol.parentId);
-            if (curMol) {
-                // Add to top of list
-                titles.unshift(
-                    getFileNameParts(curMol.title as string).basename
-                );
-                continue;
-            }
-            break;
-        }
+    //     while (curMol.parentId) {
+    //         curMol = treeNodeList.filters.onlyId(curMol.parentId);
+    //         if (curMol) {
+    //             // Add to top of list
+    //             titles.unshift(
+    //                 getFileNameParts(curMol.title as string).basename
+    //             );
+    //             continue;
+    //         }
+    //         break;
+    //     }
 
-        if (noCategory && (titles.length > 2 || titles[1] === "Protein")) {
-            // Remove one in position 1 ("protein", "compound", "metal", etc.)
-            titles.splice(1, 1);
-        }
+    //     if (noCategory && (titles.length > 2 || titles[1] === "Protein")) {
+    //         // Remove one in position 1 ("protein", "compound", "metal", etc.)
+    //         titles.splice(1, 1);
+    //     }
 
-        return titles.join(":").split("(")[0].trim();
-    }
+    //     return titles.join(":").split("(")[0].trim();
+    // }
 
     /**
      * Gets the name of the molecule in path-like format.

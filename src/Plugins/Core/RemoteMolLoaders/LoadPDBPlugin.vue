@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Load PDB ID"
+        :title="title"
         actionBtnTxt="Load"
         :intro="intro"
         :pluginId="pluginId"
@@ -39,12 +39,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class LoadPDBPlugin extends PluginParentClass {
     menuPath = "File/[1] Remote Import/[2] PDB ID";
+    title = "Load PDB ID";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
         {
             name: "Protein Data Bank",
             url: "https://www.rcsb.org/",

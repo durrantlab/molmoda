@@ -2,7 +2,7 @@
   <PluginComponent
     :userArgs="userArgs"
     v-model="open"
-    title="Load AlphaFold Structure"
+    :title="title"
     actionBtnTxt="Load"
     :intro="intro"
     :pluginId="pluginId"
@@ -36,12 +36,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class LoadAlphaFoldPlugin extends PluginParentClass {
   menuPath = "File/Remote Import/[4] AlphaFold";
+  title = "Load AlphaFold Structure";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
     {
       name: "AlphaFold Protein Structure Database",
       url: "https://alphafold.ebi.ac.uk/",

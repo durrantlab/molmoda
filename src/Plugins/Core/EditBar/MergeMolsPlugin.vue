@@ -2,7 +2,7 @@
     <PluginComponent
         ref="pluginComponent"
         v-model="open"
-        title="Merge Molecules"
+        :title="title"
         :intro="intro"
         actionBtnTxt="Merge"
         :userArgs="userArgs"
@@ -44,12 +44,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class MergeMolsPlugin extends PluginParentClass {
     menuPath = ["Edit", "Molecules", "[5] Merge..."];
+    title = "Merge Molecules";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "mergemols";
     intro = "Copy and merge the selected molecules into a single new molecule.";
@@ -98,7 +99,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
             {
                 name: "newName",
                 // val: title + ":" + nodeToActOn.title + " (cloned)",
-                val: titles.join("-") + " (merged)",
+                val: titles.join("-") + ":merged",
             } as IUserArg,
         ]);
     }

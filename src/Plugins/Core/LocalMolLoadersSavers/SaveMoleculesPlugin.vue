@@ -3,7 +3,7 @@
         ref="pluginComponent"
         :userArgs="userArgs"
         v-model="open"
-        title="Save Molecule Files"
+        :title="title"
         actionBtnTxt="Save"
         :intro="introToUse"
         :pluginId="pluginId"
@@ -54,6 +54,7 @@ import {
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * SaveMoleculesPlugin
@@ -65,12 +66,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class SaveMoleculesPlugin extends PluginParentClass {
     menuPath = "File/Project/[1] Save...";
-    softwareCredits: ISoftwareCredit[] = [];
+    title = "Save Molecule Files";
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "savemolecules";
 

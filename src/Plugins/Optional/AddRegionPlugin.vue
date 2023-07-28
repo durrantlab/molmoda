@@ -3,7 +3,7 @@
         ref="pluginComponent"
         :userArgs="userArgs"
         v-model="open"
-        title="Add Region"
+        :title="title"
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
@@ -54,12 +54,13 @@ import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorC
 })
 export default class AddRegionPlugin extends PluginParentClass {
     menuPath = "Edit/Regions/Add Region";
+    title = "Add Region";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "addregion";
 

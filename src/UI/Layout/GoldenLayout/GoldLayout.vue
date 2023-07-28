@@ -31,6 +31,7 @@
                                                 src="img/icons/android-chrome-192x192.png"
                                                 class="rounded mx-auto d-block"
                                                 alt="Logo"
+                                                style="width: 192px; height: 192px;"
                                             />
                                         </div>
                                     </div>

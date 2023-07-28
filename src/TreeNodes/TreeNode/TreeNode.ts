@@ -23,7 +23,7 @@ import { store } from "@/Store";
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
     // Properties common to both non-terminal and terminal nodes.
-    title: string; // appears in tree
+    title: string | undefined; // appears in tree
     type?: TreeNodeType;
     id?: string; // random id for nodes
     parentId?: string; // parent id for tree
@@ -49,7 +49,7 @@ export interface ITreeNode {
  */
 export class TreeNode {
     // Properties common to both non-terminal and terminal nodes.
-    title: string; // appears in tree
+    _title: string | undefined; // appears in tree
     type?: TreeNodeType;
     id?: string; // random id for nodes
     parentId?: string; // parent id for tree
@@ -78,7 +78,8 @@ export class TreeNode {
      * @param  {ITreeNode} params  The parameters.
      */
     constructor(params: ITreeNode) {
-        this.title = params.title;
+        this._title = this.fixTitle(params.title);
+        // this.title = params.title;
         this.type = params.type;
 
         // If no id, create one.
@@ -105,6 +106,40 @@ export class TreeNode {
 
         // For chaining
         return this;
+    }
+
+    private fixTitle(title: string | undefined): string | undefined{
+        if (title === undefined) {
+            return undefined;
+        }
+        // If there is "(" in the title, update it to : (trying to enforce
+        // consistency).
+        title = title.replace("(", ":");
+        title = title.replace(")", ":");
+        while (title.indexOf(" :") !== -1) {
+            title = title.replace(" :", ":");
+        }
+        while (title.indexOf(": ") !== -1) {
+            title = title.replace(": ", ":");
+        }
+
+        title = title.trim();
+
+        // If ends in :, remove
+        if (title.endsWith(":")) {
+            title = title.slice(0, title.length - 1);
+        }
+
+        return title;
+    }
+
+    public get title(): string | undefined {
+        return this._title;
+    }
+
+    public set title(val: string | undefined) {
+        val = this.fixTitle(val);
+        this._title = val;
     }
 
     /**
@@ -234,10 +269,16 @@ export class TreeNode {
      * Get a nodes ancestory. First element is most distant ancestor (greatest
      * grandparent), and last is this node itself.
      *
-     * @param  {TreeNodeList}  mols  The list of molecules to search.
+     * @param  {TreeNodeList}  [mols=undefined]  The list of molecules to
+     *                                           search. If undefined, uses all
+     *                                           molecules.
      * @returns {TreeNodeList}  The list of nodes in the ancestory.
      */
-    public getAncestry(mols: TreeNodeList): TreeNodeList {
+    public getAncestry(mols?: TreeNodeList): TreeNodeList {
+        if (mols === undefined) {
+            mols = getMoleculesFromStore();
+        }
+
         return this._ancestry.getAncestry(mols);
     }
 

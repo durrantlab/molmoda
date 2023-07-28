@@ -2,7 +2,7 @@
   <PluginComponent
     ref="pluginComponent"
     v-model="open"
-    title="Rename Molecule"
+    :title="title"
     :intro="intro"
     actionBtnTxt="Rename"
     :userArgs="userArgs"
@@ -37,12 +37,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class RenameMolPlugin extends PluginParentClass {
   menuPath = "[4] Edit/Molecules/[1] Rename...";
+  title = "Rename Molecule";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "renamemol";
   intro = `Rename the molecule.`;

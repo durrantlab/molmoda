@@ -36,6 +36,11 @@ def validate_plugin(ts_file):
             None,
         ),
         (
+            ':title="title',
+            'The PluginComponent must define a title prop like this: :title="title"',
+            None,
+        ),
+        (
             'v-model="open"',
             'The PluginComponent must define a v-model like this: v-model="open"',
             [

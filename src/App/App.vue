@@ -20,6 +20,7 @@
             @onPluginSetup="onPluginSetup"
             :softwareCredits="softwareCredits"
             :contributorCredits="contributorCredits"
+            :loadedPlugins="loadedPlugins"
         />
         <DragDropFileLoad />
     </div>
@@ -45,6 +46,8 @@ import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import { globalCredits } from "./GlobalCredits";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -66,6 +69,9 @@ import { globalCredits } from "./GlobalCredits";
 export default class App extends Vue {
     // Menu data
     menuData: IMenuEntry[] = [];
+
+    // Here so it will be reactive. See also LoadedPlugins.ts
+    loadedPlugins: PluginParentClass[] = [];
 
     // Software credits (libraries used)
     softwareCredits: ISoftwareCredit[] = globalCredits;
@@ -96,8 +102,9 @@ export default class App extends Vue {
     }
 
     /**
-     * Called when a plugin has finished setting up. Collects the menu and credits
-     * data.
+     * Called when a plugin has finished setting up. Collects the menu and
+     * credits data. Runs each time a plugin is loaded, so multiple times (since
+     * multiple plugins).
      *
      * @param {IPluginSetupInfo} pluginSetupInfo  Information about the plugin
      *                                            that has finished setting up.
@@ -128,6 +135,19 @@ export default class App extends Vue {
         this.contributorCredits = this._removeDuplicateNames(
             this.contributorCredits
         );
+
+        this.loadedPlugins = Object.keys(loadedPlugins).map(
+            (k) => loadedPlugins[k]
+        );
+
+        // Sort by title
+        this.loadedPlugins.sort((a, b) => {
+            const an = a.title.toLowerCase();
+            const bn = b.title.toLowerCase();
+            if (an < bn) return -1;
+            if (an > bn) return 1;
+            return 0;
+        });
     }
 
     /** mounted function */

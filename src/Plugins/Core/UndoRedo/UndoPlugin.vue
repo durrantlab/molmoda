@@ -1,7 +1,7 @@
 <template>
   <PluginComponent
     v-model="open"
-    title=""
+    :title="title"
     :userArgs="userArgs"
     :pluginId="pluginId"
     :intro="intro"
@@ -32,12 +32,13 @@ export default class UndoPlugin extends PluginParentClass {
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
   menuPath = ["Edit", "[0] Revisions", "[1] Undo"];
+  title = "";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "undo";
   noPopup = true;

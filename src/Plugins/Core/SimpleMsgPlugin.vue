@@ -44,10 +44,10 @@ export default class SimpleMsgPlugin extends PluginParentClass {
   menuPath = null;
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "simplemsg";
   intro = "";

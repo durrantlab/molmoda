@@ -142,6 +142,11 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 A list of software credits. If the plugin uses no third-party packages, set this to `[]`.
  Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 63](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L63).
 
+#### `title` (variable) <a id="title"></a>
+
+The [`title`](#title) of the plugin. This is shown at the top of the plugin bar.
+ Type: `string`. 
+
 #### `userArgs` (variable) <a id="userArgs"></a>
 
 A list of user arguments. Note that [`userArgs`](#userArgs) defines the user arguments, but it is not reactive. See it as an unchangable template. Use [`updateUserArgs`](#updateUserArgs) to programmatically change actual user-specified inputs.

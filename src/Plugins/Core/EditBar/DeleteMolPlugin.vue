@@ -2,7 +2,7 @@
     <PluginComponent
         ref="pluginComponent"
         v-model="open"
-        title="Delete Molecule"
+        :title="title"
         :intro="intro"
         actionBtnTxt="Delete"
         :userArgs="userArgs"
@@ -39,12 +39,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class DeleteMolPlugin extends PluginParentClass {
     menuPath = ["Edit", "Molecules", "[3] Delete..."];
+    title = "Delete Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "deletemol";
     intro = "Delete the selected molecule(s)?";

@@ -1,7 +1,7 @@
 <template>
   <PluginComponent
     v-model="open"
-    title=""
+    :title="title"
     :pluginId="pluginId"
     :userArgs="userArgs"
     :intro="intro"
@@ -31,12 +31,13 @@ export default class RedoPlugin extends PluginParentClass {
   // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
   menuPath = ["Edit", "Revisions", "[2] Redo"];
+  title = "";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "redo";
   noPopup = true;

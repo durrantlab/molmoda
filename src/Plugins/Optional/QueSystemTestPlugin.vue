@@ -2,7 +2,7 @@
   <PluginComponent
     :userArgs="userArgs"
     v-model="open"
-    title="Load Molecule from PubChem"
+    :title="title"
     :intro="intro"
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
@@ -35,12 +35,13 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 })
 export default class QueSystemTestPlugin extends PluginParentClass {
   menuPath = "[7] Test/Test Component Queue System";
+  title = "Load Molecule from PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "testplugin2";
 

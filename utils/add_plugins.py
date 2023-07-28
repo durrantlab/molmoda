@@ -14,8 +14,12 @@ core_plugins.sort(key=lambda x: os.path.basename(x))
 optional_plugins.sort(key=lambda x: os.path.basename(x))
 
 # Remove if os.basename is AboutPlugin.vue (handled special case in
-# AllPlugins.vue)
-core_plugins = [x for x in core_plugins if os.path.basename(x) != "AboutPlugin.vue"]
+# AllPlugins.vue). Same with HelpPlugin.vue
+core_plugins = [
+    x
+    for x in core_plugins
+    if os.path.basename(x) not in ["AboutPlugin.vue", "HelpPlugin.vue"]
+]
 
 
 all_plugins = "../src/Plugins/AllPlugins.vue"
@@ -77,20 +81,17 @@ content = re.sub(
 
 # Insert template2
 content = re.sub(
-    r"// TEMPLATE2 START.*// TEMPLATE2 END",
-    template2,
-    content,
-    flags=re.DOTALL,
+    r"// TEMPLATE2 START.*// TEMPLATE2 END", template2, content, flags=re.DOTALL,
 )
 
 # Insert template3
 content = re.sub(
-    r"// TEMPLATE3 START.*// TEMPLATE3 END",
-    template3,
-    content,
-    flags=re.DOTALL,
+    r"// TEMPLATE3 START.*// TEMPLATE3 END", template3, content, flags=re.DOTALL,
 )
 # print(content)
+
+while "\n\n\n" in content:
+    content = content.replace("\n\n\n", "\n\n")
 
 # Write the modified content
 with open(all_plugins, "w") as file:

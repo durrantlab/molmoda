@@ -2,7 +2,7 @@
   <PluginComponent
     :userArgs="userArgs"
     v-model="open"
-    title="Save a VRML Model"
+    :title="title"
     actionBtnTxt="Save"
     :intro="intro"
     :pluginId="pluginId"
@@ -31,6 +31,7 @@ import {
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * SaveVRMLPlugin
@@ -42,18 +43,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class SaveVRMLPlugin extends PluginParentClass {
   menuPath = "File/Graphics/VRML";
-  softwareCredits: ISoftwareCredit[] = [
-    {
-      name: "3Dmol.js",
-      url: "https://3dmol.csb.pitt.edu/",
-      license: Licenses.BSD3,
-    },
-  ];
+  title = "Save a VRML Model";
+  softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "savevrml";
 

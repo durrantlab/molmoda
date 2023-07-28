@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Small-Molecule Docking"
+        :title="title"
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
@@ -22,6 +22,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import {
     IContributorCredit,
     ISoftwareCredit,
+    Licenses,
 } from "@/Plugins/PluginInterfaces";
 import {
     FormElement,
@@ -54,6 +55,7 @@ import {
     TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * WebinaPlugin
@@ -65,13 +67,21 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
     },
 })
 export default class WebinaPlugin extends PluginParentClass {
-    menuPath = "[6] Docking/Webina";
-    softwareCredits: ISoftwareCredit[] = [];
-    contributorCredits: IContributorCredit[] = [
+    menuPath = "[6] Docking/Small-Molecule Docking";
+    title = "Small-Molecule Docking";
+    softwareCredits: ISoftwareCredit[] = [
         {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
+            name: "AutoDock Vina",
+            url: "https://vina.scripps.edu/",
+            license: Licenses.APACHE2,
         },
+        dynamicImports.webina.credit,
+    ];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "webina";
 
@@ -374,7 +384,9 @@ export default class WebinaPlugin extends PluginParentClass {
 
         return Promise.all(treeNodesPromises)
             .then((dockedTreeNodes: TreeNode[]) => {
-                const initialCompoundsVisible = getSetting("initialCompoundsVisible")
+                const initialCompoundsVisible = getSetting(
+                    "initialCompoundsVisible"
+                );
 
                 // Only first 5 are visible
                 for (let i = 0; i < dockedTreeNodes.length; i++) {

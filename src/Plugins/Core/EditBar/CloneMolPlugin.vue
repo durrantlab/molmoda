@@ -2,7 +2,7 @@
     <PluginComponent
         ref="pluginComponent"
         v-model="open"
-        title="Clone Molecule"
+        :title="title"
         :intro="intro"
         actionBtnTxt="Clone"
         :userArgs="userArgs"
@@ -44,12 +44,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class CloneMolPlugin extends PluginParentClass {
     menuPath = ["Edit", "Molecules", "Clone..."];
+    title = "Clone Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "clonemol";
     intro = `Clone (copy) the selected molecule.`;
@@ -89,7 +90,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             {
                 name: "newName",
                 // val: title + ":" + nodeToActOn.title + " (cloned)",
-                val: title + " (cloned)",
+                val: title + ":cloned",
             } as IUserArg,
         ]);
     }

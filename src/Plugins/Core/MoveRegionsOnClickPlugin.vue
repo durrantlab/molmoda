@@ -2,7 +2,7 @@
     <PluginComponent
         :userArgs="userArgs"
         v-model="open"
-        title="Move regions?"
+        :title="title"
         cancelBtnTxt="Cancel"
         actionBtnTxt="Move"
         :intro="intro"
@@ -43,12 +43,13 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 })
 export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     menuPath = null; // Not available through menu system
+    title = "Move regions?";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
-        {
-            name: "Jacob D. Durrant",
-            url: "http://durrantlab.com/",
-        },
+        // {
+        //     name: "Jacob D. Durrant",
+        //     url: "http://durrantlab.com/",
+        // },
     ];
     pluginId = "moveregionsonclick";
     intro = `Move all selected regions to this atom's position:`;

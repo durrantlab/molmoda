@@ -2,14 +2,14 @@
   <PluginComponent
     :userArgs="userArgs"
     v-model="open"
-    title="About"
+    :title="title"
     cancelBtnTxt="Done"
     actionBtnTxt=""
     :intro="intro"
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
   >
-  <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block;" />
+  <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block; width:192px; height: 192px;" />
     <p>
       The following organizations and individuals have contributed, directly or
       indirectly, to the {{ appName }} project:
@@ -69,6 +69,7 @@ export default class AboutPlugin extends PluginParentClass {
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
   menuPath = ["[3] Biotite", "[1] About"];
+  title = "About";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {

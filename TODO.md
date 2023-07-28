@@ -121,9 +121,25 @@ of processors available.
 
 Need GoogleAnlytics
 
-Help system. Probably need to make sure title always in plugin itself.
+Protonate: Explain using Open Babel to guess, recommend more rigorous method.
+
+Docking: Mention need to prepare ligand and receptor.
+
+Good to provide example structures for easy testing?
+
+// TODO: Not true. Need custom license option.
+
+Reduce. How to rename new protein? Also, need to make sure parameters ok.
 
 # DONE
+
+Reduce: Need to get custom DB in there, remove receptor.pdb included in data,
+etc. Also, make Dockerfile look better, more notes, etc.
+
+Help system: Should do software credits too. In various plugins, some credits
+should be software credits. Good to fix that.
+
+Help system. Probably need to make sure title always in plugin itself.
 
 Need easy method (on TreeNodeList) to automatically organize by compound,
 protein, etc. DONE, but use it throughout biotite.

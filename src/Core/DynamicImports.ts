@@ -145,10 +145,28 @@ export const dynamicImports = {
     //     },
     // } as IDynamicImport,
 
+    reduce: {
+        credit: {
+            name: "Reduce",
+            url: "https://github.com/rlabduke/reduce",
+            license: Licenses.APACHE2,  // TODO: Not true. Need custom license option.
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "reduce" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "../../public/js/reduce/index.js"
+            ).then((mod) => {
+                return mod.default;
+            });
+        }
+    } as IDynamicImport,
     webina: {
         credit: {
-            name: "AutoDock Vina",
-            url: "https://vina.scripps.edu/",
+            name: "Webina",
+            url: "https://durrantlab.pitt.edu/webina-download/",
             license: Licenses.APACHE2,
         },
 
