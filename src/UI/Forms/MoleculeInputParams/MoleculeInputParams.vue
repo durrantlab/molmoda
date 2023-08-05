@@ -23,7 +23,7 @@
                 id="otherMols"
             />
             <FormCheckBox
-                v-if="val.considerProteins"
+                v-if="val.considerProteins && val.allowUserToToggleIncludeMetalsSolventAsProtein"
                 v-model="val.includeMetalsSolventAsProtein"
                 text="Count metals/solvent as part of the protein"
                 id="countMetalsSolvent"

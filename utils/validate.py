@@ -20,8 +20,7 @@ def validate_plugin(ts_file):
     # It must end in Plugin.vue
     if not ts_file.endswith("Plugin.vue"):
         add_error(
-            ts_file,
-            'All files containing plugins must end in "Plugin.vue"',
+            ts_file, 'All files containing plugins must end in "Plugin.vue"',
         )
 
     required_substrs = [
@@ -84,6 +83,15 @@ def validate_plugin(ts_file):
                 ],
             ),
         )
+
+        if "menuPath = null" not in content:
+            required_substrs.append(
+                (
+                    '..."',
+                    "Unless a plugin defes noPopup to be true, the menu item must end in ...",
+                    [],
+                ),
+            )
 
     for strng, msg, exceptions in required_substrs:
         if strng not in content:

@@ -8,6 +8,12 @@
         :pluginId="pluginId"
         actionBtnTxt="Dock"
     >
+    <Alert type="warning">
+        This plugin assumes your compound(s) and protein(s) have already been
+        properly protonated. If necessary, be sure to use
+        <PluginPathLink plugin="protonatecomps"></PluginPathLink> and
+        <PluginPathLink plugin="reduce"></PluginPathLink> first.
+    </Alert>
     </PluginComponent>
 </template>
 
@@ -56,6 +62,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
+import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
  * WebinaPlugin
@@ -64,11 +71,12 @@ import { dynamicImports } from "@/Core/DynamicImports";
     components: {
         PluginComponent,
         Alert,
+        PluginPathLink
     },
 })
 export default class WebinaPlugin extends PluginParentClass {
-    menuPath = "[6] Docking/Small-Molecule Docking";
-    title = "Small-Molecule Docking";
+    menuPath = "[6] Docking/Compound Docking...";
+    title = "Compound Docking";
     softwareCredits: ISoftwareCredit[] = [
         {
             name: "AutoDock Vina",
@@ -91,6 +99,13 @@ export default class WebinaPlugin extends PluginParentClass {
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
     userArgs: FormElement[] = [
+        // {
+        //     type: FormElemType.Alert,
+        //     id: "warning",
+        //     description:
+        //         "This plugin assumes your protein reeptor and small molecules have already been properly protonated. .",
+        //     alertType: "warning",
+        // } as IFormAlert,
         {
             type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -280,7 +295,21 @@ export default class WebinaPlugin extends PluginParentClass {
                     webinaOut.origCmpdTreeNode = origAssociatedTreeNodes[i][1];
                 });
 
-                this.submitJobs([webinaOuts]);
+                const byProtein: { [key: string]: any[] } = {};
+                webinaOuts.forEach((webinaOut: any) => {
+                    const protId = webinaOut.origProtTreeNode.id;
+                    if (!byProtein[protId]) {
+                        byProtein[protId] = [];
+                    }
+                    byProtein[protId].push(webinaOut);
+                });
+
+                // Get values
+                const prots = Object.keys(byProtein).map((protId) => {
+                    return byProtein[protId];
+                });
+
+                this.submitJobs(prots);
                 return;
             })
             .catch((err: Error) => {
@@ -304,6 +333,8 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(payloads: any[]): Promise<any> {
+        debugger;
+
         const protPath = (
             payloads[0].origProtTreeNode as TreeNode
         ).descriptions.pathName(":");
@@ -407,9 +438,16 @@ export default class WebinaPlugin extends PluginParentClass {
                     }),
                 ]);
 
+                // Get the top title of the protein
+                const protTreeNode = payloads[0].origProtTreeNode as TreeNode;
+                debugger;
+                const title = protTreeNode.getAncestry().get(0).title;
+                debugger;
+
                 // Create a new TreeNodeList
                 const mainTreeNode = new TreeNode({
-                    title: `Docked: ${protPath}, ${ligPath}`,
+                    // title: `Docked: ${protPath}, ${ligPath}`,
+                    title: `${title}:docking`,
                     nodes: compoundTreeNodeList,
                     treeExpanded: true,
                     visible: true,

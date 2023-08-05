@@ -9,7 +9,8 @@
     :userArgs="userArgs"
     :pluginId="pluginId"
     :intro="intro"
-  >
+    >
+    <!-- modalWidth="default" -->
     <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
   </PluginComponent>
 </template>

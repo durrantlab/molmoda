@@ -1,5 +1,28 @@
 <template>
     <span>
+        <!-- <div
+            v-if="allTreeData.length > 0 && depth === 0"
+            class="input-group input-group-sm mb-1"
+        >
+            <div class="input-group-prepend">
+                <span class="input-group-text">
+                    <font-awesome-icon
+                        style="color: #212529"
+                        :icon="['fas', 'magnifying-glass']"
+                    />
+                </span>
+            </div>
+            <input type="text" class="form-control" v-model="filterStr" />
+        </div> -->
+
+        <FilterInput
+            v-if="allTreeDataFlattened.length > 0 && depth === 0"
+            :list="allTreeDataFlattened"
+            :extractTextToFilterFunc="extractTextToFilterFunc"
+            @onFilter="onFilter"
+            mb="1"
+        ></FilterInput>
+
         <div
             v-for="(treeDatum, idx) in getLocalTreeData"
             v-bind:key="treeDatum.id"
@@ -39,6 +62,7 @@ import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUti
 import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import FilterInput from "@/UI/Components/FilterInput.vue";
 
 /**
  * TreeView component
@@ -48,12 +72,15 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
         IconSwitcher,
         IconBar,
         TitleBar,
+        FilterInput,
     },
 })
 export default class TreeView extends Vue {
     @Prop({ default: 0 }) depth!: number;
     @Prop({ default: undefined }) treeData!: TreeNodeList | undefined;
     @Prop({ default: undefined }) styleToUse!: string;
+
+    filteredTreeNodes: TreeNode[] | null = null;
 
     /**
      * Get the style for a fixed-width element.
@@ -64,11 +91,6 @@ export default class TreeView extends Vue {
     flexFixedWidth(width: number): string {
         return flexFixedWidthStyle(width);
     }
-
-    // @Watch("treeData")
-    // onTreeDataChange(newValue: any) {
-    //   alert("changed");
-    // }
 
     /**
      * Get the indent style for the title bar.
@@ -89,17 +111,39 @@ export default class TreeView extends Vue {
         return this.$store.state["molecules"];
     }
 
+    get allTreeDataFlattened(): TreeNode[] {
+        return !this.treeData
+            ? (this.storeMolecules as TreeNodeList).flattened.toArray()
+            : (this.treeData as TreeNodeList).flattened.toArray();
+    }
+
+    extractTextToFilterFunc(item: TreeNode): string {
+        return item.title;
+    }
+
+    onFilter(filteredNodes: TreeNode[] | null) {
+        this.filteredTreeNodes = filteredNodes;
+    }
+
     /**
      * Get the local tree data.
      *
      * @returns {TreeNode[]} The local tree data. Needs to be converted to
-     *     TreeNode[] to be interable in vue.js.
+     *     TreeNode[] to be interable in vue.js. If there's no filter, just
+     *     return the whole tree as a list. Otherwise, return the filtered
+     *     nodes.
      */
     get getLocalTreeData(): TreeNode[] {
-        if (!this.treeData) {
-            return (this.storeMolecules as TreeNodeList).toArray();
+        const allTreeData = !this.treeData
+            ? (this.storeMolecules as TreeNodeList).toArray()
+            : (this.treeData as TreeNodeList).toArray();
+
+        if (this.filteredTreeNodes === null) {
+            // No filter. Just return the tree.
+            return allTreeData;
         }
-        return (this.treeData as TreeNodeList).toArray();
+
+        return this.filteredTreeNodes;
     }
 
     // fixTitle(title: string): string {

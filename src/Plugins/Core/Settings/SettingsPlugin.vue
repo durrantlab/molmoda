@@ -42,7 +42,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class SettingsPlugin extends PluginParentClass {
-    menuPath = ["[3] Biotite", "[2] Settings"];
+    menuPath = ["[3] Biotite", "[2] Settings..."];
     title = "Settings";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

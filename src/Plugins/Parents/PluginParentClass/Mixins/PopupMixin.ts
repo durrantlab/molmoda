@@ -17,7 +17,7 @@ export class PopupMixin extends Vue {
      * @helper
      * @document
      */
-    protected closePopup(): void {
+    closePopup(): void {
         this.open = false;
         // this.$emit("update:modelValue", false);
     }

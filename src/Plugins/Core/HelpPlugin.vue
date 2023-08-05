@@ -9,16 +9,21 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
     >
-        <span v-for="plugin of loadedPlugins" :key="plugin.pluginId">
-            <span
-                v-if="
-                    plugin.title !== '' && menuPathToUse(plugin.menuPath) !== ''
-                "
-            >
+        <FilterInput
+            :list="loadedPlugins"
+            :extractTextToFilterFunc="extractTextToFilterFunc"
+            @onFilter="onFilter"
+        ></FilterInput>
+
+        <span v-for="plugin of loadedPluginsToUse" :key="plugin.pluginId">
+            <span v-if="plugin.title !== '' && plugin.menuPath !== null">
                 <h6 class="mb-1">{{ plugin.title }}</h6>
 
                 <p class="ms-2 mb-0 alert alert-light lh-1 p-0">
-                    <small v-html="menuPathToUse(plugin.menuPath)"></small>
+                    <!-- <small v-html="menuPathToUse(plugin.menuPath)"></small> -->
+                    <small>
+                        Menu: <PluginPathLink :plugin="plugin"></PluginPathLink
+                    ></small>
                 </p>
 
                 <p
@@ -43,17 +48,21 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
+import FilterInput from "@/UI/Components/FilterInput.vue";
 
 /** HelpPlugin */
 @Options({
     components: {
         PluginComponent,
+        PluginPathLink,
+        FilterInput
     },
 })
 export default class HelpPlugin extends PluginParentClass {
     @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
 
-    menuPath = ["[3] Biotite", "[5] Help"];
+    menuPath = ["[3] Biotite", "[5] Help..."];
     title = "Help";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
@@ -68,6 +77,24 @@ export default class HelpPlugin extends PluginParentClass {
     userArgs: FormElement[] = [];
     alwaysEnabled = true;
     logJob = false;
+
+    filteredPlugins: PluginParentClass[] | null = null;
+
+    extractTextToFilterFunc(plugin: PluginParentClass): string {
+        return plugin.title + " " + plugin.intro;
+    }
+
+    get loadedPluginsToUse(): PluginParentClass[] {
+        if (this.filteredPlugins === null) {
+            return this.loadedPlugins;
+        }
+
+        return this.filteredPlugins;
+    }
+
+    onFilter(plugins: PluginParentClass[]): void {
+        this.filteredPlugins = plugins;
+    }
 
     /**
      * Runs when the popup closes via done button. Here, does nothing.
@@ -131,30 +158,30 @@ export default class HelpPlugin extends PluginParentClass {
         return html;
     }
 
-    /**
-     * Gets the menu path to display for the plugin.
-     *
-     * @param {string | string[] | null}  menuPath The menu path to display.
-     * @returns {string} The menu path to display, formatted as a string.
-     */
-    menuPathToUse(menuPath: string | string[] | null): string {
-        // If null, return ""
-        if (menuPath === null) {
-            return "";
-        }
+    // /**
+    //  * Gets the menu path to display for the plugin.
+    //  *
+    //  * @param {string | string[] | null}  menuPath The menu path to display.
+    //  * @returns {string} The menu path to display, formatted as a string.
+    //  */
+    // menuPathToUse(menuPath: string | string[] | null): string {
+    //     // If null, return ""
+    //     if (menuPath === null) {
+    //         return "";
+    //     }
 
-        // If it's an array, convert it to a string.
-        if (Array.isArray(menuPath)) {
-            menuPath = menuPath.join("/");
-        }
+    //     // If it's an array, convert it to a string.
+    //     if (Array.isArray(menuPath)) {
+    //         menuPath = menuPath.join("/");
+    //     }
 
-        // Remove anything like [#], where # is a number
-        menuPath = menuPath.replace(/\[\d+\] /g, "");
+    //     // Remove anything like [#], where # is a number
+    //     menuPath = menuPath.replace(/\[\d+\] /g, "");
 
-        menuPath = menuPath.replace(/\//g, " &rarr; ");
+    //     menuPath = menuPath.replace(/\//g, " &rarr; ");
 
-        return "Menu: " + menuPath;
-    }
+    //     return "Menu: " + menuPath;
+    // }
 
     /**
      * Gets the test commands for the plugin. For advanced use.

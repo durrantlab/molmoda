@@ -68,7 +68,7 @@ export default class AboutPlugin extends PluginParentClass {
   @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
-  menuPath = ["[3] Biotite", "[1] About"];
+  menuPath = ["[3] Biotite", "[1] About..."];
   title = "About";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

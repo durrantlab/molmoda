@@ -70,7 +70,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
   },
 })
 export default class LoadPubChemPlugin extends PluginParentClass {
-  menuPath = "File/Remote Import/[6] PubChem";
+  menuPath = "File/Remote Import/[6] PubChem...";
   title = "Load Molecule from PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

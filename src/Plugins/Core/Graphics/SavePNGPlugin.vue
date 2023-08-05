@@ -40,7 +40,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
     },
 })
 export default class SavePNGPlugin extends PluginParentClass {
-    menuPath = "File/Graphics/PNG";
+    menuPath = "File/Graphics/PNG...";
     title = "Save a PNG Image";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
     contributorCredits: IContributorCredit[] = [

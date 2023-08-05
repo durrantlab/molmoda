@@ -35,7 +35,7 @@
                 @click="titleClick(treeDatumID)"
                 :style="treeDatum.visible ? '' : 'color: lightgray;'"
             >
-                {{ treeDatum.title }}
+                {{ title }}
                 <span v-if="treeDatum.nodes"
                     >({{ treeDatum.nodes?.length }})</span
                 >
@@ -205,6 +205,30 @@ export default class TitleBar extends Vue {
      */
     get selInstructions(): string {
         return selectInstructionsBrief;
+    }
+
+    get title(): string {
+        let title = this.treeDatum.title;
+        
+        // If there is "(" in the title, update it to : (trying to enforce
+        // consistency).
+        title = title.replace("(", ":");
+        title = title.replace(")", ":");
+        while (title.indexOf(" :") !== -1) {
+            title = title.replace(" :", ":");
+        }
+        while (title.indexOf(": ") !== -1) {
+            title = title.replace(": ", ":");
+        }
+
+        title = title.trim();
+
+        // If ends in :, remove
+        if (title.endsWith(":")) {
+            title = title.slice(0, title.length - 1);
+        }
+
+        return title;
     }
 
     /**

@@ -34,7 +34,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
   },
 })
 export default class QueSystemTestPlugin extends PluginParentClass {
-  menuPath = "[7] Test/Test Component Queue System";
+  menuPath = "[7] Test/Test Component Queue System...";
   title = "Load Molecule from PubChem";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

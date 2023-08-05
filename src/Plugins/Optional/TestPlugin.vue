@@ -38,7 +38,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
     },
 })
 export default class TestPlugin extends PluginParentClass {
-    menuPath = "Test/Test Component";
+    menuPath = "Test/Test Component...";
     title = "Load Molecule from PubChem";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

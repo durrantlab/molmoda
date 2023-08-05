@@ -23,7 +23,7 @@ import { store } from "@/Store";
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
     // Properties common to both non-terminal and terminal nodes.
-    title: string | undefined; // appears in tree
+    title: string; // appears in tree
     type?: TreeNodeType;
     id?: string; // random id for nodes
     parentId?: string; // parent id for tree
@@ -49,7 +49,7 @@ export interface ITreeNode {
  */
 export class TreeNode {
     // Properties common to both non-terminal and terminal nodes.
-    _title: string | undefined; // appears in tree
+    title: string; // appears in tree
     type?: TreeNodeType;
     id?: string; // random id for nodes
     parentId?: string; // parent id for tree
@@ -78,8 +78,8 @@ export class TreeNode {
      * @param  {ITreeNode} params  The parameters.
      */
     constructor(params: ITreeNode) {
-        this._title = this.fixTitle(params.title);
-        // this.title = params.title;
+        // this._title = this.fixTitle(params.title);
+        this.title = params.title;
         this.type = params.type;
 
         // If no id, create one.
@@ -108,39 +108,41 @@ export class TreeNode {
         return this;
     }
 
-    private fixTitle(title: string | undefined): string | undefined{
-        if (title === undefined) {
-            return undefined;
-        }
-        // If there is "(" in the title, update it to : (trying to enforce
-        // consistency).
-        title = title.replace("(", ":");
-        title = title.replace(")", ":");
-        while (title.indexOf(" :") !== -1) {
-            title = title.replace(" :", ":");
-        }
-        while (title.indexOf(": ") !== -1) {
-            title = title.replace(": ", ":");
-        }
+    // private fixTitle(title: string): string {
+    //     if (title === undefined) {
+    //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //         // @ts-ignore
+    //         return undefined;
+    //     }
+    //     // If there is "(" in the title, update it to : (trying to enforce
+    //     // consistency).
+    //     title = title.replace("(", ":");
+    //     title = title.replace(")", ":");
+    //     while (title.indexOf(" :") !== -1) {
+    //         title = title.replace(" :", ":");
+    //     }
+    //     while (title.indexOf(": ") !== -1) {
+    //         title = title.replace(": ", ":");
+    //     }
 
-        title = title.trim();
+    //     title = title.trim();
 
-        // If ends in :, remove
-        if (title.endsWith(":")) {
-            title = title.slice(0, title.length - 1);
-        }
+    //     // If ends in :, remove
+    //     if (title.endsWith(":")) {
+    //         title = title.slice(0, title.length - 1);
+    //     }
 
-        return title;
-    }
+    //     return title;
+    // }
 
-    public get title(): string | undefined {
-        return this._title;
-    }
+    // public get title(): string {
+    //     return this._title;
+    // }
 
-    public set title(val: string | undefined) {
-        val = this.fixTitle(val);
-        this._title = val;
-    }
+    // public set title(val: string) {
+    //     val = this.fixTitle(val);
+    //     this._title = val;
+    // }
 
     /**
      * Get whether this node is visible.
@@ -299,20 +301,60 @@ export class TreeNode {
             });
     }
 
+    private static _getChain(
+        treeNode: TreeNode,
+        availableChains: string[]
+    ): string {
+        let chain: string | undefined = undefined;
+
+        if (!treeNode.model) {
+            // If there's no model, use first available chain.
+            chain = availableChains.shift();
+        } else {
+            const firstAtom = (treeNode.model as GLModel).selectedAtoms({})[0];
+            if (!firstAtom) {
+                // If there are no atoms in the model, use first
+                // available chain.
+                chain = availableChains.shift();
+            } else {
+                const firstAtomChain = firstAtom.chain;
+                if (firstAtomChain === "" || firstAtomChain === undefined) {
+                    // If the first atom has no chain, use first
+                    // available chain.
+                    chain = availableChains.shift();
+                } else if (availableChains.indexOf(firstAtomChain) === -1) {
+                    // If the first atom's chain is not available, use
+                    // first available chain.
+                    chain = availableChains.shift();
+                } else {
+                    // Use the first atom's chain.
+                    chain = firstAtomChain;
+                }
+            }
+        }
+
+        return chain as string;
+    }
+
     /**
      * Given a list of file infos, load them all into a tree, but position them
      * in type/chain categories.
      *
-     * @param  {TreeNode[]} treeNodes        The tree nodes to organize. Tree
-     *                                       node rather than FileInfo because
-     *                                       the category is needed.
-     * @param  {string}     [chainName="A"]  The name of the chain to use.
-     *                                       Defaults to "A".
+     * @param  {TreeNode[]} treeNodes                      The tree nodes to
+     *                                                     organize. Tree node
+     *                                                     rather than FileInfo
+     *                                                     because the category
+     *                                                     is needed.
+     * @param  {boolean}    [divideCompoundsByChain=true]  Whether to divide
+     *                                                     compounds by chain.
+     *                                                     If false, all
+     *                                                     compounds are put in
+     *                                                     the same chain node.
      * @returns {TreeNode}  The root tree node of the loaded tree.
      */
     public static loadHierarchicallyFromTreeNodes(
         treeNodes: TreeNode[],
-        chainName = "A"
+        divideCompoundsByChain = true
     ): TreeNode {
         // Consider only the terminal nodes
         const allTreeNodes: TreeNode[] = [];
@@ -326,9 +368,9 @@ export class TreeNode {
             }
         }
 
-        // Divide the nodes into categories. For now, supporting
-        // only Protein and Compounds. TODO: Expand to all possible categories.
-        const categories: { [key: string]: TreeNode[] } = {};
+        // Divide the nodes into categories. For now, supporting only Protein
+        // and Compounds. TODO: Expand to all possible categories.
+        const categories: { [key: string]: any } = {};
         for (const treeNode of allTreeNodes) {
             if (treeNode.type === TreeNodeType.Compound) {
                 if (!categories["Compounds"]) {
@@ -340,6 +382,28 @@ export class TreeNode {
                     categories["Protein"] = [];
                 }
                 categories["Protein"].push(treeNode);
+            }
+        }
+
+        // Further divide the Compounds into chains. Proteins not so divide
+        // because model node is the chain, but multiple compounds can belong to
+        // same chain.
+        if (categories["Compounds"]) {
+            if (divideCompoundsByChain) {
+                const compounds = categories["Compounds"];
+                const newCompounds: { [key: string]: TreeNode[] } = {};
+                for (const treeNode of compounds) {
+                    const chain = TreeNode._getChain(treeNode, ["A"]);
+                    if (!newCompounds[chain]) {
+                        newCompounds[chain] = [];
+                    }
+                    newCompounds[chain].push(treeNode);
+                }
+                categories["Compounds"] = newCompounds;
+            } else {
+                categories["Compounds"] = {
+                    "A": categories["Compounds"],
+                };
             }
         }
 
@@ -368,6 +432,7 @@ export class TreeNode {
                 continue;
             }
 
+            // The node named "Protein" or "Compounds"
             const categoryNode = new TreeNode({
                 title: title,
                 treeExpanded: false,
@@ -376,23 +441,61 @@ export class TreeNode {
                 focused: false,
                 viewerDirty: true,
                 type: type,
+                nodes: new TreeNodeList([]),
             });
 
             rootNode.nodes?.push(categoryNode);
 
-            const chainNode = new TreeNode({
-                title: chainName,
-                treeExpanded: false,
-                visible: true,
-                selected: SelectedType.False,
-                focused: false,
-                viewerDirty: true,
-                type: type,
-            });
+            if (title === "Protein") {
+                const availableChainsOrig: string[] = [];
+                for (let i = 0; i < 26; i++) {
+                    availableChainsOrig.push(String.fromCharCode(65 + i));
+                }
 
-            categoryNode.nodes = new TreeNodeList([chainNode]);
+                let availableChains: string[] = [];
+    
+                for (const treeNode of categories[title]) {
+                    if (availableChains.length === 0) {
+                        availableChains = availableChainsOrig.slice();
+                    }
 
-            chainNode.nodes = new TreeNodeList(categories[title]);
+                    // Chains contain models
+                    const chain = TreeNode._getChain(treeNode, availableChains);
+                    treeNode.title = chain as string;
+                    categoryNode.nodes?.push(treeNode);
+                }
+            } else if (title === "Compounds") {
+                for (const chain of Object.keys(categories[title])) {
+                    const chainNode = new TreeNode({
+                        title: chain as string,
+                        treeExpanded: false,
+                        visible: true,
+                        selected: SelectedType.False,
+                        focused: false,
+                        viewerDirty: true,
+                        type: type,
+                        nodes: new TreeNodeList(categories[title][chain]),
+                    });
+                    categoryNode.nodes?.push(chainNode);
+                }
+            }
+
+            // // The one named "A" or whatever the chain is.
+            // const chainNode = new TreeNode({
+            //     title: chain as string,
+            //     treeExpanded: false,
+            //     visible: true,
+            //     selected: SelectedType.False,
+            //     focused: false,
+            //     viewerDirty: true,
+            //     type: type,
+            //     nodes: new TreeNodeList([treeNode])
+            // });
+
+            // categoryNode.nodes?.push(chainNode);
+
+            // // Add the nodes to the chain node. Contain models.
+            // chainNode.nodes = new TreeNodeList(categories[title]);
         }
 
         return rootNode;

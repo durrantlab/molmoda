@@ -13,6 +13,7 @@ export interface IMoleculeInputParams {
     proteinFormat?: string;
     compoundFormat?: string;
     includeMetalsSolventAsProtein?: boolean;
+    allowUserToToggleIncludeMetalsSolventAsProtein?: boolean;
 
     // Below is useful if running things in webworkers. Sends input molecules or
     // molecule pairs in batches. If not specified, batching not applied (just
@@ -37,6 +38,7 @@ export class MoleculeInput {
     considerProteins = true;
     considerCompounds = true;
     includeMetalsSolventAsProtein = true;
+    allowUserToToggleIncludeMetalsSolventAsProtein = true;
     proteinFormat = "pdb";
     compoundFormat = "mol2";
 
@@ -75,6 +77,9 @@ export class MoleculeInput {
         }
         if (params.includeMetalsSolventAsProtein !== undefined) {
             this.includeMetalsSolventAsProtein = params.includeMetalsSolventAsProtein;
+        }
+        if (params.allowUserToToggleIncludeMetalsSolventAsProtein !== undefined) {
+            this.allowUserToToggleIncludeMetalsSolventAsProtein = params.allowUserToToggleIncludeMetalsSolventAsProtein;
         }
 
         // If not specified, use the default batch size.

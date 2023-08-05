@@ -6,7 +6,7 @@
         @keypress="onKeypress"
         data-bs-backdrop="static"
     >
-        <div class="modal-dialog">
+        <div :class="'modal-dialog ' + modalWidthToUse">
             <div class="modal-content">
                 <div :class="headerClasses">
                     <h5 class="modal-title">{{ title }}</h5>
@@ -104,6 +104,7 @@ export default class Popup extends Vue {
     @Prop({ default: "" }) id!: string;
     @Prop({}) onShown!: Function;
     @Prop({}) beforeShown!: Function;
+    @Prop({ default: "default" }) modalWidth!: string;
 
     idToUse = "";
 
@@ -133,6 +134,24 @@ export default class Popup extends Vue {
                 // Throw the error
                 throw err;
             });
+    }
+
+    get modalWidthToUse(): string {
+        if (this.modalWidth === "default") {
+            return "";
+        }
+
+        // Require it to be sm, lg, or xl
+        if (
+            this.modalWidth !== "sm" &&
+            this.modalWidth !== "lg" &&
+            this.modalWidth !== "xl" && 
+            this.modalWidth !== "default"
+        ) {
+            throw "modalWidth must be default, sm, lg, or xl";
+        }
+
+        return "modal-" + this.modalWidth;
     }
 
     /**

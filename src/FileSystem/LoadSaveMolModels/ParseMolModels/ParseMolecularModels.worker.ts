@@ -135,6 +135,7 @@ function flattenChains(treeNode: TreeNode): TreeNode {
     if (!treeNode.nodes) {
         throw new Error("No nodes found in treeNode.");
     }
+
     const flattened = _getDefaultTreeNode(
         treeNode.title,
         NodesOrModel.Model

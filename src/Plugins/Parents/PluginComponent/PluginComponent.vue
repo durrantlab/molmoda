@@ -16,6 +16,7 @@
         @onDone4="onPopupDone4"
         @onClosed="onClosed"
         :id="'modal-' + pluginId"
+        :modalWidth="modalWidth"
     >
         <p v-if="intro !== ''" v-html="intro"></p>
         <slot></slot>
@@ -74,6 +75,8 @@ export default class PluginComponent extends mixins(
 
     /** Whether the action button (e.g., "Load") is enabled. */
     @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
+
+    @Prop({ default: undefined }) modalWidth!: string;
 
     /**
      * Whether to hide user parameters that are disabled or to show them in a

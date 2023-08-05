@@ -64,7 +64,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
     },
 })
 export default class FPocketWebPlugin extends PluginParentClass {
-    menuPath = "Proteins/Detect Pockets";
+    menuPath = "Proteins/Detect Pockets...";
     title = "Pocket Detection";
     softwareCredits: ISoftwareCredit[] = [
         dynamicImports.fpocketweb.credit,

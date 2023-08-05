@@ -82,11 +82,10 @@ export default class MergeMolsPlugin extends PluginParentClass {
         // Get top of molecule title.
         let titles: string[] = [];
         this.nodesToActOn.forEach((node) => {
-            titles.push(
-                node
-                    .getAncestry(this.$store.state.molecules as TreeNodeList)
-                    .get(0).title
-            );
+            const title = node
+                .getAncestry(this.$store.state.molecules as TreeNodeList)
+                .get(0).title;
+            titles.push(title);
         });
 
         // Keep only unique titles
@@ -195,9 +194,11 @@ export default class MergeMolsPlugin extends PluginParentClass {
             .loadExampleProtein(true)
             .selectMoleculeInTree("Protein")
             .selectMoleculeInTree("Compounds", true);
-        
-        const afterPluginCloses = new TestCmdList()
-            .waitUntilRegex("#navigator", ".merged.");
+
+        const afterPluginCloses = new TestCmdList().waitUntilRegex(
+            "#navigator",
+            ".merged."
+        );
 
         return [
             {

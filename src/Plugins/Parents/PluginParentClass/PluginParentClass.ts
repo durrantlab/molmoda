@@ -8,10 +8,7 @@ import {
     ISoftwareCredit,
 } from "../../PluginInterfaces";
 import * as api from "@/Api";
-import {
-    removeTerminalPunctuation,
-    timeDiffDescription,
-} from "@/Core/Utils";
+import { removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
 import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 import { HooksMixin } from "./Mixins/HooksMixin";
@@ -25,7 +22,11 @@ import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { doneInQueueStore, makeUniqJobId, startInQueueStore } from "@/Queue/QueueStore";
+import {
+    doneInQueueStore,
+    makeUniqJobId,
+    startInQueueStore,
+} from "@/Queue/QueueStore";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -57,7 +58,7 @@ export abstract class PluginParentClass extends mixins(
 
     /**
      * The title of the plugin. This is shown at the top of the plugin bar.
-     * 
+     *
      * @type {string}
      */
     abstract title: string;
@@ -88,7 +89,7 @@ export abstract class PluginParentClass extends mixins(
      * A short description of the plugin. This is shown at the top of the
      * plugin. It should first describe what the plugin does, then how it does
      * it. Be brief.
-     * 
+     *
      * @type {string}
      */
     abstract intro: string;
@@ -143,7 +144,7 @@ export abstract class PluginParentClass extends mixins(
     /**
      * By default, all jobs are shown in the job queue. You can change this
      * default behavior by setting showInQueue to false.
-     * 
+     *
      * @type {boolean}
      */
     showInQueue = true;
@@ -268,7 +269,9 @@ export abstract class PluginParentClass extends mixins(
         // thread.
         const jobId = makeUniqJobId(this.pluginId);
         if (this.showInQueue) {
-            startInQueueStore(jobId, 1, () => {return;})
+            startInQueueStore(jobId, 1, () => {
+                return;
+            });
         }
 
         // Wait for promises to resolve.
@@ -405,6 +408,22 @@ export abstract class PluginParentClass extends mixins(
         return;
     }
 
+    /**
+     * Called by the menu to open the plugin. Can be called externally too. But
+     * if you want to call a plugin programmatically with parameterws, use
+     * pluginsApi.runPlugin.
+     */
+    public menuOpenPlugin(): void {
+        // Could use `this.onPluginStart();`, but use api for
+        // consistency's sake.
+        const msg = this.checkPluginAllowed();
+        if (msg !== null) {
+            api.messages.popupError(msg);
+        } else {
+            api.plugins.runPlugin(this.pluginId);
+        }
+    }
+
     /** mounted function */
     mounted() {
         // Do some quick validation
@@ -419,16 +438,7 @@ export abstract class PluginParentClass extends mixins(
             menuData: {
                 path: this.menuPath,
                 hotkey: this.hotkey,
-                function: () => {
-                    // Could use `this.onPluginStart();`, but use api for
-                    // consistency's sake.
-                    const msg = this.checkPluginAllowed();
-                    if (msg !== null) {
-                        api.messages.popupError(msg);
-                    } else {
-                        api.plugins.runPlugin(this.pluginId);
-                    }
-                },
+                function: this.menuOpenPlugin,
             } as IMenuItem,
             pluginId: this.pluginId,
         } as IPluginSetupInfo);

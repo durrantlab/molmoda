@@ -14,4 +14,13 @@ export const pluginsApi = {
             plugin.onPluginStart(params);
         }
     },
+
+    closeAllPlugins: function () {
+        for (const pluginName in loadedPlugins) {
+            const plugin = loadedPlugins[pluginName];
+            if (plugin.open) {
+                plugin.closePopup();
+            }
+        }
+    },
 };

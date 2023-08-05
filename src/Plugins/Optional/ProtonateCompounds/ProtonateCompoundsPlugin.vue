@@ -6,7 +6,7 @@
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
-        actionBtnTxt="Prepare"
+        actionBtnTxt="Protonate"
     >
         <!-- <template #afterForm>
             <Alert type="info"
@@ -56,7 +56,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
     },
 })
 export default class ProtonateCompoundsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Protonate";
+    menuPath = "Compounds/Protonate...";
     title = "Protonate Compounds";
     softwareCredits: ISoftwareCredit[] = [
         dynamicImports.obabelwasm.credit
@@ -72,7 +72,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     ];
     pluginId = "protonatecomps";
 
-    intro = `Protonate compounds at a given pH, in preparation for docking.`;
+    intro = `Protonate compounds at a given pH, in preparation for docking. Uses the Open Babel library to guess at proper protonation states.`;
 
     userArgs: FormElement[] = [
         {
@@ -192,8 +192,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                 ) as TreeNode[];
 
                 const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(
-                    onlyTreeNodes,
-                    "A"
+                    onlyTreeNodes
                 );
 
                 rootNode.title = "Prepared Compounds";

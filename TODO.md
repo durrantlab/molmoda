@@ -119,19 +119,50 @@ Continue compound prepare. Also, search for // TODO: Why does this occasionally 
 Queue system should throw an error if any single job requires more than number
 of processors available.
 
-Need GoogleAnlytics
-
-Protonate: Explain using Open Babel to guess, recommend more rigorous method.
-
-Docking: Mention need to prepare ligand and receptor.
-
 Good to provide example structures for easy testing?
 
 // TODO: Not true. Need custom license option.
 
-Reduce. How to rename new protein? Also, need to make sure parameters ok.
+If you click on an atom, also select in tree.
+
+On docking, multiple nested "Compounds" Docking organized by receptor.
+
+Reduce. Also, need to make sure parameters ok. 
+
+reduce is actually in webworker? I don't think so.
+
+On credit, include title, etc. So that's also part of credits (not just url).
+Well, maybe just url to paper.
+
+Yuri could work on analytics integration. (Assigned)
+
+Isn't smiles drawer and rdkitjs redundant for drawing molecules?
+
+Improve intro text in central viewer on app open.
 
 # DONE
+
+Help system could have filter. Good to make general component (with clear)?
+
+On PluginPathLink, it could look through all plugins and close ones without the
+emit. Update and change wherever it is used.
+
+Docking: Mention need to prepare ligand and receptor. Not checked.
+
+Need GoogleAnlytics
+
+Ability to filter trees
+
+Check Help, Some without menus showing. Good to eliminate.
+
+component that shows menu path (standardized). When click, closes all modals and
+goes to that modal. Integrate into help.
+
+Protonate: Explain using Open Babel to guess, recommend more rigorous method.
+
+Reduce. How to rename new protein?
+
+On docking, work on top-level name. Need consistent rule to use.
 
 Reduce: Need to get custom DB in there, remove receptor.pdb included in data,
 etc. Also, make Dockerfile look better, more notes, etc.

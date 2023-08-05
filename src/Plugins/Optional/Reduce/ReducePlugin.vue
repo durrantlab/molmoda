@@ -6,7 +6,7 @@
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
-        actionBtnTxt="Dock"
+        actionBtnTxt="Protonate"
     >
     </PluginComponent>
 </template>
@@ -14,8 +14,7 @@
 <script lang="ts">
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
-    checkCompoundLoaded,
-    checkProteinLoaded,
+=    checkProteinLoaded,
 } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -67,7 +66,7 @@ import { ReduceQueue } from "./ReduceQueue";
     },
 })
 export default class ReducePlugin extends PluginParentClass {
-    menuPath = "Proteins/Protonate";
+    menuPath = "Proteins/Protonate...";
     title = "Protonate Proteins";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.reduce.credit];
     contributorCredits: IContributorCredit[] = [
@@ -93,6 +92,7 @@ export default class ReducePlugin extends PluginParentClass {
                 proteinFormat: "pdb",
                 // compoundFormat: "pdbqtlig", // Will include torsions
                 includeMetalsSolventAsProtein: false,
+                allowUserToToggleIncludeMetalsSolventAsProtein: false
             } as IMoleculeInputParams),
         } as IFormMoleculeInputParams,
     ];
@@ -166,7 +166,6 @@ export default class ReducePlugin extends PluginParentClass {
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(payloads: any[]): Promise<any> {
-        debugger;
         const pdbOuts = payloads.map((payload) => payload.output);
 
         // Make fileInfos
@@ -214,12 +213,12 @@ export default class ReducePlugin extends PluginParentClass {
                 for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
                     const protProtonatedTreeNode = protProtonatedTreeNodes[i];
                     protProtonatedTreeNode.visible = i < initialCompoundsVisible;
-                    
+
                     const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([protProtonatedTreeNode]);
                     // console.log(payloads);
                     // console.log(pdbOuts);
                     // debugger;
-                    treeNode.title = payloads[i].title + ":Protonated";
+                    treeNode.title = payloads[i].title + ":protonated";
                     treeNode.addToMainTree();
                 }
 

@@ -42,7 +42,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
   },
 })
 export default class SaveVRMLPlugin extends PluginParentClass {
-  menuPath = "File/Graphics/VRML";
+  menuPath = "File/Graphics/VRML...";
   title = "Save a VRML Model";
   softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
   contributorCredits: IContributorCredit[] = [

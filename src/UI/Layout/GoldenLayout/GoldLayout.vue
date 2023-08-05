@@ -31,7 +31,10 @@
                                                 src="img/icons/android-chrome-192x192.png"
                                                 class="rounded mx-auto d-block"
                                                 alt="Logo"
-                                                style="width: 192px; height: 192px;"
+                                                style="
+                                                    width: 192px;
+                                                    height: 192px;
+                                                "
                                             />
                                         </div>
                                     </div>
@@ -48,8 +51,13 @@
                                                 <span
                                                     v-html="appDescription"
                                                 ></span>
-                                                To get started,
-                                                <b>do such and such a thing</b>.
+                                                To get started, take a look at
+                                                the
+                                                <PluginPathLink
+                                                    plugin="help"
+                                                    title="Biotite Help System"
+                                                ></PluginPathLink
+                                                >.
                                             </p>
                                         </div>
                                     </div>
@@ -118,6 +126,7 @@ import { makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
 import { appName, appVersion, appDescription } from "@/Core/AppInfo";
+import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
  * GoldLayout component
@@ -133,6 +142,7 @@ import { appName, appVersion, appDescription } from "@/Core/AppInfo";
         InformationPanel,
         QueuePanel,
         DataPanel,
+        PluginPathLink,
     },
 })
 export default class GoldLayout extends Vue {
@@ -311,6 +321,7 @@ export default class GoldLayout extends Vue {
     position: absolute;
     width: 100%;
     height: 100%;
+    z-index: 50;
 }
 </style>
 

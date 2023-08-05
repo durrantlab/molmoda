@@ -38,7 +38,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class LoadPDBPlugin extends PluginParentClass {
-    menuPath = "File/[1] Remote Import/[2] PDB ID";
+    menuPath = "File/[1] Remote Import/[2] PDB ID...";
     title = "Load PDB ID";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

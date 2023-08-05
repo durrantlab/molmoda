@@ -15,7 +15,7 @@ import { faRectangleXmark } from "@fortawesome/free-regular-svg-icons/faRectangl
 import { faSort } from "@fortawesome/free-solid-svg-icons/faSort";
 import { faSortDown } from "@fortawesome/free-solid-svg-icons/faSortDown";
 import { faSortUp } from "@fortawesome/free-solid-svg-icons/faSortUp";
-
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons/faMagnifyingGlass";
 /**
  * Load the font awesome icons.
  */
@@ -36,4 +36,5 @@ export function loadFontAwesomeFonts() {
     library.add(faSort);
     library.add(faSortDown);
     library.add(faSortUp);
+    library.add(faMagnifyingGlass);
 }

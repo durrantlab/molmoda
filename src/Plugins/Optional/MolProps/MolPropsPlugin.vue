@@ -54,7 +54,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
     },
 })
 export default class MolPropsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Calculate Properties";
+    menuPath = "Compounds/Calculate Properties...";
     title = "Calculate Molecular Properties";
     softwareCredits: ISoftwareCredit[] = [
         dynamicImports.rdkitjs.credit

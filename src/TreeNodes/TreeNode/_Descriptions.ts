@@ -120,7 +120,7 @@ export class TreeNodeDescriptions {
 
                 newTitle = titles.join(separator);
             }
-            if (newTitle.length > maxLength) {
+            if (newTitle.length > maxLength && this.parentTreeNode.title) {
                 newTitle = this.parentTreeNode.title;
             }
         } else {
