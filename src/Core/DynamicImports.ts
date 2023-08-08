@@ -151,17 +151,17 @@ export const dynamicImports = {
             url: "https://github.com/rlabduke/reduce",
             license: Licenses.APACHE2,  // TODO: Not true. Need custom license option.
         },
-        get module(): Promise<any> {
-            return import(
-                /* webpackChunkName: "reduce" */
-                /* webpackMode: "lazy" */
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                "../../public/js/reduce/index.js"
-            ).then((mod) => {
-                return mod.default;
-            });
-        }
+        // get module(): Promise<any> {
+        //     return import(
+        //         /* webpackChunkName: "reduce" */
+        //         /* webpackMode: "lazy" */
+        //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //         // @ts-ignore
+        //         "../../public/js/reduce/index.js"
+        //     ).then((mod) => {
+        //         return mod.default;
+        //     });
+        // }
     } as IDynamicImport,
     webina: {
         credit: {

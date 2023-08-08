@@ -13,9 +13,7 @@
 
 <script lang="ts">
 import { FileInfo } from "@/FileSystem/FileInfo";
-import {
-=    checkProteinLoaded,
-} from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkProteinLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -92,7 +90,7 @@ export default class ReducePlugin extends PluginParentClass {
                 proteinFormat: "pdb",
                 // compoundFormat: "pdbqtlig", // Will include torsions
                 includeMetalsSolventAsProtein: false,
-                allowUserToToggleIncludeMetalsSolventAsProtein: false
+                allowUserToToggleIncludeMetalsSolventAsProtein: false,
             } as IMoleculeInputParams),
         } as IFormMoleculeInputParams,
     ];
@@ -131,14 +129,14 @@ export default class ReducePlugin extends PluginParentClass {
             if (!f.treeNode) {
                 return undefined;
             }
-            return f.treeNode.getAncestry().get(0).title
+            return f.treeNode.getAncestry().get(0).title;
         });
 
         new ReduceQueue("reduce", fileInfos, 1).done
             .then((reduceOuts: any) => {
                 // TODO: Get any stdErr and show errors if they exist.
 
-                for (let i=0; i<reduceOuts.length; i++) {
+                for (let i = 0; i < reduceOuts.length; i++) {
                     reduceOuts[i].title = distantAncestorTitles[i];
                 }
 
@@ -212,9 +210,12 @@ export default class ReducePlugin extends PluginParentClass {
                 // Only first 5 are visible
                 for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
                     const protProtonatedTreeNode = protProtonatedTreeNodes[i];
-                    protProtonatedTreeNode.visible = i < initialCompoundsVisible;
+                    protProtonatedTreeNode.visible =
+                        i < initialCompoundsVisible;
 
-                    const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([protProtonatedTreeNode]);
+                    const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([
+                        protProtonatedTreeNode,
+                    ]);
                     // console.log(payloads);
                     // console.log(pdbOuts);
                     // debugger;

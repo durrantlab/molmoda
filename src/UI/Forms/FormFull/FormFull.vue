@@ -1,6 +1,7 @@
 <template>
     <span>
         <span v-for="formElem of modelValue" v-bind:key="formElem.id">
+            <!-- a form group (accordion) -->
             <FormWrapper
                 v-if="
                     formElem.type === FormElementType.Group &&
@@ -29,6 +30,7 @@
                 :cls="'border-0 mt-' + spacing"
                 :disabled="disabled(formElem)"
             >
+                <!-- any of the other form elements (not group) -->
                 <FormInput
                     v-if="formElem.type === FormElementType.Text"
                     type="text"
@@ -185,7 +187,7 @@ import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
 })
 export default class FormFull extends Vue {
     @Prop({ required: true }) modelValue!: FormElement[];
-    @Prop({ required: true }) id!: FormElement[];
+    @Prop({ required: true }) id!: string;
     @Prop({ default: false }) hideIfDisabled!: boolean;
     @Prop({ default: "3" }) spacing!: string;
 

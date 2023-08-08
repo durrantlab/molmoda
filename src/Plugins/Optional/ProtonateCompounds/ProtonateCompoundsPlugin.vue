@@ -195,7 +195,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                     onlyTreeNodes
                 );
 
-                rootNode.title = "Prepared Compounds";
+                rootNode.title = "Compounds:protonated";
 
                 rootNode.addToMainTree();
                 return;

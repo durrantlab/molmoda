@@ -129,8 +129,6 @@ On docking, multiple nested "Compounds" Docking organized by receptor.
 
 Reduce. Also, need to make sure parameters ok. 
 
-reduce is actually in webworker? I don't think so.
-
 On credit, include title, etc. So that's also part of credits (not just url).
 Well, maybe just url to paper.
 
@@ -141,6 +139,8 @@ Isn't smiles drawer and rdkitjs redundant for drawing molecules?
 Improve intro text in central viewer on app open.
 
 # DONE
+
+reduce is actually in webworker? I don't think so.
 
 Help system could have filter. Good to make general component (with clear)?
 
