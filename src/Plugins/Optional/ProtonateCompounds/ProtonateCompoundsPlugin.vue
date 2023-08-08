@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Protonate"
+        @onUserArgChanged="onUserArgChanged"
     >
         <!-- <template #afterForm>
             <Alert type="info"
@@ -33,7 +34,6 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
@@ -58,23 +58,21 @@ import { dynamicImports } from "@/Core/DynamicImports";
 export default class ProtonateCompoundsPlugin extends PluginParentClass {
     menuPath = "Compounds/Protonate...";
     title = "Protonate Compounds";
-    softwareCredits: ISoftwareCredit[] = [
-        dynamicImports.obabelwasm.credit
-    ];
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [
         // {
         //     name: "Jacob D. Durrant",
         //     url: "http://durrantlab.com/",
         // },
         {
-            name: "Yuri Kochnev"
-        }
+            name: "Yuri Kochnev",
+        },
     ];
     pluginId = "protonatecomps";
 
     intro = `Protonate compounds at a given pH, in preparation for docking. Uses the Open Babel library to guess at proper protonation states.`;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             // type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -94,7 +92,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             min: 0,
             max: 14,
             step: 0.1,
-            description: "Physiological pH is 7.4."
+            description: "Physiological pH is 7.4.",
         },
 
         {
@@ -102,8 +100,9 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             id: "regen3DCoords",
             label: "Regenerate 3D coordinates",
             val: false,
-            description: "Whether to regenerate 3D atomic coordinates given the new protonation state.",
-        }
+            description:
+                "Whether to regenerate 3D atomic coordinates given the new protonation state.",
+        },
     ];
 
     /**
@@ -129,17 +128,13 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     /**
      * Runs when the user presses the action button and the popup closes.
      *
-     * @param {IUserArg[]} userArgs  The user arguments.
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
-    onPopupDone(userArgs: IUserArg[]): Promise<void> {
-        const compounds: FileInfo[] = this.getArg(
-            userArgs,
-            "makemolinputparams"
-        );
+    onPopupDone(): Promise<void> {
+        const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
-        const pH = this.getArg(userArgs, "pH");
-        const regen3DCoords = this.getArg(userArgs, "regen3DCoords");
+        const pH = this.getUserArg("pH");
+        const regen3DCoords = this.getUserArg("regen3DCoords");
 
         return convertFileInfosOpenBabel(compounds, "mol2", regen3DCoords, pH)
             .then((molTexts: string[]) => {
@@ -191,9 +186,8 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                     (tn) => tn !== undefined
                 ) as TreeNode[];
 
-                const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(
-                    onlyTreeNodes
-                );
+                const rootNode =
+                    TreeNode.loadHierarchicallyFromTreeNodes(onlyTreeNodes);
 
                 rootNode.title = "Compounds:protonated";
 

@@ -8,6 +8,7 @@
         :userArgs="userArgs"
         :pluginId="pluginId"
         @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -49,7 +50,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     ];
     pluginId = "deletemol";
     intro = "Delete the selected molecule(s)?";
-    userArgs: FormElement[] = [];
+    userArgDefaults: FormElement[] = [];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
     alwaysEnabled = true;

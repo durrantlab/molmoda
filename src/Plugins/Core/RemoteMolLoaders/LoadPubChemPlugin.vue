@@ -9,6 +9,7 @@
         :pluginId="pluginId"
         :isActionBtnEnabled="isBtnEnabled()"
         :intro="intro"
+        @onUserArgChanged="onUserArgChanged"
     >
         <FormWrapper>
             <FormInput
@@ -90,7 +91,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
   intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a>, a database of small molecules.`
 
-  userArgs: FormElement[] = [];
+  userArgDefaults: FormElement[] = [];
   alwaysEnabled = true;
 
   /**

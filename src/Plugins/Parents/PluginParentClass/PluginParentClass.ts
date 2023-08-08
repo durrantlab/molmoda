@@ -16,7 +16,6 @@ import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
 import { ValidationMixin } from "./Mixins/ValidationMixin";
 import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
@@ -27,6 +26,7 @@ import {
     makeUniqJobId,
     startInQueueStore,
 } from "@/Queue/QueueStore";
+import { copyUserArgs } from "../UserInputUtils";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -95,13 +95,17 @@ export abstract class PluginParentClass extends mixins(
     abstract intro: string;
 
     /**
-     * A list of user arguments. Note that `userArgs` defines the user
-     * arguments, but it is not reactive. See it as an unchangable template. Use
-     * `updateUserArgs` to programmatically change actual user-specified inputs.
+     * A list of user arguments. Note that `userArgDefaults` defines the default
+     * user argument values (on popup), but it is not reactive. See it as an
+     * unchangable template. Modify userArgs to change the user argument values
+     * reactively.
      *
      * @type {FormElement[]}
      */
-    abstract userArgs: FormElement[];
+    abstract userArgDefaults: FormElement[];
+
+    // TODO: Describe here.
+    userArgs: FormElement[] = [];
 
     /**
      * Optionally define a hotkey (keyboard shortcut) to trigger this plugin.
@@ -165,6 +169,9 @@ export abstract class PluginParentClass extends mixins(
      * @document
      */
     public onPluginStart(payload?: any): void {
+        // Reset userArgs to defaults.
+        this.userArgs = copyUserArgs(this.userArgDefaults);
+
         // Children should not override this function! Use onPopupOpen instead.
         this.payload = payload;
 
@@ -211,12 +218,11 @@ export abstract class PluginParentClass extends mixins(
      * it if you want to modify those arguments before submitting to the queue,
      * or if you want to submit multiple jobs to the queue.
      *
-     * @param {IUserArg[]} userArgs  The user arguments.
      * @gooddefault
      * @document
      */
-    public onPopupDone(userArgs: IUserArg[]): void {
-        this.submitJobs([userArgs]);
+    public onPopupDone(): void {
+        this.submitJobs(this.userArgs);
     }
 
     /**
@@ -456,6 +462,8 @@ export abstract class PluginParentClass extends mixins(
             });
         }
 
+        this.userArgs = copyUserArgs(this.userArgDefaults);
+
         this.onMounted();
 
         createTestCmdsIfTestSpecified(this);
@@ -478,5 +486,24 @@ export abstract class PluginParentClass extends mixins(
                 }
                 return;
             });
+    }
+
+    /**
+     * Called when the user arguments change. Override this function to react
+     * when the user arguments change. Access the arguments using this.userArgs.
+     */
+    onUserArgChange() {
+        return;
+    }
+
+    /**
+     * Makes the userArgs reactive. Do not overwrite this funciton. If you wish
+     * to react when the user arguments change, use onUserArgChange instead.
+     *
+     * @param {FormElement[]} newUserArgs  The new userArgs.
+     */
+    onUserArgChanged(newUserArgs: FormElement[]) {
+        this.userArgs = newUserArgs;
+        this.onUserArgChange();
     }
 }

@@ -35,6 +35,7 @@ export class ReduceQueue extends QueueParent {
      * @returns {Promise<IJobInfo>}  The output job.
      */
     private async _runJob(jobInfo: IJobInfo): Promise<IJobInfo> {
+        debugger;
         // treeNode not serializable, and not needed, so remove it.
         jobInfo.input.treeNode = undefined;
 

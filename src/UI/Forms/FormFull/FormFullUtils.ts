@@ -3,59 +3,21 @@ import {
     FormElemType,
     IFormGroup,
     IFormNumber,
+    IGenericFormElement,
 } from "./FormFullInterfaces";
-
-export interface IUserArg {
-    name: string;
-    val: any;
-}
-
-/**
- * Converts the data structure used to render forms into a flat array of
- * IUserArg. Also removes any alert messages.
- *
- * @param  {FormElement[]} formElements The form elements to convert.
- * @returns {IUserArg[]} The converted array of IUserArg.
- */
-export function collapseFormElementArray(
-    formElements: FormElement[]
-): IUserArg[] {
-    const data: IUserArg[] = [];
-
-    const getData = (elems: FormElement[]) => {
-        // No need to keep the alerts.
-        elems = elems.filter((elem) => {
-            return elem.type !== FormElemType.Alert;
-        });
-
-        for (const elem of elems) {
-            if (elem.type === FormElemType.Group) {
-                getData((elem as IFormGroup).childElements);
-            } else {
-                data.push({
-                    name: elem.id,
-                    // Use number for type cast because has val property.
-                    val: (elem as IFormNumber).val,
-                });
-            }
-        }
-    };
-
-    getData(formElements);
-
-    return data;
-}
 
 /**
  * Converts a list of user-specified arguments into a command-line string. TODO:
  * Not currently used.
  *
- * @param  {IUserArg[]} userArgs        The user-specified arguments.
- * @param  {string}     [namePrefix="--"] The prefix for each argument name.
+ * @param  {IGenericFormElement[]} userArgs           The user-specified
+ *                                                    arguments.
+ * @param  {string}                [namePrefix="--"]  The prefix for each
+ *                                                    argument name.
  * @returns {string} The command-line string.
  */
 export function userParamsToCommandLineString(
-    userArgs: IUserArg[],
+    userArgs: IGenericFormElement[],
     namePrefix = "--"
 ): string {
     // Converts the data structure used to render forms into a flat command line
@@ -63,7 +25,7 @@ export function userParamsToCommandLineString(
     const cmdLine = userArgs.map((param) => {
         const val =
             typeof param.val === "string" ? `"${param.val}"` : param.val;
-        return `${namePrefix}${param.name} ${val}`;
+        return `${namePrefix}${param.id} ${val}`;
     });
 
     return cmdLine.join(" ");

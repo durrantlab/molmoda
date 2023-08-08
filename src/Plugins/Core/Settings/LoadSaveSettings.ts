@@ -1,49 +1,49 @@
 import { visualizationApi } from "@/Api/Visualization";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
+import { IGenericFormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 // import * as api from "@/Api/";
 
 /**
  * Saves settings to local storage.
  * 
- * @param  {IUserArg[]} settings  The settings to save.
+ * @param  {IGenericFormElement[]} settings  The settings to save.
  */
-export function saveSettings(settings: IUserArg[]) {
+export function saveSettings(settings: IGenericFormElement[]) {
     localStorage.setItem("settings", JSON.stringify(settings));
 }
 
 /**
  * Gets settings from local storage.
  * 
- * @returns {IUserArg[]}  The settings.
+ * @returns {IGenericFormElement[]}  The settings.
  */
-export function getSettings(): IUserArg[] {
+export function getSettings(): IGenericFormElement[] {
     const settingsJson = localStorage.getItem("settings");
     if (settingsJson === null) {
         return [];
     }
-    return JSON.parse(settingsJson) as IUserArg[];
+    return JSON.parse(settingsJson) as IGenericFormElement[];
 }
 
 /**
  * Gets the value of a specific setting, using default value if not present.
  *
- * @param  {string} name  The name of the setting.
+ * @param  {string} id  The id of the setting.
  * @returns {any}  The value of the setting.
  */
-export function getSetting(name: string): any {
+export function getSetting(id: string): any {
     const settings = getSettings();
     for (const setting of settings) {
-        if (setting.name === name) {
+        if (setting.id === id) {
             return setting.val;
         }
     }
 
     // Get default
     const defaults = defaultSettings();
-    for (const settingName in defaults) {
-        if (settingName === name) {
-            return defaults[settingName];
+    for (const settingId in defaults) {
+        if (settingId === id) {
+            return defaults[settingId];
         }
     }
 
@@ -53,13 +53,13 @@ export function getSetting(name: string): any {
 /**
  * Given settings, apply them (meaning, update app per settings).
  *
- * @param  {IUserArg[]} settings  The settings to apply.
+ * @param  {IGenericFormElement[]} settings  The settings to apply.
  */
-export function applySettings(settings: IUserArg[]) {
+export function applySettings(settings: IGenericFormElement[]) {
     // Convert the settings to a map for easy lookup.
-    const settingsMap = new Map<string, IUserArg>();
+    const settingsMap = new Map<string, IGenericFormElement>();
     for (const setting of settings) {
-        settingsMap.set(setting.name, setting);
+        settingsMap.set(setting.id, setting);
     }
     const defaults = defaultSettings();
 

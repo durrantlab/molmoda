@@ -96,7 +96,8 @@
                 <!-- :filterFunc="makeGeneric(formElem).filterFunc" -->
                 <MoleculeInputParams
                     v-else-if="
-                        formElem.type === FormElementType.MoleculeInputParams
+                        formElem.type === FormElementType.MoleculeInputParams &&
+                        makeGeneric(formElem).val.molsToConsider !== undefined
                     "
                     v-model="makeGeneric(formElem).val"
                     @onChange="onDataUpdated"
@@ -273,7 +274,7 @@ export default class FormFull extends Vue {
 
     /**
      * Validate a label.
-     * 
+     *
      * @param {string | undefined} label  The label to validate.
      * @returns {string | undefined}  The label to use.
      */
@@ -284,7 +285,12 @@ export default class FormFull extends Vue {
 
         // Do some validation on the label. Label should not end in
         // punctuation
-        if (label.endsWith(".") || label.endsWith("!") || label.endsWith("?")) {
+        if (
+            (label.endsWith(".") ||
+                label.endsWith("!") ||
+                label.endsWith("?")) &&
+            !label.endsWith("etc.")
+        ) {
             throw new Error(
                 `FormFull: Label should not end in punctuation: ${label} Use description for extended explanations.`
             );
@@ -318,7 +324,7 @@ export default class FormFull extends Vue {
 
     /**
      * Get the label to use for a form element.
-     * 
+     *
      * @param {FormElement} formElem  The form element.
      * @returns {string | undefined}  The label to use.
      */

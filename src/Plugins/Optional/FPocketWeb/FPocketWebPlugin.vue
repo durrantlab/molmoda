@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Detect"
+        @onUserArgChanged="onUserArgChanged"
     >
     </PluginComponent>
 </template>
@@ -30,8 +31,8 @@ import {
     IFormMoleculeInputParams,
     IFormNumber,
     IFormSelect,
+    IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
@@ -71,9 +72,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
         {
             name: "fpocket",
             url: "https://github.com/Discngine/fpocket",
-            license: Licenses.MIT
+            license: Licenses.MIT,
         },
-
     ];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -88,7 +88,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     msgOnJobsFinished =
         "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             // type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -222,14 +222,9 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(userArgs: IUserArg[]) {
-        const pdbFiles: FileInfo[] = this.getArg(
-            userArgs,
-            "makemolinputparams"
-        );
+    onPopupDone() {
+        const pdbFiles: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const userArgsNotFpocketArgs = [
             "providePseudoAtoms",
@@ -238,9 +233,9 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
         // Convert to IFpocketParams format
         const fpocketParams: { [key: string]: any } = {}; // IFpocketParams
-        userArgs.forEach((arg) => {
-            if (userArgsNotFpocketArgs.indexOf(arg.name) === -1) {
-                fpocketParams[arg.name] = arg.val;
+        this.userArgs.forEach((arg) => {
+            if (userArgsNotFpocketArgs.indexOf(arg.id) === -1) {
+                fpocketParams[arg.id] = (arg as IGenericFormElement).val;
             }
         });
 
@@ -260,9 +255,11 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     fpocketOut.origFileName = pdbFiles[i].name;
                     fpocketOut.label =
                         pdbFiles[i].treeNode?.descriptions.pathName(":");
-                    fpocketOut.providePseudoAtoms = userArgs.filter(
-                        (u) => u.name === "providePseudoAtoms"
-                    )[0].val;
+                    fpocketOut.providePseudoAtoms = (
+                        this.userArgs.filter(
+                            (u) => u.id === "providePseudoAtoms"
+                        )[0] as IGenericFormElement
+                    ).val;
                 });
 
                 this.submitJobs(fpocketOuts);

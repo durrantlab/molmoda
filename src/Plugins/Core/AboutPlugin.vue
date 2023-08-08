@@ -8,6 +8,7 @@
     :intro="intro"
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
+    @onUserArgChanged="onUserArgChanged"
   >
   <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block; width:192px; height: 192px;" />
     <p>
@@ -80,7 +81,7 @@ export default class AboutPlugin extends PluginParentClass {
   pluginId = "about";
   intro = appDescription;
 
-  userArgs: FormElement[] = [];
+  userArgDefaults: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
   lazyLoadedImg = "";

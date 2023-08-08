@@ -9,6 +9,7 @@
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="filesToLoad.length > 0"
         :intro="intro"
+        @onUserArgChanged="onUserArgChanged"
     >
         <FormFile
             ref="formFile"
@@ -62,7 +63,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         // {
         //     id: "group",
         //     // type: FormElemType.Group,

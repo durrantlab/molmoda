@@ -5,6 +5,7 @@
     :pluginId="pluginId"
     :userArgs="userArgs"
     :intro="intro"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
   
@@ -41,7 +42,7 @@ export default class DataWindowPlugin extends PluginParentClass {
   ];
   pluginId = "datawindow";
   noPopup = true;
-  userArgs: FormElement[] = [];
+  userArgDefaults: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
   intro = `Switch to the data panel.`;

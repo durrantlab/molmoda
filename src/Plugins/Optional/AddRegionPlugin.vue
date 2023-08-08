@@ -8,8 +8,8 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Add Region"
-        @onDataChanged="onDataChanged"
         :hideIfDisabled="true"
+        @onUserArgChanged="onUserArgChanged"
     >
     </PluginComponent>
 </template>
@@ -31,8 +31,8 @@ import {
     IFormAlert,
     IFormOption,
     IFormSelect,
+IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import {
     IAtom,
@@ -66,7 +66,7 @@ export default class AddRegionPlugin extends PluginParentClass {
 
     intro = `Add a new box or spherical region to the workspace.`;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             description: `After adding a region, select it in the Navigator panel. You can then change its location and size via the Styles panel or by clicking atoms in the Viewer panel.`,
             id: "alert",
@@ -123,18 +123,16 @@ export default class AddRegionPlugin extends PluginParentClass {
 
     /**
      * Detects when user arguments have changed, and updates UI accordingly.
-     *
-     * @param {userArgs[]} userArgs  The updated user arguments.
      */
-    onDataChanged(userArgs: IUserArg[]) {
-        let regionType = this.getArg(userArgs, "regionType") as string;
+     onUserArgChange() {
+        let regionType = this.getUserArg("regionType") as string;
         if (regionType === "box") {
-            this.updateUserArgEnabled("dimensions", true);
-            this.updateUserArgEnabled("radius", false);
+            this.setUserArgEnabled("dimensions", true);
+            this.setUserArgEnabled("radius", false);
         } else {
             // sphere
-            this.updateUserArgEnabled("dimensions", false);
-            this.updateUserArgEnabled("radius", true);
+            this.setUserArgEnabled("dimensions", false);
+            this.setUserArgEnabled("radius", true);
         }
     }
 
@@ -210,47 +208,24 @@ export default class AddRegionPlugin extends PluginParentClass {
                 }
             }
 
-            this.updateUserArgs([
-                {
-                    name: "radius",
-                    val: Math.round(500 * max_dim) / 1000,
-                },
-            ]);
-
-            this.updateUserArgs([
-                {
-                    name: "center",
-                    val: [center_x, center_y, center_z],
-                },
-            ]);
-
-            this.updateUserArgs([
-                {
-                    name: "dimensions",
-                    val: dimens,
-                },
-            ]);
+            this.setUserArg("radius", Math.round(500 * max_dim) / 1000);
+            this.setUserArg("center", [center_x, center_y, center_z]);
+            this.setUserArg("dimensions", dimens);
         }
 
-        this.updateUserArgs([
-            {
-                name: "color",
-                val: randomPastelColor(),
-            },
-        ]);
+        this.setUserArg("color", randomPastelColor());
     }
 
     /**
      * Runs when the user presses the action button and the popup closes.
      *
-     * @param {IUserArg[]} userArgs  The user arguments.
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
-    onPopupDone(userArgs: IUserArg[]): Promise<void> {
-        const regionType = this.getArg(userArgs, "regionType");
-        const regionName = this.getArg(userArgs, "regionName");
-        const color = this.getArg(userArgs, "color");
-        const opacity = this.getArg(userArgs, "opacity");
+    onPopupDone(): Promise<void> {
+        const regionType = this.getUserArg("regionType");
+        const regionName = this.getUserArg("regionName");
+        const color = this.getUserArg("color");
+        const opacity = this.getUserArg("opacity");
 
         // Make a tree node
         const treeNode = new TreeNode({
@@ -259,7 +234,7 @@ export default class AddRegionPlugin extends PluginParentClass {
         } as ITreeNode);
 
         let region: any = {
-            center: this.getArg(userArgs, "center"),
+            center: this.getUserArg("center"),
             color: color,
             movable: true,
             opacity: opacity,
@@ -268,13 +243,13 @@ export default class AddRegionPlugin extends PluginParentClass {
         if (regionType === "box") {
             region = {
                 ...region,
-                dimensions: this.getArg(userArgs, "dimensions"),
+                dimensions: this.getUserArg("dimensions"),
                 type: RegionType.Box,
             };
         } else {
             region = {
                 ...region,
-                radius: this.getArg(userArgs, "radius"),
+                radius: this.getUserArg("radius"),
                 type: RegionType.Sphere,
             };
         }

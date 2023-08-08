@@ -5,6 +5,7 @@
         :userArgs="userArgs"
         :pluginId="pluginId"
         :intro="intro"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -43,7 +44,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     ];
     pluginId = "clearselection";
     noPopup = true;
-    userArgs: FormElement[] = [];
+    userArgDefaults: FormElement[] = [];
     alwaysEnabled = true;
     logJob = false;
     intro = "Clear the selection of all molecules."

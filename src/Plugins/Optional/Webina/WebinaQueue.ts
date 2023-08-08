@@ -140,8 +140,12 @@ export class WebinaQueue extends QueueParent {
                     })
                     .then((instance: any) => {
                         const argsList = [];
+
                         for (const key in jobInfo.input.webinaParams) {
                             const val = jobInfo.input.webinaParams[key];
+                            if (val === undefined) {
+                                continue;
+                            }
                             if ([true, "true"].indexOf(val) !== -1) {
                                 argsList.push(`--${key}`);
                             } else if ([false, "false"].indexOf(val) !== -1) {

@@ -8,6 +8,7 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         ref="pluginComponent"
+        @onUserArgChanged="onUserArgChanged"
     >
         <!-- cancelBtnTxt="Done" -->
     </PluginComponent>
@@ -18,9 +19,9 @@ import { Options } from "vue-class-component";
 import {
     FormElement,
     IFormNumber,
+IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     ISoftwareCredit,
@@ -54,7 +55,7 @@ export default class SettingsPlugin extends PluginParentClass {
     pluginId = "settings";
     intro = `Modify Biotite general settings.`;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             // type: FormElemType.Number,
             id: "maxProcs",
@@ -96,55 +97,61 @@ export default class SettingsPlugin extends PluginParentClass {
      */
     onBeforePopupOpen() {
         // Get values from localstorage.
-        let updatedUserVals: IUserArg[] = [];
-
         const savedSettings = getSettings();
         const maxProcs = savedSettings.filter(
-            (setting) => setting.name === "maxProcs"
+            (setting) => setting.id === "maxProcs"
         )[0]?.val;
         const initialCompoundsVisible = savedSettings.filter(
-            (setting) => setting.name === "initialCompoundsVisible"
+            (setting) => setting.id === "initialCompoundsVisible"
         )[0]?.val;
         const molViewer = savedSettings.filter(
-            (setting) => setting.name === "molViewer"
+            (setting) => setting.id === "molViewer"
         )[0]?.val;
 
         const defaults = defaultSettings();
 
         // Update the userArgs with the saved values.
-        updatedUserVals.push({
-            name: "maxProcs",
-            val: maxProcs ? parseInt(maxProcs) : defaults.maxProcs,
-        });
-        updatedUserVals.push({
-            name: "initialCompoundsVisible",
-            val: initialCompoundsVisible
+        this.setUserArg(
+            "maxProcs",
+            maxProcs ? parseInt(maxProcs) : defaults.maxProcs
+        );
+        this.setUserArg(
+            "initialCompoundsVisible",
+            initialCompoundsVisible
                 ? parseInt(initialCompoundsVisible)
-                : defaults.initialCompoundsVisible,
-        });
-        updatedUserVals.push({
-            name: "molViewer",
-            val: molViewer ? molViewer : defaults.molViewer,
-        });
-
-        this.updateUserArgs(updatedUserVals);
+                : defaults.initialCompoundsVisible
+        );
+        this.setUserArg(
+            "molViewer",
+            molViewer ? molViewer : defaults.molViewer
+        );
     }
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(userArgs: IUserArg[]) {
-        this.submitJobs([userArgs]);
+    onPopupDone() {
+        // Putting in [] so all settings sent together, rather than one-by-one.        
+        this.submitJobs([this.userArgs]);
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
      *
-     * @param {IUserArg[]} args  The user arguments to pass to the "executable."
+     * @param {IGenericFormElement[]} args  The user arguments to pass to the
+     *                                      "executable."            
      */
-    runJobInBrowser(args: IUserArg[]) {
+    runJobInBrowser(args: IGenericFormElement[]) {
+
+        // Keeping only id and val.
+        args = args.map((arg) => {
+            return {
+                id: arg.id,
+                val: arg.val,
+            };
+        });
+
         saveSettings(args);
         applySettings(args);
         return;

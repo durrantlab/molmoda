@@ -25,6 +25,7 @@ defineMakerFuncs();
 // console.warn("Below now meaningless?");
 // api.sys.loadStatus.menuFinalized = true;
 const store = setupVueXStore();
+
 applySettings(getSettings());
 
 createApp(App)

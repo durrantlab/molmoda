@@ -8,6 +8,7 @@
         :userArgs="userArgs"
         :pluginId="pluginId"
         @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -27,7 +28,6 @@ import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
@@ -54,7 +54,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
     ];
     pluginId = "mergemols";
     intro = "Copy and merge the selected molecules into a single new molecule.";
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             id: "newName",
             label: "",
@@ -94,13 +94,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         });
         titles.sort();
 
-        this.updateUserArgs([
-            {
-                name: "newName",
-                // val: title + ":" + nodeToActOn.title + " (cloned)",
-                val: titles.join("-") + ":merged",
-            } as IUserArg,
-        ]);
+        this.setUserArg("newName", titles.join("-") + ":merged");
     }
 
     /**
@@ -117,11 +111,10 @@ export default class MergeMolsPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {IUserArg[]} userArgs  The user arguments.
      * @returns {Promise<void> | undefined}  If the job is asynchronous, return
      *     a promise. Otherwise, return undefined.
      */
-    runJobInBrowser(userArgs: IUserArg[]): Promise<void> | undefined {
+    runJobInBrowser(): Promise<void> | undefined {
         if (!this.nodesToActOn) {
             // Nothing to do.
             return;
@@ -151,7 +144,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
 
                 return mergeTreeNodes(
                     onlySelectedTreeNodeList,
-                    this.getArg(userArgs, "newName")
+                    this.getUserArg("newName")
                 );
             })
             .then((mergedTreeNode: TreeNode) => {
@@ -169,7 +162,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         //     .then((treeNodeList: TreeNodeList) => {
         //         return mergeTreeNodes(
         //             treeNodeList,
-        //             this.getArg(userArgs, "newName")
+        //             this.getUserArg("newName")
         //         );
         //     })
         //     .then((mergedTreeNode: TreeNode) => {

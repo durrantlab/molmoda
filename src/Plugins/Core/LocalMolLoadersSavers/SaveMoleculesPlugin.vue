@@ -9,8 +9,8 @@
         :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         :prohibitCancel="appClosing"
-        @onDataChanged="onDataChanged"
         :hideIfDisabled="true"
+        @onUserArgChanged="onUserArgChanged"
     >
     </PluginComponent>
 </template>
@@ -32,8 +32,8 @@ import {
     IFormGroup,
     IFormSelect,
     IFormText,
+    IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { saveBiotite } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveBiotite";
@@ -84,7 +84,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     // process.
     appClosing = false;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             id: "filename",
             label: "",
@@ -196,69 +196,47 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         this.appClosing = this.payload !== undefined;
 
         // Reset some form values
-        this.updateUserArgs([
-            {
-                name: "useBiotiteFormat",
-                val: true,
-            },
-            {
-                name: "saveVisible",
-                val: true,
-            },
-            {
-                name: "saveSelected",
-                val: true,
-            },
-            {
-                name: "saveHiddenAndUnselected",
-                val: false,
-            },
-            {
-                name: "separateCompounds",
-                val: true,
-            },
-        ]);
+        this.setUserArg("useBiotiteFormat", true);
+        this.setUserArg("saveVisible", true);
+        this.setUserArg("saveSelected", true);
+        this.setUserArg("saveHiddenAndUnselected", false);
+        this.setUserArg("separateCompounds", true);
 
         this.payload = undefined;
     }
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(userArgs: IUserArg[]) {
-        this.submitJobs([userArgs]);
+    onPopupDone() {
+        // No need to pass parameters here because they will be read directly
+        // from this.userArgs.
+        this.submitJobs();
     }
 
     /**
      * Detects when user arguments have changed, and updates UI accordingly.
-     *
-     * @param {userArgs[]} userArgs  The updated user arguments.
      */
-    onDataChanged(userArgs: IUserArg[]) {
-        let useBiotite = this.getArg(userArgs, "useBiotiteFormat") as boolean;
-        // this.updateUserArgEnabled("molMergingGroup", !useBiotite);
-        this.updateUserArgEnabled("whichMolsGroup", !useBiotite);
-        this.updateUserArgEnabled("separateCompounds", !useBiotite);
+    onUserArgChange() {
+        let useBiotite = this.getUserArg("useBiotiteFormat") as boolean;
+        // this.setUserArgEnabled("molMergingGroup", !useBiotite);
+        this.setUserArgEnabled("whichMolsGroup", !useBiotite);
+        this.setUserArgEnabled("separateCompounds", !useBiotite);
 
         // Show onemol format or protein format, depending on whether
         // mergeAllMolecules is true.
-        let separateCompounds = this.getArg(
-            userArgs,
-            "separateCompounds"
-        ) as boolean;
-        this.updateUserArgEnabled(
+        let separateCompounds = this.getUserArg("separateCompounds") as boolean;
+        this.setUserArgEnabled(
             "oneMolFileFormat",
             !separateCompounds && !useBiotite
         );
-        this.updateUserArgEnabled(
+        this.setUserArgEnabled(
             "nonCompoundFormat",
             separateCompounds && !useBiotite
         );
 
         // If separating out compounds, show compound format.
-        this.updateUserArgEnabled(
+        this.setUserArgEnabled(
             "compoundFormat",
             separateCompounds && !useBiotite
         );
@@ -290,31 +268,25 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
      *
-     * @param {IUserArg[]} userArgs  Information about the file to save.
-     * @returns {RunJobReturn}  A promise that resolves when the job is
-     *     done.
+     * @returns {RunJobReturn}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(userArgs: IUserArg[]): RunJobReturn {
-        const filename = this.getArg(userArgs, "filename");
-        const useBiotiteFormat = this.getArg(
-            userArgs,
-            "useBiotiteFormat"
-        ) as boolean;
-        let compoundFormat = this.getArg(userArgs, "compoundFormat");
-        let nonCompoundFormat = this.getArg(userArgs, "nonCompoundFormat");
-        const oneMolFileFormat = this.getArg(userArgs, "oneMolFileFormat");
-        const separateCompounds = this.getArg(
-            userArgs,
+    runJobInBrowser(): RunJobReturn {
+        const filename = this.getUserArg("filename");
+        const useBiotiteFormat = this.getUserArg("useBiotiteFormat") as boolean;
+        let compoundFormat = this.getUserArg("compoundFormat");
+        let nonCompoundFormat = this.getUserArg("nonCompoundFormat");
+        const oneMolFileFormat = this.getUserArg("oneMolFileFormat");
+        const separateCompounds = this.getUserArg(
             "separateCompounds"
         ) as boolean;
-        const saveHiddenAndUnselected = this.getArg(
-            userArgs,
+        const saveHiddenAndUnselected = this.getUserArg(
             "saveHiddenAndUnselected"
         ) as boolean;
-        const saveVisible = this.getArg(userArgs, "saveVisible") as boolean;
-        const saveSelected = this.getArg(userArgs, "saveSelected") as boolean;
+        const saveVisible = this.getUserArg("saveVisible") as boolean;
+        const saveSelected = this.getUserArg("saveSelected") as boolean;
 
         if (useBiotiteFormat) {
             saveBiotite(filename)
@@ -351,8 +323,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             selected: saveSelected,
             hiddenAndUnselected: saveHiddenAndUnselected,
         } as IMolsToConsider;
-
-        debugger;
 
         // Divide terminal nodes into compound and non-compound, per the mols to
         // consider.
@@ -410,8 +380,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         const biotiteJob = {
             beforePluginOpens: new TestCmdList()
                 .loadExampleProtein(true)
-                .selectMoleculeInTree("Protein")
-                .cmds,
+                .selectMoleculeInTree("Protein").cmds,
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",
                 "test",
@@ -449,29 +418,35 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             let pluginOpen = new TestCmdList()
                 .setUserArg("filename", "test", this.pluginId)
                 // .setUserArg("useBiotiteFormat", false, this.pluginId)
-                .click("#modal-savemolecules #useBiotiteFormat-savemolecules-item");
-            
+                .click(
+                    "#modal-savemolecules #useBiotiteFormat-savemolecules-item"
+                );
+
             if (visible === false) {
                 // True by default, so must click
-                pluginOpen = pluginOpen
-                    .click("#modal-savemolecules #saveVisible-savemolecules-item");
+                pluginOpen = pluginOpen.click(
+                    "#modal-savemolecules #saveVisible-savemolecules-item"
+                );
             }
 
             if (selected === false) {
                 // True by default, so must click
-                pluginOpen = pluginOpen
-                    .click("#modal-savemolecules #saveSelected-savemolecules-item");
+                pluginOpen = pluginOpen.click(
+                    "#modal-savemolecules #saveSelected-savemolecules-item"
+                );
             }
-            
+
             if (hiddenAndUnselected === true) {
                 // False by default, so must click
-                pluginOpen = pluginOpen
-                    .click("#modal-savemolecules #saveHiddenAndUnselected-savemolecules-item");
+                pluginOpen = pluginOpen.click(
+                    "#modal-savemolecules #saveHiddenAndUnselected-savemolecules-item"
+                );
             }
 
             if (idx % 2 === 0) {
-                pluginOpen = pluginOpen
-                    .click("#modal-savemolecules #separateCompounds-savemolecules-item");
+                pluginOpen = pluginOpen.click(
+                    "#modal-savemolecules #separateCompounds-savemolecules-item"
+                );
             }
 
             // Note that the PDB and MOL2 formats (defaults) require OpenBabel and

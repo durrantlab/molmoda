@@ -23,7 +23,7 @@
         <FormFull
             ref="formfull"
             :id="pluginId"
-            v-model="userArgsToUse"
+            v-model="userArgsFixed"
             @onChange="onChange"
             :hideIfDisabled="hideIfDisabled"
         ></FormFull>
@@ -35,21 +35,16 @@
 // Every plugin component must use this component.
 
 import { Options, mixins } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
 import {
     FormElement,
     IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import {
-    collapseFormElementArray,
-    IUserArg,
-} from "@/UI/Forms/FormFull/FormFullUtils";
 import { PopupMixin } from "./Mixins/PopupMixin";
-import { UserInputsMixin } from "./Mixins/UserInputsMixin";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { FileInfo } from "@/FileSystem/FileInfo";
+import { fixUserArgs, convertMoleculeInputParamsToFileInfos } from "../UserInputUtils";
 
 /**
  * PopupOptionalPlugin component
@@ -60,10 +55,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
         FormFull,
     },
 })
-export default class PluginComponent extends mixins(
-    PopupMixin,
-    UserInputsMixin
-) {
+export default class PluginComponent extends mixins(PopupMixin) {
     /** Title of the popup. */
     @Prop({ required: true }) title!: string;
 
@@ -114,6 +106,14 @@ export default class PluginComponent extends mixins(
      */
     @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
 
+    get userArgsFixed(): FormElement[] {
+        return fixUserArgs(this.userArgs);
+    }
+
+    set userArgsFixed(val: FormElement[]) {
+        this.onChange(val);
+    }
+
     /**
      * Determine whether the userData validates (each datum). Children shouldn't
      * override. Override isActionBtnEnabled instead.
@@ -127,7 +127,7 @@ export default class PluginComponent extends mixins(
         }
 
         // Using default validation because not specified.
-        for (const userArg of this.userArgsToUse) {
+        for (const userArg of this.userArgsFixed) {
             const _userInput = userArg as IGenericFormElement;
             if (
                 _userInput.validateFunc !== undefined &&
@@ -144,50 +144,17 @@ export default class PluginComponent extends mixins(
     /**
      * Runs when the user presses the action button and the popup closes.
      */
-    onPopupDone() {
-        const userArgs: IUserArg[] = collapseFormElementArray(
-            this.userArgsToUse
-        );
-
+    async onPopupDone() {
+        
         // Close the popup
         this.$emit("update:modelValue", false);
         // this.closePopup();
 
-        // If one of the user arguments is of type MoleculeInputParams, replace
-        // it with IFileInfo objects.
-        let combineIdxs: number[] = [];
-        let combinePromises: Promise<FileInfo[][]>[] = [];
-        for (const idx in userArgs) {
-            const param = userArgs[idx];
-            if (param.val.molsToConsider) {  // MoleculeInputParams
-                combineIdxs.push(parseInt(idx));
-                combinePromises.push(
-                    param.val.getProtAndCompoundPairs()
-                );
-            }
-        }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        await convertMoleculeInputParamsToFileInfos(this.userArgs);
 
-        Promise.all(combinePromises)
-            .then((combinedMols: (FileInfo[][])[]) => {
-                // If there wasn't a MoleculeInputParams, the list will be
-                // empty.
-                for (let idx = 0; idx < combineIdxs.length; idx++) {
-                    let i = combineIdxs[idx];
-                    userArgs[i].val = combinedMols[idx];
-                }
-
-                /**
-                 * Runs when the primary action button is pressed, after the popup closes.
-                 *
-                 * @param {IUserArg[]} userArgs  The specified user arguments.
-                 */
-                this.$emit("onPopupDone", userArgs);
-
-                return;
-            })
-            .catch((err) => {
-                throw err;
-            });
+        this.$emit("onPopupDone");
     }
 
     /**
@@ -224,21 +191,21 @@ export default class PluginComponent extends mixins(
      * @param {FormElement[]} vals  The updated values.
      */
     onChange(vals: FormElement[]) {
-        const userArgs: IUserArg[] = collapseFormElementArray(vals);
-
-        /**
-         * Runs when the user changes any user arguments (plugin parameters).
-         *
-         * @param {IUserArg[]} userArgs  The updated user arguments.
-         */
-        this.$emit("onDataChanged", userArgs);
+        // Runs when the user changes any user arguments (plugin parameters).
+        this.$emit("onUserArgChanged", this.userArgsFixed);
     }
+
+    // Listen to userArgs and update userArgsFixed.
+    // @Watch("userArgs")
+    // onUserArgsChanged() {
+    //     this.setUserInputsToUse(this.userArgs);
+    // }
 
     /**
      * Plugins mounted function.
      */
     mounted() {
-        this.setUserInputsToUse(this.userArgs);
+        // this.setUserInputsToUse(this.userArgs);
         this.openToUse = this.modelValue;
     }
 }

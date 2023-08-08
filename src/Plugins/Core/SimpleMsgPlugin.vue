@@ -1,18 +1,22 @@
 <template>
-  <PluginComponent
-    :title="title"
-    v-model="open"
-    :cancelBtnTxt="neverClose ? '' : 'Ok'"
-    actionBtnTxt=""
-    @onClosed="onClosed"
-    :variant="variant"
-    :userArgs="userArgs"
-    :pluginId="pluginId"
-    :intro="intro"
+    <PluginComponent
+        :title="title"
+        v-model="open"
+        :cancelBtnTxt="neverClose ? '' : 'Ok'"
+        actionBtnTxt=""
+        @onClosed="onClosed"
+        :variant="variant"
+        :userArgs="userArgs"
+        :pluginId="pluginId"
+        :intro="intro"
+        @onUserArgChanged="onUserArgChanged"
     >
-    <!-- modalWidth="default" -->
-    <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
-  </PluginComponent>
+        <!-- modalWidth="default" -->
+        <p
+            style="overflow: hidden; text-overflow: ellipsis"
+            v-html="message"
+        ></p>
+    </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -22,8 +26,8 @@ import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
-  ISimpleMsg,
-  PopupVariant,
+    ISimpleMsg,
+    PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
@@ -33,75 +37,75 @@ import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
  * SimpleMsgPlugin
  */
 @Options({
-  components: {
-    Popup,
-    PluginComponent,
-  },
+    components: {
+        Popup,
+        PluginComponent,
+    },
 })
 export default class SimpleMsgPlugin extends PluginParentClass {
-  // @Prop({ required: true }) title!: string;
-  // @Prop({ required: true }) message!: string;
+    // @Prop({ required: true }) title!: string;
+    // @Prop({ required: true }) message!: string;
 
-  menuPath = null;
-  softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [
-    // {
-    //   name: "Jacob D. Durrant",
-    //   url: "http://durrantlab.com/",
-    // },
-  ];
-  pluginId = "simplemsg";
-  intro = "";
+    menuPath = null;
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //   name: "Jacob D. Durrant",
+        //   url: "http://durrantlab.com/",
+        // },
+    ];
+    pluginId = "simplemsg";
+    intro = "";
 
-  // Below set via onPluginStart.
-  title = "";
-  message = "";
-  variant = PopupVariant.Primary;
-  callBack: any = undefined;
-  neverClose = false;
-  showInQueue = false;
+    // Below set via onPluginStart.
+    title = "";
+    message = "";
+    variant = PopupVariant.Primary;
+    callBack: any = undefined;
+    neverClose = false;
+    showInQueue = false;
 
-  userArgs: FormElement[] = [];
-  alwaysEnabled = true;
-  logJob = false;
+    userArgDefaults: FormElement[] = [];
+    alwaysEnabled = true;
+    logJob = false;
 
-  /**
-   * Runs when the user first starts the plugin. For example, if the plugin is
-   * in a popup, this function would open the popup.
-   *
-   * @param {ISimpleMsg} [payload]  Information about the message to display.
-   */
-  onPluginStart(payload: ISimpleMsg) {
-    this.title = payload.title;
-    this.message = payload.message;
-    this.callBack = payload.callBack;
-    this.variant =
-      payload.variant === undefined ? PopupVariant.Primary : payload.variant;
-    this.neverClose =
-      payload.neverClose === undefined ? false : payload.neverClose;
-    this.open = payload.open !== undefined ? payload.open : true;
-  }
-
-  /**
-   * Runs when the user closes the simple message popup.
-   */
-  onClosed() {
-    this.submitJobs();
-  }
-
-  /**
-   * Every plugin runs some job. This is the function that does the job running.
-   */
-  runJobInBrowser() {
-    if (this.callBack) {
-      this.callBack();
+    /**
+     * Runs when the user first starts the plugin. For example, if the plugin is
+     * in a popup, this function would open the popup.
+     *
+     * @param {ISimpleMsg} [payload]  Information about the message to display.
+     */
+    onPluginStart(payload: ISimpleMsg) {
+        this.title = payload.title;
+        this.message = payload.message;
+        this.callBack = payload.callBack;
+        this.variant =
+            payload.variant === undefined
+                ? PopupVariant.Primary
+                : payload.variant;
+        this.neverClose =
+            payload.neverClose === undefined ? false : payload.neverClose;
+        this.open = payload.open !== undefined ? payload.open : true;
     }
-    return;
-  }
+
+    /**
+     * Runs when the user closes the simple message popup.
+     */
+    onClosed() {
+        this.submitJobs();
+    }
+
+    /**
+     * Every plugin runs some job. This is the function that does the job running.
+     */
+    runJobInBrowser() {
+        if (this.callBack) {
+            this.callBack();
+        }
+        return;
+    }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-</style>
-
+<style scoped lang="scss"></style>

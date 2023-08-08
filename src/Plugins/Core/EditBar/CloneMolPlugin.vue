@@ -9,6 +9,7 @@
         :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         :hideIfDisabled="true"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -27,7 +28,6 @@ import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestCmd";
@@ -55,7 +55,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     pluginId = "clonemol";
     intro = `Clone (copy) the selected molecule.`;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             id: "newName",
             label: "",
@@ -86,13 +86,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             .getAncestry(this.$store.state.molecules)
             .get(0).title;
 
-        this.updateUserArgs([
-            {
-                name: "newName",
-                // val: title + ":" + nodeToActOn.title + " (cloned)",
-                val: title + ":cloned",
-            } as IUserArg,
-        ]);
+        this.setUserArg("newName", title + ":cloned");
     }
 
     /**
@@ -108,10 +102,9 @@ export default class CloneMolPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
-     * @param {IUserArg[]} userArgs  The user arguments.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(userArgs: IUserArg[]): Promise<void> {
+    runJobInBrowser(): Promise<void> {
         if (!this.nodesToActOn) {
             // Nothing to do.
             return Promise.resolve();
@@ -121,7 +114,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         return cloneMolsWithAncestry(this.nodesToActOn, true)
             .then((treeNodeList: TreeNodeList) => {
                 const node = treeNodeList.get(0);
-                node.title = this.getArg(userArgs, "newName");
+                node.title = this.getUserArg("newName");
                 node.visible = true;
                 treeNodeList.addToMainTree();
                 // this.$store.commit("pushToMolecules", node);
@@ -193,7 +186,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         //     }
 
         //     // Update title of new node tree.
-        //     topNode.title = this.getArg(userArgs, "newName");
+        //     topNode.title = this.getUserArg("newName");
 
         //     this.$store.commit("pushToMolecules", topNode);
         //     return;

@@ -5,6 +5,7 @@
     :userArgs="userArgs"
     :pluginId="pluginId"
     :intro="intro"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
 
@@ -42,7 +43,7 @@ export default class UndoPlugin extends PluginParentClass {
   ];
   pluginId = "undo";
   noPopup = true;
-  userArgs: FormElement[] = [];
+  userArgDefaults: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
   hotkey = "z"

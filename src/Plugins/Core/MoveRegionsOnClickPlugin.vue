@@ -8,6 +8,7 @@
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
+        @onUserArgChanged="onUserArgChanged"
     >
         <ul>
             <li v-for="title of selectedRegionsTitles" :key="title">
@@ -54,7 +55,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     pluginId = "moveregionsonclick";
     intro = `Move all selected regions to this atom's position:`;
 
-    userArgs: FormElement[] = [];
+    userArgDefaults: FormElement[] = [];
     alwaysEnabled = true;
     logJob = false;
 

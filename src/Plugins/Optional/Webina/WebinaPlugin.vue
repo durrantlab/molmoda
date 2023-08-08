@@ -7,13 +7,14 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Dock"
+        @onUserArgChanged="onUserArgChanged"
     >
-    <Alert type="warning">
-        This plugin assumes your compound(s) and protein(s) have already been
-        properly protonated. If necessary, be sure to use
-        <PluginPathLink plugin="protonatecomps"></PluginPathLink> and
-        <PluginPathLink plugin="reduce"></PluginPathLink> first.
-    </Alert>
+        <Alert type="warning">
+            This plugin assumes your compound(s) and protein(s) have already
+            been properly protonated. If necessary, be sure to use
+            <PluginPathLink plugin="protonatecomps"></PluginPathLink> and
+            <PluginPathLink plugin="reduce"></PluginPathLink> first.
+        </Alert>
     </PluginComponent>
 </template>
 
@@ -39,8 +40,8 @@ import {
     IFormMoleculeInputParams,
     IFormNumber,
     IFormSelectRegion,
+    IGenericFormElement,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import {
     IMoleculeInputParams,
     IProtCmpdTreeNodePair,
@@ -71,7 +72,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
     components: {
         PluginComponent,
         Alert,
-        PluginPathLink
+        PluginPathLink,
     },
 })
 export default class WebinaPlugin extends PluginParentClass {
@@ -98,7 +99,7 @@ export default class WebinaPlugin extends PluginParentClass {
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         // {
         //     type: FormElemType.Alert,
         //     id: "warning",
@@ -233,22 +234,20 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(userArgs: IUserArg[]) {
-        const filePairs: IProtCmpdTreeNodePair[] = this.getArg(
-            userArgs,
-            "makemolinputparams"
-        );
+    onPopupDone() {
+        const filePairs: IProtCmpdTreeNodePair[] =
+            this.getUserArg("makemolinputparams");
 
         // Remove makemolinputparams from the arguments
-        userArgs = userArgs.filter((arg) => arg.name !== "makemolinputparams");
+        let userArgs = this.userArgs.filter(
+            (arg) => arg.id !== "makemolinputparams"
+        );
 
         // Prepare Webina parameters
         const webinaParams: { [key: string]: any } = {};
-        userArgs.forEach((arg: IUserArg) => {
-            webinaParams[arg.name] = arg.val;
+        userArgs.forEach((arg: IGenericFormElement) => {
+            webinaParams[arg.id] = arg.val;
         });
         const region = webinaParams["region"];
         delete webinaParams["region"];
@@ -278,9 +277,11 @@ export default class WebinaPlugin extends PluginParentClass {
             return {
                 pdbFiles: filePair,
                 webinaParams: webinaParams,
-                keepOnlyBest: userArgs.filter(
-                    (u) => u.name === "keep_only_best"
-                )[0].val,
+                keepOnlyBest: (
+                    userArgs.filter(
+                        (u) => u.id === "keep_only_best"
+                    )[0] as IGenericFormElement
+                ).val,
             };
         });
 

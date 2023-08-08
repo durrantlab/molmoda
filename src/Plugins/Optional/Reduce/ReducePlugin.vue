@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Protonate"
+        @onUserArgChanged="onUserArgChanged"
     >
     </PluginComponent>
 </template>
@@ -31,7 +32,6 @@ import {
     IFormNumber,
     IFormSelectRegion,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import {
     IMoleculeInputParams,
     IProtCmpdTreeNodePair,
@@ -80,7 +80,7 @@ export default class ReducePlugin extends PluginParentClass {
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -116,14 +116,9 @@ export default class ReducePlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(userArgs: IUserArg[]) {
-        const fileInfos: FileInfo[] = this.getArg(
-            userArgs,
-            "makemolinputparams"
-        );
+    onPopupDone() {
+        const fileInfos: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const distantAncestorTitles = fileInfos.map((f) => {
             if (!f.treeNode) {

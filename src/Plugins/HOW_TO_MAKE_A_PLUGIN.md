@@ -135,7 +135,7 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 33](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L33).
+| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 34](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L34).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 
@@ -147,9 +147,9 @@ A list of software credits. If the plugin uses no third-party packages, set this
 The [`title`](#title) of the plugin. This is shown at the top of the plugin bar.
  Type: `string`. 
 
-#### `userArgs` (variable) <a id="userArgs"></a>
+#### `userArgDefaults` (variable) <a id="userArgDefaults"></a>
 
-A list of user arguments. Note that [`userArgs`](#userArgs) defines the user arguments, but it is not reactive. See it as an unchangable template. Use [`updateUserArgs`](#updateUserArgs) to programmatically change actual user-specified inputs.
+A list of user arguments. Note that [`userArgDefaults`](#userArgDefaults) defines the default user argument values (on popup), but it is not reactive. See it as an unchangable template. Modify userArgs to change the user argument values reactively.
  Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 18](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L18).
 
 
@@ -211,7 +211,7 @@ Submits multiple jobs to the queue system. [`submitJobs`](#submitJobs) is typica
 
 #### `updateUserArgs` (function) <a id="updateUserArgs"></a>
 
-Programmatically update user arguments. Necessary because [`userArgs`](#userArgs) is NOT reactive. Useful to do things like (1) prepopulate a [`userArgs`](#userArgs) value or (2) modify one [`userArgs`](#userArgs) value based on the value of another (see also `<PluginComponent>`'s `onDataChanged` function). For [`updateUserArgs`](#updateUserArgs) to work, the plugin's `<PluginComponent>` must have `ref="pluginComponent"`.
+Programmatically update user arguments. Necessary because `userArgs` is NOT reactive. Useful to do things like (1) prepopulate a `userArgs` value or (2) modify one `userArgs` value based on the value of another (see also `<PluginComponent>`'s `onDataChanged` function). For [`updateUserArgs`](#updateUserArgs) to work, the plugin's `<PluginComponent>` must have `ref="pluginComponent"`.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------

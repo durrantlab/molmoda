@@ -68,6 +68,11 @@ def validate_plugin(ts_file):
             "All plugins must use the PluginComponent component",
             None,
         ),
+        (
+            '@onUserArgChanged="onUserArgChanged"',
+            'All plugins must include @onUserArgChanged="onUserArgChanged"',
+            None,
+        ),
     ]
 
     if "noPopup = true" not in content:
@@ -95,6 +100,23 @@ def validate_plugin(ts_file):
 
     for strng, msg, exceptions in required_substrs:
         if strng not in content:
+            # Substring not in content, but is this an exception?
+            is_exception = False
+            if exceptions is not None:
+                is_exception = any(exception in ts_file for exception in exceptions)
+            if not is_exception:
+                add_error(ts_file, msg)
+    
+    prohibited_substrings = [
+        (
+            "onUserArgChanged(",
+            "Plugins must not define onUserArgChanged function. That's reserved for the parent class. Use onUserArgChange instead, which is called by the parent class.",
+            None
+        ),
+    ]
+
+    for strng, msg, exceptions in prohibited_substrings:
+        if strng in content:
             # Substring not in content, but is this an exception?
             is_exception = False
             if exceptions is not None:

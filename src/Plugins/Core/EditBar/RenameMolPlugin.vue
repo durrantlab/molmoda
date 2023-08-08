@@ -8,6 +8,7 @@
     :userArgs="userArgs"
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
 
@@ -23,7 +24,6 @@ import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
@@ -48,7 +48,7 @@ export default class RenameMolPlugin extends PluginParentClass {
   pluginId = "renamemol";
   intro = `Rename the molecule.`;
 
-  userArgs: FormElement[] = [
+  userArgDefaults: FormElement[] = [
     {
       id: "newName",
       label: "",
@@ -81,22 +81,15 @@ export default class RenameMolPlugin extends PluginParentClass {
    */
   onBeforePopupOpen() {
     setNodesToActOn(this);
-    this.updateUserArgs([
-      {
-        name: "newName",
-        val: this.nodesToActOn.get(0).title,
-      } as IUserArg,
-    ]);
+    this.setUserArg("newName", this.nodesToActOn.get(0).title);
   }
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  runJobInBrowser(userArgs: IUserArg[]) {
+  runJobInBrowser() {
     if (this.nodesToActOn) {
-      this.nodesToActOn.get(0).title = this.getArg(userArgs, "newName");
+      this.nodesToActOn.get(0).title = this.getUserArg("newName");
     }
     return;
   }

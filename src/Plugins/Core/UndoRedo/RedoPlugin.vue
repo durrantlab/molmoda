@@ -5,6 +5,7 @@
     :pluginId="pluginId"
     :userArgs="userArgs"
     :intro="intro"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
 
@@ -41,7 +42,7 @@ export default class RedoPlugin extends PluginParentClass {
   ];
   pluginId = "redo";
   noPopup = true;
-  userArgs: FormElement[] = [];
+  userArgDefaults: FormElement[] = [];
   alwaysEnabled = true;
   logJob = false;
   hotkey = "y"

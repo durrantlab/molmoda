@@ -8,6 +8,7 @@
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
+        @onUserArgChanged="onUserArgChanged"
     >
         <FilterInput
             :list="loadedPlugins"
@@ -74,7 +75,7 @@ export default class HelpPlugin extends PluginParentClass {
     pluginId = "help";
     intro = "List information about each of the loaded plugins.";
 
-    userArgs: FormElement[] = [];
+    userArgDefaults: FormElement[] = [];
     alwaysEnabled = true;
     logJob = false;
 

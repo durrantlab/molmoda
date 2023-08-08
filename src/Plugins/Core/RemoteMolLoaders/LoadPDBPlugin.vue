@@ -7,6 +7,7 @@
         :intro="intro"
         :pluginId="pluginId"
         @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -22,9 +23,8 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { FormElement, IFormText, IGenericFormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -57,7 +57,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
     hotkey = "d";
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             id: "pdbId",
             label: "",
@@ -80,11 +80,9 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(userArgs: IUserArg[]) {
-        const pdbId = this.getArg(userArgs, "pdbId");
+    onPopupDone() {
+        const pdbId = this.getUserArg("pdbId");
         this.submitJobs([pdbId]);
     }
 

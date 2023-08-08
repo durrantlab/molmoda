@@ -7,6 +7,7 @@
     :intro="intro"
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
 
@@ -22,7 +23,6 @@ import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { ITest } from "@/Testing/TestCmd";
 import {
   fileNameFilter,
@@ -55,7 +55,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   intro = `Save the current molecular scene as a VRML file (3D model).`;
 
-  userArgs: FormElement[] = [
+  userArgDefaults: FormElement[] = [
     {
       id: "filename",
       label: "",
@@ -85,11 +85,9 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Runs when the user presses the action button and the popup closes.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userArgs: IUserArg[]) {
-    this.submitJobs([{ filename: this.getArg(userArgs, "filename") }]);
+  onPopupDone() {
+    this.submitJobs([{ filename: this.getUserArg("filename") }]);
   }
 
   /**

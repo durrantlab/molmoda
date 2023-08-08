@@ -6,6 +6,7 @@
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -51,7 +52,7 @@ export default class TestPlugin extends PluginParentClass {
 
     intro = `This is a <b>test</b> component.`;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             id: "group2",
             // type: FormElemType.Group,
@@ -102,13 +103,8 @@ export default class TestPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
-     * @param {IUserArg[]} userArgs  The user arguments.
      */
-    onPopupDone(/* userArgs: IUserArg[] */) {
-        // * @param {IUserArg[]} userArgs  The user arguments.
-        // debugger;
-        // this.submitJobs([userArgs]);
+    onPopupDone() {
         const jobParams = [];
         for (let i = 0; i < 1; i++) {
             const jobParam = {
@@ -122,7 +118,7 @@ export default class TestPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
-     * @param {IUserArg[]} _args  The user arguments to pass to the "executable."
+     * @param {any} _args  The user arguments to pass to the "executable."
      * @returns {Promise<undefined>}  A promise that resolves when the job is
      *     done.
      */

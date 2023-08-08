@@ -6,6 +6,7 @@
     :intro="intro"
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
 
@@ -49,7 +50,7 @@ export default class QueSystemTestPlugin extends PluginParentClass {
 
   msgOnJobsFinished = "All jobs finished, moo.";
 
-  userArgs: FormElement[] = [
+  userArgDefaults: FormElement[] = [
     {
       // type: FormElemType.Number,
       id: "moose",
@@ -85,13 +86,8 @@ export default class QueSystemTestPlugin extends PluginParentClass {
 
   /**
    * Runs when the user presses the action button and the popup closes.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(/* userArgs: IUserArg[] */) {
-    // * @param {IUserArg[]} userArgs  The user arguments.
-    // debugger;
-    // this.submitJobs([userArgs]);
+  onPopupDone() {
     const jobParams = [];
     for (let i = 0; i < 10; i++) {
       const jobParam = {

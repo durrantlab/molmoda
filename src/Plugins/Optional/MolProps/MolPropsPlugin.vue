@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
         actionBtnTxt="Calculate"
+        @onUserArgChanged="onUserArgChanged"
     >
         <template #afterForm>
             <Alert type="info"
@@ -32,7 +33,6 @@ import {
     FormElement,
     IFormMoleculeInputParams,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
@@ -56,9 +56,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 export default class MolPropsPlugin extends PluginParentClass {
     menuPath = "Compounds/Calculate Properties...";
     title = "Calculate Molecular Properties";
-    softwareCredits: ISoftwareCredit[] = [
-        dynamicImports.rdkitjs.credit
-    ];
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.rdkitjs.credit];
     contributorCredits: IContributorCredit[] = [
         // {
         //     name: "Jacob D. Durrant",
@@ -69,7 +67,7 @@ export default class MolPropsPlugin extends PluginParentClass {
 
     intro = `Calculates the molecular properties of small-molecule compounds.`;
 
-    userArgs: FormElement[] = [
+    userArgDefaults: FormElement[] = [
         {
             // type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -113,14 +111,10 @@ export default class MolPropsPlugin extends PluginParentClass {
     /**
      * Runs when the user presses the action button and the popup closes.
      *
-     * @param {IUserArg[]} userArgs  The user arguments.
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
-    onPopupDone(userArgs: IUserArg[]): Promise<void> {
-        const compounds: FileInfo[] = this.getArg(
-            userArgs,
-            "makemolinputparams"
-        );
+    onPopupDone(): Promise<void> {
+        const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
         // Make sure the filenames are unique.
         for (let i = 0; i < compounds.length; i++) {

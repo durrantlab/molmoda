@@ -138,7 +138,36 @@ Isn't smiles drawer and rdkitjs redundant for drawing molecules?
 
 Improve intro text in central viewer on app open.
 
+Still true ref="pluginComponent" ?
+
+Settings reset to default
+
+Lines representation should be thicker.
+
+Rename form element types as appropriate now that userArgs are gone.
+
 # DONE
+
+Perhpas you could eliminate need for IUserArg entirely, replacing it with
+IFormElement variants.
+
+onDataChanged needed (throughout) if you eliminate IUserArg?
+
+Can jobInfo.input.treeNode always be eliminated before sending to worker? Maybe
+only if it's an object?
+
+collapseFormElementArray still needed?
+
+Keep reworking getUserArg so second parameter never required (througohut codepase).
+
+Made some changs to Settings. Good to check stil works. SaveMolecules too. FPocketWeb?
+
+I don't think you need to pass userArgs to onPopupDone. Just access them from
+the now reactive this.userArgs.
+
+getArg needs to be recursive. setArg too. updateUserArgEnabled too.
+
+Get rid of updateUserArgs function
 
 reduce is actually in webworker? I don't think so.
 

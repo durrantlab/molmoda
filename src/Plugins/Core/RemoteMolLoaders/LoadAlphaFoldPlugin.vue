@@ -7,6 +7,7 @@
     :intro="intro"
     :pluginId="pluginId"
     @onPopupDone="onPopupDone"
+    @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>
 
@@ -20,7 +21,6 @@ import {
 import * as api from "@/Api";
 import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { IUserArg } from "@/UI/Forms/FormFull/FormFullUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -52,7 +52,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
 
   intro = `Load a protein from the <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a>, a database of predicted protein structures.`;
 
-  userArgs: FormElement[] = [
+  userArgDefaults: FormElement[] = [
     {
       id: "uniprot",
       label: "",
@@ -79,11 +79,9 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
 
   /**
    * Runs when the user presses the action button and the popup closes.
-   *
-   * @param {IUserArg[]} userArgs  The user arguments.
    */
-  onPopupDone(userArgs: IUserArg[]) {
-    let uniprot = this.getArg(userArgs, "uniprot");
+  onPopupDone() {
+    let uniprot = this.getUserArg("uniprot");
     this.submitJobs([uniprot]);
   }
 

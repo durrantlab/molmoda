@@ -5,6 +5,7 @@
         :userArgs="userArgs"
         :pluginId="pluginId"
         :intro="intro"
+        @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
 
@@ -43,7 +44,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     ];
     pluginId = "selectall";
     noPopup = true;
-    userArgs: FormElement[] = [];
+    userArgDefaults: FormElement[] = [];
     alwaysEnabled = true;
     logJob = false;
     intro = "Select all molecules in the tree."

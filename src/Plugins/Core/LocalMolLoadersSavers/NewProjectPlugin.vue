@@ -11,6 +11,7 @@
         @onPopupDone2="saveProject"
         :isActionBtnEnabled="true"
         :intro="intro"
+        @onUserArgChanged="onUserArgChanged"
     >
         <p>
             Would you like to
@@ -54,7 +55,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     filesToLoad: FileInfo[] = [];
     pluginId = "newproject";
 
-    userArgs: FormElement[] = [];
+    userArgDefaults: FormElement[] = [];
     alwaysEnabled = true;
     hotkey = "n";
     intro = "Start a new project. Your current project will be lost."

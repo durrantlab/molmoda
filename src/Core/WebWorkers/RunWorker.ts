@@ -1,4 +1,5 @@
 import type { IFileInfo } from "@/FileSystem/Types";
+import { toRaw, isReactive } from "vue";
 
 /**
  * Runs a webworker.
@@ -39,8 +40,23 @@ export function runWorker(
         });
     }
 
+    // Go through each of the items in data. If it's reactive, make it raw.
+    // This is necessary because the webworker can't handle reactive objects.
+    for (const key in data) {
+        const element = data[key];
+        if (isReactive(element)) {
+            data[key] = toRaw(element);
+        }
+    }
+
     // Now send data to webworker.
-    worker.postMessage(data);
+    try {
+        worker.postMessage(data);
+    } catch (err) {
+        console.error(err);
+        console.error("NOTE: data likely couldn't be serialized. Did you remove all treenodes?");
+        throw err;
+    }
 
     return returnPromise;
 }
