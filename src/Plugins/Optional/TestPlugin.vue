@@ -18,12 +18,12 @@ import {
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormGroup,
-    IFormMoleculeInputParams,
-    IFormNumber,
-    IFormSelectRegion,
+    IUserArgGroup,
+    IUserArgMoleculeInputParams,
+    IUserArgNumber,
+    IUserSelectRegion,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
@@ -52,7 +52,7 @@ export default class TestPlugin extends PluginParentClass {
 
     intro = `This is a <b>test</b> component.`;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             id: "group2",
             // type: FormElemType.Group,
@@ -63,22 +63,22 @@ export default class TestPlugin extends PluginParentClass {
                     // label: "Region test",
                     val: null,  // To use default
                     type: FormElemType.SelectRegion,
-                } as IFormSelectRegion,
+                } as IUserSelectRegion,
             ],
             startOpened: true,
-        } as IFormGroup,
+        } as IUserArgGroup,
 
         {
             // type: FormElemType.Number,
             id: "moose",
             label: "Moose",
             val: 0,
-        } as IFormNumber,
+        } as IUserArgNumber,
         {
             // type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({ compoundFormat: "can" }),
-        } as IFormMoleculeInputParams,
+        } as IUserArgMoleculeInputParams,
         {
             id: "group",
             // type: FormElemType.Group,
@@ -98,7 +98,7 @@ export default class TestPlugin extends PluginParentClass {
                 },
             ],
             startOpened: true,
-        } as IFormGroup,
+        } as IUserArgGroup,
     ];
 
     /**

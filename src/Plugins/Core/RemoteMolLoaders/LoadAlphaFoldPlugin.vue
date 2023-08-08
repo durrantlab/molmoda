@@ -19,7 +19,7 @@ import {
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import * as api from "@/Api";
-import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass, RunJobReturn } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
@@ -52,7 +52,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
 
   intro = `Load a protein from the <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a>, a database of predicted protein structures.`;
 
-  userArgDefaults: FormElement[] = [
+  userArgDefaults: UserArg[] = [
     {
       id: "uniprot",
       label: "",
@@ -72,7 +72,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         let r = /[OPQ]\d[A-Z\d]{3}\d|[A-NR-Z]\d([A-Z][A-Z\d]{2}\d){1,2}/;
         return uniprot.match(r) !== null;
       },
-    } as IFormText,
+    } as IUserArgText,
   ];
 
   alwaysEnabled = true;

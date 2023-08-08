@@ -37,8 +37,8 @@
 import { Options, mixins } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import {
-    FormElement,
-    IGenericFormElement,
+    UserArg,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
@@ -60,7 +60,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
     @Prop({ required: true }) title!: string;
 
     /** The user arguments (plugin parameters) that the end user can specify. */
-    @Prop({ required: true }) userArgs!: FormElement[];
+    @Prop({ required: true }) userArgs!: UserArg[];
 
     /** A unique id that defines the plugin. Must be lower case. */
     @Prop({ required: true }) pluginId!: string;
@@ -106,11 +106,11 @@ export default class PluginComponent extends mixins(PopupMixin) {
      */
     @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
 
-    get userArgsFixed(): FormElement[] {
+    get userArgsFixed(): UserArg[] {
         return fixUserArgs(this.userArgs);
     }
 
-    set userArgsFixed(val: FormElement[]) {
+    set userArgsFixed(val: UserArg[]) {
         this.onChange(val);
     }
 
@@ -128,7 +128,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
         // Using default validation because not specified.
         for (const userArg of this.userArgsFixed) {
-            const _userInput = userArg as IGenericFormElement;
+            const _userInput = userArg as IGenericUserArg;
             if (
                 _userInput.validateFunc !== undefined &&
                 !_userInput.validateFunc(_userInput.val)
@@ -188,9 +188,9 @@ export default class PluginComponent extends mixins(PopupMixin) {
     /**
      * Runs when the user data changes.
      *
-     * @param {FormElement[]} vals  The updated values.
+     * @param {UserArg[]} vals  The updated values.
      */
-    onChange(vals: FormElement[]) {
+    onChange(vals: UserArg[]) {
         // Runs when the user changes any user arguments (plugin parameters).
         this.$emit("onUserArgChanged", this.userArgsFixed);
     }

@@ -1,16 +1,16 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     FormElemType,
-    FormElement,
-    IFormGroup,
-    IGenericFormElement,
+    UserArg,
+    IUserArgGroup,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
     MoleculeInput,
 } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
-export function fixUserArgs(userArgs: FormElement[]): FormElement[] {
+export function fixUserArgs(userArgs: UserArg[]): UserArg[] {
     _inferUserInputTypes(userArgs);
     _addDefaultUserInputsIfNeeded(userArgs);
     return userArgs;
@@ -22,9 +22,9 @@ export function fixUserArgs(userArgs: FormElement[]): FormElement[] {
  * define types, so this must be robust. Note that modifies the user
  * argument in place, so no need to return anything.
  *
- * @param  {FormElement[]} userArgs  The user arguments.
+ * @param  {UserArg[]} userArgs  The user arguments.
  */
-function _inferUserInputTypes(userArgs: FormElement[]) {
+function _inferUserInputTypes(userArgs: UserArg[]) {
     // Infer the type if it is not given.
     for (const userArg of userArgs) {
         if (userArg.type !== undefined) {
@@ -32,7 +32,7 @@ function _inferUserInputTypes(userArgs: FormElement[]) {
             continue;
         }
 
-        const _userArg = userArg as IGenericFormElement;
+        const _userArg = userArg as IGenericUserArg;
         if (_userArg.val !== undefined) {
             // User arg has property val
             switch (typeof _userArg.val) {
@@ -70,7 +70,7 @@ function _inferUserInputTypes(userArgs: FormElement[]) {
             }
         } else {
             // The only one that doesn't define val is
-            // IFormMoleculeInputParams. Do sanity check just the same.
+            // IUserArgMoleculeInputParams. Do sanity check just the same.
             if (_userArg.childElements !== undefined) {
                 userArg.type = FormElemType.Group;
                 _inferUserInputTypes(_userArg.childElements); // Recurse
@@ -99,18 +99,18 @@ function _inferUserInputTypes(userArgs: FormElement[]) {
  * filter and validation functions). Doens't add in type if missing, because
  * that is determined elsewhere. This is done in place, so returns nothing.
  *
- * @param {FormElement[]} userArgs  The user arguments.
+ * @param {UserArg[]} userArgs  The user arguments.
  */
-function _addDefaultUserInputsIfNeeded(userArgs: FormElement[]) {
+function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
     for (const userArg of userArgs) {
         // Add filter function if necessary
-        const _userInput = userArg as IGenericFormElement;
+        const _userInput = userArg as IGenericUserArg;
         if (
             // NOTE: Don't put FormElemType.Number below.
             [FormElemType.Text].includes(_userInput.type as FormElemType) &&
             _userInput.filterFunc === undefined
         ) {
-            (userArg as IGenericFormElement).filterFunc = (val: any) => val;
+            (userArg as IGenericUserArg).filterFunc = (val: any) => val;
         }
 
         // Add validation function if necessary
@@ -131,14 +131,14 @@ function _addDefaultUserInputsIfNeeded(userArgs: FormElement[]) {
     }
 }
 
-export function copyUserArgs(origUserArgs: FormElement[]): FormElement[] {
+export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
     // Make a copy of the user arguments so we don't modify the original.
     const userArgs = JSON.parse(JSON.stringify(origUserArgs));
 
     // Restore functions from original.
     for (let i = 0; i < userArgs.length; i++) {
-        const origUserInput = userArgs[i] as IGenericFormElement;
-        const userArg = userArgs[i] as IGenericFormElement;
+        const origUserInput = userArgs[i] as IGenericUserArg;
+        const userArg = userArgs[i] as IGenericUserArg;
         if (origUserInput.filterFunc !== undefined) {
             userArg.filterFunc = origUserInput.filterFunc;
         }
@@ -173,16 +173,16 @@ export function copyUserArgs(origUserArgs: FormElement[]): FormElement[] {
  *                                             right one.
  * @param {Function}              onMatch      A function to run on the user
  *                                             argument to update it.
- * @param {IGenericFormElement[]} userArgs     The userArgs to update. If
+ * @param {IGenericUserArg[]} userArgs     The userArgs to update. If
  *                                             not given, uses the
  *                                             `userArgs` object variable.
  * @returns {boolean} Returns true if the user argument was found and false
  *     otherwise.
  */
 export function recurseUserArgsAndAct(
-    compareFunc: (userArg: IGenericFormElement) => boolean,
-    onMatch: (userArg: IGenericFormElement) => void,
-    userArgs: IGenericFormElement[]
+    compareFunc: (userArg: IGenericUserArg) => boolean,
+    onMatch: (userArg: IGenericUserArg) => void,
+    userArgs: IGenericUserArg[]
 ): boolean {
     // if (this.validatePluginComponentRefIsSet() === false) {
     //     return false;
@@ -200,7 +200,7 @@ export function recurseUserArgsAndAct(
             recurseUserArgsAndAct(
                 compareFunc,
                 onMatch,
-                (userArg as IFormGroup).childElements
+                (userArg as IUserArgGroup).childElements
             )
         ) {
             return true;
@@ -210,16 +210,16 @@ export function recurseUserArgsAndAct(
     return false;
 }
 
-export function convertMoleculeInputParamsToFileInfos(userArgs: IGenericFormElement[]): Promise<any> {
+export function convertMoleculeInputParamsToFileInfos(userArgs: IGenericUserArg[]): Promise<any> {
     const promises: Promise<any>[] = [];
     recurseUserArgsAndAct(
-        (userArg: IGenericFormElement) => {
+        (userArg: IGenericUserArg) => {
             if (userArg.val === undefined) {
                 return false;
             }
             return userArg.val.molsToConsider !== undefined;
         },
-        (userArg: IGenericFormElement) => {
+        (userArg: IGenericUserArg) => {
             const promise = userArg.val
                 .getProtAndCompoundPairs()
                 .then((fileInfos: FileInfo[]) => {

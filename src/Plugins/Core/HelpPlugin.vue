@@ -46,7 +46,7 @@ import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
@@ -75,7 +75,7 @@ export default class HelpPlugin extends PluginParentClass {
     pluginId = "help";
     intro = "List information about each of the loaded plugins.";
 
-    userArgDefaults: FormElement[] = [];
+    userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
 

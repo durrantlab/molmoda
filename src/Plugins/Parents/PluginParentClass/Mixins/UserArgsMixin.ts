@@ -1,10 +1,10 @@
 /* eslint-disable jsdoc/check-tag-names */
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormGroup,
-    IGenericFormElement,
+    IUserArgGroup,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Vue } from "vue-class-component";
 import { recurseUserArgsAndAct } from "../../UserInputUtils";
@@ -29,10 +29,10 @@ export class UserArgsMixin extends Vue {
      */
     protected setUserArgEnabled(id: string, val: boolean) {
         recurseUserArgsAndAct(
-            (userArg: IGenericFormElement) => {
+            (userArg: IGenericUserArg) => {
                 return userArg.id === id;
             },
-            (userArg: IGenericFormElement) => {
+            (userArg: IGenericUserArg) => {
                 userArg.enabled = val;
             },
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -68,10 +68,10 @@ export class UserArgsMixin extends Vue {
      */
     protected setUserArg(id: string, val: any) {
         recurseUserArgsAndAct(
-            (userArg: IGenericFormElement) => {
+            (userArg: IGenericUserArg) => {
                 return userArg.id === id;
             },
-            (userArg: IGenericFormElement) => {
+            (userArg: IGenericUserArg) => {
                 userArg.val = val;
             },
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -91,15 +91,15 @@ export class UserArgsMixin extends Vue {
     protected getUserArg(id: string): any {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const userArgs = this.userArgs as IGenericFormElement[];
+        const userArgs = this.userArgs as IGenericUserArg[];
 
         // It's a form element
         let val: any = undefined;
         recurseUserArgsAndAct(
-            (userArg: IGenericFormElement) => {
+            (userArg: IGenericUserArg) => {
                 return userArg.id === id;
             },
-            (userArg: IGenericFormElement) => {
+            (userArg: IGenericUserArg) => {
                 val = userArg.val;
             },
             userArgs as any[]

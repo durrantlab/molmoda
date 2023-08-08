@@ -26,7 +26,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
@@ -50,7 +50,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     ];
     pluginId = "deletemol";
     intro = "Delete the selected molecule(s)?";
-    userArgDefaults: FormElement[] = [];
+    userArgDefaults: UserArg[] = [];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
     alwaysEnabled = true;

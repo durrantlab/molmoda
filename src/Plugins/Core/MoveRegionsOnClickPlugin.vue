@@ -29,7 +29,7 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { IRegion } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
@@ -55,7 +55,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     pluginId = "moveregionsonclick";
     intro = `Move all selected regions to this atom's position:`;
 
-    userArgDefaults: FormElement[] = [];
+    userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
 

@@ -18,7 +18,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Options } from "vue-class-component";
 import { switchToGoldenLayoutPanel } from "./Common";
 
@@ -42,7 +42,7 @@ export default class JobsWindowPlugin extends PluginParentClass {
   ];
   pluginId = "jobswindow";
   noPopup = true;
-  userArgDefaults: FormElement[] = [];
+  userArgDefaults: UserArg[] = [];
   alwaysEnabled = true;
   logJob = false;
   intro = `Switch to the jobs panel.`;

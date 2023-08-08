@@ -55,7 +55,7 @@ import { Prop } from "vue-property-decorator";
 import { appDescription, appName } from "@/Core/AppInfo";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
@@ -81,7 +81,7 @@ export default class AboutPlugin extends PluginParentClass {
   pluginId = "about";
   intro = appDescription;
 
-  userArgDefaults: FormElement[] = [];
+  userArgDefaults: UserArg[] = [];
   alwaysEnabled = true;
   logJob = false;
   lazyLoadedImg = "";

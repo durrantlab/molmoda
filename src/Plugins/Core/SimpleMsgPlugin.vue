@@ -31,7 +31,7 @@ import {
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * SimpleMsgPlugin
@@ -65,7 +65,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     neverClose = false;
     showInQueue = false;
 
-    userArgDefaults: FormElement[] = [];
+    userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
 

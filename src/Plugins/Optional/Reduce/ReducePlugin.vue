@@ -23,14 +23,14 @@ import {
     Licenses,
 } from "@/Plugins/PluginInterfaces";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormAlert,
-    IFormCheckbox,
-    IFormGroup,
-    IFormMoleculeInputParams,
-    IFormNumber,
-    IFormSelectRegion,
+    IUserAlert,
+    IUserArgCheckbox,
+    IUserArgGroup,
+    IUserArgMoleculeInputParams,
+    IUserArgNumber,
+    IUserSelectRegion,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
@@ -80,7 +80,7 @@ export default class ReducePlugin extends PluginParentClass {
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -92,7 +92,7 @@ export default class ReducePlugin extends PluginParentClass {
                 includeMetalsSolventAsProtein: false,
                 allowUserToToggleIncludeMetalsSolventAsProtein: false,
             } as IMoleculeInputParams),
-        } as IFormMoleculeInputParams,
+        } as IUserArgMoleculeInputParams,
     ];
 
     /**

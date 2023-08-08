@@ -28,7 +28,7 @@ import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -55,7 +55,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     pluginId = "clonemol";
     intro = `Clone (copy) the selected molecule.`;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             id: "newName",
             label: "",
@@ -65,7 +65,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
             },
-        } as IFormText,
+        } as IUserArgText,
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);

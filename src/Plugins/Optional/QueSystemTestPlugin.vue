@@ -16,10 +16,10 @@ import {
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import {
-  FormElement,
-  IFormGroup,
-  IFormMoleculeInputParams,
-  IFormNumber,
+  UserArg,
+  IUserArgGroup,
+  IUserArgMoleculeInputParams,
+  IUserArgNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
@@ -50,18 +50,18 @@ export default class QueSystemTestPlugin extends PluginParentClass {
 
   msgOnJobsFinished = "All jobs finished, moo.";
 
-  userArgDefaults: FormElement[] = [
+  userArgDefaults: UserArg[] = [
     {
       // type: FormElemType.Number,
       id: "moose",
       label: "Moose",
       val: 0,
-    } as IFormNumber,
+    } as IUserArgNumber,
     {
       // type: FormElemType.MoleculeInputParams,
       id: "makemolinputparams",
       val: new MoleculeInput({ compoundFormat: "can" }),
-    } as IFormMoleculeInputParams,
+    } as IUserArgMoleculeInputParams,
     {
       id: "group",
       // type: FormElemType.Group,
@@ -81,7 +81,7 @@ export default class QueSystemTestPlugin extends PluginParentClass {
         },
       ],
       startOpened: true,
-    } as IFormGroup,
+    } as IUserArgGroup,
   ];
 
   /**

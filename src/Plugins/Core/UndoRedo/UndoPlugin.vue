@@ -16,7 +16,7 @@ import * as api from "@/Api";
 import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
@@ -43,7 +43,7 @@ export default class UndoPlugin extends PluginParentClass {
   ];
   pluginId = "undo";
   noPopup = true;
-  userArgDefaults: FormElement[] = [];
+  userArgDefaults: UserArg[] = [];
   alwaysEnabled = true;
   logJob = false;
   hotkey = "z"

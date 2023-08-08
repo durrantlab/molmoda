@@ -1,4 +1,4 @@
-import { IFormOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 export enum MolLoader {
     Mol3D, // 3dmoljs. Always prefer over open babel when available.
@@ -243,12 +243,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
  *                                              formats that do or do not
  *                                              support bond orders. Ignored if
  *                                              undefined (returns all formats).
- * @returns {IFormOption[]}  A description of the formats, compatible with
- *     IFormOption.
+ * @returns {IUserArgOption[]}  A description of the formats, compatible with
+ *     IUserArgOption.
  */
 export function getFormatDescriptions(
     hasbondOrders?: boolean | undefined
-): IFormOption[] {
+): IUserArgOption[] {
     let keys = Object.keys(molFormatInformation);
 
     if (hasbondOrders !== undefined) {
@@ -262,7 +262,7 @@ export function getFormatDescriptions(
         return {
             val: info.primaryExt,
             description: `${info.description} (.${info.primaryExt})`,
-        } as IFormOption;
+        } as IUserArgOption;
     });
 }
 

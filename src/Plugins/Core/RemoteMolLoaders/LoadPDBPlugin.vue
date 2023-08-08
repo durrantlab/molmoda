@@ -23,7 +23,7 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement, IFormText, IGenericFormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText, IGenericUserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -57,7 +57,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
     hotkey = "d";
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             id: "pdbId",
             label: "",
@@ -73,7 +73,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
             validateFunc: (pdb: string): boolean => {
                 return pdb.length === 4;
             },
-        } as IFormText,
+        } as IUserArgText,
     ];
 
     alwaysEnabled = true;

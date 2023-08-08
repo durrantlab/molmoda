@@ -27,12 +27,12 @@ import {
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
-    FormElement,
-    IFormCheckbox,
-    IFormGroup,
-    IFormSelect,
-    IFormText,
-    IGenericFormElement,
+    UserArg,
+    IUserArgCheckbox,
+    IUserArgGroup,
+    IUserArgSelect,
+    IUserArgText,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
@@ -84,7 +84,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     // process.
     appClosing = false;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             id: "filename",
             label: "",
@@ -97,12 +97,12 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             validateFunc: (filename: string): boolean => {
                 return matchesFilename(filename);
             },
-        } as IFormText,
+        } as IUserArgText,
         {
             id: "useBiotiteFormat",
             label: "Save project in .biotite format",
             val: true,
-        } as IFormCheckbox,
+        } as IUserArgCheckbox,
         {
             id: "whichMolsGroup",
             label: "Molecules to Save",
@@ -111,27 +111,27 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                     id: "saveVisible",
                     label: "Visible molecules",
                     val: false,
-                } as IFormCheckbox,
+                } as IUserArgCheckbox,
                 {
                     id: "saveSelected",
                     label: "Selected molecules",
                     val: false,
-                } as IFormCheckbox,
+                } as IUserArgCheckbox,
                 {
                     id: "saveHiddenAndUnselected",
                     label: "Other molecules (hidden and unselected)",
                     val: true,
-                } as IFormCheckbox,
-            ] as FormElement[],
+                } as IUserArgCheckbox,
+            ] as UserArg[],
             startOpened: true,
             enabled: false,
-        } as IFormGroup,
+        } as IUserArgGroup,
         {
             id: "separateCompounds",
             label: "Save each small-molecule compound to a separate file",
             val: true,
             enabled: false,
-        } as IFormCheckbox,
+        } as IUserArgCheckbox,
         {
             label: "File format for all molecules, saved to a single file",
             id: "oneMolFileFormat",
@@ -140,14 +140,14 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 (option) => option.val !== "biotite"
             ),
             enabled: false,
-        } as IFormSelect,
+        } as IUserArgSelect,
         {
             label: "File format for macromolecules, solvent, etc.",
             id: "nonCompoundFormat",
             val: "pdb",
             options: getFormatDescriptions(false),
             enabled: false,
-        } as IFormSelect,
+        } as IUserArgSelect,
         {
             label: "File format for separate small-molecule compounds",
             id: "compoundFormat",
@@ -156,7 +156,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 (option) => option.val !== "biotite"
             ),
             enabled: false,
-        } as IFormSelect,
+        } as IUserArgSelect,
     ];
 
     alwaysEnabled = true;

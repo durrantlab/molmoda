@@ -31,7 +31,7 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
@@ -63,7 +63,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         // {
         //     id: "group",
         //     // type: FormElemType.Group,
@@ -74,16 +74,16 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         //             label: "Calculate 3D atomic coordinates (compounds)",
         //             val: false,
         //             description: "Compounds are 2D-formatted (e.g., 2D SDF)? Calculate 3D atomic coordinates."
-        //         } as IFormCheckbox,
+        //         } as IUserArgCheckbox,
         //         {
         //             id: "separateFrames",
         //             label: "Load multiple molecules separately",
         //             val: false,
         //             description: "File contains multiple molecules/frames? Load each as a separate molecule."
-        //         } as IFormCheckbox,
+        //         } as IUserArgCheckbox,
         //     ],
         //     startOpened: false,
-        // } as IFormGroup,
+        // } as IUserArgGroup,
     ];
     alwaysEnabled = true;
     accept = fileTypesAccepts;

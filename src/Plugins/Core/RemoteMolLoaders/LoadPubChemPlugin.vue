@@ -54,7 +54,7 @@ import {
   PluginParentClass,
   RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -91,7 +91,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
   intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a>, a database of small molecules.`
 
-  userArgDefaults: FormElement[] = [];
+  userArgDefaults: UserArg[] = [];
   alwaysEnabled = true;
 
   /**

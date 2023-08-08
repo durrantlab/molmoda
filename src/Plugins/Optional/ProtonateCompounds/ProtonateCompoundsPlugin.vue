@@ -29,8 +29,8 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
     FormElemType,
-    FormElement,
-    IFormMoleculeInputParams,
+    UserArg,
+    IUserArgMoleculeInputParams,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
@@ -72,7 +72,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
     intro = `Protonate compounds at a given pH, in preparation for docking. Uses the Open Babel library to guess at proper protonation states.`;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             // type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -81,7 +81,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                 considerProteins: false,
                 batchSize: null,
             }),
-        } as IFormMoleculeInputParams,
+        } as IUserArgMoleculeInputParams,
 
         // pH
         {

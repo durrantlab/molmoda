@@ -87,7 +87,7 @@ import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorSelect from "./ColorSelect/ColorSelect.vue";
-import { IFormOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { defaultStyles } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
@@ -131,37 +131,37 @@ export default class StylesForMolType extends Vue {
         { description: "Backbone: Hidden", val: "backbone-hidden" },
         { description: "Backbone: Cartoon", val: "cartoon" },
         // {description: 'Protein: Tubes', val: 'tubes'},
-    ] as IFormOption[];
+    ] as IUserArgOption[];
 
     metalStyleOptions = [
         { description: "Surface: Hidden", val: "surface-hidden" },
         { description: "Surface", val: "surface" },
-    ] as IFormOption[];
+    ] as IUserArgOption[];
 
     /**
      * Get the atom styles to use as options in the select. This is a computed
      * rather than data variable because it changes depending on other variables.
      *
-     * @returns {IFormOption[]}  Array of option objects.
+     * @returns {IUserArgOption[]}  Array of option objects.
      */
-    get atomsStyleOptions(): IFormOption[] {
+    get atomsStyleOptions(): IUserArgOption[] {
         let options = [
             { description: "Atoms: Hidden", val: "atoms-hidden" },
-        ] as IFormOption[];
+        ] as IUserArgOption[];
 
         if (this.molType !== "metal") {
             options.push(
                 ...([
                     { description: "Atoms: Lines", val: "line" },
                     { description: "Atoms: Sticks", val: "stick" },
-                ] as IFormOption[])
+                ] as IUserArgOption[])
             );
         }
 
         options.push({
             description: "Atoms: Spheres",
             val: "sphere",
-        } as IFormOption);
+        } as IUserArgOption);
 
         return options;
     }

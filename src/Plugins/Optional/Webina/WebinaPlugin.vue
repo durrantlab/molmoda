@@ -32,15 +32,15 @@ import {
     Licenses,
 } from "@/Plugins/PluginInterfaces";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormAlert,
-    IFormCheckbox,
-    IFormGroup,
-    IFormMoleculeInputParams,
-    IFormNumber,
-    IFormSelectRegion,
-    IGenericFormElement,
+    IUserAlert,
+    IUserArgCheckbox,
+    IUserArgGroup,
+    IUserArgMoleculeInputParams,
+    IUserArgNumber,
+    IUserSelectRegion,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
@@ -99,14 +99,14 @@ export default class WebinaPlugin extends PluginParentClass {
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         // {
         //     type: FormElemType.Alert,
         //     id: "warning",
         //     description:
         //         "This plugin assumes your protein reeptor and small molecules have already been properly protonated. .",
         //     alertType: "warning",
-        // } as IFormAlert,
+        // } as IUserAlert,
         {
             type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -117,14 +117,14 @@ export default class WebinaPlugin extends PluginParentClass {
                 compoundFormat: "pdbqtlig", // Will include torsions
                 includeMetalsSolventAsProtein: false,
             } as IMoleculeInputParams),
-        } as IFormMoleculeInputParams,
+        } as IUserArgMoleculeInputParams,
         {
             id: "region",
             // label: "Region test",
             val: null, // To use default
             type: FormElemType.SelectRegion,
             regionName: "Docking Box",
-        } as IFormSelectRegion,
+        } as IUserSelectRegion,
         {
             id: "cpu",
             type: FormElemType.Number,
@@ -135,7 +135,7 @@ export default class WebinaPlugin extends PluginParentClass {
             },
             description:
                 "If performing multiple dockings, use 1. Otherwise, consider more.",
-        } as IFormNumber,
+        } as IUserArgNumber,
         {
             id: "exhaustiveness",
             type: FormElemType.Number,
@@ -146,7 +146,7 @@ export default class WebinaPlugin extends PluginParentClass {
             },
             description:
                 "How thoroughly to search for the pose. Roughly proportional to time.",
-        } as IFormNumber,
+        } as IUserArgNumber,
         {
             id: "score_only",
             type: FormElemType.Checkbox,
@@ -154,14 +154,14 @@ export default class WebinaPlugin extends PluginParentClass {
             val: false,
             description:
                 "Scores the existing pose, without repositioning the compound.",
-        } as IFormCheckbox,
+        } as IUserArgCheckbox,
         {
             id: "keep_only_best",
             type: FormElemType.Checkbox,
             label: "Keep only best",
             val: true,
             description: "Keep only the best predicted pose for each compound.",
-        } as IFormCheckbox,
+        } as IUserArgCheckbox,
         {
             id: "webinaAdvancedParams",
             type: FormElemType.Group,
@@ -173,7 +173,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     description:
                         "Unless you are an expert user, these advanced parameters are best left unmodified.",
                     alertType: "warning",
-                } as IFormAlert,
+                } as IUserAlert,
                 {
                     id: "seed",
                     type: FormElemType.Number,
@@ -184,7 +184,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     },
                     description:
                         "The explicit random seed. Useful if reproducibility is critical.",
-                } as IFormNumber,
+                } as IUserArgNumber,
                 {
                     id: "num_modes",
                     type: FormElemType.Number,
@@ -194,7 +194,7 @@ export default class WebinaPlugin extends PluginParentClass {
                         return Math.round(val);
                     },
                     description: "The maximum number of binding poses to show.",
-                } as IFormNumber,
+                } as IUserArgNumber,
                 {
                     id: "energy_range",
                     type: FormElemType.Number,
@@ -202,10 +202,10 @@ export default class WebinaPlugin extends PluginParentClass {
                     val: 3,
                     description:
                         "The maximum energy difference between the best and worst pose.",
-                } as IFormNumber,
+                } as IUserArgNumber,
             ],
             startOpened: false,
-        } as IFormGroup,
+        } as IUserArgGroup,
     ];
 
     /**
@@ -246,7 +246,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
         // Prepare Webina parameters
         const webinaParams: { [key: string]: any } = {};
-        userArgs.forEach((arg: IGenericFormElement) => {
+        userArgs.forEach((arg: IGenericUserArg) => {
             webinaParams[arg.id] = arg.val;
         });
         const region = webinaParams["region"];
@@ -280,7 +280,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 keepOnlyBest: (
                     userArgs.filter(
                         (u) => u.id === "keep_only_best"
-                    )[0] as IGenericFormElement
+                    )[0] as IGenericUserArg
                 ).val,
             };
         });

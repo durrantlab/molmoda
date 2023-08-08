@@ -152,14 +152,14 @@ import FormInput from "../FormInput.vue";
 import FormWrapper from "../FormWrapper.vue";
 import FormSelect from "../FormSelect.vue";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormGroup,
-    IFormMoleculeInputParams,
-    IFormOption,
-    IFormRange,
-    IFormSelect,
-    IGenericFormElement,
+    IUserArgGroup,
+    IUserArgMoleculeInputParams,
+    IUserArgOption,
+    IUserArgRange,
+    IUserArgSelect,
+    IGenericUserArg,
 } from "./FormFullInterfaces";
 import Accordian from "@/UI/Layout/Accordian/Accordian.vue";
 import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
@@ -187,7 +187,7 @@ import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
     },
 })
 export default class FormFull extends Vue {
-    @Prop({ required: true }) modelValue!: FormElement[];
+    @Prop({ required: true }) modelValue!: UserArg[];
     @Prop({ required: true }) id!: string;
     @Prop({ default: false }) hideIfDisabled!: boolean;
     @Prop({ default: "3" }) spacing!: string;
@@ -198,20 +198,20 @@ export default class FormFull extends Vue {
      * Get the options for a select element.
      *
      * @param {any} val  The form element.
-     * @returns {(string | IFormOption)[]}  The options.
+     * @returns {(string | IUserArgOption)[]}  The options.
      */
-    getSelectOptions(val: any): (string | IFormOption)[] {
-        return (val as IFormSelect).options;
+    getSelectOptions(val: any): (string | IUserArgOption)[] {
+        return (val as IUserArgSelect).options;
     }
 
     /**
      * Get the min, max, and step for a range element.
      *
-     * @param {any} val  Contains information about the range (like IFormRange).
+     * @param {any} val  Contains information about the range (like IUserArgRange).
      * @returns {any}    The min, max, and step.
      */
     getRangeMinMaxStep(val: any): any {
-        let val2 = val as IFormRange;
+        let val2 = val as IUserArgRange;
         return {
             min: val2.min,
             max: val2.max,
@@ -222,20 +222,20 @@ export default class FormFull extends Vue {
     /**
      * Get the DOM id for a form element.
      *
-     * @param {FormElement} formElem  The form element.
+     * @param {UserArg} formElem  The form element.
      * @returns {string}              The DOM id.
      */
-    itemId(formElem: FormElement): string {
+    itemId(formElem: UserArg): string {
         return `${formElem.id}-${this.id}-item`;
     }
 
     /**
      * Determine if a given form element is currently disabled.
      *
-     * @param {FormElement} formElem  The form element.
+     * @param {UserArg} formElem  The form element.
      * @returns {boolean}  True if disabled, false otherwise.
      */
-    disabled(formElem: FormElement): boolean {
+    disabled(formElem: UserArg): boolean {
         return this.makeGeneric(formElem).enabled === false;
     }
 
@@ -244,32 +244,32 @@ export default class FormFull extends Vue {
      * template...
      *
      * @param {any} frmElem  The form element.
-     * @returns {IFormGroup}  The IFormTextOrColor.
+     * @returns {IUserArgGroup}  The IFormTextOrColor.
      */
-    makeGeneric(frmElem: FormElement): IGenericFormElement {
-        return frmElem as IGenericFormElement;
+    makeGeneric(frmElem: UserArg): IGenericUserArg {
+        return frmElem as IGenericUserArg;
     }
 
     /**
-     * Cast the form element to an IFormMoleculeInputParams. Just to make typing work
+     * Cast the form element to an IUserArgMoleculeInputParams. Just to make typing work
      * in template...
      *
      * @param {any} val  The form element.
-     * @returns {IFormGroup}  The IFormMoleculeInputParams.
+     * @returns {IUserArgGroup}  The IUserArgMoleculeInputParams.
      */
-    allowConsiderCompounds(val: FormElement): IFormMoleculeInputParams {
-        return val as IFormMoleculeInputParams;
+    allowConsiderCompounds(val: UserArg): IUserArgMoleculeInputParams {
+        return val as IUserArgMoleculeInputParams;
     }
 
     /**
-     * Cast the form element to an IFormGroup. Just to make typing work in
+     * Cast the form element to an IUserArgGroup. Just to make typing work in
      * template...
      *
-     * @param {FormElement} val  The form element.
-     * @returns {IFormGroup}  The IFormGroup.
+     * @param {UserArg} val  The form element.
+     * @returns {IUserArgGroup}  The IUserArgGroup.
      */
-    asGroup(val: FormElement): IFormGroup {
-        return val as IFormGroup;
+    asGroup(val: UserArg): IUserArgGroup {
+        return val as IUserArgGroup;
     }
 
     /**
@@ -325,10 +325,10 @@ export default class FormFull extends Vue {
     /**
      * Get the label to use for a form element.
      *
-     * @param {FormElement} formElem  The form element.
+     * @param {UserArg} formElem  The form element.
      * @returns {string | undefined}  The label to use.
      */
-    labelToUse(formElem: FormElement): string | undefined {
+    labelToUse(formElem: UserArg): string | undefined {
         if (formElem.type === FormElemType.Checkbox) {
             // For checkbox, label is the text
             return "";

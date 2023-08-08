@@ -15,7 +15,7 @@ import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
 import { ValidationMixin } from "./Mixins/ValidationMixin";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
@@ -100,12 +100,12 @@ export abstract class PluginParentClass extends mixins(
      * unchangable template. Modify userArgs to change the user argument values
      * reactively.
      *
-     * @type {FormElement[]}
+     * @type {UserArg[]}
      */
-    abstract userArgDefaults: FormElement[];
+    abstract userArgDefaults: UserArg[];
 
     // TODO: Describe here.
-    userArgs: FormElement[] = [];
+    userArgs: UserArg[] = [];
 
     /**
      * Optionally define a hotkey (keyboard shortcut) to trigger this plugin.
@@ -500,9 +500,9 @@ export abstract class PluginParentClass extends mixins(
      * Makes the userArgs reactive. Do not overwrite this funciton. If you wish
      * to react when the user arguments change, use onUserArgChange instead.
      *
-     * @param {FormElement[]} newUserArgs  The new userArgs.
+     * @param {UserArg[]} newUserArgs  The new userArgs.
      */
-    onUserArgChanged(newUserArgs: FormElement[]) {
+    onUserArgChanged(newUserArgs: UserArg[]) {
         this.userArgs = newUserArgs;
         this.onUserArgChange();
     }

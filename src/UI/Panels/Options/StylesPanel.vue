@@ -60,13 +60,13 @@ import {
     RegionType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormColor,
-    IFormRange,
-    IFormText,
-    IFormVector3D,
-    IGenericFormElement,
+    IUserArgColor,
+    IUserArgRange,
+    IUserArgText,
+    IUserArgVector3D,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { analyzeColor } from "./Styles/ColorSelect/ColorConverter";
@@ -155,9 +155,9 @@ export default class StylesPanel extends Vue {
     /**
      * Sets the form data for the selected region.
      *
-     * @param {FormElement[]} vals  The form data to set.
+     * @param {UserArg[]} vals  The form data to set.
      */
-    set constructedRegionForm(vals: FormElement[]) {
+    set constructedRegionForm(vals: UserArg[]) {
         const regionContainer = this.firstSelectedTreeNodeWithRegion;
         if (!regionContainer || !regionContainer.region) {
             return;
@@ -165,7 +165,7 @@ export default class StylesPanel extends Vue {
 
         const valsObj: { [key: string]: any } = {};
         for (const val of vals) {
-            valsObj[val.id] = (val as IGenericFormElement).val;
+            valsObj[val.id] = (val as IGenericUserArg).val;
         }
 
         regionContainer.region.color = valsObj["color"];
@@ -190,9 +190,9 @@ export default class StylesPanel extends Vue {
     /**
      * Create the form data for the selected region.
      *
-     * @returns {FormElement[]} The form data for the selected region.
+     * @returns {UserArg[]} The form data for the selected region.
      */
-    get constructedRegionForm(): FormElement[] {
+    get constructedRegionForm(): UserArg[] {
         let color = this.firstSelectedTreeNodeWithRegion?.region?.color;
         // If color doesn't start with #, convert to Hex.
         if (color && color[0] !== "#") {
@@ -204,12 +204,12 @@ export default class StylesPanel extends Vue {
                 type: FormElemType.Text,
                 val: `${this.firstSelectedTreeNodeWithRegion?.title} (${this.firstSelectedTreeNodeWithRegion?.region?.type})`,
                 enabled: false,
-            } as IFormText,
+            } as IUserArgText,
             {
                 id: "color",
                 type: FormElemType.Color,
                 val: color,
-            } as IFormColor,
+            } as IUserArgColor,
             {
                 id: "opacity",
                 type: FormElemType.Range,
@@ -218,8 +218,8 @@ export default class StylesPanel extends Vue {
                 max: 1,
                 step: 0.01,
                 val: this.firstSelectedTreeNodeWithRegion?.region?.opacity,
-            } as IFormRange,
-        ] as FormElement[];
+            } as IUserArgRange,
+        ] as UserArg[];
 
         if (this.firstSelectedTreeNodeWithRegion?.region?.movable) {
             if (
@@ -233,7 +233,7 @@ export default class StylesPanel extends Vue {
                     val: (
                         this.firstSelectedTreeNodeWithRegion?.region as ISphere
                     ).radius,
-                } as IFormRange);
+                } as IUserArgRange);
             } else {
                 // Assuming it's a box, because arrows, cylinders, etc. will never
                 // be movable.
@@ -244,7 +244,7 @@ export default class StylesPanel extends Vue {
                     val: (this.firstSelectedTreeNodeWithRegion?.region as IBox)
                         ?.dimensions,
                     filterFunc: (val: number) => (val < 0 ? 0 : val),
-                } as IFormVector3D);
+                } as IUserArgVector3D);
             }
             frm.push({
                 id: "center",
@@ -252,7 +252,7 @@ export default class StylesPanel extends Vue {
                 label: "Center (X, Y, Z)",
                 val: this.firstSelectedTreeNodeWithRegion?.region?.center,
                 description: "(Click atom to center)",
-            } as IFormVector3D);
+            } as IUserArgVector3D);
         }
         return frm;
     }

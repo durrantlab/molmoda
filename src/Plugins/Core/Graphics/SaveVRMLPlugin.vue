@@ -22,7 +22,7 @@ Licenses,
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import {
   fileNameFilter,
@@ -55,7 +55,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   intro = `Save the current molecular scene as a VRML file (3D model).`;
 
-  userArgDefaults: FormElement[] = [
+  userArgDefaults: UserArg[] = [
     {
       id: "filename",
       label: "",
@@ -68,7 +68,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       validateFunc: (filename: string): boolean => {
         return matchesFilename(filename);
       },
-    } as IFormText,
+    } as IUserArgText,
   ];
 
   alwaysEnabled = true;

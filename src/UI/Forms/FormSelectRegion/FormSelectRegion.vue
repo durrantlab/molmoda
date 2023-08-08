@@ -90,7 +90,7 @@ import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import FormVector3D from "../FormVector3D.vue";
 import FormWrapper from "../FormWrapper.vue";
 import FormSelect from "../FormSelect.vue";
-import { IFormOption } from "../FormFull/FormFullInterfaces";
+import { IUserArgOption } from "../FormFull/FormFullInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import Alert from "../../Layout/Alert.vue";
@@ -243,10 +243,10 @@ export default class FormSelectRegion extends Vue {
     /**
      * Get all the regions in the tree. Return as options for the select.
      *
-     * @returns {IFormOption[] | undefined} The regions in the tree. Undefined
+     * @returns {IUserArgOption[] | undefined} The regions in the tree. Undefined
      *    if there are no regions in the tree.
      */
-    get regionsInTree(): IFormOption[] | undefined {
+    get regionsInTree(): IUserArgOption[] | undefined {
         let treeNodeList: TreeNodeList = this.$store.state["molecules"];
         treeNodeList = treeNodeList.filters.keepRegions(true, true);
 
@@ -290,7 +290,7 @@ export default class FormSelectRegion extends Vue {
         selectedNotVisible.sort(sortFunc);
         notVisibleNotSelected.sort(sortFunc);
 
-        const options = [] as IFormOption[];
+        const options = [] as IUserArgOption[];
 
         options.push({
             description: "Select a region to load...",

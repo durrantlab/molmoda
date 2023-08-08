@@ -15,7 +15,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { redo, redoStack } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
@@ -42,7 +42,7 @@ export default class RedoPlugin extends PluginParentClass {
   ];
   pluginId = "redo";
   noPopup = true;
-  userArgDefaults: FormElement[] = [];
+  userArgDefaults: UserArg[] = [];
   alwaysEnabled = true;
   logJob = false;
   hotkey = "y"

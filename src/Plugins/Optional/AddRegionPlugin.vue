@@ -26,12 +26,12 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITreeNode, TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IFormAlert,
-    IFormOption,
-    IFormSelect,
-IGenericFormElement,
+    IUserAlert,
+    IUserArgOption,
+    IUserArgSelect,
+IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
 import {
@@ -66,12 +66,12 @@ export default class AddRegionPlugin extends PluginParentClass {
 
     intro = `Add a new box or spherical region to the workspace.`;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             description: `After adding a region, select it in the Navigator panel. You can then change its location and size via the Styles panel or by clicking atoms in the Viewer panel.`,
             id: "alert",
             alertType: "info",
-        } as IFormAlert,
+        } as IUserAlert,
         {
             // type: FormElemType.MoleculeInputParams,
             label: "Type",
@@ -79,9 +79,9 @@ export default class AddRegionPlugin extends PluginParentClass {
             options: [
                 { description: "Box", val: "box" },
                 { description: "Sphere", val: "sphere" },
-            ] as IFormOption[],
+            ] as IUserArgOption[],
             val: "box",
-        } as IFormSelect,
+        } as IUserArgSelect,
         {
             label: "Name",
             id: "regionName",

@@ -20,7 +20,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
@@ -48,7 +48,7 @@ export default class RenameMolPlugin extends PluginParentClass {
   pluginId = "renamemol";
   intro = `Rename the molecule.`;
 
-  userArgDefaults: FormElement[] = [
+  userArgDefaults: UserArg[] = [
     {
       id: "newName",
       label: "",
@@ -58,7 +58,7 @@ export default class RenameMolPlugin extends PluginParentClass {
       validateFunc: (newName: string): boolean => {
         return newName.length > 0;
       },
-    } as IFormText,
+    } as IUserArgText,
   ];
 
   nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);

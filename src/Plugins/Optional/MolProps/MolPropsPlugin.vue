@@ -30,8 +30,8 @@ import {
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import {
-    FormElement,
-    IFormMoleculeInputParams,
+    UserArg,
+    IUserArgMoleculeInputParams,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
@@ -67,7 +67,7 @@ export default class MolPropsPlugin extends PluginParentClass {
 
     intro = `Calculates the molecular properties of small-molecule compounds.`;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             // type: FormElemType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -76,7 +76,7 @@ export default class MolPropsPlugin extends PluginParentClass {
                 considerProteins: false,
                 batchSize: null,
             }),
-        } as IFormMoleculeInputParams,
+        } as IUserArgMoleculeInputParams,
     ];
 
     /**

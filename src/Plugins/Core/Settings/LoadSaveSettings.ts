@@ -1,28 +1,28 @@
 import { visualizationApi } from "@/Api/Visualization";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
-import { IGenericFormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IGenericUserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 // import * as api from "@/Api/";
 
 /**
  * Saves settings to local storage.
  * 
- * @param  {IGenericFormElement[]} settings  The settings to save.
+ * @param  {IGenericUserArg[]} settings  The settings to save.
  */
-export function saveSettings(settings: IGenericFormElement[]) {
+export function saveSettings(settings: IGenericUserArg[]) {
     localStorage.setItem("settings", JSON.stringify(settings));
 }
 
 /**
  * Gets settings from local storage.
  * 
- * @returns {IGenericFormElement[]}  The settings.
+ * @returns {IGenericUserArg[]}  The settings.
  */
-export function getSettings(): IGenericFormElement[] {
+export function getSettings(): IGenericUserArg[] {
     const settingsJson = localStorage.getItem("settings");
     if (settingsJson === null) {
         return [];
     }
-    return JSON.parse(settingsJson) as IGenericFormElement[];
+    return JSON.parse(settingsJson) as IGenericUserArg[];
 }
 
 /**
@@ -53,11 +53,11 @@ export function getSetting(id: string): any {
 /**
  * Given settings, apply them (meaning, update app per settings).
  *
- * @param  {IGenericFormElement[]} settings  The settings to apply.
+ * @param  {IGenericUserArg[]} settings  The settings to apply.
  */
-export function applySettings(settings: IGenericFormElement[]) {
+export function applySettings(settings: IGenericUserArg[]) {
     // Convert the settings to a map for easy lookup.
-    const settingsMap = new Map<string, IGenericFormElement>();
+    const settingsMap = new Map<string, IGenericUserArg>();
     for (const setting of settings) {
         settingsMap.set(setting.id, setting);
     }

@@ -21,7 +21,7 @@ import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -44,7 +44,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     ];
     pluginId = "clearselection";
     noPopup = true;
-    userArgDefaults: FormElement[] = [];
+    userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
     intro = "Clear the selection of all molecules."

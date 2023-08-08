@@ -26,7 +26,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
-import { FormElement, IFormText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
@@ -54,7 +54,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
     ];
     pluginId = "mergemols";
     intro = "Copy and merge the selected molecules into a single new molecule.";
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             id: "newName",
             label: "",
@@ -64,7 +64,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
             },
-        } as IFormText,
+        } as IUserArgText,
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);

@@ -18,11 +18,11 @@ import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import isEqual from "lodash.isequal";
 
 import {
-  FormElement,
+  UserArg,
   FormElemType,
-  IFormOption,
-  IFormSelect,
-  IGenericFormElement,
+  IUserArgOption,
+  IUserArgSelect,
+  IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ColorOptions } from "./ColorOptions";
 
@@ -73,10 +73,10 @@ export default class ColorSelect extends Vue {
       id: "colorscheme",
       val: colorStyleIdx.toString(),
       options: colorFormOptionsForSelect,
-    } as IFormSelect;
+    } as IUserArgSelect;
 
     // Make the form
-    let colorForm: FormElement[] = [colorFormSelect];
+    let colorForm: UserArg[] = [colorFormSelect];
 
     // If the color scheme is color carbons or solid, add the color option to
     // the color form.
@@ -99,9 +99,9 @@ export default class ColorSelect extends Vue {
   /**
    * Get the constructed color form.
    *
-   * @param {FormElement[]} val  The color form.
+   * @param {UserArg[]} val  The color form.
    */
-  set constructedColorForm(val: FormElement[]) {
+  set constructedColorForm(val: UserArg[]) {
     // Emit something that looks like this:
     // { "cartoon": '{ "color": "spectrum" }' }
 
@@ -112,7 +112,7 @@ export default class ColorSelect extends Vue {
     let color = (
       val.filter((v: any) => {
         return v.id === "color";
-      })[0] as IGenericFormElement
+      })[0] as IGenericUserArg
     )?.val;
     this.colorStyles.color =
       color === undefined ? this.colorStyles.defaultColor : color;
@@ -121,7 +121,7 @@ export default class ColorSelect extends Vue {
     let colorschemeIdx = (
       val.filter((v: any) => {
         return v.id === "colorscheme";
-      })[0] as IGenericFormElement
+      })[0] as IGenericUserArg
     )?.val;
     (style as any)[this.repName] = this.colorStyles.indexToStyle(colorschemeIdx);
 
@@ -157,10 +157,10 @@ export default class ColorSelect extends Vue {
    * Color options (e.g., Color by Element) are presented as a select box. This
    * gets the appropriate options for that box.
    *
-   * @returns {IFormOption[]}  The options for the color-style select box.
+   * @returns {IUserArgOption[]}  The options for the color-style select box.
    */
-  private _getColorOptionsForSelect(): IFormOption[] {
-    let colorFormOptions: IFormOption[] = [];
+  private _getColorOptionsForSelect(): IUserArgOption[] {
+    let colorFormOptions: IUserArgOption[] = [];
 
     if (this.allowColorByElement) {
       colorFormOptions.push({

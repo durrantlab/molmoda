@@ -1,7 +1,7 @@
 import {
-    FormElement,
+    UserArg,
     FormElemType,
-    IGenericFormElement,
+    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
@@ -14,9 +14,9 @@ import { fixUserArgs } from "../../UserInputUtils";
  * UserInputsMixin
  */
 export class UserInputsMixin extends Vue {
-    // public userArgsFixed: FormElement[] = [];
+    // public userArgsFixed: UserArg[] = [];
 
-    set userArgsFixed(userArgs: FormElement[]) {
+    set userArgsFixed(userArgs: UserArg[]) {
         fixUserArgs(userArgs);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
@@ -26,9 +26,9 @@ export class UserInputsMixin extends Vue {
     /**
      * Sets the user arguments to use. Modifies the ones provided.
      *
-     * @param  {FormElement[]} origUserArgs  The provided user arguments.
+     * @param  {UserArg[]} origUserArgs  The provided user arguments.
      */
-    get userArgsFixed(): FormElement[] {
+    get userArgsFixed(): UserArg[] {
         // Make a copy of the user arguments so we don't modify the original.
         // const userArgs = JSON.parse(JSON.stringify(this.userArgs));
         
@@ -39,8 +39,8 @@ export class UserInputsMixin extends Vue {
 
         // // Restore functions too.
         // for (let i = 0; i < userArgs.length; i++) {
-        //     const origUserInput = userArgs[i] as IGenericFormElement;
-        //     const userArg = userArgs[i] as IGenericFormElement;
+        //     const origUserInput = userArgs[i] as IGenericUserArg;
+        //     const userArg = userArgs[i] as IGenericUserArg;
         //     if (origUserInput.filterFunc !== undefined) {
         //         userArg.filterFunc = origUserInput.filterFunc;
         //     }

@@ -15,20 +15,20 @@ export enum FormElemType {
     SelectRegion
 }
 
-export type FormElement =
-    | IFormText
-    | IFormNumber
-    | IFormSelect
-    | IFormRange
-    | IFormGroup
-    | IFormMoleculeInputParams
-    | IFormColor
-    | IFormCheckbox
-    | IFormVector3D
-    | IFormAlert
-    | IFormSelectRegion;
+export type UserArg =
+    | IUserArgText
+    | IUserArgNumber
+    | IUserArgSelect
+    | IUserArgRange
+    | IUserArgGroup
+    | IUserArgMoleculeInputParams
+    | IUserArgColor
+    | IUserArgCheckbox
+    | IUserArgVector3D
+    | IUserAlert
+    | IUserSelectRegion;
 
-interface IFormElement {
+interface IUserArg {
     id: string;
 
     // `type` inferred if not given, but in some cases must specify (e.g.,
@@ -47,7 +47,7 @@ interface IFormElement {
 }
 
 // Below interface just to help with typescript.
-export interface IGenericFormElement extends IFormElement {
+export interface IGenericUserArg extends IUserArg {
     val?: any;
     min?: any;
     options?: any;
@@ -60,63 +60,63 @@ export interface IGenericFormElement extends IFormElement {
     regionName?: any;
 }
 
-export interface IFormText extends IFormElement {
+export interface IUserArgText extends IUserArg {
     val: string;
     placeHolder?: string;
     filterFunc?: (val: any) => any;
 }
 
-export interface IFormColor extends IFormElement {
+export interface IUserArgColor extends IUserArg {
     val: string;
 }
-export interface IFormNumber extends IFormElement {
+export interface IUserArgNumber extends IUserArg {
     val: number;
     placeHolder?: string;
     filterFunc?: (val: any) => any;
 }
 
-export interface IFormCheckbox extends IFormElement {
+export interface IUserArgCheckbox extends IUserArg {
     val: boolean;
 }
 
-export interface IFormRange extends IFormNumber {
+export interface IUserArgRange extends IUserArgNumber {
     min: number;
     max: number;
     step: number;
 }
 
-export interface IFormVector3D extends IFormElement {
+export interface IUserArgVector3D extends IUserArg {
     val: [number, number, number];
 }
 
-export interface IFormOption {
+export interface IUserArgOption {
     description: string;
     val: any;
     disabled?: boolean;
 }
 
-export interface IFormSelect extends IFormElement {
+export interface IUserArgSelect extends IUserArg {
     val: string;
-    options: (string | IFormOption)[];
+    options: (string | IUserArgOption)[];
 }
 
-export interface IFormGroup extends IFormElement {
+export interface IUserArgGroup extends IUserArg {
     // Use label as title.
-    childElements: FormElement[];
+    childElements: UserArg[];
     startOpened?: boolean;
 }
 
-export interface IFormMoleculeInputParams extends IFormElement {
+export interface IUserArgMoleculeInputParams extends IUserArg {
     val: MoleculeInput;
 }
 
-export interface IFormAlert extends IFormElement {
+export interface IUserAlert extends IUserArg {
     // Use description (not label!) as message.
     alertType: string;  // warning, info, etc.
     description: string;  // Required
 }
 
-export interface IFormSelectRegion extends IFormElement {
+export interface IUserSelectRegion extends IUserArg {
     val: ISphereOrBox | null,
     regionName?: string;
 }

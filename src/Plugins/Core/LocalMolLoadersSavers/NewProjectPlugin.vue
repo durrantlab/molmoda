@@ -28,7 +28,7 @@ import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
 import * as api from "@/Api";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { FormElement } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -55,7 +55,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     filesToLoad: FileInfo[] = [];
     pluginId = "newproject";
 
-    userArgDefaults: FormElement[] = [];
+    userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     hotkey = "n";
     intro = "Start a new project. Your current project will be lost."

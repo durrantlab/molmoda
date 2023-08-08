@@ -17,9 +17,9 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import {
-    FormElement,
-    IFormNumber,
-IGenericFormElement,
+    UserArg,
+    IUserArgNumber,
+IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -55,20 +55,20 @@ export default class SettingsPlugin extends PluginParentClass {
     pluginId = "settings";
     intro = `Modify Biotite general settings.`;
 
-    userArgDefaults: FormElement[] = [
+    userArgDefaults: UserArg[] = [
         {
             // type: FormElemType.Number,
             id: "maxProcs",
             label: "Maximum number of available processors",
             val: 0,
-        } as IFormNumber,
+        } as IUserArgNumber,
         {
             id: "initialCompoundsVisible",
             label: "Molecules initially visible",
             val: 10,
             description:
                 "Number of molecules initially visible when creating/loading many new molecules.",
-        } as IFormNumber,
+        } as IUserArgNumber,
         // {
         //     type: FormElemType.Select,
         //     id: "molViewer",
@@ -80,13 +80,13 @@ export default class SettingsPlugin extends PluginParentClass {
         //         {
         //             val: "3dmol",
         //             description: "3Dmol.js",
-        //         } as IFormOption,
+        //         } as IUserArgOption,
         //         {
         //             val: "ngl",
         //             description: "NGL Viewer",
-        //         } as IFormOption,
+        //         } as IUserArgOption,
         //     ],
-        // } as IFormSelect,
+        // } as IUserArgSelect,
     ];
     alwaysEnabled = true;
     logJob = false;
@@ -139,10 +139,10 @@ export default class SettingsPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {IGenericFormElement[]} args  The user arguments to pass to the
+     * @param {IGenericUserArg[]} args  The user arguments to pass to the
      *                                      "executable."            
      */
-    runJobInBrowser(args: IGenericFormElement[]) {
+    runJobInBrowser(args: IGenericUserArg[]) {
 
         // Keeping only id and val.
         args = args.map((arg) => {
