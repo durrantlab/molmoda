@@ -28,7 +28,7 @@ import {
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import {
-    FormElemType,
+    UserArgType,
     UserArg,
     IUserArgMoleculeInputParams,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -74,7 +74,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
-            // type: FormElemType.MoleculeInputParams,
+            // type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({
                 compoundFormat: "mol2",
@@ -85,7 +85,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
         // pH
         {
-            type: FormElemType.Range,
+            type: UserArgType.Range,
             id: "pH",
             label: "Protonation pH",
             val: 7.4,
@@ -96,7 +96,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         },
 
         {
-            type: FormElemType.Checkbox,
+            type: UserArgType.Checkbox,
             id: "regen3DCoords",
             label: "Regenerate 3D coordinates",
             val: false,

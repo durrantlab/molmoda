@@ -24,7 +24,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserAlert,
     IUserArgCheckbox,
     IUserArgGroup,
@@ -82,7 +82,7 @@ export default class ReducePlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
-            type: FormElemType.MoleculeInputParams,
+            type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({
                 considerCompounds: false,

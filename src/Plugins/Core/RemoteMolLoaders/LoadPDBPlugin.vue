@@ -23,7 +23,7 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { UserArg, IUserArgText, IGenericUserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";

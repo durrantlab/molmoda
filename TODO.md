@@ -138,15 +138,21 @@ Isn't smiles drawer and rdkitjs redundant for drawing molecules?
 
 Improve intro text in central viewer on app open.
 
-Still true ref="pluginComponent" ?
-
 Settings reset to default
 
 Lines representation should be thicker.
 
-Rename form element types as appropriate now that userArgs are gone.
+I think Webina can't rescore. Also, // TODO: region somtimes null. Need to figure out. I think after redocking.
 
 # DONE
+
+Still true ref="pluginComponent" ?
+
+Rename form element types as appropriate now that userArgs are gone.
+
+Look for FormElemType.
+
+Try to remove generic wherever you can.
 
 Perhpas you could eliminate need for IUserArg entirely, replacing it with
 IFormElement variants.

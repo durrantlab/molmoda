@@ -104,7 +104,10 @@ export abstract class PluginParentClass extends mixins(
      */
     abstract userArgDefaults: UserArg[];
 
-    // TODO: Describe here.
+    /**
+     * The user arguments, created from `userArgDefaults`. This is reactive. You
+     * should not define it on children.
+     */
     userArgs: UserArg[] = [];
 
     /**

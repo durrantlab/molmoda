@@ -33,14 +33,13 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserAlert,
     IUserArgCheckbox,
     IUserArgGroup,
     IUserArgMoleculeInputParams,
     IUserArgNumber,
     IUserSelectRegion,
-    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
@@ -101,14 +100,14 @@ export default class WebinaPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         // {
-        //     type: FormElemType.Alert,
+        //     type: UserArgType.Alert,
         //     id: "warning",
         //     description:
         //         "This plugin assumes your protein reeptor and small molecules have already been properly protonated. .",
         //     alertType: "warning",
         // } as IUserAlert,
         {
-            type: FormElemType.MoleculeInputParams,
+            type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({
                 considerCompounds: true,
@@ -122,12 +121,12 @@ export default class WebinaPlugin extends PluginParentClass {
             id: "region",
             // label: "Region test",
             val: null, // To use default
-            type: FormElemType.SelectRegion,
+            type: UserArgType.SelectRegion,
             regionName: "Docking Box",
         } as IUserSelectRegion,
         {
             id: "cpu",
-            type: FormElemType.Number,
+            type: UserArgType.Number,
             label: "Number of processors",
             val: 1,
             filterFunc: (val: number) => {
@@ -138,7 +137,7 @@ export default class WebinaPlugin extends PluginParentClass {
         } as IUserArgNumber,
         {
             id: "exhaustiveness",
-            type: FormElemType.Number,
+            type: UserArgType.Number,
             label: "Exhaustiveness",
             val: 8,
             filterFunc: (val: number) => {
@@ -149,7 +148,7 @@ export default class WebinaPlugin extends PluginParentClass {
         } as IUserArgNumber,
         {
             id: "score_only",
-            type: FormElemType.Checkbox,
+            type: UserArgType.Checkbox,
             label: "Score only",
             val: false,
             description:
@@ -157,26 +156,25 @@ export default class WebinaPlugin extends PluginParentClass {
         } as IUserArgCheckbox,
         {
             id: "keep_only_best",
-            type: FormElemType.Checkbox,
+            type: UserArgType.Checkbox,
             label: "Keep only best",
             val: true,
             description: "Keep only the best predicted pose for each compound.",
         } as IUserArgCheckbox,
         {
             id: "webinaAdvancedParams",
-            type: FormElemType.Group,
+            type: UserArgType.Group,
             label: "Advanced docking parameters",
             childElements: [
                 {
                     id: "warning",
-                    type: FormElemType.Alert,
-                    description:
-                        "Unless you are an expert user, these advanced parameters are best left unmodified.",
+                    type: UserArgType.Alert,
+                    val: "Unless you are an expert user, these advanced parameters are best left unmodified.",
                     alertType: "warning",
                 } as IUserAlert,
                 {
                     id: "seed",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Random seed",
                     val: 1,
                     filterFunc: (val: number) => {
@@ -187,7 +185,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 } as IUserArgNumber,
                 {
                     id: "num_modes",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Number of modes",
                     val: 9,
                     filterFunc: (val: number) => {
@@ -197,7 +195,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 } as IUserArgNumber,
                 {
                     id: "energy_range",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Energy range",
                     val: 3,
                     description:
@@ -246,10 +244,14 @@ export default class WebinaPlugin extends PluginParentClass {
 
         // Prepare Webina parameters
         const webinaParams: { [key: string]: any } = {};
-        userArgs.forEach((arg: IGenericUserArg) => {
+        userArgs.forEach((arg: UserArg) => {
             webinaParams[arg.id] = arg.val;
         });
         const region = webinaParams["region"];
+        if (region === null) {
+            // TODO: region somtimes null. Need to figure out. I think after redocking.
+            debugger;
+        }
         delete webinaParams["region"];
         webinaParams["center_x"] = region.center[0];
         webinaParams["center_y"] = region.center[1];
@@ -280,7 +282,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 keepOnlyBest: (
                     userArgs.filter(
                         (u) => u.id === "keep_only_best"
-                    )[0] as IGenericUserArg
+                    )[0] as UserArg
                 ).val,
             };
         });

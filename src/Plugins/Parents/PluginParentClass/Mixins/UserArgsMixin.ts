@@ -2,9 +2,8 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserArgGroup,
-    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Vue } from "vue-class-component";
 import { recurseUserArgsAndAct } from "../../UserInputUtils";
@@ -18,9 +17,7 @@ export class UserArgsMixin extends Vue {
      * variable directly, but this is more convenient because you can look it up
      * by id (helper function). Allows you to modify one `userArgs` enabled
      * value based on the value of another (see also `<PluginComponent>`'s
-     * `onUserArgChange` function). For `setUserArgEnabled` to work, the
-     * plugin's `<PluginComponent>` must have `ref="pluginComponent"`. TODO:
-     * True?
+     * `onUserArgChange` function).
      *
      * @param {string}                id          The id of the user argument to
      *                                            update.
@@ -29,10 +26,10 @@ export class UserArgsMixin extends Vue {
      */
     protected setUserArgEnabled(id: string, val: boolean) {
         recurseUserArgsAndAct(
-            (userArg: IGenericUserArg) => {
+            (userArg: UserArg) => {
                 return userArg.id === id;
             },
-            (userArg: IGenericUserArg) => {
+            (userArg: UserArg) => {
                 userArg.enabled = val;
             },
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -40,23 +37,6 @@ export class UserArgsMixin extends Vue {
             this.userArgs
         );
     }
-
-    /**
-     * Checks if the plugin component has ref set to "pluginComponent".
-     *
-     * @returns {any} Returns false if ref is not set to "pluginComponent",
-     *     otherwise returns the plugin component.
-     */
-    // private validatePluginComponentRefIsSet(): any {
-    //     const pluginComponent = this.$refs["pluginComponent"] as any;
-    //     if (pluginComponent === undefined) {
-    //         console.warn(
-    //             'To use the updateUserVars() function, the PluginComponent must have ref "pluginComponent".'
-    //         );
-    //         return false;
-    //     }
-    //     return pluginComponent;
-    // }
 
     /**
      * Note that userArgs is reactive, so you can just modify it directly. But
@@ -68,10 +48,10 @@ export class UserArgsMixin extends Vue {
      */
     protected setUserArg(id: string, val: any) {
         recurseUserArgsAndAct(
-            (userArg: IGenericUserArg) => {
+            (userArg: UserArg) => {
                 return userArg.id === id;
             },
-            (userArg: IGenericUserArg) => {
+            (userArg: UserArg) => {
                 userArg.val = val;
             },
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -91,15 +71,15 @@ export class UserArgsMixin extends Vue {
     protected getUserArg(id: string): any {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const userArgs = this.userArgs as IGenericUserArg[];
+        const {userArgs} = this;
 
         // It's a form element
         let val: any = undefined;
         recurseUserArgsAndAct(
-            (userArg: IGenericUserArg) => {
+            (userArg: UserArg) => {
                 return userArg.id === id;
             },
-            (userArg: IGenericUserArg) => {
+            (userArg: UserArg) => {
                 val = userArg.val;
             },
             userArgs as any[]

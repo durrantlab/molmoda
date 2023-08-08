@@ -25,7 +25,7 @@ Title of the popup. This component property is required.
 #### `userArgs` (:property) <a id="userArgs"></a>
 
 The user arguments (plugin parameters) that the end user can specify. This component property is required.
- Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 18](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L18).
+ Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 19](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L19).
 
 
 ### Optional Properties
@@ -75,22 +75,6 @@ The popup variant (i.e., whether to style the popup as primary, secondary, succe
 \<PluginComponent> emits the following events.
 
 
-#### `onDataChanged` (@event) <a id="onDataChanged"></a>
-
-Runs when the user changes any user arguments (plugin parameters).
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `userArgs` | `IUserArg[]` | The updated user arguments. `IUserArg` is defined in [FormFullUtils.ts, line 8](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullUtils.ts#L8).
-
-#### `onPopupDone` (@event) <a id="onPopupDone"></a>
-
-Runs when the primary action button is pressed, after the popup closes.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `userArgs` | `IUserArg[]` | The specified user arguments. `IUserArg` is defined in [FormFullUtils.ts, line 8](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullUtils.ts#L8).
-
 #### `onPopupDone2` (@event) <a id="onPopupDone2"></a>
 
 Runs when the secondary action button is pressed, after the popup closes.
@@ -135,7 +119,7 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 34](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L34).
+| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 33](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L33).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 
@@ -150,7 +134,7 @@ The [`title`](#title) of the plugin. This is shown at the top of the plugin bar.
 #### `userArgDefaults` (variable) <a id="userArgDefaults"></a>
 
 A list of user arguments. Note that [`userArgDefaults`](#userArgDefaults) defines the default user argument values (on popup), but it is not reactive. See it as an unchangable template. Modify userArgs to change the user argument values reactively.
- Type: `FormElement[]`.  `FormElement` is defined in [FormFullInterfaces.ts, line 18](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L18).
+ Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 19](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L19).
 
 
 ### Optional Functions/Variables
@@ -209,14 +193,6 @@ Submits multiple jobs to the queue system. [`submitJobs`](#submitJobs) is typica
 | `[numProcessorsPerJob=1]` | `number` | The number of processors to use per job. Defaults to 1.
 | `[delayBetweenJobsMS]` | `number` | The number of milliseconds to wait between running jobs. A modal appears during this time giving the user the opportunity to cancel all jobs. Optional.
 
-#### `updateUserArgs` (function) <a id="updateUserArgs"></a>
-
-Programmatically update user arguments. Necessary because `userArgs` is NOT reactive. Useful to do things like (1) prepopulate a `userArgs` value or (2) modify one `userArgs` value based on the value of another (see also `<PluginComponent>`'s `onDataChanged` function). For [`updateUserArgs`](#updateUserArgs) to work, the plugin's `<PluginComponent>` must have `ref="pluginComponent"`.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `userArgs` | `IUserArg[]` | The user variables to update. `IUserArg` is defined in [FormFullUtils.ts, line 8](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullUtils.ts#L8).
-
 
 ### Optional Functions/Variables with Good Defaults
 
@@ -253,10 +229,6 @@ Runs when the user first starts the plugin. Called when the user clicks the plug
 #### `onPopupDone` (function) <a id="onPopupDone"></a>
 
 Runs when the user clicks the plugin action button (e.g., "Load"). You likely want to call the [`submitJobs`](#submitJobs) function from [`onPopupDone`](#onPopupDone) to submit job(s) to the queue system. The default version submits the user arguments as a single job. Override it if you want to modify those arguments before submitting to the queue, or if you want to submit multiple jobs to the queue.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `userArgs` | `IUserArg[]` | The user arguments. `IUserArg` is defined in [FormFullUtils.ts, line 8](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullUtils.ts#L8).
 
 #### `onStartJobLogMsg` (function) <a id="onStartJobLogMsg"></a>
 

@@ -1,6 +1,5 @@
 <template>
     <PluginComponent
-        ref="pluginComponent"
         :userArgs="userArgs"
         v-model="open"
         :title="title"
@@ -32,7 +31,6 @@ import {
     IUserArgGroup,
     IUserArgSelect,
     IUserArgText,
-    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";

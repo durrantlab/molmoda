@@ -1,7 +1,8 @@
 import { ISphereOrBox } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { MoleculeInput } from "../MoleculeInputParams/MoleculeInput";
+import { IProtCmpdTreeNodePair, MoleculeInput } from "../MoleculeInputParams/MoleculeInput";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
-export enum FormElemType {
+export enum UserArgType {
     Text,
     Number,
     Color,
@@ -31,9 +32,12 @@ export type UserArg =
 interface IUserArg {
     id: string;
 
+    // Children interfaces may redefine, but all should have val.
+    val: any;
+
     // `type` inferred if not given, but in some cases must specify (e.g.,
-    // FormElemType.Number and FormElemType.Range both deal with numbers)
-    type?: FormElemType;
+    // UserArgType.Number and UserArgType.Range both deal with numbers)
+    type?: UserArgType;
 
     label?: string;
 
@@ -44,20 +48,6 @@ interface IUserArg {
     // Description appears below in smaller font. TODO: Not implemented
     // everywhere. Just as needed.
     description?: string;
-}
-
-// Below interface just to help with typescript.
-export interface IGenericUserArg extends IUserArg {
-    val?: any;
-    min?: any;
-    options?: any;
-    childElements?: any;
-    placeHolder?: any;
-    filterFunc?: any;
-    enabled?: any;
-    isMoleculeInput?: any;
-    alertType?: any;
-    regionName?: any;
 }
 
 export interface IUserArgText extends IUserArg {
@@ -104,16 +94,17 @@ export interface IUserArgGroup extends IUserArg {
     // Use label as title.
     childElements: UserArg[];
     startOpened?: boolean;
+    val: null;
 }
 
 export interface IUserArgMoleculeInputParams extends IUserArg {
-    val: MoleculeInput;
+    val: MoleculeInput | FileInfo[] | IProtCmpdTreeNodePair[];
 }
 
 export interface IUserAlert extends IUserArg {
-    // Use description (not label!) as message.
+    // Use val (not label!) as message.
     alertType: string;  // warning, info, etc.
-    description: string;  // Required
+    val: string;  // Required
 }
 
 export interface IUserSelectRegion extends IUserArg {

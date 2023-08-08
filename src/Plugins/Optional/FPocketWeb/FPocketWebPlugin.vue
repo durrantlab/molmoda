@@ -24,14 +24,13 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserAlert,
     IUserArgCheckbox,
     IUserArgGroup,
     IUserArgMoleculeInputParams,
     IUserArgNumber,
     IUserArgSelect,
-    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
@@ -90,7 +89,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
-            // type: FormElemType.MoleculeInputParams,
+            // type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({
                 considerCompounds: false,
@@ -100,46 +99,45 @@ export default class FPocketWebPlugin extends PluginParentClass {
         } as IUserArgMoleculeInputParams,
         {
             id: "providePseudoAtoms",
-            type: FormElemType.Checkbox,
+            type: UserArgType.Checkbox,
             label: "Provide pocket-filling pseudo atoms for visualization",
             val: false,
         } as IUserArgCheckbox,
         {
             id: "pocketDetectionParams",
-            type: FormElemType.Group,
+            type: UserArgType.Group,
             label: "Optional Pocket Detection Parameters",
             childElements: [
                 {
                     id: "warning",
-                    type: FormElemType.Alert,
-                    description:
-                        "Unless you are an expert user, these advanced parameters are best left unmodified",
+                    type: UserArgType.Alert,
+                    val: "Unless you are an expert user, these advanced parameters are best left unmodified",
                     alertType: "warning",
                 } as IUserAlert,
                 {
                     id: "min_alpha_size",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Minimum radius of an alpha-sphere",
                     val: 3.4,
                 } as IUserArgNumber,
 
                 {
                     id: "max_alpha_size",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Maximum radius of an alpha-sphere",
                     val: 6.2,
                 } as IUserArgNumber,
 
                 {
                     id: "clustering_distance",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Distance threshold for clustering algorithm",
                     val: 2.4,
                 } as IUserArgNumber,
 
                 {
                     id: "clustering_method",
-                    type: FormElemType.Select,
+                    type: UserArgType.Select,
                     label: "Clustering method for grouping voronoi vertices",
                     options: [
                         {
@@ -160,7 +158,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
                 {
                     id: "clustering_measure",
-                    type: FormElemType.Select,
+                    type: UserArgType.Select,
                     label: "Distance measure for clustering",
                     options: [
                         { description: "e : euclidean distance", val: "e" },
@@ -171,28 +169,28 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
                 {
                     id: "min_spheres_per_pocket",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Minimum number of a-sphere per pocket",
                     val: 15,
                 } as IUserArgNumber,
 
                 {
                     id: "ratio_apol_spheres_pocket",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Minimum proportion of apolar sphere in a pocket (remove otherwise)",
                     val: 0.0,
                 } as IUserArgNumber,
 
                 {
                     id: "number_apol_asph_pocket",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Minimum number of apolar neighbor for an a-sphere to be considered as apolar",
                     val: 3,
                 } as IUserArgNumber,
 
                 {
                     id: "iterations_volume_mc",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Number of Monte-Carlo iterations for calculating each pocket volume",
                     val: 300,
                 } as IUserArgNumber,
@@ -235,7 +233,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
         const fpocketParams: { [key: string]: any } = {}; // IFpocketParams
         this.userArgs.forEach((arg) => {
             if (userArgsNotFpocketArgs.indexOf(arg.id) === -1) {
-                fpocketParams[arg.id] = (arg as IGenericUserArg).val;
+                fpocketParams[arg.id] = (arg as UserArg).val;
             }
         });
 
@@ -258,7 +256,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     fpocketOut.providePseudoAtoms = (
                         this.userArgs.filter(
                             (u) => u.id === "providePseudoAtoms"
-                        )[0] as IGenericUserArg
+                        )[0] as UserArg
                     ).val;
                 });
 

@@ -1,12 +1,17 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
-    FormElemType,
+    UserArgType,
     UserArg,
     IUserArgGroup,
-    IGenericUserArg,
+    IUserArgRange,
+    IUserArgSelect,
+    IUserArgMoleculeInputParams,
+    IUserAlert,
+    IUserArgText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
+    IProtCmpdTreeNodePair,
     MoleculeInput,
 } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
@@ -32,35 +37,37 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
             continue;
         }
 
-        const _userArg = userArg as IGenericUserArg;
+        const _userArg = userArg as UserArg;
         if (_userArg.val !== undefined) {
             // User arg has property val
             switch (typeof _userArg.val) {
                 case "number":
                     userArg.type =
-                        _userArg.min === undefined
-                            ? FormElemType.Number
-                            : FormElemType.Range;
+                        (_userArg as IUserArgRange).min === undefined
+                            ? UserArgType.Number
+                            : UserArgType.Range;
                     break;
                 case "string":
                     // If starts with #, assume color.
                     if (_userArg.val.startsWith("#")) {
-                        userArg.type = FormElemType.Color;
-                    } else if (_userArg.options !== undefined) {
-                        userArg.type = FormElemType.Select;
+                        userArg.type = UserArgType.Color;
+                    } else if (
+                        (_userArg as IUserArgSelect).options !== undefined
+                    ) {
+                        userArg.type = UserArgType.Select;
                     } else {
-                        userArg.type = FormElemType.Text;
+                        userArg.type = UserArgType.Text;
                     }
                     break;
                 case "object":
                     // if (_userArg.val.center !== undefined) {
-                    //     userArg.type = FormElemType.SelectRegion;
+                    //     userArg.type = UserArgType.SelectRegion;
                     // } else {
-                    userArg.type = FormElemType.MoleculeInputParams;
+                    userArg.type = UserArgType.MoleculeInputParams;
                     // }
                     break;
                 case "boolean":
-                    userArg.type = FormElemType.Checkbox;
+                    userArg.type = UserArgType.Checkbox;
                     break;
                 default:
                     throw new Error(
@@ -71,16 +78,16 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
         } else {
             // The only one that doesn't define val is
             // IUserArgMoleculeInputParams. Do sanity check just the same.
-            if (_userArg.childElements !== undefined) {
-                userArg.type = FormElemType.Group;
-                _inferUserInputTypes(_userArg.childElements); // Recurse
-            } else if (_userArg.alertType !== undefined) {
+            if ((<IUserArgGroup>_userArg).childElements !== undefined) {
+                userArg.type = UserArgType.Group;
+                _inferUserInputTypes((<IUserArgGroup>_userArg).childElements); // Recurse
+            } else if ((<IUserAlert>_userArg).alertType !== undefined) {
                 // It's a message
-                userArg.type = FormElemType.Alert;
+                userArg.type = UserArgType.Alert;
 
-                if (_userArg.label !== undefined) {
+                if ((<IUserAlert>_userArg).label !== undefined) {
                     throw new Error(
-                        "Cannot specify label on FormElemType.Alert argument: " +
+                        "Cannot specify label on UserArgType.Alert argument: " +
                             JSON.stringify(userArg)
                     );
                 }
@@ -104,18 +111,18 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
 function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
     for (const userArg of userArgs) {
         // Add filter function if necessary
-        const _userInput = userArg as IGenericUserArg;
+        const _userInput = userArg as UserArg;
         if (
-            // NOTE: Don't put FormElemType.Number below.
-            [FormElemType.Text].includes(_userInput.type as FormElemType) &&
-            _userInput.filterFunc === undefined
+            // NOTE: Don't put UserArgType.Number below.
+            [UserArgType.Text].includes(_userInput.type as UserArgType) &&
+            (<IUserArgText>_userInput).filterFunc === undefined
         ) {
-            (userArg as IGenericUserArg).filterFunc = (val: any) => val;
+            (<IUserArgText>_userInput).filterFunc = (val: any) => val;
         }
 
         // Add validation function if necessary
         if (userArg.validateFunc === undefined) {
-            if (_userInput.type === FormElemType.Number) {
+            if (_userInput.type === UserArgType.Number) {
                 userArg.validateFunc = (v: number) => {
                     return !isNaN(v);
                 };
@@ -137,17 +144,24 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
 
     // Restore functions from original.
     for (let i = 0; i < userArgs.length; i++) {
-        const origUserInput = userArgs[i] as IGenericUserArg;
-        const userArg = userArgs[i] as IGenericUserArg;
-        if (origUserInput.filterFunc !== undefined) {
-            userArg.filterFunc = origUserInput.filterFunc;
+        const origUserInput = userArgs[i] as UserArg;
+        const userArg = userArgs[i] as UserArg;
+        // Casting to IUserArgText to avoid typescript error.
+        if ((<IUserArgText>origUserInput).filterFunc !== undefined) {
+            (<IUserArgText>userArg).filterFunc = (<IUserArgText>(
+                origUserInput
+            )).filterFunc;
         }
         if (origUserInput.validateFunc !== undefined) {
             userArg.validateFunc = origUserInput.validateFunc;
         }
 
         // If it's a MoleculeInput, turn it back into an object.
-        if (userArg.val && userArg.val.isMoleculeInput) {
+        if (
+            userArg.val &&
+            ((<IUserArgMoleculeInputParams>userArg).val as MoleculeInput)
+                .isMoleculeInput
+        ) {
             userArg.val = new MoleculeInput(
                 userArg.val as IMoleculeInputParams
             );
@@ -173,16 +187,16 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
  *                                             right one.
  * @param {Function}              onMatch      A function to run on the user
  *                                             argument to update it.
- * @param {IGenericUserArg[]} userArgs     The userArgs to update. If
+ * @param {UserArg[]} userArgs     The userArgs to update. If
  *                                             not given, uses the
  *                                             `userArgs` object variable.
  * @returns {boolean} Returns true if the user argument was found and false
  *     otherwise.
  */
 export function recurseUserArgsAndAct(
-    compareFunc: (userArg: IGenericUserArg) => boolean,
-    onMatch: (userArg: IGenericUserArg) => void,
-    userArgs: IGenericUserArg[]
+    compareFunc: (userArg: UserArg) => boolean,
+    onMatch: (userArg: UserArg) => void,
+    userArgs: UserArg[]
 ): boolean {
     // if (this.validatePluginComponentRefIsSet() === false) {
     //     return false;
@@ -196,7 +210,7 @@ export function recurseUserArgsAndAct(
             return true;
         } else if (
             // It's a group. Recurse. If you find it, return true.
-            userArg.type === FormElemType.Group &&
+            userArg.type === UserArgType.Group &&
             recurseUserArgsAndAct(
                 compareFunc,
                 onMatch,
@@ -210,19 +224,26 @@ export function recurseUserArgsAndAct(
     return false;
 }
 
-export function convertMoleculeInputParamsToFileInfos(userArgs: IGenericUserArg[]): Promise<any> {
+export function convertMoleculeInputParamsToFileInfos(
+    userArgs: UserArg[]
+): Promise<any> {
     const promises: Promise<any>[] = [];
     recurseUserArgsAndAct(
-        (userArg: IGenericUserArg) => {
+        (userArg: UserArg) => {
             if (userArg.val === undefined) {
                 return false;
             }
-            return userArg.val.molsToConsider !== undefined;
+            return (
+                ((<IUserArgMoleculeInputParams>userArg).val as MoleculeInput)
+                    .molsToConsider !== undefined
+            );
         },
-        (userArg: IGenericUserArg) => {
-            const promise = userArg.val
+        (userArg: UserArg) => {
+            const promise = (
+                (<IUserArgMoleculeInputParams>userArg).val as MoleculeInput
+            )
                 .getProtAndCompoundPairs()
-                .then((fileInfos: FileInfo[]) => {
+                .then((fileInfos: FileInfo[] | IProtCmpdTreeNodePair[]) => {
                     userArg.val = fileInfos;
                     return;
                 });

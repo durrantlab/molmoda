@@ -66,7 +66,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [
         // {
         //     id: "group",
-        //     // type: FormElemType.Group,
+        //     // type: UserArgType.Group,
         //     label: "Advanced",
         //     childElements: [
         //         {

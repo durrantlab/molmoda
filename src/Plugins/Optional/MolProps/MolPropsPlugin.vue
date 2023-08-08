@@ -69,7 +69,7 @@ export default class MolPropsPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
-            // type: FormElemType.MoleculeInputParams,
+            // type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({
                 compoundFormat: "can",

@@ -52,29 +52,29 @@ export default class QueSystemTestPlugin extends PluginParentClass {
 
   userArgDefaults: UserArg[] = [
     {
-      // type: FormElemType.Number,
+      // type: UserArgType.Number,
       id: "moose",
       label: "Moose",
       val: 0,
     } as IUserArgNumber,
     {
-      // type: FormElemType.MoleculeInputParams,
+      // type: UserArgType.MoleculeInputParams,
       id: "makemolinputparams",
       val: new MoleculeInput({ compoundFormat: "can" }),
     } as IUserArgMoleculeInputParams,
     {
       id: "group",
-      // type: FormElemType.Group,
+      // type: UserArgType.Group,
       label: "Labelme",
       childElements: [
         {
-          // type: FormElemType.Number,
+          // type: UserArgType.Number,
           id: "moose2",
           label: "Moose2",
           val: 0,
         },
         {
-          // type: FormElemType.Text,
+          // type: UserArgType.Text,
           id: "moose3",
           label: "Moose3",
           val: "face",

@@ -61,12 +61,11 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserArgColor,
     IUserArgRange,
     IUserArgText,
     IUserArgVector3D,
-    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { analyzeColor } from "./Styles/ColorSelect/ColorConverter";
@@ -165,7 +164,7 @@ export default class StylesPanel extends Vue {
 
         const valsObj: { [key: string]: any } = {};
         for (const val of vals) {
-            valsObj[val.id] = (val as IGenericUserArg).val;
+            valsObj[val.id] = val.val;
         }
 
         regionContainer.region.color = valsObj["color"];
@@ -201,18 +200,18 @@ export default class StylesPanel extends Vue {
         const frm = [
             {
                 id: "nameAndType",
-                type: FormElemType.Text,
+                type: UserArgType.Text,
                 val: `${this.firstSelectedTreeNodeWithRegion?.title} (${this.firstSelectedTreeNodeWithRegion?.region?.type})`,
                 enabled: false,
             } as IUserArgText,
             {
                 id: "color",
-                type: FormElemType.Color,
+                type: UserArgType.Color,
                 val: color,
             } as IUserArgColor,
             {
                 id: "opacity",
-                type: FormElemType.Range,
+                type: UserArgType.Range,
                 label: "Opacity",
                 min: 0,
                 max: 1,
@@ -228,7 +227,7 @@ export default class StylesPanel extends Vue {
             ) {
                 frm.push({
                     id: "radius",
-                    type: FormElemType.Number,
+                    type: UserArgType.Number,
                     label: "Radius",
                     val: (
                         this.firstSelectedTreeNodeWithRegion?.region as ISphere
@@ -239,7 +238,7 @@ export default class StylesPanel extends Vue {
                 // be movable.
                 frm.push({
                     id: "dimensions",
-                    type: FormElemType.Vector3D,
+                    type: UserArgType.Vector3D,
                     label: "Dimensions (X, Y, Z)",
                     val: (this.firstSelectedTreeNodeWithRegion?.region as IBox)
                         ?.dimensions,
@@ -248,7 +247,7 @@ export default class StylesPanel extends Vue {
             }
             frm.push({
                 id: "center",
-                type: FormElemType.Vector3D,
+                type: UserArgType.Vector3D,
                 label: "Center (X, Y, Z)",
                 val: this.firstSelectedTreeNodeWithRegion?.region?.center,
                 description: "(Click atom to center)",

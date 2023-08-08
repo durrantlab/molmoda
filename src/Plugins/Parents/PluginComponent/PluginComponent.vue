@@ -38,7 +38,6 @@ import { Options, mixins } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import {
     UserArg,
-    IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
@@ -128,7 +127,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
         // Using default validation because not specified.
         for (const userArg of this.userArgsFixed) {
-            const _userInput = userArg as IGenericUserArg;
+            const _userInput = userArg;
             if (
                 _userInput.validateFunc !== undefined &&
                 !_userInput.validateFunc(_userInput.val)

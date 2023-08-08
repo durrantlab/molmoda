@@ -7,7 +7,6 @@
         :intro="intro"
         @onPopupDone="onPopupDone"
         :pluginId="pluginId"
-        ref="pluginComponent"
         @onUserArgChanged="onUserArgChanged"
     >
         <!-- cancelBtnTxt="Done" -->
@@ -19,7 +18,6 @@ import { Options } from "vue-class-component";
 import {
     UserArg,
     IUserArgNumber,
-IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -57,7 +55,7 @@ export default class SettingsPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
-            // type: FormElemType.Number,
+            // type: UserArgType.Number,
             id: "maxProcs",
             label: "Maximum number of available processors",
             val: 0,
@@ -70,7 +68,7 @@ export default class SettingsPlugin extends PluginParentClass {
                 "Number of molecules initially visible when creating/loading many new molecules.",
         } as IUserArgNumber,
         // {
-        //     type: FormElemType.Select,
+        //     type: UserArgType.Select,
         //     id: "molViewer",
         //     label: "Molecular viewer library",
         //     val: "3dmol",
@@ -113,12 +111,12 @@ export default class SettingsPlugin extends PluginParentClass {
         // Update the userArgs with the saved values.
         this.setUserArg(
             "maxProcs",
-            maxProcs ? parseInt(maxProcs) : defaults.maxProcs
+            maxProcs ? parseInt(maxProcs as string) : defaults.maxProcs
         );
         this.setUserArg(
             "initialCompoundsVisible",
             initialCompoundsVisible
-                ? parseInt(initialCompoundsVisible)
+                ? parseInt(initialCompoundsVisible as string)
                 : defaults.initialCompoundsVisible
         );
         this.setUserArg(
@@ -131,7 +129,7 @@ export default class SettingsPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        // Putting in [] so all settings sent together, rather than one-by-one.        
+        // Putting in [] so all settings sent together, rather than one-by-one.
         this.submitJobs([this.userArgs]);
     }
 
@@ -139,16 +137,15 @@ export default class SettingsPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {IGenericUserArg[]} args  The user arguments to pass to the
-     *                                      "executable."            
+     * @param {UserArg[]} args  The user arguments to pass to the
+     *                                      "executable."
      */
-    runJobInBrowser(args: IGenericUserArg[]) {
-
+    runJobInBrowser(args: UserArg[]) {
         // Keeping only id and val.
         args = args.map((arg) => {
             return {
                 id: arg.id,
-                val: arg.val,
+                val: arg.val as any,
             };
         });
 

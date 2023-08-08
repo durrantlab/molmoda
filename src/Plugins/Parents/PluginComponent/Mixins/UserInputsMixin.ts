@@ -1,7 +1,6 @@
 import {
     UserArg,
-    FormElemType,
-    IGenericUserArg,
+    UserArgType,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
@@ -25,8 +24,8 @@ export class UserInputsMixin extends Vue {
 
     /**
      * Sets the user arguments to use. Modifies the ones provided.
-     *
-     * @param  {UserArg[]} origUserArgs  The provided user arguments.
+     * 
+     * @returns {UserArg[]} The user arguments.
      */
     get userArgsFixed(): UserArg[] {
         // Make a copy of the user arguments so we don't modify the original.
@@ -39,8 +38,8 @@ export class UserInputsMixin extends Vue {
 
         // // Restore functions too.
         // for (let i = 0; i < userArgs.length; i++) {
-        //     const origUserInput = userArgs[i] as IGenericUserArg;
-        //     const userArg = userArgs[i] as IGenericUserArg;
+        //     const origUserInput = userArgs[i] as UserArg;
+        //     const userArg = userArgs[i] as UserArg;
         //     if (origUserInput.filterFunc !== undefined) {
         //         userArg.filterFunc = origUserInput.filterFunc;
         //     }

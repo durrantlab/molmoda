@@ -19,10 +19,10 @@ import isEqual from "lodash.isequal";
 
 import {
   UserArg,
-  FormElemType,
+  UserArgType,
   IUserArgOption,
   IUserArgSelect,
-  IGenericUserArg,
+IUserArgColor,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ColorOptions } from "./ColorOptions";
 
@@ -69,7 +69,7 @@ export default class ColorSelect extends Vue {
     );
 
     const colorFormSelect = {
-      type: FormElemType.Select,
+      type: UserArgType.Select,
       id: "colorscheme",
       val: colorStyleIdx.toString(),
       options: colorFormOptionsForSelect,
@@ -87,7 +87,7 @@ export default class ColorSelect extends Vue {
       ].indexOf(colorStyleIdx) > -1
     ) {
       colorForm.push({
-        type: FormElemType.Color,
+        type: UserArgType.Color,
         id: "color",
         val: this.colorStyles.extractHexColorsFromStyle(style)[0],
       });
@@ -112,7 +112,7 @@ export default class ColorSelect extends Vue {
     let color = (
       val.filter((v: any) => {
         return v.id === "color";
-      })[0] as IGenericUserArg
+      })[0] as IUserArgColor
     )?.val;
     this.colorStyles.color =
       color === undefined ? this.colorStyles.defaultColor : color;
@@ -121,9 +121,9 @@ export default class ColorSelect extends Vue {
     let colorschemeIdx = (
       val.filter((v: any) => {
         return v.id === "colorscheme";
-      })[0] as IGenericUserArg
+      })[0] as IUserArgColor
     )?.val;
-    (style as any)[this.repName] = this.colorStyles.indexToStyle(colorschemeIdx);
+    (style as any)[this.repName] = this.colorStyles.indexToStyle(parseInt(colorschemeIdx));
 
     // console.log("from color style:", reps);
     this.$emit("update:modelValue", style);

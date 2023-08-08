@@ -1,6 +1,5 @@
 <template>
   <PluginComponent
-    ref="pluginComponent"
     v-model="open"
     :title="title"
     :intro="intro"

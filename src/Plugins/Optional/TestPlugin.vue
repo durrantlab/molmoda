@@ -19,7 +19,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserArgGroup,
     IUserArgMoleculeInputParams,
     IUserArgNumber,
@@ -55,43 +55,43 @@ export default class TestPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [
         {
             id: "group2",
-            // type: FormElemType.Group,
+            // type: UserArgType.Group,
             label: "Region Test",
             childElements: [
                 {
                     id: "region",
                     // label: "Region test",
                     val: null,  // To use default
-                    type: FormElemType.SelectRegion,
+                    type: UserArgType.SelectRegion,
                 } as IUserSelectRegion,
             ],
             startOpened: true,
         } as IUserArgGroup,
 
         {
-            // type: FormElemType.Number,
+            // type: UserArgType.Number,
             id: "moose",
             label: "Moose",
             val: 0,
         } as IUserArgNumber,
         {
-            // type: FormElemType.MoleculeInputParams,
+            // type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
             val: new MoleculeInput({ compoundFormat: "can" }),
         } as IUserArgMoleculeInputParams,
         {
             id: "group",
-            // type: FormElemType.Group,
+            // type: UserArgType.Group,
             label: "Labelme",
             childElements: [
                 {
-                    // type: FormElemType.Number,
+                    // type: UserArgType.Number,
                     id: "moose2",
                     label: "Moose2",
                     val: 0,
                 },
                 {
-                    // type: FormElemType.Text,
+                    // type: UserArgType.Text,
                     id: "moose3",
                     label: "Moose3",
                     val: "face",

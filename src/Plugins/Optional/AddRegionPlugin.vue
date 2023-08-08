@@ -1,6 +1,5 @@
 <template>
     <PluginComponent
-        ref="pluginComponent"
         :userArgs="userArgs"
         v-model="open"
         :title="title"
@@ -27,11 +26,10 @@ import { ITreeNode, TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserAlert,
     IUserArgOption,
     IUserArgSelect,
-IGenericUserArg,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
 import {
@@ -68,12 +66,12 @@ export default class AddRegionPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
-            description: `After adding a region, select it in the Navigator panel. You can then change its location and size via the Styles panel or by clicking atoms in the Viewer panel.`,
+            val: `After adding a region, select it in the Navigator panel. You can then change its location and size via the Styles panel or by clicking atoms in the Viewer panel.`,
             id: "alert",
             alertType: "info",
         } as IUserAlert,
         {
-            // type: FormElemType.MoleculeInputParams,
+            // type: UserArgType.MoleculeInputParams,
             label: "Type",
             id: "regionType",
             options: [
@@ -88,7 +86,7 @@ export default class AddRegionPlugin extends PluginParentClass {
             val: "region",
         },
         {
-            type: FormElemType.Vector3D,
+            type: UserArgType.Vector3D,
             label: "Dimensions",
             id: "dimensions",
             val: [1, 1, 1],
@@ -101,7 +99,7 @@ export default class AddRegionPlugin extends PluginParentClass {
             enabled: false,
         },
         {
-            type: FormElemType.Vector3D,
+            type: UserArgType.Vector3D,
             label: "Center",
             id: "center",
             val: [0, 0, 0],

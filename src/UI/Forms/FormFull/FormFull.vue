@@ -153,13 +153,12 @@ import FormWrapper from "../FormWrapper.vue";
 import FormSelect from "../FormSelect.vue";
 import {
     UserArg,
-    FormElemType,
+    UserArgType,
     IUserArgGroup,
     IUserArgMoleculeInputParams,
     IUserArgOption,
     IUserArgRange,
     IUserArgSelect,
-    IGenericUserArg,
 } from "./FormFullInterfaces";
 import Accordian from "@/UI/Layout/Accordian/Accordian.vue";
 import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
@@ -192,7 +191,7 @@ export default class FormFull extends Vue {
     @Prop({ default: false }) hideIfDisabled!: boolean;
     @Prop({ default: "3" }) spacing!: string;
 
-    FormElementType = FormElemType; // So accessible in template
+    FormElementType = UserArgType; // So accessible in template
 
     /**
      * Get the options for a select element.
@@ -246,8 +245,9 @@ export default class FormFull extends Vue {
      * @param {any} frmElem  The form element.
      * @returns {IUserArgGroup}  The IFormTextOrColor.
      */
-    makeGeneric(frmElem: UserArg): IGenericUserArg {
-        return frmElem as IGenericUserArg;
+    makeGeneric(frmElem: UserArg): UserArg {
+        // TODO: Not needed (once done debugging)
+        return frmElem as UserArg;
     }
 
     /**
@@ -329,12 +329,12 @@ export default class FormFull extends Vue {
      * @returns {string | undefined}  The label to use.
      */
     labelToUse(formElem: UserArg): string | undefined {
-        if (formElem.type === FormElemType.Checkbox) {
+        if (formElem.type === UserArgType.Checkbox) {
             // For checkbox, label is the text
             return "";
         }
         if (formElem.label) {
-            // if (formElem.type === FormElemType.Range) {
+            // if (formElem.type === UserArgType.Range) {
             //     return `${formElem.label} (${this.makeGeneric(formElem).val})`;
             // }
 
