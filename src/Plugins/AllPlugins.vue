@@ -36,6 +36,7 @@ system uses these to autopopulate with plugins. -->
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
+    <PasteFilePlugin @onPluginSetup="onPluginSetup"></PasteFilePlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
@@ -85,6 +86,7 @@ import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
+import PasteFilePlugin from "./Optional/PasteFilePlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
@@ -131,6 +133,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     AddRegionPlugin,
     FPocketWebPlugin,
     MolPropsPlugin,
+    PasteFilePlugin,
     ProtonateCompoundsPlugin,
     QueSystemTestPlugin,
     ReducePlugin,

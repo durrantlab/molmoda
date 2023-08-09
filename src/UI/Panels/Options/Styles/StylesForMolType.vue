@@ -229,6 +229,8 @@ export default class StylesForMolType extends Vue {
                 // @ts-ignore
                 let val = style[repName];
                 if (val === undefined) {
+                    debugger;
+                    console.log(defaultStyles);
                     val = (defaultStyles[this.molType] as any)[0][repName];
                     // val should be like {color: 'spectrum'}.
 
@@ -241,7 +243,8 @@ export default class StylesForMolType extends Vue {
                 (style as any)[repName] = val;
         }
 
-        // In case of atoms, representations are mutually exclusive.
+        // In case of atoms, representations are mutually exclusive. So delete
+        // other representations that might conflict with this one.
         switch (repName) {
             case "line":
                 if (style.stick) {

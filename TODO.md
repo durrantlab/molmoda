@@ -144,6 +144,8 @@ Lines representation should be thicker.
 
 I think Webina can't rescore. Also, // TODO: region somtimes null. Need to figure out. I think after redocking.
 
+Make textarea for form.
+
 # DONE
 
 Still true ref="pluginComponent" ?

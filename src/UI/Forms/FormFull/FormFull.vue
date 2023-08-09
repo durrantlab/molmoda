@@ -245,9 +245,8 @@ export default class FormFull extends Vue {
      * @param {any} frmElem  The form element.
      * @returns {IUserArgGroup}  The IFormTextOrColor.
      */
-    makeGeneric(frmElem: UserArg): UserArg {
-        // TODO: Not needed (once done debugging)
-        return frmElem as UserArg;
+    makeGeneric(frmElem: UserArg): any {
+        return frmElem as any;
     }
 
     /**
