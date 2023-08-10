@@ -140,13 +140,16 @@ Improve intro text in central viewer on app open.
 
 Settings reset to default
 
-Lines representation should be thicker.
-
-I think Webina can't rescore. Also, // TODO: region somtimes null. Need to figure out. I think after redocking.
+I think Webina can't rescore. Also, // TODO: region somtimes null. Need to
+figure out. I think after redocking.
 
 Make textarea for form.
 
+Throw better error if not file extension when converting.
+
 # DONE
+
+Lines representation should be thicker.
 
 Still true ref="pluginComponent" ?
 

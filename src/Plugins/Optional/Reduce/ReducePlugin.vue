@@ -31,6 +31,7 @@ import {
     IUserArgMoleculeInputParams,
     IUserArgNumber,
     IUserSelectRegion,
+    IUserArgTextArea,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,

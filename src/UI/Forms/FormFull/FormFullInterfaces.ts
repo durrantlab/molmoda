@@ -4,6 +4,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 
 export enum UserArgType {
     Text,
+    TextArea,
     Number,
     Color,
     Select,
@@ -21,6 +22,7 @@ export type UserArg =
     | IUserArgNumber
     | IUserArgSelect
     | IUserArgRange
+    | IUserArgTextArea
     | IUserArgGroup
     | IUserArgMoleculeInputParams
     | IUserArgColor
@@ -51,6 +53,12 @@ interface IUserArg {
 }
 
 export interface IUserArgText extends IUserArg {
+    val: string;
+    placeHolder?: string;
+    filterFunc?: (val: any) => any;
+}
+
+export interface IUserArgTextArea extends IUserArg {
     val: string;
     placeHolder?: string;
     filterFunc?: (val: any) => any;

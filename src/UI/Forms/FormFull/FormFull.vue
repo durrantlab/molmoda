@@ -75,6 +75,15 @@
                     :description="makeGeneric(formElem).description"
                     :delayBetweenChangesDetected="0"
                 />
+                <FormTextArea
+                    v-else-if="formElem.type === FormElementType.TextArea"
+                    v-model.number="makeGeneric(formElem).val"
+                    @onChange="onDataUpdated"
+                    :id="itemId(formElem)"
+                    :disabled="disabled(formElem)"
+                    :description="makeGeneric(formElem).description"
+                    :delayBetweenChangesDetected="0"
+                ></FormTextArea>
                 <FormSelect
                     v-else-if="formElem.type === FormElementType.Select"
                     v-model="makeGeneric(formElem).val"
@@ -167,6 +176,7 @@ import FormCheckBox from "../FormCheckBox.vue";
 import FormVector3D from "../FormVector3D.vue";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
+import FormTextArea from "../FormTextArea.vue";
 
 /**
  * FormFull
@@ -176,6 +186,7 @@ import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
         FormWrapper,
         FormInput,
         FormSelect,
+        FormTextArea,
         Accordian,
         AccordianItem,
         MoleculeInputParams,
