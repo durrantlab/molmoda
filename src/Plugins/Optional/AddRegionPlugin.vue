@@ -27,7 +27,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
     UserArg,
     UserArgType,
-    IUserAlert,
+    IUserArgAlert,
     IUserArgOption,
     IUserArgSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -69,7 +69,7 @@ export default class AddRegionPlugin extends PluginParentClass {
             val: `After adding a region, select it in the Navigator panel. You can then change its location and size via the Styles panel or by clicking atoms in the Viewer panel.`,
             id: "alert",
             alertType: "info",
-        } as IUserAlert,
+        } as IUserArgAlert,
         {
             // type: UserArgType.MoleculeInputParams,
             label: "Type",

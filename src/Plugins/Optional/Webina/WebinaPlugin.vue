@@ -34,7 +34,7 @@ import {
 import {
     UserArg,
     UserArgType,
-    IUserAlert,
+    IUserArgAlert,
     IUserArgCheckbox,
     IUserArgGroup,
     IUserArgMoleculeInputParams,
@@ -105,7 +105,7 @@ export default class WebinaPlugin extends PluginParentClass {
         //     description:
         //         "This plugin assumes your protein reeptor and small molecules have already been properly protonated. .",
         //     alertType: "warning",
-        // } as IUserAlert,
+        // } as IUserArgAlert,
         {
             type: UserArgType.MoleculeInputParams,
             id: "makemolinputparams",
@@ -171,7 +171,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     type: UserArgType.Alert,
                     val: "Unless you are an expert user, these advanced parameters are best left unmodified.",
                     alertType: "warning",
-                } as IUserAlert,
+                } as IUserArgAlert,
                 {
                     id: "seed",
                     type: UserArgType.Number,
@@ -298,6 +298,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     webinaOut.origCmpdTreeNode = origAssociatedTreeNodes[i][1];
                 });
 
+                // Organize by protein
                 const byProtein: { [key: string]: any[] } = {};
                 webinaOuts.forEach((webinaOut: any) => {
                     const protId = webinaOut.origProtTreeNode.id;
@@ -336,14 +337,13 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(payloads: any[]): Promise<any> {
-        debugger;
-
         const protPath = (
             payloads[0].origProtTreeNode as TreeNode
         ).descriptions.pathName(":");
-        const ligPath = (
-            payloads[0].origCmpdTreeNode as TreeNode
-        ).descriptions.pathName(":");
+
+        // const ligPath = (
+        //     payloads[0].origCmpdTreeNode as TreeNode
+        // ).descriptions.pathName(":");
 
         const treeNodesPromises: Promise<TreeNode>[] = [];
         for (const payload of payloads) {
@@ -394,11 +394,23 @@ export default class WebinaPlugin extends PluginParentClass {
                             );
                         }
 
-                        treeNode.src = payload.origCmpdTreeNode.src;
-                        treeNode.data = data;
-                        treeNode.data[scoreLabel].treeNodeId = treeNode.id;
+                        // This has been loaded hierarchically. So the one
+                        // terminal node is the actual TreeNode.
+                        let terminalTreeNode = treeNode.nodes?.terminals.get(0);
 
-                        return treeNode;
+                        if (terminalTreeNode) {
+                            terminalTreeNode.src = payload.origCmpdTreeNode.src;
+                            terminalTreeNode.data = data;
+                            terminalTreeNode.data[scoreLabel].treeNodeId =
+                                terminalTreeNode.id;
+                            terminalTreeNode.title =
+                                payload.origCmpdTreeNode.title;
+                        } else {
+                            // This should never happen, but here for typescript.
+                            terminalTreeNode = treeNode;
+                        }
+
+                        return terminalTreeNode;
                     })
                     .catch((err: Error) => {
                         // TODO: FIX
@@ -428,38 +440,45 @@ export default class WebinaPlugin extends PluginParentClass {
                     dockedTreeNode.visible = i < initialCompoundsVisible;
                 }
 
-                const compoundTreeNodeList = new TreeNodeList([
-                    new TreeNode({
-                        title: "Compounds",
-                        nodes: new TreeNodeList(dockedTreeNodes),
-                        treeExpanded: true,
-                        visible: true,
-                        selected: SelectedType.ChildOfTrue,
-                        focused: true,
-                        viewerDirty: true,
-                        type: TreeNodeType.Compound,
-                    }),
-                ]);
-
-                // Get the top title of the protein
+                // Get the top title of the protein. Because things have been
+                // organized by proteins, all these will be the same, so first
+                // one is as good as any.
                 const protTreeNode = payloads[0].origProtTreeNode as TreeNode;
-                debugger;
                 const title = protTreeNode.getAncestry().get(0).title;
-                debugger;
 
-                // Create a new TreeNodeList
-                const mainTreeNode = new TreeNode({
-                    // title: `Docked: ${protPath}, ${ligPath}`,
-                    title: `${title}:docking`,
-                    nodes: compoundTreeNodeList,
-                    treeExpanded: true,
-                    visible: true,
-                    selected: SelectedType.True,
-                    focused: true,
-                    viewerDirty: true,
-                });
+                const rootNode =
+                    TreeNode.loadHierarchicallyFromTreeNodes(dockedTreeNodes);
 
-                mainTreeNode.addToMainTree();
+                rootNode.title = `${title}:docking`;
+
+                // const compoundTreeNodeList = new TreeNodeList([
+                //     new TreeNode({
+                //         title: "Compounds",
+                //         nodes: new TreeNodeList(dockedTreeNodes),
+                //         treeExpanded: true,
+                //         visible: true,
+                //         selected: SelectedType.ChildOfTrue,
+                //         focused: true,
+                //         viewerDirty: true,
+                //         type: TreeNodeType.Compound,
+                //     }),
+                // ]);
+
+                // debugger;
+
+                // // Create a new TreeNodeList
+                // const mainTreeNode = new TreeNode({
+                //     // title: `Docked: ${protPath}, ${ligPath}`,
+                //     title: `${title}:docking`,
+                //     nodes: compoundTreeNodeList,
+                //     treeExpanded: true,
+                //     visible: true,
+                //     selected: SelectedType.True,
+                //     focused: true,
+                //     viewerDirty: true,
+                // });
+
+                rootNode.addToMainTree();
 
                 return dockedTreeNodes;
             })

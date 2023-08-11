@@ -63,24 +63,27 @@ export class TreeNodeDescriptions {
     /**
      * Gets the name of the molecule in path-like format.
      *
-     * @param {string}        [separator=">"]  The separator to use.
-     * @param {number}        [maxLength=20]   Abbreviate to no longer than this
-     *                                         length. If 0 or less, don't
-     *                                         abbreviate.
-     * @param {TreeNodeList}  [allMols]        All the molecules.
+     * @param {string}        [separator=">"]   The separator to use.
+     * @param {number}        [maxLength=20]    Abbreviate to no longer than
+     *                                          this length. If 0 or less, don't
+     *                                          abbreviate.
+     * @param {TreeNodeList}  [molsToConsider]  The molecules to consider when
+     *                                          determining the path. If not
+     *                                          specified, uses all molecules
+     *                                          (default).
      * @returns {string}  The name of the molecule in path-like format.
      */
     public pathName(
         separator = ">",
         maxLength = 20,
-        allMols?: TreeNodeList
+        molsToConsider?: TreeNodeList
     ): string {
         // If molecules not provided, get them from the store (all molecules).
-        if (allMols === undefined) {
-            allMols = getMoleculesFromStore();
+        if (molsToConsider === undefined) {
+            molsToConsider = getMoleculesFromStore();
         }
 
-        const ancestors = this.parentTreeNode.getAncestry(allMols);
+        const ancestors = this.parentTreeNode.getAncestry(molsToConsider);
         let titles = ancestors.map((x) => x.title);
 
         // Simplify words some

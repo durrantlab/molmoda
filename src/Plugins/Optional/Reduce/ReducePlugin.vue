@@ -25,7 +25,7 @@ import {
 import {
     UserArg,
     UserArgType,
-    IUserAlert,
+    IUserArgAlert,
     IUserArgCheckbox,
     IUserArgGroup,
     IUserArgMoleculeInputParams,

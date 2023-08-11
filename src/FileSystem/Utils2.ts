@@ -59,8 +59,16 @@ export function getFileType(fileInfo: FileInfo | string): string {
         return formatInfo.primaryExt.toUpperCase();
     }
 
+    // If it's JSON, that's from biotite.
+    if (ext === "JSON") {
+        return ext;
+    }
+
     // It's not a molecular filetype. TODO: Will need to implement something
     // separate for other foramts (CSV, etc.).
-    console.warn("Could not determine filetype for " + fileInfo.name);
-    return ext;
+    // console.warn("Could not determine filetype for " + fileInfo.name);
+    // return ext;
+
+    // Throw error instead
+    throw new Error("Could not determine filetype for " + fileInfo.name);
 }

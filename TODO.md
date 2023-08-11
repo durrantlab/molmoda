@@ -143,11 +143,17 @@ Settings reset to default
 I think Webina can't rescore. Also, // TODO: region somtimes null. Need to
 figure out. I think after redocking.
 
-Make textarea for form.
+Would be nice to have alerts (System).
+
+Exhausiveness can't be less than 1
+
+# DONE
+
+Alert wrong on reduce?
 
 Throw better error if not file extension when converting.
 
-# DONE
+Make textarea for form.
 
 Lines representation should be thicker.
 

@@ -10,6 +10,7 @@ import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
+import { getMoleculesFromStore } from "./Store/StoreExternalAccess";
 
 // api.sys.loadStatus.started = true;
 
@@ -33,39 +34,12 @@ createApp(App)
     .use(store)
     .mount("#app");
 
-// // eslint-disable-next-line promise/catch-or-return
-// dynamicImports.rdkitjs.module.then((mod: any) => {
-//     debugger;
-//     return;
-// });
-
-// setTimeout(() => {
-//     // eslint-disable-next-line promise/catch-or-return
-//     dynamicImports.rdkitjs.module.then((mod: any) => {
-//         debugger;
-//         return;
-//     });
-// }, 15000);
-
-
-// obTest();
-
-// Make list of fake inputs, 200 random numbers
-// const fakeInputs: number[] = [];
-// for (let i = 0; i < 200; i++) {
-//     fakeInputs.push(Math.random());
-// }
-// new QueueTest("test", fakeInputs, 2, {
-//     onJobDone: (jobInfo) => {
-//         console.log("Job done:", jobInfo);
-//     },
-//     onProgress: (progress) => {
-//         console.log("Progress:", progress);
-//     },
-//     onQueueDone: (outputs) => {
-//         console.log("Queue done:", outputs);
-//     },
-//     onError(jobInfos, error) {
-//         console.error("Error running jobs:", jobInfos, error);
-//     },
-// });
+(window as any).testids = () => {
+    getMoleculesFromStore().flattened.forEach((m) => {
+        if (m.nodes) {
+            m.nodes.forEach((n) => {
+                console.log(m.id, n.parentId);
+            });
+        }
+    });
+}

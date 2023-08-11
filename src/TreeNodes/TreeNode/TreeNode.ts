@@ -355,7 +355,7 @@ export class TreeNode {
     public static loadHierarchicallyFromTreeNodes(
         treeNodes: TreeNode[],
         divideCompoundsByChain = true
-    ): TreeNode {
+): TreeNode {
         // Consider only the terminal nodes
         const allTreeNodes: TreeNode[] = [];
         for (const treeNode of treeNodes) {
@@ -603,29 +603,24 @@ export class TreeNode {
     }
 
     /**
-     * Assigns new ids to all nodes in the tree. This is useful when cloning
-     * a tree, for example. This is done in place.
+     * Assigns new ids to all nodes in the tree. This is useful when cloning a
+     * tree, for example. This is done in place. It also fixed all parentIds.
      */
     reassignAllIds() {
-        // Get all the nodes as a flat TreeNodeList, including cloned. This
-        // is just to make it easier to process each node.
-        const allNodesFlattened = new TreeNodeList([this]);
-        const children = this.nodes;
-        if (children) {
-            allNodesFlattened.extend(children.flattened);
-        }
+        // Get all the nodes (flat).
+        const allNodes = new TreeNodeList([this]).flattened;
 
-        // For every existing id in the flat list, make up a new id.
-        const oldIdToNewId = new Map<string, string>();
-        allNodesFlattened.forEach((node: TreeNode) => {
-            oldIdToNewId.set(node.id as string, randomID());
+        // Go through each node and assign a new id.
+        allNodes.forEach((node: TreeNode) => {
+            node.id = randomID();
         });
 
-        // Go through and assign the new ids, both as ids and parentIDs.
-        allNodesFlattened.forEach((node: TreeNode) => {
-            node.id = oldIdToNewId.get(node.id as string);
-            if (node.parentId) {
-                node.parentId = oldIdToNewId.get(node.parentId);
+        // Go through each node that has children and assign the new parentIds.
+        allNodes.forEach((node: TreeNode) => {
+            if (node.nodes) {
+                node.nodes.forEach((child: TreeNode) => {
+                    child.parentId = node.id;
+                });
             }
         });
     }
@@ -634,6 +629,7 @@ export class TreeNode {
      * A helper function. Adds this node to the molecules in the vuex store.
      */
     public addToMainTree() {
+        this.reassignAllIds();
         getMoleculesFromStore().push(this);
     }
 

@@ -6,7 +6,7 @@ import {
     IUserArgRange,
     IUserArgSelect,
     IUserArgMoleculeInputParams,
-    IUserAlert,
+    IUserArgAlert,
     IUserArgText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
@@ -55,6 +55,18 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
                         (_userArg as IUserArgSelect).options !== undefined
                     ) {
                         userArg.type = UserArgType.Select;
+                    } else if (
+                        (<IUserArgAlert>_userArg).alertType !== undefined
+                    ) {
+                        // It's a message
+                        userArg.type = UserArgType.Alert;
+
+                        if ((<IUserArgAlert>_userArg).label !== undefined) {
+                            throw new Error(
+                                "Cannot specify label on UserArgType.Alert argument: " +
+                                    JSON.stringify(userArg)
+                            );
+                        }
                     } else {
                         userArg.type = UserArgType.Text;
                     }
@@ -81,16 +93,6 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
             if ((<IUserArgGroup>_userArg).childElements !== undefined) {
                 userArg.type = UserArgType.Group;
                 _inferUserInputTypes((<IUserArgGroup>_userArg).childElements); // Recurse
-            } else if ((<IUserAlert>_userArg).alertType !== undefined) {
-                // It's a message
-                userArg.type = UserArgType.Alert;
-
-                if ((<IUserAlert>_userArg).label !== undefined) {
-                    throw new Error(
-                        "Cannot specify label on UserArgType.Alert argument: " +
-                            JSON.stringify(userArg)
-                    );
-                }
             } else {
                 throw new Error(
                     "Could not infer type of user argument: " +

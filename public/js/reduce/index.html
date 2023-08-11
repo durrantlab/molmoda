@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <script>
+        let std = "";
+        let stdOut = "";
+        let stdErr = "";
+
+        var REDUCE_MODULE = {
+
+            noInitialRun: true,
+
+            // stderr will log when any file is read.
+            logReadFiles: true,
+
+            onRuntimeInitialized: function () {
+                // your initialization code here
+            },
+
+            /**
+             * A function that runs when the program exits.
+             */
+            onExit(/* code */) {
+                debugger;
+
+                // // Update with output
+                // jobInfo.output = {
+                //     std: std.trim(),
+                //     stdOut: stdOut.trim(),
+                //     stdErr: stdErr.trim(),
+                //     output: stdOut,
+                //     time: performance.now() - startTime,
+                // };
+
+                // // Resolve the promise with the output
+                // resolve(jobInfo);
+            },
+
+
+            /**
+             * A function that runs when stdout is written to.
+             * 
+             * @param {string} text  The text written to stdout.
+             */
+            print(text) {
+                console.log(text);
+                stdOut += text + "\n";
+                std += text + "\n";
+            },
+
+            /**
+             * A function that runs when stderr is written to.
+             * 
+             * @param {string} text  The text written to stderr.
+             */
+            printErr(text) {
+                console.log(text);
+                stdErr += text + "\n";
+                std += text + "\n";
+            },
+        };
+
+    </script>
+
+    <script type="module">
+        import initModule from "./index.js";
+        initModule(REDUCE_MODULE)
+            .then((mod) => {
+                mod.callMain(['-FLIP', '/receptor.pdb'])
+            })
+    </script>
+
+</body>
+
+</html>

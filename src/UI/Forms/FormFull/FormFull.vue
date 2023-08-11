@@ -132,8 +132,8 @@
                     :type="makeGeneric(formElem).alertType"
                     extraClasses="mt-2 mb-0"
                 >
-                    <span v-if="formElem.description">
-                        {{ formElem.description }}
+                    <span v-if="formElem.val">
+                        {{ formElem.val }}
                     </span>
                 </Alert>
 

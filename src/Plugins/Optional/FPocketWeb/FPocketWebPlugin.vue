@@ -25,7 +25,7 @@ import {
 import {
     UserArg,
     UserArgType,
-    IUserAlert,
+    IUserArgAlert,
     IUserArgCheckbox,
     IUserArgGroup,
     IUserArgMoleculeInputParams,
@@ -113,7 +113,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     type: UserArgType.Alert,
                     val: "Unless you are an expert user, these advanced parameters are best left unmodified",
                     alertType: "warning",
-                } as IUserAlert,
+                } as IUserArgAlert,
                 {
                     id: "min_alpha_size",
                     type: UserArgType.Number,

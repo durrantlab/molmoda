@@ -460,7 +460,10 @@ export class TreeNodeList {
      * the vuex store.
      */
     public addToMainTree() {
-        getMoleculesFromStore().extend(this);
+        for (const node of this._nodes) {
+            node.addToMainTree();
+        }
+        // getMoleculesFromStore().extend(this);
     }
 
     /**

@@ -28,7 +28,7 @@ export type UserArg =
     | IUserArgColor
     | IUserArgCheckbox
     | IUserArgVector3D
-    | IUserAlert
+    | IUserArgAlert
     | IUserSelectRegion;
 
 interface IUserArg {
@@ -109,7 +109,7 @@ export interface IUserArgMoleculeInputParams extends IUserArg {
     val: MoleculeInput | FileInfo[] | IProtCmpdTreeNodePair[];
 }
 
-export interface IUserAlert extends IUserArg {
+export interface IUserArgAlert extends IUserArg {
     // Use val (not label!) as message.
     alertType: string;  // warning, info, etc.
     val: string;  // Required
