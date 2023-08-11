@@ -25,7 +25,7 @@ Title of the popup. This component property is required.
 #### `userArgs` (:property) <a id="userArgs"></a>
 
 The user arguments (plugin parameters) that the end user can specify. This component property is required.
- Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 19](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L19).
+ Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 20](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L20).
 
 
 ### Optional Properties
@@ -134,7 +134,7 @@ The [`title`](#title) of the plugin. This is shown at the top of the plugin bar.
 #### `userArgDefaults` (variable) <a id="userArgDefaults"></a>
 
 A list of user arguments. Note that [`userArgDefaults`](#userArgDefaults) defines the default user argument values (on popup), but it is not reactive. See it as an unchangable template. Modify userArgs to change the user argument values reactively.
- Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 19](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L19).
+ Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 20](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L20).
 
 
 ### Optional Functions/Variables

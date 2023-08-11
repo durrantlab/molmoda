@@ -147,6 +147,10 @@ Would be nice to have alerts (System).
 
 Exhausiveness can't be less than 1
 
+Need to add wasm reduce, but don't commit cruft. Should not be big.
+
+
+
 # DONE
 
 Alert wrong on reduce?

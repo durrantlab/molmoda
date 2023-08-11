@@ -38,3 +38,5 @@ wasm-compile/vina/support/AutoDock-Vina-1.2.3/
 wasm-compile/vina/support/boost_1_82_0/
 wasm-compile/vina/support/emsdk/
 package-lock.json
+
+src/compile_errors.json
