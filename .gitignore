@@ -40,3 +40,5 @@ wasm-compile/vina/support/emsdk/
 package-lock.json
 
 src/compile_errors.json
+
+.temp_cache/

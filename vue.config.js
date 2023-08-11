@@ -3,6 +3,7 @@ const { defineConfig } = require("@vue/cli-service");
 const CopyPlugin = require("copy-webpack-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
 // const webpack = require("webpack");
+const path = require("path");
 
 module.exports = defineConfig({
     devServer: {
@@ -27,6 +28,12 @@ module.exports = defineConfig({
             config.output.devtoolFallbackModuleFilenameTemplate =
                 "webpack:///[resource-path]?[hash]";
         }
+
+        // ChatGPT says this will speed up builds
+        config.cache = {
+            type: "filesystem",
+            cacheDirectory: path.resolve(__dirname, ".temp_cache"),
+        };
 
         config.resolve.fallback = {
             fs: false,
@@ -137,8 +144,6 @@ module.exports = defineConfig({
     //     // devtool: 'source-map',
     //     devtool: 'eval-source-map'
     // }
-
-
 
     // Use devtools source-map
 
