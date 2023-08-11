@@ -12,5 +12,6 @@ export let goldenLayout: GoldenLayout;
  */
 export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
     goldenLayout = new GoldenLayout(glContainer);
+    // (window as any).gl = goldenLayout;
     return goldenLayout;
 }
