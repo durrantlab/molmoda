@@ -57,7 +57,7 @@ export default class TestPlugin extends PluginParentClass {
             id: "group2",
             // type: UserArgType.Group,
             label: "Region Test",
-            childElements: [
+            val: [
                 {
                     id: "region",
                     // label: "Region test",
@@ -83,7 +83,7 @@ export default class TestPlugin extends PluginParentClass {
             id: "group",
             // type: UserArgType.Group,
             label: "Labelme",
-            childElements: [
+            val: [
                 {
                     // type: UserArgType.Number,
                     id: "moose2",

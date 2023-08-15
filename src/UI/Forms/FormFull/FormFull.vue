@@ -17,7 +17,7 @@
                     >
                         <!-- :hideIfDisabled="hideIfDisabled" -->
                         <FormFull
-                            v-model="asGroup(formElem).childElements"
+                            v-model="asGroup(formElem).val"
                             :id="id"
                             @onChange="onDataUpdated"
                         ></FormFull>

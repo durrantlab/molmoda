@@ -27,7 +27,7 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Run a single job.
-     * 
+     *
      * @param {IJobInfo} jobInfo  The job to run.
      * @returns {Promise<IJobInfo>}  The output job.
      */
@@ -88,32 +88,50 @@ export class WebinaQueue extends QueueParent {
                              * A function that runs when the program exits.
                              */
                             onExit(/* code */) {
-                                // Read the contents of the output file
-                                const output = (this as any).FS.readFile(
-                                    "/output.pdbqt",
-                                    {
-                                        encoding: "utf8",
-                                    }
-                                );
-
                                 // Update with output
                                 jobInfo.output = {
                                     std: std.trim(),
                                     stdOut: stdOut.trim(),
                                     stdErr: stdErr.trim(),
-                                    output: output,
                                     time: performance.now() - startTime,
                                 };
+
+                                let output: string;
+                                if (jobInfo.input.webinaParams.score_only) {
+                                    // Score only
+
+                                    // The output should be the input ligand.
+                                    output =
+                                        jobInfo.input.pdbFiles.cmpd.contents.trim();
+
+                                    const splitStr =
+                                        "Estimated Free Energy of Binding";
+                                    jobInfo.output.scoreOnly = splitStr + stdOut
+                                        .trim()
+                                        .split(splitStr)[1];
+                                } else {
+                                    // Actual docking, get from file.
+
+                                    // Read the contents of the output file
+                                    output = (this as any).FS.readFile(
+                                        "/output.pdbqt",
+                                        {
+                                            encoding: "utf8",
+                                        }
+                                    );
+                                }
+
+                                jobInfo.output.output = output;
 
                                 // Resolve the promise with the output
                                 resolve(jobInfo);
                             },
 
                             // Monitor stdout and stderr output
-                            
+
                             /**
                              * A function that runs when stdout is written to.
-                             * 
+                             *
                              * @param {string} text  The text written to stdout.
                              */
                             print(text: string) {
@@ -124,7 +142,7 @@ export class WebinaQueue extends QueueParent {
 
                             /**
                              * A function that runs when stderr is written to.
-                             * 
+                             *
                              * @param {string} text  The text written to stderr.
                              */
                             printErr(text: string) {

@@ -104,7 +104,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         {
             id: "whichMolsGroup",
             label: "Molecules to Save",
-            childElements: [
+            val: [
                 {
                     id: "saveVisible",
                     label: "Visible molecules",

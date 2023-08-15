@@ -68,7 +68,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         //     id: "group",
         //     // type: UserArgType.Group,
         //     label: "Advanced",
-        //     childElements: [
+        //     val: [
         //         {
         //             id: "gen3D",
         //             label: "Calculate 3D atomic coordinates (compounds)",

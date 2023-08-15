@@ -8,6 +8,7 @@
         :pluginId="pluginId"
         actionBtnTxt="Dock"
         @onUserArgChanged="onUserArgChanged"
+        :hideIfDisabled="true"
     >
         <Alert type="warning">
             This plugin assumes your compound(s) and protein(s) have already
@@ -53,12 +54,9 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { messagesApi } from "@/Api/Messages";
 import { WebinaQueue } from "./WebinaQueue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
     ITreeNodeData,
-    SelectedType,
     TreeNodeDataType,
-    TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
@@ -130,7 +128,14 @@ export default class WebinaPlugin extends PluginParentClass {
             label: "Number of processors",
             val: 1,
             filterFunc: (val: number) => {
-                return Math.round(val);
+                val = Math.round(val);
+                if (val < 1) {
+                    val = 1;
+                }
+                if (val > getSetting("maxProcs")) {
+                    val = getSetting("maxProcs");
+                }
+                return val;
             },
             description:
                 "If performing multiple dockings, use 1. Otherwise, consider more.",
@@ -141,7 +146,11 @@ export default class WebinaPlugin extends PluginParentClass {
             label: "Exhaustiveness",
             val: 8,
             filterFunc: (val: number) => {
-                return Math.round(val);
+                val = Math.round(val);
+                if (val < 1) {
+                    val = 1;
+                }
+                return val;
             },
             description:
                 "How thoroughly to search for the pose. Roughly proportional to time.",
@@ -165,7 +174,7 @@ export default class WebinaPlugin extends PluginParentClass {
             id: "webinaAdvancedParams",
             type: UserArgType.Group,
             label: "Advanced docking parameters",
-            childElements: [
+            val: [
                 {
                     id: "warning",
                     type: UserArgType.Alert,
@@ -189,7 +198,11 @@ export default class WebinaPlugin extends PluginParentClass {
                     label: "Number of modes",
                     val: 9,
                     filterFunc: (val: number) => {
-                        return Math.round(val);
+                        val = Math.round(val);
+                        if (val < 1) {
+                            val = 1;
+                        }
+                        return val;
                     },
                     description: "The maximum number of binding poses to show.",
                 } as IUserArgNumber,
@@ -198,6 +211,12 @@ export default class WebinaPlugin extends PluginParentClass {
                     type: UserArgType.Number,
                     label: "Energy range",
                     val: 3,
+                    filterFunc: (val: number) => {
+                        if (val < 0) {
+                            val = 0;
+                        }
+                        return val;
+                    },
                     description:
                         "The maximum energy difference between the best and worst pose.",
                 } as IUserArgNumber,
@@ -231,16 +250,28 @@ export default class WebinaPlugin extends PluginParentClass {
     }
 
     /**
+     * Called when the user arguments change. Override this function to react
+     * when the user arguments change. Access the arguments using this.userArgs.
+     */
+    onUserArgChange() {
+        // If score only, then no keeps only best
+        const scoreOnly = this.getUserArg("score_only");
+        this.setUserArgEnabled("keep_only_best", !scoreOnly);
+        this.setUserArgEnabled("webinaAdvancedParams", !scoreOnly);
+        return;
+    }
+
+    /**
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
         const filePairs: IProtCmpdTreeNodePair[] =
             this.getUserArg("makemolinputparams");
 
-        // Remove makemolinputparams from the arguments
-        let userArgs = this.userArgs.filter(
-            (arg) => arg.id !== "makemolinputparams"
-        );
+        let userArgs = [
+            ...this.userArgs,
+            ...this.getUserArg("webinaAdvancedParams"),
+        ] as UserArg[];
 
         // Prepare Webina parameters
         const webinaParams: { [key: string]: any } = {};
@@ -252,7 +283,6 @@ export default class WebinaPlugin extends PluginParentClass {
             // TODO: region somtimes null. Need to figure out. I think after redocking.
             debugger;
         }
-        delete webinaParams["region"];
         webinaParams["center_x"] = region.center[0];
         webinaParams["center_y"] = region.center[1];
         webinaParams["center_z"] = region.center[2];
@@ -263,10 +293,28 @@ export default class WebinaPlugin extends PluginParentClass {
         webinaParams["ligand"] = "/ligand.pdbqt";
         webinaParams["out"] = "/output.pdbqt";
 
-        // keep_only_best isn't an actual webina parameter.
-        const keepOnlyBest = webinaParams["keep_only_best"];
-        if (webinaParams["keep_only_best"]) {
-            delete webinaParams["keep_only_best"];
+        let keepOnlyBest = webinaParams["keep_only_best"];
+
+        // A number of user args aren't actual webina parameters. Remove them.
+        const notParams = [
+            "region",
+            "keep_only_best",
+            "warning",
+            "makemolinputparams",
+            "webinaAdvancedParams"
+        ];
+        notParams.forEach((notParam) => {
+            if (webinaParams[notParam] !== undefined) {
+                delete webinaParams[notParam];
+            }
+        });
+
+        // If score only, some other parameters aren't needed (shouldn't be set)
+        if (webinaParams["score_only"]) {
+            delete webinaParams["num_modes"];
+            delete webinaParams["energy_range"];
+            delete webinaParams["seed"];
+            keepOnlyBest = true; // because there's only 1
         }
 
         const origAssociatedTreeNodes = filePairs.map((filePair) => {
@@ -294,6 +342,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 // Add keep_only_best and output filename basename to the output
                 webinaOuts.forEach((webinaOut: any, i: number) => {
                     webinaOut.keepOnlyBest = keepOnlyBest;
+                    webinaOut.scoreOnly = webinaParams["score_only"];
                     webinaOut.origProtTreeNode = origAssociatedTreeNodes[i][0];
                     webinaOut.origCmpdTreeNode = origAssociatedTreeNodes[i][1];
                 });
@@ -309,11 +358,11 @@ export default class WebinaPlugin extends PluginParentClass {
                 });
 
                 // Get values
-                const prots = Object.keys(byProtein).map((protId) => {
+                const byProts = Object.keys(byProtein).map((protId) => {
                     return byProtein[protId];
                 });
 
-                this.submitJobs(prots);
+                this.submitJobs(byProts);
                 return;
             })
             .catch((err: Error) => {
@@ -332,7 +381,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {any[]} payloads     The user arguments to pass to the "executable."
+     * @param {any[]} payloads  The user arguments to pass to the "executable."
      *                          Contains compound information.
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
@@ -362,20 +411,73 @@ export default class WebinaPlugin extends PluginParentClass {
                 const model = pdbqtOutLines[0].trim();
 
                 const data: { [key: string]: ITreeNodeData } = {};
-                const scoreLabel = "Docking Scores: " + protPath;
-                data[scoreLabel] = {
-                    data: {
-                        "Score (kcal/mol)": parseFloat(
-                            pdbqtOutLines
-                                .find((line: string) =>
-                                    line.startsWith("REMARK VINA")
-                                )
-                                .split(/\s+/)[3]
-                        ),
-                    },
-                    type: TreeNodeDataType.Table,
-                    treeNodeId: "", // Fill in later
-                };
+                let scoreLabel = "";
+
+                if (payload.scoreOnly) {
+                    // Estimated Free Energy of Binding   : -9.516 (kcal/mol) [=(1)+(2)+(3)+(4)]
+                    // (1) Final Intermolecular Energy    : -14.801 (kcal/mol)
+                    //     Ligand - Receptor              : -14.801 (kcal/mol)
+                    //     Ligand - Flex side chains      : 0.000 (kcal/mol)
+                    // (2) Final Total Internal Energy    : -0.773 (kcal/mol)
+                    //     Ligand                         : -0.773 (kcal/mol)
+                    //     Flex   - Receptor              : 0.000 (kcal/mol)
+                    //     Flex   - Flex side chains      : 0.000 (kcal/mol)
+                    // (3) Torsional Free Energy          : 5.285 (kcal/mol)
+                    // (4) Unbound System's Energy        : -0.773 (kcal/mol)
+
+                    console.log(payload.stdOut);
+
+                    const extractEnergy = (pattern: RegExp): number => {
+                        const match = payload.stdOut.match(pattern);
+                        return match ? parseFloat(match[1]) : NaN;
+                    };
+
+                    const estimatedFreeEnergyOfBinding = extractEnergy(
+                        /Estimated Free Energy of Binding\s*:\s*(-?[\d.]+)/
+                    );
+                    // const finalIntermolecularEnergy = extractEnergy(
+                    //     /\(1\) Final Intermolecular Energy\s*:\s*(-?[\d.]+)/
+                    // );
+                    // const finalTotalInternalEnergy = extractEnergy(
+                    //     /\(2\) Final Total Internal Energy\s*:\s*(-?[\d.]+)/
+                    // );
+                    // const torsionalFreeEnergy = extractEnergy(
+                    //     /\(3\) Torsional Free Energy\s*:\s*(-?[\d.]+)/
+                    // );
+                    // const unboundSystemsEnergy = extractEnergy(
+                    //     /\(4\) Unbound System's Energy\s*:\s*(-?[\d.]+)/
+                    // );
+
+                    scoreLabel = "Webina Scores: " + protPath;
+
+                    data[scoreLabel] = {
+                        data: {
+                            "Score (kcal/mol)": estimatedFreeEnergyOfBinding,
+                            // "Intermolecular (kcal/mol)":
+                            //     finalIntermolecularEnergy,
+                            // "Internal (kcal/mol)": finalTotalInternalEnergy,
+                            // "Torsional (kcal/mol)": torsionalFreeEnergy,
+                            // "Unbound System (kcal/mol)": unboundSystemsEnergy,
+                        },
+                        type: TreeNodeDataType.Table,
+                        treeNodeId: "", // Fill in later
+                    };
+                } else {
+                    scoreLabel = "Webina Docking Scores: " + protPath;
+                    data[scoreLabel] = {
+                        data: {
+                            "Score (kcal/mol)": parseFloat(
+                                pdbqtOutLines
+                                    .find((line: string) =>
+                                        line.startsWith("REMARK VINA")
+                                    )
+                                    .split(/\s+/)[3]
+                            ),
+                        },
+                        type: TreeNodeDataType.Table,
+                        treeNodeId: "", // Fill in later
+                    };
+                }
 
                 // Create fileinfo
                 const modelName = payload.keepOnlyBest
@@ -421,10 +523,6 @@ export default class WebinaPlugin extends PluginParentClass {
                     });
 
                 treeNodesPromises.push(treeNodePromise);
-
-                // this.$store.commit("pushToMolecules", outPdbFileTreeNode);
-
-                // debugger;
             }
         }
 
@@ -450,33 +548,6 @@ export default class WebinaPlugin extends PluginParentClass {
                     TreeNode.loadHierarchicallyFromTreeNodes(dockedTreeNodes);
 
                 rootNode.title = `${title}:docking`;
-
-                // const compoundTreeNodeList = new TreeNodeList([
-                //     new TreeNode({
-                //         title: "Compounds",
-                //         nodes: new TreeNodeList(dockedTreeNodes),
-                //         treeExpanded: true,
-                //         visible: true,
-                //         selected: SelectedType.ChildOfTrue,
-                //         focused: true,
-                //         viewerDirty: true,
-                //         type: TreeNodeType.Compound,
-                //     }),
-                // ]);
-
-                // debugger;
-
-                // // Create a new TreeNodeList
-                // const mainTreeNode = new TreeNode({
-                //     // title: `Docked: ${protPath}, ${ligPath}`,
-                //     title: `${title}:docking`,
-                //     nodes: compoundTreeNodeList,
-                //     treeExpanded: true,
-                //     visible: true,
-                //     selected: SelectedType.True,
-                //     focused: true,
-                //     viewerDirty: true,
-                // });
 
                 rootNode.addToMainTree();
 

@@ -100,9 +100,8 @@ export interface IUserArgSelect extends IUserArg {
 
 export interface IUserArgGroup extends IUserArg {
     // Use label as title.
-    childElements: UserArg[];
+    val: UserArg[];
     startOpened?: boolean;
-    val: null;
 }
 
 export interface IUserArgMoleculeInputParams extends IUserArg {

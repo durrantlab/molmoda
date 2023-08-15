@@ -149,7 +149,7 @@ export const dynamicImports = {
         credit: {
             name: "Reduce",
             url: "https://github.com/rlabduke/reduce",
-            license: Licenses.APACHE2,  // TODO: Not true. Need custom license option.
+            license: Licenses.CUSTOM,
         },
         // get module(): Promise<any> {
         //     return import(

@@ -123,7 +123,7 @@ function detectFileType(contents: string): FileType {
   },
 })
 export default class PasteFilePlugin extends PluginParentClass {
-  menuPath = "Test/Paste File";
+  menuPath = "Test/Paste File...";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
     {
@@ -141,7 +141,7 @@ export default class PasteFilePlugin extends PluginParentClass {
       id: "group2",
       // type: UserArgType.Group,
       label: "Manual Type Selection",
-      childElements: [
+      val: [
         {
           id: "pdb",
           label: ".pdb",
@@ -196,7 +196,7 @@ export default class PasteFilePlugin extends PluginParentClass {
     const userArgs = this.userArgs;
     console.log("PasteFilePlugin: onPopupDone: userArgs: ", userArgs);
 
-    //userArgs[0].childElements[0].val = true;
+    //userArgs[0].val[0].val = true;
 
     const fileInfo = new FileInfo({
       name: "PastedFile" + randomID() + "." + "smi", // getFileExtension(detectFileType(this.inputText)),

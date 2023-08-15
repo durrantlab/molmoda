@@ -42,3 +42,4 @@ package-lock.json
 src/compile_errors.json
 
 .temp_cache/
+debug_with_assertions

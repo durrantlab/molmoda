@@ -38,67 +38,57 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
         }
 
         const _userArg = userArg as UserArg;
-        if (_userArg.val !== undefined) {
-            // User arg has property val
-            switch (typeof _userArg.val) {
-                case "number":
-                    userArg.type =
-                        (_userArg as IUserArgRange).min === undefined
-                            ? UserArgType.Number
-                            : UserArgType.Range;
-                    break;
-                case "string":
-                    // If starts with #, assume color.
-                    if (_userArg.val.startsWith("#")) {
-                        userArg.type = UserArgType.Color;
-                    } else if (
-                        (_userArg as IUserArgSelect).options !== undefined
-                    ) {
-                        userArg.type = UserArgType.Select;
-                    } else if (
-                        (<IUserArgAlert>_userArg).alertType !== undefined
-                    ) {
-                        // It's a message
-                        userArg.type = UserArgType.Alert;
+        // User arg has property val
+        switch (typeof _userArg.val) {
+            case "number":
+                userArg.type =
+                    (_userArg as IUserArgRange).min === undefined
+                        ? UserArgType.Number
+                        : UserArgType.Range;
+                break;
+            case "string":
+                // If starts with #, assume color.
+                if (_userArg.val.startsWith("#")) {
+                    userArg.type = UserArgType.Color;
+                } else if ((_userArg as IUserArgSelect).options !== undefined) {
+                    userArg.type = UserArgType.Select;
+                } else if ((<IUserArgAlert>_userArg).alertType !== undefined) {
+                    // It's a message
+                    userArg.type = UserArgType.Alert;
 
-                        if ((<IUserArgAlert>_userArg).label !== undefined) {
-                            throw new Error(
-                                "Cannot specify label on UserArgType.Alert argument: " +
-                                    JSON.stringify(userArg)
-                            );
-                        }
-                    } else {
-                        userArg.type = UserArgType.Text;
+                    if ((<IUserArgAlert>_userArg).label !== undefined) {
+                        throw new Error(
+                            "Cannot specify label on UserArgType.Alert argument: " +
+                                JSON.stringify(userArg)
+                        );
                     }
-                    break;
-                case "object":
-                    // if (_userArg.val.center !== undefined) {
-                    //     userArg.type = UserArgType.SelectRegion;
-                    // } else {
+                } else {
+                    userArg.type = UserArgType.Text;
+                }
+                break;
+            case "object": // A list or object
+                // if (_userArg.val.center !== undefined) {
+                //     userArg.type = UserArgType.SelectRegion;
+                // } else {
+                // }
+
+                if (Array.isArray(_userArg.val)) {
+                    // If it's an array, assume it's a group.
+                    userArg.type = UserArgType.Group;
+                    _inferUserInputTypes((<IUserArgGroup>_userArg).val); // Recurse
+                } else {
+                    // Assume it's a molecule input params
                     userArg.type = UserArgType.MoleculeInputParams;
-                    // }
-                    break;
-                case "boolean":
-                    userArg.type = UserArgType.Checkbox;
-                    break;
-                default:
-                    throw new Error(
-                        "Could not infer type of user argument: " +
-                            JSON.stringify(userArg)
-                    );
-            }
-        } else {
-            // The only one that doesn't define val is
-            // IUserArgMoleculeInputParams. Do sanity check just the same.
-            if ((<IUserArgGroup>_userArg).childElements !== undefined) {
-                userArg.type = UserArgType.Group;
-                _inferUserInputTypes((<IUserArgGroup>_userArg).childElements); // Recurse
-            } else {
+                }
+                break;
+            case "boolean":
+                userArg.type = UserArgType.Checkbox;
+                break;
+            default:
                 throw new Error(
                     "Could not infer type of user argument: " +
                         JSON.stringify(userArg)
                 );
-            }
         }
     }
 }
@@ -119,10 +109,11 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
             [UserArgType.Text].includes(_userInput.type as UserArgType) &&
             (<IUserArgText>_userInput).filterFunc === undefined
         ) {
+            // The default filterFunc is empty.
             (<IUserArgText>_userInput).filterFunc = (val: any) => val;
         }
 
-        // Add validation function if necessary
+        // Add validation function if necessary (default if not given).
         if (userArg.validateFunc === undefined) {
             if (_userInput.type === UserArgType.Number) {
                 userArg.validateFunc = (v: number) => {
@@ -146,7 +137,7 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
 
     // Restore functions from original.
     for (let i = 0; i < userArgs.length; i++) {
-        const origUserInput = userArgs[i] as UserArg;
+        const origUserInput = origUserArgs[i] as UserArg;
         const userArg = userArgs[i] as UserArg;
         // Casting to IUserArgText to avoid typescript error.
         if ((<IUserArgText>origUserInput).filterFunc !== undefined) {
@@ -216,7 +207,7 @@ export function recurseUserArgsAndAct(
             recurseUserArgsAndAct(
                 compareFunc,
                 onMatch,
-                (userArg as IUserArgGroup).childElements
+                (userArg as IUserArgGroup).val
             )
         ) {
             return true;

@@ -107,7 +107,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
             id: "pocketDetectionParams",
             type: UserArgType.Group,
             label: "Optional Pocket Detection Parameters",
-            childElements: [
+            val: [
                 {
                     id: "warning",
                     type: UserArgType.Alert,

@@ -125,8 +125,6 @@ Good to provide example structures for easy testing?
 
 If you click on an atom, also select in tree.
 
-On docking, multiple nested "Compounds" Docking organized by receptor.
-
 Reduce. Also, need to make sure parameters ok. 
 
 On credit, include title, etc. So that's also part of credits (not just url).
@@ -140,18 +138,28 @@ Improve intro text in central viewer on app open.
 
 Settings reset to default
 
-I think Webina can't rescore. Also, // TODO: region somtimes null. Need to
-figure out. I think after redocking.
+Also, // TODO: region somtimes null. Need to figure out. I think after
+redocking.
 
 Would be nice to have alerts (System).
 
-Exhausiveness can't be less than 1
-
 Need to add wasm reduce, but don't commit cruft. Should not be big.
 
+Dock your test file. asdsadasasaaasdggh.biotite  Look in data at prot path for
+one. It's not good.
 
 
 # DONE
+
+On docking, multiple nested "Compounds" Docking organized by receptor.
+
+I think Webina can't rescore. Need to write separate function that passes the
+output if it is re-score. Perhaps you could just repeat the ligand again so that
+if there's something to put in the tree. Also you should make it so you can't
+keep on the top line if you're rescoring and make other things disappear in that
+case.
+
+Exhausiveness can't be less than 1
 
 Alert wrong on reduce?
 

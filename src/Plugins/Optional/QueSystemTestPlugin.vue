@@ -66,7 +66,7 @@ export default class QueSystemTestPlugin extends PluginParentClass {
       id: "group",
       // type: UserArgType.Group,
       label: "Labelme",
-      childElements: [
+      val: [
         {
           // type: UserArgType.Number,
           id: "moose2",
