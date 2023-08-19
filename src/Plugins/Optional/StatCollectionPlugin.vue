@@ -1,0 +1,108 @@
+<template>
+  <PluginComponent
+    :intro="intro"
+    v-model="open"
+    :title="title"
+    :userArgs="userArgs"
+    @onPopupDone="onPopupDone"
+    :pluginId="pluginId"
+    @onUserArgChanged="onUserArgChanged"
+  >
+    <div>
+      <p>Dear User,</p>
+      <p>
+        We are a university-driven scientific organization, committed to pushing
+        the boundaries of knowledge. To sustain our efforts and secure funding,
+        understanding app usage is vital. Your anonymous statistics ensure we
+        optimize our tools without compromising privacy. Your data is strictly
+        confidential, and we collect only usage patterns for publication
+        purposes. Join us in advancing research and innovation.
+      </p>
+      <p>Your contribution matters!</p>
+      <p>Best regards,</p>
+      <p>Durrantlab</p>
+    </div>
+  </PluginComponent>
+</template>
+
+<script lang="ts">
+import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { Options } from "vue-class-component";
+import Cookies from "js-cookie";
+import {
+  ISoftwareCredit,
+  IContributorCredit,
+} from "@/Plugins/PluginInterfaces";
+import {
+  IUserArgCheckbox,
+  IUserArgGroup,
+  IUserArgText,
+  UserArg,
+  UserArgType,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
+
+@Options({
+  components: {
+    PluginComponent,
+  },
+})
+export default class StatCollectionPlugin extends PluginParentClass {
+  // menuPath = "Test/StatCollection...";
+  menuPath = null;
+  softwareCredits: ISoftwareCredit[] = [];
+  contributorCredits: IContributorCredit[] = [
+    {
+      name: "Yuri K. Kochnev",
+      url: "durrantlab.com",
+    },
+  ];
+  pluginId = "statcollection";
+  intro = "Help Us Improve!";
+  title = "StatCollection";
+
+  open = Cookies.get("statcollection") ? false : true;
+
+  userArgDefaults: UserArg[] = [
+    {
+      id: "statcollection",
+      label: "StatCollection",
+      open: true,
+      val: [
+        {
+          id: "statcollection",
+          label: "StatCollection",
+          val: false,
+          type: UserArgType.Checkbox,
+        } as IUserArgCheckbox,
+      ],
+    } as IUserArgGroup,
+  ];
+
+  onPopupDone() {
+    Cookies.remove("statcollection");
+    /* eslint-disable-next-line  */
+    // @ts-ignore: Object is possibly 'null'.
+    if (this.userArgs[0].val[0].val) {
+      Cookies.set("statcollection", "true", {
+        expires: 365,
+        sameSite: "strict",
+      });
+    } else {
+      Cookies.set("statcollection", "false", {
+        expires: 7,
+        sameSite: "strict",
+      });
+    }
+    console.log(Cookies.get("statcollection"));
+  }
+
+  runJobInBrowser(args: any): Promise<void> {
+    console.log("runJobInBrowser");
+    return Promise.resolve();
+  }
+}
+</script>
+
+<style scoped></style>
+```
