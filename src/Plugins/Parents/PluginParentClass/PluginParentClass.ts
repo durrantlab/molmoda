@@ -4,6 +4,7 @@ import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { mixins } from "vue-class-component";
 import {
     IContributorCredit,
+    IInfoPayload,
     IPluginSetupInfo,
     ISoftwareCredit,
 } from "../../PluginInterfaces";
@@ -105,6 +106,22 @@ export abstract class PluginParentClass extends mixins(
     abstract userArgDefaults: UserArg[];
 
     /**
+     * The payload to send to the plugin component via the infoPayload property.
+     * 
+     * @returns {IInfoPayload}  The info payload.
+     */
+    get infoPayload(): IInfoPayload {
+        return {
+            title: this.title,
+            userArgs: this.userArgs,
+            pluginId: this.pluginId,
+            intro: this.intro || "",
+            softwareCredits: this.softwareCredits,
+            contributorCredits: this.contributorCredits,
+        };
+    }
+
+    /**
      * The user arguments, created from `userArgDefaults`. This is reactive. You
      * should not define it on children.
      */
@@ -165,13 +182,15 @@ export abstract class PluginParentClass extends mixins(
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
      *
-     * @param {any} [payload]   Data to pass to the plugin. Probably only useful
-     *                          when programmatically starting the plugin
-     *                          without using the menu system. Optional.
+     * @param {any} [payload]    Data to pass to the plugin. Probably only
+     *                           useful when programmatically starting the
+     *                           plugin without using the menu system. Optional.
+     * @returns {Promise<void>}  Promise that resolves when the plugin is
+     *                           finished starting.
      * @gooddefault
      * @document
      */
-    public onPluginStart(payload?: any): void {
+    public async onPluginStart(payload?: any): Promise<void> {
         // Reset userArgs to defaults.
         this.userArgs = copyUserArgs(this.userArgDefaults);
 
@@ -195,21 +214,37 @@ export abstract class PluginParentClass extends mixins(
                 ? Promise.resolve(continueOpen)
                 : continueOpen; // Already a promise
 
+        const contOpen = await continuePromise;
+
         // Continue to open plugin only if promise resolves true.
-        continuePromise
-            .then((continueOpen: boolean) => {
-                if (continueOpen === false) {
-                    return;
-                }
-                this.openPopup();
-                setTimeout(() => {
-                    this.onPopupOpen();
-                }, 1000);
-                return;
-            })
-            .catch((err: any) => {
-                throw err;
-            });
+        if (contOpen === false) {
+            return;
+        }
+
+        this.openPopup();
+
+        // Wait a bit before firing onPopupOpen. This is to give the popup
+        // time to open before the plugin starts doing stuff.
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(undefined);
+            }, 1000);
+        });
+
+        this.onPopupOpen();
+
+        // Could set focus using $refs, but I think it will be easier just to
+        // find the field with javascript.
+        if (this.userArgs.length > 0) {
+            const firstFieldId = this.userArgs[0].id;
+            const queryStr = `#modal-${this.pluginId} #${firstFieldId}-${this.pluginId}-item`;
+            const firstField = document.querySelector(queryStr);
+            if (firstField) {
+                (firstField as HTMLElement).focus();
+            }
+        }
+
+        return;
     }
 
     /**
@@ -484,6 +519,8 @@ export abstract class PluginParentClass extends mixins(
         return new TreeNodeList()
             .loadFromFileInfo(fileInfo)
             .then((newTreeNodeList) => {
+                // Note: If loading biotite file, newTreeNodeList will be
+                // undefined.
                 if (newTreeNodeList) {
                     return newTreeNodeList.addToMainTree();
                 }

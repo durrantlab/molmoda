@@ -15,6 +15,13 @@ import {
     MoleculeInput,
 } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
+/**
+ * Fix the user arguments. Infers the types if not given, and adds in default
+ * values if not given. 
+ * 
+ * @param {UserArg[]} userArgs  The user arguments.
+ * @returns {UserArg[]} The user arguments, fixed.
+ */
 export function fixUserArgs(userArgs: UserArg[]): UserArg[] {
     _inferUserInputTypes(userArgs);
     _addDefaultUserInputsIfNeeded(userArgs);
@@ -131,6 +138,12 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
     }
 }
 
+/**
+ * Copy the user arguments.
+ * 
+ * @param {UserArg[]} origUserArgs  The original user arguments.
+ * @returns {UserArg[]} The copied user arguments.
+ */
 export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
     // Make a copy of the user arguments so we don't modify the original.
     const userArgs = JSON.parse(JSON.stringify(origUserArgs));
@@ -159,6 +172,9 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
                 userArg.val as IMoleculeInputParams
             );
         }
+
+        // If it's a Region, turn it back into an object.
+        // debugger;
     }
 
     // this.inferUserInputTypes(userArgs);
@@ -217,6 +233,13 @@ export function recurseUserArgsAndAct(
     return false;
 }
 
+/**
+ * Goes through userArgs and converts any MoleculeInputParams to FileInfos.
+ *
+ * @param {UserArg[]} userArgs  The user arguments.
+ * @returns {Promise<any>} A promise that resolves when all the
+ *                         MoleculeInputParams have been converted to FileInfos.
+ */
 export function convertMoleculeInputParamsToFileInfos(
     userArgs: UserArg[]
 ): Promise<any> {

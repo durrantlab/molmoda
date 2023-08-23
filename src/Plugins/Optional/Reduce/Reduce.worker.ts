@@ -21,7 +21,7 @@ waitForDataFromMainThread()
 
         // https://emscripten.org/docs/api_reference/module.html
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             return REDUCE_MODULE({
                 noInitialRun: true,
 

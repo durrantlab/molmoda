@@ -64,6 +64,12 @@ export function getFileType(fileInfo: FileInfo | string): string {
         return ext;
     }
 
+    // This happens when extension hasn't been added yet (for example, filename
+    // user gives from plugin).
+    if (ext === "") {
+        return ext;
+    }
+
     // It's not a molecular filetype. TODO: Will need to implement something
     // separate for other foramts (CSV, etc.).
     // console.warn("Could not determine filetype for " + fileInfo.name);

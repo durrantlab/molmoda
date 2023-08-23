@@ -111,16 +111,32 @@ export default class TreeView extends Vue {
         return this.$store.state["molecules"];
     }
 
+    /**
+     * Get the tree data, with all nodes flattened.
+     *
+     * @returns {TreeNode[]} The flattened tree data.
+     */
     get allTreeDataFlattened(): TreeNode[] {
         return !this.treeData
             ? (this.storeMolecules as TreeNodeList).flattened.toArray()
             : (this.treeData as TreeNodeList).flattened.toArray();
     }
 
+    /**
+     * Get the text that will be used for filtering.
+     *
+     * @param {TreeNode} item  The item to get the text from.
+     * @returns {string}  The text to use for filtering.
+     */
     extractTextToFilterFunc(item: TreeNode): string {
         return item.title;
     }
 
+    /**
+     * Handle the filter event.
+     *
+     * @param {TreeNode[] | null} filteredNodes  The filtered nodes.
+     */
     onFilter(filteredNodes: TreeNode[] | null) {
         this.filteredTreeNodes = filteredNodes;
     }

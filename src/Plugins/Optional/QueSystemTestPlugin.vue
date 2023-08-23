@@ -1,11 +1,8 @@
 <template>
   <PluginComponent
-    :userArgs="userArgs"
     v-model="open"
-    :title="title"
-    :intro="intro"
+    :infoPayload="infoPayload"
     @onPopupDone="onPopupDone"
-    :pluginId="pluginId"
     @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>

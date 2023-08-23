@@ -24,19 +24,19 @@ def validate_plugin(ts_file):
         )
 
     required_substrs = [
+        # (
+        #     ':userArgs="userArgs"',
+        #     'The PluginComponent must define a userArgs prop like this: :userArgs="userArgs"',
+        #     None,
+        # ),
+        # (
+        #     ':intro="intro',
+        #     'The PluginComponent must define an intro prop like this: :intro="intro"',
+        #     None,
+        # ),
         (
-            ':userArgs="userArgs"',
-            'The PluginComponent must define a userArgs prop like this: :userArgs="userArgs"',
-            None,
-        ),
-        (
-            ':intro="intro',
-            'The PluginComponent must define an intro prop like this: :intro="intro"',
-            None,
-        ),
-        (
-            ':title="title',
-            'The PluginComponent must define a title prop like this: :title="title"',
+            ':infoPayload="infoPayload"',
+            'The PluginComponent must define a title prop like this: :infoPayload="infoPayload"',
             None,
         ),
         (
@@ -48,16 +48,16 @@ def validate_plugin(ts_file):
                 "CloneExtractMolPlugin.vue",
             ],
         ),
-        (
-            'title="',
-            'The PluginComponent must define a title like this: title="My Plugin"',
-            None,
-        ),
-        (
-            ':pluginId="pluginId"',
-            'The PluginComponent must define a pluginId prop like this: :pluginId="pluginId"',
-            None,
-        ),
+        # (
+        #     'title="',
+        #     'The PluginComponent must define a title like this: title="My Plugin"',
+        #     None,
+        # ),
+        # (
+        #     ':pluginId="pluginId"',
+        #     'The PluginComponent must define a pluginId prop like this: :pluginId="pluginId"',
+        #     None,
+        # ),
         (
             "extends PluginParentClass",
             "All plugins must extend PluginParentClass",
@@ -73,6 +73,11 @@ def validate_plugin(ts_file):
             'All plugins must include @onUserArgChanged="onUserArgChanged"',
             None,
         ),
+        (
+            'getTests(',
+            'All plugins must define a getTests function. If a test is not needed, return an empty array.',
+            None
+        )
     ]
 
     if "noPopup = true" not in content:
@@ -93,7 +98,7 @@ def validate_plugin(ts_file):
             required_substrs.append(
                 (
                     '..."',
-                    "Unless a plugin defes noPopup to be true, the menu item must end in ...",
+                    'Unless a plugin defines noPopup to be true, its menu item must end in "..."',
                     [],
                 ),
             )

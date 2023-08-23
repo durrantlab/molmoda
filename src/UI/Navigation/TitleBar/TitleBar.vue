@@ -207,6 +207,12 @@ export default class TitleBar extends Vue {
         return selectInstructionsBrief;
     }
 
+    /**
+     * Get the title of the molecule (node). Makes some adjustments to the title
+     * specified in the TreeNode itself.
+     *
+     * @returns {string} The title of the molecule (node).
+     */
     get title(): string {
         let title = this.treeDatum.title;
         
@@ -336,7 +342,7 @@ export default class TitleBar extends Vue {
      *
      * @param {string} id  The id of the molecule (node).
      */
-    toggleFocused(id: string) {
+    async toggleFocused(id: string) {
         let allData = this.$store.state["molecules"] as TreeNodeList;
         if (this.getNode(id)?.focused) {
             // If the one you're clicking is already focused, then unfocus all.
@@ -347,6 +353,8 @@ export default class TitleBar extends Vue {
                 node.focused = node.id === id;
             });
         }
+        const viewer = await api.visualization.viewer;
+        viewer.zoomOnFocused();
     }
 
     /**

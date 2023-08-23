@@ -23,6 +23,8 @@ import {
 } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
+import { store } from "@/Store";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 
@@ -175,7 +177,7 @@ export abstract class ViewerParent {
         const model = this.molCache[id];
         if (model) {
             this.showMolecule(id);
-            this._makeAtomsHoverableAndClickable(model);
+            this._makeAtomsHoverableAndClickable(model, id);
             return;
         }
 
@@ -438,12 +440,17 @@ export abstract class ViewerParent {
     /**
      * Makes atoms responsive to mouse hovering and clicking.
      *
-     * @param {GenericModelType} model  The model to make atoms hoverable and
-     *                                  clickable.
+     * @param {GenericModelType} model    The model to make atoms hoverable and
+     *                                    clickable.
+     * @param {string}           modelID  The ID of the model.
      */
-    private _makeAtomsHoverableAndClickable(model: GenericModelType) {
+    private _makeAtomsHoverableAndClickable(
+        model: GenericModelType,
+        modelID: string
+    ) {
         this.makeAtomsClickable(model, (x: number, y: number, z: number) => {
             api.plugins.runPlugin("moveregionsonclick", [x, y, z]);
+            selectProgramatically(modelID);
             setStoreVar("clearFocusedMolecule", false);
         });
 
@@ -476,6 +483,55 @@ export abstract class ViewerParent {
      * @returns {void}
      */
     abstract zoomToModels(ids: string[]): void;
+
+    /**
+     * Zoom in on the focused molecules.
+     *
+     * @param {string[]} visibleTerminalNodeModelsIds  The visible models. If no
+     *                                                 tree nodes are labeled as
+     *                                                 focused, the function
+     *                                                 will just use all visible
+     *                                                 terminal nodes. If this
+     *                                                 is undefined, will
+     *                                                 determine from the tree
+     *                                                 which are visible and
+     *                                                 terminal.
+     */    
+    public zoomOnFocused(visibleTerminalNodeModelsIds?: string[]) {
+        let molsToFocusIds: string[] = [];
+        const allMols = getMoleculesFromStore();
+        const flatNodes = allMols.flattened;
+        for (let idx = 0; idx < flatNodes.length; idx++) {
+            const treeNode = flatNodes.get(idx);
+            if (treeNode.focused) {
+                if (!treeNode.nodes) {
+                    // Already terminal
+                    molsToFocusIds = [treeNode.id as string];
+                } else {
+                    const children = treeNode.nodes;
+                    molsToFocusIds = children.filters.onlyTerminal.map(
+                        (n) => n.id as string
+                    ) as string[];
+                }
+                break;
+            }
+        }
+
+        if (molsToFocusIds.length === 0) {
+            if (visibleTerminalNodeModelsIds === undefined) {
+                visibleTerminalNodeModelsIds = allMols.terminals.filters
+                    .keepVisible()
+                    .map((n) => n.id as string);
+            }
+            molsToFocusIds = visibleTerminalNodeModelsIds;
+        }
+
+        this.renderAll();
+        if (store.state["updateZoom"]) {
+            this.zoomToModels(molsToFocusIds);
+            // api.visualization.viewer.zoom(0.8);
+        }
+    }
 
     /**
      * Zoom in on a specific point.
@@ -545,11 +601,11 @@ export abstract class ViewerParent {
      * Converts the 3DMoljs style stored in the molecules tree to a style format
      * compatible with this viewer.
      *
-     * @param {IStyle}        style         The style to convert.
-     * @param {TreeNode} treeNode  The molecular container, which may
-     *                                      contain additional/more accessible
-     *                                      information about the molecule than
-     *                                      is available in the model itself.
+     * @param {IStyle}   style     The style to convert.
+     * @param {TreeNode} treeNode  The molecular container, which may contain
+     *                             additional/more accessible information about
+     *                             the molecule than is available in the model
+     *                             itself.
      * @returns {GenericStyleType}  The converted style.
      */
     abstract convertStyle(style: IStyle, treeNode: TreeNode): GenericStyleType;
@@ -568,7 +624,7 @@ export abstract class ViewerParent {
      */
     public unLoadViewer() {
         // Remove from api
-        api.visualization.viewer = undefined;
+        api.visualization.viewerObj = undefined;
         loadViewerLibPromise = undefined;
 
         // Do any viewer-specific unloading

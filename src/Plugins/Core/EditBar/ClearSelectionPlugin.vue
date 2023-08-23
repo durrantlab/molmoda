@@ -1,10 +1,7 @@
 <template>
     <PluginComponent
         v-model="open"
-        :title="title"
-        :userArgs="userArgs"
-        :pluginId="pluginId"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
@@ -47,7 +44,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = "Clear the selection of all molecules."
+    intro = "Clear the selection of all molecules.";
 
     /**
      * Check if this plugin can currently be used.
@@ -81,14 +78,12 @@ export default class ClearSelectionPlugin extends PluginParentClass {
      * @returns {ITest}  The selenium test commands.
      */
     getTests(): ITest {
-        const beforePluginOpens = new TestCmdList()
-            .loadExampleProtein(true)
-            .selectMoleculeInTree("Protein");
-
         return {
-            beforePluginOpens: beforePluginOpens.cmds,
+            beforePluginOpens: new TestCmdList()
+                .loadExampleProtein(true)
+                .selectMoleculeInTree("Protein").cmds,
             closePlugin: [],
-            afterPluginCloses: [],
+            afterPluginCloses: new TestCmdList().wait(1).cmds,
         };
     }
 }

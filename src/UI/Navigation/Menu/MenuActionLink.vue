@@ -12,7 +12,7 @@
             href="#"
             :id="'menu-plugin-' + idSlug"
         >
-            {{ menuData._text }}
+            {{ menuData._text?.replace("_", "") }}
             <div v-if="showHotkey" style="float: right" class="text-muted">
                 {{ hotkeyPrefix }}{{ menuData.hotkey?.toUpperCase() }}
             </div>

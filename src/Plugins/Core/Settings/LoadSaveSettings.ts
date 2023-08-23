@@ -64,7 +64,7 @@ export function applySettings(settings: UserArg[]) {
     const defaults = defaultSettings();
 
     const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
-    visualizationApi.viewer?.unLoadViewer();
+    visualizationApi.viewerObj?.unLoadViewer();
     setStoreVar("molViewer", molViewer);
 }
 

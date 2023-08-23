@@ -15,6 +15,9 @@ export const pluginsApi = {
         }
     },
 
+    /**
+     * Closes all plugins.
+     */
     closeAllPlugins: function () {
         for (const pluginName in loadedPlugins) {
             const plugin = loadedPlugins[pluginName];

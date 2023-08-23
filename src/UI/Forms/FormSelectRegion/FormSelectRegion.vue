@@ -6,7 +6,9 @@
         <!-- cls="border-0 mt-2" -->
         <!-- cls="px-3" -->
         <FormWrapper
-            :label="regionsInTree ? 'Load from Sphere or Box Region' : undefined"
+            :label="
+                regionsInTree ? 'Load from Sphere or Box Region' : undefined
+            "
             :disabled="disabled"
         >
             <FormSelect
@@ -114,8 +116,8 @@ const sortFunc = (a: TreeNode, b: TreeNode) => {
 
 const defaultVals = {
     center: [0, 0, 0],
-    dimensions: [0, 0, 0],
-    radius: 0,
+    dimensions: [20, 20, 20],
+    radius: 20,
 } as ISphereOrBox;
 
 /**
@@ -147,7 +149,7 @@ export default class FormSelectRegion extends Vue {
 
     /**
      * Get the name of the region to use.
-     * 
+     *
      * @returns {string} The name of the region to use.
      */
     get regionNameToUse(): string {
@@ -176,9 +178,33 @@ export default class FormSelectRegion extends Vue {
     @Watch("modelValue", { deep: true, immediate: true })
     onModelValueChanged() {
         if (this.modelValue === null || this.modelValue === undefined) {
-            this.modelValueToUse = defaultVals;
+            this.modelValueToUse = JSON.parse(JSON.stringify(defaultVals));
+            this.selectedRegionId = "noneSelected";
             return;
         }
+
+        // Make sure radius and dimensions > 0.1.
+        if (
+            (this.modelValue as ISphere).radius !== undefined &&
+            (this.modelValue as ISphere).radius < 0.1
+        ) {
+            this.modelValue.radius = 0.1;
+        }
+
+        if ((this.modelValue as IBox).dimensions !== undefined) {
+            if ((this.modelValue as IBox).dimensions[0] < 0.1) {
+                (this.modelValue as IBox).dimensions[0] = 0.1;
+            }
+
+            if ((this.modelValue as IBox).dimensions[1] < 0.1) {
+                (this.modelValue as IBox).dimensions[1] = 0.1;
+            }
+
+            if ((this.modelValue as IBox).dimensions[2] < 0.1) {
+                (this.modelValue as IBox).dimensions[2] = 0.1;
+            }
+        }
+
         this.modelValueToUse = this.modelValue;
     }
 
@@ -390,6 +416,13 @@ export default class FormSelectRegion extends Vue {
         // // In some circumstances (e.g., changing values in an object), not reactive.
         // // Emit also "onChange" to signal the value has changed.
         this.$emit("onChange");
+    }
+
+    /**
+     * Runs when the component is mounted.
+     */
+    mounted() {
+        this.onModelValueToUseChanged();
     }
 }
 </script>

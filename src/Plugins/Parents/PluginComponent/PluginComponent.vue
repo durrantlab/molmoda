@@ -1,6 +1,6 @@
 <template>
     <Popup
-        :title="title"
+        :title="infoPayload.title"
         v-model="openToUse"
         :cancelBtnTxt="cancelBtnTxt"
         :actionBtnTxt="actionBtnTxt"
@@ -15,14 +15,16 @@
         @onDone3="onPopupDone3"
         @onDone4="onPopupDone4"
         @onClosed="onClosed"
-        :id="'modal-' + pluginId"
+        :id="'modal-' + infoPayload.pluginId"
         :modalWidth="modalWidth"
     >
-        <p v-if="intro !== ''" v-html="intro"></p>
+        <!-- :footerTxt="citationTxt" -->
+        <p v-if="infoPayload.intro !== ''" v-html="infoPayload.intro"></p>
+        <span v-if="citationsTxt !== ''" v-html="citationsTxt"></span>
         <slot></slot>
         <FormFull
             ref="formfull"
-            :id="pluginId"
+            :id="infoPayload.pluginId"
             v-model="userArgsFixed"
             @onChange="onChange"
             :hideIfDisabled="hideIfDisabled"
@@ -35,15 +37,18 @@
 // Every plugin component must use this component.
 
 import { Options, mixins } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
-import {
-    UserArg,
-} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { Prop } from "vue-property-decorator";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { fixUserArgs, convertMoleculeInputParamsToFileInfos } from "../UserInputUtils";
+import {
+    fixUserArgs,
+    convertMoleculeInputParamsToFileInfos,
+} from "../UserInputUtils";
+import { IInfoPayload } from "@/Plugins/PluginInterfaces";
+import { citationsTxt } from "@/Plugins/Citations";
 
 /**
  * PopupOptionalPlugin component
@@ -55,31 +60,18 @@ import { fixUserArgs, convertMoleculeInputParamsToFileInfos } from "../UserInput
     },
 })
 export default class PluginComponent extends mixins(PopupMixin) {
-    /** Title of the popup. */
-    @Prop({ required: true }) title!: string;
-
-    /** The user arguments (plugin parameters) that the end user can specify. */
-    @Prop({ required: true }) userArgs!: UserArg[];
-
-    /** A unique id that defines the plugin. Must be lower case. */
-    @Prop({ required: true }) pluginId!: string;
-
     /** Whether the action button (e.g., "Load") is enabled. */
     @Prop({ default: undefined }) isActionBtnEnabled!: boolean;
 
     @Prop({ default: undefined }) modalWidth!: string;
+
+    @Prop({ required: true }) infoPayload!: IInfoPayload;
 
     /**
      * Whether to hide user parameters that are disabled or to show them in a
      * disabled state.
      */
     @Prop({ default: false }) hideIfDisabled!: boolean;
-
-    /**
-     * Introductory text that appears at the top of the plugin (above the user
-     * inputs).
-     */
-    @Prop({ default: "" }) intro!: string;
 
     /** The text that appears on the action button (e.g., "Load"). */
     @Prop({ default: "Load" }) actionBtnTxt!: string;
@@ -105,12 +97,31 @@ export default class PluginComponent extends mixins(PopupMixin) {
      */
     @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
 
+    /**
+     * The user arguments (i.e., plugin parameters) to use.
+     *
+     * @returns {UserArg[]} The user arguments (i.e., plugin parameters) to use.
+     */
     get userArgsFixed(): UserArg[] {
-        return fixUserArgs(this.userArgs);
+        return fixUserArgs(this.infoPayload.userArgs);
     }
 
+    /**
+     * Sets the user arguments (i.e., plugin parameters) that should be used.
+     *
+     * @param {UserArg[]} val  The user arguments (i.e., plugin parameters).
+     */
     set userArgsFixed(val: UserArg[]) {
         this.onChange(val);
+    }
+
+    /**
+     * Get multiple citations as a string.
+     * 
+     * @returns {string} The citations as a string.
+     */
+    get citationsTxt(): string {
+        return citationsTxt(this.infoPayload);
     }
 
     /**
@@ -144,14 +155,13 @@ export default class PluginComponent extends mixins(PopupMixin) {
      * Runs when the user presses the action button and the popup closes.
      */
     async onPopupDone() {
-        
         // Close the popup
         this.$emit("update:modelValue", false);
         // this.closePopup();
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        await convertMoleculeInputParamsToFileInfos(this.userArgs);
+        await convertMoleculeInputParamsToFileInfos(this.infoPayload.userArgs);
 
         this.$emit("onPopupDone");
     }
@@ -186,10 +196,8 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
     /**
      * Runs when the user data changes.
-     *
-     * @param {UserArg[]} vals  The updated values.
      */
-    onChange(vals: UserArg[]) {
+    onChange(userArgsFixed: UserArg[]) {
         // Runs when the user changes any user arguments (plugin parameters).
         this.$emit("onUserArgChanged", this.userArgsFixed);
     }

@@ -100,6 +100,17 @@ export const dynamicImports = {
             name: "3Dmol.js",
             url: "https://3dmol.csb.pitt.edu/",
             license: Licenses.BSD3,
+            citations: [
+                {
+                    title: "3Dmol.js: molecular visualization with WebGL",
+                    authors: ["Rego, Nicholas", "Koes, David"],
+                    journal: "Bioinformatics",
+                    year: 2015,
+                    volume: 31,
+                    issue: 8,
+                    pages: "1322-1324",
+                }
+            ]
         },
 
         /**
@@ -150,6 +161,17 @@ export const dynamicImports = {
             name: "Reduce",
             url: "https://github.com/rlabduke/reduce",
             license: Licenses.CUSTOM,
+            citations: [
+                {
+                    title: "Asparagine and glutamine: using hydrogen atom contacts in the choice of side-chain amide orientation",
+                    authors: ["Word, J. Michael", "Lovell, Simon C."],
+                    journal: "J. Mol. Biol.",
+                    year: 1999,
+                    volume: 285,
+                    issue: 4,
+                    pages: "1735-1747"
+                }
+            ]
         },
         // get module(): Promise<any> {
         //     return import(
@@ -168,6 +190,17 @@ export const dynamicImports = {
             name: "Webina",
             url: "https://durrantlab.pitt.edu/webina-download/",
             license: Licenses.APACHE2,
+            citations: [
+                {
+                    title: "Webina: an open-source library and web app that runs AutoDock Vina entirely in the web browser",
+                    authors: ["Kochnev, Yuri", "Hellemann, Erich"],
+                    journal: "Bioinformatics",
+                    year: 2020,
+                    volume: 36,
+                    issue: 16,
+                    pages: "4513-4515",
+                }
+            ]
         },
 
         /**
@@ -286,6 +319,17 @@ export const dynamicImports = {
             name: "Open Babel",
             url: "https://openbabel.org/wiki/Main_Page",
             license: Licenses.GPL2,
+            citations: [
+                {
+                    title: "Open Babel: An open chemical toolbox",
+                    authors: ["O'Boyle, Noel M", "Banck, Michael"],
+                    journal: "J. Cheminformatics",
+                    year: 2011,
+                    volume: 3,
+                    issue: 1,
+                    pages: "1-14",
+                }
+            ]
         },
     },
     smilesdrawer: {
@@ -293,6 +337,17 @@ export const dynamicImports = {
             name: "smilesdrawer",
             url: "https://github.com/reymond-group/smilesDrawer",
             license: Licenses.MIT,
+            citations: [
+                {
+                    title: "SmilesDrawer: Parsing and Drawing SMILES-Encoded Molecular Structures Using Client-Side JavaScript",
+                    authors: ["Probst, Daniel", "Reymond, Jean-Louis"],
+                    journal: "J. Chem. Inf. Model.",
+                    year: 2018,
+                    volume: 58,
+                    issue: 1,
+                    pages: "1-7",
+                }
+            ]
         },
         /**
          * Gets the module.
@@ -338,6 +393,7 @@ export const dynamicImports = {
             name: "rdkitjs",
             url: "https://github.com/rdkit/rdkit-js",
             license: Licenses.BSD3,
+            // TODO: Citation? Couldn't find it.
         },
     },
     sheetsjs: {
@@ -455,6 +511,17 @@ export const dynamicImports = {
             name: "fpocketweb",
             url: "https://git.durrantlab.pitt.edu/jdurrant/fpocketweb",
             license: Licenses.APACHE2,
+            citations: [
+                {
+                    title: "FPocketWeb: protein pocket hunting in a web browser",
+                    authors: ["Kochnev, Yuri", "Durrant, Jacob D"],
+                    journal: "J. Cheminformatics",
+                    year: 2022,
+                    volume: 14,
+                    issue: 1,
+                    pages: "58",
+                }
+            ]
         },
     },
 };

@@ -2,6 +2,7 @@
   <div v-if="testSpecified" style="height:0; opacity:0;">
     <span id="test-cmds">{{ $store.state.test.cmds }}</span>
     <span id="test-error">{{ $store.state.test.error }}</span>
+    <span id="test-msgs">{{  $store.state.test.msgs }}</span>
   </div>
 </template>
   
@@ -11,7 +12,7 @@ import { pluginToTest } from "./PluginToTest";
 //   import { Prop } from "vue-property-decorator";
 
 /**
- * FormFull
+ * TestData
  */
 @Options({
   components: {},

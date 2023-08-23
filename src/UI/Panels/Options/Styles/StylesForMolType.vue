@@ -229,8 +229,6 @@ export default class StylesForMolType extends Vue {
                 // @ts-ignore
                 let val = style[repName];
                 if (val === undefined) {
-                    debugger;
-                    console.log(defaultStyles);
                     val = (defaultStyles[this.molType] as any)[0][repName];
                     // val should be like {color: 'spectrum'}.
 

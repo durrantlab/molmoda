@@ -10,6 +10,7 @@ system uses these to autopopulate with plugins. -->
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
+    <ExampleDataPlugin @onPluginSetup="onPluginSetup"></ExampleDataPlugin>
     <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
     <JobsWindowPlugin @onPluginSetup="onPluginSetup"></JobsWindowPlugin>
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
@@ -60,6 +61,7 @@ import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
+import ExampleDataPlugin from "./Core/LocalMolLoadersSavers/ExampleDataPlugin.vue";
 import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
 import JobsWindowPlugin from "./Core/Window/JobsWindowPlugin.vue";
 import LoadAlphaFoldPlugin from "./Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue";
@@ -107,6 +109,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     CloneMolPlugin,
     DataWindowPlugin,
     DeleteMolPlugin,
+    ExampleDataPlugin,
     InformationWindowPlugin,
     JobsWindowPlugin,
     LoadAlphaFoldPlugin,

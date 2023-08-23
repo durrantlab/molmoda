@@ -1,17 +1,14 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
-        :title="title"
+        :infoPayload="infoPayload"
         v-model="open"
         cancelBtnTxt="Cancel"
-        :pluginId="pluginId"
         actionBtnTxt="New Project"
         @onPopupDone="onPopupDone"
         actionBtnTxt2="Save Project First"
         @onPopupDone2="saveProject"
         :isActionBtnEnabled="true"
-        :intro="intro"
-        @onUserArgChanged="onUserArgChanged"
+            @onUserArgChanged="onUserArgChanged"
     >
         <p>
             Would you like to
@@ -58,7 +55,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     hotkey = "n";
-    intro = "Start a new project. Your current project will be lost."
+    intro = "Start a new project. Your current project will be lost.";
 
     /**
      * Runs when the user presses the action button and the popup closes.

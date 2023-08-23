@@ -39,9 +39,13 @@ Localization: https://kazupon.github.io/vue-i18n/started.html#javascript
 
 Bootstrap Tour
 
-How useful is log really?
-
 NOT REALLY NEEDED YET: https://vuejs.org/guide/components/async.html#basic-usage
+
+https://firebase.google.com/docs/auth
+
+Add graphs to data too. Plotly? Also, you should be able to download graphs
+(png, svg, xlsx, csv). And text too. And should auto keep track of how the
+molecule was generated.
 
 # Ongoing: Important
 
@@ -49,16 +53,10 @@ Current version of openbabel (tmp version) converts only first fframe of file
 (e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
 openmolecules to check for three molecules when you get that fixed.
 
-When change colors and things, shouldn't refocus.
-
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
 updateAppName not used anywhere, but I think it should be.
-
-Add graphs to data too. Plotly? Also, you should be able to download graphs
-(png, svg, xlsx, csv). And text too. And should auto keep track of how the
-molecule was generated.
 
 Test elements could be restructured as objects. Would be better to put functions
 on each one. Then, Tutorial based on tests (first one). Started to do this. See
@@ -92,16 +90,7 @@ etc. Also, you could standardie how webworkers are used for multiprocessing
 
 Open options: add 3D coordinates, frames to separate molecules, etc.
 
-https://firebase.google.com/docs/auth
-
 ligs.cif shows only one
-
-See // TODO: Need to use timeout here.
-
-**** Need to check if hydrogen atoms added to protein and ligand befor eWebina.
-
-Search for "// Select not input not textarea" and consider using this more
-judiciously.
 
 Draw molecule. (Yuri working on this)
 
@@ -114,21 +103,12 @@ Popups (done, start after delay) need to be built into the queue system.
 *** Whenever new molecule created, create that record be kept of how it was
 obtained. That record can be viewed.
 
-Continue compound prepare. Also, search for // TODO: Why does this occasionally happen? . Happens quite a bit.
+Search for // TODO: Why does this occasionally happen? . Happens quite a bit.
 
 Queue system should throw an error if any single job requires more than number
 of processors available.
 
-Good to provide example structures for easy testing?
-
-// TODO: Not true. Need custom license option.
-
-If you click on an atom, also select in tree.
-
-Reduce. Also, need to make sure parameters ok. 
-
-On credit, include title, etc. So that's also part of credits (not just url).
-Well, maybe just url to paper.
+Reduce. Make sure parameters ok. 
 
 Yuri could work on analytics integration. (Assigned)
 
@@ -138,9 +118,6 @@ Improve intro text in central viewer on app open.
 
 Settings reset to default
 
-Also, // TODO: region somtimes null. Need to figure out. I think after
-redocking.
-
 Would be nice to have alerts (System).
 
 Need to add wasm reduce, but don't commit cruft. Should not be big.
@@ -148,8 +125,49 @@ Need to add wasm reduce, but don't commit cruft. Should not be big.
 Dock your test file. asdsadasasaaasdggh.biotite  Look in data at prot path for
 one. It's not good.
 
+Put surface then hide. Nothing underneath.
+
+No .cmds needed. Do on backend.
+
+If afterPlugin empty wait 1 sec by default. So not needed in each plugin. then
+check all plugins and remove where this appears.
 
 # DONE
+
+See // TODO: Need to use timeout here.
+
+Error on popup is truncated. Need to see.
+
+Search for "// Select not input not textarea" and consider using this more
+judiciously.
+
+How useful is log really?
+
+If you click on an atom, also select in tree.
+
+When change colors and things, shouldn't refocus.
+
+Append... doesn't refocus. Check elsewhere to see refocusing. Also, when click
+on focus button. Much work remains.
+
+Also, // TODO: region somtimes null. Need to figure out. I think after
+redocking.
+
+Need to check if hydrogen atoms added to protein and ligand befor eWebina.
+
+On credit, include title, etc. So that's also part of credits (not just url).
+Well, maybe just url to paper.
+
+No longer focusing on first field for some reason.
+
+Good to provide example structures for easy testing? Done, but title, etc.,
+needs updating.
+
+Protonate Proteins intro is wrong.
+
+// TODO: Not true. Need custom license option.
+
+Credits should also have optional citations (e.g., protein data bank).
 
 On docking, multiple nested "Compounds" Docking organized by receptor.
 

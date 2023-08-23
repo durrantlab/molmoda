@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         actionBtnTxt="Detect"
         @onUserArgChanged="onUserArgChanged"
     >
@@ -72,6 +69,21 @@ export default class FPocketWebPlugin extends PluginParentClass {
             name: "fpocket",
             url: "https://github.com/Discngine/fpocket",
             license: Licenses.MIT,
+            citations: [
+                {
+                    title: "Fpocket: An open source platform for ligand pocket detection",
+                    authors: [
+                        "Le Guilloux, V.",
+                        "Schmidtke, P.",
+                        "Tuffery, P.",
+                    ],
+                    journal: "BMC Bioinformatics",
+                    year: 2009,
+                    volume: 10,
+                    issue: 1,
+                    pages: "1-1",
+                },
+            ],
         },
     ];
     contributorCredits: IContributorCredit[] = [
@@ -227,11 +239,12 @@ export default class FPocketWebPlugin extends PluginParentClass {
         const userArgsNotFpocketArgs = [
             "providePseudoAtoms",
             "makemolinputparams",
+            "warning",
         ];
 
         // Convert to IFpocketParams format
         const fpocketParams: { [key: string]: any } = {}; // IFpocketParams
-        this.userArgs.forEach((arg) => {
+        this.getUserArgsFlat().forEach((arg) => {
             if (userArgsNotFpocketArgs.indexOf(arg.id) === -1) {
                 fpocketParams[arg.id] = (arg as UserArg).val;
             }
@@ -239,6 +252,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
         // Combine into payloads
         const payloads: any[] = pdbFiles.map((pdbFile) => {
+            // Remove treenodes from payloads
+            delete pdbFile.treeNode;
             return {
                 pdbFile,
                 fpocketParams,
@@ -503,15 +518,28 @@ export default class FPocketWebPlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest {
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#navigator", "PocketBox1")
-                .wait(5).cmds,
-        };
+    getTests(): ITest[] {
+        return [
+            // without pseudo atoms
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", "Pocket1Box")
+                    // .wait(5)
+                    .cmds,
+            },
+            // Including pseudo atoms
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
+                pluginOpen: new TestCmdList().click("#providePseudoAtoms-fpocketweb-item").cmds,
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", "PocketPseudoAtoms1")
+                    // .wait(5)
+                    .cmds,
+            },
+        ];
     }
 }
 </script>

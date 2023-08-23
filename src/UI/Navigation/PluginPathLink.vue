@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
 
 // Need below for menu to work. No need to lazy load. Always available.
 import "bootstrap/js/dist/dropdown";
@@ -64,6 +64,9 @@ export default class PluginPathLink extends Vue {
         return menuPath;
     }
 
+    /**
+     * Open the plugin specified by the component menu path.
+     */
     goToMenuPath() {
         pluginsApi.closeAllPlugins();
 
@@ -77,6 +80,9 @@ export default class PluginPathLink extends Vue {
         }, 500);
     }
     
+    /**
+     * When the component is mounted.
+     */
     mounted() {
         if (typeof this.plugin === "string") {
             // Keep checking until plugin is available.

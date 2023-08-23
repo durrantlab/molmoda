@@ -1,13 +1,10 @@
 <template>
   <PluginComponent
-    :userArgs="userArgs"
     v-model="open"
-    :title="title"
+    :infoPayload="infoPayload"
     cancelBtnTxt="Done"
     actionBtnTxt=""
-    :intro="intro"
     @onPopupDone="onPopupDone"
-    :pluginId="pluginId"
     @onUserArgChanged="onUserArgChanged"
   >
   <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block; width:192px; height: 192px;" />

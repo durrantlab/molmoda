@@ -2,7 +2,6 @@ import { messagesApi } from "@/Api/Messages";
 import type { FileInfo } from "@/FileSystem/FileInfo";
 import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
 import { TreeNodeListCopies } from "./_Copy";

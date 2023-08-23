@@ -19,6 +19,9 @@ import { newTreeNodeList, setupMakerFuncs } from "../TreeNodeMakers";
 import { TreeNodeAncestry } from "./_Ancestry";
 import { TreeNodeDescriptions } from "./_Descriptions";
 import { store } from "@/Store";
+import * as api from "@/Api";
+import * as SetupTests from "@/Testing/SetupTests";
+import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -301,6 +304,16 @@ export class TreeNode {
             });
     }
 
+    /**
+     * Gets the chain of a given tree node. If the tree node has no model, the
+     * first available chain is returned. If the tree node has a model, the
+     * first atom's chain is returned. If the first atom has no chain, the first
+     * available chain is returned.
+     *
+     * @param  {TreeNode} treeNode         The tree node.
+     * @param  {string[]} availableChains  The available chains.
+     * @returns {string}  The chain.
+     */
     private static _getChain(
         treeNode: TreeNode,
         availableChains: string[]
@@ -628,9 +641,19 @@ export class TreeNode {
     /**
      * A helper function. Adds this node to the molecules in the vuex store.
      */
-    public addToMainTree() {
+    public async addToMainTree() {
         this.reassignAllIds();
+
+        if (SetupTests.isTest) {
+            // If it's a test, open it with all nodes expanded.
+            expandAndShowAllMolsInTree();
+        }
+
         getMoleculesFromStore().push(this);
+
+        // If you add new molecules to the tree, focus on everything.
+        const viewer = await api.visualization.viewer;
+        viewer.zoomOnFocused();
     }
 
     /**

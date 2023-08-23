@@ -12,21 +12,6 @@ All plugins must include a template that contains only a single
 Every \<PluginComponent> must define the following properties.
 
 
-#### `pluginId` (:property) <a id="pluginId"></a>
-
-A unique id that defines the plugin. Must be lower case. This component property is required.
- Type: `string`. 
-
-#### `title` (:property) <a id="title"></a>
-
-Title of the popup. This component property is required.
- Type: `string`. 
-
-#### `userArgs` (:property) <a id="userArgs"></a>
-
-The user arguments (plugin parameters) that the end user can specify. This component property is required.
- Type: `UserArg[]`.  `UserArg` is defined in [FormFullInterfaces.ts, line 20](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/UI/Forms/FormFull/FormFullInterfaces.ts#L20).
-
 
 ### Optional Properties
 
@@ -48,11 +33,6 @@ The text that appears on the cancel button (e.g., "Cancel"). This component prop
 
 Whether to hide user parameters that are disabled or to show them in a disabled state. This component property is optional. If it is not specified, the default value is used: `false`.
  Type: `boolean`. 
-
-#### `intro` (:property) <a id="intro"></a>
-
-Introductory text that appears at the top of the plugin (above the user inputs). This component property is optional. If it is not specified, the default value is used: `""`.
- Type: `string`. 
 
 #### `isActionBtnEnabled` (:property) <a id="isActionBtnEnabled"></a>
 
@@ -119,12 +99,12 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 33](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L33).
+| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 34](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L34).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 
 A list of software credits. If the plugin uses no third-party packages, set this to `[]`.
- Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 63](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L63).
+ Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 75](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L75).
 
 #### `title` (variable) <a id="title"></a>
 
@@ -225,6 +205,7 @@ Runs when the user first starts the plugin. Called when the user clicks the plug
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[payload]` | `any` | Data to pass to the plugin. Probably only useful when programmatically starting the plugin without using the menu system. Optional.
+| `(returns)` | `Promise<void>` | Promise that resolves when the plugin is finished starting.
 
 #### `onPopupDone` (function) <a id="onPopupDone"></a>
 

@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         actionBtnTxt="Add Region"
         :hideIfDisabled="true"
         @onUserArgChanged="onUserArgChanged"
@@ -122,7 +119,7 @@ export default class AddRegionPlugin extends PluginParentClass {
     /**
      * Detects when user arguments have changed, and updates UI accordingly.
      */
-     onUserArgChange() {
+    onUserArgChange() {
         let regionType = this.getUserArg("regionType") as string;
         if (regionType === "box") {
             this.setUserArgEnabled("dimensions", true);
@@ -289,7 +286,10 @@ export default class AddRegionPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList().loadExampleProtein(true).cmds,
             // closePlugin: [],
-            afterPluginCloses: [],
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                "region"
+            ).cmds,
         };
     }
 }

@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         actionBtnTxt="Protonate"
         @onUserArgChanged="onUserArgChanged"
     >
@@ -232,14 +229,30 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest {
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(true).cmds,
-            // closePlugin: [],
-            afterPluginCloses: [],
-        };
+    getTests(): ITest[] {
+        return [
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein(true)
+                    .cmds,
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "Compounds:protonated"
+                ).cmds,
+            },
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein(true)
+                    .cmds,
+                pluginOpen: new TestCmdList().click(
+                    "#regen3DCoords-protonatecomps-item"
+                ).cmds,
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "Compounds:protonated"
+                ).cmds,
+            },
+        ];
     }
 }
 </script>

@@ -89,23 +89,23 @@ export default class ViewerPanel extends Vue {
             // Putting it in setTimeout so some components of UI will react
             // immediately. Below can be time consuming in some cases.
             if (loadViewerLibPromise === undefined) {
-                if (api.visualization.viewer !== undefined) {
+                if (api.visualization.viewerObj !== undefined) {
                     // Molecular library already loaded.
                     setLoadViewerLibPromise(
-                        Promise.resolve(api.visualization.viewer)
+                        Promise.resolve(api.visualization.viewerObj)
                     );
                 } else {
                     // Need to load the molecular library.
                     if (this.$store.state.molViewer === "3dmol") {
-                        api.visualization.viewer = new Viewer3DMol();
-                    // } else if (this.$store.state.molViewer === "ngl") {
+                        api.visualization.viewerObj = new Viewer3DMol();
+                        // } else if (this.$store.state.molViewer === "ngl") {
                         // api.visualization.viewer = new ViewerNGL();
                     } else {
                         throw new Error("Unknown viewer");
                     }
 
-                    const promise = api.visualization.viewer
-                        .loadAndSetupViewerLibrary(
+                    const promise = api.visualization.viewerObj
+                        ?.loadAndSetupViewerLibrary(
                             "mol-viewer",
                             (classes: string) => {
                                 this.containerClass = classes;
@@ -116,7 +116,7 @@ export default class ViewerPanel extends Vue {
                             // @ts-ignore
                             window["viewer"] = viewer;
 
-                            api.visualization.viewer = viewer;
+                            api.visualization.viewerObj = viewer;
                             this.$emit("onViewerLoaded");
                             return viewer;
                         });
@@ -129,12 +129,12 @@ export default class ViewerPanel extends Vue {
                 .then(() => {
                     if (allMolecules.length === 0) {
                         // No molecules present
-                        api.visualization.viewer?.clearCache();
+                        api.visualization.viewerObj?.clearCache();
                         return;
                     }
 
                     // Update and zoom
-                    return this._updateStylesAndZoom();
+                    return this._updateStyles();
                 })
                 .catch((err) => {
                     throw err;
@@ -148,19 +148,19 @@ export default class ViewerPanel extends Vue {
      * @returns {Promise<any>}  A promise that resolves when the styles and
      *    zoom have been updated.
      */
-    private _updateStylesAndZoom(): Promise<any> {
+    private async _updateStyles(): Promise<any> {
         const spinnerId = api.messages.startWaitSpinner();
-
-        return this._updateStyleChanges()
-            .then((visibleTerminalNodeModelsIds) => {
-                this._zoomPerFocus(visibleTerminalNodeModelsIds);
-                api.messages.stopWaitSpinner(spinnerId);
-                return;
-            })
-            .catch((err) => {
-                api.messages.stopWaitSpinner(spinnerId);
-                throw err;
-            });
+        try {
+            // const visibleTerminalNodeModelsIds =
+                
+            await this._updateStyleChanges();
+            // this._zoomPerFocus(visibleTerminalNodeModelsIds);
+            // api.visualization.viewer?.zoomOnFocused(visibleTerminalNodeModelsIds);
+            api.messages.stopWaitSpinner(spinnerId);
+        } catch (err) {
+            api.messages.stopWaitSpinner(spinnerId);
+            throw err;
+        }
     }
 
     /**
@@ -177,12 +177,12 @@ export default class ViewerPanel extends Vue {
             (node: TreeNode) => node.id
         ) as string[];
 
-        api.visualization.viewer?.removeObjects(idsOfTerminalNodes);
+        api.visualization.viewerObj?.removeObjects(idsOfTerminalNodes);
     }
 
     /**
      * Update the styles of the molecules.
-     * 
+     *
      * @param {TreeNode} treeNode  The tree node to update.
      * @param {Promise<any>[]} surfacePromises  The promises for the surfaces.
      * @returns {boolean}  True if styles is defined in the end. False otherwise.
@@ -195,12 +195,14 @@ export default class ViewerPanel extends Vue {
             // Styles to apply, so make sure it's visible.
 
             // Clear current styles
-            api.visualization.viewer?.clearMoleculeStyles(
+            api.visualization.viewerObj?.clearMoleculeStyles(
                 treeNode.id as string
             );
 
             // Clear any surfaces associated with this molecule.
-            api.visualization.viewer?.clearSurfacesOfMol(treeNode.id as string);
+            api.visualization.viewerObj?.clearSurfacesOfMol(
+                treeNode.id as string
+            );
 
             // Add new styles
             let spheresUsed = false;
@@ -208,10 +210,13 @@ export default class ViewerPanel extends Vue {
                 if (!style["surface"]) {
                     // It's a style, not a surface.
                     const convertedStyle =
-                        api.visualization.viewer?.convertStyle(style, treeNode);
-                    api.visualization.viewer?.setMolecularStyle(
+                        api.visualization.viewerObj?.convertStyle(
+                            style,
+                            treeNode
+                        );
+                    api.visualization.viewerObj?.setMolecularStyle(
                         treeNode.id as string,
-                        api.visualization.viewer?.convertSelection({}),
+                        api.visualization.viewerObj?.convertSelection({}),
                         convertedStyle,
                         true
                     );
@@ -222,12 +227,10 @@ export default class ViewerPanel extends Vue {
                 }
 
                 // It's a surface. Mark it for adding later.
-                const convertedStyle = api.visualization.viewer?.convertStyle(
-                    style,
-                    treeNode
-                );
+                const convertedStyle =
+                    api.visualization.viewerObj?.convertStyle(style, treeNode);
                 surfacePromises.push(
-                    api.visualization.viewer?.addSurface(
+                    api.visualization.viewerObj?.addSurface(
                         treeNode.id as string,
                         convertedStyle
                     ) as Promise<any>
@@ -239,13 +242,14 @@ export default class ViewerPanel extends Vue {
             if (treeNode.styles.length > 0 && !spheresUsed) {
                 // If there's any style, no style is spheres, make sure unbonded
                 // atoms are visible.
-                const convertedStyle = api.visualization.viewer?.convertStyle(
-                    unbondedAtomsStyle,
-                    treeNode
-                );
-                api.visualization.viewer?.setMolecularStyle(
+                const convertedStyle =
+                    api.visualization.viewerObj?.convertStyle(
+                        unbondedAtomsStyle,
+                        treeNode
+                    );
+                api.visualization.viewerObj?.setMolecularStyle(
                     treeNode.id as string,
-                    api.visualization.viewer?.convertSelection({
+                    api.visualization.viewerObj?.convertSelection({
                         bonds: 0,
                     }),
                     convertedStyle,
@@ -263,12 +267,7 @@ export default class ViewerPanel extends Vue {
      * @returns {Promise<string[]>}  A promise that resolves the ids of the
      *     molecules that are visible.
      */
-    private _updateStyleChanges(): Promise<string[]> {
-        if (api.visualization.viewer === undefined) {
-            // Not ready yet.
-            return Promise.resolve([]);
-        }
-
+    private async _updateStyleChanges(): Promise<string[]> {
         let visibleTerminalNodeModelsIds: string[] = [];
         const terminalNodes = this.treeview.filters.onlyTerminal;
 
@@ -276,8 +275,8 @@ export default class ViewerPanel extends Vue {
 
         // Add all the models and put them in the cache. This also hides the
         // regions if visible == false on the node.
-        const addMolPromises =
-            api.visualization.viewer?.addTreeNodeList(terminalNodes);
+        const viewer = await api.visualization.viewer;
+        const addMolPromises = viewer.addTreeNodeList(terminalNodes) || [];
 
         // All models now loaded. Style them appropriately.
         return Promise.all(addMolPromises)
@@ -311,20 +310,14 @@ export default class ViewerPanel extends Vue {
 
                             // hide it.
                             // console.log("Hiding:" + treeNode.id);
-                            api.visualization.viewer?.hideObject(
-                                treeNode.id as string
-                            );
+                            viewer.hideObject(treeNode.id as string);
 
                             // Clear any surfaces associated with this molecule.
-                            api.visualization.viewer?.clearSurfacesOfMol(
-                                treeNode.id as string
-                            );
+                            viewer.clearSurfacesOfMol(treeNode.id as string);
                         } else {
                             // Make sure actually visible
                             // console.log("Showing:" + treeNode.id);
-                            api.visualization.viewer?.showObject(
-                                treeNode.id as string
-                            );
+                            viewer.showObject(treeNode.id as string);
                         }
 
                         return isVisible;
@@ -339,7 +332,7 @@ export default class ViewerPanel extends Vue {
 
                     // Visible, but no style specified. Is it a region?
                     if (treeNode.region) {
-                        api.visualization.viewer?.updateRegionStyle(
+                        viewer.updateRegionStyle(
                             treeNode.id as string,
                             treeNode.region
                         );
@@ -348,13 +341,10 @@ export default class ViewerPanel extends Vue {
 
                     // Visible, no styles, not a region. This should never
                     // happen.
-                    api.visualization.viewer?.setMolecularStyle(
+                    viewer.setMolecularStyle(
                         treeNode.id as string,
-                        api.visualization.viewer?.convertSelection({}),
-                        api.visualization.viewer?.convertStyle(
-                            { line: {} },
-                            treeNode
-                        )
+                        viewer.convertSelection({}),
+                        viewer.convertStyle({ line: {} }, treeNode)
                     );
                     console.warn("error?");
                 }
@@ -369,40 +359,44 @@ export default class ViewerPanel extends Vue {
             });
     }
 
-    /**
-     * Zoom in on the visible molecules.
-     *
-     * @param {string[]} visibleTerminalNodeModelsIds  The visible models.
-     */
-    private _zoomPerFocus(visibleTerminalNodeModelsIds: string[]) {
-        let molsToFocusIds: string[] = [];
-        const flatNodes = this.treeview.flattened;
-        for (let idx = 0; idx < flatNodes.length; idx++) {
-            const treeNode = flatNodes.get(idx);
-            if (treeNode.focused) {
-                if (!treeNode.nodes) {
-                    // Already terminal
-                    molsToFocusIds = [treeNode.id as string];
-                } else {
-                    const children = treeNode.nodes;
-                    molsToFocusIds = children.filters.onlyTerminal.map(
-                        (n) => n.id as string
-                    ) as string[];
-                }
-                break;
-            }
-        }
+    // /**
+    //  * Zoom in on the visible molecules.
+    //  *
+    //  * @param {string[]} visibleTerminalNodeModelsIds  The visible models. If no
+    //  *                                                 tree nodes are labeled as
+    //  *                                                 focused, the function
+    //  *                                                 will just use all visible
+    //  *                                                 terminal nodes.
+    //  */
+    // private _zoomPerFocus(visibleTerminalNodeModelsIds: string[]) {
+    //     let molsToFocusIds: string[] = [];
+    //     const flatNodes = this.treeview.flattened;
+    //     for (let idx = 0; idx < flatNodes.length; idx++) {
+    //         const treeNode = flatNodes.get(idx);
+    //         if (treeNode.focused) {
+    //             if (!treeNode.nodes) {
+    //                 // Already terminal
+    //                 molsToFocusIds = [treeNode.id as string];
+    //             } else {
+    //                 const children = treeNode.nodes;
+    //                 molsToFocusIds = children.filters.onlyTerminal.map(
+    //                     (n) => n.id as string
+    //                 ) as string[];
+    //             }
+    //             break;
+    //         }
+    //     }
 
-        if (molsToFocusIds.length === 0) {
-            molsToFocusIds = visibleTerminalNodeModelsIds;
-        }
+    //     if (molsToFocusIds.length === 0) {
+    //         molsToFocusIds = visibleTerminalNodeModelsIds;
+    //     }
 
-        api.visualization.viewer?.renderAll();
-        if (this.$store.state["updateZoom"]) {
-            api.visualization.viewer?.zoomToModels(molsToFocusIds);
-            // api.visualization.viewer.zoom(0.8);
-        }
-    }
+    //     api.visualization.viewer?.renderAll();
+    //     if (this.$store.state["updateZoom"]) {
+    //         api.visualization.viewer?.zoomToModels(molsToFocusIds);
+    //         // api.visualization.viewer.zoom(0.8);
+    //     }
+    // }
 }
 </script>
 

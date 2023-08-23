@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
+        :infoPayload="infoPayload"
         actionBtnTxt="Save"
-        :intro="intro"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
@@ -17,7 +14,6 @@ import * as api from "@/Api";
 import {
     IContributorCredit,
     ISoftwareCredit,
-    Licenses,
 } from "@/Plugins/PluginInterfaces";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -94,15 +90,14 @@ export default class SavePNGPlugin extends PluginParentClass {
      * @param {any} parameters  Information about the PNG file to save.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(parameters: any): Promise<void> {
+    async runJobInBrowser(parameters: any): Promise<void> {
         let filename = parameters.filename;
-        if (api.visualization.viewer === undefined) {
-            throw new Error("No viewer to save.");
-        }
-        return api.visualization.viewer.pngURI().then((pngUri: string) => {
-            api.fs.savePngUri(filename, pngUri as string);
-            return;
-        });
+        // if (api.visualization.viewerObj === undefined) {
+        //     throw new Error("No viewer to save.");
+        // }
+        const viewer = await api.visualization.viewer;
+        const pngUri = await viewer.pngURI();
+        api.fs.savePngUri(filename, pngUri as string);
     }
 
     /**
@@ -120,9 +115,10 @@ export default class SavePNGPlugin extends PluginParentClass {
                 "test",
                 this.pluginId
             ).cmds,
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#log", 'Job "savepng:.+?" ended')
-                .wait(3).cmds,
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#log",
+                "Job savepng.*? ended"
+            ).cmds,
         };
     }
 }

@@ -1,14 +1,11 @@
 <template>
     <PluginComponent
-        :title="title"
+        :infoPayload="infoPayload"
         v-model="open"
         :cancelBtnTxt="neverClose ? '' : 'Ok'"
         actionBtnTxt=""
         @onClosed="onClosed"
         :variant="variant"
-        :userArgs="userArgs"
-        :pluginId="pluginId"
-        :intro="intro"
         @onUserArgChanged="onUserArgChanged"
     >
         <!-- modalWidth="default" -->
@@ -74,8 +71,10 @@ export default class SimpleMsgPlugin extends PluginParentClass {
      * in a popup, this function would open the popup.
      *
      * @param {ISimpleMsg} [payload]  Information about the message to display.
+     * @returns {Promise<void>}       Promise that resolves when the plugin is
+     *                                finished starting.
      */
-    onPluginStart(payload: ISimpleMsg) {
+    async onPluginStart(payload: ISimpleMsg): Promise<void> {
         this.title = payload.title;
         this.message = payload.message;
         this.callBack = payload.callBack;

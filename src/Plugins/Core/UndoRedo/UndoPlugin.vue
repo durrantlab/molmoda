@@ -1,10 +1,7 @@
 <template>
   <PluginComponent
     v-model="open"
-    :title="title"
-    :userArgs="userArgs"
-    :pluginId="pluginId"
-    :intro="intro"
+    :infoPayload="infoPayload"
     @onUserArgChanged="onUserArgChanged"
   ></PluginComponent>
 </template>

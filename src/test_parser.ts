@@ -231,7 +231,7 @@
 //     //     (btn as HTMLElement).style.display = "none";
 //     // }
 //     // // @ts-ignore
-//     // window.viewer = viewer;
+//     // window.viewerObj = viewer;
 //     // return
 //     // viewer.loadPdb('7bv2');
 //     // viewer.loadEmdb('EMD-30210', { detail: 6 });

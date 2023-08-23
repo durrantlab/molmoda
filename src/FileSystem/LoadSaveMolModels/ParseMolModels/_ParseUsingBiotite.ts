@@ -23,7 +23,14 @@ export function parseUsingBiotite(
         .then((stateFromJson) => {
             // Update vueX store
             for (const key of biotiteStateKeysToRetain) {
-                pushToStoreList(key, stateFromJson[key]);
+                switch (key) {
+                    case "log":
+                        pushToStoreList(key, stateFromJson[key]);
+                        break;
+                    case "molecules":
+                        (stateFromJson[key] as TreeNodeList).addToMainTree();
+                        break;
+                }
             }
 
             fixLog();
@@ -47,10 +54,10 @@ function fixLog() {
         const an = a.timestampSecs as number;
         const bn = b.timestampSecs as number;
         if (an < bn) {
-          return -1;
+            return -1;
         }
         if (an > bn) {
-          return 1;
+            return 1;
         }
         return 0;
     });

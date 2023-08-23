@@ -68,6 +68,15 @@
                         {{ actionBtnTxt4 }}
                     </button>
                 </div>
+                <div
+                    v-if="footerTxt !== ''"
+                    class="modal-footer alert alert-light fs-6 lh-sm"
+                    style="display: inline-block"
+                    v-html="footerTxt"
+                >
+                </div>
+                                    <!-- <small v-html="footerTxt" style="inline-block"></small> -->
+
             </div>
         </div>
     </div>
@@ -105,6 +114,7 @@ export default class Popup extends Vue {
     @Prop({}) onShown!: Function;
     @Prop({}) beforeShown!: Function;
     @Prop({ default: "default" }) modalWidth!: string;
+    @Prop({ default: "" }) footerTxt!: string;
 
     idToUse = "";
 
@@ -136,6 +146,11 @@ export default class Popup extends Vue {
             });
     }
 
+    /**
+     * Gets the width to use on the modal.
+     *
+     * @returns {string} The width to use on the modal.
+     */
     get modalWidthToUse(): string {
         if (this.modalWidth === "default") {
             return "";
@@ -145,7 +160,7 @@ export default class Popup extends Vue {
         if (
             this.modalWidth !== "sm" &&
             this.modalWidth !== "lg" &&
-            this.modalWidth !== "xl" && 
+            this.modalWidth !== "xl" &&
             this.modalWidth !== "default"
         ) {
             throw "modalWidth must be default, sm, lg, or xl";

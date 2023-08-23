@@ -1,11 +1,8 @@
 <template>
   <PluginComponent
-    :intro="intro"
     v-model="open"
-    :title="title"
-    :userArgs="userArgs"
+    :infoPayload="infoPayload"
     @onPopupDone="onPopupDone"
-    :pluginId="pluginId"
     @onUserArgChanged="onUserArgChanged"
   >
     <div id="pasteFile" style="width: 380px; height: 600px">

@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         actionBtnTxt="Dock"
         @onUserArgChanged="onUserArgChanged"
         :hideIfDisabled="true"
@@ -80,6 +77,17 @@ export default class WebinaPlugin extends PluginParentClass {
             name: "AutoDock Vina",
             url: "https://vina.scripps.edu/",
             license: Licenses.APACHE2,
+            citations: [
+                {
+                    title: "AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings",
+                    authors: ["Eberhardt, Jerome", "Santos-Martins, Diogo", ".,.."],
+                    journal: "J. Chem. Inf. Model.",
+                    year: 2021,
+                    volume: 61,
+                    issue: 8,
+                    pages: "3891-3898",
+                }
+            ]
         },
         dynamicImports.webina.credit,
     ];
@@ -268,6 +276,7 @@ export default class WebinaPlugin extends PluginParentClass {
         const filePairs: IProtCmpdTreeNodePair[] =
             this.getUserArg("makemolinputparams");
 
+        // TODO: Consider this.getUserArgsFlat() instead.
         let userArgs = [
             ...this.userArgs,
             ...this.getUserArg("webinaAdvancedParams"),
@@ -279,10 +288,6 @@ export default class WebinaPlugin extends PluginParentClass {
             webinaParams[arg.id] = arg.val;
         });
         const region = webinaParams["region"];
-        if (region === null) {
-            // TODO: region somtimes null. Need to figure out. I think after redocking.
-            debugger;
-        }
         webinaParams["center_x"] = region.center[0];
         webinaParams["center_y"] = region.center[1];
         webinaParams["center_z"] = region.center[2];
@@ -566,7 +571,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    getTezts(): ITest {
         return {
             beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
             afterPluginCloses: new TestCmdList()

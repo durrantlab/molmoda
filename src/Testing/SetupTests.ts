@@ -1,6 +1,8 @@
 import { addVueXStoreModule } from "@/Store";
-import { setStoreVar } from "@/Store/StoreExternalAccess";
+import { getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
 import { setPluginToTest } from "./PluginToTest";
+
+export let isTest = false;
 
 /**
  * If running a selenium test, this function will set things up.
@@ -13,6 +15,8 @@ export function setupTests() {
         // You're not running a test
         return;
     }
+
+    isTest = true;
 
     const idx = urlParams.get("index");
 
@@ -38,6 +42,7 @@ export function setupTests() {
     addVueXStoreModule("test", {
         cmds: "",
         error: "",
+        msgs: "",
     });
 
     /* It's a test to see if the error handler works. */
@@ -46,4 +51,17 @@ export function setupTests() {
     //     // @ts-ignore
     //     sdfdsfdsf;
     // }, 5000);
+}
+
+/**
+ * Expands the navigator tree so all molecules are visible. Easier to test.
+ */
+export function expandAndShowAllMolsInTree() {
+    // Get all molecules.
+    setTimeout(() => {
+        getMoleculesFromStore().flattened.forEach((mol) => {
+            mol.treeExpanded = true;
+            mol.visible = true;
+        });
+    }, 500);
 }

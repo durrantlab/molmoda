@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         actionBtnTxt="Protonate"
         @onUserArgChanged="onUserArgChanged"
     >
@@ -20,22 +17,14 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import {
     IContributorCredit,
     ISoftwareCredit,
-    Licenses,
 } from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
     UserArgType,
-    IUserArgAlert,
-    IUserArgCheckbox,
-    IUserArgGroup,
     IUserArgMoleculeInputParams,
-    IUserArgNumber,
-    IUserSelectRegion,
-    IUserArgTextArea,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     IMoleculeInputParams,
-    IProtCmpdTreeNodePair,
     MoleculeInput,
 } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
@@ -44,13 +33,6 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { messagesApi } from "@/Api/Messages";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import {
-    ITreeNodeData,
-    SelectedType,
-    TreeNodeDataType,
-    TreeNodeType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ReduceQueue } from "./ReduceQueue";
@@ -65,7 +47,9 @@ import { ReduceQueue } from "./ReduceQueue";
     },
 })
 export default class ReducePlugin extends PluginParentClass {
-    menuPath = "Proteins/Protonate...";
+    // Note _ will be removed from display text. Needed to distinguish from
+    // Compounds/Protonate in menu ids.
+    menuPath = "Proteins/Protonate_...";  
     title = "Protonate Proteins";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.reduce.credit];
     contributorCredits: IContributorCredit[] = [
@@ -76,7 +60,7 @@ export default class ReducePlugin extends PluginParentClass {
     ];
     pluginId = "reduce";
 
-    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding. Uses a version of AutoDock Vina (Webina).`;
+    intro = `Protonate proteins, in preparation for docking. Uses the reduce program to guess at proper protonation states.`;
 
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
@@ -244,8 +228,8 @@ export default class ReducePlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
             afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#navigator", "PocketBox1")
-                .wait(5).cmds,
+                .waitUntilRegex("#navigator", ":protonated")
+                .cmds,
         };
     }
 }

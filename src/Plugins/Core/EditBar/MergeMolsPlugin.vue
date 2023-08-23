@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         actionBtnTxt="Merge"
-        :userArgs="userArgs"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
@@ -182,20 +179,16 @@ export default class MergeMolsPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     getTests(): ITest[] {
-        const beforePluginOpens = new TestCmdList()
-            .loadExampleProtein(true)
-            .selectMoleculeInTree("Protein")
-            .selectMoleculeInTree("Compounds", true);
-
-        const afterPluginCloses = new TestCmdList().waitUntilRegex(
-            "#navigator",
-            ".merged."
-        );
-
         return [
             {
-                beforePluginOpens: beforePluginOpens.cmds,
-                afterPluginCloses: afterPluginCloses.cmds,
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleProtein(true)
+                    .selectMoleculeInTree("Protein")
+                    .selectMoleculeInTree("Compounds", true).cmds,
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    ".merged"
+                ).cmds,
             },
         ];
     }

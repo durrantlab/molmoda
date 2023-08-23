@@ -1,12 +1,9 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
+        :infoPayload="infoPayload"
         actionBtnTxt="Save"
-        :intro="intro"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         @onUserArgChanged="onUserArgChanged"
     >
         <!-- cancelBtnTxt="Done" -->
@@ -137,10 +134,9 @@ export default class SettingsPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {UserArg[]} args  The user arguments to pass to the
-     *                                      "executable."
+     * @param {UserArg[]} args  The user arguments to pass to the "executable."
      */
-    runJobInBrowser(args: UserArg[]) {
+    async runJobInBrowser(args: UserArg[]) {
         // Keeping only id and val.
         args = args.map((arg) => {
             return {

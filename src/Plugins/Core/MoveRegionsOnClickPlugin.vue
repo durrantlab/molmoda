@@ -1,13 +1,10 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
+        :infoPayload="infoPayload"
         cancelBtnTxt="Cancel"
         actionBtnTxt="Move"
-        :intro="intro"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         @onUserArgChanged="onUserArgChanged"
     >
         <ul>

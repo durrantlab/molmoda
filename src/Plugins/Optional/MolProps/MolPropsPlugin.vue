@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         actionBtnTxt="Calculate"
         @onUserArgChanged="onUserArgChanged"
     >
@@ -152,7 +149,7 @@ export default class MolPropsPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    getTezts(): ITest {
         return {
             beforePluginOpens: new TestCmdList().loadExampleProtein(true).cmds,
             // closePlugin: [],

@@ -1,14 +1,11 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
-        :title="title"
+        :infoPayload="infoPayload"
         v-model="open"
         cancelBtnTxt="Cancel"
         actionBtnTxt="Open"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="filesToLoad.length > 0"
-        :intro="intro"
         @onUserArgChanged="onUserArgChanged"
     >
         <FormFile
@@ -52,7 +49,9 @@ import { dynamicImports } from "@/Core/DynamicImports";
 export default class OpenMoleculesPlugin extends PluginParentClass {
     menuPath = "[3] File/[1] Project/[0] Open...";
     title = "Open Molecule Files";
-    softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
+    softwareCredits: ISoftwareCredit[] = [
+        dynamicImports.obabelwasm.credit
+    ];
     contributorCredits: IContributorCredit[] = [
         // {
         //     name: "Jacob D. Durrant",
@@ -63,28 +62,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
 
-    userArgDefaults: UserArg[] = [
-        // {
-        //     id: "group",
-        //     // type: UserArgType.Group,
-        //     label: "Advanced",
-        //     val: [
-        //         {
-        //             id: "gen3D",
-        //             label: "Calculate 3D atomic coordinates (compounds)",
-        //             val: false,
-        //             description: "Compounds are 2D-formatted (e.g., 2D SDF)? Calculate 3D atomic coordinates."
-        //         } as IUserArgCheckbox,
-        //         {
-        //             id: "separateFrames",
-        //             label: "Load multiple molecules separately",
-        //             val: false,
-        //             description: "File contains multiple molecules/frames? Load each as a separate molecule."
-        //         } as IUserArgCheckbox,
-        //     ],
-        //     startOpened: false,
-        // } as IUserArgGroup,
-    ];
+    userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     accept = fileTypesAccepts;
     hotkey = "o";

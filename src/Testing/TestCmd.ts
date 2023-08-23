@@ -8,8 +8,8 @@ enum TestCommand {
     Wait = "wait",
     WaitUntilRegex = "waitUntilRegex",
     Upload = "upload",
-    AddTests = "addTests",  // TODO: Not a class yet
-    CheckBox = "checkBox",  // TODO: Not a class yet
+    AddTests = "addTests", // TODO: Not a class yet
+    CheckBox = "checkBox", // TODO: Not a class yet
 }
 
 export interface ITestCommand {
@@ -34,7 +34,7 @@ export abstract class _TestCmdParent {
 
 /**
  * A class to generate the command to click a selector. Should only be called
- * from class TestCmdList. 
+ * from class TestCmdList.
  */
 export class _TestClick extends _TestCmdParent {
     private selector: string;
@@ -55,7 +55,7 @@ export class _TestClick extends _TestCmdParent {
 
     /**
      * Generates the command to click the selector.
-     * 
+     *
      * @returns {ITestCommand}  The command to click the selector.
      */
     get cmd(): ITestCommand {
@@ -67,7 +67,7 @@ export class _TestClick extends _TestCmdParent {
     }
 }
 
-/** 
+/**
  * A class to generate the command to wait for a specified duration.  Should
  * only be called from class TestCmdList.
  */
@@ -76,7 +76,7 @@ export class _TestWait extends _TestCmdParent {
 
     /**
      * Creates an instance of _TestWait.
-     * 
+     *
      * @param  {number} [durationInSecs=1]  The duration to wait, in seconds.
      */
     constructor(durationInSecs = 1) {
@@ -97,7 +97,7 @@ export class _TestWait extends _TestCmdParent {
     }
 }
 
-/** 
+/**
  * A class to generate the command to type text into a selector.  Should only be
  * called from class TestCmdList.
  */
@@ -107,7 +107,7 @@ export class _TestText extends _TestCmdParent {
 
     /**
      * Creates an instance of _TestText.
-     * 
+     *
      * @param  {string} selector  The selector to type into.
      * @param  {string} text      The text to type.
      */
@@ -133,7 +133,7 @@ export class _TestText extends _TestCmdParent {
     }
 }
 
-/** 
+/**
  * A class to generate the command to wait until the specified regex is found in
  * the specified selector. Should only be called from class TestCmdList.
  */
@@ -143,7 +143,7 @@ export class _TestWaitUntilRegex extends _TestCmdParent {
 
     /**
      * Creates an instance of _TestWaitUntilRegex.
-     * 
+     *
      * @param  {string} selector  The selector to monitor.
      * @param  {string} regex     The regex to wait for.
      */
@@ -153,7 +153,6 @@ export class _TestWaitUntilRegex extends _TestCmdParent {
         this.regex = regex;
     }
 
-    
     /**
      * Generates the command to wait until the specified regex is found in the
      * specified selector.
@@ -170,8 +169,7 @@ export class _TestWaitUntilRegex extends _TestCmdParent {
     }
 }
 
-
-/** 
+/**
  * A class to generate the command to upload a file. Should only be called from
  * class TestCmdList.
  */
@@ -181,7 +179,7 @@ export class _TestUpload extends _TestCmdParent {
 
     /**
      * Creates an instance of TestUpload.
-     * 
+     *
      * @param  {string} selector  The selector to upload to.
      * @param  {string} filePath  The file path to upload.
      */
@@ -190,7 +188,7 @@ export class _TestUpload extends _TestCmdParent {
         this.selector = selector;
 
         if (filePath.startsWith("file://")) {
-            filePath = filePath.substring(7)
+            filePath = filePath.substring(7);
         }
 
         this.filePath = filePath;
@@ -199,7 +197,7 @@ export class _TestUpload extends _TestCmdParent {
     /**
      * Generates the command to upload the specified file to the specified
      * selector.
-     * 
+     *
      * @returns {ITestCommand}  The command to upload the specified file to the
      *    specified selector.
      */
@@ -275,6 +273,7 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
 
     cmds.push(
         ...sels.map((sel) => new _TestClick(sel).cmd),
+        new _TestWait(1).cmd,
         new _TestClick(lastSel).cmd,
         new _TestWait(1).cmd
     );
@@ -290,7 +289,6 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
  * @returns {ITest[]}  The test definitions.
  */
 function addTestDefaults(plugin: any): ITest[] {
-    let tests: ITest | ITest[] = plugin.getTests();
     const pluginId: string = plugin.pluginId;
 
     // If tests is ITest, wrap it in an array.
@@ -307,14 +305,17 @@ function addTestDefaults(plugin: any): ITest[] {
         ];
         test.afterPluginCloses =
             test.afterPluginCloses ||
+            // If you're loging the job, wait for notice of job ending.
             (plugin.logJob
                 ? [
                       new _TestWaitUntilRegex(
                           "#log",
-                          'Job "' + pluginId + ':.+?" ended'
+                          "Job " + pluginId + '.*?" ended'
                       ).cmd,
                   ]
-                : []);
+                // Otherwise, just want 1 second to give a little time for
+                // errors to pop up, if any.
+                : [new _TestWait(1).cmd]);
     }
 
     return tests;
@@ -331,7 +332,11 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
         PluginToTest.pluginToTest === plugin.pluginId &&
         plugin.pluginId !== ""
     ) {
-        const tests = addTestDefaults(plugin); // Defined in each plugin
+        Here is where you need to eliminate .cmds somehow.
+
+        let tests: ITest | ITest[] = plugin.getTests();
+
+        const tests = addTestDefaults(tests); // Defined in each plugin
 
         // If there is more than one test but pluginTestIndex is undefined, send
         // back command to add tests.

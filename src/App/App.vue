@@ -154,7 +154,10 @@ export default class App extends Vue {
     mounted() {
         api.messages.log(`${appName} suite started`);
 
-        if (compileErrors.length > 0) {
+        if (
+            compileErrors.length > 0 &&
+            window.location.search.indexOf("test=") === -1
+        ) {
             // There are compile errors
             api.messages.popupError(
                 "<p>The following compile errors were found:</p><ul><li>" +
@@ -203,15 +206,15 @@ body.waiting * {
 // See https://stackoverflow.com/questions/826782/how-to-disable-text-selection-highlighting
 
 // Select not input not textarea
-:not([textarea][input]) {
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
-    -moz-user-select: none; /* Old versions of Firefox */
-    -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
-}
+// :not([textarea][input]) {
+//     -webkit-touch-callout: none; /* iOS Safari */
+//     -webkit-user-select: none; /* Safari */
+//     -khtml-user-select: none; /* Konqueror HTML */
+//     -moz-user-select: none; /* Old versions of Firefox */
+//     -ms-user-select: none; /* Internet Explorer/Edge */
+//     user-select: none; /* Non-prefixed version, currently
+//                                   supported by Chrome, Edge, Opera and Firefox */
+// }
 
 // https://stackoverflow.com/questions/7855590/preventing-scroll-bars-from-being-hidden-for-macos-trackpad-users-in-webkit-blin
 

@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         actionBtnTxt="Clone"
-        :userArgs="userArgs"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         :hideIfDisabled="true"
         @onUserArgChanged="onUserArgChanged"
@@ -203,18 +200,16 @@ export default class CloneMolPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commandss.
      */
     getTests(): ITest[] {
-        const beforePluginOpens = new TestCmdList()
-            .loadExampleProtein(true)
-            .selectMoleculeInTree("Protein");
-
-        const afterPluginCloses = new TestCmdList()
-            .waitUntilRegex("#navigator", ".cloned.");
-
         return [
             // First test cloning
             {
-                beforePluginOpens: beforePluginOpens.cmds,
-                afterPluginCloses: afterPluginCloses.cmds,
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleProtein(true)
+                    .selectMoleculeInTree("Protein").cmds,
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    ":cloned"
+                ).cmds,
             },
         ];
     }

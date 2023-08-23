@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
+        :infoPayload="infoPayload"
         actionBtnTxt="Load"
-        :intro="intro"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
@@ -49,6 +46,17 @@ export default class LoadPDBPlugin extends PluginParentClass {
         {
             name: "Protein Data Bank",
             url: "https://www.rcsb.org/",
+            citations: [
+                {
+                    title: "The Protein Data Bank",
+                    authors: ["Berman, H. M.", "Westbrook, J."],
+                    journal: "Nucleic Acids Res.",
+                    volume: 28,
+                    year: 2000,
+                    issue: 1,
+                    pages: "235-242",
+                },
+            ],
         },
     ];
     pluginId = "loadpdb";
@@ -115,11 +123,15 @@ export default class LoadPDBPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            pluginOpen: new TestCmdList()
-                .setUserArg("pdbId", "1XDN", this.pluginId).cmds,
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#styles", "Protein")
-                .waitUntilRegex("#log", 'Job "loadpdb:.+?" ended').cmds
+            pluginOpen: new TestCmdList().setUserArg(
+                "pdbId",
+                "1XDN",
+                this.pluginId
+            ).cmds,
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                "1XDN"
+            ).cmds,
         };
     }
 }

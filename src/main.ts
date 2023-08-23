@@ -14,32 +14,39 @@ import { getMoleculesFromStore } from "./Store/StoreExternalAccess";
 
 // api.sys.loadStatus.started = true;
 
-setOnePluginMode();
-loadFontAwesomeFonts();
-setupTests();
-setupWarnSaveOnClose();
-
-defineMakerFuncs();
-
-// api.sys.loadStatus.pluginsLoaded = true;
-
-// console.warn("Below now meaningless?");
-// api.sys.loadStatus.menuFinalized = true;
-const store = setupVueXStore();
-
-applySettings(getSettings());
-
-createApp(App)
-    .component("font-awesome-icon", FontAwesomeIcon)
-    .use(store)
-    .mount("#app");
-
-(window as any).testids = () => {
-    getMoleculesFromStore().flattened.forEach((m) => {
-        if (m.nodes) {
-            m.nodes.forEach((n) => {
-                console.log(m.id, n.parentId);
-            });
-        }
-    });
+/**
+ * The main function.
+ */
+async function main() {
+    setOnePluginMode();
+    loadFontAwesomeFonts();
+    setupTests();
+    setupWarnSaveOnClose();
+    
+    defineMakerFuncs();
+    
+    // api.sys.loadStatus.pluginsLoaded = true;
+    
+    // console.warn("Below now meaningless?");
+    // api.sys.loadStatus.menuFinalized = true;
+    const store = setupVueXStore();
+    
+    applySettings(getSettings());
+    
+    createApp(App)
+        .component("font-awesome-icon", FontAwesomeIcon)
+        .use(store)
+        .mount("#app");
+    
+    (window as any).testids = () => {
+        getMoleculesFromStore().flattened.forEach((m) => {
+            if (m.nodes) {
+                m.nodes.forEach((n) => {
+                    console.log(m.id, n.parentId);
+                });
+            }
+        });
+    }
 }
+
+main();

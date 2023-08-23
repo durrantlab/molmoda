@@ -42,16 +42,25 @@ export default class FilterInput extends Vue {
 
     filterStr = "";
 
+    /**
+     * When the filter string changes, trigger onFilter.
+     */
     @Watch("filterStr")
     onFilterStrChange() {
         this.onFilter();
     }
 
+    /**
+     * When the list changes, trigger onFilter.
+     */
     @Watch("list")
     onListChange() {
         this.onFilter();
     }
 
+    /**
+     * Filter the list per the filter text and emit the filtered list.
+     */
     onFilter() {
         const searchStr = this.filterStr.toLowerCase();
 

@@ -1,11 +1,8 @@
 <template>
     <PluginComponent
         v-model="open"
-        :title="title"
-        :intro="intro"
+        :infoPayload="infoPayload"
         actionBtnTxt="Delete"
-        :userArgs="userArgs"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
@@ -123,22 +120,20 @@ export default class DeleteMolPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     getTests(): ITest[] {
-        const beforePluginOpensDelChild = new TestCmdList()
-            .loadExampleProtein(true)
-            .selectMoleculeInTree("Protein");
-
-        const beforePluginOpensDelRoot = new TestCmdList()
-            .loadExampleProtein(true)
-            .selectMoleculeInTree("4WP4.pdb:1");
-
         return [
             // Test deleting a child node.
             {
-                beforePluginOpens: beforePluginOpensDelChild.cmds,
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleProtein(true)
+                    .selectMoleculeInTree("Protein").cmds,
+                afterPluginCloses: new TestCmdList().wait(1).cmds,
             },
             // Also test deleting a root node.
             {
-                beforePluginOpens: beforePluginOpensDelRoot.cmds,
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleProtein(true)
+                    .selectMoleculeInTree("4WP4").cmds,
+                afterPluginCloses: new TestCmdList().wait(1).cmds,
             },
         ];
     }

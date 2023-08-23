@@ -1,4 +1,3 @@
-import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import type { TreeNodeList } from "../TreeNodeList/TreeNodeList";
 import type { TreeNode } from "./TreeNode";

@@ -1,10 +1,7 @@
 <template>
     <PluginComponent
         v-model="open"
-        :title="title"
-        :userArgs="userArgs"
-        :pluginId="pluginId"
-        :intro="intro"
+        :infoPayload="infoPayload"
         @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
 </template>
@@ -84,8 +81,6 @@ export default class SelectAllPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList()
                 .loadExampleProtein(true).cmds,
-                // ...this.testExpandMoleculesTree("4WP4"),
-                // this.testSelectMoleculeInTree("Protein"),
             closePlugin: [],
             afterPluginCloses: [],
         };

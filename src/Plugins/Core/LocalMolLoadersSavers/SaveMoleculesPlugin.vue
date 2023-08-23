@@ -1,11 +1,9 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
+        :infoPayload="infoPayload"
         actionBtnTxt="Save"
         :intro="introToUse"
-        :pluginId="pluginId"
         @onPopupDone="onPopupDone"
         :prohibitCancel="appClosing"
         :hideIfDisabled="true"
@@ -385,7 +383,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 this.pluginId
             ).cmds,
             afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#log", 'Job "savemolecules:.+?" ended')
+                .waitUntilRegex("#log", 'Job savemolecules.*? ended')
                 .wait(3).cmds,
         };
 

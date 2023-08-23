@@ -1,13 +1,10 @@
 <template>
     <PluginComponent
-        :userArgs="userArgs"
         v-model="open"
-        :title="title"
+        :infoPayload="infoPayload"
         cancelBtnTxt="Done"
         actionBtnTxt=""
-        :intro="intro"
         @onPopupDone="onPopupDone"
-        :pluginId="pluginId"
         @onUserArgChanged="onUserArgChanged"
     >
         <FilterInput
@@ -20,7 +17,7 @@
             <span v-if="plugin.title !== '' && plugin.menuPath !== null">
                 <h6 class="mb-1">{{ plugin.title }}</h6>
 
-                <p class="ms-2 mb-0 alert alert-light lh-1 p-0">
+                <p class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent">
                     <!-- <small v-html="menuPathToUse(plugin.menuPath)"></small> -->
                     <small>
                         Menu: <PluginPathLink :plugin="plugin"></PluginPathLink
@@ -29,9 +26,16 @@
 
                 <p
                     v-if="creditsToShow(plugin) !== ''"
-                    class="ms-2 mb-0 alert alert-light lh-1 p-0"
+                    class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent"
                 >
                     <small v-html="creditsToShow(plugin)"></small>
+                </p>
+
+                <p
+                    v-if="citationsToShow(plugin) !== ''"
+                    class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent"
+                >
+                    <small v-html="citationsToShow(plugin)"></small>
                 </p>
 
                 <p v-html="plugin.intro" class="ms-2 mt-1"></p>
@@ -51,13 +55,14 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
+import { citationsTxt } from "../Citations";
 
 /** HelpPlugin */
 @Options({
     components: {
         PluginComponent,
         PluginPathLink,
-        FilterInput
+        FilterInput,
     },
 })
 export default class HelpPlugin extends PluginParentClass {
@@ -81,10 +86,24 @@ export default class HelpPlugin extends PluginParentClass {
 
     filteredPlugins: PluginParentClass[] | null = null;
 
+    /**
+     * Gets the text to use for filtering the plugins.
+     *
+     * @param {PluginParentClass} plugin  The plugin to get the text for.
+     * @returns {string} The text to use for filtering the plugins. This is the
+     *                   text that is searched for in the filter box.
+     */
     extractTextToFilterFunc(plugin: PluginParentClass): string {
         return plugin.title + " " + plugin.intro;
     }
 
+    /**
+     * Gets the plugins to display. If the user has entered text in the
+     * filter box, then this will be the filtered list. Otherwise, it will
+     * be the full list.
+     *
+     * @returns {PluginParentClass[]} The list of plugins to display.
+     */
     get loadedPluginsToUse(): PluginParentClass[] {
         if (this.filteredPlugins === null) {
             return this.loadedPlugins;
@@ -93,6 +112,12 @@ export default class HelpPlugin extends PluginParentClass {
         return this.filteredPlugins;
     }
 
+    /**
+     * Filters the plugins based on the user's input (filter text).
+     *
+     * @param {PluginParentClass[]}  plugins  The list of filtered plugins
+     *                                        emitted by the component.
+     */
     onFilter(plugins: PluginParentClass[]): void {
         this.filteredPlugins = plugins;
     }
@@ -116,6 +141,16 @@ export default class HelpPlugin extends PluginParentClass {
     // onLoadedPluginsChange(newVal: PluginParentClass[]) {
     //     console.log(newVal);
     // }
+
+    /**
+     * Gets the citations to display, html formatted.
+     *
+     * @param {PluginParentClass}  plugin The plugin to get the citations for.
+     * @returns {string} The citations to display, html formatted.
+     */
+    citationsToShow(plugin: PluginParentClass): string {
+        return citationsTxt(plugin.infoPayload, false);
+    }
 
     /**
      * Gets the credits to display, html formatted.
@@ -206,6 +241,6 @@ export default class HelpPlugin extends PluginParentClass {
 <style scoped lang="scss">
 .inverse-indent {
     text-indent: -1em;
-    padding-left: 1em;
+    padding-left: 1em !important;
 }
 </style>

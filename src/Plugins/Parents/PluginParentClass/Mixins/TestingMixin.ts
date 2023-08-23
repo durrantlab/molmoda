@@ -25,7 +25,7 @@ export class TestingMixin extends Vue {
                 ? [
                       new _TestWaitUntilRegex(
                           "#log",
-                          'Job "' + (this as any).pluginId + ':.+?" ended'
+                          'Job ' + (this as any).pluginId + '.*?" ended'
                       ).cmd,
                   ]
                 : [];

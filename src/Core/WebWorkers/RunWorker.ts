@@ -53,8 +53,10 @@ export function runWorker(
     try {
         worker.postMessage(data);
     } catch (err) {
+        debugger;
+        console.log(data);
         console.error(err);
-        console.error("NOTE: data likely couldn't be serialized. Did you remove all treenodes?");
+        console.error("NOTE: perhaps the data couldn't be serialized. For example, did you remove all treenodes?");
         throw err;
     }
 

@@ -13,6 +13,7 @@ import {
     _TestWaitUntilRegex,
 } from "./TestCmd";
 import * as api from "@/Api";
+import { expandAndShowAllMolsInTree } from "./SetupTests";
 
 let exampleLoaded = false;
 
@@ -36,7 +37,7 @@ export class TestCmdList {
 
     /**
      * Wait for a specified number of seconds.
-     * 
+     *
      * @param {number} [durationInSecs=1]  The number of seconds to wait.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
@@ -47,7 +48,7 @@ export class TestCmdList {
 
     /**
      * Type text into a text box.
-     * 
+     *
      * @param {string} selector  The CSS selector for the text box.
      * @param {string} text      The text to type.
      * @returns {TestCmdList} This TestCmdList (for chaining).
@@ -59,7 +60,7 @@ export class TestCmdList {
 
     /**
      * Wait until a given regex matches the text of an element.
-     * 
+     *
      * @param {string} selector  The CSS selector for the element.
      * @param {string} regex     The regex to match.
      * @returns {TestCmdList} This TestCmdList (for chaining).
@@ -71,7 +72,7 @@ export class TestCmdList {
 
     /**
      * Upload a file.
-     * 
+     *
      * @param {string} selector  The CSS selector for the file input.
      * @param {string} filePath  The path to the file to upload.
      * @returns {TestCmdList} This TestCmdList (for chaining).
@@ -83,7 +84,7 @@ export class TestCmdList {
 
     /**
      * Returns the list of test commands.
-     * 
+     *
      * @returns {ITestCommand[]} The list of test commands.
      */
     public get cmds(): ITestCommand[] {
@@ -108,7 +109,14 @@ export class TestCmdList {
         exampleLoaded = true;
         loadRemote("4WP4.pdb", false)
             .then((fileInfo: FileInfo) => {
-                getMoleculesFromStore().loadFromFileInfo(fileInfo);
+                return getMoleculesFromStore().loadFromFileInfo(fileInfo);
+            })
+            .then(() => {
+                expandAndShowAllMolsInTree();
+                return api.visualization.viewer;
+            })
+            .then((v) => {
+                v.zoomOnFocused();
                 return;
             })
             .catch((err: string) => {
@@ -118,7 +126,7 @@ export class TestCmdList {
 
         this.waitUntilRegex("#styles", "Protein");
         if (expandInMoleculeTree) {
-            this.expandMoleculesTree("4WP4");
+            // this.expandMoleculesTree("4WP4");
         }
         return this;
     }
@@ -132,6 +140,16 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public expandMoleculesTree(treeTitles: string[] | string): TestCmdList {
+        // If treeTitles is undefined, expand everything. TODO: Should this be
+        // the default behavior always?
+        // if (treeTitles === undefined) {
+        //     const tree = getMoleculesFromStore();
+        //     tree.flattened.forEach((node) => {
+        //         node.treeExpanded = true;
+        //     });
+        //     return this;
+        // }
+
         // If treeTitles is not array, make it one.
         if (!Array.isArray(treeTitles)) {
             treeTitles = [treeTitles];
@@ -157,7 +175,6 @@ export class TestCmdList {
     //     setStoreVar("molecules", treeNodeList);
     //     return this;
     // }
-        
 
     /**
      * If running a selenium test, this function will generate the command to
@@ -206,7 +223,8 @@ export class TestCmdList {
 
         if (typeof argVal === "boolean") {
             // Throw an error saying to use clicks instead.
-            const msg = "Use clicks instead of setUserArg for boolean user arguments.";
+            const msg =
+                "Use clicks instead of setUserArg for boolean user arguments.";
             alert(msg);
             throw new Error(msg);
 

@@ -1,11 +1,4 @@
-import {
-    UserArg,
-    UserArgType,
-} from "@/UI/Forms/FormFull/FormFullInterfaces";
-import {
-    IMoleculeInputParams,
-    MoleculeInput,
-} from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Vue } from "vue-class-component";
 import { fixUserArgs } from "../../UserInputUtils";
 
@@ -15,6 +8,11 @@ import { fixUserArgs } from "../../UserInputUtils";
 export class UserInputsMixin extends Vue {
     // public userArgsFixed: UserArg[] = [];
 
+    /**
+     * Sets the user arguments to use. Modifies the ones provided.
+     * 
+     * @param {UserArg[]} userArgs  The user arguments.
+     */
     set userArgsFixed(userArgs: UserArg[]) {
         fixUserArgs(userArgs);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -24,17 +22,16 @@ export class UserInputsMixin extends Vue {
 
     /**
      * Sets the user arguments to use. Modifies the ones provided.
-     * 
+     *
      * @returns {UserArg[]} The user arguments.
      */
     get userArgsFixed(): UserArg[] {
         // Make a copy of the user arguments so we don't modify the original.
         // const userArgs = JSON.parse(JSON.stringify(this.userArgs));
-        
 
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const {userArgs} = this;
+        const { userArgs } = this;
 
         // // Restore functions too.
         // for (let i = 0; i < userArgs.length; i++) {
