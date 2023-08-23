@@ -7,19 +7,21 @@
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
     @onUserArgChanged="onUserArgChanged"
+    actionBtnTxt="OK"
   >
     <div>
       <p>Dear User,</p>
-      <p>
-        We are a university-driven scientific organization, committed to pushing
-        the boundaries of knowledge. To sustain our efforts and secure funding,
-        understanding app usage is vital. Your anonymous statistics ensure we
-        optimize our tools without compromising privacy. Your data is strictly
-        confidential, and we collect only usage patterns for publication
-        purposes. Join us in advancing research and innovation.
-      </p>
       <p>Your contribution matters!</p>
-      <p>Best regards,</p>
+      <p>
+        We are a university-driven scientific organization dedicated to pushing
+        the boundaries of knowledge. To sustain our efforts and secure funding,
+        we rely on understanding app usage. Rest assured, we are transparent in
+        our data practices. We will set cookies to gather anonymous statistics,
+        which help us optimize our tools without compromising your privacy. Your
+        data remains strictly confidential, and we only collect usage patterns
+        for publication purposes.
+      </p>
+      <p>Join us in advancing research and innovation.</p>
       <p>Durrantlab</p>
     </div>
   </PluginComponent>
@@ -66,12 +68,12 @@ export default class StatCollectionPlugin extends PluginParentClass {
   userArgDefaults: UserArg[] = [
     {
       id: "statcollection",
-      label: "StatCollection",
+      label: "Confirm selection",
       open: true,
       val: [
         {
           id: "statcollection",
-          label: "StatCollection",
+          label: "Anonymous statisctics collection",
           val: false,
           type: UserArgType.Checkbox,
         } as IUserArgCheckbox,

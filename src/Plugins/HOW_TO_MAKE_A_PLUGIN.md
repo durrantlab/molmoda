@@ -95,7 +95,7 @@ Every plugin class must define the following functions and variables.
 #### `contributorCredits` (variable) <a id="contributorCredits"></a>
 
 A list of people to credit.
- Type: `IContributorCredit[]`.  `IContributorCredit` is defined in [PluginInterfaces.ts, line 69](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L69).
+ Type: `IContributorCredit[]`.  `IContributorCredit` is defined in [PluginInterfaces.ts, line 133](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L133).
 
 #### `intro` (variable) <a id="intro"></a>
 
@@ -124,7 +124,7 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 
 A list of software credits. If the plugin uses no third-party packages, set this to `[]`.
- Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 63](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L63).
+ Type: `ISoftwareCredit[]`.  `ISoftwareCredit` is defined in [PluginInterfaces.ts, line 126](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L126).
 
 #### `title` (variable) <a id="title"></a>
 

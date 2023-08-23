@@ -73,6 +73,24 @@ export const dynamicImports = {
             });
         },
     } as IDynamicImport,
+    kekule: {
+        credit: {
+            name: "Kekule.js",
+            url: "https://partridgejiang.github.io/Kekule.js/",
+            license: Licenses.MIT,
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "kekule" */
+                /* webpackMode: "lazy" */
+                /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+                // @ts-ignore
+                "kekule"
+            ).then((mod) => {
+                return mod.default;
+            });
+        },
+    } as IDynamicImport,
     fileSaver: {
         credit: {
             name: "FileSaver.js",

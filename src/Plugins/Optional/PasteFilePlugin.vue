@@ -80,7 +80,14 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ref } from "vue";
 import { Watch } from "vue-property-decorator";
 import { reactive } from "vue";
-import { IUserArgCheckbox, IUserArgGroup, IUserArgText, UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { logEvent } from "@/Core/GoogleAnalytics";
+import {
+  IUserArgCheckbox,
+  IUserArgGroup,
+  IUserArgText,
+  UserArg,
+  UserArgType,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 enum FileType {
   PDB = "pdb",
@@ -179,7 +186,6 @@ export default class PasteFilePlugin extends PluginParentClass {
 
   inputText = "";
   fileType = FileType.OTHER;
-
   @Watch("inputText")
   onInputTextChange(val: string, oldVal: string) {
     console.log("PasteFilePlugin: onInputTextChange: val: ", val);
@@ -214,6 +220,11 @@ export default class PasteFilePlugin extends PluginParentClass {
       .catch((err: any) => {
         throw err;
       });
+    logEvent("plugin", this.pluginId, {
+      event_category: "plugin",
+      event_label: this.title,
+      value: 1,
+    });
   }
 
   runJobInBrowser(arg: any): Promise<void> {

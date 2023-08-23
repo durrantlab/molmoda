@@ -55,6 +55,7 @@
   "devDependencies": {
     "@types/file-saver": "^2.0.5",
     "@types/jquery": "^3.5.14",
+    "@types/js-cookie": "^3.0.3",
     "@types/lodash": "^4.14.182",
     "@types/sortablejs": "^1.13.0",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
@@ -77,12 +78,15 @@
     "eslint-plugin-vue": "^8.0.3",
     "eslint-plugin-write-good-comments": "^0.1.4",
     "expose-loader": "^4.0.0",
+    "js-cookie": "^3.0.5",
+    "kekule": "^1.0.0",
     "os-browserify": "^0.3.0",
     "postcss-loader": "^6.2.1",
     "sass": "^1.54.5",
     "sass-loader": "^12.6.0",
     "style-loader": "^3.3.1",
     "thread-loader": "^3.0.4",
+    "ts-unused-exports": "^10.0.0",
     "typescript": "~4.5.5",
     "vue-cli-plugin-webpack-bundle-analyzer": "^4.0.0"
   }

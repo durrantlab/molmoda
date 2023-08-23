@@ -53,6 +53,7 @@ export function logEvent(
   eventAction: string,
   eventOptions?: Record<string, any>
 ) {
+  if (!Cookies.get("statcollection")) return;
   injectGoogleAnalytics();
   if (typeof window !== "undefined" && typeof window.gtag === "function") {
     window.gtag("event", eventAction, {

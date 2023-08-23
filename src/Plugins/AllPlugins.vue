@@ -2,7 +2,11 @@
 system uses these to autopopulate with plugins. -->
 <template>
   <div>
-    <AboutPlugin @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
+    <AboutPlugin
+      @onPluginSetup="onPluginSetup"
+      :softwareCreditsToShow="softwareCredits"
+      :contributorCreditsToShow="contributorCredits"
+    />
     <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
 
     <!-- TEMPLATE1 START -->
@@ -10,15 +14,21 @@ system uses these to autopopulate with plugins. -->
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
-    <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
+    <InformationWindowPlugin
+      @onPluginSetup="onPluginSetup"
+    ></InformationWindowPlugin>
     <JobsWindowPlugin @onPluginSetup="onPluginSetup"></JobsWindowPlugin>
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
     <LoadPDBPlugin @onPluginSetup="onPluginSetup"></LoadPDBPlugin>
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
     <LogWindowPlugin @onPluginSetup="onPluginSetup"></LogWindowPlugin>
     <MergeMolsPlugin @onPluginSetup="onPluginSetup"></MergeMolsPlugin>
-    <MoveRegionsOnClickPlugin @onPluginSetup="onPluginSetup"></MoveRegionsOnClickPlugin>
-    <NavigatorWindowPlugin @onPluginSetup="onPluginSetup"></NavigatorWindowPlugin>
+    <MoveRegionsOnClickPlugin
+      @onPluginSetup="onPluginSetup"
+    ></MoveRegionsOnClickPlugin>
+    <NavigatorWindowPlugin
+      @onPluginSetup="onPluginSetup"
+    ></NavigatorWindowPlugin>
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
     <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
@@ -37,9 +47,13 @@ system uses these to autopopulate with plugins. -->
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <PasteFilePlugin @onPluginSetup="onPluginSetup"></PasteFilePlugin>
-    <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
+    <!--DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin-->
+    <ProtonateCompoundsPlugin
+      @onPluginSetup="onPluginSetup"
+    ></ProtonateCompoundsPlugin>
     <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
+    <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
@@ -49,7 +63,11 @@ system uses these to autopopulate with plugins. -->
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
+import {
+  IContributorCredit,
+  IPluginSetupInfo,
+  ISoftwareCredit,
+} from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 
 import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
@@ -87,9 +105,11 @@ import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import PasteFilePlugin from "./Optional/PasteFilePlugin.vue";
+// import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
+import StatCollectionPlugin from "./Optional/StatCollectionPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
@@ -133,14 +153,15 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     AddRegionPlugin,
     FPocketWebPlugin,
     MolPropsPlugin,
+    // DrawMoleculePlugin,
     PasteFilePlugin,
     ProtonateCompoundsPlugin,
     QueSystemTestPlugin,
     ReducePlugin,
+    StatCollectionPlugin,
     TestPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
-
   },
 })
 export default class AllPlugins extends Vue {
@@ -150,7 +171,7 @@ export default class AllPlugins extends Vue {
 
   /**
    * Runs when the plugin is setup.
-   * 
+   *
    * @param {IPluginSetupInfo} pluginSetupInfo  The plugin-setup parameters.
    */
   onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
@@ -160,5 +181,4 @@ export default class AllPlugins extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>
