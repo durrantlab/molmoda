@@ -11,13 +11,13 @@ import {
 import * as api from "@/Api";
 import { removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
-import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
+import { ITest, createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
 import { ValidationMixin } from "./Mixins/ValidationMixin";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { TestingMixin } from "./Mixins/TestingMixin";
+// import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -41,7 +41,7 @@ export abstract class PluginParentClass extends mixins(
     PopupMixin,
     JobMsgsMixin,
     ValidationMixin,
-    TestingMixin,
+    // TestingMixin,
     UserArgsMixin
 ) {
     /**
@@ -546,4 +546,14 @@ export abstract class PluginParentClass extends mixins(
         this.userArgs = newUserArgs;
         this.onUserArgChange();
     }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[] | ITest | null}  The selenium test command(s). If null,
+     * skips test (rarely used).
+     */
+    abstract getTests(): ITest[] | ITest;
 }

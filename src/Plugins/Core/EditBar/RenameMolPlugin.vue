@@ -101,16 +101,16 @@ export default class RenameMolPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList()
                 .loadExampleProtein(true)
-                .selectMoleculeInTree("Protein").cmds,
+                .selectMoleculeInTree("Protein"),
             pluginOpen: new TestCmdList().setUserArg(
                 "newName",
-                "2",
+                "Protein2",
                 this.pluginId
-            ).cmds,
+            ),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "Protein2"
-            ).cmds,
+            ),
         };
     }
 }

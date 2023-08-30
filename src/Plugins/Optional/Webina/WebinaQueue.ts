@@ -1,6 +1,7 @@
 import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { ITest } from "@/Testing/TestCmd";
 
 /**
  * A calculate mol props queue.
@@ -106,9 +107,9 @@ export class WebinaQueue extends QueueParent {
 
                                     const splitStr =
                                         "Estimated Free Energy of Binding";
-                                    jobInfo.output.scoreOnly = splitStr + stdOut
-                                        .trim()
-                                        .split(splitStr)[1];
+                                    jobInfo.output.scoreOnly =
+                                        splitStr +
+                                        stdOut.trim().split(splitStr)[1];
                                 } else {
                                     // Actual docking, get from file.
 
@@ -186,5 +187,17 @@ export class WebinaQueue extends QueueParent {
                     })
             );
         });
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+    getTests(): ITest[] {
+        // No tests for this simple plugin.
+        return [];
     }
 }

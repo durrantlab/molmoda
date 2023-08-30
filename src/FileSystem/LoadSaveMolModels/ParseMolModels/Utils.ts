@@ -35,9 +35,8 @@ export function parseMolecularModelFromTexts(
             // return Promise.all(promises);
         })
         .then((molecularDataNodeList: TreeNodeList) => {
-            molecularDataNodeList.forEach((molecularDatum: TreeNode, idx: number) => {
-                // Set name based on first one in fileInfos.
-                const fileName = fileInfos[idx].name;
+            molecularDataNodeList.forEach((molecularDatum: TreeNode) => {
+                const fileName = molecularDatum.src;
 
                 // Set molName as src on all terminal nodes
                 molecularDatum.src = fileName;

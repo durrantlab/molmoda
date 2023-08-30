@@ -95,12 +95,10 @@ export default class ExampleDataPlugin extends PluginParentClass {
         return [
             // First test without saving first
             {
-                beforePluginOpens: [],
-                afterPluginCloses:
-                    new TestCmdList().waitUntilRegex(
-                        "#navigator",
-                        "1XDN:protonated"
-                    ).cmds,
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "1XDN:protonated"
+                ),
             },
         ];
     }

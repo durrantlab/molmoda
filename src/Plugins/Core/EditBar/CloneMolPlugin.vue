@@ -205,11 +205,11 @@ export default class CloneMolPlugin extends PluginParentClass {
             {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleProtein(true)
-                    .selectMoleculeInTree("Protein").cmds,
+                    .selectMoleculeInTree("Protein"),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     ":cloned"
-                ).cmds,
+                ),
             },
         ];
     }

@@ -234,23 +234,21 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     getTests(): ITest[] {
         return [
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(true)
-                    .cmds,
+                beforePluginOpens: new TestCmdList().loadExampleProtein(true),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"
-                ).cmds,
+                ),
             },
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(true)
-                    .cmds,
+                beforePluginOpens: new TestCmdList().loadExampleProtein(true),
                 pluginOpen: new TestCmdList().click(
                     "#regen3DCoords-protonatecomps-item"
-                ).cmds,
+                ),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"
-                ).cmds,
+                ),
             },
         ];
     }

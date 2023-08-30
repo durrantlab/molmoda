@@ -125,15 +125,13 @@ export default class DeleteMolPlugin extends PluginParentClass {
             {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleProtein(true)
-                    .selectMoleculeInTree("Protein").cmds,
-                afterPluginCloses: new TestCmdList().wait(1).cmds,
+                    .selectMoleculeInTree("Protein"),
             },
             // Also test deleting a root node.
             {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleProtein(true)
-                    .selectMoleculeInTree("4WP4").cmds,
-                afterPluginCloses: new TestCmdList().wait(1).cmds,
+                    .selectMoleculeInTree("4WP4"),
             },
         ];
     }

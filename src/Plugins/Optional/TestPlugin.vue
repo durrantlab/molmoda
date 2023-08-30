@@ -26,6 +26,7 @@ import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { ITest } from "@/Testing/TestCmd";
 
 /**
  * TestPlugin
@@ -58,7 +59,7 @@ export default class TestPlugin extends PluginParentClass {
                 {
                     id: "region",
                     // label: "Region test",
-                    val: null,  // To use default
+                    val: null, // To use default
                     type: UserArgType.SelectRegion,
                 } as IUserSelectRegion,
             ],
@@ -165,6 +166,18 @@ export default class TestPlugin extends PluginParentClass {
         //     .catch((err: any) => {
         //         throw err;
         //     });
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+    getTests(): ITest[] {
+        // No tests for this simple plugin.
+        return [];
     }
 }
 </script>

@@ -136,10 +136,7 @@ function flattenChains(treeNode: TreeNode): TreeNode {
         throw new Error("No nodes found in treeNode.");
     }
 
-    const flattened = _getDefaultTreeNode(
-        treeNode.title,
-        NodesOrModel.Model
-    );
+    const flattened = _getDefaultTreeNode(treeNode.title, NodesOrModel.Model);
 
     treeNode.nodes.forEach((chain: TreeNode) => {
         if (!chain.model) {
@@ -206,9 +203,7 @@ function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
 
             const newKey = residueID(atom);
             if (newKey !== lastResidueID) {
-                residues.push(
-                    _getDefaultTreeNode(newKey, NodesOrModel.Model)
-                );
+                residues.push(_getDefaultTreeNode(newKey, NodesOrModel.Model));
                 lastResidueID = newKey;
             }
             const atoms = residues.get(residues.length - 1).model as IAtom[];
@@ -295,19 +290,19 @@ function collapseSingles(
  */
 function addMolTypeAndStyle(treeNode: TreeNode, stylesAndSels: IStyle[]) {
     const molType = treeNode.type;
-    new TreeNodeList([treeNode]).filters.onlyTerminal.forEach((mol: TreeNode) => {
-        mol.type = molType;
-        mol.styles = stylesAndSels;
-    });
-
-    new TreeNodeList([treeNode]).flattened.forEach(
+    new TreeNodeList([treeNode]).filters.onlyTerminal.forEach(
         (mol: TreeNode) => {
-            mol.id = randomID();
-            mol.treeExpanded = false;
-            mol.visible = true;
-            mol.viewerDirty = true;
+            mol.type = molType;
+            mol.styles = stylesAndSels;
         }
     );
+
+    new TreeNodeList([treeNode]).flattened.forEach((mol: TreeNode) => {
+        mol.id = randomID();
+        mol.treeExpanded = false;
+        mol.visible = true;
+        mol.viewerDirty = true;
+    });
 }
 
 /**
@@ -435,7 +430,10 @@ function divideAtomsIntoDistinctComponents(
 
     // Get the format
     const molFormatInfo = getFormatInfo(data);
-    const frames = divideMolTxtIntoFrames(data.fileInfo.contents, molFormatInfo);
+    const frames = divideMolTxtIntoFrames(
+        data.fileInfo.contents,
+        molFormatInfo
+    );
 
     // glviewer for use in webworker.
     return dynamicImports.mol3d.module.then(($3Dmol: any) => {
@@ -606,10 +604,20 @@ function addParentIds(treeNode: TreeNode) {
 
 waitForDataFromMainThread()
     .then((data: IMolData[]) => {
-        const promises = data.map(d => divideAtomsIntoDistinctComponents(d))
-        return Promise.all(promises);
+        const promises = data.map((d) => divideAtomsIntoDistinctComponents(d));
+        return Promise.all([Promise.resolve(data), ...promises]);
     })
-    .then((organizedAtomsFramesList: TreeNodeList[]) => {
+    .then((payload: any[]) => {
+        const data = payload[0] as IMolData[];
+        const organizedAtomsFramesList = payload.slice(1) as TreeNodeList[];
+
+        // Add source to all nodes
+        for (let i = 0; i < organizedAtomsFramesList.length; i++) {
+            for (let j = 0; j < organizedAtomsFramesList[i].length; j++) {
+                organizedAtomsFramesList[i].get(j).src = data[i].fileInfo.name;
+            }
+        }
+
         // Merge into one list
         const organizedAtomsFrames = organizedAtomsFramesList[0];
         for (let i = 1; i < organizedAtomsFramesList.length; i++) {

@@ -1,6 +1,8 @@
 import { slugify } from "@/Core/Utils";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import * as PluginToTest from "./PluginToTest";
+import { TestCmdList } from "./TestCmdList";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 
 enum TestCommand {
     Click = "click",
@@ -17,6 +19,8 @@ export interface ITestCommand {
     cmd: TestCommand;
     data?: any;
 }
+
+type IConvertedTest = { [key: string]: ITestCommand[] };
 
 /**
  * A class to generate the command to type text into a selector.  Should only be
@@ -212,18 +216,18 @@ export class _TestUpload extends _TestCmdParent {
 
 export interface ITest {
     // Run before the popup opens (and before menu clicking).
-    beforePluginOpens?: ITestCommand[];
+    beforePluginOpens?: TestCmdList;
 
     // Populate the user arguments. Do not include the command to click the
     // plugin action button.
-    pluginOpen?: ITestCommand[];
+    pluginOpen?: TestCmdList;
 
     // Clicks the popup button to close the plugin. Set to [] explicitly for
     // those rare plugins that have no popups.
-    closePlugin?: ITestCommand[];
+    closePlugin?: TestCmdList;
 
     // Run after the plugin popup is closed, and the job is running.
-    afterPluginCloses?: ITestCommand[];
+    afterPluginCloses?: TestCmdList;
 }
 
 /**
@@ -283,42 +287,64 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
 
 /**
  * If running selenium tests, this function will add any unspecified (default)
- * test commands.
+ * test commands. Occurs in place.
  *
+ * @param  {ITest[]} convertedTests  The tests to add defaults to.
  * @param  {any} plugin  The plugin, with getTests() function and pluginId.
- * @returns {ITest[]}  The test definitions.
  */
-function addTestDefaults(plugin: any): ITest[] {
-    const pluginId: string = plugin.pluginId;
+function addTestDefaults(
+    convertedTests: IConvertedTest[],
+    plugin: PluginParentClass
+) {
+    const { pluginId } = plugin;
 
-    // If tests is ITest, wrap it in an array.
-    if (!Array.isArray(tests)) {
-        tests = [tests];
+    if (convertedTests.length === 0) {
+        convertedTests.push({} as IConvertedTest);
     }
 
     // If any elements of each test are undefined, replace with defaults.
-    for (const test of tests) {
+    for (const test of convertedTests) {
+        // Set beforePluginOpens to [] if undefined.
         test.beforePluginOpens = test.beforePluginOpens || [];
-        test.pluginOpen = test.pluginOpen || [];
-        test.closePlugin = test.closePlugin || [
-            new _TestClick(`#modal-${pluginId} .action-btn`).cmd,
-        ];
-        test.afterPluginCloses =
-            test.afterPluginCloses ||
-            // If you're loging the job, wait for notice of job ending.
-            (plugin.logJob
-                ? [
-                      new _TestWaitUntilRegex(
-                          "#log",
-                          "Job " + pluginId + '.*?" ended'
-                      ).cmd,
-                  ]
-                // Otherwise, just want 1 second to give a little time for
-                // errors to pop up, if any.
-                : [new _TestWait(1).cmd]);
-    }
 
-    return tests;
+        // Set pluginOpen to [] if undefined.
+        test.pluginOpen = test.pluginOpen || [];
+
+        // Set closePlugin to [] if undefined and noPopup, otherwise set to
+        // click on action button.
+        if (!test.closePlugin) {
+            test.closePlugin = plugin.noPopup
+                ? []
+                : [new _TestClick(`#modal-${pluginId} .action-btn`).cmd];
+        }
+
+        // Now consider test.afterPluginCloses. If logJob, use that to wait for
+        // indication that job finished.
+        if (!test.afterPluginCloses) {
+            // It's not defined. Start by assuming it's empty.
+            test.afterPluginCloses = [];
+            if (plugin.logJob) {
+                test.afterPluginCloses.push(
+                    new _TestWaitUntilRegex(
+                        "#log",
+                        "Job " + pluginId + '.*?" started'
+                    ).cmd
+                );
+            }
+        }
+
+        // It should not end in a wait (validation).
+        if (
+            test.afterPluginCloses.length > 0 &&
+            test.afterPluginCloses[test.afterPluginCloses.length - 1].cmd ===
+                TestCommand.Wait
+        ) {
+            throw new Error("Last command cannot be a wait.");
+        }
+
+        // Always add a wait at the end of the test.
+        test.afterPluginCloses.push(new _TestWait(1).cmd);
+    }
 }
 
 /**
@@ -328,50 +354,83 @@ function addTestDefaults(plugin: any): ITest[] {
  * @param  {any} plugin  The plugin to test.
  */
 export function createTestCmdsIfTestSpecified(plugin: any) {
-    if (
-        PluginToTest.pluginToTest === plugin.pluginId &&
-        plugin.pluginId !== ""
-    ) {
-        Here is where you need to eliminate .cmds somehow.
+    if (PluginToTest.pluginToTest !== plugin.pluginId) {
+        return;
+    }
 
-        let tests: ITest | ITest[] = plugin.getTests();
+    if (plugin.pluginId === "") {
+        return;
+    }
 
-        const tests = addTestDefaults(tests); // Defined in each plugin
+    let tests: ITest | ITest[] = plugin.getTests();
 
-        // If there is more than one test but pluginTestIndex is undefined, send
-        // back command to add tests.
-        if (tests.length > 1 && PluginToTest.pluginTestIndex === undefined) {
-            plugin.$store.commit("setVar", {
-                name: "cmds",
-                val: JSON.stringify([
-                    // TODO: Needs to be a class?
-                    {
-                        cmd: TestCommand.AddTests,
-                        data: tests.length,
-                    },
-                ]),
-                module: "test",
-            });
-            return;
+    // If tests is ITest, wrap it in an array.
+    if (!Array.isArray(tests)) {
+        tests = [tests];
+    }
+
+    // Convert the values of each test to cmds.
+    const convertedTests: IConvertedTest[] = [];
+    for (const test of tests) {
+        const convertedTest: IConvertedTest = {};
+        for (const key in test) {
+            const testStep = test[key as keyof ITest];
+            if (testStep !== undefined) {
+                convertedTest[key] = testStep.cmds;
+            }
         }
+        convertedTests.push(convertedTest);
+    }
 
-        const test = tests[PluginToTest.pluginTestIndex || 0];
+    addTestDefaults(convertedTests, plugin); // Defined in each plugin
 
-        // It is this plugin that should be tested.
-        const cmds = [
-            ...(test.beforePluginOpens as ITestCommand[]), // Defined in each plugin
-            ..._openPluginCmds(plugin),
-            ...(test.pluginOpen as ITestCommand[]), // Defined in each plugin
-            new _TestWait(1).cmd,
-            ...(test.closePlugin as ITestCommand[]), // Defined in each plugin
-            ...(test.afterPluginCloses as ITestCommand[]), // Defined in each plugin
-            new _TestWait(0.5).cmd,
-        ] as ITestCommand[];
-
+    // If there is more than one test but pluginTestIndex is undefined, send
+    // back command to add tests.
+    if (
+        convertedTests.length > 1 &&
+        PluginToTest.pluginTestIndex === undefined
+    ) {
         plugin.$store.commit("setVar", {
             name: "cmds",
-            val: JSON.stringify(cmds),
+            val: JSON.stringify([
+                // TODO: Needs to be a class?
+                {
+                    cmd: TestCommand.AddTests,
+                    data: convertedTests.length,
+                },
+            ]),
             module: "test",
         });
+        return;
     }
+
+    // If the plugin is not menu accessible, can't test it. Just pass it.
+    // Example: moveregionsonclick
+    if (plugin.menuPath === null) {
+        plugin.$store.commit("setVar", {
+            name: "cmds",
+            val: JSON.stringify([]),
+            module: "test",
+        });
+        return;
+    }
+
+    // It is this test that should be tested (not just reporting that there are
+    // tests, but an actual test).
+    const convertedTest = convertedTests[PluginToTest.pluginTestIndex || 0];
+    const cmds = [
+        ...(convertedTest.beforePluginOpens as ITestCommand[]), // Defined in each plugin
+        ..._openPluginCmds(plugin),
+        ...(convertedTest.pluginOpen as ITestCommand[]), // Defined in each plugin
+        new _TestWait(1).cmd,
+        ...(convertedTest.closePlugin as ITestCommand[]), // Defined in each plugin
+        ...(convertedTest.afterPluginCloses as ITestCommand[]), // Defined in each plugin
+        new _TestWait(0.5).cmd,
+    ] as ITestCommand[];
+
+    plugin.$store.commit("setVar", {
+        name: "cmds",
+        val: JSON.stringify(cmds),
+        module: "test",
+    });
 }

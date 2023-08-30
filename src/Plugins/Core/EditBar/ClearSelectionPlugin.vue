@@ -81,9 +81,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList()
                 .loadExampleProtein(true)
-                .selectMoleculeInTree("Protein").cmds,
-            closePlugin: [],
-            afterPluginCloses: new TestCmdList().wait(1).cmds,
+                .selectMoleculeInTree("Protein"),
         };
     }
 }

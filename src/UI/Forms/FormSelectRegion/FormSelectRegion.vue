@@ -30,7 +30,7 @@
             <!-- :filterFunc="filterFunc" -->
             <FormVector3D
                 v-model="modelValueToUse.dimensions"
-                :id="id + '-dimens'"
+                :id="'dimens-' + id"
                 :disabled="disabled"
                 :description="description"
                 @onChange="resetSelected"
@@ -62,7 +62,7 @@
             <!-- :filterFunc="filterFunc" -->
             <FormVector3D
                 v-model="modelValueToUse.center"
-                :id="id + '-center'"
+                :id="'center-' + id"
                 :disabled="disabled"
                 :description="description"
                 @onChange="resetSelected"

@@ -269,11 +269,11 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                 .text("#modal-loadpubchem #formMolName", "Aspirin")
                 // TODO: Below could wait until value populated. Hoping it will take
                 // less than 3 secs is hackish.
-                .wait(5).cmds,
+                .wait(5),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "aspirin-"
-            ).cmds,
+            ),
         };
     }
 }

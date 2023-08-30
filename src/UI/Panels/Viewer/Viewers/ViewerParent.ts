@@ -450,8 +450,17 @@ export abstract class ViewerParent {
     ) {
         this.makeAtomsClickable(model, (x: number, y: number, z: number) => {
             api.plugins.runPlugin("moveregionsonclick", [x, y, z]);
-            selectProgramatically(modelID);
-            setStoreVar("clearFocusedMolecule", false);
+
+            // Determine if any of the currently selected items are regions.
+            const selectedRegions = getMoleculesFromStore()
+                .filters.keepSelected(true, true)
+                .filters.keepRegions(true, true);
+            
+            if (selectedRegions.length == 0) {
+                // Region is not selected, so select the molecule.
+                selectProgramatically(modelID);
+                setStoreVar("clearFocusedMolecule", false);
+            }
         });
 
         this.makeAtomsHoverable(
@@ -496,7 +505,7 @@ export abstract class ViewerParent {
      *                                                 determine from the tree
      *                                                 which are visible and
      *                                                 terminal.
-     */    
+     */
     public zoomOnFocused(visibleTerminalNodeModelsIds?: string[]) {
         let molsToFocusIds: string[] = [];
         const allMols = getMoleculesFromStore();

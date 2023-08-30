@@ -10,6 +10,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from json.decoder import JSONDecodeError
 
 # import traceback
 import threading
@@ -51,6 +52,9 @@ class el:
 
     @text.setter
     def text(self, value):
+        # Clear the field
+        self.el.clear()
+        # Type the value
         self.el.send_keys(value)
         self.check_errors()
 
@@ -188,29 +192,6 @@ def make_driver():
     return webdriver.Firefox(options=options)
 
 
-# If first argument given, use that as plugin_id
-if len(sys.argv) > 1:
-    # job index also given.
-    subjob_idx = int(sys.argv[2]) - 1 if len(sys.argv) > 2 else None
-    plugin_ids = [(sys.argv[1], subjob_idx)]
-else:
-    # Get ID's of all plugins
-    plugin_ids = []
-    for ts_file in glob.glob("./src/**/*Plugin.vue", recursive=True):
-        with open(ts_file, "r") as f:
-            content = f.read()
-        plugin_id = re.search(r'[^:]\bpluginId *?= *?"(.+)"', content, re.MULTILINE)[1]
-        plugin_ids.append((plugin_id, None))
-    plugin_ids = [
-        i
-        for i in plugin_ids
-        if "simplemsg" not in i[0] and "redo" not in i[0] and "testplugin" not in i[0]
-    ]
-
-plugin_ids.sort()
-
-# plugin_ids.remove("about")  # Because cancel button. TODO: Good to account for this.
-
 drivers = {}
 
 
@@ -224,7 +205,9 @@ def run_test(plugin_id):
 
     driver = drivers[key]
 
-    plugin_id, plugin_idx = plugin_id
+    plugin_idx = plugin_id[1]
+    plugin_id = plugin_id[0]
+    # plugin_id, plugin_idx = plugin_id
 
     url = f"http://localhost:{localhost_port}/?test={plugin_id}"
     if plugin_idx is not None:
@@ -232,12 +215,20 @@ def run_test(plugin_id):
 
     driver.get(url)
 
-    cmds_str = el("#test-cmds", driver).text
-    cmds = json.loads(cmds_str)
     plugin_idx_str = f" #{str(plugin_idx + 1)}" if plugin_idx is not None else ""
-
     test_lbl = f"{plugin_id}{plugin_idx_str}"
     # resp = f"Result of {test_lbl}: "
+
+    cmds_str = el("#test-cmds", driver).text
+    try:
+        cmds = json.loads(cmds_str)
+    except Exception as JSONDecodeError:
+        print(f"Failed to parse JSON: {cmds_str}")
+        return {
+            "status": "failed",
+            "test": test_lbl,
+            "error": f"Failed to parse JSON: {cmds_str}",
+        }
 
     # print(f"Starting {test_lbl}...")
     try:
@@ -282,71 +273,167 @@ def run_test(plugin_id):
     return resp
 
 
-# Get all the tests you'll run
+# If first argument given, use that as plugin_id
+if len(sys.argv) > 1:
+    # job index also given.
+    subjob_idx = int(sys.argv[2]) - 1 if len(sys.argv) > 2 else None
+    plugin_ids = [(sys.argv[1], subjob_idx)]
+else:
+    # Get ID's of all plugins
+    plugin_ids = []
+    for ts_file in glob.glob("./src/**/*Plugin.vue", recursive=True):
+        with open(ts_file, "r") as f:
+            content = f.read()
+        plugin_id = re.search(r'[^:]\bpluginId *?= *?"(.+)"', content, re.MULTILINE)[1]
+        plugin_ids.append((plugin_id, None))
+    plugin_ids = [
+        i
+        for i in plugin_ids
+        if "simplemsg" not in i[0] and "redo" not in i[0] and "testplugin" not in i[0]
+    ]
 
-# while plugin_ids:
-#     plugin_id = plugin_ids.pop(0)
-#     result = run_test(plugin_id)
-#     if result is not None:
-#         plugin_ids.extend(result)
+plugin_ids.sort()
+# print(plugin_ids)
 
-all_test_results = {}
+# For debugging
+# plugin_ids = plugin_ids[:5]
 
-with ThreadPoolExecutor(max_workers=4) as executor:
-    futures_to_tests = (
-        {}
-    )  # Use a dictionary to map futures to the tests they represent (optional but can be useful)
-    results = []
+# all_test_results = {}
 
-    while plugin_ids or futures_to_tests:
-        # While there are tests to submit or futures that haven't been processed
-        while plugin_ids:
-            test = plugin_ids.pop()
-            future = executor.submit(run_test, test)
-            futures_to_tests[future] = test
+passed_tests = []
 
-        # Use as_completed to gather results and remove completed futures
-        for future in as_completed(futures_to_tests):
-            test = futures_to_tests[future]
-            try:
-                result = future.result()
+for try_idx in range(4):
+    failed_tests = []
+    drivers = {}
 
-                # Is result a list?
-                if isinstance(result, list):
-                    plugin_ids.extend(result)
-                    print(f"Added tests: {json.dumps(result)}")
-                    continue
+    # plugin_ids.remove("about")  # Because cancel button. TODO: Good to account for this.
 
-                # Not a list, so do nothing.
-                # results.append(result)
-                # print(f"Test {test} resulted in {result}")
-                print(
-                    f"{result['status'][:1].upper()}{result['status'][1:]}: {result['test']} {result['error']}"
-                )
-                if result["test"] not in all_test_results:
-                    all_test_results[result["test"]] = []
-                all_test_results[result["test"]].append(result["status"])
-            except Exception as e:
-                print(f"Test {test} raised an exception: {e}")
-            finally:
-                del futures_to_tests[future]
+    # Get all the tests you'll run
+
+    # while plugin_ids:
+    #     plugin_id = plugin_ids.pop(0)
+    #     result = run_test(plugin_id)
+    #     if result is not None:
+    #         plugin_ids.extend(result)
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        # Use a dictionary to map futures to the tests they represent (optional but
+        # can be useful)
+        futures_to_tests = {}
+
+        results = []
+
+        while plugin_ids or futures_to_tests:
+            # While there are tests to submit or futures that haven't been processed
+            while plugin_ids:
+                test = plugin_ids.pop()
+                future = executor.submit(run_test, test)
+                futures_to_tests[future] = test
+
+            # Use as_completed to gather results and remove completed futures
+            for future in as_completed(futures_to_tests):
+                test = futures_to_tests[future]
+                try:
+                    result = future.result()
+
+                    # Is result a list?
+                    if isinstance(result, list):
+                        plugin_ids.extend(result)
+                        print(f"Added tests: {json.dumps(result)}")
+                        continue
+
+                    # Not a list, so do nothing.
+                    # results.append(result)
+                    # print(f"Test {test} resulted in {result}")
+                    print(
+                        f"{result['status'][:1].upper()}{result['status'][1:]}: {result['test']} {result['error']}"
+                    )
+                    # if result["test"] not in all_test_results:
+                    # all_test_results[result["test"]] = []
+                    # all_test_results[result["test"]].append(
+                    #     result["status"] + " (try " + str(tryIdx + 1) + ")"
+                    # )
+                    # all_test_results[result["test"]] = (
+                    #     result["status"] + " (try " + str(tryIdx + 1) + ")"
+                    # )
+
+                    if result["status"] == "passed":
+                        passed_tests.append([test[0], test[1], try_idx])
+                    else:
+                        failed_tests.append([test[0], test[1], try_idx])
+                except Exception as e:
+                    print(f"Test {test} raised an exception: {e}")
+                    # all_test_results[test[0]] = f"failed (try {str(tryIdx + 1)})"
+                    failed_tests.append([test[0], test[1], try_idx])
+                finally:
+                    del futures_to_tests[future]
+
+    # print("")
+    # print("Tests that passed:")
+    # for test, value in all_test_results.items():
+    #     if "passed" in value:
+    #         print(f"   {test}: {all_test_results[test]}")
+    #         # if all("passed" in i for i in all_test_results[test]):
+
+    plugin_ids = failed_tests
+    plugin_ids.sort()
+
+    # plugin_ids = [
+    #     test for test, value_ in all_test_results.items() if "failed" in value_
+    # ]
+    # plugin_ids2 = [
+    #     (i, None) if " #" not in i else (i.split(" #")[0], int(i.split(" #")[1]))
+    #     for i in plugin_ids
+    # ]
+    # plugin_ids2.sort()
+
+    # Go through all the drivers and quit
+    for driver in drivers.values():
+        driver.quit()
+
+    if not plugin_ids:
+        break
+
+    plugin_ids_str = ", ".join(
+        [i[0] if i[1] is None else f"{i[0]} #{str(i[1] + 1)}" for i in plugin_ids]
+    )
+    print(f"Will retry the following tests: {plugin_ids_str}")
+
+
+# import pdb; pdb.set_trace()
 
 print("")
 print("Tests that passed:")
-for test in all_test_results:
-    if all(i == "passed" for i in all_test_results[test]):
-        print(f"   {test}")
+for test_name, test_idx, try_idx in passed_tests:
+    lbl = f"   {test_name}"
+    if test_idx is not None:
+        lbl += f" #{test_idx + 1}"
+    lbl += f" (try {try_idx + 1})"
+    print(lbl)
+
+    # if "passed" in value:
+    #     print(f"   {test}: {all_test_results[test]}")
+    #     # if all("passed" in i for i in all_test_results[test]):
 
 print("")
 print("Tests that failed:")
-for test in all_test_results:
-    if any(i == "failed" for i in all_test_results[test]):
-        print(f"   {test}")
+for test_name, test_idx, try_idx in failed_tests:
+    lbl = f"   {test_name}"
+    if test_idx is not None:
+        lbl += f" #{test_idx + 1}"
+    lbl += f" (try {try_idx + 1})"
+    print(lbl)
 
-# Run the tests in parallel, at most four at a time.
-# with ThreadPoolExecutor(max_workers=4) as executor:
-#     executor.map(run_test, all_tests)
+    # if "passed" in value:
+    #     print(f"   {test}: {all_test_results[test]}")
+    #     # if all("passed" in i for i in all_test_results[test]):
+
+# for test, value in all_test_results.items():
+#     if "failed" in value:
+#         print(f"   {test}: {all_test_results[test]}")
+#         # if all("passed" in i for i in all_test_results[test]):
 
 
 input("Done. Press Enter to end all tests...")
+
 # driver.quit()

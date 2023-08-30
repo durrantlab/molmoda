@@ -147,14 +147,14 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
                 "uniprot",
                 "P86927",
                 this.pluginId
-            ).cmds,
+            ),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "P86927"
-            ).cmds,
+            ),
 
             // .waitUntilRegex("#styles", "Protein")
-            // .waitUntilRegex("#log", 'Job loadalphafold.*? ended').cmds
+            // .waitUntilRegex("#log", 'Job loadalphafold.*? ended')
         };
     }
 }

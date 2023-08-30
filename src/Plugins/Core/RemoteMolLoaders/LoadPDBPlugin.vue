@@ -127,11 +127,11 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 "pdbId",
                 "1XDN",
                 this.pluginId
-            ).cmds,
+            ),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "1XDN"
-            ).cmds,
+            ),
         };
     }
 }

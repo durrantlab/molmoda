@@ -9,7 +9,7 @@ export class PopupMixin extends Vue {
 
     // Occasionally, you might need a plugin that doesn't require a popup (e.g.,
     // undo/redo). In that case, set this to true.
-    protected noPopup = false;
+    public noPopup = false;
 
     /**
      * Closes the popup.

@@ -31,6 +31,7 @@ import { IRegion } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { ITest } from "@/Testing/TestCmd";
 
 /** AboutPlugin */
 @Options({
@@ -114,6 +115,17 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
         treeNode.viewerDirty = true;
 
         return;
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+     getTests(): ITest[] {        // No tests for this simple plugin.
+        return [];
     }
 }
 </script>

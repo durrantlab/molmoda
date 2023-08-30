@@ -77,6 +77,14 @@ Every plugin class must define the following functions and variables.
 A list of people to credit.
  Type: `IContributorCredit[]`.  `IContributorCredit` is defined in [PluginInterfaces.ts, line 69](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/PluginInterfaces.ts#L69).
 
+#### `getTests` (function) <a id="getTests"></a>
+
+Gets the test commands for the plugin. For advanced use.
+
+| Parameter | Type | Description
+| --------- | ---- | -----------
+| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217).
+
 #### `intro` (variable) <a id="intro"></a>
 
 A short description of the plugin. This is shown at the top of the plugin. It should first describe what the plugin does, then how it does it. Be brief.
@@ -180,14 +188,6 @@ The following functions and variables have good default implementations, so most
 plugin classes should not define them. But they can be defined if needed
 (advanced use, rare cases).
 
-
-#### `getTests` (function) <a id="getTests"></a>
-
-Gets the test commands for the plugin. For advanced use.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [TestCmd.ts, line 215](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L215). `ITest` is defined in [TestCmd.ts, line 215](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L215).
 
 #### `onEndJobLogMsg` (function) <a id="onEndJobLogMsg"></a>
 

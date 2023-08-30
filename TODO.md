@@ -127,12 +127,14 @@ one. It's not good.
 
 Put surface then hide. Nothing underneath.
 
-No .cmds needed. Do on backend.
+Remind me to set up beta, site, and version name for biotype.
+
+# DONE
 
 If afterPlugin empty wait 1 sec by default. So not needed in each plugin. then
 check all plugins and remove where this appears.
 
-# DONE
+No .cmds needed. Do on backend.
 
 See // TODO: Need to use timeout here.
 

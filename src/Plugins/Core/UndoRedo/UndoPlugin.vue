@@ -84,11 +84,10 @@ export default class UndoPlugin extends PluginParentClass {
   getTests(): ITest {
     return {
       beforePluginOpens: new TestCmdList()
-        .loadExampleProtein().cmds,
+        .loadExampleProtein(),
       // pluginOpen: [this.testSetUserArg("filename", "test")],
-      closePlugin: [],
-      afterPluginCloses: new TestCmdList()
-        .wait(3).cmds
+      // afterPluginCloses: new TestCmdList()
+      //   .wait(3)
     };
   }
 }

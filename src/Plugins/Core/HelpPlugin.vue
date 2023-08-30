@@ -231,8 +231,7 @@ export default class HelpPlugin extends PluginParentClass {
             closePlugin: new TestCmdList().pressPopupButton(
                 ".cancel-btn",
                 this.pluginId
-            ).cmds,
-            afterPluginCloses: [],
+            ),
         };
     }
 }

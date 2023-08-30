@@ -376,15 +376,14 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         const biotiteJob = {
             beforePluginOpens: new TestCmdList()
                 .loadExampleProtein(true)
-                .selectMoleculeInTree("Protein").cmds,
+                .selectMoleculeInTree("Protein"),
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",
                 "test",
                 this.pluginId
-            ).cmds,
+            ),
             afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#log", 'Job savemolecules.*? ended')
-                .wait(3).cmds,
+                .waitUntilRegex("#log", "Job savemolecules.*? ended")
         };
 
         const jobs = [
@@ -451,7 +450,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
             jobs.push({
                 ...biotiteJob,
-                pluginOpen: pluginOpen.cmds,
+                pluginOpen: pluginOpen,
             });
         }
 

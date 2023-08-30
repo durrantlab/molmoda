@@ -49,9 +49,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 export default class OpenMoleculesPlugin extends PluginParentClass {
     menuPath = "[3] File/[1] Project/[0] Open...";
     title = "Open Molecule Files";
-    softwareCredits: ISoftwareCredit[] = [
-        dynamicImports.obabelwasm.credit
-    ];
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [
         // {
         //     name: "Jacob D. Durrant",
@@ -157,43 +155,42 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     getTests(): ITest[] {
         const filesToTest = [
             // File, title-clicks,
-            // ["two_files.zip", ["ligs", "Compounds", "A"], "UNL:1"],
-            ["four_mols.zip", ["ligs", "Compounds", "A"], "ligs.smi:3"],
-            // ["ligs.smi.zip", ["ligs", "Compounds", "A"], "ligs.smi:3"],
-            ["ligs.can", ["ligs", "Compounds", "A"], "ligs.can:3"],
-            ["test.biotite", ["1XDN", "Compounds", "A"], "ATP:501"],
+            // ["two_files.zip", ["ligs"ompounds", "A"], "UNL:1"],
+            ["four_mols.zip", "ligs:3"],
+            // ["ligs.smi.zip", "ligs.smi:3"],
+            ["ligs.can", "ligs:3"],
+            ["test.biotite", "ATP:501"],
 
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
-            ["ligs.cif", ["ligs", "Compounds", "X"], "UNL:1"],
+            ["ligs.cif", "UNL:1"],
 
-            ["ligs.mol2", ["ligs", "Compounds", "A"], "ligs.mol2:3"],
-            ["ligs.pdb", ["ligs", "Compounds", "A"], "UN3:1"],
-            ["ligs.pdbqt", ["ligs", "Compounds", "A"], "UN3:1"],
-            ["ligs.sdf", ["ligs", "Compounds", "A"], "ligs.sdf:3"],
-            ["ligs.smi", ["ligs", "Compounds", "A"], "ligs.smi:3"],
-            ["4WP4.pdb", ["4WP4", "Compounds", "A"], "TOU:101"],
-            ["4WP4.pdb.zip", ["4WP4", "Compounds", "A"], "TOU:101"],
-            ["4WP4.pdbqt", ["4WP4", "Protein"], "A"],
-            ["4WP4.pqr", ["4WP4", "Compounds", "A"], "TOU:101"],
-            ["4WP4.xyz", ["4WP4", "Compounds", "A"], "4WP4.xyz:1"],
+            ["ligs.mol2", "ligs:3"],
+            ["ligs.pdb", "UN3:1"],
+            ["ligs.pdbqt", "UN3:1"],
+            ["ligs.sdf", "ligs:3"],
+            ["ligs.smi", "ligs:3"],
+            ["4WP4.pdb", "TOU:101"],
+            ["4WP4.pdb.zip", "TOU:101"],
+            ["4WP4.pdbqt", "A"],
+            ["4WP4.pqr", "TOU:101"],
+            ["4WP4.xyz", "4WP4:1"],
         ];
 
         return filesToTest.map((fileToTest) => {
             const name = fileToTest[0];
-            const titles = fileToTest[1] as string[];
+            // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
-            const substrng = fileToTest[2] as string;
+            const substrng = fileToTest[1] as string;
             return {
                 pluginOpen: new TestCmdList().setUserArg(
                     "formFile",
                     "file://./src/Testing/mols/" + name,
                     this.pluginId
-                ).cmds,
+                ),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#styles", "Atoms")
-                    .expandMoleculesTree(titles)
+                    // .expandMoleculesTree(titles)
                     .waitUntilRegex("#navigator", substrng)
-                    .wait(5).cmds,
             };
         });
     }

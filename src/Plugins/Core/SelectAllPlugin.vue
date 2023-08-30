@@ -44,7 +44,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = "Select all molecules in the tree."
+    intro = "Select all molecules in the tree.";
 
     hotkey = "a";
 
@@ -79,10 +79,7 @@ export default class SelectAllPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            beforePluginOpens: new TestCmdList()
-                .loadExampleProtein(true).cmds,
-            closePlugin: [],
-            afterPluginCloses: [],
+            beforePluginOpens: new TestCmdList().loadExampleProtein(true),
         };
     }
 }

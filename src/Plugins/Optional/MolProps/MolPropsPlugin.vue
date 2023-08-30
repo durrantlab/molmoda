@@ -149,11 +149,13 @@ export default class MolPropsPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTezts(): ITest {
+    getTests(): ITest {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(true).cmds,
-            // closePlugin: [],
-            afterPluginCloses: [],
+            beforePluginOpens: new TestCmdList().loadExampleProtein(true),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#app",
+                "fail"
+            )
         };
     }
 }

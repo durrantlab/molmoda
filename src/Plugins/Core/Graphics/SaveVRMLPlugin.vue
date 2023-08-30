@@ -121,16 +121,16 @@ export default class SaveVRMLPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
+            beforePluginOpens: new TestCmdList().loadExampleProtein(),
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",
                 "test",
                 this.pluginId
-            ).cmds,
+            ),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#log",
                 "Job savevrml.*? ended"
-            ).cmds,
+            ),
         };
     }
 }

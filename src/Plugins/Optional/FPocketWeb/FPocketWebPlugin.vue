@@ -524,20 +524,22 @@ export default class FPocketWebPlugin extends PluginParentClass {
         return [
             // without pseudo atoms
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
-                afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#navigator", "Pocket1Box")
-                    // .wait(5)
-                    .cmds,
+                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "Pocket1Box"
+                ),
             },
             // Including pseudo atoms
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
-                pluginOpen: new TestCmdList().click("#providePseudoAtoms-fpocketweb-item").cmds,
-                afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#navigator", "PocketPseudoAtoms1")
-                    // .wait(5)
-                    .cmds,
+                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                pluginOpen: new TestCmdList().click(
+                    "#providePseudoAtoms-fpocketweb-item"
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "PocketPseudoAtoms1"
+                ),
             },
         ];
     }

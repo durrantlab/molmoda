@@ -80,14 +80,18 @@ export default class WebinaPlugin extends PluginParentClass {
             citations: [
                 {
                     title: "AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings",
-                    authors: ["Eberhardt, Jerome", "Santos-Martins, Diogo", ".,.."],
+                    authors: [
+                        "Eberhardt, Jerome",
+                        "Santos-Martins, Diogo",
+                        ".,..",
+                    ],
                     journal: "J. Chem. Inf. Model.",
                     year: 2021,
                     volume: 61,
                     issue: 8,
                     pages: "3891-3898",
-                }
-            ]
+                },
+            ],
         },
         dynamicImports.webina.credit,
     ];
@@ -306,7 +310,7 @@ export default class WebinaPlugin extends PluginParentClass {
             "keep_only_best",
             "warning",
             "makemolinputparams",
-            "webinaAdvancedParams"
+            "webinaAdvancedParams",
         ];
         notParams.forEach((notParam) => {
             if (webinaParams[notParam] !== undefined) {
@@ -569,15 +573,54 @@ export default class WebinaPlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    getTezts(): ITest {
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#navigator", "PocketBox1")
-                .wait(5).cmds,
+    getTests(): ITest[] {
+        const pluginOpenFactory = () => {
+            return new TestCmdList()
+                .setUserArg("x-dimens-region", 10, this.pluginId)
+                .setUserArg("y-dimens-region", 10, this.pluginId)
+                .setUserArg("z-dimens-region", 10, this.pluginId)
+                .setUserArg("x-center-region", 6.322, this.pluginId)
+                .setUserArg("y-center-region", 9.638, this.pluginId)
+                .setUserArg("z-center-region", 18.939, this.pluginId)
+                .setUserArg("cpu", 4, this.pluginId)
+                .setUserArg("exhaustiveness", 1, this.pluginId);
         };
+
+        return [
+            // Test just standard docking
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                pluginOpen: pluginOpenFactory(),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "4WP4:docking"
+                ),
+            },
+            // Test score in place
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                pluginOpen: pluginOpenFactory().click(
+                    "#score_only-webina-item"
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "4WP4:docking"
+                ),
+            },
+            // Test keep all poses
+            {
+                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                pluginOpen: pluginOpenFactory().click(
+                    "#keep_only_best-webina-item"
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "4WP4:docking"
+                ),
+            },
+        ];
     }
 }
 </script>

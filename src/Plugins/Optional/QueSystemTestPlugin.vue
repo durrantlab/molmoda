@@ -1,121 +1,133 @@
 <template>
-  <PluginComponent
-    v-model="open"
-    :infoPayload="infoPayload"
-    @onPopupDone="onPopupDone"
-    @onUserArgChanged="onUserArgChanged"
-  ></PluginComponent>
+    <PluginComponent
+        v-model="open"
+        :infoPayload="infoPayload"
+        @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged"
+    ></PluginComponent>
 </template>
 
 <script lang="ts">
 import {
-  IContributorCredit,
-  ISoftwareCredit,
+    IContributorCredit,
+    ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import {
-  UserArg,
-  IUserArgGroup,
-  IUserArgMoleculeInputParams,
-  IUserArgNumber,
+    UserArg,
+    IUserArgGroup,
+    IUserArgMoleculeInputParams,
+    IUserArgNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Options } from "vue-class-component";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { ITest } from "@/Testing/TestCmd";
 
 /**
  * QueSystemTestPlugin
  */
 @Options({
-  components: {
-    PluginComponent,
-  },
+    components: {
+        PluginComponent,
+    },
 })
 export default class QueSystemTestPlugin extends PluginParentClass {
-  menuPath = "[7] Test/Test Component Queue System...";
-  title = "Load Molecule from PubChem";
-  softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [
-    // {
-    //   name: "Jacob D. Durrant",
-    //   url: "http://durrantlab.com/",
-    // },
-  ];
-  pluginId = "testplugin2";
+    menuPath = "[7] Test/Test Component Queue System...";
+    title = "Load Molecule from PubChem";
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //   name: "Jacob D. Durrant",
+        //   url: "http://durrantlab.com/",
+        // },
+    ];
+    pluginId = "testplugin2";
 
-  intro = `This is a <b>test</b> component.`;
+    intro = `This is a <b>test</b> component.`;
 
-  msgOnJobsFinished = "All jobs finished, moo.";
+    msgOnJobsFinished = "All jobs finished, moo.";
 
-  userArgDefaults: UserArg[] = [
-    {
-      // type: UserArgType.Number,
-      id: "moose",
-      label: "Moose",
-      val: 0,
-    } as IUserArgNumber,
-    {
-      // type: UserArgType.MoleculeInputParams,
-      id: "makemolinputparams",
-      val: new MoleculeInput({ compoundFormat: "can" }),
-    } as IUserArgMoleculeInputParams,
-    {
-      id: "group",
-      // type: UserArgType.Group,
-      label: "Labelme",
-      val: [
+    userArgDefaults: UserArg[] = [
         {
-          // type: UserArgType.Number,
-          id: "moose2",
-          label: "Moose2",
-          val: 0,
-        },
+            // type: UserArgType.Number,
+            id: "moose",
+            label: "Moose",
+            val: 0,
+        } as IUserArgNumber,
         {
-          // type: UserArgType.Text,
-          id: "moose3",
-          label: "Moose3",
-          val: "face",
-        },
-      ],
-      startOpened: true,
-    } as IUserArgGroup,
-  ];
+            // type: UserArgType.MoleculeInputParams,
+            id: "makemolinputparams",
+            val: new MoleculeInput({ compoundFormat: "can" }),
+        } as IUserArgMoleculeInputParams,
+        {
+            id: "group",
+            // type: UserArgType.Group,
+            label: "Labelme",
+            val: [
+                {
+                    // type: UserArgType.Number,
+                    id: "moose2",
+                    label: "Moose2",
+                    val: 0,
+                },
+                {
+                    // type: UserArgType.Text,
+                    id: "moose3",
+                    label: "Moose3",
+                    val: "face",
+                },
+            ],
+            startOpened: true,
+        } as IUserArgGroup,
+    ];
 
-  /**
-   * Runs when the user presses the action button and the popup closes.
-   */
-  onPopupDone() {
-    const jobParams = [];
-    for (let i = 0; i < 10; i++) {
-      const jobParam = {
-        delay: Math.random() * 10000, // ms
-      };
-      jobParams.push(jobParam);
+    /**
+     * Runs when the user presses the action button and the popup closes.
+     */
+    onPopupDone() {
+        const jobParams = [];
+        for (let i = 0; i < 10; i++) {
+            const jobParam = {
+                delay: Math.random() * 10000, // ms
+            };
+            jobParams.push(jobParam);
+        }
+        this.submitJobs(jobParams, Math.round(Math.random() * 2)); // , 10000);
     }
-    this.submitJobs(jobParams, Math.round(Math.random() * 2)); // , 10000);
-  }
 
-  /**
-   * Every plugin runs some job. This is the function that does the job running.
-   *
-   * @param {any} _args  The user arguments to pass to the "executable."
-   * @returns {Promise<undefined>}  A promise that resolves when the job is
-   *     done.
-   */
-  runJobInBrowser(_args: any): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, _args.delay);
-    });
+    /**
+     * Every plugin runs some job. This is the function that does the job running.
+     *
+     * @param {any} _args  The user arguments to pass to the "executable."
+     * @returns {Promise<undefined>}  A promise that resolves when the job is
+     *     done.
+     */
+    runJobInBrowser(_args: any): Promise<void> {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, _args.delay);
+        });
 
-    // console.log(_args);
+        // console.log(_args);
 
-    // Submit some jobs that delay randomly.
+        // Submit some jobs that delay randomly.
 
-    // debugger;
-    // return Promise.resolve(undefined);
-  }
+        // debugger;
+        // return Promise.resolve(undefined);
+    }
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+    getTests(): ITest[] {
+        // No tests for this simple plugin.
+        return [];
+    }
 }
 </script>
 

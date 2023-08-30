@@ -29,6 +29,7 @@ import {
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/TestCmd";
 
 /**
  * SimpleMsgPlugin
@@ -102,6 +103,17 @@ export default class SimpleMsgPlugin extends PluginParentClass {
             this.callBack();
         }
         return;
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+     getTests(): ITest[] {        // No tests for this simple plugin.
+        return [];
     }
 }
 </script>

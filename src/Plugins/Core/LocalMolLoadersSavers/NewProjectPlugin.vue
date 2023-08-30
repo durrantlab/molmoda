@@ -8,7 +8,7 @@
         actionBtnTxt2="Save Project First"
         @onPopupDone2="saveProject"
         :isActionBtnEnabled="true"
-            @onUserArgChanged="onUserArgChanged"
+        @onUserArgChanged="onUserArgChanged"
     >
         <p>
             Would you like to
@@ -113,8 +113,8 @@ export default class NewProjectPlugin extends PluginParentClass {
         return [
             // First test without saving first
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
-                afterPluginCloses: new TestCmdList().wait(1).cmds,
+                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                afterPluginCloses: new TestCmdList()
             },
 
             // Test with saving first (secondary button)
@@ -122,10 +122,10 @@ export default class NewProjectPlugin extends PluginParentClass {
                 beforePluginOpens: new TestCmdList().waitUntilRegex(
                     "#styles",
                     "Protein"
-                ).cmds,
+                ),
                 closePlugin: new TestCmdList()
                     .click("#modal-newproject .action-btn2")
-                    .wait(3).cmds,
+                    .wait(3),
                 afterPluginCloses: new TestCmdList()
                     .text(
                         "#modal-savemolecules #filename-savemolecules-item",
@@ -134,7 +134,6 @@ export default class NewProjectPlugin extends PluginParentClass {
                     .click("#modal-savemolecules .action-btn")
                     .wait(5)
                     .click("#modal-simplemsg .cancel-btn")
-                    .wait(1).cmds,
             },
         ];
     }

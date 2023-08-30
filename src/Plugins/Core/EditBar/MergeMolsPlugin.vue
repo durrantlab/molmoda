@@ -184,11 +184,11 @@ export default class MergeMolsPlugin extends PluginParentClass {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleProtein(true)
                     .selectMoleculeInTree("Protein")
-                    .selectMoleculeInTree("Compounds", true).cmds,
+                    .selectMoleculeInTree("Compounds", true),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     ".merged"
-                ).cmds,
+                ),
             },
         ];
     }

@@ -284,12 +284,11 @@ export default class AddRegionPlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(true).cmds,
-            // closePlugin: [],
+            beforePluginOpens: new TestCmdList().loadExampleProtein(true),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "region"
-            ).cmds,
+            ),
         };
     }
 }

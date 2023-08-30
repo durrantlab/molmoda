@@ -13,7 +13,7 @@
                         type="number"
                         class="form-control form-control-sm"
                         :readonly="readonly"
-                        :id="`${id}-${axes[axisIdx]}`"
+                        :id="`${axes[axisIdx]}-${id}`"
                         :placeholder="placeHolder"
                         :disabled="disabled"
                         @input="handleInput"

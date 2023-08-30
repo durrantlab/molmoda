@@ -155,8 +155,7 @@ export default class AboutPlugin extends PluginParentClass {
    */
   getTests(): ITest {
     return {
-      closePlugin: new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId).cmds,
-      afterPluginCloses: [],
+      closePlugin: new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
     };
   }
 }

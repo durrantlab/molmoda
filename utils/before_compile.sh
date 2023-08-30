@@ -6,7 +6,7 @@ echo
 
 echo "UNUSED EXPORTS:"
 cd ../
-ts-unused-exports tsconfig.json $(find src/ -type f | grep -v "\.old" | grep "\.ts\|\.vue") | grep -v ": default$"
+node_modules/ts-unused-exports/bin/ts-unused-exports tsconfig.json $(find src/ -type f | grep -v "\.old" | grep "\.ts\|\.vue") | grep -v ": default$"
 cd -
 
 echo

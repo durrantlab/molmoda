@@ -49,7 +49,7 @@ import { ReduceQueue } from "./ReduceQueue";
 export default class ReducePlugin extends PluginParentClass {
     // Note _ will be removed from display text. Needed to distinguish from
     // Compounds/Protonate in menu ids.
-    menuPath = "Proteins/Protonate_...";  
+    menuPath = "Proteins/Protonate_...";
     title = "Protonate Proteins";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.reduce.credit];
     contributorCredits: IContributorCredit[] = [
@@ -226,10 +226,11 @@ export default class ReducePlugin extends PluginParentClass {
      */
     getTests(): ITest {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein().cmds,
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#navigator", ":protonated")
-                .cmds,
+            beforePluginOpens: new TestCmdList().loadExampleProtein(),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                ":protonated"
+            ),
         };
     }
 }

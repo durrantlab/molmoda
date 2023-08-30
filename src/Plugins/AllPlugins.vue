@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/ban-ts-comment -->
+<!-- eslint-disable @typescript-eslint/ban-ts-comment -->
 <!-- NOTE: Do not remove comments "TEMPLATE# START" and "TEMPLATE# END". Build
 system uses these to autopopulate with plugins. -->
 <template>
@@ -48,8 +50,9 @@ system uses these to autopopulate with plugins. -->
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+import { Options } from "vue-class-component";
 import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 

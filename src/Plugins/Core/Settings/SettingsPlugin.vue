@@ -162,7 +162,7 @@ export default class SettingsPlugin extends PluginParentClass {
             {
                 closePlugin: new TestCmdList().click(
                     "#modal-settings .cancel-btn"
-                ).cmds,
+                )
             },
         ];
     }

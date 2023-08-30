@@ -79,9 +79,8 @@ export default class RedoPlugin extends PluginParentClass {
                 .loadExampleProtein()
                 .click("#menu1-edit")
                 .click("#menu-plugin-undo")
-                .wait(3).cmds,
-            closePlugin: [],
-            afterPluginCloses: new TestCmdList().wait(3).cmds,
+                .wait(3),
+            // afterPluginCloses: new TestCmdList().wait(3),
         };
     }
 }
