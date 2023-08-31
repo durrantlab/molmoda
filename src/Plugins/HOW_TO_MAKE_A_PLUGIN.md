@@ -83,7 +83,7 @@ Gets the test commands for the plugin. For advanced use.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITest[] \| ITest` | The selenium test command(s). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217).
+| `(returns)` | `ITest[] \| ITest \| null` | The selenium test command(s). If null, skips test (rarely used). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217).
 
 #### `intro` (variable) <a id="intro"></a>
 

@@ -35,7 +35,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class LoadAlphaFoldPlugin extends PluginParentClass {
-    menuPath = "File/Remote Import/[4] AlphaFold...";
+    menuPath = "File/Import/[4] AlphaFold...";
     title = "Load AlphaFold Structure";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

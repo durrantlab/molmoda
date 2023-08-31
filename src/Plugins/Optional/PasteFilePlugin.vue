@@ -5,60 +5,6 @@
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
     >
-        <div id="pasteFile" style="width: 380px; height: 600px">
-            <textarea
-                id="pasteFileTextArea"
-                style="width: 100%; height: 100%"
-                v-model="inputText"
-            ></textarea>
-        </div>
-        <div class="container mt-4">
-            <h3>Select File Type:</h3>
-            <div class="form-check">
-                <input
-                    class="form-check-input"
-                    type="radio"
-                    name="fileType"
-                    id="pdb"
-                    value="pdb"
-                    v-model="fileType"
-                />
-                <label class="form-check-label" for="pdbRadio"> PDB </label>
-            </div>
-            <div class="form-check">
-                <input
-                    class="form-check-input"
-                    type="radio"
-                    name="fileType"
-                    id="smi"
-                    value="smi"
-                    v-model="fileType"
-                />
-                <label class="form-check-label" for="smiRadio"> SMI </label>
-            </div>
-            <div class="form-check">
-                <input
-                    class="form-check-input"
-                    type="radio"
-                    name="fileType"
-                    id="sdf"
-                    value="sdf"
-                    v-model="fileType"
-                />
-                <label class="form-check-label" for="sdfRadio"> SDF </label>
-            </div>
-            <div class="form-check">
-                <input
-                    class="form-check-input"
-                    type="radio"
-                    name="fileType"
-                    id="other"
-                    value="other"
-                    v-model="fileType"
-                />
-                <label class="form-check-label" for="otherRadio"> Other </label>
-            </div>
-        </div>
     </PluginComponent>
 </template>
 
@@ -74,49 +20,43 @@ import {
 import { randomID } from "@/Core/Utils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { ref } from "vue";
-import { Watch } from "vue-property-decorator";
-import { reactive } from "vue";
 import {
-    IUserArgCheckbox,
-    IUserArgGroup,
-    IUserArgText,
+    IUserArgOption,
+    IUserArgSelect,
+    IUserArgTextArea,
     UserArg,
     UserArgType,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 
-enum FileType {
-    PDB = "pdb",
-    SMI = "smi",
-    SDF = "sdf",
-    OTHER = "other",
+function getFormatInfos() {
+    // Keep only those keys whose values have validateContents defined
+    // const formats: [string, string, (s: string) => boolean][] = [];
+    const options: IUserArgOption[] = [];
+    const validateFuncs: [(s: string) => boolean, string][] = [];
+    Object.keys(molFormatInformation).forEach((key) => {
+        const format = molFormatInformation[key];
+        if (format.validateContents !== undefined) {
+            options.push({
+                description: `${format.description} (*.${format.primaryExt})`,
+                val: format.primaryExt,
+            });
+            validateFuncs.push([format.validateContents, format.primaryExt]);
+        }
+    });
+    return { options, validateFuncs };
 }
 
-function getFileExtension(fileType: FileType): string {
-    switch (fileType) {
-        case FileType.PDB:
-            return "pdb";
-        case FileType.SMI:
-            return "smi";
-        case FileType.SDF:
-            return "sdf";
-        case FileType.OTHER:
-            return "other";
+function detectFileType(contents: string): string {
+    for (const [validateFunc, ext] of getFormatInfos().validateFuncs) {
+        if (validateFunc(contents)) {
+            return ext;
+        }
     }
-}
-function detectFileType(contents: string): FileType {
-    // Regular expressions for detecting specific file formats
-    const pdbRegex1 = /^(?:ATOM|HETATM)/m;
-    const pdbRegex2 = /^(?!VENDOR|REMARK)/m;
-    const smiRegex = /^[^\n\r]+$/m;
-    const sdfRegex = /^\s*M\s+END\s*$/m;
 
-    if (pdbRegex1.test(contents) && pdbRegex2.test(contents))
-        return FileType.PDB;
-    else if (smiRegex.test(contents)) return FileType.SMI;
-    else if (sdfRegex.test(contents)) return FileType.SDF;
-    return FileType.OTHER;
+    // TODO: This really means "unknown" format, not "pdb" format. Should not
+    // allow user to click button.
+    return "pdb";
 }
 
 /**
@@ -128,7 +68,7 @@ function detectFileType(contents: string): FileType {
     },
 })
 export default class PasteFilePlugin extends PluginParentClass {
-    menuPath = "Test/Paste File...";
+    menuPath = "File/Import/[7] Paste...";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         {
@@ -141,72 +81,43 @@ export default class PasteFilePlugin extends PluginParentClass {
     intro = `Use the editor below to paste your file.`;
     title = "Paste File Component";
 
-    userArgDefaults: UserArg[] = reactive([
+    userArgDefaults: UserArg[] = [
         {
-            id: "group2",
-            // type: UserArgType.Group,
-            label: "Manual Type Selection",
-            val: [
-                {
-                    id: "pdb",
-                    label: ".pdb",
-                    val: false, // To use default
-                    type: UserArgType.Checkbox,
-                } as IUserArgCheckbox,
-                {
-                    id: "smi",
-                    label: ".smi",
-                    val: false, // To use default
-                    type: UserArgType.Checkbox,
-                } as IUserArgCheckbox,
-                {
-                    id: "sdf",
-                    label: ".sdf",
-                    val: false, // To use default
-                    type: UserArgType.Checkbox,
-                } as IUserArgCheckbox,
-                {
-                    id: "other",
-                    label: "Other",
-                    val: false, // To use default
-                    type: UserArgType.Checkbox,
-                } as IUserArgCheckbox,
-                {
-                    id: "otherText",
-                    label: "Other file type:",
-                    placeholder: "Enter file extension",
-                    val: "", // To use default
-                    type: UserArgType.Text,
-                } as IUserArgText,
-            ],
-        } as IUserArgGroup,
-    ]);
+            id: "pasteFileTextArea",
+            val: "",
+            type: UserArgType.TextArea,
+            placeHolder: "Paste file contents here...",
+        } as IUserArgTextArea,
+        {
+            // type: UserArgType.MoleculeInputParams,
+            label: "Format",
+            id: "format",
+            options: getFormatInfos().options,
+            val: "pdb",
+        } as IUserArgSelect,
+    ];
 
-    inputText = "";
-    fileType = FileType.OTHER;
-
-    @Watch("inputText")
-    onInputTextChange(val: string, oldVal: string) {
-        console.log("PasteFilePlugin: onInputTextChange: val: ", val);
-
-        this.fileType = detectFileType(val);
+    onUserArgChange() {
+        const contents = this.getUserArg("pasteFileTextArea");
+        // console.log("PasteFilePlugin: onInputTextChange: val: ", contents);
+        this.setUserArg("format", detectFileType(contents));
     }
 
     onPopupDone() {
-        console.log(
-            "PasteFilePlugin: onPopupDone: this.inputText: " +
-                detectFileType(this.inputText)
-        );
-        // access userArgs object with id 'pdb' and set the value to true
-        const userArgs = this.userArgs;
-        console.log("PasteFilePlugin: onPopupDone: userArgs: ", userArgs);
+        // console.log(
+        //     "PasteFilePlugin: onPopupDone: this.inputText: " +
+        //         detectFileType(this.getUserArg("pasteFileTextArea"))
+        // );
 
-        //userArgs[0].val[0].val = true;
+        // access userArgs object with id 'pdb' and set the value to true
+        // const userArgs = this.userArgs;
+        // console.log("PasteFilePlugin: onPopupDone: userArgs: ", userArgs);
 
         const fileInfo = new FileInfo({
             name: "PastedFile" + randomID() + "." + "smi", // getFileExtension(detectFileType(this.inputText)),
-            contents: this.inputText,
+            contents: this.getUserArg("pasteFileTextArea"),
         });
+
         const treeNode = TreeNode.loadFromFileInfo(fileInfo);
         treeNode
             .then((node: any) => {
@@ -222,23 +133,14 @@ export default class PasteFilePlugin extends PluginParentClass {
     }
 
     runJobInBrowser(arg: any): Promise<void> {
-        console.log("PasteFilePlugin: runJobInBrowser: arg: ", arg);
+        // console.log("PasteFilePlugin: runJobInBrowser: arg: ", arg);
         return Promise.resolve();
     }
 
-    /**
-     * Gets the test commands for the plugin. For advanced use.
-     *
-     * @gooddefault
-     * @document
-     * @returns {ITest[]}  The selenium test commands.
-     */
-    getTests(): ITest[] {
-        // No tests for this simple plugin.
+    getTests() {
         return [];
     }
 }
 </script>
 
 <style scoped></style>
-```

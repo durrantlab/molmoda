@@ -379,7 +379,7 @@ function divideMolTxtIntoFrames(
 //     molText: string,
 //     molFormatInfo: IFormatInfo
 // ): string {
-//     const regexps = molFormatInfo.namesRegex;
+//     const regexps = molFormatInfo.extractMolNameRegex;
 //     let firstMatch = "";
 //     if (regexps) {
 //         for (const regexp of regexps) {

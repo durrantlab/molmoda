@@ -4,7 +4,7 @@ export enum MolLoader {
     Mol3D, // 3dmoljs. Always prefer over open babel when available.
     OpenBabel,
     Biotite,
-    Zip
+    Zip,
 }
 
 interface IFrameSeparator {
@@ -21,7 +21,7 @@ export interface IFormatInfo {
     lacks3D?: boolean;
     frameSeparators?: IFrameSeparator[];
     // In some cases, you can extract a title from the file itself.
-    namesRegex?: RegExp[];
+    extractMolNameRegex?: RegExp[];
     saveWarning?: string;
     extraObabelArgs?: string[];
 
@@ -29,6 +29,11 @@ export interface IFormatInfo {
     // there are rare occasions when the format name for obabel might differ
     // than the primary extension.
     obabelFormatName?: string;
+
+    // If set, this function will be called to validate the contents of the
+    // file. For example, if the file is a PDB file, you might want to check
+    // that it contains ATOM lines.
+    validateContents?: (contents: string) => boolean;
 }
 
 const pdbLikeSeparators = [
@@ -98,7 +103,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false,
         loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken. Actually, open babel too. Doesn't do multi-frame CIF files.
         frameSeparators: cifLikeSeparators,
-        namesRegex: cifLikeNames,
+        extractMolNameRegex: cifLikeNames,
     },
     PDB: {
         primaryExt: "pdb",
@@ -107,8 +112,14 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false,
         loader: MolLoader.Mol3D,
         frameSeparators: pdbLikeSeparators,
-        namesRegex: pdbLikeNames,
+        extractMolNameRegex: pdbLikeNames,
         saveWarning: "PDB" + noBondOrdersWarning,
+        validateContents: (contents: string) => {
+            // Note that this will assume pdbqt and pqr files are pdb. But not
+            // validating contents of those other files for now.
+            const pdbRegex = /^(?:ATOM|HETATM)/m;
+            return pdbRegex.test(contents);
+        }
     },
     MOL2: {
         primaryExt: "mol2",
@@ -122,7 +133,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
                 isAtEndOfFrame: false,
             },
         ],
-        namesRegex: [/^@<TRIPOS>MOLECULE\n(.+)$/gm],
+        extractMolNameRegex: [/^@<TRIPOS>MOLECULE\n(.+)$/gm],
+        validateContents: (contents: string) => {
+            // If contains @<TRIPOS>ATOM, assume it's a mol2 file.
+            const mol2Regex = /^@<TRIPOS>ATOM/m;
+            return mol2Regex.test(contents);
+        }
     },
     MCIF: {
         primaryExt: "mcif",
@@ -131,7 +147,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false, // Not sure
         loader: MolLoader.Mol3D,
         frameSeparators: cifLikeSeparators,
-        namesRegex: cifLikeNames,
+        extractMolNameRegex: cifLikeNames,
     },
     SDF: {
         primaryExt: "sdf",
@@ -147,10 +163,15 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
                 isAtEndOfFrame: true,
             },
         ],
-        namesRegex: [
+        extractMolNameRegex: [
             // NOTE: Leaving off g so will only match first line
             /^(.+)$/m,
         ],
+        validateContents: (contents: string) => {
+            // If it has $$$$ on its own line, assume it's an sdf file.
+            const sdfRegex = /^\$\$\$\$$/m;
+            return sdfRegex.test(contents);
+        }
     },
     PDBQT: {
         primaryExt: "pdbqt",
@@ -159,8 +180,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false,
         loader: MolLoader.OpenBabel,
         frameSeparators: pdbLikeSeparators,
-        namesRegex: pdbLikeNames,
-        extraObabelArgs: ["-xr"],  // Rigid (for receptor)
+        extractMolNameRegex: pdbLikeNames,
+        extraObabelArgs: ["-xr"], // Rigid (for receptor)
     },
     PDBQTLIG: {
         // NOTE: This is meant for ligands converted to PDBQT. Let's just
@@ -171,7 +192,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false,
         loader: MolLoader.OpenBabel,
         frameSeparators: pdbLikeSeparators,
-        namesRegex: pdbLikeNames,
+        extractMolNameRegex: pdbLikeNames,
         obabelFormatName: "pdbqt",
         // extraObabelArgs: ["-xr"],  // Rigid (for receptor)
     },
@@ -182,7 +203,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: false,
         loader: MolLoader.Mol3D,
         frameSeparators: pdbLikeSeparators,
-        namesRegex: pdbLikeNames,
+        extractMolNameRegex: pdbLikeNames,
     },
     SMI: {
         primaryExt: "smi",
@@ -191,9 +212,13 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: true,
         loader: MolLoader.OpenBabel,
         frameSeparators: smiLikeSeparators,
-        namesRegex: smiLikeNames,
+        extractMolNameRegex: smiLikeNames,
         saveWarning: "SMI" + noCoordinatesWarning,
-        lacks3D: true
+        lacks3D: true,
+        validateContents: (contents: string) => {
+            const smiRegex = /^[A-Z][a-z]?(?:[-=]?\(?\d?[A-Z][a-z]?\d?\)?)*$/m;
+            return smiRegex.test(contents);
+        }
     },
     CAN: {
         primaryExt: "can",
@@ -202,9 +227,9 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         hasBondOrders: true,
         loader: MolLoader.OpenBabel,
         frameSeparators: smiLikeSeparators,
-        namesRegex: smiLikeNames,
+        extractMolNameRegex: smiLikeNames,
         saveWarning: "CAN" + noCoordinatesWarning,
-        lacks3D: true
+        lacks3D: true,
     },
     XYZ: {
         primaryExt: "xyz",
@@ -214,7 +239,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.Mol3D,
         // technically separated by number on own line, but niche case
         // frameSeparators: null
-        namesRegex: [/^\d+\n(.+)$/gm], // second line, after number-only line
+        extractMolNameRegex: [/^\d+\n(.+)$/gm], // second line, after number-only line
         saveWarning: "XYZ" + noBondOrdersWarning,
     },
     MMTF: {
@@ -230,9 +255,9 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         primaryExt: "zip",
         exts: ["zip"],
         description: "ZIP archive",
-        hasBondOrders: false,  // Not sure
+        hasBondOrders: false, // Not sure
         loader: MolLoader.Zip,
-    }
+    },
 };
 
 /**

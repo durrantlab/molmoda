@@ -129,6 +129,12 @@ Put surface then hide. Nothing underneath.
 
 Remind me to set up beta, site, and version name for biotype.
 
+review:
+    src/Core/GoogleAnalytics.ts
+    src/Plugins/Optional/DrawMoleculePlugin.vue
+    src/Plugins/Optional/StatCollectionPlugin.vue
+    src/Plugins/Optional/PasteFilePlugin.vue
+
 # DONE
 
 If afterPlugin empty wait 1 sec by default. So not needed in each plugin. then

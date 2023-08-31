@@ -73,6 +73,30 @@ export const dynamicImports = {
             });
         },
     } as IDynamicImport,
+    kekule: {
+        credit: {
+            name: "Kekule.js",
+            url: "https://partridgejiang.github.io/Kekule.js/",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "kekule" */
+                /* webpackMode: "lazy" */
+                /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+                // @ts-ignore
+                "kekule"
+            );
+            // .then((mod) => {
+            //     return mod.default;
+            // });
+        },
+    } as IDynamicImport,
     fileSaver: {
         credit: {
             name: "FileSaver.js",
@@ -109,8 +133,8 @@ export const dynamicImports = {
                     volume: 31,
                     issue: 8,
                     pages: "1322-1324",
-                }
-            ]
+                },
+            ],
         },
 
         /**
@@ -169,9 +193,9 @@ export const dynamicImports = {
                     year: 1999,
                     volume: 285,
                     issue: 4,
-                    pages: "1735-1747"
-                }
-            ]
+                    pages: "1735-1747",
+                },
+            ],
         },
         // get module(): Promise<any> {
         //     return import(
@@ -199,8 +223,8 @@ export const dynamicImports = {
                     volume: 36,
                     issue: 16,
                     pages: "4513-4515",
-                }
-            ]
+                },
+            ],
         },
 
         /**
@@ -328,8 +352,8 @@ export const dynamicImports = {
                     volume: 3,
                     issue: 1,
                     pages: "1-14",
-                }
-            ]
+                },
+            ],
         },
     },
     smilesdrawer: {
@@ -346,8 +370,8 @@ export const dynamicImports = {
                     volume: 58,
                     issue: 1,
                     pages: "1-7",
-                }
-            ]
+                },
+            ],
         },
         /**
          * Gets the module.
@@ -520,8 +544,8 @@ export const dynamicImports = {
                     volume: 14,
                     issue: 1,
                     pages: "58",
-                }
-            ]
+                },
+            ],
         },
     },
 };

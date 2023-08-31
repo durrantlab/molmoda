@@ -37,12 +37,14 @@ system uses these to autopopulate with plugins. -->
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
+    <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <PasteFilePlugin @onPluginSetup="onPluginSetup"></PasteFilePlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
+    <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
@@ -89,12 +91,14 @@ import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
+import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import PasteFilePlugin from "./Optional/PasteFilePlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
+import StatCollectionPlugin from "./Optional/StatCollectionPlugin.vue";
 import TestPlugin from "./Optional/TestPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
@@ -137,12 +141,14 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ViewerWindowPlugin,
 
     AddRegionPlugin,
+    DrawMoleculePlugin,
     FPocketWebPlugin,
     MolPropsPlugin,
     PasteFilePlugin,
     ProtonateCompoundsPlugin,
     QueSystemTestPlugin,
     ReducePlugin,
+    StatCollectionPlugin,
     TestPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
