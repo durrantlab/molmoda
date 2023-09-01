@@ -53,8 +53,8 @@ import { dynamicImports } from "@/Core/DynamicImports";
     },
 })
 export default class ProtonateCompoundsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Protonate...";
-    title = "Protonate Compounds";
+    menuPath = "Compounds/Protonation...";
+    title = "Protonate/Deprotonate Compounds";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -67,7 +67,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     ];
     pluginId = "protonatecomps";
 
-    intro = `Protonate compounds at a given pH, in preparation for docking. Uses the Open Babel library to guess at proper protonation states.`;
+    intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking. Uses the Open Babel library to guess at proper protonation states.`;
 
     userArgDefaults: UserArg[] = [
         {

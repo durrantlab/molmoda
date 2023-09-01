@@ -15,6 +15,7 @@
         @onDone3="onPopupDone3"
         @onDone4="onPopupDone4"
         @onClosed="onClosed"
+        @onCancel="onPopupCancel"
         :id="'modal-' + infoPayload.pluginId"
         :modalWidth="modalWidth"
     >
@@ -49,6 +50,7 @@ import {
 } from "../UserInputUtils";
 import { IInfoPayload } from "@/Plugins/PluginInterfaces";
 import { citationsTxt } from "@/Plugins/Citations";
+import { logGAEvent } from "@/Core/GoogleAnalytics";
 
 /**
  * PopupOptionalPlugin component
@@ -132,6 +134,8 @@ export default class PluginComponent extends mixins(PopupMixin) {
      *     not validate.
      */
     get validateUserInputs(): boolean {
+        // If isActionBtnEnabled is defined on the plugin, it overrides any
+        // validation.
         if (this.isActionBtnEnabled !== undefined) {
             return this.isActionBtnEnabled;
         }
@@ -150,6 +154,19 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
         return true;
     }
+
+
+    /**
+     * Runs when the user clicks the cancel button.
+     */
+     onPopupCancel() {
+        // Log plugin started
+        logGAEvent(this.infoPayload.pluginId, "cancelled");
+
+        this.$emit("update:modelValue", false);
+        this.$emit("onPopupCancel");
+    }
+
 
     /**
      * Runs when the user presses the action button and the popup closes.

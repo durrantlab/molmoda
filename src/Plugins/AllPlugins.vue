@@ -32,6 +32,7 @@ system uses these to autopopulate with plugins. -->
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
+    <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
@@ -40,12 +41,9 @@ system uses these to autopopulate with plugins. -->
     <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
-    <PasteFilePlugin @onPluginSetup="onPluginSetup"></PasteFilePlugin>
+    <MolTextPlugin @onPluginSetup="onPluginSetup"></MolTextPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
-    <QueSystemTestPlugin @onPluginSetup="onPluginSetup"></QueSystemTestPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
-    <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
-    <TestPlugin @onPluginSetup="onPluginSetup"></TestPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
   </div>
@@ -86,6 +84,7 @@ import SaveVRMLPlugin from "./Core/Graphics/SaveVRMLPlugin.vue";
 import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
+import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
@@ -94,12 +93,9 @@ import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
-import PasteFilePlugin from "./Optional/PasteFilePlugin.vue";
+import MolTextPlugin from "./Optional/MolTextPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
-import QueSystemTestPlugin from "./Optional/QueSystemTestPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
-import StatCollectionPlugin from "./Optional/StatCollectionPlugin.vue";
-import TestPlugin from "./Optional/TestPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
 
@@ -136,6 +132,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SelectAllPlugin,
     SettingsPlugin,
     SimpleMsgPlugin,
+    StatCollectionPlugin,
     StylesWindowPlugin,
     UndoPlugin,
     ViewerWindowPlugin,
@@ -144,12 +141,9 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     DrawMoleculePlugin,
     FPocketWebPlugin,
     MolPropsPlugin,
-    PasteFilePlugin,
+    MolTextPlugin,
     ProtonateCompoundsPlugin,
-    QueSystemTestPlugin,
     ReducePlugin,
-    StatCollectionPlugin,
-    TestPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
 

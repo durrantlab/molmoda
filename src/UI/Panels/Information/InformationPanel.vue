@@ -89,7 +89,7 @@ export default class InformationPanel extends Vue {
                         return;
                     }
 
-                    this.smiles = smi;
+                    this.smiles = smi.replace(" ", "\t").split("\t")[0];
                     this.treeNode = firstSelected;
                     return;
                 })

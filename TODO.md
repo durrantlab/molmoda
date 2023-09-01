@@ -47,38 +47,33 @@ Add graphs to data too. Plotly? Also, you should be able to download graphs
 (png, svg, xlsx, csv). And text too. And should auto keep track of how the
 molecule was generated.
 
-# Ongoing: Important
+Search for "Use clicks instead of setUserArg for boolean user arguments." Would
+be good to implement this. Need to detect value of checkbox before clicking. But
+if students are going to design these tests, make that happen.
 
-Current version of openbabel (tmp version) converts only first fframe of file
-(e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
-openmolecules to check for three molecules when you get that fixed.
+Conversion from 3dmol to PDB in same webworker (at least optional).
+
+api system seems convoluted.
+
+*** Whenever new molecule created, create that record be kept of how it was
+obtained. That record can be viewed.
+
+Would be nice to have alerts (System).
+
+# Ongoing: Important
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
 updateAppName not used anywhere, but I think it should be.
 
-Test elements could be restructured as objects. Would be better to put functions
-on each one. Then, Tutorial based on tests (first one). Started to do this. See
-ParentPluginTestFuncs.ts
-
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
-
-Search for "Use clicks instead of setUserArg for boolean user arguments." Would
-be good to implement this. Need to detect value of checkbox before clicking. But
-if students are going to design these tests, make that happen.
-
-**** Tests
-    Return to openmolecules test. Not passing.
-    Check savemolecules test. It's very complicated.
 
 **** molprops, after done, should switch to data tab for you.
 
 MolProps... need to neutralize molecule before calculating properties?
 
 Mol filter could be similar plugin, might be helpful.
-
-Conversion from 3dmol to PDB in same webworker (at least optional).
 
 Search for // TODO: Note that only one webworker is used here. You could multithread
 When you calculate properties, why does it create and destroy the webworker
@@ -92,16 +87,9 @@ Open options: add 3D coordinates, frames to separate molecules, etc.
 
 ligs.cif shows only one
 
-Draw molecule. (Yuri working on this)
-
 is logging needed?
 
-api system seems convoluted.
-
 Popups (done, start after delay) need to be built into the queue system.
-
-*** Whenever new molecule created, create that record be kept of how it was
-obtained. That record can be viewed.
 
 Search for // TODO: Why does this occasionally happen? . Happens quite a bit.
 
@@ -110,15 +98,11 @@ of processors available.
 
 Reduce. Make sure parameters ok. 
 
-Yuri could work on analytics integration. (Assigned)
-
 Isn't smiles drawer and rdkitjs redundant for drawing molecules?
 
 Improve intro text in central viewer on app open.
 
 Settings reset to default
-
-Would be nice to have alerts (System).
 
 Need to add wasm reduce, but don't commit cruft. Should not be big.
 
@@ -131,11 +115,33 @@ Remind me to set up beta, site, and version name for biotype.
 
 review:
     src/Core/GoogleAnalytics.ts
-    src/Plugins/Optional/DrawMoleculePlugin.vue
-    src/Plugins/Optional/StatCollectionPlugin.vue
-    src/Plugins/Optional/PasteFilePlugin.vue
+
+On both draw and paste, be sure to deal with no text/drawing (error). See Yuri
+code, but don't merge. Other minor changes. Review that.
 
 # DONE
+
+Current version of openbabel (tmp version) converts only first fframe of file
+(e.g., PDBQT). Make sure Yuri's converts all, and test that. Update
+openmolecules to check for three molecules when you get that fixed.
+
+Test elements could be restructured as objects. Would be better to put functions
+on each one. Then, Tutorial based on tests (first one). Started to do this. See
+ParentPluginTestFuncs.ts
+
+**** Tests
+    Return to openmolecules test. Not passing.
+    Check savemolecules test. It's very complicated.
+
+Draw molecule. (Yuri working on this)
+
+Yuri could work on analytics integration. (Assigned)
+
+src/Plugins/Optional/StatCollectionPlugin.vue
+    Need to also add to settings panel
+
+src/Plugins/Optional/DrawMoleculePlugin.vue
+src/Plugins/Optional/PasteFilePlugin.vue
 
 If afterPlugin empty wait 1 sec by default. So not needed in each plugin. then
 check all plugins and remove where this appears.

@@ -5,6 +5,7 @@
         actionBtnTxt="Save"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
+        :hideIfDisabled="true"
     >
         <!-- cancelBtnTxt="Done" -->
     </PluginComponent>
@@ -15,6 +16,8 @@ import { Options } from "vue-class-component";
 import {
     UserArg,
     IUserArgNumber,
+UserArgType,
+IUserArgAlert,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -30,6 +33,7 @@ import {
 } from "./LoadSaveSettings";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { enableStats, isStatCollectionEnabled, removeStatCollectionCookie } from "../StatCollection/StatUtils";
 
 /** SettingsPlugin */
 @Options({
@@ -56,6 +60,7 @@ export default class SettingsPlugin extends PluginParentClass {
             id: "maxProcs",
             label: "Maximum number of available processors",
             val: 0,
+            description: "Maximum number of processors available for any one job.",
         } as IUserArgNumber,
         {
             id: "initialCompoundsVisible",
@@ -64,6 +69,19 @@ export default class SettingsPlugin extends PluginParentClass {
             description:
                 "Number of molecules initially visible when creating/loading many new molecules.",
         } as IUserArgNumber,
+        {
+            id: "statCollect",
+            label: "Collect usage statistics",
+            val: false,
+            description: "Report statistics on Biotite usage to help the Biotite team get grants for continued development."
+        },
+        {
+            id: "statCollectAlert",
+            val: "Please consider allowing us to record limited information about your use of Biotite! These statistics help us secure funding for continued development.",
+            type: UserArgType.Alert,
+            enabled: false,
+            alertType: "warning",
+        } as IUserArgAlert
         // {
         //     type: UserArgType.Select,
         //     id: "molViewer",
@@ -85,6 +103,27 @@ export default class SettingsPlugin extends PluginParentClass {
     ];
     alwaysEnabled = true;
     logJob = false;
+
+    setStatCollectPetition() {
+        const currentVal = this.getUserArg("statCollect");
+        this.setUserArgEnabled("statCollectAlert", !currentVal);
+    }
+
+    async onUserArgChange() {
+        const currentStatEnabledVal = this.getUserArg("statCollect");
+        const savedStatEnabledVal = await isStatCollectionEnabled();
+
+        if (currentStatEnabledVal !== savedStatEnabledVal) {
+            if (currentStatEnabledVal) {
+                enableStats();
+            } else {
+                // NOTE: Not disabling, but clearing cookie. So user will have
+                // to confirm on next reload.
+                removeStatCollectionCookie();
+            }
+        }
+        this.setStatCollectPetition();
+    }
 
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
@@ -120,6 +159,15 @@ export default class SettingsPlugin extends PluginParentClass {
             "molViewer",
             molViewer ? molViewer : defaults.molViewer
         );
+
+        isStatCollectionEnabled().then((isSet) => {
+            this.setUserArg("statCollect", isSet);
+            this.setStatCollectPetition();
+            return;
+        })
+        .catch((err) => {
+            throw err;
+        });
     }
 
     /**
@@ -162,7 +210,7 @@ export default class SettingsPlugin extends PluginParentClass {
             {
                 closePlugin: new TestCmdList().click(
                     "#modal-settings .cancel-btn"
-                )
+                ),
             },
         ];
     }

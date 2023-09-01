@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from json.decoder import JSONDecodeError
+import html
 
 # import traceback
 import threading
@@ -55,6 +56,7 @@ class el:
         # Clear the field
         self.el.clear()
         # Type the value
+        value = html.unescape(value)
         self.el.send_keys(value)
         self.check_errors()
 

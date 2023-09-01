@@ -216,8 +216,73 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         saveWarning: "SMI" + noCoordinatesWarning,
         lacks3D: true,
         validateContents: (contents: string) => {
-            const smiRegex = /^[A-Z][a-z]?(?:[-=]?\(?\d?[A-Z][a-z]?\d?\)?)*$/m;
-            return smiRegex.test(contents);
+            let lines = contents.split("\n");
+            lines = lines.filter((line) => line.trim().length > 0);
+            if (lines.length === 0) {
+                return false;
+            }
+
+            // Split and consider only first part.
+            const smiles = lines.map((line) => line.split(" ")[0]);
+
+            for (let smile of smiles) {
+                // Remove valid characters to see if anything is left.
+                
+                // Letters
+                smile = smile.replace(/[A-Z]/gi, "");
+                smile = smile.replace(/[a-z]/gi, "");
+
+                // Numbers
+                smile = smile.replace(/\d/g, "");
+
+                // Parentheses
+                smile = smile.replace(/\(/g, "");
+                smile = smile.replace(/\)/g, "");
+
+                // Square brackets
+                smile = smile.replace(/\[/g, "");
+                smile = smile.replace(/\]/g, "");
+
+                // Periods
+                smile = smile.replace(/\./g, "");
+
+                // Hyphens
+                smile = smile.replace(/-/g, "");
+
+                // Plus
+                smile = smile.replace(/\+/g, "");
+
+                // Equal signs
+                smile = smile.replace(/=/g, "");
+
+                // #
+                smile = smile.replace(/#/g, "");
+
+                // Asterisk
+                smile = smile.replace(/\*/g, "");
+
+                // @
+                smile = smile.replace(/@/g, "");
+
+                // Forward and backslash
+                smile = smile.replace(/\//g, "");
+                smile = smile.replace(/\\/g, "");
+
+                // Percent
+                smile = smile.replace(/%/g, "");
+
+                // colon
+                smile = smile.replace(/:/g, "");
+
+                // If anything is left, it's not a valid SMILES.
+                if (smile.length > 0) {
+                    return false;
+                }
+            }
+            return true;
+
+            // const smiRegex = /^[A-Z][a-z]?(?:[-=]?\(?\d?[A-Z][a-z]?\d?\)?)*$/m;
+            // return smiRegex.test(contents);
         }
     },
     CAN: {

@@ -374,7 +374,20 @@ export class TreeNode {
         for (const treeNode of treeNodes) {
             if (treeNode.nodes) {
                 const terminalNodes = treeNode.nodes.terminals;
-                allTreeNodes.push(...terminalNodes._nodes);
+
+                // If the terminal nodes are titled "undefined:undefined", use the 
+                // title from the treeNode.
+                const nodes = terminalNodes._nodes;
+                if (nodes.length === 1) {
+                    nodes[0].title = treeNode.title;
+                } else {
+                    // Add index
+                    for (let i = 0; i < nodes.length; i++) {
+                        nodes[i].title = `${treeNode.title}:${i + 1}`;
+                    }
+                }
+
+                allTreeNodes.push(...nodes);
             } else {
                 // This is a terminal node
                 allTreeNodes.push(treeNode);

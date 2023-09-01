@@ -83,6 +83,7 @@
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
                     :delayBetweenChangesDetected="0"
+                    :placeHolder="makeGeneric(formElem).placeHolder"
                 ></FormTextArea>
                 <FormSelect
                     v-else-if="formElem.type === FormElementType.Select"

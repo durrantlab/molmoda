@@ -49,8 +49,8 @@ import { ReduceQueue } from "./ReduceQueue";
 export default class ReducePlugin extends PluginParentClass {
     // Note _ will be removed from display text. Needed to distinguish from
     // Compounds/Protonate in menu ids.
-    menuPath = "Proteins/Protonate_...";
-    title = "Protonate Proteins";
+    menuPath = "Proteins/Protonation_...";
+    title = "Protonate/Deprotonate Proteins";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.reduce.credit];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -60,7 +60,7 @@ export default class ReducePlugin extends PluginParentClass {
     ];
     pluginId = "reduce";
 
-    intro = `Protonate proteins, in preparation for docking. Uses the reduce program to guess at proper protonation states.`;
+    intro = `Protonate/deprotonate proteins, in preparation for docking. Uses the reduce program to guess at proper protonation states.`;
 
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";

@@ -42,7 +42,7 @@ import {
 import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
- * TestPlugin
+ * MolPropsPlugin
  */
 @Options({
     components: {

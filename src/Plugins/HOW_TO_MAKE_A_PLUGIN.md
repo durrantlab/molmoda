@@ -107,7 +107,7 @@ Each plugin is associated with specific jobs (calculations). Most of these will 
 | Parameter | Type | Description
 | --------- | ---- | -----------
 | `[parameterSet]` | `any` | One of the parameterSets items submitted via the [`submitJobs`](#submitJobs) function. Optional.
-| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 34](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L34).
+| `(returns)` | `RunJobReturn` | A promise that resolves when the job is done. Return void if there's nothing to return. `RunJobReturn` is defined in [PluginParentClass.ts, line 35](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Plugins/Parents/PluginParentClass/PluginParentClass.ts#L35).
 
 #### `softwareCredits` (variable) <a id="softwareCredits"></a>
 

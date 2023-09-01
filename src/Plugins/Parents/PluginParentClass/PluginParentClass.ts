@@ -28,6 +28,7 @@ import {
     startInQueueStore,
 } from "@/Queue/QueueStore";
 import { copyUserArgs } from "../UserInputUtils";
+import { logGAEvent } from "@/Core/GoogleAnalytics";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -191,6 +192,9 @@ export abstract class PluginParentClass extends mixins(
      * @document
      */
     public async onPluginStart(payload?: any): Promise<void> {
+        // Log plugin started
+        logGAEvent(this.pluginId, "started");
+
         // Reset userArgs to defaults.
         this.userArgs = copyUserArgs(this.userArgDefaults);
 
@@ -301,6 +305,9 @@ export abstract class PluginParentClass extends mixins(
             parameterSets = [undefined];
         }
 
+        // Log plugin started
+        logGAEvent(this.pluginId, "jobSubmitted");
+
         // Run each of the parameter sets through the _runJobInBrowser function.
         let jobs = parameterSets.map((p: any) => {
             return this._runJobInBrowser(undefined, p);
@@ -327,6 +334,9 @@ export abstract class PluginParentClass extends mixins(
         if (this.showInQueue) {
             doneInQueueStore(jobId);
         }
+
+        // Log plugin started
+        logGAEvent(this.pluginId, "jobFinished");
 
         // const jobs: IJobInfoToEndpoint[] = parameterSets.map(
         //     (p: IJobInfoToEndpoint) => {

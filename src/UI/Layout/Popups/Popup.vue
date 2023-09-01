@@ -30,6 +30,7 @@
                         type="button"
                         class="btn btn-secondary cancel-btn"
                         data-bs-dismiss="modal"
+                        @click="cancelBtn"
                     >
                         {{ cancelBtnTxt }}
                     </button>
@@ -203,6 +204,16 @@ export default class Popup extends Vue {
         }
         return styles + "alert alert-" + this.variant;
     }
+
+    /**
+     * Runs when the cancel button is pressed.
+     */
+     cancelBtn() {
+        setTimeout(() => {
+            this.$emit("onCancel");
+            this.$emit("update:modelValue", false);
+        }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
+     }
 
     /**
      * Runs when the action button is pressed.

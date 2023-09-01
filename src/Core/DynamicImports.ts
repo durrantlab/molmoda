@@ -78,6 +78,17 @@ export const dynamicImports = {
             name: "Kekule.js",
             url: "https://partridgejiang.github.io/Kekule.js/",
             license: Licenses.MIT,
+            citations: [
+                {
+                    title: "Kekule.js: An Open Source JavaScript Chemoinformatics Toolkit",
+                    authors: ["Jiang, Chen", "Jin, Xi"],
+                    journal: "J. Chem. Inf. Model.",
+                    year: 2016,
+                    volume: 56,
+                    issue: 6,
+                    pages: "1132-1138",
+                },
+            ]
         },
         /**
          * Gets the module.
@@ -85,16 +96,26 @@ export const dynamicImports = {
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
-            return import(
+            const themePromise = import(
+                /* webpackChunkName: "kekule-theme" */
+                /* webpackMode: "lazy" */
+                /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+                // @ts-ignore
+                "kekule/theme/default"
+            );
+            const libPromise = import(
                 /* webpackChunkName: "kekule" */
                 /* webpackMode: "lazy" */
                 /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
                 // @ts-ignore
                 "kekule"
             );
-            // .then((mod) => {
-            //     return mod.default;
-            // });
+
+            return Promise.all([themePromise, libPromise]).then(
+                (mods: any[]) => {
+                    return mods[1];
+                }
+            );
         },
     } as IDynamicImport,
     fileSaver: {
@@ -417,7 +438,8 @@ export const dynamicImports = {
             name: "rdkitjs",
             url: "https://github.com/rdkit/rdkit-js",
             license: Licenses.BSD3,
-            // TODO: Citation? Couldn't find it.
+            // NOTE: Couldn't find citation. I don't think there is an official
+            // citation as of Aug 31, 2023.
         },
     },
     sheetsjs: {
@@ -548,4 +570,21 @@ export const dynamicImports = {
             ],
         },
     },
+
+    jsCookie: {
+        credit: {
+            name: "js-cookie",
+            url: "https://github.com/js-cookie/js-cookie",
+            license: Licenses.MIT,
+        },
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "js-cookie" */
+                /* webpackMode: "lazy" */
+                "js-cookie"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    }
 };
