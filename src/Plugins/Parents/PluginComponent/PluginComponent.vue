@@ -18,6 +18,7 @@
         @onCancel="onPopupCancel"
         :id="'modal-' + infoPayload.pluginId"
         :modalWidth="modalWidth"
+        :submitOnEnter="submitOnEnter"
     >
         <!-- :footerTxt="citationTxt" -->
         <p v-if="infoPayload.intro !== ''" v-html="infoPayload.intro"></p>
@@ -98,6 +99,12 @@ export default class PluginComponent extends mixins(PopupMixin) {
      * success, danger, etc.).
      */
     @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
+
+    /**
+     * Whether pressing enter will submit the plugin. Almost always true
+     * (default).
+     */
+    @Prop({ default: true }) submitOnEnter!: boolean;
 
     /**
      * The user arguments (i.e., plugin parameters) to use.

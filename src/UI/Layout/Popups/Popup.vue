@@ -116,6 +116,7 @@ export default class Popup extends Vue {
     @Prop({}) beforeShown!: Function;
     @Prop({ default: "default" }) modalWidth!: string;
     @Prop({ default: "" }) footerTxt!: string;
+    @Prop({ default: true }) submitOnEnter!: boolean;
 
     idToUse = "";
 
@@ -244,7 +245,7 @@ export default class Popup extends Vue {
      * @param {KeyboardEvent} e  The keyboard event.
      */
     onKeypress(e: KeyboardEvent) {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && this.submitOnEnter) {
             if (this.actionBtnTxt && this.isActionBtnEnabled) {
                 this.actionBtn();
             } else if (!this.actionBtnTxt) {

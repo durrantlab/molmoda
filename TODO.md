@@ -60,6 +60,10 @@ obtained. That record can be viewed.
 
 Would be nice to have alerts (System).
 
+Isn't smiles drawer and rdkitjs redundant for drawing molecules?
+
+is logging needed?
+
 # Ongoing: Important
 
 Load session after saving without restarting, duplicate keys in log. Good to
@@ -87,8 +91,6 @@ Open options: add 3D coordinates, frames to separate molecules, etc.
 
 ligs.cif shows only one
 
-is logging needed?
-
 Popups (done, start after delay) need to be built into the queue system.
 
 Search for // TODO: Why does this occasionally happen? . Happens quite a bit.
@@ -97,8 +99,6 @@ Queue system should throw an error if any single job requires more than number
 of processors available.
 
 Reduce. Make sure parameters ok. 
-
-Isn't smiles drawer and rdkitjs redundant for drawing molecules?
 
 Improve intro text in central viewer on app open.
 
@@ -118,6 +118,8 @@ review:
 
 On both draw and paste, be sure to deal with no text/drawing (error). See Yuri
 code, but don't merge. Other minor changes. Review that.
+
+New flag for plugins to disable submit on Enter. Let Yuri know.
 
 # DONE
 
