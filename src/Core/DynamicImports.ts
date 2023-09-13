@@ -577,6 +577,11 @@ export const dynamicImports = {
             url: "https://github.com/js-cookie/js-cookie",
             license: Licenses.MIT,
         },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
         get module(): Promise<any> {
             return import(
                 /* webpackChunkName: "js-cookie" */

@@ -22,6 +22,7 @@
     <FormElementDescription
       v-if="descriptioToUse !== '' && descriptioToUse !== undefined"
       :description="descriptioToUse"
+      :validate="validateDescription"
     ></FormElementDescription>
   </span>
 </template>
@@ -54,6 +55,7 @@ export default class FormInput extends Vue {
   @Prop({}) description!: string;
   @Prop({default: FORM_INPUT_DELAY_UPDATE_DEFAULT}) delayBetweenChangesDetected!: number;
   @Prop({default: false}) readonly!: boolean;
+  @Prop({default: true}) validateDescription!: boolean;
 
   // Below used for range.
   @Prop({ default: undefined }) min!: number;

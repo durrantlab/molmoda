@@ -64,6 +64,12 @@ Isn't smiles drawer and rdkitjs redundant for drawing molecules?
 
 is logging needed?
 
+Restore calc mol props after publishing docking
+    molprops, after done, should switch to data tab for you.
+    MolProps... need to neutralize molecule before calculating properties?
+
+Mol filter could be similar plugin, might be helpful.
+
 # Ongoing: Important
 
 Load session after saving without restarting, duplicate keys in log. Good to
@@ -72,12 +78,6 @@ clear log on load session.
 updateAppName not used anywhere, but I think it should be.
 
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
-
-**** molprops, after done, should switch to data tab for you.
-
-MolProps... need to neutralize molecule before calculating properties?
-
-Mol filter could be similar plugin, might be helpful.
 
 Search for // TODO: Note that only one webworker is used here. You could multithread
 When you calculate properties, why does it create and destroy the webworker
@@ -98,7 +98,7 @@ Search for // TODO: Why does this occasionally happen? . Happens quite a bit.
 Queue system should throw an error if any single job requires more than number
 of processors available.
 
-Reduce. Make sure parameters ok. 
+Reduce. Make sure parameters ok.
 
 Improve intro text in central viewer on app open.
 
@@ -116,12 +116,14 @@ Remind me to set up beta, site, and version name for biotype.
 review:
     src/Core/GoogleAnalytics.ts
 
+# DONE
+
 On both draw and paste, be sure to deal with no text/drawing (error). See Yuri
 code, but don't merge. Other minor changes. Review that.
 
-New flag for plugins to disable submit on Enter. Let Yuri know.
+Put "2cd" into PubChem. Get an error.
 
-# DONE
+New flag for plugins to disable submit on Enter. Let Yuri know.
 
 Current version of openbabel (tmp version) converts only first fframe of file
 (e.g., PDBQT). Make sure Yuri's converts all, and test that. Update

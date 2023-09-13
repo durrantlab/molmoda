@@ -44,6 +44,11 @@ Whether the action button (e.g., "Load") is enabled. This component property is 
 Whether the user can cancel the plugin. Some rare plugins are not cancelable. This component property is optional. If it is not specified, the default value is used: `false`.
  Type: `boolean`. 
 
+#### `submitOnEnter` (:property) <a id="submitOnEnter"></a>
+
+Whether pressing enter will submit the plugin. Almost always true (default). This component property is optional. If it is not specified, the default value is used: `true`.
+ Type: `boolean`. 
+
 #### `variant` (:property) <a id="variant"></a>
 
 The popup variant (i.e., whether to style the popup as primary, secondary, success, danger, etc.). This component property is optional. If it is not specified, the default value is used: `PopupVariant.Primary`.

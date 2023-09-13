@@ -29,6 +29,7 @@ export default class FormElementDescription extends Vue {
     // NOTE: Prefer description, not the slot, because description is subject to
     // extra validation.
     @Prop({}) description!: string;
+    @Prop({default: true}) validate!: boolean;
 
 
     /**
@@ -38,7 +39,7 @@ export default class FormElementDescription extends Vue {
      */
     @Watch("description")
     onDescriptionChanged(newVal: string) {
-        if (!isSentence(newVal)) {
+        if (this.validate && !isSentence(newVal)) {
             const msg =
                 "FormElementDescription: description must be a sentence (start with capital letter, end with punctuation): " +
                 newVal;

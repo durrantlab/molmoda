@@ -220,6 +220,9 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
     /**
      * Runs when the user data changes.
+     *
+     * @param {UserArg[]} userArgsFixed  The user arguments (i.e., plugin
+     *                                   parameters).
      */
     onChange(userArgsFixed: UserArg[]) {
         // Runs when the user changes any user arguments (plugin parameters).

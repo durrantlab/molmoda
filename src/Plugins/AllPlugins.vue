@@ -40,7 +40,6 @@ system uses these to autopopulate with plugins. -->
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
-    <MolPropsPlugin @onPluginSetup="onPluginSetup"></MolPropsPlugin>
     <MolTextPlugin @onPluginSetup="onPluginSetup"></MolTextPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
@@ -92,7 +91,6 @@ import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
-import MolPropsPlugin from "./Optional/MolProps/MolPropsPlugin.vue";
 import MolTextPlugin from "./Optional/MolTextPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
@@ -140,7 +138,6 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     AddRegionPlugin,
     DrawMoleculePlugin,
     FPocketWebPlugin,
-    MolPropsPlugin,
     MolTextPlugin,
     ProtonateCompoundsPlugin,
     ReducePlugin,

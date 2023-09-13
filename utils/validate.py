@@ -194,13 +194,26 @@ for ts_file in ts_files:
     #     )
 
     # All *.vue files /Plugins/ must be plugins, except those in .../Parents/...
-    if (
-        "/Plugins/" in ts_file
-        and "/Parents/" not in ts_file
-        and ts_file.endswith(".vue")
-        and os.path.basename(ts_file) not in ["AllPlugins.vue"]
-    ):
-        validate_plugin(ts_file)
+    if "/Plugins/" not in ts_file:
+        # It's not a plugin
+        continue
+    if "/Parents/" in ts_file:
+        # It's a parent, not a plugin
+        continue
+
+    if not ts_file.endswith(".vue"):
+        # It's not a vue file, so not a plugin
+        continue
+
+    if os.path.basename(ts_file) in ["AllPlugins.vue"]:
+        # It's not a plugin (in blacklist)
+        continue
+
+    if "<PluginComponent" not in content:
+        # It's not a plugin (doesn't contain <PluginComponent)
+        continue
+
+    validate_plugin(ts_file)
 
 errors = sorted(set(errors))
 

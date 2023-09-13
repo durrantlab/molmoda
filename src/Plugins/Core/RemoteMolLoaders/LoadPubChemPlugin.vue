@@ -17,6 +17,7 @@
                 @onChange="searchByName"
                 :delayBetweenChangesDetected="2000"
                 :description="molNameRespDescription"
+                :validateDescription="false"
             ></FormInput>
         </FormWrapper>
         <FormWrapper
@@ -86,7 +87,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                     journal: "Nucleic Acids Res.",
                     volume: 51,
                     issue: "D1",
-                    pages: "D1373–D1380",
+                    pages: "D1373-D1380",
                     year: 2023,
                 },
             ],

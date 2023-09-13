@@ -5,8 +5,13 @@
         @onUserArgChanged="onUserArgChanged"
         @onPopupDone="onPopupDone"
         modalWidth="xl"
+        :isActionBtnEnabled="isActionBtnEnabled"
     >
-        <div ref="chemComposer" style="width: 100%; height: 400px"></div>
+        <div
+            ref="chemComposer"
+            style="width: 100%; height: 400px"
+            @click="onWidgetClick"
+        ></div>
     </PluginComponent>
 </template>
 
@@ -55,6 +60,8 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
     kekule: any;
     chemComposer: any;
+
+    isActionBtnEnabled = false;
 
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
@@ -109,11 +116,11 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                 // If it's a test, throw in a methane for testing.
                 if (isTest) {
                     const cmlData = `<?xml version="1.0"?><molecule xmlns="http://www.xml-cml.org/schema"><atomArray><atom id="a1" elementType="C" hydrogenCount="4"/></atomArray></molecule>`;
-                    const benzene = this.kekule.IO.loadFormatData(
+                    const testMol = this.kekule.IO.loadFormatData(
                         cmlData,
                         "cml"
                     );
-                    this.chemComposer.setChemObj(benzene);
+                    this.chemComposer.setChemObj(testMol);
                 }
 
                 // this.chemComposer.setDimension('200px', '200px');
@@ -169,6 +176,15 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      */
     runJobInBrowser(args: any): Promise<void> {
         return Promise.resolve();
+    }
+
+    /**
+     * Detects when widget is clicked. Enables action button if there is a valid
+     * smiles string ready.
+     */
+    onWidgetClick() {
+        const smi = this.kekule.IO.saveFormatData(this.chemComposer.getChemObj(), "smi");
+        this.isActionBtnEnabled = smi !== "";        
     }
 
     /**

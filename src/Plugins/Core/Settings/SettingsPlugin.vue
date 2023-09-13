@@ -104,11 +104,17 @@ export default class SettingsPlugin extends PluginParentClass {
     alwaysEnabled = true;
     logJob = false;
 
+    /**
+     * Set whether the user has allowed stats collection.
+     */
     setStatCollectPetition() {
         const currentVal = this.getUserArg("statCollect");
         this.setUserArgEnabled("statCollectAlert", !currentVal);
     }
 
+    /**
+     * Runs when the user changes a user argument.
+     */
     async onUserArgChange() {
         const currentStatEnabledVal = this.getUserArg("statCollect");
         const savedStatEnabledVal = await isStatCollectionEnabled();
