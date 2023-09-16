@@ -17,3 +17,4 @@ fi
 sudo rm -rf support/reduce-4.13
 sudo rm -rf support/emsdk
 sudo rm -rf support/reduce-4.13_wasm
+sudo rm -rf out/
