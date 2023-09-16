@@ -70,6 +70,14 @@ Restore calc mol props after publishing docking
 
 Mol filter could be similar plugin, might be helpful.
 
+Search for // TODO: Note that only one webworker is used here. You could multithread
+When you calculate properties, why does it create and destroy the webworker
+before launching another one? Wouldn't it be easier just to deal with this
+outside the plugin system? You'll want to repurpose it anyway for filtering,
+etc. Also, you could standardie how webworkers are used for multiprocessing
+(keeping track of order automatically). Reuse convert w/ obabel code.
+    But when you go to do remote calculations...
+
 # Ongoing: Important
 
 Load session after saving without restarting, duplicate keys in log. Good to
@@ -79,30 +87,18 @@ updateAppName not used anywhere, but I think it should be.
 
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
 
-Search for // TODO: Note that only one webworker is used here. You could multithread
-When you calculate properties, why does it create and destroy the webworker
-before launching another one? Wouldn't it be easier just to deal with this
-outside the plugin system? You'll want to repurpose it anyway for filtering,
-etc. Also, you could standardie how webworkers are used for multiprocessing
-(keeping track of order automatically). Reuse convert w/ obabel code.
-    But when you go to do remote calculations...
-
 Open options: add 3D coordinates, frames to separate molecules, etc.
 
 ligs.cif shows only one
 
 Popups (done, start after delay) need to be built into the queue system.
 
-Search for // TODO: Why does this occasionally happen? . Happens quite a bit.
-
 Queue system should throw an error if any single job requires more than number
 of processors available.
 
 Reduce. Make sure parameters ok.
 
-Improve intro text in central viewer on app open.
-
-Settings reset to default
+*** Settings reset to default
 
 Need to add wasm reduce, but don't commit cruft. Should not be big.
 
@@ -116,7 +112,14 @@ Remind me to set up beta, site, and version name for biotype.
 review:
     src/Core/GoogleAnalytics.ts
 
+Load t.smi. Unclick everything, then click one by one. Doens't automatically
+show unless rotate in viewer.
+
 # DONE
+
+Improve intro text in central viewer on app open.
+
+Search for // TODO: Why does this occasionally happen? . Happens quite a bit.
 
 On both draw and paste, be sure to deal with no text/drawing (error). See Yuri
 code, but don't merge. Other minor changes. Review that.

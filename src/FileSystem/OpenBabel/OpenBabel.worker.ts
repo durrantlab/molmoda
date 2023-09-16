@@ -16,7 +16,6 @@ let oBabelModReady: any = undefined;
 let stdOutOrErr = "";
 let stdErr = "";
 
-
 /**
  * Runs the Open Babel command line program.
  *
@@ -96,7 +95,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             /**
              * A helper function that changes the permissions of a file on the Open Babel
              * file system.
-             * 
+             *
              * @param {string} path  The path to the file to change.
              * @param {string} mode  The mode to change to.
              */
@@ -106,7 +105,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * A helper function that deletes a file on the Open Babel file system.
-             * 
+             *
              * @param {string} path  The path to the file to delete.
              */
             unlink(path: string) {
@@ -115,13 +114,13 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * A helper function that deletes a directory on the Open Babel file system.
-             * 
+             *
              * @param {string} path  The path to the directory to delete.
              */
             rmdir(path: string) {
                 // Directory must be empty
                 (this as any).FS.rmdir(path);
-            }
+            },
         };
 
         const Module = {
@@ -162,9 +161,16 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             // Verify that the names of each inputFile are unique. Throw an
             // error otherwise.
-            const inputFileNameSet = new Set(inputFiles.map((file) => file.name));
+            const inputFileNameSet = new Set(
+                inputFiles.map((file) => file.name)
+            );
             if (inputFileNameSet.size !== inputFiles.length) {
-                console.log("Uniq names:", inputFileNameSet, ". Size != ", inputFiles.length);
+                console.log(
+                    "Uniq names:",
+                    inputFileNameSet,
+                    ". Size != ",
+                    inputFiles.length
+                );
                 throw new Error("Input file names must be unique.");
             }
 
@@ -174,19 +180,44 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             }
 
             // You're copying over many input files. You need to know which one
-            // was actually used.
-            let inputFileActualyUsed: FileInfo | undefined = undefined;
+            // is actually used for this calculation.
+            let inputFileActuallyUsed: FileInfo | undefined = undefined;
+            let outputFileActuallyUsed: string | undefined = undefined;
 
             // Modify the arguments to you're readying and writing from the new
             // temporary directory.
             for (let i = 0; i < args.length; i++) {
                 if (args[i] === "-O") {
+                    // Rewrite output so it goes to the temporary directory.
+                    outputFileActuallyUsed = args[i + 1];
                     args[i + 1] = tmpDir + args[i + 1];
                 } else if (inputFileNameSet.has(args[i])) {
-                    // debugger;
-                    inputFileActualyUsed = inputFiles.find((file) => file.name === args[i]);
+                    // So not -O. Must be an input file. Rewrite so it goes to
+                    // the temporary directory.
+                    inputFileActuallyUsed = inputFiles.find(
+                        (file) => file.name === args[i]
+                    );
                     args[i] = tmpDir + args[i];
                 }
+            }
+
+            // It's important that the input and output files be sufficiently
+            // different. Because -m might overwrite an already existant file
+            // otherwise.
+            const inputFileBaseWithoutNumbers = (<FileInfo>inputFileActuallyUsed).name
+                .replace(/\d/g, "")
+                .split(".")[0];
+            const outputFileBaseWithoutNumbers = outputFileActuallyUsed
+                ?.replace(/\d/g, "")
+                .split(".")[0];
+
+            if (inputFileBaseWithoutNumbers === outputFileBaseWithoutNumbers) {
+                throw new Error(
+                    "Input and output file names must be sufficiently different: " +
+                        (<FileInfo>inputFileActuallyUsed).name +
+                        " vs. " +
+                        outputFileActuallyUsed
+                );
             }
 
             const filesBeforeRun = mod.files.readDir(tmpDir);
@@ -208,16 +239,16 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             // Keep those files in filesAfterRun that are not in
             // mod.filesBeforeRun. These are the new files.
             let newFiles = filesAfterRun.filter(
-                (fileName: string) =>
-                    !filesBeforeRun.includes(fileName)
+                (fileName: string) => !filesBeforeRun.includes(fileName)
             );
 
             if (newFiles.length === 0) {
                 // There was no new files for some reason. Output a warning, and
                 // return the input molecule.
-                console.error("No new files were created. Sending back input file.");
-                // TODO: Why does this occasionally happen?
-                newFiles = [inputFileActualyUsed?.name];
+                console.error(
+                    "No new files were created. Sending back input file."
+                );
+                newFiles = [inputFileActuallyUsed?.name];
             }
 
             // console.log("MOO", filesBeforeRun, filesAfterRun, newFiles);
@@ -226,28 +257,28 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             //     debugger;
             // }
 
-            const contents: string[] = newFiles.map(
-                (fileName: string) => {
-                    fileName = tmpDir + fileName;
-                    return mod.files.readFile(fileName);
-                }
-            );
+            const contents: string[] = newFiles.map((fileName: string) => {
+                fileName = tmpDir + fileName;
+                return mod.files.readFile(fileName);
+            });
 
             // Remove the temporary directory. Keep only unique.
-            const filesToDelete = [...new Set([...newFiles, ...inputFileNameSet])];
+            const filesToDelete = [
+                ...new Set([...newFiles, ...inputFileNameSet]),
+            ];
             for (const fileName of filesToDelete) {
                 mod.files.unlink(tmpDir + fileName);
             }
             mod.files.rmdir(tmpDir);
 
-            return [inputFileActualyUsed?.auxData, contents];
+            return [inputFileActuallyUsed?.auxData, contents];
         })
         .then((outputFilesData: [any, string[]]) => {
             return {
                 orderIdxs: outputFilesData[0],
                 outputFiles: outputFilesData[1],
                 stdOutOrErr,
-                stdErr
+                stdErr,
             };
         })
         .catch((err: Error) => {
@@ -265,8 +296,8 @@ self.onmessage = (params: MessageEvent) => {
     // console.log(params)
 
     currentlyRunning = true;
-    const argsSets = params.data.map((d: any) => d.args);  // params.data.argsSets as string[][];
-    const inputFiles = params.data.map((d: any) => d.inputFile);  // params.data.inputFiles as FileInfo[];
+    const argsSets = params.data.map((d: any) => d.args); // params.data.argsSets as string[][];
+    const inputFiles = params.data.map((d: any) => d.inputFile); // params.data.inputFiles as FileInfo[];
     // const outputFilePath = params.outputFilePath as string;
 
     const promises = argsSets.map((args: any) => {

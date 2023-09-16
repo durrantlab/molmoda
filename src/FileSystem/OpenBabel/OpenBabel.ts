@@ -149,7 +149,7 @@ export function convertFileInfosOpenBabel(
                 const formatInfo = getFormatInfoGivenType(targetFormat);
 
                 const extToUse = formatInfo?.obabelFormatName ?? targetFormat;
-                cmds.push(...["-O", "tmp." + extToUse]);
+                cmds.push(...["-O", "tmpout." + extToUse]);
 
                 if (formatInfo?.extraObabelArgs !== undefined) {
                     cmds.push(...formatInfo.extraObabelArgs);

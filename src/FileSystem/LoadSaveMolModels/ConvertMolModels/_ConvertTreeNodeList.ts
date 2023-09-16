@@ -64,7 +64,7 @@ export function _convertTreeNodeList(
 
     const fileInfos = molTxts.map((molTxt: string, idx: number) =>
         new FileInfo({
-            name: `tmp${idx}.pdb`,
+            name: `tmpmol${idx}.pdb`,
             contents: molTxt
         })
     );
@@ -75,7 +75,7 @@ export function _convertTreeNodeList(
     ).then((contents: string[]) => {
         return contents.map((content: string) => {
             return new FileInfo({
-                name: `tmp.${targetExt}`,
+                name: `tmpmol.${targetExt}`,
                 contents: content
             });
         });
