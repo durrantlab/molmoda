@@ -194,7 +194,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
      * Runs when the user presses the second action button and the popup closes.
      */
     onPopupDone2() {
-        this.$emit("update:modelValue", false);
+        // this.$emit("update:modelValue", false);
 
         /**
          * Runs when the secondary action button is pressed, after the popup closes.
@@ -206,7 +206,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
      * Runs when the user presses the third action button and the popup closes.
      */
     onPopupDone3() {
-        this.$emit("update:modelValue", false);
+        // this.$emit("update:modelValue", false);
         this.$emit("onPopupDone3");
     }
 
@@ -214,7 +214,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
      * Runs when the user presses the forth action button and the popup closes.
      */
     onPopupDone4() {
-        this.$emit("update:modelValue", false);
+        // this.$emit("update:modelValue", false);
         this.$emit("onPopupDone4");
     }
 

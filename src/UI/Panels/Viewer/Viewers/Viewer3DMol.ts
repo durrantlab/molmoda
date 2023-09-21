@@ -94,6 +94,7 @@ export class Viewer3DMol extends ViewerParent {
         const model = this.lookup(id);
         if (model) {
             model.show();
+            // this.renderAll();
         }
     }
 

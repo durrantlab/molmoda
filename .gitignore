@@ -43,3 +43,6 @@ src/compile_errors.json
 
 .temp_cache/
 debug_with_assertions
+rsync.sh
+
+report.html

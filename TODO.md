@@ -98,10 +98,6 @@ of processors available.
 
 Reduce. Make sure parameters ok.
 
-*** Settings reset to default
-
-Need to add wasm reduce, but don't commit cruft. Should not be big.
-
 Dock your test file. asdsadasasaaasdggh.biotite  Look in data at prot path for
 one. It's not good.
 
@@ -112,10 +108,14 @@ Remind me to set up beta, site, and version name for biotype.
 review:
     src/Core/GoogleAnalytics.ts
 
+# DONE
+
 Load t.smi. Unclick everything, then click one by one. Doens't automatically
 show unless rotate in viewer.
 
-# DONE
+Settings reset to default
+
+Need to add wasm reduce, but don't commit cruft. Should not be big.
 
 Improve intro text in central viewer on app open.
 

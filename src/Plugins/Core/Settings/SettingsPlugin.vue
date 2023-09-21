@@ -6,6 +6,8 @@
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
         :hideIfDisabled="true"
+        actionBtnTxt2="Load Defaults"
+        @onPopupDone2="setDefaults"
     >
         <!-- cancelBtnTxt="Done" -->
     </PluginComponent>
@@ -182,6 +184,19 @@ export default class SettingsPlugin extends PluginParentClass {
     onPopupDone() {
         // Putting in [] so all settings sent together, rather than one-by-one.
         this.submitJobs([this.userArgs]);
+    }
+
+    setDefaults() {
+        const defaults = defaultSettings();
+        
+        for (const setting in defaults) {
+            const val = defaults[setting];
+            this.setUserArg(setting, val);
+        }
+
+        // Also, allow stat collection
+        this.setUserArg("statCollect", true);
+        enableStats();
     }
 
     /**

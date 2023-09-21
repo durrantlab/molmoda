@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve",
-    "build": "cd utils && ./before_compile.sh && cd .. && vue-cli-service build",
+    "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",
+    "build": "cd utils && ./before_compile.sh && cd .. && vue-cli-service --progress --verbose build && cd utils && ./after_compile.sh && cd ..",
     "lint": "vue-cli-service lint",
     "docs": "vue-cli-service build --mode docs; jsdoc dist/js/app.js",
     "docs2": "jsdoc -r -c jsdoc.json src/"

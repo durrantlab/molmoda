@@ -121,8 +121,8 @@ export abstract class ViewerParent {
         // Remove from cache
         this.removeFromCache(id);
 
-        // Note that not calling render here. Need to call it elsewhere fore these
-        // changes to appear in 3dmoljs viewer.
+        // Note that not calling render here. Need to call it elsewhere for
+        // these changes to appear in 3dmoljs viewer.
     }
 
     /**
@@ -160,11 +160,13 @@ export abstract class ViewerParent {
         if (model) {
             this.hideMolecule(id);
             this._makeAtomsNotHoverableAndClickable(model);
+            this.renderAll();
             return;
         }
-
+        
         if (this.regionCache[id]) {
             this.hideRegion(id);
+            this.renderAll();
         }
     }
 
@@ -178,6 +180,7 @@ export abstract class ViewerParent {
         if (model) {
             this.showMolecule(id);
             this._makeAtomsHoverableAndClickable(model, id);
+            this.renderAll();
             return;
         }
 
@@ -190,6 +193,7 @@ export abstract class ViewerParent {
             }
 
             this.showRegion(id, opacity);
+            this.renderAll();
         }
     }
 

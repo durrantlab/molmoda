@@ -235,7 +235,7 @@ export default class Popup extends Vue {
     otherActionBtn(idx: number) {
         setTimeout(() => {
             this.$emit("onDone" + idx.toString());
-            this.$emit("update:modelValue", false);
+            // this.$emit("update:modelValue", false);
         }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
     }
 

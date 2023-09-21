@@ -1,8 +1,7 @@
-// const TerserPlugin = require("terser-webpack-plugin");
 const { defineConfig } = require("@vue/cli-service");
 const CopyPlugin = require("copy-webpack-plugin");
+
 const CircularDependencyPlugin = require("circular-dependency-plugin");
-// const webpack = require("webpack");
 const path = require("path");
 
 module.exports = defineConfig({
@@ -13,12 +12,14 @@ module.exports = defineConfig({
         },
     },
     // publicPath: "./",
+
     transpileDependencies: true,
+
     productionSourceMap: true,
     parallel: 4,
     configureWebpack: (config) => {
         if (process.env.NODE_ENV === "development") {
-            config.devtool = "eval-source-map";
+            config.devtool ="eval-source-map";
             config.output.devtoolModuleFilenameTemplate = (info) =>
                 info.resourcePath.match(/\.vue$/) &&
                 !info.identifier.match(/type=script/) // this is change ✨
@@ -27,6 +28,13 @@ module.exports = defineConfig({
 
             config.output.devtoolFallbackModuleFilenameTemplate =
                 "webpack:///[resource-path]?[hash]";
+        } else if (process.env.NODE_ENV === "docs") {
+            config.optimization.minimize = false;
+        } else {
+            // Production
+            // console.log("product!")
+            config.stats = "verbose";
+            config.devtool = false;
         }
 
         // ChatGPT says this will speed up builds
@@ -48,7 +56,9 @@ module.exports = defineConfig({
             os: require.resolve("os-browserify/browser"),
             perf_hooks: false,
         };
+
         config.resolve.symlinks = false;
+
         config.plugins.push(
             new CopyPlugin({
                 patterns: [
@@ -72,6 +82,7 @@ module.exports = defineConfig({
                 ],
             })
         );
+
         config.plugins.push(
             new CircularDependencyPlugin({
                 // exclude detection of files based on a RegExp
@@ -88,10 +99,6 @@ module.exports = defineConfig({
             })
         );
 
-        if (process.env.NODE_ENV === "docs") {
-            config.optimization.minimize = false;
-        }
-
         config.optimization.splitChunks = {
             minSize: 10000,
             maxSize: 250000,
@@ -99,90 +106,13 @@ module.exports = defineConfig({
 
         config.optimization.runtimeChunk = true;
 
-        // Only build source maps if in development
-        config.devtool =
-            process.env.NODE_ENV === "development" ? "eval-source-map" : false;
-
-        // config.optimization.minimizer = [
-        //     new TerserPlugin({
-        //         terserOptions: {
-        //             format: {
-        //                 comments: true,
-        //                 // beautify: true,
-        //             },
-        //         },
-        //         extractComments: false,
-        //     }),
-        // ];
-
-        // module.rules = [
-        //     //   {test: require.resolve("jquery"), use: "expose-loader?$"},
-        //     //   {test: require.resolve("jquery"), use: "expose-loader?jQuery"},
-        //     {
-        //         test: require.resolve(
-        //             "./src/assets/MDB5-STANDARD-UI-KIT-Free-6.4.0/js/mdb.min.js"
-        //         ),
-        //         use: [
-        //             {
-        //                 loader: "imports-loader",
-        //                 options: {
-        //                     type: "commonjs",
-        //                     imports: ["single process/browser process"],
-        //                 },
-        //             },
-        //         ],
-        //     },
-        // ];
     },
     pluginOptions: {
         webpackBundleAnalyzer: {
-            openAnalyzer: true,
+            openAnalyzer: false,
+            analyzerMode: "static",
         },
     },
+    
 
-    // {
-    //     // devtool: 'source-map',
-    //     devtool: 'eval-source-map'
-    // }
-
-    // Use devtools source-map
-
-    // configureWebpack: (config) => {
-    //     config.module.rules.push({
-    //         // Processing jquery
-    //         test: require.resolve("jquery"),
-    //         // use: [
-    //         //     {
-    //         //         loader: "expose-loader",
-    //         //         options: "jQuery",
-    //         //     },
-    //         //     {
-    //         //         loader: "expose-loader",
-    //         //         options: "$",
-    //         //     },
-    //         // ],
-    //         loader: "expose-loader",
-    //         options: {
-    //             exposes: {
-    //                 globalName: "jQuery",
-    //                 override: true,
-    //             }
-    //         },
-    //         // [
-    //         //     {
-    //         //         loader: "expose-loader",
-    //         //         options: "$",
-    //         //     }
-    //         // ],
-    //     });
-    // },
-
-    // chainWebpack: config => {
-    //   config.module
-    //     .rule('expose')
-    //     // .test(/\.graphql$/)
-    //     .use('expose-loader')
-    //       .loader('expose-loader')
-    //       .end()
-    // }
 });
