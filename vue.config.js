@@ -11,31 +11,37 @@ module.exports = defineConfig({
             "Cross-Origin-Embedder-Policy": "require-corp",
         },
     },
-    // publicPath: "./",
+    publicPath: (process.env.NODE_ENV === "development") ? undefined : "./",
+    // publicPath: "/apps/biotite/beta/",
 
     transpileDependencies: true,
 
     productionSourceMap: true,
     parallel: 4,
     configureWebpack: (config) => {
-        if (process.env.NODE_ENV === "development") {
+        // if (process.env.NODE_ENV === "development") {
+        // } else 
+        if (process.env.NODE_ENV === "docs") {
+            config.optimization.minimize = false;
+        } else {
+            // So currently runs in development and production...
+            
             config.devtool ="eval-source-map";
             config.output.devtoolModuleFilenameTemplate = (info) =>
                 info.resourcePath.match(/\.vue$/) &&
                 !info.identifier.match(/type=script/) // this is change ✨
                     ? `webpack-generated:///${info.resourcePath}?${info.hash}`
                     : `webpack-yourCode:///${info.resourcePath}`;
-
+    
             config.output.devtoolFallbackModuleFilenameTemplate =
                 "webpack:///[resource-path]?[hash]";
-        } else if (process.env.NODE_ENV === "docs") {
-            config.optimization.minimize = false;
-        } else {
-            // Production
-            // console.log("product!")
-            config.stats = "verbose";
-            config.devtool = false;
         }
+        // else {
+        //     // Production
+        //     // console.log("product!")
+        //     config.stats = "verbose";
+        //     config.devtool = "eval-source-map"; // false;
+        // }
 
         // ChatGPT says this will speed up builds
         config.cache = {

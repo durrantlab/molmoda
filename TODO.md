@@ -103,12 +103,12 @@ one. It's not good.
 
 Put surface then hide. Nothing underneath.
 
-Remind me to set up beta, site, and version name for biotype.
-
 review:
     src/Core/GoogleAnalytics.ts
 
 # DONE
+
+Remind me to set up beta, site, and version name for biotype.
 
 Load t.smi. Unclick everything, then click one by one. Doens't automatically
 show unless rotate in viewer.

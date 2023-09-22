@@ -4,13 +4,17 @@ import { FileInfo } from "../FileInfo";
 
 // This runs from within a webworker
 
-declare let Webobabel: any;
+// declare let Webobabel: any;
 
 // let stdOutOrErr = "";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-importScripts("obabel-wasm/obabel.js");
+// importScripts("obabel-wasm/obabel.js");
+
+import * as Webobabel from "../../../public/js/obabel-wasm/obabel.js";
+
+// debugger;
 
 let oBabelModReady: any = undefined;
 let stdOutOrErr = "";

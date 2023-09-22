@@ -31,13 +31,19 @@ export default class FormWrapper extends Vue {
     @Prop({ default: false }) disabled!: boolean;
     @Prop({ default: false }) useSubLabelFormatting!: boolean;
 
-    /**
-     * Get a random ID.
-     *
-     * @returns {string} The random ID.
-     */
-    get randomID(): string {
-        return (
+    randomID = "";
+
+    // /**
+    //  * Get a random ID.
+    //  *
+    //  * @returns {string} The random ID.
+    //  */
+    // get randomID(): string {
+    //     return 
+    // }
+
+    mounted() {
+        this.randomID = (
             "a" +
             Math.random().toString(36).substring(2, 15) +
             Math.random().toString(36).substring(2, 15)
