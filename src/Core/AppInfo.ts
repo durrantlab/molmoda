@@ -3,6 +3,11 @@ export let appVersion = "1.0.0";
 
 export const appDescription = `${appName} ${appVersion} is a browser-based suite for computer-aided drug discovery, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>. It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.`;
 
+// Though it is hackish, occasionally I just wait for the popup to open before
+// doing anything. Good to define a single global constant that determines this
+// wait time.
+export const delayForPopupOpenClose = 1000;
+
 /**
  * Updates the app name. When running just one plugin, name should be updated to
  * reflect plugin name. TODO: Not currently used, but I think it should be.

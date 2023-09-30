@@ -1,6 +1,9 @@
 <template>
-    <span>
-        <!-- <div
+    <!-- <ContextMenu
+        :options="contextMenuOptions"
+        @onMenuItemClick="onMenuItemClick"
+    > -->
+    <!-- <div
             v-if="allTreeData.length > 0 && depth === 0"
             class="input-group input-group-sm mb-1"
         >
@@ -14,13 +17,14 @@
             </div>
             <input type="text" class="form-control" v-model="filterStr" />
         </div> -->
-
+    <div>
         <FilterInput
             v-if="allTreeDataFlattened.length > 0 && depth === 0"
             :list="allTreeDataFlattened"
             :extractTextToFilterFunc="extractTextToFilterFunc"
             @onFilter="onFilter"
             mb="1"
+            v-model="filterStr"
         ></FilterInput>
 
         <div
@@ -35,6 +39,7 @@
                 :treeDatum="treeDatum"
                 :depth="depth"
                 :treeData="treeData"
+                :filterStr="filterStr"
             />
 
             <!-- Show sub-items if appropriate -->
@@ -48,7 +53,8 @@
             />
             <!-- </Transition> -->
         </div>
-    </span>
+    </div>
+    <!-- </ContextMenu> -->
 </template>
 
 <script lang="ts">
@@ -63,6 +69,10 @@ import TitleBar from "@/UI/Navigation/TitleBar/TitleBar.vue";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import FilterInput from "@/UI/Components/FilterInput.vue";
+import ContextMenu from "../ContextMenu/ContextMenu.vue";
+import { pluginsApi } from "@/Api/Plugins";
+import { SelectedType } from "./TreeInterfaces";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 /**
  * TreeView component
@@ -73,6 +83,7 @@ import FilterInput from "@/UI/Components/FilterInput.vue";
         IconBar,
         TitleBar,
         FilterInput,
+        ContextMenu,
     },
 })
 export default class TreeView extends Vue {
@@ -81,6 +92,7 @@ export default class TreeView extends Vue {
     @Prop({ default: undefined }) styleToUse!: string;
 
     filteredTreeNodes: TreeNode[] | null = null;
+    filterStr = "";
 
     /**
      * Get the style for a fixed-width element.

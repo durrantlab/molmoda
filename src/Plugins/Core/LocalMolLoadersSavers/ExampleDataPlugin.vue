@@ -23,6 +23,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { filesToFileInfos } from "@/FileSystem/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { appName } from "@/Core/AppInfo";
 
 /**
  * ExampleDataPlugin
@@ -44,7 +45,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     intro =
-        "Append an example project to the current workspace. Useful for exploring and testing the Biotite interface.";
+        `Append an example project to the current workspace. Useful for exploring and testing the ${appName} interface.`;
 
     /**
      * Runs when the user presses the action button and the popup closes.

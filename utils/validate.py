@@ -154,8 +154,11 @@ errors = []
 
 
 for ts_file in ts_files:
+    # try:
     with open(ts_file, "r") as file:
         content = file.read()
+    # except:
+        # import pdb; pdb.set_trace()
 
     # No use fetch( anywhere. Prefer axios.get.
     if "fetch(" in content:
@@ -173,6 +176,14 @@ for ts_file in ts_files:
                 )
     if "import(" in content and os.path.basename(ts_file) != "DynamicImports.ts":
         add_error(ts_file, "Use import() only in the DynamicImports.ts file.")
+
+    # Don't allow "Biotite" anywhere but in AppInfo.ts
+    if re.search(r"\bBiotite\b", content) and "AppInfo.ts" not in ts_file:
+        add_error(
+            ts_file,
+            'The string "Biotite" should only be used in AppInfo.ts. Import the app name from there.',
+        )
+        
 
     # Try to avoid filtering molecules directly. Use the shallowFilters
     # subclass.
@@ -192,6 +203,8 @@ for ts_file in ts_files:
     #         ts_file,
     #         f"Use the shallowFilters subclass instead of filtering TreeNodeList directly (or include mol_filter_ok somewhere nearby): `{txt}`",
     #     )
+
+    ##### BELOW HERE, ONLY VALIDATE PLUGINS #####
 
     # All *.vue files /Plugins/ must be plugins, except those in .../Parents/...
     if "/Plugins/" not in ts_file:

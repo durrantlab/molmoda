@@ -78,35 +78,70 @@ etc. Also, you could standardie how webworkers are used for multiprocessing
 (keeping track of order automatically). Reuse convert w/ obabel code.
     But when you go to do remote calculations...
 
+Queue system should throw an error if any single job requires more than number
+of processors available.
+
+Popups (done, start after delay) need to be built into the queue system.
+
+"Modes" (docking, etc.) where only relevant tools appear. Updates title
+accordingly. Just put title and tools in url, then clear url so not visible.
+RELATED: updateAppName not used anywhere, but I think it should be.
+
+Open options: add 3D coordinates, frames to separate molecules, etc.
+
 # Ongoing: Important
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-updateAppName not used anywhere, but I think it should be.
-
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
 
-Open options: add 3D coordinates, frames to separate molecules, etc.
-
 ligs.cif shows only one
-
-Popups (done, start after delay) need to be built into the queue system.
-
-Queue system should throw an error if any single job requires more than number
-of processors available.
 
 Reduce. Make sure parameters ok.
 
 Dock your test file. asdsadasasaaasdggh.biotite  Look in data at prot path for
-one. It's not good.
-
-Put surface then hide. Nothing underneath.
+one. It's not good. Entry col needs to be wider.
 
 review:
     src/Core/GoogleAnalytics.ts
 
+After deleting, need to rerender too.
+    Something here: "if (idsOfMolsOrRegionsToDelete.length > 0) {"
+Delete stuff, then focus, it all comes back
+
+Load in mols. Rename one. Export as mol2. Unzip. Name change not reflected in file name
+
+Right click menu on titles with things to do? (delete, rename, etc.)
+
+Toggle visiblity option (based on preponderance of visible)
+
+Menu (both popup and main) shoudl react to allowable. Register all those
+allowable in central object. Maybe just pass all options always, sort out
+criteria in function? See "// TODO: Could this just be populated from Edit menu automatically?"
+
+// TODO: Redo onBeforePopupOpen below. No longer valid.
+
 # DONE
+
+Error catching and reporting. (done, but need to figure out why no source maps
+on production.)
+
+Should be able to select except in specified regions?
+
+Possile for menu to also indicate number of leaf nodes?
+
+_ is ok in filename. Maybe others (-)
+
+Should be able to save ligand as pdb.
+
+Filer by solvent, then try to delete just solvent, doesn't work
+
+Shift select on molecules = bad.
+
+On table, get full value on hover over.
+
+Put surface then hide. Nothing underneath.
 
 Remind me to set up beta, site, and version name for biotype.
 

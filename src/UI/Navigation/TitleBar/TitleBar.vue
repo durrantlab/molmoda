@@ -1,24 +1,29 @@
 <template>
-    <div
-        :class="'title' + selectedclass(treeDatumID)"
-        :style="indentStyle"
-        :data-label="treeDatum.title"
-        @click="titleBarClick"
+    <ContextMenu
+        :options="contextMenuOptions"
+        @onMenuItemClick="onContextMenuItemClick"
+        @onMenuItemRightClick="onContextMenuItemRightClick"
     >
-        <!-- expand icon -->
-        <IconSwitcher
-            v-if="treeDatum.nodes"
-            class="title-element clickable expand-icon"
-            :useFirst="treeDatum.treeExpanded"
-            :iconID1="['fa', 'angle-down']"
-            :iconID2="['fa', 'angle-right']"
-            :width="15"
-            @click="toggleExpand(treeDatumID)"
-        />
-        <div v-else :style="flexFixedWidth(7)"></div>
+        <div
+            :class="'title' + selectedclass(treeDatumID)"
+            :style="indentStyle"
+            :data-label="treeDatum.title"
+            @click="titleBarClick"
+        >
+            <!-- expand icon -->
+            <IconSwitcher
+                v-if="treeDatum.nodes"
+                class="title-element clickable expand-icon"
+                :useFirst="treeDatum.treeExpanded"
+                :iconID1="['fa', 'angle-down']"
+                :iconID2="['fa', 'angle-right']"
+                :width="15"
+                @click="toggleExpand(treeDatumID)"
+            />
+            <div v-else :style="flexFixedWidth(7)"></div>
 
-        <!-- item icon -->
-        <!-- <IconSwitcher
+            <!-- item icon -->
+            <!-- <IconSwitcher
       class="title-element clickable"
       :useFirst="treeDatum.nodes !== undefined"
       :iconID1="['far', 'folder']"
@@ -27,83 +32,84 @@
       @click="titleClick(treeDatumID)"
     /> -->
 
-        <!-- title text -->
-        <!-- :placement="tipPlacement" -->
-        <Tooltip :tip="selInstructions">
-            <div
-                class="title-text clickable"
-                @click="titleClick(treeDatumID)"
-                :style="treeDatum.visible ? '' : 'color: lightgray;'"
-            >
-                {{ title }}
-                <span v-if="treeDatum.nodes"
-                    >({{ treeDatum.nodes?.length }})</span
+            <!-- title text -->
+            <!-- :placement="tipPlacement" -->
+            <Tooltip :tip="selInstructions">
+                <div
+                    class="title-text clickable"
+                    @click="titleClick(treeDatumID)"
+                    :style="treeDatum.visible ? '' : 'color: lightgray;'"
                 >
-            </div></Tooltip
-        >
+                    {{ title }}
+                    <span v-if="treeDatum.nodes">
+                        {{ descendentCounts(treeDatum) }}
+                    </span>
+                </div></Tooltip
+            >
 
-        <!-- menu-item buttons -->
-        <IconBar
-            :width="24 * Object.keys(iconsToDisplay).length"
-            extraClasses="me-2 selected"
-            style="margin-right:8px;"
-        >
-            <!-- the eye icon should always be farthest to the right, so list it first -->
-            <IconSwitcher
-                class="title-element clickable"
-                :useFirst="treeDatum.visible"
-                :iconID1="['far', 'eye']"
-                :iconID2="['far', 'eye-slash']"
-                :icon2Style="{ color: 'lightgray' }"
-                :width="22"
-                @click="toggleVisible(treeDatumID)"
-                title="Visible"
-            />
-            <IconSwitcher
-                v-if="iconsToDisplay.focused"
-                class="title-element clickable"
-                :useFirst="treeDatum.focused"
-                :iconID1="['fa', 'arrows-to-eye']"
-                :iconID2="['fa', 'arrows-to-eye']"
-                :icon2Style="{ color: 'lightgray' }"
-                :width="22"
-                @click="toggleFocused(treeDatumID)"
-                title="Focus"
-            />
-            <IconSwitcher
-                v-if="iconsToDisplay.delete"
-                class="title-element clickable"
-                :useFirst="true"
-                :iconID1="['far', 'rectangle-xmark']"
-                :iconID2="['far', 'rectangle-xmark']"
-                :width="22"
-                @click="deleteMol(treeDatumID)"
-                title="Delete"
-            />
-            <IconSwitcher
-                v-if="iconsToDisplay.cloneExtract"
-                class="title-element clickable"
-                :useFirst="true"
-                :iconID1="['far', 'clone']"
-                :iconID2="['far', 'clone']"
-                :width="22"
-                @click="cloneMol(treeDatumID)"
-                title="Clone"
-            />
-            <IconSwitcher
-                v-if="iconsToDisplay.rename"
-                class="title-element clickable"
-                :useFirst="true"
-                :iconID1="['fa', 'pencil']"
-                :iconID2="['fa', 'pencil']"
-                :width="22"
-                @click="renameMol(treeDatumID)"
-                title="Rename"
-            />
-            <!-- 
+            <!-- menu-item buttons -->
+            <IconBar
+                :width="24 * Object.keys(iconsToDisplay).length"
+                extraClasses="me-2 selected"
+                style="margin-right: 8px"
+            >
+                <!-- the eye icon should always be farthest to the right, so list it first -->
+                <IconSwitcher
+                    class="title-element clickable"
+                    :useFirst="treeDatum.visible"
+                    :iconID1="['far', 'eye']"
+                    :iconID2="['far', 'eye-slash']"
+                    :icon2Style="{ color: 'lightgray' }"
+                    :width="22"
+                    @click="toggleVisible(treeDatumID)"
+                    title="Visible"
+                />
+                <IconSwitcher
+                    v-if="iconsToDisplay.focused"
+                    class="title-element clickable"
+                    :useFirst="treeDatum.focused"
+                    :iconID1="['fa', 'arrows-to-eye']"
+                    :iconID2="['fa', 'arrows-to-eye']"
+                    :icon2Style="{ color: 'lightgray' }"
+                    :width="22"
+                    @click="toggleFocused(treeDatumID)"
+                    title="Focus"
+                />
+                <IconSwitcher
+                    v-if="iconsToDisplay.delete"
+                    class="title-element clickable"
+                    :useFirst="true"
+                    :iconID1="['far', 'rectangle-xmark']"
+                    :iconID2="['far', 'rectangle-xmark']"
+                    :width="22"
+                    @click="deleteMol(treeDatumID)"
+                    title="Delete"
+                />
+                <IconSwitcher
+                    v-if="iconsToDisplay.cloneExtract"
+                    class="title-element clickable"
+                    :useFirst="true"
+                    :iconID1="['far', 'clone']"
+                    :iconID2="['far', 'clone']"
+                    :width="22"
+                    @click="cloneMol(treeDatumID)"
+                    title="Clone"
+                />
+                <IconSwitcher
+                    v-if="iconsToDisplay.rename"
+                    class="title-element clickable"
+                    :useFirst="true"
+                    :iconID1="['fa', 'pencil']"
+                    :iconID2="['fa', 'pencil']"
+                    :width="22"
+                    @click="renameMol(treeDatumID)"
+                    title="Rename"
+                />
+                <!-- 
         :icon2Style="{ color: 'lightgray' }" -->
-        </IconBar>
-    </div>
+            </IconBar>
+        </div>
+    </ContextMenu>
 </template>
 
 <script lang="ts">
@@ -118,6 +124,10 @@ import * as api from "@/Api";
 import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import ContextMenu from "../ContextMenu/ContextMenu.vue";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { pluginsApi } from "@/Api/Plugins";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 
 interface IIconsToDisplay {
     visible?: boolean;
@@ -135,12 +145,26 @@ interface IIconsToDisplay {
         IconSwitcher,
         IconBar,
         Tooltip,
+        ContextMenu,
     },
 })
 export default class TitleBar extends Vue {
     @Prop({ required: true }) treeDatum!: TreeNode;
     @Prop({ default: 0 }) depth!: number;
     @Prop({ default: undefined }) treeData!: TreeNodeList;
+    @Prop({ default: "" }) filterStr!: string;
+
+    descendentCounts(node: TreeNode): string {
+        const numChildren = node.nodes?.length;
+        const numTerminals = node.nodes?.terminals.length;
+
+        let s = `(${numChildren}`;
+        if (numChildren !== numTerminals) {
+            s += ` / ${numTerminals}`;
+        }
+        s += ")";
+        return s;
+    }
 
     /**
      * Get the id of the molecule (node).
@@ -215,7 +239,7 @@ export default class TitleBar extends Vue {
      */
     get title(): string {
         let title = this.treeDatum.title;
-        
+
         // If there is "(" in the title, update it to : (trying to enforce
         // consistency).
         title = title.replace("(", ":");
@@ -390,7 +414,57 @@ export default class TitleBar extends Vue {
      * @param {string} id  The id of the molecule (node).
      */
     titleClick(id: string) {
-        doSelecting(id, this.getLocalTreeData);
+        doSelecting(id, this.getLocalTreeData, this.filterStr);
+    }
+
+    get contextMenuOptions(): string[] {
+        // TODO: Could this just be populated from Edit menu automatically?
+        return [
+            "Rename",
+            "Delete",
+            "Clone",
+            "Merge",
+            "Add Region",
+            "Select All",
+            "Clear Selection",
+        ];
+    }
+
+    onContextMenuItemRightClick() {
+        const id = this.treeDatumID;
+        const isSelected = this.isSelected(id);
+        // If it isn't selected, select it.
+        if (!isSelected) {
+            doSelecting(id, this.getLocalTreeData, this.filterStr);
+        }
+    }
+
+    onContextMenuItemClick(option: string) {
+        // Get all selected nodes
+        const selectedNodes = getMoleculesFromStore().flattened.filter(
+            (n) => n.selected !== SelectedType.False
+        );
+        if (option === "Rename" && selectedNodes.length > 0) {
+            const plugin = loadedPlugins["renamemol"];
+            debugger;
+            pluginsApi.runPlugin("renamemol", this.treeDatumID);
+        } else if (option === "Delete") {
+            pluginsApi.runPlugin("deletemol", this.treeDatumID);
+        }
+        switch (option) {
+            case "Delete":
+                break;
+            case "Clone":
+                break;
+            case "Merge":
+                break;
+            case "Add Region":
+                break;
+            case "Select All":
+                break;
+            case "Clear Selection":
+                break;
+        }
     }
 }
 </script>

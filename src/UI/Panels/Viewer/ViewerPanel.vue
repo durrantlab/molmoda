@@ -79,16 +79,22 @@ export default class ViewerPanel extends Vue {
     }
 
     /**
-     * Checks if the treeview has changed.
+     * Checks if the treeview has changed. This is the glue that connects the
+     * tree view navigator to the viewer. 
+     *
+     * Note: To help with code searching, this might be another way to describe
+     * this function: @Watch("molecules")
      *
      * @param {TreeNodeList} allMolecules  The new molecules.
      */
     @Watch("treeview", { immediate: false, deep: true })
-    onTreeviewChanged(allMolecules: TreeNodeList) {
-        setTimeout(() => {
+    async onTreeviewChanged(allMolecules: TreeNodeList) {
+        setTimeout(async () => {
             // Putting it in setTimeout so some components of UI will react
             // immediately. Below can be time consuming in some cases.
             if (loadViewerLibPromise === undefined) {
+                // Note: These need to be promises (not async/await) because the
+                // promise must be passed to setLoadViewerLibPromise().
                 if (api.visualization.viewerObj !== undefined) {
                     // Molecular library already loaded.
                     setLoadViewerLibPromise(
@@ -125,20 +131,16 @@ export default class ViewerPanel extends Vue {
                 }
             }
 
-            (loadViewerLibPromise as Promise<any>)
-                .then(() => {
-                    if (allMolecules.length === 0) {
-                        // No molecules present
-                        api.visualization.viewerObj?.clearCache();
-                        return;
-                    }
+            await loadViewerLibPromise as Promise<any>;
 
-                    // Update and zoom
-                    return this._updateStyles();
-                })
-                .catch((err) => {
-                    throw err;
-                });
+            if (allMolecules.length === 0) {
+                // No molecules present
+                api.visualization.viewerObj?.clearCache();
+                return;
+            }
+
+            // Update and zoom
+            return this._updateStyles();
         }, 0);
     }
 

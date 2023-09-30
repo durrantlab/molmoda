@@ -41,13 +41,10 @@
                                     :icon="['fa', headerIcon(header)]"
                                 />&nbsp;
                             </span>
-                            <Tooltip
-                                v-if="header.note !== undefined"
-                                :tip="header.note"
-                            >
+                            <!-- Show note as a tool tip if defined.-->
+                            <Tooltip :tip="getHeaderToolTipText(header)">
                                 {{ header.text }}
                             </Tooltip>
-                            <span v-else>{{ header.text }}</span>
                         </th>
                     </tr>
                 </thead>
@@ -78,24 +75,29 @@
                             class="cell px-2"
                             :style="clickableRows ? 'cursor: pointer;' : ''"
                         >
-                            {{ getCell(row[header.text]).val }}
-                            <div
-                                v-if="showIcon(getCell(row[header.text]), row)"
-                                class="icon-clickable"
-                                @click.stop="
-                                    iconClicked(
-                                        getCell(row[header.text])
-                                            .iconClickEmitName,
-                                        row
-                                    )
-                                "
-                            >
-                                <font-awesome-icon
-                                    :icon="
-                                        getCell(row[header.text]).iconClasses
+                            <Tooltip :tip="getCellToolTipText(getCell(row[header.text]))">
+                                {{ getCell(row[header.text]).val }}
+                                <div
+                                    v-if="
+                                        showIcon(getCell(row[header.text]), row)
                                     "
-                                />
-                            </div>
+                                    class="icon-clickable"
+                                    @click.stop="
+                                        iconClicked(
+                                            getCell(row[header.text])
+                                                .iconClickEmitName,
+                                            row
+                                        )
+                                    "
+                                >
+                                    <font-awesome-icon
+                                        :icon="
+                                            getCell(row[header.text])
+                                                .iconClasses
+                                        "
+                                    />
+                                </div>
+                            </Tooltip>
                         </td>
                     </tr>
                 </tbody>
@@ -119,7 +121,6 @@ interface ITableDataInternal {
     headers: IHeader[];
     rows: { [key: string]: ICellValue }[];
 }
-
 
 /**
  * Table component
@@ -226,6 +227,26 @@ export default class Table extends Vue {
         }
 
         return dataToUse;
+    }
+
+    /**
+     * Get the header tool tip text.
+     * 
+     * @param {IHeader} header  The header to get the tool tip text for.
+     * @returns {string} The tool tip text.
+     */
+    getHeaderToolTipText(header: IHeader): string {
+        return header.note !== undefined ? header.note : header.text;
+    }
+
+    /**
+     * Get the cell tool tip text.
+     * 
+     * @param {ICellValue} cellValue  The cell value to get the tool tip text for.
+     * @returns {string | number} The tool tip text.
+     */
+    getCellToolTipText(cellValue: ICellValue): string | number {
+        return cellValue.val;
     }
 
     /**

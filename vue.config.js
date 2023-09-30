@@ -25,8 +25,6 @@ module.exports = defineConfig({
             config.optimization.minimize = false;
         } else {
             // So currently runs in development and production...
-            
-            config.devtool ="eval-source-map";
             config.output.devtoolModuleFilenameTemplate = (info) =>
                 info.resourcePath.match(/\.vue$/) &&
                 !info.identifier.match(/type=script/) // this is change ✨
@@ -36,6 +34,17 @@ module.exports = defineConfig({
             config.output.devtoolFallbackModuleFilenameTemplate =
                 "webpack:///[resource-path]?[hash]";
         }
+
+        // Handle source maps
+        if (process.env.NODE_ENV === "development") {
+            // Embeds souce maps in code. Faster build times. Good for development
+            config.devtool ="eval-source-map";
+        } else {
+            // Production
+            // Separate map files
+            config.devtool ="source-map";
+        }
+
         // else {
         //     // Production
         //     // console.log("product!")

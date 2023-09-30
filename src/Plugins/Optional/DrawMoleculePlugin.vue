@@ -121,6 +121,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                         "cml"
                     );
                     this.chemComposer.setChemObj(testMol);
+                    this.isActionBtnEnabled = true;
                 }
 
                 // this.chemComposer.setDimension('200px', '200px');

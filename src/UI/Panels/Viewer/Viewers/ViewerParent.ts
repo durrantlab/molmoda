@@ -27,6 +27,7 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { store } from "@/Store";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
+import { toRaw } from 'vue'
 
 /**
  * Sets the loadViewerLibPromise variable.
@@ -95,10 +96,19 @@ export abstract class ViewerParent {
             }
         }
 
-        // Remove them from the cache, viewer, etc.
-        idsOfMolsOrRegionsToDelete.forEach((id: string) => {
-            this.removeObject(id);
-        });
+        if (idsOfMolsOrRegionsToDelete.length > 0) {
+            // Remove them from the cache, viewer, etc.
+            idsOfMolsOrRegionsToDelete.forEach((id: string) => {
+                this.removeObject(id);
+                // this.renderAll();
+            });
+
+            // debugger;
+            // Render if anything was removed.
+            // setTimeout(() => {
+            //     this.renderAll();
+            // }, 3000);
+        }
     }
 
     /**
@@ -163,7 +173,7 @@ export abstract class ViewerParent {
             this.renderAll();
             return;
         }
-        
+
         if (this.regionCache[id]) {
             this.hideRegion(id);
             this.renderAll();
@@ -459,7 +469,7 @@ export abstract class ViewerParent {
             const selectedRegions = getMoleculesFromStore()
                 .filters.keepSelected(true, true)
                 .filters.keepRegions(true, true);
-            
+
             if (selectedRegions.length == 0) {
                 // Region is not selected, so select the molecule.
                 selectProgramatically(modelID);
@@ -692,9 +702,10 @@ export abstract class ViewerParent {
             return undefined;
         }
         if (this.molCache[id]) {
-            return this.molCache[id];
+            // remove vuejs proxy
+            return toRaw(this.molCache[id]);
         }
-        return this.regionCache[id];
+        return toRaw(this.regionCache[id]);
     }
 
     /**

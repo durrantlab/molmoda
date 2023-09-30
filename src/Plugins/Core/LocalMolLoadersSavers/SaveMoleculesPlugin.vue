@@ -51,6 +51,7 @@ import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { appName } from "@/Core/AppInfo";
 
 /**
  * SaveMoleculesPlugin
@@ -72,7 +73,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     ];
     pluginId = "savemolecules";
 
-    intro = `Save molecules to the disk. The Biotite format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
+    intro = `Save molecules to the disk. The ${appName} format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
 
     hotkey = "s";
 
@@ -149,8 +150,12 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             id: "compoundFormat",
             val: "mol2",
             options: getFormatDescriptions(true).filter(
+                // Prioritize formats with bonds
                 (option) => option.val !== "biotite"
-            ),
+            ).concat(getFormatDescriptions(false).filter(
+                // Add a few non-bonds formats too because they're popular
+                (option) => ["pdb", "pdbqtlig", "xyz"].indexOf(option.val) !== -1
+            )),
             enabled: false,
         } as IUserArgSelect,
     ];
@@ -387,7 +392,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         };
 
         const jobs = [
-            // Biotite
             biotiteJob,
         ];
 

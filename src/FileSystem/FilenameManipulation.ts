@@ -7,8 +7,10 @@ import { IFileParts } from "./Utils";
  * @returns {string} The filename with all non-alphanumeric characters removed.
  */
  export function fileNameFilter(filename: string): string {
-    // Keep numbers and letters and period
-    filename = filename.replace(/[^a-zA-Z\d.]/g, "");
+    // Keep numbers and letters and period. Also - and _.
+    // filename = filename.replace(/[^a-zA-Z\d.]/g, "");
+    filename = filename.replace(/[^\w.-]/g, '');
+
     return filename;
 }
 

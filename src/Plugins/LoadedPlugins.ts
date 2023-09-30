@@ -1,4 +1,5 @@
 // Keep track of all loaded plugins. Useful for loading a plugin independent of
+// the menu system. 
 
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 

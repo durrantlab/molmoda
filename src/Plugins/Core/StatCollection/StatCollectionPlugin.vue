@@ -5,7 +5,7 @@
         @onPopupDone="onPopupDone"
         @onPopupCancel="onPopupCancel"
         @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Yes, Support Biotite"
+        :actionBtnTxt="'Yes, Support ' + appName"
         cancelBtnTxt="No, Opt Out"
     >
         <div>
@@ -13,7 +13,7 @@
             <p>
                 We need your help! Would you please authorize us to use Google
                 Analytics 4 (GA4) to record limited information about your use
-                of Biotite?
+                of {{appName}}?
             </p>
 
             <p>
@@ -38,9 +38,9 @@
             </p>
 
             <p>
-                <b>No strings attached.</b> Biotite is fully accessible without
+                <b>No strings attached.</b> {{appName}} is fully accessible without
                 GA4 enabled, but we hope you'll choose to help us out! You can
-                disable GA4 anytime through <i>Biotite → Settings...</i>
+                disable GA4 anytime through <i>{{appName}} → Settings...</i>
             </p>
 
             <p>Is it alright if we enable GA4?</p>
@@ -60,6 +60,7 @@ import {
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { isTest } from "@/Testing/SetupTests";
+import { appName } from "@/Core/AppInfo";
 
 /**
  * StatCollectionPlugin
@@ -81,10 +82,14 @@ export default class StatCollectionPlugin extends PluginParentClass {
     ];
     pluginId = "statcollection";
     intro = "";
-    title = "Support Biotite Development!";
+    title = `Support ${appName} Development!`;
     open = false;
 
     userArgDefaults: UserArg[] = [];
+
+    get appName(): string {
+        return appName;
+    }
 
     /**
      * Runs when the user presses the cancel button and the popup closes.

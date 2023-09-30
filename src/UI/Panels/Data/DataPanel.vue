@@ -91,8 +91,8 @@ export default class DataPanel extends Vue {
         // In the past I allowed text wrapping if there were more than 5 columns
         // to try to make it more readable, but I've come to prefer never
         // wrapping.
-        return tableData.headers.length > 5;
-        // return false;
+        // return tableData.headers.length > 5;
+        return true;
     }
 
     /**
@@ -221,7 +221,8 @@ export default class DataPanel extends Vue {
      * @returns {string}  The name of the molecule in path-like format.
      */
     nodePathName(treeNode: TreeNode, allMols: TreeNodeList): string {
-        return treeNode.descriptions.pathName(":", 35, allMols);
+        // debugger;
+        return treeNode.descriptions.pathName("/", 30 /*35*/, allMols);
     }
 
     /**

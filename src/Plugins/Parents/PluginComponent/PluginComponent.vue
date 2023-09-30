@@ -1,5 +1,6 @@
 <template>
     <Popup
+        v-if="renderInnerPopup"
         :title="infoPayload.title"
         v-model="openToUse"
         :cancelBtnTxt="cancelBtnTxt"
@@ -20,6 +21,7 @@
         :modalWidth="modalWidth"
         :submitOnEnter="submitOnEnter"
     >
+        <!-- <span v-if="openToUse"> -->
         <!-- :footerTxt="citationTxt" -->
         <p v-if="infoPayload.intro !== ''" v-html="infoPayload.intro"></p>
         <span v-if="citationsTxt !== ''" v-html="citationsTxt"></span>
@@ -32,6 +34,7 @@
             :hideIfDisabled="hideIfDisabled"
         ></FormFull>
         <slot name="afterForm"></slot>
+        <!-- </span> -->
     </Popup>
 </template>
 
@@ -126,7 +129,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
     /**
      * Get multiple citations as a string.
-     * 
+     *
      * @returns {string} The citations as a string.
      */
     get citationsTxt(): string {
@@ -162,18 +165,16 @@ export default class PluginComponent extends mixins(PopupMixin) {
         return true;
     }
 
-
     /**
      * Runs when the user clicks the cancel button.
      */
-     onPopupCancel() {
+    onPopupCancel() {
         // Log plugin started
         logGAEvent(this.infoPayload.pluginId, "cancelled");
 
         this.$emit("update:modelValue", false);
         this.$emit("onPopupCancel");
     }
-
 
     /**
      * Runs when the user presses the action button and the popup closes.

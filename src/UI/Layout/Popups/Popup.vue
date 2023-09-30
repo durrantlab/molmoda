@@ -6,7 +6,7 @@
         @keypress="onKeypress"
         data-bs-backdrop="static"
     >
-        <div :class="'modal-dialog ' + modalWidthToUse">
+        <div :class="'modal-dialog ' + modalWidthToUse" v-if="modelValue">
             <div class="modal-content">
                 <div :class="headerClasses">
                     <h5 class="modal-title">{{ title }}</h5>

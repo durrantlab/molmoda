@@ -25,6 +25,7 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { visualizationApi } from "@/Api/Visualization";
 
 /**
  * DeleteMolPlugin
@@ -74,13 +75,29 @@ export default class DeleteMolPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job running.
      */
-    runJobInBrowser() {
+    async runJobInBrowser() {
         if (this.nodesToActOn) {
+            // debugger;
             const treeNodeList = this.$store.state.molecules as TreeNodeList;
 
             this.nodesToActOn.forEach((node) => {
                 treeNodeList.removeNode(node);
+
+                // // Mark parent as dirty to trigger rerender
+                // if (node.parentTreeNode) {
+                //     node.parentTreeNode.viewerDirty = true;
+                // } else {
+                //     // It's a root node, without a parent id.
+                // }
             });
+
+            // const viewer = await visualizationApi.viewer;
+            // viewer.renderAll();
+            
+
+            // this.$store.commit("updateMolecules", treeNodeList);
+
+
 
             // Get the parent node and remove this from it's nodes.
             // if (this.nodeToActOn.parentId) {

@@ -56,6 +56,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import { citationsTxt } from "../Citations";
+import { appName } from "@/Core/AppInfo";
 
 /** HelpPlugin */
 @Options({
@@ -68,7 +69,7 @@ import { citationsTxt } from "../Citations";
 export default class HelpPlugin extends PluginParentClass {
     @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
 
-    menuPath = ["[3] Biotite", "[5] Help..."];
+    menuPath = [`[3] ${appName}`, "[5] Help..."];
     title = "Help";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

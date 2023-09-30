@@ -29,6 +29,7 @@ import {
 } from "@/Queue/QueueStore";
 import { copyUserArgs } from "../UserInputUtils";
 import { logGAEvent } from "@/Core/GoogleAnalytics";
+import { delayForPopupOpenClose } from "@/Core/AppInfo";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -46,7 +47,7 @@ export abstract class PluginParentClass extends mixins(
     UserArgsMixin
 ) {
     /**
-     * The menu path for this plugin (e.g., `["[3] Biotite", "[1] About"]` or
+     * The menu path for this plugin (e.g., `["[3] biotite", "[1] About"]` or
      * `"File/Molecules/Import/[4] AlphaFold"`). Note that you can include a
      * priority (number) in brackets. The priority is stripped from the text,
      * but its value is used to order the menu item relative to others.
@@ -179,6 +180,21 @@ export abstract class PluginParentClass extends mixins(
     protected payload: any = undefined;
 
     /**
+     * Checks if the plugin is allowed to run. Returns true if allowed, false if
+     * not allowed, or a string if not allowed and there's a user message.
+     *
+     * NOTE: Many plugins should overwrite this function. The default version
+     * always returns null, which means the plugin is always allowed to run.
+     *
+     * @returns {string | boolean}  Null if allowed, or a message if not
+     * allowed.
+     * @gooddefault
+     */
+    public isPluginAllowed(): string | boolean {
+        return true;
+    }
+
+    /**
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
@@ -200,6 +216,14 @@ export abstract class PluginParentClass extends mixins(
 
         // Children should not override this function! Use onPopupOpen instead.
         this.payload = payload;
+
+        if (this.isPluginAllowed() !== true) {
+            // Plugin not allowed to run. Exit.
+            debugger;
+            return;
+        }
+
+        // TODO: Redo onBeforePopupOpen below. No longer valid.
 
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
@@ -232,7 +256,7 @@ export abstract class PluginParentClass extends mixins(
         await new Promise((resolve) => {
             setTimeout(() => {
                 resolve(undefined);
-            }, 1000);
+            }, delayForPopupOpenClose);
         });
 
         this.onPopupOpen();

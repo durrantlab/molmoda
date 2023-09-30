@@ -10,6 +10,7 @@ import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
+import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
 
 // api.sys.loadStatus.started = true;
 
@@ -17,6 +18,7 @@ import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
  * The main function.
  */
 async function main() {
+    errorReportingSetup();
     setOnePluginMode();
     loadFontAwesomeFonts();
     setupTests();

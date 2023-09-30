@@ -225,7 +225,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         this.cid = "";
         this.molName = "";
         this.molNameRespDescription =
-            "The name of the molecule. If given, Biotite will automatically search PubChem for the corresponding Chemical Identification (CID) number.";
+            `The name of the molecule. If given, ${appName} will automatically search PubChem for the corresponding Chemical Identification (CID) number.`;
     }
 
     /**

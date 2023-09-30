@@ -82,6 +82,8 @@ export class TreeNodeDescriptions {
             molsToConsider = getMoleculesFromStore();
         }
 
+        const placeholder = "...";
+
         const ancestors = this.parentTreeNode.getAncestry(molsToConsider);
         let titles = ancestors.map((x) => x.title);
 
@@ -98,6 +100,8 @@ export class TreeNodeDescriptions {
                     .replace("Solvent", "Solv")
                     .replace("protein", "prot")
                     .replace("compound", "cmpd")
+                    .replace("protonated", "prot")
+                    .replace("docking", "dock")
                     .replace("solvent", "solv");
             });
 
@@ -107,21 +111,23 @@ export class TreeNodeDescriptions {
                     break;
                 }
 
-                // remove any existing elements of value ...
-                titles = titles.filter((x) => x !== "");
+                // remove any existing elements of value ""
+                titles = titles.filter((x) => x !== placeholder);
 
-                // Set middle element to ...
-                let middle = Math.floor(titles.length / 2);
-                if (middle === titles.length - 1) {
-                    middle--;
+                // Set middle element to ""
+                let middleIdx = Math.floor(titles.length / 2);
+                if (middleIdx === titles.length - 1) {
+                    middleIdx--;
                 }
-                if (middle === 0) {
-                    middle++;
+                if (middleIdx === 0) {
+                    middleIdx++;
                 }
-                titles[middle] = "";
+                titles[middleIdx] = placeholder;
 
                 newTitle = titles.join(separator);
             }
+
+            // If it's still too long, just give the molecule title.
             if (newTitle.length > maxLength && this.parentTreeNode.title) {
                 newTitle = this.parentTreeNode.title;
             }

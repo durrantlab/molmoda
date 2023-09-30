@@ -7,7 +7,7 @@
             />
         </span>
 
-        <input type="text" class="form-control" v-model="filterStr" />
+        <input type="text" class="form-control" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />
         <!-- <button class="btn btn-link" type="button">
             <font-awesome-icon
                 style="color: #212529"
@@ -36,17 +36,15 @@ export default class FilterInput extends Vue {
     @Prop({ required: true }) list!: any[];
     @Prop({ required: true }) extractTextToFilterFunc!: (item: any) => string;
     @Prop({ default: "3" }) mb!: string;
-
-    // @Prop({ required: true }) modelValue!: any;
+    @Prop({ required: true }) modelValue!: string;  // filterStr
     // @Prop({ default: "placeholder" }) placeHolder!: string;
-
-    filterStr = "";
 
     /**
      * When the filter string changes, trigger onFilter.
      */
-    @Watch("filterStr")
-    onFilterStrChange() {
+    @Watch("modelValue")
+    onModelValueChange(newVal: string) {
+        this.$emit('update:modelValue', newVal);
         this.onFilter();
     }
 
@@ -62,7 +60,7 @@ export default class FilterInput extends Vue {
      * Filter the list per the filter text and emit the filtered list.
      */
     onFilter() {
-        const searchStr = this.filterStr.toLowerCase();
+        const searchStr = this.modelValue.toLowerCase();
 
         if (searchStr === "") {
             // No search term, so emit null.

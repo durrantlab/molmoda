@@ -1,9 +1,10 @@
+import { appName } from "@/Core/AppInfo";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 export enum MolLoader {
     Mol3D, // 3dmoljs. Always prefer over open babel when available.
     OpenBabel,
-    Biotite,
+    BiotiteFormat,
     Zip,
 }
 
@@ -92,9 +93,9 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
     BIOTITE: {
         primaryExt: "biotite",
         exts: ["biotite"],
-        description: "Biotite Session",
+        description: `${appName} Session`,
         hasBondOrders: true,
-        loader: MolLoader.Biotite,
+        loader: MolLoader.BiotiteFormat,
     },
     CIF: {
         primaryExt: "cif",

@@ -29,6 +29,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { delayForPopupOpenClose } from "@/Core/AppInfo";
 
 /**
  * NewProjectPlugin
@@ -90,7 +91,7 @@ export default class NewProjectPlugin extends PluginParentClass {
         this.closePopup();
         setTimeout(() => {
             api.plugins.runPlugin("savemolecules", true);
-        }, 1000);
+        }, delayForPopupOpenClose);
     }
 
     /**

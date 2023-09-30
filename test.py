@@ -1,3 +1,4 @@
+import contextlib
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -27,7 +28,8 @@ import os
 # from selenium.webdriver.logging import LogEntries
 # from selenium.webdriver.logging import LogType
 
-localhost_port = "8080"
+# root_url = "http://localhost:8080"
+root_url = "https://durrantlab.pitt.edu/apps/biotite/beta"
 
 
 class el:
@@ -56,7 +58,8 @@ class el:
         # Clear the field
         self.el.clear()
         # Type the value
-        value = html.unescape(value)
+        with contextlib.suppress(Exception):
+            value = html.unescape(value)
         self.el.send_keys(value)
         self.check_errors()
 
@@ -211,7 +214,7 @@ def run_test(plugin_id):
     plugin_id = plugin_id[0]
     # plugin_id, plugin_idx = plugin_id
 
-    url = f"http://localhost:{localhost_port}/?test={plugin_id}"
+    url = f"{root_url}/?test={plugin_id}"
     if plugin_idx is not None:
         url += f"&index={str(plugin_idx)}"
 

@@ -36,6 +36,7 @@ import {
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { enableStats, isStatCollectionEnabled, removeStatCollectionCookie } from "../StatCollection/StatUtils";
+import { appName } from "@/Core/AppInfo";
 
 /** SettingsPlugin */
 @Options({
@@ -44,7 +45,7 @@ import { enableStats, isStatCollectionEnabled, removeStatCollectionCookie } from
     },
 })
 export default class SettingsPlugin extends PluginParentClass {
-    menuPath = ["[3] Biotite", "[2] Settings..."];
+    menuPath = [`[3] ${appName}`, "[2] Settings..."];
     title = "Settings";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
@@ -54,7 +55,7 @@ export default class SettingsPlugin extends PluginParentClass {
         // },
     ];
     pluginId = "settings";
-    intro = `Modify Biotite general settings.`;
+    intro = `Modify ${appName} general settings.`;
 
     userArgDefaults: UserArg[] = [
         {
@@ -75,11 +76,11 @@ export default class SettingsPlugin extends PluginParentClass {
             id: "statCollect",
             label: "Collect usage statistics",
             val: false,
-            description: "Report statistics on Biotite usage to help the Biotite team get grants for continued development."
+            description: `Report statistics on ${appName} usage to help the ${appName} team get grants for continued development.`
         },
         {
             id: "statCollectAlert",
-            val: "Please consider allowing us to record limited information about your use of Biotite! These statistics help us secure funding for continued development.",
+            val: `Please consider allowing us to record limited information about your use of ${appName}! These statistics help us secure funding for continued development.`,
             type: UserArgType.Alert,
             enabled: false,
             alertType: "warning",

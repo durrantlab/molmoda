@@ -55,7 +55,7 @@
                                                 the
                                                 <PluginPathLink
                                                     plugin="help"
-                                                    title="Biotite Help System"
+                                                    :title='appName + " Help System"'
                                                 ></PluginPathLink
                                                 >.
                                             </p>
@@ -155,6 +155,15 @@ export default class GoldLayout extends Vue {
      */
     get appInfo(): string {
         return appName + " " + appVersion;
+    }
+
+    /**
+     * Gets the app name.
+     * 
+     * @returns {string}  The app name.
+     */
+    get appName(): string {
+        return appName;
     }
 
     /**

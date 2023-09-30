@@ -576,7 +576,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     getTests(): ITest[] {
-        const pluginOpenFactory = () => {
+        const webinaPluginOpenFactory = () => {
             return new TestCmdList()
                 .setUserArg("x-dimens-region", 10, this.pluginId)
                 .setUserArg("y-dimens-region", 10, this.pluginId)
@@ -592,7 +592,7 @@ export default class WebinaPlugin extends PluginParentClass {
             // Test just standard docking
             {
                 beforePluginOpens: new TestCmdList().loadExampleProtein(),
-                pluginOpen: pluginOpenFactory(),
+                pluginOpen: webinaPluginOpenFactory(),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "4WP4:docking"
@@ -601,7 +601,7 @@ export default class WebinaPlugin extends PluginParentClass {
             // Test score in place
             {
                 beforePluginOpens: new TestCmdList().loadExampleProtein(),
-                pluginOpen: pluginOpenFactory().click(
+                pluginOpen: webinaPluginOpenFactory().click(
                     "#score_only-webina-item"
                 ),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
@@ -612,7 +612,7 @@ export default class WebinaPlugin extends PluginParentClass {
             // Test keep all poses
             {
                 beforePluginOpens: new TestCmdList().loadExampleProtein(),
-                pluginOpen: pluginOpenFactory().click(
+                pluginOpen: webinaPluginOpenFactory().click(
                     "#keep_only_best-webina-item"
                 ),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(

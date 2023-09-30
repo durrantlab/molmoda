@@ -9,14 +9,27 @@ export const selectInstructionsBrief =
 export const selectInstructionsLong =
     "Click while holding down the Control, Command (Mac), or Shift key to select multiple molecules.";
 
+function _checkNodePassesFilter(node: TreeNode, filterStr: string): boolean {
+    if (filterStr === "") {
+        return true;
+    }
+
+    return node.title.toLowerCase().indexOf(filterStr) !== -1;
+}
+
 /**
  * Selects node(s) and their children. Accounts for different key combinations
  * (ctrl, shift, cmd).
  *
- * @param  {string}          id           The id of the last node selected.
- * @param  {TreeNodeList} molTreeData  The molecule tree data.
+ * @param  {string}        id              The id of the last node selected.
+ * @param  {TreeNodeList}  molTreeData     The molecule tree data.
+ * @param  {string}        [filterStr=""]  The filter string.
  */
-export function doSelecting(id: string, molTreeData: TreeNodeList) {
+export function doSelecting(
+    id: string,
+    molTreeData: TreeNodeList,
+    filterStr = ""
+) {
     const node = molTreeData.filters.onlyId(id);
 
     if (node === null) {
@@ -24,22 +37,11 @@ export function doSelecting(id: string, molTreeData: TreeNodeList) {
         return;
     }
 
-    // If control key is down, toggle selected and its children.
-    if (controlKeyDown) {
-        if (
-            node.selected === SelectedType.True ||
-            node.selected === SelectedType.ChildOfTrue
-        ) {
-            setSelectWithChildren(node, SelectedType.False);
-        } else {
-            setSelectWithChildren(node, SelectedType.True);
-        }
-        return;
-    }
-
     // If shift key is down, selecting multiple items.
     if (shiftKeyDown) {
-        const {flattened} = getMoleculesFromStore();
+        filterStr = filterStr.toLowerCase();
+
+        const { flattened } = getMoleculesFromStore();
         // Go through flattened, save the node if it is selected.
         let mostRecentSelected: TreeNode | null = null;
         for (let idx = 0; idx < flattened.length; idx++) {
@@ -67,16 +69,30 @@ export function doSelecting(id: string, molTreeData: TreeNodeList) {
                 ) {
                     selecting = !selecting;
                 }
-                if (selecting) {
+                if (selecting && _checkNodePassesFilter(nd, filterStr)) {
                     setSelectWithChildren(nd, SelectedType.True);
                 }
             });
-            setSelectWithChildren(node, SelectedType.True);
+            if (_checkNodePassesFilter(node, filterStr)) {
+                setSelectWithChildren(node, SelectedType.True);
+            }
             // debugger;
             return;
         }
     }
 
+    // If control key is down, toggle selected and its children.
+    if (controlKeyDown) {
+        if (
+            node.selected === SelectedType.True ||
+            node.selected === SelectedType.ChildOfTrue
+        ) {
+            setSelectWithChildren(node, SelectedType.False);
+        } else {
+            setSelectWithChildren(node, SelectedType.True);
+        }
+        return;
+    }
     // No control or shift pressed if you get here.
 
     const allNodesFlattened = getMoleculesFromStore().flattened;

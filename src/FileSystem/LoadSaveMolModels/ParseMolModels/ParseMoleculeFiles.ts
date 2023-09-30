@@ -59,7 +59,7 @@ export function _parseMoleculeFile(
             promise = parseUsingOpenBabel(fileInfo, formatInfo);
             break;
         }
-        case MolLoader.Biotite: {
+        case MolLoader.BiotiteFormat: {
             return parseUsingBiotite(fileInfo).then((payload: any) => {
                 api.messages.stopWaitSpinner(spinnerId);
                 return payload;

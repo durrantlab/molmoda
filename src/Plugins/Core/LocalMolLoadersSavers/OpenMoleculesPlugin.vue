@@ -36,6 +36,7 @@ import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { delayForPopupOpenClose } from "@/Core/AppInfo";
 
 /**
  * OpenMoleculesPlugin
@@ -93,7 +94,13 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      */
     onBeforePopupOpen(): boolean | Promise<boolean> {
         // Below is hackish...
-        (this.$refs.formFile as FormFile).clearFile();
+        setTimeout(() => {
+            // Give the component time to render
+            const formFile = (this.$refs.formFile as FormFile);
+            if (formFile) {
+                formFile.clearFile();
+            }
+        }, delayForPopupOpenClose);
 
         if (this.payload !== undefined) {
             let fileList = this.payload as File[];
