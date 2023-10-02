@@ -9,6 +9,13 @@ export const selectInstructionsBrief =
 export const selectInstructionsLong =
     "Click while holding down the Control, Command (Mac), or Shift key to select multiple molecules.";
 
+/**
+ * Checks whether the a node passes the user-specified filter, if any.
+ *
+ * @param  {TreeNode} node        The node to check.
+ * @param  {string}   filterStr   The filter string.
+ * @returns {boolean}  Whether the node passes the filter.
+ */
 function _checkNodePassesFilter(node: TreeNode, filterStr: string): boolean {
     if (filterStr === "") {
         return true;

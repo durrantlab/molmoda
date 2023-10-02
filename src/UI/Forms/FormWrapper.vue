@@ -42,6 +42,9 @@ export default class FormWrapper extends Vue {
     //     return 
     // }
 
+    /**
+     * Called when the component is mounted.
+     */
     mounted() {
         this.randomID = (
             "a" +

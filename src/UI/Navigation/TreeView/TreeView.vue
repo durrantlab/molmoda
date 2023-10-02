@@ -70,9 +70,6 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";
-import { pluginsApi } from "@/Api/Plugins";
-import { SelectedType } from "./TreeInterfaces";
-import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 /**
  * TreeView component

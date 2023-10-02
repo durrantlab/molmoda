@@ -17,7 +17,7 @@
       data-bs-toggle="dropdown"
       aria-expanded="false"
     >
-      {{ menuData._text }}
+      {{ menuData.text }}
     </a>
     <ul class="dropdown-menu" :aria-labelledby="'menu1-' + idSlug">
       <span v-for="(item, idx) in menuItemsWithSeparators" v-bind:key="idx">
@@ -64,7 +64,7 @@ export default class MenuLevel1 extends MenuLevelParent {
    * @returns {string}  The slug.
    */
   get idSlug(): string {
-    return slugify(this.menuData._text as string);
+    return slugify(this.menuData.text as string);
   }
 
   /**

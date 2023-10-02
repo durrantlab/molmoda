@@ -35,7 +35,7 @@
                     v-if="formElem.type === FormElementType.Text"
                     type="text"
                     v-model="makeGeneric(formElem).val"
-                    :placeHolder="makeGeneric(formElem).placeHolder"
+                    :placeHolder="getPlaceHolder(formElem)"
                     :filterFunc="makeGeneric(formElem).filterFunc"
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
@@ -46,7 +46,7 @@
                     v-else-if="formElem.type === FormElementType.Number"
                     type="number"
                     v-model.number="makeGeneric(formElem).val"
-                    :placeHolder="makeGeneric(formElem).placeHolder"
+                    :placeHolder="getPlaceHolder(formElem)"
                     :filterFunc="makeGeneric(formElem).filterFunc"
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
@@ -83,7 +83,7 @@
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
                     :delayBetweenChangesDetected="0"
-                    :placeHolder="makeGeneric(formElem).placeHolder"
+                    :placeHolder="getPlaceHolder(formElem)"
                 ></FormTextArea>
                 <FormSelect
                     v-else-if="formElem.type === FormElementType.Select"
@@ -119,7 +119,7 @@
                 <FormVector3D
                     v-else-if="formElem.type === FormElementType.Vector3D"
                     v-model="makeGeneric(formElem).val"
-                    :placeHolder="makeGeneric(formElem).placeHolder"
+                    :placeHolder="getPlaceHolder(formElem)"
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :filterFunc="makeGeneric(formElem).filterFunc"
@@ -361,6 +361,23 @@ export default class FormFull extends Vue {
     onDataUpdated() {
         this.$emit("onChange", this.modelValue);
         this.$emit("update:modelValue", this.modelValue);
+    }
+
+    /**
+     * Get the placeholder to use for a form element.
+     * 
+     * @param {UserArg} formElem  The form element.
+     * @returns {string}  The placeholder to use.
+     */
+    getPlaceHolder(formElem: any): string {
+        // If placeholder given, use that.
+        if (formElem.placeHolder !== undefined) {
+            return formElem.placeHolder;
+        }
+
+        // Otherwise, use the label
+        return (this.labelToUse(formElem) as string) + "...";
+
     }
 }
 </script>

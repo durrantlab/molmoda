@@ -18,10 +18,9 @@ export interface IMenuSubmenu {
     // This doesn't have an action, but contains items that may have actions (or
     // themselves be other submenus).
 
-    // Using _text to match IMenuItem. Note that IMenuSubmenu is never used
-    // directly in any plugin anyway.
-    _text: string;
-    items: (IMenuSubmenu | IMenuItem)[];
+    // Using text to match IMenuItem.
+    text: string;
+    items: IMenuEntry[];
     type: MenuItemType;
     _rank?: number;
 }
@@ -29,13 +28,15 @@ export interface IMenuSubmenu {
 export interface IMenuItem {
     path: string[] | string | undefined; // Directory structure, ending in text label
     function?: () => void;
+    checkPluginAllowed?: (_?: any) => string | boolean;
     type?: MenuItemType; // If absent, will assume MenuItemType.ACTION
     hotkey?: string;
+    pluginId?: string;
+    text?: string;
 
     // Below used internally, not from plugin.
     _rank?: number;
     _pathNames?: string[];
-    _text?: string;
 }
 
 export interface IMenuPathInfo {
@@ -88,7 +89,7 @@ export class MenuLevelParent extends Vue {
  * @returns {boolean} True if found, false otherwise.
  */
 function _isNameInMenuData(menuDat: IMenuEntry[], name: string): boolean {
-    return menuDat.map((m: IMenuEntry) => m._text).includes(name);
+    return menuDat.map((m: IMenuEntry) => m.text).includes(name);
 }
 
 /**
@@ -100,7 +101,7 @@ function _isNameInMenuData(menuDat: IMenuEntry[], name: string): boolean {
  */
 function _getSubMenu(menuDat: IMenuEntry[], name: string): IMenuSubmenu {
     return menuDat.find(
-        (m) => (m as IMenuSubmenu)._text === name
+        (m) => (m as IMenuSubmenu).text === name
     ) as IMenuSubmenu;
 }
 
@@ -209,7 +210,7 @@ export function addMenuItem(
     const actionItem = menuPathInfo?.pop();
 
     // Separate path data to _text and _pathNames rather than path.
-    newMenuItem._text = actionItem?.text;
+    newMenuItem.text = actionItem?.text;
     newMenuItem._pathNames = menuPathInfo?.map((m) => m.text);
     newMenuItem.path = undefined;
 
@@ -233,7 +234,7 @@ export function addMenuItem(
             // This level doesn't exist, so add it.
             existingMenuItemsPlaceholder.push({
                 type: MenuItemType.Submenu,
-                _text: pathNameWithoutRank,
+                text: pathNameWithoutRank,
                 items: [],
                 _rank: rank,
             } as IMenuSubmenu);
@@ -251,7 +252,7 @@ export function addMenuItem(
             } else if (subMenu._rank !== rank) {
                 // Error: Rank already set. Assert
                 throw new Error(
-                    `Plugin "${pluginId}" set rank of "${subMenu._text}" menu item to ${rank}, but it is already set to ${subMenu._rank}.`
+                    `Plugin "${pluginId}" set rank of "${subMenu.text}" menu item to ${rank}, but it is already set to ${subMenu._rank}.`
                 );
             }
         }
@@ -285,8 +286,8 @@ export function menuDataSorted(menuData: IMenuEntry[]) {
         }
 
         // If ranks are equal, sort by text.
-        const a_text = a._text as string;
-        const b_text = b._text as string;
+        const a_text = a.text as string;
+        const b_text = b.text as string;
         if (a_text < b_text) {
             return -1;
         }

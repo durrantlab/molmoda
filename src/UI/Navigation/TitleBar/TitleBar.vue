@@ -1,6 +1,6 @@
 <template>
     <ContextMenu
-        :options="contextMenuOptions"
+        :options="contextMenuItems"
         @onMenuItemClick="onContextMenuItemClick"
         @onMenuItemRightClick="onContextMenuItemRightClick"
     >
@@ -124,10 +124,10 @@ import * as api from "@/Api";
 import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
+import { IMenuItem, IMenuSubmenu } from "../Menu/Menu";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";
-import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
-import { pluginsApi } from "@/Api/Plugins";
-import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import { IContextMenuOption } from "../ContextMenu/ContextMenuInterfaces";
 
 interface IIconsToDisplay {
     visible?: boolean;
@@ -154,6 +154,12 @@ export default class TitleBar extends Vue {
     @Prop({ default: undefined }) treeData!: TreeNodeList;
     @Prop({ default: "" }) filterStr!: string;
 
+    /**
+     * Get the string to indicate the number of children and terminals.
+     * 
+     * @param {TreeNode} node The node.
+     * @returns {string} The string to indicate the number of children and terminals.
+     */
     descendentCounts(node: TreeNode): string {
         const numChildren = node.nodes?.length;
         const numTerminals = node.nodes?.terminals.length;
@@ -303,7 +309,7 @@ export default class TitleBar extends Vue {
         if (node === null) {
             return false;
         }
-        return node.selected === SelectedType.True;
+        return node.selected !== SelectedType.False;
     }
 
     /**
@@ -417,19 +423,69 @@ export default class TitleBar extends Vue {
         doSelecting(id, this.getLocalTreeData, this.filterStr);
     }
 
-    get contextMenuOptions(): string[] {
-        // TODO: Could this just be populated from Edit menu automatically?
-        return [
-            "Rename",
-            "Delete",
-            "Clone",
-            "Merge",
-            "Add Region",
-            "Select All",
-            "Clear Selection",
-        ];
+    // Below are functions useful for the context menu (right click).
+
+    /**
+     * Get the items from the edit submenu.
+     * 
+     * @returns {IMenuItem[]} The items from the edit submenu.
+     */
+    get editMenuItems(): IMenuItem[] {
+        const editMenu = LoadedPlugins.allMenuData.filter(
+            (m) => m.text === "Edit"
+        )[0] as IMenuSubmenu;
+
+        // Collect all the items from the submenus, in one list.
+        const allEditItems: IMenuItem[] = [];
+        editMenu.items.forEach((item) => {
+            for (const subItem of (item as IMenuSubmenu).items) {
+                // A few are skipped.
+                if (["Undo", "Redo"].includes(subItem.text as string)) {
+                    continue;
+                }
+                allEditItems.push(subItem as IMenuItem);
+            }
+            allEditItems.push({
+                path: "",
+                text: "separator"
+            } as IMenuItem);
+        });
+
+        // Shouldn't start or end with separator
+        while (allEditItems[0].text === "separator") {
+            allEditItems.shift();
+        }
+        while (allEditItems[allEditItems.length - 1].text === "separator") {
+            allEditItems.pop();
+        }
+        return allEditItems;
     }
 
+
+    /**
+     * Get the items for the context menu.
+     * 
+     * @returns {IContextMenuOption[]} The items for the context menu.
+     */
+    get contextMenuItems(): IContextMenuOption[] {
+        return this.editMenuItems.map((item) => {
+            const checkPluginAllowed = item.checkPluginAllowed;
+            const allowed = checkPluginAllowed
+                ? checkPluginAllowed(this.$store.state.molecules) === null
+                : true;
+            return {
+                text: item.text as string,
+                pluginId: item.pluginId as string,
+                enabled: allowed,
+                function: item.function,
+            } as IContextMenuOption;
+        });
+    }
+
+    /**
+     * Runs when user right clicks. Selects the molecule if it isn't already
+     * selected.
+     */
     onContextMenuItemRightClick() {
         const id = this.treeDatumID;
         const isSelected = this.isSelected(id);
@@ -439,31 +495,14 @@ export default class TitleBar extends Vue {
         }
     }
 
-    onContextMenuItemClick(option: string) {
-        // Get all selected nodes
-        const selectedNodes = getMoleculesFromStore().flattened.filter(
-            (n) => n.selected !== SelectedType.False
-        );
-        if (option === "Rename" && selectedNodes.length > 0) {
-            const plugin = loadedPlugins["renamemol"];
-            debugger;
-            pluginsApi.runPlugin("renamemol", this.treeDatumID);
-        } else if (option === "Delete") {
-            pluginsApi.runPlugin("deletemol", this.treeDatumID);
-        }
-        switch (option) {
-            case "Delete":
-                break;
-            case "Clone":
-                break;
-            case "Merge":
-                break;
-            case "Add Region":
-                break;
-            case "Select All":
-                break;
-            case "Clear Selection":
-                break;
+    /**
+     * Runs when user clicks on a context menu item.
+     * 
+     * @param {IContextMenuOption} menuItem The menu item that was clicked.
+     */
+    onContextMenuItemClick(menuItem: IContextMenuOption) {
+        if (menuItem && menuItem.function) {
+            menuItem.function();
         }
     }
 }

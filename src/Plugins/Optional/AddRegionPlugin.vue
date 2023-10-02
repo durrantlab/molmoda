@@ -48,7 +48,7 @@ import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorC
     },
 })
 export default class AddRegionPlugin extends PluginParentClass {
-    menuPath = "Edit/Regions/Add Region...";
+    menuPath = "Regions/Add Region...";
     title = "Add Region";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

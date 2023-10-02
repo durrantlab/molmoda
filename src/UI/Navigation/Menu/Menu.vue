@@ -23,7 +23,7 @@
           <!-- iterate over menuData -->
           <MenuLevel1
             v-for="menuDatum in menuDataSorted"
-            v-bind:key="menuDatum._text"
+            v-bind:key="menuDatum.text"
             :menuData="menuDatum"
           />
         </ul>
@@ -43,6 +43,7 @@ import "bootstrap/js/dist/collapse";
 
 import MenuLevel1 from "./MenuLevel1.vue";
 import { IMenuEntry, menuDataSorted } from "./Menu";
+import { setAllMenuData } from "@/Plugins/LoadedPlugins";
 
 /**
  * Menu component
@@ -62,6 +63,10 @@ export default class Menu extends Vue {
    */
   get menuDataSorted(): IMenuEntry[] {
     menuDataSorted(this.menuData);
+
+    // Make the menu data available outside this component.
+    setAllMenuData(this.menuData);
+
     return this.menuData;
   }
 }

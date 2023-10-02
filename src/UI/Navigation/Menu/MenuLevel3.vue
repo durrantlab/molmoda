@@ -17,12 +17,12 @@
           :id="'menu2-' + idSlug"
         >
           <!-- <div style="width:100px; float:left;">{{menuData.text}}</div> -->
-          {{ menuData._text }}&nbsp;
+          {{ menuData.text }}&nbsp;
         </a>
         <ul class="dropdown-menu">
           <MenuActionLink
             v-for="item in getItems(menuData)"
-            v-bind:key="item._text"
+            v-bind:key="item.text"
             :isTopLevel="false"
             :menuData="item"
           />
@@ -59,7 +59,7 @@ export default class MenuLevel3 extends MenuLevelParent {
    * @returns {string}  The slug.
    */
    get idSlug(): string {
-    return slugify(this.menuData._text as string);
+    return slugify(this.menuData.text as string);
   }
 }
 </script>

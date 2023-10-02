@@ -28,8 +28,8 @@ import os
 # from selenium.webdriver.logging import LogEntries
 # from selenium.webdriver.logging import LogType
 
-# root_url = "http://localhost:8080"
-root_url = "https://durrantlab.pitt.edu/apps/biotite/beta"
+root_url = "http://localhost:8080"
+# root_url = "https://durrantlab.pitt.edu/apps/biotite/beta"
 
 
 class el:

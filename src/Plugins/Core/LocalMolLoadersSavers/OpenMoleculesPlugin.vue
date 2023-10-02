@@ -89,10 +89,8 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     *
-     * @returns {boolean | Promise<boolean>}  Whether to open the popup.
      */
-    onBeforePopupOpen(): boolean | Promise<boolean> {
+    onBeforePopupOpen() {
         // Below is hackish...
         setTimeout(() => {
             // Give the component time to render
@@ -106,7 +104,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             let fileList = this.payload as File[];
             this.payload = undefined;
 
-            return filesToFileInfos(
+            filesToFileInfos(
                 fileList,
                 false,
                 this.accept.split(",").map((a) => a.toUpperCase().substring(1))
@@ -128,13 +126,12 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
                     this.filesToLoad = toLoad;
                     this.onPopupDone();
-                    return false;
+                    return;
                 })
                 .catch((err) => {
                     throw err;
                 });
         }
-        return true;
         // this.windowClosing = this.payload !== undefined;
     }
 

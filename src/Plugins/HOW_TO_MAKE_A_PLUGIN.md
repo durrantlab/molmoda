@@ -142,15 +142,12 @@ Checks if the plugin can currently run. This function allows plugins to provide 
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
+| `_` | `any` | This parameter given only to enable reactivity elsewhere. Not used.
 | `(returns)` | `string \| null` | If a string, the error message to show instead of running the plugin. If null, proceeds to run the plugin.
 
 #### `onBeforePopupOpen` (function) <a id="onBeforePopupOpen"></a>
 
 Called right before the plugin popup opens.
-
-| Parameter | Type | Description
-| --------- | ---- | -----------
-| `(returns)` | `boolean \| Promise<boolean> \| void` | If [`onBeforePopupOpen`](#onBeforePopupOpen) returns false or a promise that resolves false, the popup will not open. This is useful for those rare occasions when you need to stop an opening plugin. If void (or true), the popup will still open.
 
 #### `onMounted` (function) <a id="onMounted"></a>
 

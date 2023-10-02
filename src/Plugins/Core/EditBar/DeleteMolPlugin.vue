@@ -25,7 +25,6 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { visualizationApi } from "@/Api/Visualization";
 
 /**
  * DeleteMolPlugin
@@ -58,7 +57,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
      * Runs before the popup opens. Will almost always need this, so requiring
      * children to define it.
      */
-    onBeforePopupOpen(): void {
+    onBeforePopupOpen() {
         setNodesToActOn(this);
     }
 

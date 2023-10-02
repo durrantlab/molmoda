@@ -1,18 +1,18 @@
 <template>
     <li v-if="isTopLevel" class="nav-item">
         <a class="nav-link" @click="runFunction(menuData)" href="#">
-            {{ menuData._text }}
+            {{ menuData.text }}
         </a>
     </li>
     <li v-else>
         <a
-            class="dropdown-item pt-0"
-            style="padding-bottom: 2px"
+            :class="'dropdown-item pt-0' + (disabled ? ' disabled' : '')"
+            style="padding-bottom: 2px; pointer-events: all"
             @click="runFunction(menuData)"
             href="#"
             :id="'menu-plugin-' + idSlug"
         >
-            {{ menuData._text?.replace("_", "") }}
+            {{ menuData.text?.replace("_", "") }}
             <div v-if="showHotkey" style="float: right" class="text-muted">
                 {{ hotkeyPrefix }}{{ menuData.hotkey?.toUpperCase() }}
             </div>
@@ -45,6 +45,21 @@ export default class MenuActionLink extends Vue {
     @Prop({ default: false }) isTopLevel!: boolean;
 
     hotkeyPrefix = "Ctrl+";
+    // disabled = false;
+
+    /**
+     * Whether the menu item is disabled.
+     *
+     * @returns {boolean}  Whether the menu item is disabled.
+     */
+    get disabled(): boolean {
+        const checkPluginAllowed = this.menuData.checkPluginAllowed;
+        if (checkPluginAllowed) {
+            const pluginAllowed = checkPluginAllowed(this.$store.state.molecules);
+            return (pluginAllowed !== null);
+        }
+        return false;
+    }
 
     /**
      * Whether to show the hot key in the menu.
@@ -72,7 +87,7 @@ export default class MenuActionLink extends Vue {
      * @returns {string}  The slug.
      */
     get idSlug(): string {
-        return slugify(this.menuData._text as string);
+        return slugify(this.menuData.text as string);
     }
 
     /**

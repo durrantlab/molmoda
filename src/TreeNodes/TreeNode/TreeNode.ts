@@ -170,6 +170,14 @@ export class TreeNode {
     }
 
     /**
+     * Set this node's visibility without affecting its children.
+     */
+    public set visibleWithoutChildren(val: boolean) {
+        // Regular visible propogates to children. This just affects this node.
+        this._visible = val;
+    }
+
+    /**
      * Get the descriptions subclass.
      *
      * @returns {TreeNodeDescriptions}  The descriptions subclass.

@@ -75,7 +75,6 @@ export default class NewProjectPlugin extends PluginParentClass {
             // Since store is not dirty, just reload page.
             window.location.reload();
         }
-        return;
     }
 
     /**

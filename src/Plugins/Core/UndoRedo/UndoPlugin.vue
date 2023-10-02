@@ -1,9 +1,9 @@
 <template>
-  <PluginComponent
-    v-model="open"
-    :infoPayload="infoPayload"
-    @onUserArgChanged="onUserArgChanged"
-  ></PluginComponent>
+    <PluginComponent
+        v-model="open"
+        :infoPayload="infoPayload"
+        @onUserArgChanged="onUserArgChanged"
+    ></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -21,75 +21,76 @@ import { TestCmdList } from "@/Testing/TestCmdList";
  * UndoPlugin
  */
 @Options({
-  components: {
-    PluginComponent,
-  },
+    components: {
+        PluginComponent,
+    },
 })
 export default class UndoPlugin extends PluginParentClass {
-  // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
-  // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
+    // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
+    // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
-  menuPath = ["Edit", "[0] Revisions", "[1] Undo"];
-  title = "";
-  softwareCredits: ISoftwareCredit[] = [];
-  contributorCredits: IContributorCredit[] = [
-    // {
-    //   name: "Jacob D. Durrant",
-    //   url: "http://durrantlab.com/",
-    // },
-  ];
-  pluginId = "undo";
-  noPopup = true;
-  userArgDefaults: UserArg[] = [];
-  alwaysEnabled = true;
-  logJob = false;
-  hotkey = "z"
-  intro = "Undo the last action."
+    menuPath = ["Edit", "[0] Revisions", "[1] Undo"];
+    title = "";
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [
+        // {
+        //   name: "Jacob D. Durrant",
+        //   url: "http://durrantlab.com/",
+        // },
+    ];
+    pluginId = "undo";
+    noPopup = true;
+    userArgDefaults: UserArg[] = [];
+    alwaysEnabled = true;
+    logJob = false;
+    hotkey = "z";
+    intro = "Undo the last action.";
 
-  /**
-   * Check if this plugin can currently be used.
-   *
-   * @returns {string | null}  If it returns a string, show that as an error
-   *     message. If null, proceed to run the plugin.
-   */
-  checkPluginAllowed(): string | null {
-    if (undoStack.length === 0) {
-      return "No additional undo is available.";
+    /**
+     * Check if this plugin can currently be used.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
+    checkPluginAllowed(): string | null {
+        const undoStackWithoutEmptys = undoStack.filter((x) => x.length > 0);
+
+        if (undoStackWithoutEmptys.length === 0) {
+            return "No additional undo is available.";
+        }
+        return null;
     }
-    return null;
-  }
 
-  /**
-   * Called when the plugin is mounted.
-   */
-  onMounted() {
-    api.hooks.onMoleculesChanged(addToUndoStackAfterUserInaction);
-  }
+    /**
+     * Called when the plugin is mounted.
+     */
+    onMounted() {
+        api.hooks.onMoleculesChanged(addToUndoStackAfterUserInaction);
+    }
 
-  /**
-   * Every plugin runs some job. This is the function that does the job running.
-   */
-  runJobInBrowser() {
-    undo(this.$store);
-    return;
-  }
+    /**
+     * Every plugin runs some job. This is the function that does the job running.
+     */
+    runJobInBrowser() {
+        undo(this.$store);
+        return;
+    }
 
-  /**
-   * Gets the test commands for the plugin. For advanced use.
-   *
-   * @gooddefault
-   * @document
-   * @returns {ITest}  The selenium test commands.
-   */
-  getTests(): ITest {
-    return {
-      beforePluginOpens: new TestCmdList()
-        .loadExampleProtein(),
-      // pluginOpen: [this.testSetUserArg("filename", "test")],
-      // afterPluginCloses: new TestCmdList()
-      //   .wait(3)
-    };
-  }
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest}  The selenium test commands.
+     */
+    getTests(): ITest {
+        return {
+            beforePluginOpens: new TestCmdList().loadExampleProtein(),
+            // pluginOpen: [this.testSetUserArg("filename", "test")],
+            // afterPluginCloses: new TestCmdList()
+            //   .wait(3)
+        };
+    }
 }
 </script>
 

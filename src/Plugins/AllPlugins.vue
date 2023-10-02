@@ -35,6 +35,7 @@ system uses these to autopopulate with plugins. -->
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
     <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
+    <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
@@ -87,6 +88,7 @@ import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
 import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
+import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
@@ -135,6 +137,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SimpleMsgPlugin,
     StatCollectionPlugin,
     StylesWindowPlugin,
+    ToggleVisiblePlugin,
     UndoPlugin,
     ViewerWindowPlugin,
 

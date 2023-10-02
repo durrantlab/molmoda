@@ -41,6 +41,8 @@ export default class FilterInput extends Vue {
 
     /**
      * When the filter string changes, trigger onFilter.
+     * 
+     * @param {string} newVal  The new value of the filter string.
      */
     @Watch("modelValue")
     onModelValueChange(newVal: string) {

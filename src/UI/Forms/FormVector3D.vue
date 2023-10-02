@@ -14,7 +14,7 @@
                         class="form-control form-control-sm"
                         :readonly="readonly"
                         :id="`${axes[axisIdx]}-${id}`"
-                        :placeholder="placeHolder"
+                        :placeholder="axes[axisIdx].toUpperCase() + ' value...'"
                         :disabled="disabled"
                         @input="handleInput"
                         @keydown="onKeyDown"
@@ -82,6 +82,11 @@ export default class FormVector3D extends Vue {
         const newVals = JSON.parse(JSON.stringify(this.modelValue));
 
         let newVal = parseFloat(e.target.value);
+
+        if (isNaN(newVal)) {
+            // If not a number, set to 0.
+            newVal = 0;
+        }
 
         if (this.filterFunc) {
             // If there's a filter funciton, update everything.

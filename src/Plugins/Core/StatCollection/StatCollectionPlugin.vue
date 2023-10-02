@@ -87,6 +87,11 @@ export default class StatCollectionPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [];
 
+    /**
+     * The name of the application.
+     *
+     * @returns {string} The name of the application.
+     */
     get appName(): string {
         return appName;
     }

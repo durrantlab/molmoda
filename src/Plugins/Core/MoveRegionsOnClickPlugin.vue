@@ -61,25 +61,13 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      * Checks if the plugin is allowed to run. Returns true if allowed, false if
      * not allowed, or a string if not allowed and there's a user message.
      *
-     * NOTE: Many plugins should overwrite this function. The default version
-     * always returns null, which means the plugin is always allowed to run.
-     *
-     * @returns {string | boolean}  Null if allowed, or a message if not
-     * allowed.
-     * @gooddefault
+     * @returns {string | null}  Null if allowed, or a message if not allowed.
      */
-    public isPluginAllowed(): string | boolean {
-        return true;
-    }
-
-    /**
-     * Called right before popup opens. Returns true if popup should open,
-     * false if not.
-     *
-     * @returns {boolean}  True if popup should open, false if not.
-     */
-    onBeforePopupOpen(): boolean {
-        return !(this.selectedRegionsTitles.length === 0);
+     checkPluginAllowed(): string | null {
+        if (this.selectedRegionsTitles.length === 0) {
+            return "No regions selected.";
+        }
+        return null;
     }
 
     /**

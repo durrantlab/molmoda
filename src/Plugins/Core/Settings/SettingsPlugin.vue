@@ -187,6 +187,9 @@ export default class SettingsPlugin extends PluginParentClass {
         this.submitJobs([this.userArgs]);
     }
 
+    /**
+     * Set the default settings.
+     */
     setDefaults() {
         const defaults = defaultSettings();
         

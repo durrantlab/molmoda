@@ -180,21 +180,6 @@ export abstract class PluginParentClass extends mixins(
     protected payload: any = undefined;
 
     /**
-     * Checks if the plugin is allowed to run. Returns true if allowed, false if
-     * not allowed, or a string if not allowed and there's a user message.
-     *
-     * NOTE: Many plugins should overwrite this function. The default version
-     * always returns null, which means the plugin is always allowed to run.
-     *
-     * @returns {string | boolean}  Null if allowed, or a message if not
-     * allowed.
-     * @gooddefault
-     */
-    public isPluginAllowed(): string | boolean {
-        return true;
-    }
-
-    /**
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
@@ -217,37 +202,9 @@ export abstract class PluginParentClass extends mixins(
         // Children should not override this function! Use onPopupOpen instead.
         this.payload = payload;
 
-        if (this.isPluginAllowed() !== true) {
-            // Plugin not allowed to run. Exit.
-            debugger;
-            return;
-        }
-
-        // TODO: Redo onBeforePopupOpen below. No longer valid.
-
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
-        let continueOpen = this.onBeforePopupOpen() as
-            | boolean
-            | Promise<boolean>
-            | undefined;
-        if (continueOpen === undefined) {
-            // Return must have been void.
-            continueOpen = true;
-        }
-
-        // If a boolean, convert it to Promise<boolean>
-        const continuePromise =
-            typeof continueOpen === "boolean"
-                ? Promise.resolve(continueOpen)
-                : continueOpen; // Already a promise
-
-        const contOpen = await continuePromise;
-
-        // Continue to open plugin only if promise resolves true.
-        if (contOpen === false) {
-            return;
-        }
+        this.onBeforePopupOpen();
 
         this.openPopup();
 
@@ -517,6 +474,8 @@ export abstract class PluginParentClass extends mixins(
                 path: this.menuPath,
                 hotkey: this.hotkey,
                 function: this.menuOpenPlugin,
+                pluginId: this.pluginId,
+                checkPluginAllowed: this.checkPluginAllowed
             } as IMenuItem,
             pluginId: this.pluginId,
         } as IPluginSetupInfo);

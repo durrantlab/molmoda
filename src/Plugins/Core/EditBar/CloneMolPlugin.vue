@@ -72,7 +72,7 @@ export default class CloneMolPlugin extends PluginParentClass {
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
      */
-    public onBeforePopupOpen(): void {
+    public onBeforePopupOpen() {
         setNodesToActOn(this);
 
         const nodeToActOn = (this.nodesToActOn as TreeNodeList).get(0);

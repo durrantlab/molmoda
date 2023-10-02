@@ -1,11 +1,22 @@
 // Keep track of all loaded plugins. Useful for loading a plugin independent of
 // the menu system. 
 
+import { IMenuEntry } from "@/UI/Navigation/Menu/Menu";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 
 // the menu system.
 export const loadedPlugins: { [key: string]: PluginParentClass } = {};
 export const alwaysEnabledPlugins: string[] = [];
+export let allMenuData: IMenuEntry[] = [];
+
+/**
+ * Set the menu data.
+ * 
+ * @param  {IMenuEntry[]} menuData  The menu data.
+ */
+export function setAllMenuData(menuData: IMenuEntry[]) {
+    allMenuData = menuData;
+}
 
 /**
  * Register a plugin as loaded.

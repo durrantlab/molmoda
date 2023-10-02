@@ -89,16 +89,14 @@ RELATED: updateAppName not used anywhere, but I think it should be.
 
 Open options: add 3D coordinates, frames to separate molecules, etc.
 
+ligs.cif shows only one
+
 # Ongoing: Important
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
 Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
-
-ligs.cif shows only one
-
-Reduce. Make sure parameters ok.
 
 Dock your test file. asdsadasasaaasdggh.biotite  Look in data at prot path for
 one. It's not good. Entry col needs to be wider.
@@ -112,17 +110,30 @@ Delete stuff, then focus, it all comes back
 
 Load in mols. Rename one. Export as mol2. Unzip. Name change not reflected in file name
 
-Right click menu on titles with things to do? (delete, rename, etc.)
+Vector3D field can't change by typing well.
+
+Improve undo checkallow. Doesn't seem to be fully reactive? Not sure what to
+make of it.
+
+# DONE
+
+Reduce. Make sure parameters ok.
+
+Number field can't change by typing well.
+
+Separators in context menu
 
 Toggle visiblity option (based on preponderance of visible)
+    Done, but if none selected, auto pick all
 
-Menu (both popup and main) shoudl react to allowable. Register all those
-allowable in central object. Maybe just pass all options always, sort out
-criteria in function? See "// TODO: Could this just be populated from Edit menu automatically?"
+Right click menu on titles with things to do? (delete, rename, etc.)
 
 // TODO: Redo onBeforePopupOpen below. No longer valid.
 
-# DONE
+Menu (both popup and main) shoudl react to allowable. Register all those
+allowable in central object. Maybe just pass all options always, sort out
+criteria in function? See "// TODO: Could this just be populated from Edit menu
+automatically?"
 
 Error catching and reporting. (done, but need to figure out why no source maps
 on production.)
