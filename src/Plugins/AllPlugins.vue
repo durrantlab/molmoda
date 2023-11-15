@@ -44,6 +44,7 @@ system uses these to autopopulate with plugins. -->
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolTextPlugin @onPluginSetup="onPluginSetup"></MolTextPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
+    <PythonTerminalPlugin @onPluginSetup="onPluginSetup"></PythonTerminalPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
@@ -97,6 +98,7 @@ import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolTextPlugin from "./Optional/MolTextPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
+import PythonTerminalPlugin from "./Optional/PythonTerminalPlugin/PythonTerminalPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
@@ -146,6 +148,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     FPocketWebPlugin,
     MolTextPlugin,
     ProtonateCompoundsPlugin,
+    PythonTerminalPlugin,
     ReducePlugin,
     WebinaPlugin,
     // TEMPLATE3 END

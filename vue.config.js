@@ -94,6 +94,10 @@ module.exports = defineConfig({
                         from: "node_modules/@rdkit/rdkit/dist/RDKit_minimal.wasm",
                         to: "js/RDKit_minimal.wasm",
                     },
+                    {
+                        from: "src/Plugins/Optional/PythonTerminalPlugin/TreeNode.py",
+                        to: "python/TreeNode.py",
+                    },
                 ],
             })
         );
