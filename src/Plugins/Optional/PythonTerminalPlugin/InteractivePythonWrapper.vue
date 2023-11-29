@@ -49,7 +49,7 @@ export default class InteractivePython extends Vue {
     );
     /* eslint-disable-next-line */
     // @ts-ignore
-    window.ipythonAppendToHistory = this.$refs.ipython.appendToHistory;
+    window.ipython = this.$refs.ipython;
   }
 
   commands = {
@@ -98,7 +98,7 @@ export default class InteractivePython extends Vue {
     });
     /* eslint-disable-next-line */
     // @ts-ignore
-    window.ipythonAppendToHistory(markRaw(component));
+    window.ipython.appendToHistory(markRaw(component));
   };
 }
 </script>

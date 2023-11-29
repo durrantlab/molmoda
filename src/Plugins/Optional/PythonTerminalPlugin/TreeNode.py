@@ -1,21 +1,14 @@
-# import numpy as np
 import sys
 
+class CustomLogger:
+    def __init__(self, stream):
+        self.stream = stream
 
-# Define a custom print function that appends messages to an output buffer
-def custom_print(message):
-    global output_buffer
-    output_buffer.append(message)
+    def write(self, message):
+        # Prepend ">>>" to the printed output
+        self.stream.write("[CustomPrint]" + message)
 
-# Replace sys.stdout with the custom object
-# sys.stdout = custom_print()
-
-output_buffer = []
-# Print something
-print("Hello World!")
-custom_print("Hello World!")
-
-
+sys.stdout = CustomLogger(sys.stdout)
 
 molData = open("/treeNode.txt").read()
 

@@ -20,7 +20,6 @@
 
     <FileUpload v-if="fileUpload" @done="handleUpload(fileName)" />
     <SnakeLoader v-if="!pyodideInitialized" />
-    {{ pyodidePrint }}
     <TabComponent
       v-if="pyodideInitialized"
       :tabs="tabs"
@@ -141,17 +140,13 @@ export default class PythonTerminalPlugin extends PluginParentClass {
   warning = false;
   warningMessage = "This is a warning";
   pythonInitCode = "";
-  pyodidePrint = "";
+  pyodidePrint = "[CustomPrint]";
 
-  @Watch("this.pyodide.globals.get('output_buffer')", { deep: true })
+  nativeConsoleLog = console.log;
+
+  @Watch("pyodide", { deep: true })
   onOutputBufferChanged(newVal: any, oldVal: any) {
-    if (this.pyodideInitialized) {
-      /* eslint-disable-next-line */
-      // @ts-ignore
-      this.pyodide.globals.set("output_buffer", []);
-      console.log("output buffer changed");
-      console.log(newVal);
-    }
+    console.log("output buffer changed");
   }
 
   tabs = [
@@ -193,6 +188,7 @@ export default class PythonTerminalPlugin extends PluginParentClass {
 
   handleDestroy() {
     this.warning = false;
+    console.log = this.nativeConsoleLog;
     console.log("destroyed");
   }
 
@@ -202,12 +198,33 @@ export default class PythonTerminalPlugin extends PluginParentClass {
     this.warning = true;
   }
 
-  customLog(message) {
-    // Handle the message here (e.g., display it in your Vue component)
-    console.log("Custom Log:", message);
+  /**
+   * This is a hack to get the output from pyodide to the vue-command component
+   * It is a hack because it relies on the fact that pyodide uses the console.log function
+   * to print to the console. This is not a good idea, but it works for now.
+   * The message is wrapped in a custom string, and then unwrapped here.
+   *
+   * @param {any} message - the message to print to the console
+   */
+  customLog(message: any) {
+    if (message.startsWith(this.pyodidePrint)) {
+      if ((window as any).ipython)
+        (window as any).ipython.appendToHistory(
+          createStdout(
+            message
+              .slice(this.pyodidePrint.length)
+              .slice(0, -this.pyodidePrint.length)
+          )
+        );
+    } else this.nativeConsoleLog(message);
   }
 
   @Watch("pyodideInitialized")
+  /**
+   * This is a watcher that is called when pyodide is initialized.
+   * It sets the window.bash variable to the vue-command component.
+   * This is a hack, but it works.
+   */
   onPyodideInitializedChanged() {
     if (this.pyodideInitialized) {
       // after 0.5 second timeout, run the following code
@@ -333,14 +350,8 @@ export default class PythonTerminalPlugin extends PluginParentClass {
 
   pythoncommands = {};
 
-  // Define a custom Python print function
-  customPrint = (...args: any[]) => {
-    const message = args.map((arg) => String(arg)).join(" ");
-    // Send the output to the desired location, such as vue-command's createStdout
-    createStdout(message);
-  };
-
   async onPopupOpen() {
+    console.log = this.customLog;
     async function loadPythonFile(): Promise<string> {
       /* load all .py files from the python folder */
       // TODO - how to handle user uploads on actual filesystem?
@@ -403,17 +414,18 @@ export default class PythonTerminalPlugin extends PluginParentClass {
             console.log(err);
             throw err;
           });
+        // custom print function will preppend all the values to the output_buffer with ""
         // eslint-disable-next-line
         // @ts-ignore
-        this.pyodide.runPython(`
-def custom_print(*args, **kwargs):
-    global output_buffer
-    for arg in args:
-        output_buffer.append(arg)
-output_buffer = []`);
+        // this.pyodide.runPython(`
+        // def custom_print(*args, **kwargs):
+        //     global output_buffer
+        //     for arg in args:
+        //         output_buffer.append(arg)
+        // output_buffer = []`);
         // eslint-disable-next-line
         // @ts-ignore
-        this.pyodide.globals.set("print", pyodide.globals.get("custom_print"));
+        // this.pyodide.globals.set("print", pyodide.globals.get("custom_print"));
         // this.pyodide.runPython(`molData = open("/treeNode.txt").read()`);
         // eslint-disable-next-line
         // @ts-ignore
