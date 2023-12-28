@@ -9,6 +9,7 @@ enum TestCommand {
     Text = "text",
     Wait = "wait",
     WaitUntilRegex = "waitUntilRegex",
+    WaitUntilNotRegex = "waitUntilNotRegex",
     Upload = "upload",
     AddTests = "addTests", // TODO: Not a class yet
     CheckBox = "checkBox", // TODO: Not a class yet
@@ -168,6 +169,44 @@ export class _TestWaitUntilRegex extends _TestCmdParent {
         return {
             selector: this.selector,
             cmd: TestCommand.WaitUntilRegex,
+            data: this.regex,
+        };
+    }
+}
+
+/**
+ * A class to generate the command to wait until the specified regex is not
+ * found in the specified selector. Should only be called from class
+ * TestCmdList.
+ */
+export class _TestWaitUntilNotRegex extends _TestCmdParent {
+    private selector: string;
+    private regex: string;
+
+    /**
+     * Creates an instance of _TestWaitUntilRegex.
+     *
+     * @param  {string} selector  The selector to monitor.
+     * @param  {string} regex     The regex to wait for.
+     */
+    // eslint-disable-next-line sonarjs/no-identical-functions
+    constructor(selector: string, regex: string) {
+        super();
+        this.selector = selector;
+        this.regex = regex;
+    }
+
+    /**
+     * Generates the command to wait until the specified regex is found in the
+     * specified selector.
+     *
+     * @returns {ITestCommand}  The command to wait until the specified regex is
+     *    found in the specified selector.
+     */
+    get cmd(): ITestCommand {
+        return {
+            selector: this.selector,
+            cmd: TestCommand.WaitUntilNotRegex,
             data: this.regex,
         };
     }

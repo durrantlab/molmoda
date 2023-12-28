@@ -24491,8 +24491,7 @@ $3Dmol.GLModel = (function() {
                         } else {
                             drawCyl(geo, p1, p2, bondR, C1, fromCap, toCap);
                         }
-                        
-                        
+
                         atomneedsi = atom.clickable || atom.hoverable;
                         atom2needsi = atom2.clickable || atom2.hoverable;
                         
@@ -24501,12 +24500,24 @@ $3Dmol.GLModel = (function() {
                             if (atomneedsi){
                                 var cylinder1 = new $3Dmol.Cylinder(p1 , mp , bondR);
                                 var sphere1 = new $3Dmol.Sphere(p1 , bondR);
+
+                                // JDD additions
+                                if (atom.intersectionShape === undefined) {
+                                  atom.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                                }
+
                                 atom.intersectionShape.cylinder.push(cylinder1);   
                                 atom.intersectionShape.sphere.push(sphere1);                             
                             }
                             if (atom2needsi){
                                 var cylinder2 = new $3Dmol.Cylinder(p2 , mp , bondR);
                                 var sphere2 = new $3Dmol.Sphere(p2 , bondR);
+
+                                // JDD additions
+                                if (atom2.intersectionShape === undefined) {
+                                    atom2.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                                }
+
                                 atom2.intersectionShape.cylinder.push(cylinder2);
                                 atom2.intersectionShape.sphere.push(sphere2);
                             }
@@ -24570,12 +24581,24 @@ $3Dmol.GLModel = (function() {
                                 if (atomneedsi) {
                                     cylinder1a = new $3Dmol.Cylinder(p1a , mp , r);
                                     cylinder1b = new $3Dmol.Cylinder(p1b , mp2 , r);
+
+                                    // JDD additions
+                                    if (atom.intersectionShape === undefined) {
+                                      atom.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                                    }
+
                                     atom.intersectionShape.cylinder.push(cylinder1a);
                                     atom.intersectionShape.cylinder.push(cylinder1b);
                                 }
                                 if (atom2needsi) {
                                     cylinder2a = new $3Dmol.Cylinder(p2a , mp , r);
                                     cylinder2b = new $3Dmol.Cylinder(p2b , mp2 , r);
+
+                                    // JDD additions
+                                    if (atom2.intersectionShape === undefined) {
+                                      atom2.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                                    }
+
                                     atom2.intersectionShape.cylinder.push(cylinder2a);
                                     atom2.intersectionShape.cylinder.push(cylinder2b);                               
                                 }                      
@@ -24632,6 +24655,11 @@ $3Dmol.GLModel = (function() {
                                     cylinder1a = new $3Dmol.Cylinder(p1a.clone(), mp.clone(), r);
                                     cylinder1b = new $3Dmol.Cylinder(p1b.clone(), mp2.clone(), r);
                                     cylinder1c = new $3Dmol.Cylinder(p1.clone(), mp3.clone(), r);
+                                                                    // JDD additions
+                                    if (atom.intersectionShape === undefined) {
+                                        atom.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                                    }
+
                                     atom.intersectionShape.cylinder.push(cylinder1a);
                                     atom.intersectionShape.cylinder.push(cylinder1b);
                                     atom.intersectionShape.cylinder.push(cylinder1c);
@@ -24640,6 +24668,12 @@ $3Dmol.GLModel = (function() {
                                     cylinder2a = new $3Dmol.Cylinder(p2a.clone(), mp.clone(), r);
                                     cylinder2b = new $3Dmol.Cylinder(p2b.clone(), mp2.clone(), r);
                                     cylinder2c = new $3Dmol.Cylinder(p2.clone(), mp3.clone(), r);
+
+                                    // JDD additions
+                                    if (atom2.intersectionShape === undefined) {
+                                        atom2.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                                    }
+
                                     atom2.intersectionShape.cylinder.push(cylinder2a);
                                     atom2.intersectionShape.cylinder.push(cylinder2b);
                                     atom2.intersectionShape.cylinder.push(cylinder2c);                                
@@ -25085,6 +25119,7 @@ $3Dmol.GLModel = (function() {
             return id;
         };
 
+        // JDD addition
         this.setID_JDD = function(i) {
           id = i;
         }
@@ -25790,6 +25825,12 @@ $3Dmol.GLModel = (function() {
                         a.bondOrder.push(olda.bondOrder ? olda.bondOrder[j] : 1);
                     }                
                 }
+
+                // JDD addition
+                // if (!a.intersectionShape) {
+                //     a.intersectionShape = {sphere : [], cylinder : [], line : [], triangle : []};
+                // }
+
                 atoms.push(a);
             }
         };
@@ -31531,6 +31572,10 @@ $3Dmol.GLViewer = (function() {
           return data;
         };
 
+        this.addGLModel = function(data) {
+          return this.addRawModel_JDD(data)
+        }
+
         this.makeGLModel_JDD = function(txt, format, noComputeSecondaryStructure=false) {
           let mol = new $3Dmol.GLModel(
             models.length, 
@@ -31539,6 +31584,10 @@ $3Dmol.GLViewer = (function() {
           // Assume always multimodel.
           mol.addMolData(txt, format, { keepH: true, multimodel: true, noComputeSecondaryStructure: noComputeSecondaryStructure });
           return mol;
+        }
+
+        this.makeGLModel = function(txt, format, noComputeSecondaryStructure=false) {
+          return this.makeGLModel_JDD(txt, format, noComputeSecondaryStructure)
         }
 
         /**

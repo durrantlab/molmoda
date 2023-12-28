@@ -56,9 +56,11 @@ export default class DeleteMolPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Will almost always need this, so requiring
      * children to define it.
+     * 
+     * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen() {
-        setNodesToActOn(this);
+    onBeforePopupOpen(payload: any) {
+        setNodesToActOn(this, payload);
     }
 
     /**
@@ -92,11 +94,8 @@ export default class DeleteMolPlugin extends PluginParentClass {
 
             // const viewer = await visualizationApi.viewer;
             // viewer.renderAll();
-            
 
             // this.$store.commit("updateMolecules", treeNodeList);
-
-
 
             // Get the parent node and remove this from it's nodes.
             // if (this.nodeToActOn.parentId) {
@@ -142,6 +141,24 @@ export default class DeleteMolPlugin extends PluginParentClass {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleProtein(true)
                     .selectMoleculeInTree("Protein"),
+
+                // Also test clicking on the navigator to delete.
+                afterPluginCloses: new TestCmdList()
+                    .wait(2)
+
+                    // Also check clicking in title bar
+                    .selectMoleculeInTree("Compounds")
+                    .click('#navigator div[data-label="Compounds"] span.delete')
+                    .pressPopupButton(".action-btn", this.pluginId)
+                    .wait(2)
+
+                    // Also check pressing backspace
+                    .selectMoleculeInTree("Solvent")
+                    .text("body", "BACKSPACE")
+                    .pressPopupButton(".action-btn", this.pluginId)
+                    .wait(2)
+                    .waitUntilNotRegex("#navigator", "Compounds")
+                    .waitUntilNotRegex("#navigator", "Solvent")
             },
             // Also test deleting a root node.
             {

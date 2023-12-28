@@ -30,9 +30,9 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-// import { IErrorData } from "./ErrorReporting";
+import * as api from "@/Api";
 
 /**
  * ErrorReportingPlugin
@@ -118,6 +118,11 @@ export default class ErrorReportingPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     getTests(): ITest[] {
+        // Not going to test closing, etc. (Too much work.) But at least opens
+        // to see if an error occurs.
+
+        api.plugins.runPlugin(this.pluginId, {});
+
         return [];
     }
 }

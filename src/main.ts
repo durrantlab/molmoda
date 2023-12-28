@@ -8,7 +8,10 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { setupTests } from "./Testing/SetupTests";
 import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
-import { applySettings, getSettings } from "./Plugins/Core/Settings/LoadSaveSettings";
+import {
+    applySettings,
+    getSettings,
+} from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
 
@@ -23,17 +26,17 @@ async function main() {
     loadFontAwesomeFonts();
     setupTests();
     setupWarnSaveOnClose();
-    
+
     defineMakerFuncs();
-    
+
     // api.sys.loadStatus.pluginsLoaded = true;
-    
+
     // console.warn("Below now meaningless?");
     // api.sys.loadStatus.menuFinalized = true;
     const store = setupVueXStore();
-    
+
     applySettings(getSettings());
-    
+
     createApp(App)
         .component("font-awesome-icon", FontAwesomeIcon)
         .use(store)

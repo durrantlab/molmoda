@@ -151,22 +151,22 @@ export default class JobManager extends Vue {
                     Procs: r.numProcessors?.toString() as string,
                     Status: r.status.toString(),
                     Progress: (100 * r.progress).toFixed(1) + "%",
-                    Start: { sortVal: r.startTime },
-                    End: { sortVal: r.endTime },
+                    Start: { sortVal: r.startTime, val: formatTimestamp(r.startTime) },
+                    End: { sortVal: r.endTime, val: formatTimestamp(r.endTime) },
                 };
             });
 
         // Reverse rows so that the most recent job is at the top.
         // rows = rows.reverse();
 
-        // Replace timestamp with string version
-        rows = rows.map((r: any) => {
-            r.Start.val = formatTimestamp(r.Start.sortVal as number);
-            r.End.val = formatTimestamp(r.End.sortVal as number);
+        // // Replace timestamp with string version
+        // rows = rows.map((r: any) => {
+        //     r.Start.val = formatTimestamp(r.Start.sortVal as number);
+        //     r.End.val = formatTimestamp(r.End.sortVal as number);
 
-            // r.Time = new Date(r.Time).toLocaleString();
-            return r;
-        });
+        //     // r.Time = new Date(r.Time).toLocaleString();
+        //     return r;
+        // });
 
         return {
             headers: headers[tableIdx],

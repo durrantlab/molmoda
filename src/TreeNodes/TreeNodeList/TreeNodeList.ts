@@ -9,6 +9,7 @@ import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { randomID } from "@/Core/Utils";
 
 /**
  * TreeNodeList class
@@ -339,7 +340,7 @@ export class TreeNodeList {
             false // don't add to tree
         )
             .then((treeNodeList: void | TreeNodeList) => {
-                if (!treeNodeList) {
+                if (!treeNodeList || treeNodeList.length === 0) {
                     // Apparently wasn't possible to parse molecule.
                     // TODO: Show error message?
                     return;
@@ -353,7 +354,6 @@ export class TreeNodeList {
                 // Get all the terminal nodes.
                 const terminalNodes = treeNodeList.terminals;
 
-
                 // Rename the nodes in treeNodeList and make some of them
                 // invisible.
                 for (let i = 0; i < terminalNodes.length; i++) {
@@ -362,6 +362,7 @@ export class TreeNodeList {
                     if (node.title.indexOf("undefined") >= 0) {
                         const {basename} = getFileNameParts(fileName);
                         node.title = basename + ":" + (i + 1).toString();
+                        debugger
                     }
                     node.visible = i < initialCompoundsVisible;
                     // node.treeExpanded = false;

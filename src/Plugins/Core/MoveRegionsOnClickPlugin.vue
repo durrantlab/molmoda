@@ -32,6 +32,7 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
+import * as api from "@/Api";
 
 /** AboutPlugin */
 @Options({
@@ -57,17 +58,32 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     alwaysEnabled = true;
     logJob = false;
 
+    newCenter: [number, number, number] = [0, 0, 0];
+
     /**
      * Checks if the plugin is allowed to run. Returns true if allowed, false if
      * not allowed, or a string if not allowed and there's a user message.
      *
      * @returns {string | null}  Null if allowed, or a message if not allowed.
      */
-     checkPluginAllowed(): string | null {
+    checkPluginAllowed(): string | null {
         if (this.selectedRegionsTitles.length === 0) {
             return "No regions selected.";
         }
         return null;
+    }
+
+    /**
+     * Called right before the plugin popup opens.
+     *
+     * @param {number[]} payload  The payload from the event (new box center).
+     * @return {boolean | void}  If false, the popup will not open (abort).
+     *                            Anything else, and the popup will open.
+     */
+    onBeforePopupOpen(payload: [number, number, number]) {
+        // Save new center.
+        this.newCenter = payload;
+        return;
     }
 
     /**
@@ -77,7 +93,8 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      */
     get selectedRegions(): TreeNodeList {
         // Get terminal nodes
-        let terminalNodes = (this.$store.state.molecules as TreeNodeList).filters.onlyTerminal;
+        let terminalNodes = (this.$store.state.molecules as TreeNodeList)
+            .filters.onlyTerminal;
 
         // Get the ones that are selected and regions
         terminalNodes = terminalNodes.filters.keepSelected();
@@ -92,7 +109,9 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      */
     get selectedRegionsTitles(): string[] {
         const selectedRegions = this.selectedRegions;
-        return selectedRegions.map((node) => node.descriptions.pathName(" > ", 0));
+        return selectedRegions.map((node) =>
+            node.descriptions.pathName(" > ", 0)
+        );
     }
 
     /**
@@ -112,7 +131,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     runJobInBrowser(treeNode: TreeNode) {
         const newRegion = {
             ...treeNode.region,
-            center: this.payload,
+            center: this.newCenter,
         } as IRegion;
         treeNode.region = newRegion;
         treeNode.viewerDirty = true;
@@ -127,7 +146,12 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-     getTests(): ITest[] {        // No tests for this simple plugin.
+    getTests(): ITest[] {
+        // Not going to test closing, etc. (Too much work.) But at least opens
+        // to see if an error occurs.
+
+        api.plugins.runPlugin(this.pluginId, [0, 0, 0]);
+
         return [];
     }
 }

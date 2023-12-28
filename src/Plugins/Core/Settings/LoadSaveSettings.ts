@@ -56,16 +56,22 @@ export function getSetting(id: string): any {
  * @param  {UserArg[]} settings  The settings to apply.
  */
 export function applySettings(settings: UserArg[]) {
+    // NOTE: Previously this was necessary to change the molecular viewer
+    // without having to reload. We're now just using one viewer, but good to
+    // leave this function here in case you ever want to implement something
+    // similar (not just changing setting values, but actually changing
+    // something in the UI).
+    
     // Convert the settings to a map for easy lookup.
-    const settingsMap = new Map<string, UserArg>();
-    for (const setting of settings) {
-        settingsMap.set(setting.id, setting);
-    }
-    const defaults = defaultSettings();
+    // const settingsMap = new Map<string, UserArg>();
+    // for (const setting of settings) {
+    //     settingsMap.set(setting.id, setting);
+    // }
+    // const defaults = defaultSettings();
 
-    const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
-    visualizationApi.viewerObj?.unLoadViewer();
-    setStoreVar("molViewer", molViewer);
+    // const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
+    // visualizationApi.viewerObj?.unLoadViewer();
+    // setStoreVar("molViewer", molViewer);
 }
 
 /**
@@ -79,5 +85,5 @@ export function defaultSettings(): any {
     const procsToRecommend =
     maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
     
-    return { maxProcs: procsToRecommend, initialCompoundsVisible: 10, molViewer: "3dmol" };
+    return { maxProcs: procsToRecommend, initialCompoundsVisible: 20, molViewer: "3dmol" };
 }

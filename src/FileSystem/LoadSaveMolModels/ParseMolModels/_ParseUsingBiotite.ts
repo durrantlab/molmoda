@@ -1,10 +1,10 @@
-import { FileInfo } from "@/FileSystem/FileInfo";
+import type { FileInfo } from "@/FileSystem/FileInfo";
 import { store } from "@/Store";
 import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
 import { treeNodeListDeserialize } from "@/TreeNodes/Deserializers";
-import { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { ILog } from "@/UI/Panels/Log/LogUtils";
+import type { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import type { ILog } from "@/UI/Panels/Log/LogUtils";
 
 export const biotiteStateKeysToRetain = ["molecules", "log"];
 

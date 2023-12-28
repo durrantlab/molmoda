@@ -26,8 +26,7 @@ import { randomID } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
-
-export const FORM_INPUT_DELAY_UPDATE_DEFAULT = 500;
+import { formInputDelayUpdate } from "@/Core/GlobalVars";
 
 /**
  * FormTextArea component
@@ -44,7 +43,7 @@ export default class FormTextArea extends Vue {
     @Prop({ default: false }) disabled!: boolean;
     @Prop({ required: false }) filterFunc!: Function;
     @Prop({}) description!: string;
-    @Prop({ default: FORM_INPUT_DELAY_UPDATE_DEFAULT })
+    @Prop({ default: formInputDelayUpdate })
     delayBetweenChangesDetected!: number;
     @Prop({ default: false }) readonly!: boolean;
 

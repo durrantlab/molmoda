@@ -1,50 +1,49 @@
-import {
-    getJsCookie,
-    isStatCollectionEnabled,
-} from "@/Plugins/Core/StatCollection/StatUtils";
+/* eslint-disable prefer-rest-params */
+import { isStatCollectionEnabled } from "@/Plugins/Core/StatCollection/StatUtils";
 
-declare global {
-    interface Window {
-        dataLayer: any[];
-        gtag: (
-            event: string,
-            action: string,
-            options?: Record<string, any>
-        ) => void;
-    }
-}
+// declare global {
+//     interface Window {
+//         dataLayer: any[];
+//         gtag: (
+//             event: string,
+//             action: string,
+//             options?: Record<string, any>
+//         ) => void;
+//     }
+// }
 
 /**
  * Injects the google analytics script if it hasn't been injected already. This
  * is done to comply with the GDPR.
  */
 async function injectGoogleAnalyticsScriptIfNeeded() {
-    const Cookies = await getJsCookie();
-
-    if (Cookies.get("ga-inserted")) {
+    if ((window as any).gtag !== undefined) {
         // It's already inserted, so don't do it again.
         return;
     }
 
-    // Ommiting the cookie expiration date makes it a session cookie
-    Cookies.set("ga-inserted", "true", { sameSite: "strict" });
-
     await new Promise((resolve) => {
         // Insert google analytics script
         const script = document.createElement("script");
-        script.src = `https://www.googletagmanager.com/gtag/js?id=G-KQT3Z9E322`;
+        // Bioti+e - GA4
+        script.src = `https://www.googletagmanager.com/gtag/js?id=G-FLN2FB201W`;
         script.async = true;
         document.head.appendChild(script);
         script.onload = () => {
-            window.dataLayer = window.dataLayer || [];
-            /**
-             * @param  {...any} args  The arguments to pass to gtag.
-             */
-            const gtag = function (...args: any[]) {
-                window.dataLayer.push(args);
-            };
-            gtag("js", new Date());
-            gtag("config", "G-KQT3Z9E322");
+            (window as any).dataLayer = (window as any).dataLayer || [];
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            // eslint-disable-next-line jsdoc/require-jsdoc
+            window.gtag = function(){dataLayer.push(arguments);}
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            window.gtag('js', new Date());
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            window.gtag('config', 'G-FLN2FB201W');
+
             resolve(undefined);
         };
     });
@@ -61,9 +60,9 @@ async function injectGoogleAnalyticsScriptIfNeeded() {
  * https://developers.google.com/analytics/devguides/collection/gtagjs/events
  */
 export async function logGAEvent(
-    eventName: string,
-    eventAction: string,
-    eventOptions?: Record<string, any>
+    eventName: string,  // e.g., pluginId
+    eventAction: string,  // e.g., "jobSubmitted"
+    // eventOptions?: Record<string, any>
 ) {
     // Cookies.get("statcollection") is a cookie that is set when the user
     // accepts the cookie policy If the cookie is set, we load the google
@@ -75,22 +74,40 @@ export async function logGAEvent(
         return;
     }
 
-    // If runnig from localhost, do a console log instead.
-    if (window.location.hostname === "localhost") {
-        console.warn(
-            `GA Event: ${eventName} - ${eventAction} - ${JSON.stringify(
-                eventOptions
-            )}`
-        );
-        return;
+    // If running from localhost, do a console log instead.
+    const url = window.location.href;
+
+    const gaEventData = `GA Event: ${eventName} - ${eventAction}`;
+    //  - ${JSON.stringify(
+        // eventOptions
+    // )}`
+
+
+    // If localhost, 127.0.0.1, or beta in the url, don't log to google
+    // analytics.
+    const bannedUrls = ["localhost", "127.0.0.1", "beta", "?test="];
+    for (const bannedUrl of bannedUrls) {
+        if (url.indexOf(bannedUrl) !== -1) {
+            console.warn(`Analytics not sent from prohibited domain ${bannedUrl}: ${gaEventData}`);
+            return;
+        }
     }
 
     await injectGoogleAnalyticsScriptIfNeeded();
 
-    if (typeof window !== "undefined" && typeof window.gtag === "function") {
-        window.gtag("event", eventAction, {
-            event_category: eventName,
-            ...eventOptions,
-        });
+    if (
+        typeof window !== "undefined" &&
+        typeof (window as any).gtag === "function"
+    ) {
+        
+        console.log(gaEventData);
+        // (window as any).gtag("event", eventAction, {
+        //     event_category: eventName,
+        //     ...eventOptions,
+        // });
+
+        const eventActionToUse = `${eventName}-${eventAction}`;
+
+        (window as any).gtag("event", eventActionToUse);
     }
 }

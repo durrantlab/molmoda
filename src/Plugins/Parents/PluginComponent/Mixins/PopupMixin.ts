@@ -1,4 +1,4 @@
-import { delayForPopupOpenClose } from "@/Core/AppInfo";
+import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 

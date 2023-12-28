@@ -172,7 +172,7 @@ function _createPDBLine(isProt: boolean, atom: IAtom): string {
     pdbLine += _rjust((atom.y as number).toFixed(3), 8);
     pdbLine += _rjust((atom.z as number).toFixed(3), 8);
     pdbLine += _rjust("1.00", 6); // occupancy
-    pdbLine += _rjust((atom.b as number).toFixed(2), 6);
+    pdbLine += _rjust((atom.b ? (atom.b as number) : 0).toFixed(2), 6);
     pdbLine += _rjust(" ", 10); // Segment identifier is obsolete
     pdbLine += _rjust(atom.elem?.toUpperCase() as string, 2);
     return pdbLine;

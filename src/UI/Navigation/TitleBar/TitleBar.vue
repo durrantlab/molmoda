@@ -44,8 +44,8 @@
                     <span v-if="treeDatum.nodes">
                         {{ descendentCounts(treeDatum) }}
                     </span>
-                </div></Tooltip
-            >
+                </div>
+            </Tooltip>
 
             <!-- menu-item buttons -->
             <IconBar
@@ -77,7 +77,7 @@
                 />
                 <IconSwitcher
                     v-if="iconsToDisplay.delete"
-                    class="title-element clickable"
+                    class="title-element clickable delete"
                     :useFirst="true"
                     :iconID1="['far', 'rectangle-xmark']"
                     :iconID2="['far', 'rectangle-xmark']"
@@ -87,7 +87,7 @@
                 />
                 <IconSwitcher
                     v-if="iconsToDisplay.cloneExtract"
-                    class="title-element clickable"
+                    class="title-element clickable cloneextract"
                     :useFirst="true"
                     :iconID1="['far', 'clone']"
                     :iconID2="['far', 'clone']"
@@ -97,7 +97,7 @@
                 />
                 <IconSwitcher
                     v-if="iconsToDisplay.rename"
-                    class="title-element clickable"
+                    class="title-element clickable rename"
                     :useFirst="true"
                     :iconID1="['fa', 'pencil']"
                     :iconID2="['fa', 'pencil']"
@@ -156,7 +156,7 @@ export default class TitleBar extends Vue {
 
     /**
      * Get the string to indicate the number of children and terminals.
-     * 
+     *
      * @param {TreeNode} node The node.
      * @returns {string} The string to indicate the number of children and terminals.
      */
@@ -258,6 +258,10 @@ export default class TitleBar extends Vue {
         }
 
         title = title.trim();
+
+        while (title.indexOf("::") !== -1) {
+            title = title.replace("::", ":");
+        }
 
         // If ends in :, remove
         if (title.endsWith(":")) {
@@ -427,7 +431,7 @@ export default class TitleBar extends Vue {
 
     /**
      * Get the items from the edit submenu.
-     * 
+     *
      * @returns {IMenuItem[]} The items from the edit submenu.
      */
     get editMenuItems(): IMenuItem[] {
@@ -447,7 +451,7 @@ export default class TitleBar extends Vue {
             }
             allEditItems.push({
                 path: "",
-                text: "separator"
+                text: "separator",
             } as IMenuItem);
         });
 
@@ -461,10 +465,9 @@ export default class TitleBar extends Vue {
         return allEditItems;
     }
 
-
     /**
      * Get the items for the context menu.
-     * 
+     *
      * @returns {IContextMenuOption[]} The items for the context menu.
      */
     get contextMenuItems(): IContextMenuOption[] {
@@ -497,7 +500,7 @@ export default class TitleBar extends Vue {
 
     /**
      * Runs when user clicks on a context menu item.
-     * 
+     *
      * @param {IContextMenuOption} menuItem The menu item that was clicked.
      */
     onContextMenuItemClick(menuItem: IContextMenuOption) {

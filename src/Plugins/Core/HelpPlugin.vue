@@ -11,6 +11,7 @@
             :list="loadedPlugins"
             :extractTextToFilterFunc="extractTextToFilterFunc"
             @onFilter="onFilter"
+            v-model="filterStr"
         ></FilterInput>
 
         <span v-for="plugin of loadedPluginsToUse" :key="plugin.pluginId">
@@ -56,7 +57,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import { citationsTxt } from "../Citations";
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
 
 /** HelpPlugin */
 @Options({
@@ -80,6 +81,7 @@ export default class HelpPlugin extends PluginParentClass {
     ];
     pluginId = "help";
     intro = "List information about each of the loaded plugins.";
+    filterStr="";  // Not used, but needed for FilterInput component.
 
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
@@ -140,7 +142,6 @@ export default class HelpPlugin extends PluginParentClass {
 
     // @Watch("loadedPlugins")
     // onLoadedPluginsChange(newVal: PluginParentClass[]) {
-    //     console.log(newVal);
     // }
 
     /**

@@ -1,4 +1,4 @@
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 export enum MolLoader {

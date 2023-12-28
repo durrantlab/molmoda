@@ -41,6 +41,7 @@
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
+                    :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected"
                 />
                 <FormInput
                     v-else-if="formElem.type === FormElementType.Number"
@@ -52,6 +53,7 @@
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
+                    :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected"
                 />
                 <FormInput
                     v-else-if="formElem.type === FormElementType.Color"
@@ -61,6 +63,7 @@
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
+                    :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected"
                 />
                 <FormInput
                     v-else-if="formElem.type === FormElementType.Range"
@@ -359,7 +362,7 @@ export default class FormFull extends Vue {
      * When data is updated, emit the new data.
      */
     onDataUpdated() {
-        this.$emit("onChange", this.modelValue);
+        // this.$emit("onChange", this.modelValue);   // TODO: Not sure this is needed. Does it break anything anywhere?
         this.$emit("update:modelValue", this.modelValue);
     }
 

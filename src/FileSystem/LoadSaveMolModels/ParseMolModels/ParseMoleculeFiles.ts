@@ -79,6 +79,13 @@ export function _parseMoleculeFile(
             //     treeNodeList.extend(treeNodeLists[i]);
             // }
 
+            if (treeNodeList.length === 0) {
+                api.messages.popupError(
+                    "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>"
+                );
+                return treeNodeList;
+            }
+
             // Merge the tree nodes into one (so all compounds of multi-compound
             // file under single "Compounds").
             const topLevelName = getFileNameParts(fileInfo.name).basename;

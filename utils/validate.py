@@ -177,11 +177,11 @@ for ts_file in ts_files:
     if "import(" in content and os.path.basename(ts_file) != "DynamicImports.ts":
         add_error(ts_file, "Use import() only in the DynamicImports.ts file.")
 
-    # Don't allow "Biotite" anywhere but in AppInfo.ts
-    if re.search(r"\bBiotite\b", content) and "AppInfo.ts" not in ts_file:
+    # Don't allow "Biotite" anywhere but in GlobalVars.ts
+    if re.search(r"\bBiotite\b", content) and "GlobalVars.ts" not in ts_file:
         add_error(
             ts_file,
-            'The string "Biotite" should only be used in AppInfo.ts. Import the app name from there.',
+            'The string "Biotite" should only be used in GlobalVars.ts. Import the app name from there.',
         )
         
 

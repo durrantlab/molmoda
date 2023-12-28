@@ -175,8 +175,9 @@ export class Viewer3DMol extends ViewerParent {
      * @returns {Promise<GLModel>}  The model that was added.
      */
     addGLModel(model: GLModel): Promise<GLModel> {
-        this._mol3dObj.addRawModel_JDD(model);
-        return Promise.resolve(model);
+        // this._mol3dObj.addRawModel_JDD(model);
+        const newMol = this._mol3dObj.addGLModel(model, true);
+        return Promise.resolve(newMol);
     }
 
     /**
@@ -206,7 +207,6 @@ export class Viewer3DMol extends ViewerParent {
      * @returns {GenericRegionType}  The box that was added.
      */
     addBox(region: IBox): Promise<GenericRegionType> {
-        console.log("Adding box");
         const dimens = region.dimensions as number[];
         const center = region.center as number[];
         const box = this._mol3dObj.addBox({
@@ -298,19 +298,24 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Render all the molecules and surfaces currently added to the viewer.
+     *
+     * @returns {Promise<void>}  A promise that resolves when the molecules and
+     *    surfaces are rendered.
      */
-    renderAll() {
+    async renderAll(): Promise<void> {
         // This is pretty expensive, I think. Be sure to not call it too often.
+        return new Promise((resolve) => {
+            // Clear any existing timeout
+            if (this._renderAllTimeout) {
+                clearTimeout(this._renderAllTimeout);
+            }
 
-        // Clear any existing timeout
-        if (this._renderAllTimeout) {
-            clearTimeout(this._renderAllTimeout);
-        }
-
-        // Set a new timeout
-        this._renderAllTimeout = setTimeout(() => {
-            this._mol3dObj.render();
-        }, 500);
+            // Set a new timeout
+            this._renderAllTimeout = setTimeout(() => {
+                this._mol3dObj.render();
+                resolve();
+            }, 1000);
+        });
     }
 
     /**
@@ -332,8 +337,11 @@ export class Viewer3DMol extends ViewerParent {
             let models = ids.map((id) => this.lookup(id));
             models = models.filter((model) => model !== undefined);
 
-            // Remove ones that aren't molecules
-            models = models.filter((model) => model.selectedAtoms !== undefined);
+            // Remove ones that aren't molecules. So can't focus on boxes.
+            // Appears to be a limitation of 3dmoljs.
+            models = models.filter(
+                (model) => model.selectedAtoms !== undefined
+            );
 
             if (models.length > 0) {
                 this._mol3dObj.zoomTo({ model: models }, 500, true);
@@ -493,9 +501,15 @@ export class Viewer3DMol extends ViewerParent {
             true,
             (atom: any /* _viewer: any, _event: any, _container: any */) => {
                 this.centerOnPoint(atom.x, atom.y, atom.z);
-                callBack(atom.x, atom.y, atom.z);
+                setTimeout(() => {
+                    // Delay the callback so that the centering has time to
+                    // finish.
+                    // debugger
+                    callBack(atom.x, atom.y, atom.z);
+                }, 1000);
             }
         );
+        this.renderAll();
     }
 
     /**
@@ -564,6 +578,17 @@ export class Viewer3DMol extends ViewerParent {
      * @returns {string}  The VRML string.
      */
     exportVRML(): string {
+        // for (const model of this._mol3dObj.models) {
+        //     this.makeAtomsHoverable(
+        //         model,
+        //         () => {
+        //             alert("hi");
+        //         },
+        //         () => {
+        //             alert("bye");
+        //         }
+        //     );
+        // }
         return this._mol3dObj.exportVRML();
     }
 }

@@ -252,7 +252,10 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
         // Combine into payloads
         const payloads: any[] = pdbFiles.map((pdbFile) => {
-            // Remove treenodes from payloads
+            // Put path in auxData
+            pdbFile.auxData = pdbFile.treeNode?.descriptions.pathName(":")
+
+            // Remove treenodes from payloads because doesn't serialize.
             delete pdbFile.treeNode;
             return {
                 pdbFile,
@@ -266,8 +269,9 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 // This is per protein.
                 fpocketOuts.forEach((fpocketOut: any, i: number) => {
                     fpocketOut.origFileName = pdbFiles[i].name;
-                    fpocketOut.label =
-                        pdbFiles[i].treeNode?.descriptions.pathName(":");
+                    // fpocketOut.label =
+                    //     pdbFiles[i].treeNode?.descriptions.pathName(":");
+                    fpocketOut.label = pdbFiles[i].auxData;
                     fpocketOut.providePseudoAtoms = (
                         this.userArgs.filter(
                             (u) => u.id === "providePseudoAtoms"

@@ -219,7 +219,7 @@ export class TreeNode {
                     const keysToRemove = [
                         "pdbline",
                         "uMat",
-                        "intersectionShape",
+                        // "intersectionShape",  // This is needed
                     ];
                     obj["model"] = obj["model"].map((atom: IAtom) => {
                         for (const key of keysToRemove) {
@@ -669,7 +669,6 @@ export class TreeNode {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
         }
-
         getMoleculesFromStore().push(this);
 
         // If you add new molecules to the tree, focus on everything.

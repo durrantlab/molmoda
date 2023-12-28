@@ -169,6 +169,8 @@ export const dynamicImports = {
                 /* webpackMode: "lazy" */
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
+                // "@/libs/3Dmol-min"
+                // "@/libs/3Dmol"
                 "@/libs/3Dmol-nojquery.JDD"
             ).then(($3Dmol) => {
                 return $3Dmol;

@@ -51,7 +51,8 @@ import { correctFilenameExt } from "@/FileSystem/Utils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
+import { slugify } from "@/Core/Utils";
 
 /**
  * SaveMoleculesPlugin
@@ -94,6 +95,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             validateFunc: (filename: string): boolean => {
                 return matchesFilename(filename);
             },
+            delayBetweenChangesDetected: 0
         } as IUserArgText,
         {
             id: "useBiotiteFormat",
@@ -149,13 +151,19 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             label: "File format for separate small-molecule compounds",
             id: "compoundFormat",
             val: "mol2",
-            options: getFormatDescriptions(true).filter(
-                // Prioritize formats with bonds
-                (option) => option.val !== "biotite"
-            ).concat(getFormatDescriptions(false).filter(
-                // Add a few non-bonds formats too because they're popular
-                (option) => ["pdb", "pdbqtlig", "xyz"].indexOf(option.val) !== -1
-            )),
+            options: getFormatDescriptions(true)
+                .filter(
+                    // Prioritize formats with bonds
+                    (option) => option.val !== "biotite"
+                )
+                .concat(
+                    getFormatDescriptions(false).filter(
+                        // Add a few non-bonds formats too because they're popular
+                        (option) =>
+                            ["pdb", "pdbqtlig", "xyz"].indexOf(option.val) !==
+                            -1
+                    )
+                ),
             enabled: false,
         } as IUserArgSelect,
     ];
@@ -192,9 +200,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     * 
+     * @param {any} payload  The payload passed to the plugin.
      */
-    onBeforePopupOpen() {
-        this.appClosing = this.payload !== undefined;
+    onBeforePopupOpen(payload: any) {
+        this.appClosing = payload !== undefined;
 
         // Reset some form values
         this.setUserArg("useBiotiteFormat", true);
@@ -203,7 +213,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         this.setUserArg("saveHiddenAndUnselected", false);
         this.setUserArg("separateCompounds", true);
 
-        this.payload = undefined;
+        payload = undefined;
     }
 
     /**
@@ -339,6 +349,22 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             nonCompoundFormat
         )
             .then((compoundNonCompoundFileInfos: ICmpdNonCmpdFileInfos) => {
+                // Rename files before export
+                for (const fileInfos of [
+                    compoundNonCompoundFileInfos.compoundFileInfos,
+                    compoundNonCompoundFileInfos.nonCompoundFileInfos,
+                ]) {
+                    for (const fileInfo of fileInfos) {
+                        if (fileInfo.treeNode) {
+                            const ext = fileInfo.getFileType().toLowerCase();
+                            const filename = slugify(
+                                fileInfo.treeNode.descriptions.pathName("_", 0)
+                            );
+                            fileInfo.name = filename + "." + ext;
+                        }
+                    }
+                }
+
                 compoundNonCompoundFileInfos.compoundFileInfos =
                     this._ensureAllFileNamesAreUnique(
                         compoundNonCompoundFileInfos.compoundFileInfos
@@ -349,17 +375,24 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                     );
 
                 // Now save the molecules
-                if (separateCompounds === false) {
-                    // Saving to one file, so update the filename to be that one
-                    // file. First, get extension of existing filename.
-                    const currentFileName =
-                        compoundNonCompoundFileInfos.nonCompoundFileInfos[0]
-                            .name;
-                    const ext = getFileNameParts(currentFileName).ext;
+                const totalFileCount =
+                    compoundNonCompoundFileInfos.compoundFileInfos.length +
+                    compoundNonCompoundFileInfos.nonCompoundFileInfos.length;
+                if (separateCompounds === false || totalFileCount === 1) {
+                    for (const fileInfos of [
+                        compoundNonCompoundFileInfos.compoundFileInfos,
+                        compoundNonCompoundFileInfos.nonCompoundFileInfos,
+                    ]) {
+                        if (fileInfos.length == 0) continue;
 
-                    // Update the filename
-                    compoundNonCompoundFileInfos.nonCompoundFileInfos[0].name =
-                        correctFilenameExt(filename, ext);
+                        // Saving to one file, so update the filename to be that one
+                        // file. First, get extension of existing filename.
+                        const currentFileName = fileInfos[0].name;
+                        const ext = getFileNameParts(currentFileName).ext;
+
+                        // Update the filename
+                        fileInfos[0].name = correctFilenameExt(filename, ext);
+                    }
                 }
 
                 saveMolFiles(filename, compoundNonCompoundFileInfos);
@@ -387,13 +420,13 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 "test",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#log", "Job savemolecules.*? ended")
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#log",
+                "Job savemolecules.*? ended"
+            ),
         };
 
-        const jobs = [
-            biotiteJob,
-        ];
+        const jobs = [biotiteJob];
 
         let idx = 0;
 

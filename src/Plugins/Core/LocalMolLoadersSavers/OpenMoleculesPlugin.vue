@@ -28,7 +28,11 @@ import {
     PluginParentClass,
     RunJobReturn,
 } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import {
+    IUserArgCheckbox,
+    UserArg,
+    UserArgType,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { filesToFileInfos } from "@/FileSystem/Utils";
@@ -36,7 +40,7 @@ import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { delayForPopupOpenClose } from "@/Core/AppInfo";
+import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 
 /**
  * OpenMoleculesPlugin
@@ -61,7 +65,16 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
 
-    userArgDefaults: UserArg[] = [];
+    userArgDefaults: UserArg[] = [
+        {
+            id: "hideOnLoad",
+            type: UserArgType.Checkbox,
+            label: "Loaded molecules should not be visible",
+            description:
+                "If checked, the loaded molecules will not be initially visible in the molecular viewer. You will have to toggle their visibility by hand. Useful if you plan to load many molecules at once.",
+            val: false,
+        } as IUserArgCheckbox,
+    ];
     alwaysEnabled = true;
     accept = fileTypesAccepts;
     hotkey = "o";
@@ -89,21 +102,24 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     *
+     * @param {any} payload  The payload passed to the plugin.
      */
-    onBeforePopupOpen() {
+    onBeforePopupOpen(payload: any) {
         // Below is hackish...
         setTimeout(() => {
             // Give the component time to render
-            const formFile = (this.$refs.formFile as FormFile);
+            const formFile = this.$refs.formFile as FormFile;
             if (formFile) {
                 formFile.clearFile();
             }
         }, delayForPopupOpenClose);
 
-        if (this.payload !== undefined) {
-            let fileList = this.payload as File[];
-            this.payload = undefined;
+        // debugger;
 
+        if (payload !== undefined) {
+            let fileList = payload as File[];
+            // this.payload = undefined;
             filesToFileInfos(
                 fileList,
                 false,
@@ -131,6 +147,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 .catch((err) => {
                     throw err;
                 });
+            return false;
         }
         // this.windowClosing = this.payload !== undefined;
     }
@@ -146,7 +163,10 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         // It's not a biotite file (e.g., a PDB file). NOTE: When loading a
         // multi-frame file, this fileInfo contains all frames (not yet
         // separated).
-        return this.addFileInfoToViewer(fileInfo);
+        return this.addFileInfoToViewer(
+            fileInfo,
+            this.getUserArg("hideOnLoad")
+        );
     }
 
     /**
@@ -160,9 +180,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         const filesToTest = [
             // File, title-clicks,
             // ["two_files.zip", ["ligs"ompounds", "A"], "UNL:1"],
-            ["four_mols.zip", "ligs:3"],
+            ["four_mols.zip", ":ligs:"],
             // ["ligs.smi.zip", "ligs.smi:3"],
-            ["ligs.can", "ligs:3"],
+            ["ligs.can", ":ligs:"],
             ["test.biotite", "ATP:501"],
 
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
@@ -171,8 +191,8 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["ligs.mol2", "ligs:3"],
             ["ligs.pdb", "UN3:1"],
             ["ligs.pdbqt", "UN3:1"],
-            ["ligs.sdf", "ligs:3"],
-            ["ligs.smi", "ligs:3"],
+            ["ligs.sdf", ":ligs:"],
+            ["ligs.smi", ":ligs:"],
             ["4WP4.pdb", "TOU:101"],
             ["4WP4.pdb.zip", "TOU:101"],
             ["4WP4.pdbqt", "A"],
@@ -180,21 +200,25 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["4WP4.xyz", "4WP4:1"],
         ];
 
-        return filesToTest.map((fileToTest) => {
+        return filesToTest.map((fileToTest, idx) => {
             const name = fileToTest[0];
             // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
             const substrng = fileToTest[1] as string;
+            let pluginOpen = new TestCmdList().setUserArg(
+                "formFile",
+                "file://./src/Testing/mols/" + name,
+                this.pluginId
+            );
+            if (idx % 2 === 0) {
+                pluginOpen = pluginOpen.click("#hideOnLoad-openmolecules-item");
+            }
             return {
-                pluginOpen: new TestCmdList().setUserArg(
-                    "formFile",
-                    "file://./src/Testing/mols/" + name,
-                    this.pluginId
-                ),
+                pluginOpen: pluginOpen,
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#styles", "Atoms")
                     // .expandMoleculesTree(titles)
-                    .waitUntilRegex("#navigator", substrng)
+                    .waitUntilRegex("#navigator", substrng),
             };
         });
     }

@@ -62,25 +62,25 @@ export function _convertTreeNodeList(
     // string.
     molTxts = _convertTreeNodeListToPDB(treeNodeList, merge);
 
-    const fileInfos = molTxts.map((molTxt: string, idx: number) =>
-        new FileInfo({
-            name: `tmpmol${idx}.pdb`,
-            contents: molTxt
-        })
+    const fileInfos = molTxts.map(
+        (molTxt: string, idx: number) =>
+            new FileInfo({
+                name: `tmpmol${idx}.pdb`,
+                contents: molTxt,
+            })
     );
 
-    return convertFileInfosOpenBabel(
-        fileInfos,
-        targetExt
-    ).then((contents: string[]) => {
-        return contents.map((content: string) => {
-            return new FileInfo({
-                name: `tmpmol.${targetExt}`,
-                contents: content
-            });
-        });
-    })
+    return convertFileInfosOpenBabel(fileInfos, targetExt).then(
+        (contents: string[]) => {
 
+            return contents.map((content: string) => {
+                return new FileInfo({
+                    name: `tmpmol.${targetExt}`,
+                    contents: content,
+                });
+            });
+        }
+    );
 
     // const promises = fileInfos.map((fileInfo: FileInfo) =>
     //     fileInfo.convertFromPDBTxt(targetExt)

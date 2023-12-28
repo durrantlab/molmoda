@@ -25,7 +25,6 @@ export class OpenBabelQueue extends QueueParent {
                 inputs[i].inputFile.treeNode = undefined;
             }
         }
-
         return runWorker(
             new Worker(new URL("./OpenBabel.worker.ts", import.meta.url)),
             inputs,

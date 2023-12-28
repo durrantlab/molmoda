@@ -1,26 +1,57 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
+import { store } from "@/Store";
+import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import * as api from "@/Api";
 
-// @ts-ignore
-import cloneDeep from "lodash.clonedeep";
-
-export const undoStack: TreeNodeList[] = [new TreeNodeList()];
-export let redoStack: TreeNodeList[] = [];
 let timeoutId: number;
 const maxItemsOnUndoStack = 10;
+let pauseAddToUndoStack = false;
+
+setInterval(() => {
+    console.log(
+        store.state.undoStack.map((m: any) => m.undoStackId).length, 
+        store.state.redoStack.map((m: any) => m.undoStackId).length, 
+    );
+}
+, 1000);
+
+function _tmpPauseAddToUndoStack() {
+    // Cancel any pending additions to undo stack
+
+    window.clearTimeout(timeoutId);
+    
+    // Prevent new ones.
+    pauseAddToUndoStack = true;
+
+    // In a bit, start allowing again
+    setTimeout(() => {
+        pauseAddToUndoStack = false;
+    }, 500);
+}
+
+function _makeAllMolsDirty(mols: TreeNodeList) {
+    mols.filters.onlyTerminal
+    .forEach((mol: TreeNode) => { mol.viewerDirty = true; });
+}
 
 /**
  * Pushes a new item to the undo stack.
  * 
  * @param  {TreeNodeList} item The item to push.
  */
-function addItemToUndoStack(item: TreeNodeList) {
+function _addItemToUndoStack(item: TreeNodeList) {
+    const undoStack = store.state.undoStack as TreeNodeList[];
     if (undoStack.length > maxItemsOnUndoStack) {
         undoStack.shift();
     }
     undoStack.push(item);
+    store.commit("setVar", {
+        name: "undoStack",
+        val: undoStack,
+    });
 }
 
 /**
@@ -31,21 +62,29 @@ function addItemToUndoStack(item: TreeNodeList) {
  * @param  {TreeNodeList} molecules The item to push.
  */
 export function addToUndoStackAfterUserInaction(molecules: TreeNodeList) {
+    if (pauseAddToUndoStack) {
+        return;
+    }
+
     if (timeoutId) {
         window.clearTimeout(timeoutId);
     }
-    timeoutId = window.setTimeout(() => {
+    timeoutId = window.setTimeout(async () => {
         // Remove any redos.
-        redoStack = [];
+        store.commit("setVar", {
+            name: "redoStack",
+            val: [],
+        });
 
-        // Make new molecule
-        const moleculesObjToAddToStack = cloneDeep(molecules) as TreeNodeList;
-        
-        moleculesObjToAddToStack.filters.onlyTerminal
-        .forEach((mol: TreeNode) => { mol.viewerDirty = true; });
+        // Make new molecule.
+        const moleculesObjToAddToStack = await treeNodeListDeepClone(molecules);
+
+        _makeAllMolsDirty(moleculesObjToAddToStack);
+        // moleculesObjToAddToStack.filters.onlyTerminal
+        // .forEach((mol: TreeNode) => { mol.viewerDirty = true; });
 
         // Move new molecules to the stack
-        addItemToUndoStack(moleculesObjToAddToStack);
+        _addItemToUndoStack(moleculesObjToAddToStack);
         // console.log("added");
     }, 1000);
 }
@@ -56,15 +95,32 @@ export function addToUndoStackAfterUserInaction(molecules: TreeNodeList) {
  * @param  {any} store The Vuex store.
  */
 export function undo(store: any) {
+    const undoStack = store.state.undoStack as TreeNodeList[];
+    const redoStack = store.state.redoStack as TreeNodeList[];
+
     let lastItemOnUndoStack = undoStack.pop();
+
+    // Update the stacks
+    store.commit("setVar", {
+        name: "undoStack",
+        val: undoStack,
+    });
+
     if (lastItemOnUndoStack) {
         // Move current last one to redo.
         redoStack.push(lastItemOnUndoStack);
+
+        store.commit("setVar", {
+            name: "redoStack",
+            val: redoStack,
+        });
 
         // Get the new last one, but keep on stack
         lastItemOnUndoStack = undoStack[undoStack.length - 1];
 
         if (lastItemOnUndoStack) {
+            // _makeAllMolsDirty(lastItemOnUndoStack)
+
             // store.commit("replaceMolecules", lastItemOnUndoStack);
             store.commit("setVar", {
                 name: "molecules",
@@ -72,9 +128,7 @@ export function undo(store: any) {
             });
     
             // Make sure this undo isn't itself added to the undo stack.
-            setTimeout(() => {
-                window.clearTimeout(timeoutId);
-            }, 0);
+            _tmpPauseAddToUndoStack();
         }
 
         // console.log("undo");
@@ -86,11 +140,20 @@ export function undo(store: any) {
  * 
  * @param  {any} store The Vuex store.
  */
-export function redo(store: any) {   
+export async function redo(store: any) {   
+    const redoStack = store.state.redoStack as TreeNodeList[];
+
     const lastItemRedoStack = redoStack.pop();
+
+    // Update the stacks
+    store.commit("setVar", {
+        name: "redoStack",
+        val: redoStack,
+    });
+
     if (lastItemRedoStack) {
         // Move current last one to redo.
-        addItemToUndoStack(lastItemRedoStack);
+        _addItemToUndoStack(lastItemRedoStack);
 
         // store.commit("replaceMolecules", lastItemOnUndoStack);
         store.commit("setVar", {
@@ -98,11 +161,13 @@ export function redo(store: any) {
             val: lastItemRedoStack,
         });
 
+        // const viewer = await api.visualization.viewer;
+        // viewer.renderAll();
+
         // Make sure this undo isn't itself added to the undo stack.
-        setTimeout(() => {
-            window.clearTimeout(timeoutId);
-        }, 0);
+        _tmpPauseAddToUndoStack();
 
         // console.log("redo");
     }
+
 }

@@ -55,6 +55,7 @@ interface IUserArg {
 export interface IUserArgText extends IUserArg {
     val: string;
     placeHolder?: string;
+    delayBetweenChangesDetected?: number;
     filterFunc?: (val: any) => any;
 }
 

@@ -58,6 +58,7 @@ import {
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
+import * as api from "@/Api"
 
 /**
  * WebinaPlugin
@@ -280,6 +281,11 @@ export default class WebinaPlugin extends PluginParentClass {
         const filePairs: IProtCmpdTreeNodePair[] =
             this.getUserArg("makemolinputparams");
 
+        if (filePairs.length === 0 || !filePairs[0].prot || !filePairs[0].cmpd) {
+            api.messages.popupError("Could not perform docking! You must select at least one compound and one protein.")
+            return;
+        }
+
         // TODO: Consider this.getUserArgsFlat() instead.
         let userArgs = [
             ...this.userArgs,
@@ -327,7 +333,7 @@ export default class WebinaPlugin extends PluginParentClass {
         }
 
         const origAssociatedTreeNodes = filePairs.map((filePair) => {
-            return [filePair.prot.treeNode, filePair.cmpd.treeNode];
+            return [filePair.prot?.treeNode, filePair.cmpd?.treeNode];
         });
 
         const payloads: any = filePairs.map((filePair) => {
@@ -377,7 +383,7 @@ export default class WebinaPlugin extends PluginParentClass {
             .catch((err: Error) => {
                 // Intentionally not rethrowing error here. // TODO: fix this
                 messagesApi.popupError(
-                    `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+                    `<p>Webina threw an error.</p><p>Error details: ${err.message}</p>`
                 );
             });
 
@@ -515,7 +521,7 @@ export default class WebinaPlugin extends PluginParentClass {
                             terminalTreeNode.data[scoreLabel].treeNodeId =
                                 terminalTreeNode.id;
                             terminalTreeNode.title =
-                                payload.origCmpdTreeNode.title;
+                                payload.origCmpdTreeNode.title + modelName;
                         } else {
                             // This should never happen, but here for typescript.
                             terminalTreeNode = treeNode;

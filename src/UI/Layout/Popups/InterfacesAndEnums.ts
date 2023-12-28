@@ -20,6 +20,10 @@ export interface ISimpleMsg {
     open?: boolean;  // Whether to open or close
 }
 
+export interface ISimpleVideo extends ISimpleMsg {
+    youtubeID: string;
+}
+
 export interface IDelayedJobPopup {
     open: boolean;  // Whether to open or close
     // message?: string;

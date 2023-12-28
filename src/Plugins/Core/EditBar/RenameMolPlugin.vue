@@ -74,9 +74,11 @@ export default class RenameMolPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     * 
+     * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen() {
-        setNodesToActOn(this);
+    onBeforePopupOpen(payload: any) {
+        setNodesToActOn(this, payload);
         this.setUserArg("newName", this.nodesToActOn.get(0).title);
     }
 
@@ -85,6 +87,7 @@ export default class RenameMolPlugin extends PluginParentClass {
      */
     runJobInBrowser() {
         if (this.nodesToActOn) {
+            console.log("YYY", this.getUserArg("newName"))
             this.nodesToActOn.get(0).title = this.getUserArg("newName");
         }
         return;
@@ -107,10 +110,16 @@ export default class RenameMolPlugin extends PluginParentClass {
                 "Protein2",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#navigator",
-                "Protein2"
-            ),
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex("#navigator", "Protein2")
+
+                // Also check clicking in title bar
+                .selectMoleculeInTree("Compounds")
+                .click('#navigator div[data-label="Compounds"] span.rename')
+                .text("#newName-renamemol-item", "Compounds2")
+                .pressPopupButton(".action-btn", this.pluginId)
+                .wait(2)
+                .waitUntilRegex("#navigator", "Compounds2")
         };
     }
 }

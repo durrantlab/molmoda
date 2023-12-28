@@ -10,6 +10,7 @@ import {
     _TestText,
     _TestUpload,
     _TestWait,
+    _TestWaitUntilNotRegex,
     _TestWaitUntilRegex,
 } from "./TestCmd";
 import * as api from "@/Api";
@@ -67,6 +68,18 @@ export class TestCmdList {
      */
     public waitUntilRegex(selector: string, regex: string): TestCmdList {
         this.tests.push(new _TestWaitUntilRegex(selector, regex));
+        return this;
+    }
+
+    /**
+     * Wait until a given regex does not match the text of an element.
+     *
+     * @param {string} selector  The CSS selector for the element.
+     * @param {string} regex     The regex to match.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public waitUntilNotRegex(selector: string, regex: string): TestCmdList {
+        this.tests.push(new _TestWaitUntilNotRegex(selector, regex));
         return this;
     }
 

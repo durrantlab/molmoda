@@ -60,7 +60,8 @@ import {
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { isTest } from "@/Testing/SetupTests";
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
+import * as api from "@/Api";
 
 /**
  * StatCollectionPlugin
@@ -134,6 +135,11 @@ export default class StatCollectionPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     getTests(): ITest[] {
+        // Not going to test closing, etc. (Too much work.) But at least opens
+        // to see if an error occurs.
+
+        api.plugins.runPlugin(this.pluginId, {});
+
         return [];
     }
 

@@ -10,12 +10,13 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import * as api from "@/Api";
-import { addToUndoStackAfterUserInaction, undo, undoStack } from "./UndoStack";
+import { addToUndoStackAfterUserInaction, undo } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * UndoPlugin
@@ -53,7 +54,7 @@ export default class UndoPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        const undoStackWithoutEmptys = undoStack.filter((x) => x.length > 0);
+        const undoStackWithoutEmptys = this.$store.state.undoStack.filter((x: TreeNodeList) => x.length > 0);
 
         if (undoStackWithoutEmptys.length === 0) {
             return "No additional undo is available.";

@@ -127,106 +127,12 @@ export let store: any;
 export function setupVueXStore(): Store<any> {
     const storeVars = {
         state: {
-            molecules: newTreeNodeList([
-                // {
-                //     title: "Region group",
-                //     id: "test",
-                //     treeExpanded: true,
-                //     visible: true,
-                //     selected: SelectedType.False,
-                //     focused: true,
-                //     viewerDirty: true,
-                //     nodes: [
-                //         {
-                //             title: "Shapes",
-                //             id: "regions",
-                //             parentId: "test",
-                //             treeExpanded: true,
-                //             visible: true,
-                //             selected: SelectedType.False,
-                //             focused: true,
-                //             viewerDirty: true,
-                //             nodes: [
-                //                 {
-                //                     title: "Shapes2",
-                //                     id: "shapes2",
-                //                     parentId: "regions",
-                //                     treeExpanded: true,
-                //                     visible: true,
-                //                     selected: SelectedType.False,
-                //                     focused: true,
-                //                     viewerDirty: true,
-                //                     region: {
-                //                         type: RegionType.Sphere,
-                //                         id: "My region",
-                //                         center: [0, 0, 0],
-                //                         radius: 10,
-                //                         opacity: 0.2,
-                //                         movable: true
-                //                     } as ISphere,
-                //                 },
-                //                 {
-                //                     title: "Shapes3",
-                //                     id: "shapes3",
-                //                     parentId: "regions",
-                //                     treeExpanded: true,
-                //                     visible: true,
-                //                     selected: SelectedType.False,
-                //                     focused: true,
-                //                     viewerDirty: true,
-                //                     region: {
-                //                         type: RegionType.Box,
-                //                         center: [0, 0, 0],
-                //                         dimensions: [30, 10, 10],
-                //                         color: "green",
-                //                         opacity: 0.5,
-                //                         movable: true
-                //                     } as IBox,
-                //                 },
-                //                 {
-                //                     title: "Shapes4",
-                //                     id: "shapes4",
-                //                     parentId: "regions",
-                //                     treeExpanded: true,
-                //                     visible: true,
-                //                     selected: SelectedType.False,
-                //                     focused: true,
-                //                     viewerDirty: true,
-                //                     region: {
-                //                         type: RegionType.Arrow,
-                //                         center: [0, 5, 0],
-                //                         endPt: [10, 10, 10],
-                //                         color: "green",
-                //                         opacity: 0.5,
-                //                         movable: false
-                //                     } as IArrow,
-                //                 },
-                //                 {
-                //                     title: "Shapes5",
-                //                     id: "shapes5",
-                //                     parentId: "regions",
-                //                     treeExpanded: true,
-                //                     visible: true,
-                //                     selected: SelectedType.False,
-                //                     focused: true,
-                //                     viewerDirty: true,
-                //                     region: {
-                //                         type: RegionType.Cylinder,
-                //                         center: [5, 0, 0],
-                //                         endPt: [-10, 10, 10],
-                //                         color: "green",
-                //                         opacity: 0.5,
-                //                         movable: false
-                //                     } as ICylinder,
-                //                 },
-                //             ],
-                //         },
-                //     ],
-                // },
-            ]),
+            molecules: newTreeNodeList([]),
             log: [] as ILog[],
             updateZoom: true,
             molViewer: "3dmol",
+            undoStack: [newTreeNodeList([])],
+            redoStack: [] as TreeNodeList[],
         },
         getters: {},
         mutations: {

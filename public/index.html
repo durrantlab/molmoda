@@ -1,28 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <meta name="description" content="Biotite is a browser-based suite for computer-aided drug discovery, brought to you by the Durrant Lab. It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
 
-    <!-- load javascript https://www.unpkg.com/molstar@2.3.5/build/viewer/molstar.js -->
-    <!-- <script src="https://www.unpkg.com/molstar@2.3.5/build/viewer/molstar.js"></script> -->
-    <!-- <link rel="stylesheet" type="text/css" href="https://www.unpkg.com/molstar@2.3.5/build/viewer/molstar.css" /> -->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta name="description"
+    content="Biotite is a browser-based suite for computer-aided drug discovery, brought to you by the Durrant Lab. It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.">
+  <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+  <title>
+    <%= htmlWebpackPlugin.options.title %>
+  </title>
 
-  </head>
-  <body style="padding: 0; margin: 0;">
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> -->
-    
-    <!-- required for 3dmoljs -->
-    <script src="js/jquery-3.6.0.min.js"></script>
-    
-    <!-- built files will be auto injected -->
-  </body>
+  <!-- load javascript https://www.unpkg.com/molstar@2.3.5/build/viewer/molstar.js -->
+  <!-- <script src="https://www.unpkg.com/molstar@2.3.5/build/viewer/molstar.js"></script> -->
+  <!-- <link rel="stylesheet" type="text/css" href="https://www.unpkg.com/molstar@2.3.5/build/viewer/molstar.css" /> -->
+
+</head>
+
+<body style="padding: 0; margin: 0;">
+  <noscript>
+    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled.
+        Please enable it to continue.</strong>
+  </noscript>
+  <div id="app"></div>
+  <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> -->
+
+  <!-- required for 3dmoljs -->
+  <script src="js/jquery-3.6.0.min.js"></script>
+
+  <!-- built files will be auto injected -->
+</body>
+
 </html>

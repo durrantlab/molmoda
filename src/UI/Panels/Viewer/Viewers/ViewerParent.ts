@@ -99,15 +99,12 @@ export abstract class ViewerParent {
         if (idsOfMolsOrRegionsToDelete.length > 0) {
             // Remove them from the cache, viewer, etc.
             idsOfMolsOrRegionsToDelete.forEach((id: string) => {
+                // It is strange, but it's important to hide before removing.
+                // Never did figure out why.
+                this.hideObject(id);
                 this.removeObject(id);
-                // this.renderAll();
+                this.renderAll();
             });
-
-            // debugger;
-            // Render if anything was removed.
-            // setTimeout(() => {
-            //     this.renderAll();
-            // }, 3000);
         }
     }
 
@@ -394,8 +391,12 @@ export abstract class ViewerParent {
             } else {
                 // Not in cache.
                 if (treeNode.model) {
-                    addObjPromise = this.addGLModel(treeNode.model as GLModel)
-                        .then((visMol: GenericModelType) => {
+                    // treeNode.model might be a proxy, so need to use toRaw.
+
+                    // This should run first
+                    
+                    addObjPromise = this.addGLModel(toRaw(treeNode.model) as GLModel)
+                    .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
 
                             // Below now handled elsewhere (when showMolecule or
@@ -463,8 +464,6 @@ export abstract class ViewerParent {
         modelID: string
     ) {
         this.makeAtomsClickable(model, (x: number, y: number, z: number) => {
-            api.plugins.runPlugin("moveregionsonclick", [x, y, z]);
-
             // Determine if any of the currently selected items are regions.
             const selectedRegions = getMoleculesFromStore()
                 .filters.keepSelected(true, true)
@@ -474,6 +473,9 @@ export abstract class ViewerParent {
                 // Region is not selected, so select the molecule.
                 selectProgramatically(modelID);
                 setStoreVar("clearFocusedMolecule", false);
+            } else {
+                // region is selected
+                api.plugins.runPlugin("moveregionsonclick", [x, y, z]);
             }
         });
 
@@ -541,6 +543,7 @@ export abstract class ViewerParent {
         }
 
         if (molsToFocusIds.length === 0) {
+            // If nothing specified, focus on all visible molecules at once.
             if (visibleTerminalNodeModelsIds === undefined) {
                 visibleTerminalNodeModelsIds = allMols.terminals.filters
                     .keepVisible()
@@ -549,7 +552,7 @@ export abstract class ViewerParent {
             molsToFocusIds = visibleTerminalNodeModelsIds;
         }
 
-        this.renderAll();
+        // this.renderAll();
         if (store.state["updateZoom"]) {
             this.zoomToModels(molsToFocusIds);
             // api.visualization.viewer.zoom(0.8);

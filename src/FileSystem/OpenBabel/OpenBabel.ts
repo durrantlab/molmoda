@@ -101,7 +101,6 @@ export function convertFileInfosOpenBabel(
     ]);
 
     // let tmpPass: any;
-
     return runOpenBabel("convertPrep", separateFileCmds, srcFileInfos)
         .then((fileContentsFromInputs: any[][]) => {
             // Note that a given input molecule can yield multiple outputs if it

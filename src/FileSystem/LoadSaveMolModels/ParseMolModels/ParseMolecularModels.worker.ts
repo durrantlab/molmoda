@@ -375,46 +375,46 @@ function divideMolTxtIntoFrames(
  * @param  {IFormatInfo} molFormatInfo  Information about the format.
  * @returns {string}  The name. Returns "" if no name found.
  */
-// function getNameFromContent(
-//     molText: string,
-//     molFormatInfo: IFormatInfo
-// ): string {
-//     const regexps = molFormatInfo.extractMolNameRegex;
-//     let firstMatch = "";
-//     if (regexps) {
-//         for (const regexp of regexps) {
-//             // Must reset regex for repeated use. Interesting. See
-//             // https://stackoverflow.com/questions/4724701/regexp-exec-returns-null-sporadically
-//             regexp.lastIndex = 0;
+function getNameFromContent(
+    molText: string,
+    molFormatInfo: IFormatInfo
+): string {
+    const regexps = molFormatInfo.extractMolNameRegex;
+    let firstMatch = "";
+    if (regexps) {
+        for (const regexp of regexps) {
+            // Must reset regex for repeated use. Interesting. See
+            // https://stackoverflow.com/questions/4724701/regexp-exec-returns-null-sporadically
+            regexp.lastIndex = 0;
 
-//             const match = regexp.exec(molText);
-//             if (match) {
-//                 firstMatch = match[1];
-//                 break;
+            const match = regexp.exec(molText);
+            if (match) {
+                firstMatch = match[1];
+                break;
 
-//                 // below prevents multiple matches
-//                 // molText = molText.replaceAll(match[1], "");
-//             }
-//         }
-//     }
+                // below prevents multiple matches
+                // molText = molText.replaceAll(match[1], "");
+            }
+        }
+    }
 
-//     // Remove terminal ; from match
-//     if (firstMatch.endsWith(";")) {
-//         firstMatch = firstMatch.substring(0, firstMatch.length - 1);
-//     }
+    // Remove terminal ; from match
+    if (firstMatch.endsWith(";")) {
+        firstMatch = firstMatch.substring(0, firstMatch.length - 1);
+    }
 
-//     // Keep only unique
-//     // allMatches = allMatches.filter((v, i, a) => a.indexOf(v) === i);
+    // Keep only unique
+    // allMatches = allMatches.filter((v, i, a) => a.indexOf(v) === i);
 
-//     // Keep only at most first 10 letters. Append ... if more than 10
-//     // letters.
-//     if (firstMatch.length > 20) {
-//         firstMatch = firstMatch.substring(0, 20) + "...";
-//     }
+    // Keep only at most first 10 letters. Append ... if more than 10
+    // letters.
+    if (firstMatch.length > 20) {
+        firstMatch = firstMatch.substring(0, 20) + "...";
+    }
 
-//     // Compile into single string. Separate by ;
-//     return firstMatch.replaceAll(":", "");
-// }
+    // Compile into single string. Separate by ;
+    return firstMatch.replaceAll(":", "");
+}
 
 /**
  * Given molecular data from the main thread, convert it into a TreeNode object
@@ -435,6 +435,11 @@ function divideAtomsIntoDistinctComponents(
         molFormatInfo
     );
 
+    const molName = getFileNameParts(data.fileInfo.name).basename
+    const frameTitles = frames.map((f, i) => {
+        return `${getNameFromContent(f, molFormatInfo)}:${molName}:${i + 1}`;
+    })
+
     // glviewer for use in webworker.
     return dynamicImports.mol3d.module.then(($3Dmol: any) => {
         if (!glviewer) {
@@ -445,9 +450,11 @@ function divideAtomsIntoDistinctComponents(
 
         for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
             const frame = frames[frameIdx];
-            const mol = glviewer.makeGLModel_JDD(frame, data.format);
+            const frameTitle = frameTitles[frameIdx];
+            // const molWithAtomsToDivide = glviewer.makeGLModel_JDD(frame, data.format);
+            const molWithAtomsToDivide = glviewer.makeGLModel(frame, data.format);
 
-            if (mol.selectedAtoms({}).length === 0) {
+            if (molWithAtomsToDivide.selectedAtoms({}).length === 0) {
                 // No atoms in model. Skip.
                 continue;
             }
@@ -456,27 +463,37 @@ function divideAtomsIntoDistinctComponents(
 
             let proteinAtomsByChain = organizeSelByChain(
                 proteinSel,
-                mol,
+                molWithAtomsToDivide,
                 "Protein"
             );
             let nucleicAtomsByChain = organizeSelByChain(
                 nucleicSel,
-                mol,
+                molWithAtomsToDivide,
                 "Nucleic"
             );
             const solventAtomsByChain = organizeSelByChain(
                 solventSel,
-                mol,
+                molWithAtomsToDivide,
                 "Solvent"
             );
-            let metalAtomsByChain = organizeSelByChain(metalSel, mol, "Metal");
-            const ionAtomsByChain = organizeSelByChain(ionSel, mol, "Ion");
-            let lipidAtomsByChain = organizeSelByChain(lipidSel, mol, "Lipid");
-            let compoundsByChain = organizeSelByChain({}, mol, "Compound"); // Everything else is ligands
+            let metalAtomsByChain = organizeSelByChain(metalSel, molWithAtomsToDivide, "Metal");
+            const ionAtomsByChain = organizeSelByChain(ionSel, molWithAtomsToDivide, "Ion");
+            let lipidAtomsByChain = organizeSelByChain(lipidSel, molWithAtomsToDivide, "Lipid");
+            let compoundsByChain = organizeSelByChain({}, molWithAtomsToDivide, "Compound"); // Everything else is ligands
+
+            // debugger;
 
             // Further divide by residue (since each ligand is on its own residue,
             // not bound to any other).
             compoundsByChain = divideChainsIntoResidues(compoundsByChain);
+
+            // If any of the terminal nodes on compoundsByChain contains
+            // undefined, redefine it per the frame title.
+            compoundsByChain.nodes?.terminals._nodes.forEach((n: TreeNode) => {
+                if (n.title.indexOf("undefined") > -1) {
+                    n.title = frameTitle;
+                }
+            })
 
             // You don't need to divide solvent and ions by chain.
             const solventAtomsNoChain = flattenChains(solventAtomsByChain);
@@ -506,16 +523,16 @@ function divideAtomsIntoDistinctComponents(
 
             // Add name from content if you like (decided against it)
             // molName =
-            //     data.molName +
+            //     molName +
             //     (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
             // const molNameFromContent = getNameFromContent(frame, molFormatInfo);
             // if (molNameFromContent !== "") {
-            //     molName = `${molNameFromContent} (${molName})`;
+            //     molName = `${molNameFromContent}:${molName}`;
             // }
 
             // Page into single object
             let fileContents = new TreeNode({
-                title: molName,
+                title: frameTitle, // molName,
                 viewerDirty: true,
                 treeExpanded: false,
                 visible: true,

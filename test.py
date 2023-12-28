@@ -28,9 +28,11 @@ import os
 # from selenium.webdriver.logging import LogEntries
 # from selenium.webdriver.logging import LogType
 
-root_url = "http://localhost:8080"
-# root_url = "https://durrantlab.pitt.edu/apps/biotite/beta"
+# root_url = "http://localhost:8080"
+root_url = "https://durrantlab.pitt.edu/biotite/"
+#root_url = "https://durrantlab.pitt.edu/apps/biotite/beta/"
 
+print("Using root URL: " + root_url)
 
 class el:
     def __init__(self, selector, drvr, timeout=50):
@@ -56,11 +58,18 @@ class el:
     @text.setter
     def text(self, value):
         # Clear the field
-        self.el.clear()
+        try:
+            self.el.clear()
+        except Exception as e:
+            pass
+
         # Type the value
         with contextlib.suppress(Exception):
             value = html.unescape(value)
-        self.el.send_keys(value)
+        if value == "BACKSPACE":
+            self.el.send_keys(Keys.BACKSPACE)
+        else:
+            self.el.send_keys(value)
         self.check_errors()
 
     @property
@@ -123,6 +132,16 @@ class el:
         except TimeoutException as e:
             self.throw_error(
                 f"{self.selector} does not contain [[{regex}]] after {self.timeout} seconds"
+            )
+
+    def wait_until_does_not_contain_regex(self, regex):
+        try:
+            WebDriverWait(
+                self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
+            ).until_not(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
+        except TimeoutException as e:
+            self.throw_error(
+                f"{self.selector} still contains [[{regex}]] after {self.timeout} seconds"
             )
 
     def check_errors(self):
@@ -237,6 +256,7 @@ def run_test(plugin_id):
 
     # print(f"Starting {test_lbl}...")
     try:
+        # print(json.dumps(cmds, indent=4))
         for cmd in cmds:
             # resp += f"   {json.dumps(cmd)}\n"
             if cmd["cmd"] == "click":
@@ -249,6 +269,10 @@ def run_test(plugin_id):
                 time.sleep(cmd["data"])
             elif cmd["cmd"] == "waitUntilRegex":
                 el(cmd["selector"], driver).wait_until_contains_regex(cmd["data"])
+            elif cmd["cmd"] == "waitUntilNotRegex":
+                el(cmd["selector"], driver).wait_until_does_not_contain_regex(
+                    cmd["data"]
+                )
             elif cmd["cmd"] == "upload":
                 el(cmd["selector"], driver).upload_file(cmd["data"])
             elif cmd["cmd"] == "addTests":

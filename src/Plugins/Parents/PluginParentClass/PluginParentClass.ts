@@ -29,7 +29,7 @@ import {
 } from "@/Queue/QueueStore";
 import { copyUserArgs } from "../UserInputUtils";
 import { logGAEvent } from "@/Core/GoogleAnalytics";
-import { delayForPopupOpenClose } from "@/Core/AppInfo";
+import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -175,10 +175,6 @@ export abstract class PluginParentClass extends mixins(
      */
     showInQueue = true;
 
-    // In some cases, must pass information to the plugin when it opens.
-    // Typicaly when using the plugin outside the menu system.
-    protected payload: any = undefined;
-
     /**
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
@@ -199,12 +195,11 @@ export abstract class PluginParentClass extends mixins(
         // Reset userArgs to defaults.
         this.userArgs = copyUserArgs(this.userArgDefaults);
 
-        // Children should not override this function! Use onPopupOpen instead.
-        this.payload = payload;
-
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
-        this.onBeforePopupOpen();
+        if (this.onBeforePopupOpen(payload) === false) {
+            return;
+        }
 
         this.openPopup();
 
@@ -506,16 +501,25 @@ export abstract class PluginParentClass extends mixins(
      * This is a helper function to do that.
      *
      * @param {FileInfo} fileInfo  The fileInfo object.
+     * @param {boolean}  [hideOnLoad=false]  Whether to make the molecule visible
      * @returns {Promise<void>}  A promise that resolves when the molecule is
      */
-    protected addFileInfoToViewer(fileInfo: FileInfo): Promise<void> {
+    protected addFileInfoToViewer(fileInfo: FileInfo, hideOnLoad=false): Promise<void> {
         return new TreeNodeList()
             .loadFromFileInfo(fileInfo)
             .then((newTreeNodeList) => {
                 // Note: If loading biotite file, newTreeNodeList will be
                 // undefined.
                 if (newTreeNodeList) {
-                    return newTreeNodeList.addToMainTree();
+                    newTreeNodeList.addToMainTree();
+
+                    if (hideOnLoad) {
+                        newTreeNodeList.flattened.forEach((n) => {
+                            n.visible = false;
+                        });
+                    }
+
+                    return
                 }
                 return;
             });

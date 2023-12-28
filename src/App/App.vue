@@ -41,13 +41,14 @@ import {
 import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
 import * as compileErrors from "../compile_errors.json";
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
 import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
 import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import { globalCredits } from "./GlobalCredits";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import { compile } from "vue";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -159,9 +160,14 @@ export default class App extends Vue {
             window.location.search.indexOf("test=") === -1
         ) {
             // There are compile errors
+            let compileErrorsArray: string[] = [];
+            for (let i = 0; i < compileErrors.length; i++) {
+                compileErrorsArray.push(compileErrors[i]);
+            }
+
             api.messages.popupError(
                 "<p>The following compile errors were found:</p><ul><li>" +
-                    compileErrors.join("</li><li>") +
+                    compileErrorsArray.join("</li><li>") +
                     "</li></ul>"
             );
         }

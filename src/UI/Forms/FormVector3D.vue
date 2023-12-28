@@ -37,6 +37,7 @@ import { randomID } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
+import { formInputDelayUpdate } from "@/Core/GlobalVars";
 
 /**
  * FormVector3D component
@@ -56,6 +57,8 @@ export default class FormVector3D extends Vue {
     @Prop({ required: false }) filterFunc!: Function;
     @Prop({ default: "" }) cls!: string;
     @Prop({ default: "" }) styl!: string;
+    @Prop({ default: formInputDelayUpdate })
+    delayBetweenChangesDetected!: number;
 
     axesIdxs = [0, 1, 2];
     axes = ["x", "y", "z"];
@@ -70,6 +73,9 @@ export default class FormVector3D extends Vue {
         this.$emit("onKeyDown");
     }
 
+    lastHandleInputTimeStamp = 0;
+    handleInputTimeout: any = null;
+
     /**
      * Let the parent component know of any changes, after user has not interacted
      * for a bit (to prevent rapid updates).
@@ -77,28 +83,47 @@ export default class FormVector3D extends Vue {
      * @param {any} e  The value.
      */
     handleInput(e: any): void {
-        // Get "idx" data from target
-        const idx = parseInt(e.target.dataset.idx);
-        const newVals = JSON.parse(JSON.stringify(this.modelValue));
+        // It's important not to handle the input too rapidly. Good to give the
+        // user time to fix any temporarily wrong values.
 
-        let newVal = parseFloat(e.target.value);
+        const now = Date.now();
 
-        if (isNaN(newVal)) {
-            // If not a number, set to 0.
-            newVal = 0;
+        if (
+            now - this.lastHandleInputTimeStamp <
+            this.delayBetweenChangesDetected
+        ) {
+            // Too soon. Timeout below will handle.
+            return;
         }
 
-        if (this.filterFunc) {
-            // If there's a filter funciton, update everything.
-            newVal = this.filterFunc(newVal);
-        }
+        // Clear previous timeout
+        clearTimeout(this.handleInputTimeout);
 
-        newVals[idx] = newVal;
-        this.$emit("update:modelValue", newVals);
+        this.lastHandleInputTimeStamp = now;
+        this.handleInputTimeout = setTimeout(() => {
+            // Get "idx" data from target
+            const idx = parseInt(e.target.dataset.idx);
+            const newVals = JSON.parse(JSON.stringify(this.modelValue));
 
-        // In some circumstances (e.g., changing values in an object), not reactive.
-        // Emit also "onChange" to signal the value has changed.
-        this.$emit("onChange");
+            let newVal = parseFloat(e.target.value);
+
+            if (isNaN(newVal)) {
+                // If not a number, set to 0.
+                newVal = 0;
+            }
+
+            if (this.filterFunc) {
+                // If there's a filter funciton, update everything.
+                newVal = this.filterFunc(newVal);
+            }
+
+            newVals[idx] = newVal;
+            this.$emit("update:modelValue", newVals);
+
+            // In some circumstances (e.g., changing values in an object), not reactive.
+            // Emit also "onChange" to signal the value has changed.
+            this.$emit("onChange");
+        }, this.delayBetweenChangesDetected);
     }
 }
 </script>

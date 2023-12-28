@@ -9,7 +9,7 @@ export class TreeNodeListNodeActions {
 
     /**
      * Creates an instance of TreeNodeListNodeActions.
-     * 
+     *
      * @param {TreeNodeList} parentTreeNodeList  The parent TreeNodeList.
      */
     constructor(parentTreeNodeList: TreeNodeList) {
@@ -32,7 +32,7 @@ export class TreeNodeListNodeActions {
             return;
         }
 
-        let {id} = node;
+        let { id } = node;
 
         if (!node.parentId) {
             // It's a root node, without a parent id.
@@ -89,25 +89,94 @@ export class TreeNodeListNodeActions {
      *
      * @returns {TreeNodeList}  The flat array of all nodes.
      */
-    public get flattened(): TreeNodeList {
-        /**
-         * A recursive function to find the terminal leaves of mols.
-         *
-         * @param  {TreeNodeList} mls  The hierarchical array of TreeNode to
-         *                                search.
-         * @returns {TreeNodeList}  The flat array of nodes.
-         */
-        const findNodes = (mls: TreeNodeList): TreeNodeList => {
-            const allNodes = mls.newTreeNodeList();
+    // public get flattened(): TreeNodeList {
+    //     /**
+    //      * A recursive function to find the terminal leaves of mols.
+    //      *
+    //      * @param  {TreeNodeList} mls  The hierarchical array of TreeNode to
+    //      *                                search.
+    //      * @returns {TreeNodeList}  The flat array of nodes.
+    //      */
+    //     const findNodes = (mls: TreeNodeList): TreeNodeList => {
+    //         const allNodes = mls.newTreeNodeList();
 
-            mls.forEach((mol: TreeNode) => {
-                allNodes.push(mol);
-                if (mol.nodes) {
-                    allNodes.extend(findNodes(mol.nodes));
+    //         mls.forEach((mol: TreeNode) => {
+    //             allNodes.push(mol);
+    //             if (mol.nodes) {
+    //                 allNodes.extend(findNodes(mol.nodes));
+    //             }
+    //         });
+    //         return allNodes;
+    //     };
+    //     return findNodes(this.parentTreeNodeList);
+    // }
+
+    /**
+     * Gets all the nodes, whether terminal or not.
+     *
+     * @returns {TreeNodeList}  The flat array of all nodes.
+     */
+    public get flattened(): TreeNodeList {
+        // NOTE: This is adapted from ChatGPT's recommended revision of above
+        // function. I'm fairly certain it works the same, but if you run into
+        // errors, consider the differences between the two functions.
+
+        const allNodes: TreeNode[] = [];
+        const processedNodes = new Set<TreeNode>();
+
+        const stack = [this.parentTreeNodeList._nodes];
+
+        while (stack.length > 0) {
+            const nodes = stack.pop();
+            // Note nodes should not be null, but typescript doesn't know that.
+            // Don't want to do check for null every time.
+
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            for (const node of nodes) {
+                if (!processedNodes.has(node)) {
+                    processedNodes.add(node);
+                    allNodes.push(node);
+                    if (node.nodes && node.nodes.length > 0) {
+                        stack.push(node.nodes._nodes);
+                    }
                 }
-            });
-            return allNodes;
-        };
-        return findNodes(this.parentTreeNodeList);
+            }
+        }
+        return this.parentTreeNodeList.newTreeNodeList(allNodes);
     }
+
+    // /**
+    //  * Gets all the nodes, whether terminal or not.
+    //  *
+    //  * @returns {TreeNodeList}  The flat array of all nodes.
+    //  */
+    // public get flattened(): TreeNodeList {
+    //     // NOTE: This is adapted from ChatGPT's recommended revision of above
+    //     // function. I'm fairly certain it works the same, but if you run into
+    //     // errors, consider the differences between the two functions.
+    //     const treeNodeListStack: TreeNodeList[] = [this.parentTreeNodeList];
+    //     const allNodes = this.parentTreeNodeList.newTreeNodeList();
+
+    //     while (treeNodeListStack.length > 0) {
+    //         const currentTreeNode = treeNodeListStack.pop();
+
+    //         if (!currentTreeNode) {
+    //             continue;
+    //         }
+
+    //         currentTreeNode.forEach((treeNode: TreeNode) => {
+    //             allNodes.push(treeNode);
+    //             if (treeNode.nodes && treeNode.nodes.length > 0) {
+    //                 treeNode.nodes.forEach((node) => {
+    //                     if (node.nodes) {
+    //                         treeNodeListStack.push(node.nodes);
+    //                     }
+    //                 })
+    //             }
+    //         });
+    //     }
+
+    //     return allNodes;
+    // }
 }

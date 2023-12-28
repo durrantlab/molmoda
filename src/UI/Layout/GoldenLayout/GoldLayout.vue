@@ -24,43 +24,51 @@
                             :style="'height:100%; padding:0 !important;'"
                         >
                             <div v-if="!viewerLoaded" class="splash-screen">
-                                <div class="container-fluid p-2">
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <img
-                                                src="img/icons/android-chrome-192x192.png"
-                                                class="rounded mx-auto d-block"
-                                                alt="Logo"
-                                                style="
-                                                    width: 192px;
-                                                    height: 192px;
-                                                "
-                                            />
-                                        </div>
+                                <div class="container-fluid p-3">
+                                    <div
+                                        style="
+                                            float: right;
+                                            margin-left: 0.5rem;
+                                        "
+
+                                        class="d-none d-sm-block"
+                                    >
+                                        <img
+                                            src="img/icons/android-chrome-192x192.png"
+                                            class="rounded mx-auto d-block"
+                                            alt="Logo"
+                                            style="width: 128px; height: 128px"
+                                        />
+                                        <p class="text-center">
+                                            {{ appInfo }}
+                                        </p>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <p class="text-center">
-                                                {{ appInfo }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <p>
-                                                <span
-                                                    v-html="appDescription"
-                                                ></span>
-                                                To get started, take a look at
-                                                the
-                                                <PluginPathLink
-                                                    plugin="help"
-                                                    :title='appName + " Help System"'
-                                                ></PluginPathLink
-                                                >.
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <p>
+                                        <span v-html="appDescription"> </span>
+                                        {{ appName }} is freely accessible for
+                                        personal, academic, and commercial use,
+                                        without login or registration.
+                                    </p>
+                                    <p>
+                                        To get started, take a look at the
+                                        <PluginPathLink
+                                            plugin="help"
+                                            :title="appName + ' Help System'"
+                                        >
+                                        </PluginPathLink>, view a
+                                        <PluginPathLink
+                                            plugin="videotutorials"
+                                            title=" helpful video tutorial"
+                                        >
+                                        </PluginPathLink>,
+                                        or load some
+                                        <PluginPathLink
+                                            plugin="openexampleproject"
+                                            title="example data"
+                                        >
+                                        </PluginPathLink
+                                        >.
+                                    </p>
                                 </div>
                             </div>
                             <ViewerPanel @onViewerLoaded="onViewerLoaded" />
@@ -125,7 +133,7 @@ import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
-import { appName, appVersion, appDescription } from "@/Core/AppInfo";
+import { appName, appVersion, appDescription } from "@/Core/GlobalVars";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
@@ -159,7 +167,7 @@ export default class GoldLayout extends Vue {
 
     /**
      * Gets the app name.
-     * 
+     *
      * @returns {string}  The app name.
      */
     get appName(): string {

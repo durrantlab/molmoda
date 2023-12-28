@@ -33,10 +33,12 @@ system uses these to autopopulate with plugins. -->
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
+    <SimpleVideoPlugin @onPluginSetup="onPluginSetup"></SimpleVideoPlugin>
     <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
     <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
+    <VideoTutorialsPlugin @onPluginSetup="onPluginSetup"></VideoTutorialsPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
@@ -86,10 +88,12 @@ import SaveVRMLPlugin from "./Core/Graphics/SaveVRMLPlugin.vue";
 import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
+import SimpleVideoPlugin from "./Core/SimpleVideoPlugin.vue";
 import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
+import VideoTutorialsPlugin from "./Core/VideoTutorialsPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
@@ -135,10 +139,12 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SelectAllPlugin,
     SettingsPlugin,
     SimpleMsgPlugin,
+    SimpleVideoPlugin,
     StatCollectionPlugin,
     StylesWindowPlugin,
     ToggleVisiblePlugin,
     UndoPlugin,
+    VideoTutorialsPlugin,
     ViewerWindowPlugin,
 
     AddRegionPlugin,

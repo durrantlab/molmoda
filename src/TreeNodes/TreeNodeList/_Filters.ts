@@ -17,6 +17,10 @@ export type EasyCriterion = string | number | TreeNodeType;
 export class TreeNodeListFilters {
     private parentTreeNodeList: TreeNodeList;
 
+    // The findNode and other functions are very expensive, per profiler. Going
+    // to try caching the results for a speedup.
+    private cache = new Map<string, TreeNode>();
+
     /**
      * Creates an instance of TreeNodeListFilters.
      * 
@@ -226,10 +230,6 @@ export class TreeNodeListFilters {
         );
     }
 
-    // The findNode function is very expensive, per profiler. Going to try
-    // caching the results for a speedup.
-    private cache = new Map();
-
     /**
      * A recursive function to find the node of id.
      *
@@ -241,7 +241,7 @@ export class TreeNodeListFilters {
     private findNode(mls: TreeNodeList, i: string): TreeNode | null {
         // Caching result for speed.
         if (this.cache.has(i)) {
-            return this.cache.get(i);
+            return this.cache.get(i) as TreeNode;
         }
 
         const {_nodes} = mls;
@@ -282,6 +282,9 @@ export class TreeNodeListFilters {
      *     found.
      */
     public onlyId(id: string): TreeNode | null {
+        if (this.cache.get(id)) {
+            return this.cache.get(id) as TreeNode;
+        }
         return this.findNode(this.parentTreeNodeList, id);
     }
 

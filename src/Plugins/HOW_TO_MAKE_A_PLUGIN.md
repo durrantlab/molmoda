@@ -88,7 +88,7 @@ Gets the test commands for the plugin. For advanced use.
 
 | Parameter | Type | Description
 | --------- | ---- | -----------
-| `(returns)` | `ITest[] \| ITest \| null` | The selenium test command(s). If null, skips test (rarely used). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217). `ITest` is defined in [TestCmd.ts, line 217](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L217).
+| `(returns)` | `ITest[] \| ITest \| null` | The selenium test command(s). If null, skips test (rarely used). `ITest` is defined in [TestCmd.ts, line 256](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L256). `ITest` is defined in [TestCmd.ts, line 256](https://git.durrantlab.pitt.edu/jdurrant/biotite-suite/-/blob/main/src/Testing/TestCmd.ts#L256).
 
 #### `intro` (variable) <a id="intro"></a>
 
@@ -148,6 +148,10 @@ Checks if the plugin can currently run. This function allows plugins to provide 
 #### `onBeforePopupOpen` (function) <a id="onBeforePopupOpen"></a>
 
 Called right before the plugin popup opens.
+
+| Parameter | Type | Description
+| --------- | ---- | -----------
+| `payload` | `any` | The payload passed to the popup if it is accessed programatically.
 
 #### `onMounted` (function) <a id="onMounted"></a>
 

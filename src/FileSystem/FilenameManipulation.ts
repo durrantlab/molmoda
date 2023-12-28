@@ -1,5 +1,7 @@
 import { IFileParts } from "./Utils";
 
+const regexAcceptableChars = "a-zA-Z\\d."
+
 /**
  * Make sure a filename is valid by removing non-alphanumeric characters.
  *
@@ -9,7 +11,9 @@ import { IFileParts } from "./Utils";
  export function fileNameFilter(filename: string): string {
     // Keep numbers and letters and period. Also - and _.
     // filename = filename.replace(/[^a-zA-Z\d.]/g, "");
-    filename = filename.replace(/[^\w.-]/g, '');
+    const re = new RegExp(`[^${regexAcceptableChars}]`, "g");
+    filename = filename.replace(re, "");
+    // filename = filename.replace(/[^\w.-]/g, '');
 
     return filename;
 }
@@ -22,7 +26,8 @@ import { IFileParts } from "./Utils";
  */
 export function matchesFilename(filename: string): boolean {
     // Create regex for any number of letters and numbers and period
-    const r = /^[a-zA-Z\d.]+$/;
+    // const r = /^[a-zA-Z\d.]+$/;
+    const r = new RegExp(`^[${regexAcceptableChars}]+$`, "g");
 
     // Return bool whether text matches regex
     return filename.match(r) !== null;

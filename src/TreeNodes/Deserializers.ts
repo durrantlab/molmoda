@@ -26,6 +26,11 @@ function treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
                 const model = new $3Dmol.GLModel();
                 model.addAtoms(nodeSerial.model);
                 newNode.model = model;
+
+                // The model should not be reactive or alterable after loaded.
+                // Note that this dramatically improves performance in vue, but
+                // any changes to the model will require recreating it entirely.
+                Object.freeze(newNode.model);
             }
 
             return nodeSerial as ITreeNode;
@@ -71,14 +76,14 @@ export function treeNodeListDeserialize(
 /**
  * Deep clone a TreeNodeList.
  *
- * @param  {TreeNodeList} nodes  The TreeNodeList to clone.
+ * @param  {TreeNodeList} treeNodeList  The TreeNodeList to clone.
  * @returns {Promise<TreeNodeList>}  A promise that resolves the cloned
  *     TreeNodeList.
  */
 export function treeNodeListDeepClone(
-    nodes: TreeNodeList
+    treeNodeList: TreeNodeList
 ): Promise<TreeNodeList> {
-    return treeNodeListDeserialize(nodes.serialize());
+    return treeNodeListDeserialize(treeNodeList.serialize());
 }
 
 /**

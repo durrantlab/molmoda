@@ -34,8 +34,8 @@ import { randomID } from "@/Core/Utils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
+import { formInputDelayUpdate } from "@/Core/GlobalVars";
 
-export const FORM_INPUT_DELAY_UPDATE_DEFAULT = 500;
 
 /**
  * FormInput component
@@ -53,8 +53,7 @@ export default class FormInput extends Vue {
     @Prop({ default: false }) disabled!: boolean;
     @Prop({ required: false }) filterFunc!: Function;
     @Prop({}) description!: string;
-    @Prop({ default: FORM_INPUT_DELAY_UPDATE_DEFAULT })
-    delayBetweenChangesDetected!: number;
+    @Prop({ default: formInputDelayUpdate }) delayBetweenChangesDetected!: number;
     @Prop({ default: false }) readonly!: boolean;
     @Prop({ default: true }) validateDescription!: boolean;
 
@@ -137,7 +136,8 @@ export default class FormInput extends Vue {
         // Note that it's delayed to prevent rapid reactivity. Good for color
         // selector.
 
-        // If less 0.5 seconds haven't passed yet, don't try again.
+        // If it was recently updated, don't try again. The setTimeout below
+        // should be running and will update when ready.
         if (
             Date.now() - this.lastHandleInputTimeStamp <
             this.delayBetweenChangesDetected

@@ -12,19 +12,23 @@ import { toRaw, isReactive } from "vue";
  *     returns.
  */
 export function runWorker(
-    worker: Worker,
+    worker: Worker | null,
     data: any,
     autoTerminate = true
 ): Promise<any> {
     // Promise to wait for webworker to return data.
     const returnPromise = new Promise((resolve) => {
         // Remove previous onmessage, if any
+        if (worker === null) throw new Error("Worker is null");
+
         worker.onmessage = null;
 
         worker.onmessage = (resp: MessageEvent) => {
+            if (worker === null) throw new Error("Worker is null");
             if (autoTerminate) {
                 // terminate the worker after use.
                 worker.terminate();
+                worker = null;
             }
             resolve(resp.data);
         };
@@ -51,7 +55,7 @@ export function runWorker(
 
     // Now send data to webworker.
     try {
-        worker.postMessage(data);
+        worker?.postMessage(data);
     } catch (err) {
         debugger;
         console.log(data);

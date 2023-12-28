@@ -31,7 +31,7 @@ export function parseUsingOpenBabel(
                 if (hasMultipleFrames) {
                     // const prts = getFileNameParts(fileInfo.name);
                     // name = `(frame ${i + 1}) ${prts.basename}.${prts.ext}`;
-                    name = `(frame ${i + 1}) ${fileInfo.name}`;
+                    name = `(frame${i + 1}) ${fileInfo.name}`;
                 }
 
                 return new FileInfo({

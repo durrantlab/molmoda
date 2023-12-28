@@ -133,14 +133,22 @@ export default class ViewerPanel extends Vue {
 
             await loadViewerLibPromise as Promise<any>;
 
-            if (allMolecules.length === 0) {
-                // No molecules present
-                api.visualization.viewerObj?.clearCache();
-                return;
-            }
+            // if (allMolecules.length === 0) {
+            //     // No molecules present
+            //     api.visualization.viewerObj?.clearCache();
+            //     return;
+            // }
 
             // Update and zoom
-            return this._updateStyles();
+            const updatedStyles = this._updateStyles();
+
+            if (allMolecules.length === 0) {
+                // No molecules present. Perhaps not necessary, but let's clear
+                // the cache just in case.
+                api.visualization.viewerObj?.clearCache();
+            }
+
+            return updatedStyles;
         }, 0);
     }
 
@@ -302,35 +310,55 @@ export default class ViewerPanel extends Vue {
                     treeNode.viewerDirty = false;
                 });
 
-                const visibleDirtyNodes = dirtyNodes.filter(
-                    (treeNode: TreeNode) => {
-                        const isVisible = treeNode.visible;
+                const visibleDirtyNodes = dirtyNodes.filter((treeNode: TreeNode) => treeNode.visible)
+                const invisibleDirtyNodes = dirtyNodes.filter((treeNode: TreeNode) => !treeNode.visible)
 
-                        if (!isVisible) {
-                            // Since not supposed to be visible, we won't keep
-                            // it in the list. But make sure it's hidden here.
+                // Make sure invisible ones are really invisible.
+                for (let treeNode of invisibleDirtyNodes) {
+                    // Since not supposed to be visible, we won't keep
+                    // it in the list. But make sure it's hidden here.
 
-                            // hide it.
-                            // console.log("Hiding:" + treeNode.id);
-                            viewer.hideObject(treeNode.id as string);
+                    // hide it.
+                    // console.log("Hiding:" + treeNode.id);
+                    viewer.hideObject(treeNode.id as string);
 
-                            // Clear any surfaces associated with this molecule.
-                            viewer.clearSurfacesOfMol(treeNode.id as string);
-                        } else {
-                            // Make sure actually visible
-                            // console.log("Showing:" + treeNode.id);
-                            viewer.showObject(treeNode.id as string);
-                        }
+                    // Clear any surfaces associated with this molecule.
+                    viewer.clearSurfacesOfMol(treeNode.id as string);
+                }
 
-                        return isVisible;
-                    }
-                );
+                // for (let treeNode of visibleDirtyNodes) {
+                //     const isVisible = treeNode.visible;
+
+                //     if (!isVisible) {
+                //         // Since not supposed to be visible, we won't keep
+                //         // it in the list. But make sure it's hidden here.
+
+                //         // hide it.
+                //         // console.log("Hiding:" + treeNode.id);
+                //         viewer.hideObject(treeNode.id as string);
+
+                //         // Clear any surfaces associated with this molecule.
+                //         viewer.clearSurfacesOfMol(treeNode.id as string);
+                //     } else {
+                //         // Make sure actually visible
+                //         viewer.showObject(treeNode.id as string);
+                //         // console.log("Showing:" + treeNode.id);
+                //     }
+
+                //     return isVisible;
+                // }
 
                 for (const treeNode of visibleDirtyNodes) {
                     // There are styles to apply. Apply them.
                     if (this._clearAndSetStyle(treeNode, surfacePromises)) {
+                        // Make sure actually visible. This also makes
+                        // clickable, etc.
+                        viewer.showObject(treeNode.id as string);
                         continue;
                     }
+
+                    // Make sure actually visible
+                    viewer.showObject(treeNode.id as string);
 
                     // Visible, but no style specified. Is it a region?
                     if (treeNode.region) {

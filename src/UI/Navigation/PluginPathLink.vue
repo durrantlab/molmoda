@@ -16,7 +16,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 import { messagesApi } from "@/Api/Messages";
 import { pluginsApi } from "@/Api/Plugins";
-import { delayForPopupOpenClose } from "@/Core/AppInfo";
+import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 
 /**
  * PluginPathLink component

@@ -31,13 +31,14 @@
                         class="btn btn-secondary cancel-btn"
                         data-bs-dismiss="modal"
                         @click="cancelBtn"
+                        :disabled="isClosing"
                     >
                         {{ cancelBtnTxt }}
                     </button>
                     <button
                         v-if="actionBtnTxt"
                         type="button"
-                        :disabled="!isActionBtnEnabled"
+                        :disabled="!isActionBtnEnabled || isClosing"
                         class="btn btn-primary action-btn"
                         @click="actionBtn"
                     >
@@ -49,6 +50,7 @@
                         type="button"
                         class="btn btn-primary action-btn2"
                         @click="otherActionBtn(2)"
+                        :disabled="isClosing"
                     >
                         {{ actionBtnTxt2 }}
                     </button>
@@ -57,6 +59,7 @@
                         type="button"
                         class="btn btn-primary action-btn2"
                         @click="otherActionBtn(3)"
+                        :disabled="isClosing"
                     >
                         {{ actionBtnTxt3 }}
                     </button>
@@ -65,6 +68,7 @@
                         type="button"
                         class="btn btn-primary action-btn2"
                         @click="otherActionBtn(4)"
+                        :disabled="isClosing"
                     >
                         {{ actionBtnTxt4 }}
                     </button>
@@ -90,8 +94,8 @@ import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import { randomID } from "@/Core/Utils";
 import { PopupVariant } from "./InterfacesAndEnums";
-import { FORM_INPUT_DELAY_UPDATE_DEFAULT } from "@/UI/Forms/FormInput.vue";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { formInputDelayUpdate } from "@/Core/GlobalVars";
 
 /**
  * Popup component
@@ -125,6 +129,10 @@ export default class Popup extends Vue {
     // 0 or 1, depending on how you want to set the style. TODO: Good to settle on
     // one or the other.
     styling = 1;
+
+    // Allows you to force the modal closed regardless of the modelValue
+    // property. Use with caution. Should always restore to true quickly.
+    isClosing = false;
 
     /**
      * Watch for changes to the modelValue property. Show the popup accordingly.
@@ -213,17 +221,22 @@ export default class Popup extends Vue {
         setTimeout(() => {
             this.$emit("onCancel");
             this.$emit("update:modelValue", false);
-        }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
+        }, formInputDelayUpdate);
      }
 
     /**
      * Runs when the action button is pressed.
      */
     actionBtn() {
+        // This gets it to close immediately.
+        this.isClosing = true;
+        
         setTimeout(() => {
+            // This because you need to wait for user inputs to be finalized.
             this.$emit("onDone");
             this.$emit("update:modelValue", false);
-        }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
+            this.isClosing = false;
+        }, formInputDelayUpdate);
     }
 
     /**
@@ -236,7 +249,7 @@ export default class Popup extends Vue {
         setTimeout(() => {
             this.$emit("onDone" + idx.toString());
             // this.$emit("update:modelValue", false);
-        }, FORM_INPUT_DELAY_UPDATE_DEFAULT);
+        }, formInputDelayUpdate);
     }
 
     /**

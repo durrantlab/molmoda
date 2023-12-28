@@ -30,6 +30,8 @@ import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
+import * as api from "@/Api";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * SimpleMsgPlugin
@@ -112,7 +114,16 @@ export default class SimpleMsgPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-     getTests(): ITest[] {        // No tests for this simple plugin.
+    getTests(): ITest[] {
+        // Not going to test closing, etc. (Too much work.) But at least opens
+        // to see if an error occurs.
+
+        api.plugins.runPlugin(this.pluginId, {
+            title: "Test Title",
+            message: "Test message",
+            open: true, // open
+        } as ISimpleMsg);    
+
         return [];
     }
 }

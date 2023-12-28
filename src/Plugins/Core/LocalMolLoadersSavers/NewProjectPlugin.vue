@@ -5,15 +5,20 @@
         cancelBtnTxt="Cancel"
         actionBtnTxt="New Project"
         @onPopupDone="onPopupDone"
-        actionBtnTxt2="Save Project First"
-        @onPopupDone2="saveProject"
         :isActionBtnEnabled="true"
         @onUserArgChanged="onUserArgChanged"
     >
-        <p>
+        <!-- actionBtnTxt2="Save Project First" -->
+        <!-- @onPopupDone2="saveProject" -->
+        <Alert type="warning">
+            Would you like to save the current project first? If so, press the
+            "Cancel" button, then File -> Save...
+        </Alert>
+
+        <!-- <p>
             Would you like to
             <a href="#" @click="saveProject">save the project first</a>?
-        </p>
+        </p> -->
     </PluginComponent>
 </template>
 
@@ -29,7 +34,8 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { delayForPopupOpenClose } from "@/Core/AppInfo";
+import { delayForPopupOpenClose } from "@/Core/GlobalVars";
+import Alert from "@/UI/Layout/Alert.vue";
 
 /**
  * NewProjectPlugin
@@ -38,6 +44,7 @@ import { delayForPopupOpenClose } from "@/Core/AppInfo";
     components: {
         PluginComponent,
         FormFile,
+        Alert
     },
 })
 export default class NewProjectPlugin extends PluginParentClass {
@@ -83,15 +90,15 @@ export default class NewProjectPlugin extends PluginParentClass {
      * @param {Event | undefined} e  The event (if any) that triggered this
      *                               function.
      */
-    saveProject(e: Event | undefined) {
-        if (e !== undefined) {
-            e.preventDefault();
-        }
-        this.closePopup();
-        setTimeout(() => {
-            api.plugins.runPlugin("savemolecules", true);
-        }, delayForPopupOpenClose);
-    }
+    // saveProject(e: Event | undefined) {
+    //     if (e !== undefined) {
+    //         e.preventDefault();
+    //     }
+    //     this.closePopup();
+    //     setTimeout(() => {
+    //         api.plugins.runPlugin("savemolecules", true);
+    //     }, delayForPopupOpenClose);
+    // }
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
@@ -114,27 +121,27 @@ export default class NewProjectPlugin extends PluginParentClass {
             // First test without saving first
             {
                 beforePluginOpens: new TestCmdList().loadExampleProtein(),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: new TestCmdList(),
             },
 
             // Test with saving first (secondary button)
-            {
-                beforePluginOpens: new TestCmdList().waitUntilRegex(
-                    "#styles",
-                    "Protein"
-                ),
-                closePlugin: new TestCmdList()
-                    .click("#modal-newproject .action-btn2")
-                    .wait(3),
-                afterPluginCloses: new TestCmdList()
-                    .text(
-                        "#modal-savemolecules #filename-savemolecules-item",
-                        "test"
-                    )
-                    .click("#modal-savemolecules .action-btn")
-                    .wait(5)
-                    .click("#modal-simplemsg .cancel-btn")
-            },
+            // {
+            //     beforePluginOpens: new TestCmdList().waitUntilRegex(
+            //         "#styles",
+            //         "Protein"
+            //     ),
+            //     closePlugin: new TestCmdList()
+            //         .click("#modal-newproject .action-btn2")
+            //         .wait(3),
+            //     afterPluginCloses: new TestCmdList()
+            //         .text(
+            //             "#modal-savemolecules #filename-savemolecules-item",
+            //             "test"
+            //         )
+            //         .click("#modal-savemolecules .action-btn")
+            //         .wait(5)
+            //         .click("#modal-simplemsg .cancel-btn"),
+            // },
         ];
     }
 }

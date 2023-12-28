@@ -91,31 +91,91 @@ Open options: add 3D coordinates, frames to separate molecules, etc.
 
 ligs.cif shows only one
 
-# Ongoing: Important
+Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
+
+Look into MoleculeKit, which is compatible with Pyodide. 
+
+It would be good, eventually, to have different representations for different
+molecules. Perhaps, in the status panel, there could be a dropdown that says
+apply to selected molecule, or apply to all molecules, or by selection, and
+using VMD selection language seems pretty cool to me.
+
+I also like the idea of a standalone application. Shouldn't be hard to implement
+that, using Electron.
 
 Load session after saving without restarting, duplicate keys in log. Good to
 clear log on load session.
 
-Search for "// TODO: You're sending all inputFiles for each runBabel call, because"
+The new 3dmoljs is based on typescript: https://github.com/3dmol/3Dmol.js Would
+be good to use that in time. You have a branch already, but it freezes after
+docking. Your only version doesn't somehow.
+
+# Ongoing: Important
+
+Recently redid undo/redo. But load molecule and show/hide multiple times.
+    Eventually no molecule shows up.
+
+On save biotite, _ should be allowed in filename. Also -. Works now, but action
+button doesn't update.
+
+Try docking on lots of processors on bob. Some error. Why?
+
+When you dock, should also save docking parameteres to data. Together with
+score.
+
+Show message if job doesnt finish in 10 seconds (look at job panel, with link)
+
+Try to close on open button in compiled version. Doesn't work!
+
+# DONE
+
+Search through all getTests to make sure no empty tests.
+
+review:
+    src/Core/GoogleAnalytics.ts
+    Should be collecting at https://analytics.google.com/analytics/web/#/p417229323/reports/intelligenthome
+    When done debugging, search "moose" and fix.
+Seems to be logging visits, but not custom events. See if they show up tomorrow
+(maybe not realtime). Search for two isntances of "moose" that need undone (now one instance).
+
+With webina, save multiple poses. Could each pose not be the same name?
+
+I think I once was able to click submit webina button twice, launched job twice.
+
+Try moving a region by clicking you get an error.
+
+I wonder if molecules shouldnt' be reactive. Maybe there should be a refreshTree
+function that must be called manually.
+
+Click on molecule. Doesn't center. Search for "// PROBLEM HERE"
+
+title bar delete, edit, etc. buttons no longer work. Fix that, and make a test for it.
 
 Dock your test file. asdsadasasaaasdggh.biotite  Look in data at prot path for
 one. It's not good. Entry col needs to be wider.
 
-review:
-    src/Core/GoogleAnalytics.ts
+Save file. Put file name. Then say no biotite quickly. Filename originally entered disappears.
+
+Load 2HU4, saved jus tselected oseltam as pdb file. Doesn't respect filename.
+
+Drag molecule onto viewer. Does it open the modal now? Shouldn't.
+
+Load in mols. Rename one. Export as mol2. Unzip. Name change not reflected in
+file name
+
+Improve undo checkallow. Doesn't seem to be fully reactive? Not sure what to
+make of it. 
+
+I wonder if using serialize/deserialize instead of deepCopy would work?
+
+Vector3D field can't change by typing well.
+
+Standardize FORM_INPUT_DELAY_UPDATE_DEFAULT across everything? Make it a bit
+bigger than 500 ms?
 
 After deleting, need to rerender too.
     Something here: "if (idsOfMolsOrRegionsToDelete.length > 0) {"
 Delete stuff, then focus, it all comes back
-
-Load in mols. Rename one. Export as mol2. Unzip. Name change not reflected in file name
-
-Vector3D field can't change by typing well.
-
-Improve undo checkallow. Doesn't seem to be fully reactive? Not sure what to
-make of it.
-
-# DONE
 
 Reduce. Make sure parameters ok.
 

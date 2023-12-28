@@ -42,6 +42,7 @@ export function filesToFileInfos(
     allAcceptableFileTypes: string[]
 ): Promise<(FileInfo | string)[]> {
     // Type is file extension, uppercase.
+    // debugger
 
     const fileInfoBatchesPromises: Promise<FileInfo[] | string>[] = [];
     for (const file of fileList) {
@@ -83,7 +84,7 @@ export function filesToFileInfos(
                 };
 
                 reader.onerror = (e: any) => {
-                    reject(e);
+                    reject(e.currentTarget.error.message);
                 };
 
                 if (!treatAsZip) {

@@ -55,8 +55,10 @@ export function getConvertedTxts(
         return Promise.resolve([]);
     }
 
-    return nodes.toFileInfos(targetExt, merge).then(
-        (molFileInfos: FileInfo[]) => {
+
+    return nodes
+        .toFileInfos(targetExt, merge)
+        .then((molFileInfos: FileInfo[]) => {
             return molFileInfos.map((molFileInfo, idx) => {
                 // Prepend the chain
                 const molEntry = nodes.get(idx);
@@ -69,8 +71,7 @@ export function getConvertedTxts(
                 molFileInfo.treeNode = molEntry;
                 return molFileInfo;
             });
-        }
-    );
+        });
 }
 
 /**

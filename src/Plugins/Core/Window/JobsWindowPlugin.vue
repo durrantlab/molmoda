@@ -59,6 +59,8 @@ export default class JobsWindowPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     getTests(): ITest[] {
+        // This is a test! Nothing specific to do but click the menu items.
+        
         return [];
         // {
         //     afterPluginCloses: new TestCmdList().wait(3),

@@ -71,9 +71,11 @@ export default class CloneMolPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     * 
+     * @param {any} payload  The payload (node id)
      */
-    public onBeforePopupOpen() {
-        setNodesToActOn(this);
+    public onBeforePopupOpen(payload: any) {
+        setNodesToActOn(this, payload);
 
         const nodeToActOn = (this.nodesToActOn as TreeNodeList).get(0);
 
@@ -206,10 +208,16 @@ export default class CloneMolPlugin extends PluginParentClass {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleProtein(true)
                     .selectMoleculeInTree("Protein"),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    ":cloned"
-                ),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", ":cloned")
+
+                    // Also check clicking in title bar
+                    .selectMoleculeInTree("Compounds")
+                    .click('#navigator div[data-label="Compounds"] span.cloneextract')
+                    .text("#newName-clonemol-item", "Compounds-clonned")
+                    .pressPopupButton(".action-btn", this.pluginId)
+                    .wait(2)
+                    .waitUntilRegex("#navigator", "Compounds-clonned"),
             },
         ];
     }

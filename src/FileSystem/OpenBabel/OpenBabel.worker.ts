@@ -208,7 +208,9 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             // It's important that the input and output files be sufficiently
             // different. Because -m might overwrite an already existant file
             // otherwise.
-            const inputFileBaseWithoutNumbers = (<FileInfo>inputFileActuallyUsed).name
+            const inputFileBaseWithoutNumbers = (<FileInfo>(
+                inputFileActuallyUsed
+            )).name
                 .replace(/\d/g, "")
                 .split(".")[0];
             const outputFileBaseWithoutNumbers = outputFileActuallyUsed
@@ -255,8 +257,6 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 newFiles = [inputFileActuallyUsed?.name];
             }
 
-            // console.log("MOO", filesBeforeRun, filesAfterRun, newFiles);
-
             // if (newFiles[0].indexOf(".can") !== -1) {
             //     debugger;
             // }
@@ -290,6 +290,55 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
         });
 }
 
+function easyParsePDBIfPossible(
+    args: string[],
+    inputFiles: any
+): boolean | Promise<any> {
+    const testArgs = args.filter((arg) => arg !== "-m" && arg !== "-O");
+    if (testArgs.length !== 2) return false;
+
+    // If here, testArgs is like ['tmpmol0.pdb', 'tmp0.pdb']
+
+    // Validate file extensions without additional splits. They must both end in pdb.
+    const fileExt = [".pdb", ".PDB"];
+    if (
+        !fileExt.includes(testArgs[0].slice(-4)) ||
+        testArgs[0].slice(-4) !== testArgs[1].slice(-4)
+    )
+        return false;
+
+    // Find the file without iterating over the entire array
+    const fileInfoToUse = inputFiles.find((f: any) => f.name === testArgs[0]);
+    if (!fileInfoToUse) return false;
+
+    // Find lines that are, in their entirety, either END or ENDMDL. Split the
+    // contents on those lines.
+    const pdbTxtToParse = fileInfoToUse.contents.trim();
+    const lines = pdbTxtToParse.split("\n");
+
+    // Efficiently check and add the last line if needed
+    const lastLine = lines[lines.length - 1].trim();
+    if (lastLine !== "END" && lastLine !== "ENDMDL") {
+        lines.push("END");
+    }
+
+    const splitLines: string[][] = [];
+    let currentSplitLine: string[] = [];
+    for (const line of lines) {
+        if (line === "END" || line === "ENDMDL") {
+            splitLines.push(currentSplitLine);
+            currentSplitLine = [];
+        } else {
+            currentSplitLine.push(line);
+        }
+    }
+
+    return Promise.resolve({
+        orderIdxs: fileInfoToUse.auxData,
+        outputFiles: splitLines.map((lines) => lines.join("\n")),
+    });
+}
+
 let currentlyRunning = false;
 
 self.onmessage = (params: MessageEvent) => {
@@ -297,18 +346,29 @@ self.onmessage = (params: MessageEvent) => {
         throw new Error("Already running");
     }
 
-    // console.log(params)
-
     currentlyRunning = true;
     const argsSets = params.data.map((d: any) => d.args); // params.data.argsSets as string[][];
     const inputFiles = params.data.map((d: any) => d.inputFile); // params.data.inputFiles as FileInfo[];
     // const outputFilePath = params.outputFilePath as string;
 
-    const promises = argsSets.map((args: any) => {
+    const promises = argsSets.map((args: string[]) => {
         // TODO: You're sending all inputFiles for each runBabel call, because
         // you can't know which files are needed for each call. It would be
         // better to somehow persist the files/OpenBabel module and call it
         // multiple times. Need to investigate.
+
+        // Args just contains the parameters, e.g., ['tmpmol0.pdb', '-m', '-O', 'tmp0.pdb']
+
+        // inputFiles is a LIST of FileInfos. .name is filename, .contents is file contents.
+
+        // Converting pdb to pdb should not be done with open babel. It is very
+        // slow for large PDB files. But if -p, or --gen3D, then let openbabel
+        // handle it.
+        const pdbToPdbPromise = easyParsePDBIfPossible(args, inputFiles);
+        if (pdbToPdbPromise !== false) {
+            return pdbToPdbPromise;
+        }
+
         return runBabel(args, inputFiles);
     });
 

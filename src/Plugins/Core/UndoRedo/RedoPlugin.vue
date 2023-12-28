@@ -9,7 +9,7 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { redo, redoStack } from "./UndoStack";
+import { redo } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -52,7 +52,7 @@ export default class RedoPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        if (redoStack.length === 0) {
+        if (this.$store.state.redoStack.length === 0) {
             return "No additional redo is available.";
         }
         return null;

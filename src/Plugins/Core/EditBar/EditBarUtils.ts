@@ -22,14 +22,15 @@ export function getDefaultNodeToActOn(): TreeNode {
  * Determine which node to act on. Mostly likely the selected molecule.
  *
  * @param  {any}     This                 The associated Editbar Vue component.
+ * @param  {string}  nodeId               The node id to act on.
  * @param  {boolean} terminalAnySelected  Whether to only consider terminal
  *                                        nodes taht are selected. Otherwise,
  *                                        considers all selected.
  */
-export function setNodesToActOn(This: any, terminalAnySelected = false) {
-    if (This.payload) {
+export function setNodesToActOn(This: any, nodeId: string, terminalAnySelected = false) {
+    if (nodeId) {
         // this.payload is the node id.
-        const id = This.payload;
+        const id = nodeId;
         This.nodesToActOn = new TreeNodeList([
             (This.$store.state.molecules as TreeNodeList).filters.onlyId(
                 id

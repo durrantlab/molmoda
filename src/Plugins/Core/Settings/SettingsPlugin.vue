@@ -36,7 +36,7 @@ import {
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { enableStats, isStatCollectionEnabled, removeStatCollectionCookie } from "../StatCollection/StatUtils";
-import { appName } from "@/Core/AppInfo";
+import { appName } from "@/Core/GlobalVars";
 
 /** SettingsPlugin */
 @Options({
@@ -147,9 +147,9 @@ export default class SettingsPlugin extends PluginParentClass {
         const initialCompoundsVisible = savedSettings.filter(
             (setting) => setting.id === "initialCompoundsVisible"
         )[0]?.val;
-        const molViewer = savedSettings.filter(
-            (setting) => setting.id === "molViewer"
-        )[0]?.val;
+        // const molViewer = savedSettings.filter(
+        //     (setting) => setting.id === "molViewer"
+        // )[0]?.val;
 
         const defaults = defaultSettings();
 
@@ -164,10 +164,10 @@ export default class SettingsPlugin extends PluginParentClass {
                 ? parseInt(initialCompoundsVisible as string)
                 : defaults.initialCompoundsVisible
         );
-        this.setUserArg(
-            "molViewer",
-            molViewer ? molViewer : defaults.molViewer
-        );
+        // this.setUserArg(
+        //     "molViewer",
+        //     molViewer ? molViewer : defaults.molViewer
+        // );
 
         isStatCollectionEnabled().then((isSet) => {
             this.setUserArg("statCollect", isSet);

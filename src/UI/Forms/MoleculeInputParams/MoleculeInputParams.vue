@@ -160,18 +160,23 @@ export default class MoleculeInputParams extends Vue {
         let components = prts.join(" and ");
 
         let numRuns = "";
+        let warningClass = "";
         if (this.val.considerCompounds && this.val.considerProteins) {
             const total = nodeGroupsCount * compoundsNodesCount;
             numRuns = `${total} (${nodeGroupsCount} x ${compoundsNodesCount}) times`;
+            if (total === 0) warningClass = "text-danger";
         } else if (this.val.considerProteins) {
             numRuns = `${nodeGroupsCount} times (once for each protein)`;
+            if (nodeGroupsCount === 0) warningClass = "text-danger";
         } else if (this.val.considerCompounds) {
             numRuns = `${compoundsNodesCount} times (once for each compound)`;
+            if (compoundsNodesCount === 0) warningClass = "text-danger";
         } else {
             numRuns = "0 times";
+            warningClass = "text-danger";
         }
 
-        return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found ${components}, so this calculation will run ${numRuns}.`;
+        return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found ${components}, <span class="${warningClass}">so this calculation will run ${numRuns}.</span>`;
     }
 
     /**

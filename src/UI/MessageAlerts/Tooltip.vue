@@ -1,19 +1,26 @@
 <template>
-    <span
-        @mouseover="loadTip"
-        @mouseleave="hideTip"
-        data-bs-toggle="tooltip"
-        :data-bs-placement="placement"
-        :title="tip"
-        ref="tooltip"
-        style="margin: 0; padding: 0"
-    >
-        <slot></slot>
+    <span>
+        <span
+            v-if="!testMode"
+            @mouseover="loadTip"
+            @mouseleave="hideTip"
+            data-bs-toggle="tooltip"
+            :data-bs-placement="placement"
+            :title="tip"
+            ref="tooltip"
+            style="margin: 0; padding: 0"
+        >
+            <slot></slot>
+        </span>
+        <span v-else>
+            <slot></slot>
+        </span>
     </span>
 </template>
 
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
+import { isTest } from "@/Testing/SetupTests";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 // import BSToolTip from "bootstrap/js/dist/tooltip";
@@ -30,6 +37,8 @@ export default class Tooltip extends Vue {
 
     private tipLoaded = false;
     private tipObj: any = null;
+
+    testMode = false;
 
     /**
      * Hides the tooltip.
@@ -49,7 +58,9 @@ export default class Tooltip extends Vue {
 
             dynamicImports.bootstrapTooltip.module
                 .then((BSToolTip: any) => {
-                    this.tipObj = new BSToolTip(this.$refs["tooltip"] as Element);
+                    this.tipObj = new BSToolTip(
+                        this.$refs["tooltip"] as Element
+                    );
                     this.tipObj.show();
 
                     // Always automatically close after 15 seconds. Probably
@@ -64,6 +75,13 @@ export default class Tooltip extends Vue {
                     // throw "Error loading bootstrap tooltip.";
                     throw err;
                 });
+        }
+    }
+
+    mounted() {
+        // No tool tips if teting.
+        if (isTest) {
+            this.testMode = true;
         }
     }
 
