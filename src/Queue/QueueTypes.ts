@@ -5,7 +5,7 @@ export interface IJobInfo {
     output?: any;
 }
 
-export interface INewQueueCallbacks {
+export interface IQueueCallbacks {
     onQueueDone?: (outputs: any[]) => void;
     onJobDone?: (output: any) => void;
     onError?: (jobs: any[], error: any) => void;

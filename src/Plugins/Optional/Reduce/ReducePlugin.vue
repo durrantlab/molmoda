@@ -112,7 +112,7 @@ export default class ReducePlugin extends PluginParentClass {
             return f.treeNode.getAncestry().get(0).title;
         });
 
-        new ReduceQueue("reduce", fileInfos, 1).done
+        new ReduceQueue("reduce", fileInfos, undefined, 1).done
             .then((reduceOuts: any) => {
                 // TODO: Get any stdErr and show errors if they exist.
 

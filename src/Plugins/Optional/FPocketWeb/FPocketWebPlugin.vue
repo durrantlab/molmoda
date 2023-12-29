@@ -263,7 +263,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
             };
         });
 
-        new FPocketWebQueue("fpocket", payloads, 1).done
+        new FPocketWebQueue("fpocket", payloads, undefined, 1).done
             .then((fpocketOuts: any) => {
                 // Add the original name and whether to return points too. NOTE:
                 // This is per protein.

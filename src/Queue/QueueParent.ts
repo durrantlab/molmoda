@@ -7,7 +7,7 @@ import {
     startInQueueStore,
     updateProgressInQueueStore,
 } from "./QueueStore";
-import { IJobInfo, INewQueueCallbacks } from "./QueueTypes";
+import { IJobInfo, IQueueCallbacks } from "./QueueTypes";
 
 /**
  * The parent class for all queues. This class is not meant to be used directly.
@@ -36,7 +36,7 @@ export abstract class QueueParent {
     // How many processors are being currently used by jobs in the queue.
     private _numProcsCurrentlyRunning = 0;
 
-    private _callbacks: INewQueueCallbacks | undefined;
+    private _callbacks: IQueueCallbacks | undefined;
 
     // The total number of jobs
     private _numTotalJobs: number;
@@ -57,30 +57,42 @@ export abstract class QueueParent {
     /**
      * The class constructor.
      *
-     * @param {string|undefined}   jobTypeId                  A string that
-     *                                                        identifies the
-     *                                                        type of job.
-     * @param {any[]}              inputs                     An array of inputs
-     *                                                        to be processed.
-     * @param {number}             [procsPerJobBatch=1]       The number of
-     *                                                        processors that
-     *                                                        can be used by
-     *                                                        each batch of
-     *                                                        jobs.
-     * @param {INewQueueCallbacks} callbacks                  The callbacks to
-     *                                                        be used by the
-     *                                                        queue.
-     * @param {number}             [batchSize=1]              The number of jobs
-     *                                                        per batch.
-     * @param {boolean}            [showInQueue=true]         Whether to show
-     *                                                        this job in the
-     *                                                        queue.
+     * @param {string|undefined} jobTypeId                 A string that
+     *                                                     identifies the type
+     *                                                     of job.
+     * @param {any[]}            inputs                    An flat array of
+     *                                                     inputs to be
+     *                                                     processed.
+     * @param {IQueueCallbacks}  [callbacks=undefined]     The callbacks to be
+     *                                                     used by the queue, if
+     *                                                     any.
+     * @param {number}           [procsPerJobBatch=1]      The number of
+     *                                                     processors that can
+     *                                                     be used by each batch
+     *                                                     of jobs.
+     * @param {number}           [simulBatches=undefined]  The max number of
+     *                                                     batches to run
+     *                                                     simultaneously. If
+     *                                                     undefined, calculated
+     *                                                     as maxProcs /
+     *                                                     procsPerJobBatch (to
+     *                                                     run as many batches
+     *                                                     at same time as
+     *                                                     possible). 
+     * @param {number}           [batchSize=undefined]     The number of jobs
+     *                                                     per batch. If
+     *                                                     undefined, calculated
+     *                                                     as inputs.length /
+     *                                                     simulBatches.
+     * @param {boolean}          [showInQueue=true]        Whether to show this
+     *                                                     job in the queue.
      */
     constructor(
         jobTypeId: string,
         inputs: any[],
+        callbacks?: IQueueCallbacks,
         procsPerJobBatch = 1,
-        callbacks?: INewQueueCallbacks,
+        simulBatches?: number,
         batchSize: number | undefined = undefined,
         showInQueue = true
     ) {
@@ -97,10 +109,13 @@ export abstract class QueueParent {
             this._maxTotalProcs,
             this._numTotalJobs * this._procsPerJobBatch
         );
-        const maxSimultaneousJobs = Math.floor(this._maxTotalProcs / this._procsPerJobBatch);
+
+        if (simulBatches === undefined) {
+            simulBatches = Math.floor(this._maxTotalProcs / this._procsPerJobBatch);
+        }
         this._maxTotalProcs = Math.min(
             this._maxTotalProcs,
-            maxSimultaneousJobs * this._procsPerJobBatch
+            simulBatches * this._procsPerJobBatch
         );
 
         // this._maxTotalProcs -= this._maxTotalProcs % batchSize;
@@ -109,9 +124,9 @@ export abstract class QueueParent {
             // If batch size isn't defined, make it big enough to use all the
             // processors. Letting the user define this specifically in case
             // they want to use the onJobDone callback to do something with the
-            // outputs as they become available, not the onQueueDone callback
-            // (when everything done).
-            batchSize = Math.ceil(inputs.length / maxSimultaneousJobs);
+            // outputs as they become available, instead of using the
+            // onQueueDone callback (when everything done).
+            batchSize = Math.ceil(inputs.length / simulBatches);
         }
 
         this._id = makeUniqJobId(jobTypeId);

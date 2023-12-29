@@ -59,6 +59,7 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import * as api from "@/Api"
+import { IQueueCallbacks } from "@/Queue/QueueTypes";
 
 /**
  * WebinaPlugin
@@ -139,7 +140,7 @@ export default class WebinaPlugin extends PluginParentClass {
             id: "cpu",
             type: UserArgType.Number,
             label: "Number of processors",
-            val: 1,
+            val: getSetting("maxProcs"),
             filterFunc: (val: number) => {
                 val = Math.round(val);
                 if (val < 1) {
@@ -151,7 +152,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 return val;
             },
             description:
-                "If performing multiple dockings, use 1. Otherwise, consider more.",
+                "The number of processors to use for docking.",
         } as IUserArgNumber,
         {
             id: "exhaustiveness",
@@ -336,7 +337,7 @@ export default class WebinaPlugin extends PluginParentClass {
             return [filePair.prot?.treeNode, filePair.cmpd?.treeNode];
         });
 
-        const payloads: any = filePairs.map((filePair) => {
+        const inputs: any = filePairs.map((filePair) => {
             filePair.prot.name = "/receptor.pdbqt";
             filePair.cmpd.name = "/ligand.pdbqt";
             return {
@@ -350,7 +351,20 @@ export default class WebinaPlugin extends PluginParentClass {
             };
         });
 
-        new WebinaQueue("webina", payloads, webinaParams["cpu"]).done
+        const procsPerJobBatch = webinaParams["cpu"]
+
+        // For Webina, criticial to run only one webina calculation at a time. 
+        const simultBatches = 1
+        const batchSize = 1;
+
+        const callbacks = {
+            onJobDone: (output: any) => {
+                console.log(output);
+                debugger;
+            }
+        } as IQueueCallbacks
+
+        new WebinaQueue("webina", inputs, callbacks, procsPerJobBatch, simultBatches, batchSize).done
             .then((webinaOuts: any) => {
                 // TODO: Get any stdErr and show errors if they exist.
 

@@ -88,7 +88,7 @@ export function calcMolProps(
     });
 
     // Batching 25 at a time. This was chosen arbitrarily.
-    return new CalcMolPropsQueue("molProps", payloads, 1).done
+    return new CalcMolPropsQueue("molProps", payloads, undefined, 1).done
         .then((calculatedProps: any) => {
             for (let i = 0; i < calculatedProps.length; i++) {
                 const calculatedProp = calculatedProps[i];
