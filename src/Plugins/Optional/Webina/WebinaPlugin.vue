@@ -358,15 +358,18 @@ export default class WebinaPlugin extends PluginParentClass {
         const batchSize = 1;
 
         const callbacks = {
+            // Doing it this way so molecules added to the viewer as they are
+            // docked (not all at once at the end).
             onJobDone: (output: any) => {
                 console.log(output);
-                debugger;
             }
         } as IQueueCallbacks
 
         new WebinaQueue("webina", inputs, callbacks, procsPerJobBatch, simultBatches, batchSize).done
             .then((webinaOuts: any) => {
                 // TODO: Get any stdErr and show errors if they exist.
+
+                debugger
 
                 // Add keep_only_best and output filename basename to the output
                 webinaOuts.forEach((webinaOut: any, i: number) => {
@@ -415,6 +418,11 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {Promise<any>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(payloads: any[]): Promise<any> {
+        // Here payloads is a list of outputs associated with a given protein
+        // receptor. Different proteins => this function called once for each
+        // protein.
+
+        debugger
         const protPath = (
             payloads[0].origProtTreeNode as TreeNode
         ).descriptions.pathName(":");
