@@ -95,6 +95,47 @@ export class SnakeCanvas {
       }
       canvasString += "\n";
     }
+    canvasString =
+      "                                                                                \n";
+    canvasString +=
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "              ***                                                               \n";
+    canvasString =
+      "              *   *                                                             \n";
+    canvasString =
+      "              *   *  *                                                          \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+    canvasString =
+      "                                                                                \n";
+
     return canvasString;
   }
 }

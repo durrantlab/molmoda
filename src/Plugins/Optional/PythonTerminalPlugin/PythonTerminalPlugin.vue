@@ -20,33 +20,17 @@
 
     <FileUpload v-if="fileUpload" @done="handleUpload(fileName)" />
     <SnakeLoader v-if="!pyodideInitialized" />
-    <TabComponent
+    <vue-command
       v-if="pyodideInitialized"
-      :tabs="tabs"
-      @update:activeTab="changeActiveTab(val)"
-    >
-      <template v-slot:python>
-        <InteractivePythonWrapper
-          ref="python"
-          :history="pythonHistory"
-          :namespace="python"
-        />
-      </template>
-      <template v-slot:bash>
-        <vue-command
-          :namespace="bash"
-          ref="bash"
-          :yargs-options="{ alias: { color: ['colour'] } }"
-          :commands="commands"
-          :title="title"
-          prompt="durrantlat@biotite-suitte $"
-          :hideButtons="true"
-        />
-      </template>
-      <template v-slot:visualstudio>
-        <VisualStudioWrapper ref="visualstudio" />
-      </template>
-    </TabComponent>
+      :namespace="bash"
+      ref="bash"
+      :yargs-options="{ alias: { color: ['colour'] } }"
+      :commands="commands"
+      :title="title"
+      prompt="durrantlat@biotite-suitte $"
+      :hideButtons="true"
+      :history="bashHistory"
+    />
   </PluginComponent>
 </template>
 
@@ -71,7 +55,7 @@ import {
 import VueCommand, { createStdout, newDefaultHistory } from "vue-command";
 import { inject } from "vue";
 import "vue-command/dist/vue-command.css";
-import SnakeLoader from "@/Plugins/Optional/SnakeLoader/SnakeLoader.vue";
+import SnakeLoader from "@/Plugins/Optional/PythonTerminalPlugin/SnakeLoaderOld.vue";
 import { Watch } from "vue-property-decorator";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
@@ -84,8 +68,10 @@ import NanoEditor from "./NanoEditor.vue";
 import VisualStudioWrapper from "./VisualStudioWrapper.vue";
 import FileUpload from "./FileUpload.vue";
 import WarningMessage from "./WarningMessage.vue";
-import TabComponent from "./TabComponent.vue";
 import InteractivePythonWrapper from "./InteractivePythonWrapper.vue";
+import { treeNodeListDeserialize } from "@/TreeNodes/Deserializers";
+import { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 @Options({
   components: {
@@ -97,12 +83,12 @@ import InteractivePythonWrapper from "./InteractivePythonWrapper.vue";
     VisualStudioWrapper,
     FileUpload,
     WarningMessage,
-    TabComponent,
     //  PythonCommand,
   },
 })
 export default class PythonTerminalPlugin extends PluginParentClass {
   // appendToHistory = inject("appendToHistory");
+  // addDispatchedQuery = inject("addDispatchedQuery");
   menuPath = "Python/Python Interpreter...";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -131,8 +117,6 @@ export default class PythonTerminalPlugin extends PluginParentClass {
   pyodide = null;
   myVar: any;
   history: any[] = [];
-  // bashhistory: string[] = [];
-  // pythonhystory: string[] = [];
   bashHistory: any[] = newDefaultHistory();
   pythonHistory: any[] = newDefaultHistory();
   stdOut = "";
@@ -141,50 +125,72 @@ export default class PythonTerminalPlugin extends PluginParentClass {
   warningMessage = "This is a warning";
   pythonInitCode = "";
   pyodidePrint = "[CustomPrint]";
+  pyodideUpdateViewportString = "___calling_updateViewport___";
+  updateViewport = false;
 
+  boxCoordinates =
+    '{"molecules": [{"title": "ATP-pocket", "type": "region", "id": "id_1mzdsevjv9r", "focused": false, "viewerDirty": false, "region": {"center": [41.042, 20.083, 13.138], "color": "#c6aa90", "movable": true, "opacity": 0.9, "dimensions": [20, 20, 20], "type": "Box"}, "visible": true}]}';
+  // saving the native console.log
   nativeConsoleLog = console.log;
+
+  // TODO: this is a duplicate code and it will be imported from somewhere else in the future
+  jsonStrToState(jsonStr: string): Promise<any> {
+    // Viewer needs to reload everything, so set viewierDirty to true in all
+    // cases. This is a little hackish, but easier than recursing I think.
+    jsonStr = jsonStr.replace(/"viewerDirty": *false/g, '"viewerDirty":true');
+
+    // Now convert it to an object.
+    const obj = JSON.parse(jsonStr);
+
+    return treeNodeListDeserialize(obj.molecules as ITreeNode[])
+      .then((mols: TreeNodeList) => {
+        obj.molecules = mols;
+        return obj;
+      })
+      .catch((err: any) => {
+        throw err;
+      });
+  }
+
+  @Watch("updateViewport")
+  onUpdateViewportCalled() {
+    this.updateViewport = false;
+    const updatedFile = new TextDecoder("utf-8").decode(
+      /* eslint-disable-next-line */
+      // @ts-ignore
+      this.FS.readFile("/treeNodeUpdated.txt")
+    );
+    const parsedFile = JSON.parse(updatedFile);
+    console.log("updatedFile", updatedFile);
+    console.log("JSON: ", parsedFile);
+    const originalMolecules = getMoleculesFromStore();
+    const updatedMolecules = parsedFile.molecules;
+    console.log("originalMolecules", originalMolecules);
+    console.log("updatedMolecules", updatedMolecules);
+    const molsToPassToPython = JSON.parse(this.molsToPassToPython());
+    console.log("molsToPassToPython", molsToPassToPython);
+    // using lowdasg.isEqual to compare two objects: parsedFile and originalMolecules
+    // if they are equal, then we don't need to update the viewport
+    // if (lowdash.isEqual(updatedMolecules, originalMolecules)) {
+    // console.log("equal");
+    // } else {
+    // console.log("not equal");
+
+    this.jsonStrToState(this.boxCoordinates)
+      .then((state: any) => {
+        state.molecules.addToMainTree();
+        return state;
+      })
+      .catch((err: any) => {
+        console.log("error", err);
+        throw err;
+      });
+  }
 
   @Watch("pyodide", { deep: true })
   onOutputBufferChanged(newVal: any, oldVal: any) {
     console.log("output buffer changed");
   }
-
-  tabs = [
-    {
-      label: "Bash",
-      id: "bash",
-      component: VueCommand,
-      isActive: true,
-    },
-    {
-      label: "Python",
-      id: "python",
-      component: InteractivePythonWrapper,
-      isActive: false,
-    },
-    {
-      label: "Visual Studio",
-      id: "visualstudio",
-      component: VisualStudioWrapper,
-      isActive: false,
-    },
-  ];
-  changeActiveTab(tabId: string) {
-    this.tabs.forEach((tab) => {
-      if (tab.id === tabId) {
-        tab.isActive = true;
-      } else {
-        tab.isActive = false;
-      }
-    });
-  }
-
-  // onMounted() {
-  //   console.log("this.$refs.bash", this.$refs.bash);
-  //   /* eslint-disable-next-line */
-  //   // @ts-ignore
-  //   window.bash = this.$refs.bash;
-  // }
 
   handleDestroy() {
     this.warning = false;
@@ -207,14 +213,18 @@ export default class PythonTerminalPlugin extends PluginParentClass {
    * @param {any} message - the message to print to the console
    */
   customLog(message: any) {
+    if (typeof message.startsWith !== "function") return;
     if (message.startsWith(this.pyodidePrint)) {
+      let customStringStripped = message
+        .slice(this.pyodidePrint.length)
+        .slice(0, -this.pyodidePrint.length);
+      if (customStringStripped.startsWith(this.pyodideUpdateViewportString)) {
+        this.updateViewport = true;
+        return;
+      }
       if ((window as any).ipython)
         (window as any).ipython.appendToHistory(
-          createStdout(
-            message
-              .slice(this.pyodidePrint.length)
-              .slice(0, -this.pyodidePrint.length)
-          )
+          createStdout(customStringStripped)
         );
     } else this.nativeConsoleLog(message);
   }
@@ -232,9 +242,6 @@ export default class PythonTerminalPlugin extends PluginParentClass {
         /* eslint-disable-next-line */
         // @ts-ignore
         window.bash = this.$refs.bash;
-        //    console.log("this.$refs.bash", this.$refs.bash);
-        // this.bash = false;
-        // this.ipython = true;
         /* eslint-disable-next-line */
         // @ts-ignore
         //    window.bash = this.$refs.bash;
@@ -268,7 +275,6 @@ export default class PythonTerminalPlugin extends PluginParentClass {
         return createStdout(stdOut);
       }
       for (let i = 1; i < _.length; i++) {
-        // stdOut += _[i].toString() + ":\n";
         // eslint-disable-next-line
         // @ts-ignore
         stdOut += this.FS.readdir(_[i]).toString().split(",").join(" ") + "\n";
@@ -352,6 +358,7 @@ export default class PythonTerminalPlugin extends PluginParentClass {
 
   async onPopupOpen() {
     console.log = this.customLog;
+
     async function loadPythonFile(): Promise<string> {
       /* load all .py files from the python folder */
       // TODO - how to handle user uploads on actual filesystem?
@@ -374,76 +381,58 @@ export default class PythonTerminalPlugin extends PluginParentClass {
       console.log(e);
     }
 
-    const pythonClassCode = `molData = open("/treeNode.txt").read()`;
-    const pyodide = dynamicImports.pyodide.module;
-    pyodide
-      .then((pyodide: any) => {
-        this.pyodide = pyodide;
-        this.FS = pyodide.FS;
-        this.pyodideInitialized = true;
-        this.bash = true;
+    // eslint-disable-next-line
+    // @ts-ignore
+    if (typeof window.pyodide == "undefined") {
+      const pyodide = dynamicImports.pyodide.module;
+      pyodide
+        .then((pyodide: any) => {
+          this.pyodide = pyodide;
+          this.FS = pyodide.FS;
+          this.pyodideInitialized = true;
+          this.bash = true;
 
-        // eslint-disable-next-line
-        // @ts-ignore
-        this.FS.createDataFile(
-          "/",
-          "treeNode.txt",
-          this.molsToPassToPython(),
-          true,
-          true,
-          true
-        );
+          // eslint-disable-next-line
+          // @ts-ignore
+          this.FS.createDataFile(
+            "/",
+            "treeNode.txt",
+            this.molsToPassToPython(),
+            true,
+            true,
+            true
+          );
 
-        // use this.customPrint as print function in pyodide
-        // eslint-disable-next-line
-        // @ts-ignore
-        // this.pyodide.runPython(`print = customPrint`);
+          // load numpy package; we will use it extensively
+          // eslint-disable-next-line
+          // @ts-ignore
+          this.pyodide
+            .loadPackage("numpy")
+            .then(() => {
+              // eslint-disable-next-line
+              // @ts-ignore
+              this.pyodide.runPython(`import numpy as np`);
+              /* eslint-disable-next-line */
+              // @ts-ignore
+              this.pyodide.runPython(this.pythonInitCode);
+              return;
+            })
+            .catch((err: any) => {
+              console.log(err);
+              throw err;
+            });
 
-        // load numpy package; we will use it extensively
-        // eslint-disable-next-line
-        // @ts-ignore
-        this.pyodide
-          .loadPackage("numpy")
-          .then(() => {
-            // eslint-disable-next-line
-            // @ts-ignore
-            this.pyodide.runPython(`import numpy as np`);
-            return;
-          })
-          .catch((err: any) => {
-            console.log(err);
-            throw err;
-          });
-        // custom print function will preppend all the values to the output_buffer with ""
-        // eslint-disable-next-line
-        // @ts-ignore
-        // this.pyodide.runPython(`
-        // def custom_print(*args, **kwargs):
-        //     global output_buffer
-        //     for arg in args:
-        //         output_buffer.append(arg)
-        // output_buffer = []`);
-        // eslint-disable-next-line
-        // @ts-ignore
-        // this.pyodide.globals.set("print", pyodide.globals.get("custom_print"));
-        // this.pyodide.runPython(`molData = open("/treeNode.txt").read()`);
-        // eslint-disable-next-line
-        // @ts-ignore
-        this.pyodide.runPython(this.pythonInitCode);
-        // eslint-disable-next-line
-        // @ts-ignore
-        // this.pyodide.runPython(`custom_class = CustomClass("test")`);
-        (window as any).pyodide = pyodide;
-        // eslint-disable-next-line
-        // @ts-ignore
-        // console.log(this.pyodide.runPytho);
-
-        return;
-      })
-      .catch((err: any) => {
-        console.log(err);
-        throw err;
-      });
+          (window as any).pyodide = pyodide;
+          return;
+        })
+        .catch((err: any) => {
+          console.log(err);
+          throw err;
+        });
+    }
+    // eslint-disable-next-line
+    // @ts-ignore
+    else this.pyodide = window.pyodide;
   }
 
   onPopupDone() {

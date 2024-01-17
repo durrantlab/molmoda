@@ -17,7 +17,11 @@
 </template>
 
 <script lang="ts">
-import VueCommand, { createStdout, defaultParser } from "vue-command";
+import VueCommand, {
+  createStdout,
+  defaultParser,
+  newDefaultHistory,
+} from "vue-command";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { inject, markRaw, defineComponent, h } from "vue";
@@ -28,17 +32,18 @@ import { inject, markRaw, defineComponent, h } from "vue";
   },
 })
 export default class InteractivePython extends Vue {
-  @Prop({ required: false }) history: any | undefined;
+  // @Prop({ required: false }) history: any | undefined;
   @Prop({ required: false }) namespace: any | undefined;
   setFullscreen = inject("setFullscreen");
-  // exit = inject("exit");
+  exit = inject("exit");
   setQuery = inject("setQuery");
   appendToHistory = inject("appendToHistory");
+  history = newDefaultHistory();
 
   mounted() {
     /* eslint-disable-next-line */
     // @ts-ignore
-    // this.setFullscreen(true);
+    this.setFullscreen(true);
     /* eslint-disable-next-line */
     // @ts-ignore
     this.$refs.ipython.appendToHistory(createStdout("Welcome to pyodide!"));
@@ -50,6 +55,10 @@ export default class InteractivePython extends Vue {
     /* eslint-disable-next-line */
     // @ts-ignore
     window.ipython = this.$refs.ipython;
+
+    /* eslint-disable-next-line */
+    // @ts-ignore
+    window.pythonHistory = this.history;
   }
 
   commands = {

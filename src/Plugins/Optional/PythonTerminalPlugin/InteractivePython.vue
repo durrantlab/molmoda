@@ -27,7 +27,7 @@ export default {
     debugger;
   },
   createCommandNotFound(command: string) {
-    return createStdout("dcvxcvxcvCommand not found" + command);
+    return createStdout("Command not found" + command);
   },
   createStdOut(text: string) {
     return createStdout(text);
@@ -35,9 +35,17 @@ export default {
   commandNotFound(command: string) {
     try {
       const result = (window as any).pyodide.runPython(command);
-      return createStdout(result);
+      if (result === undefined) {
+        return createStdout("Command not found: " + command);
+      }
+      if (result.error) {
+        return createStdout("Error: " + result.error.message);
+      }
+      return createStdout(result.stdOut);
     } catch (e) {
-      return createStdout(e);
+      /* eslint-disable-next-line */
+      // @ts-ignore
+      return createStdout(e.message);
     }
   },
 };

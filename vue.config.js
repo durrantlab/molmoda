@@ -3,6 +3,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 const CircularDependencyPlugin = require("circular-dependency-plugin");
 const path = require("path");
+const glob = require("glob");
 
 module.exports = defineConfig({
     devServer: {
@@ -11,7 +12,7 @@ module.exports = defineConfig({
             "Cross-Origin-Embedder-Policy": "require-corp",
         },
     },
-    publicPath: (process.env.NODE_ENV === "development") ? undefined : "./",
+    publicPath: process.env.NODE_ENV === "development" ? undefined : "./",
     // publicPath: "/apps/biotite/beta/",
 
     transpileDependencies: true,
@@ -20,17 +21,17 @@ module.exports = defineConfig({
     parallel: 4,
     configureWebpack: (config) => {
         // if (process.env.NODE_ENV === "development") {
-        // } else 
+        // } else
         if (process.env.NODE_ENV === "docs") {
             config.optimization.minimize = false;
         } else {
             // So currently runs in development and production...
             config.output.devtoolModuleFilenameTemplate = (info) =>
                 info.resourcePath.match(/\.vue$/) &&
-                !info.identifier.match(/type=script/) // this is change ✨
+                    !info.identifier.match(/type=script/) // this is change ✨
                     ? `webpack-generated:///${info.resourcePath}?${info.hash}`
                     : `webpack-yourCode:///${info.resourcePath}`;
-    
+
             config.output.devtoolFallbackModuleFilenameTemplate =
                 "webpack:///[resource-path]?[hash]";
         }
@@ -38,11 +39,11 @@ module.exports = defineConfig({
         // Handle source maps
         if (process.env.NODE_ENV === "development") {
             // Embeds souce maps in code. Faster build times. Good for development
-            config.devtool ="eval-source-map";
+            config.devtool = "eval-source-map";
         } else {
             // Production
             // Separate map files
-            config.devtool ="source-map";
+            config.devtool = "source-map";
         }
 
         // else {
@@ -95,8 +96,12 @@ module.exports = defineConfig({
                         to: "js/RDKit_minimal.wasm",
                     },
                     {
-                        from: "src/Plugins/Optional/PythonTerminalPlugin/TreeNode.py",
-                        to: "python/TreeNode.py",
+                        from: "src/Plugins/Optional/PythonTerminalPlugin/python/",
+                        to: "python/",
+                        globOptions: {
+                            ignore: ["**/__pycache__/**"],
+                            pattern: "**/*.py",
+                        },
                     },
                 ],
             })
@@ -124,7 +129,6 @@ module.exports = defineConfig({
         };
 
         config.optimization.runtimeChunk = true;
-
     },
     pluginOptions: {
         webpackBundleAnalyzer: {
@@ -132,6 +136,4 @@ module.exports = defineConfig({
             analyzerMode: "static",
         },
     },
-    
-
 });

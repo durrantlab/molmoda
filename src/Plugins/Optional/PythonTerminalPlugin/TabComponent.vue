@@ -11,10 +11,6 @@
         </li>
       </ul>
     </div>
-
-    <div class="tabs-details">
-      <slot :name="activeTab"> </slot>
-    </div>
   </div>
 </template>
 
@@ -27,7 +23,6 @@ export default class Tabs extends Vue {
   activeTab = "bash";
   @Watch("activeTab") onActiveTabChanged(value: string, oldValue: string) {
     this.$emit("update:activeTab", value);
-    console.log("activeTab changed from " + oldValue + " to " + value);
   }
 
   /**
