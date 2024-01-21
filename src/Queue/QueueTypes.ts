@@ -7,7 +7,7 @@ export interface IJobInfo {
 
 export interface IQueueCallbacks {
     onQueueDone?: (outputs: any[]) => void;
-    onJobDone?: (output: any) => void;
+    onJobDone?: (output: any, index: number) => void;
     onError?: (jobs: any[], error: any) => void;
     onProgress?: (percent: number) => void;
 }

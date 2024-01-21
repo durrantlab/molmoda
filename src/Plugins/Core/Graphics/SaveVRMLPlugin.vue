@@ -91,7 +91,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
      *
      * @param {any} parameters  Information about the VRML file to save.
      */
-    async runJobInBrowser(parameters: any) {
+    async runJobInBrowser(parameters: any): Promise<any> {
         let filename = parameters.filename;
         const viewer = await api.visualization.viewer;
         let vrmlTxt = viewer.exportVRML();

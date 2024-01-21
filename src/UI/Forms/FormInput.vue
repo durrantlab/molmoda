@@ -1,29 +1,39 @@
 <template>
     <span>
-        <input
-            ref="inputElem"
-            :type="type"
-            :class="
-                'form-control form-control-sm' +
-                (type === 'color' ? ' form-control-color' : '') +
-                (type === 'range' ? ' form-range border-0 shadow-none' : '')
-            "
-            :readonly="readonly"
-            :id="id"
-            :placeholder="placeHolder"
-            :disabled="disabled"
-            @input="handleInput"
-            @keydown="onKeyDown"
-            :value="modelValue"
-            :min="min"
-            :max="max"
-            :step="step"
-        />
+        <div class="input-group">
+            <input
+                ref="inputElem"
+                :type="type"
+                :class="
+                    'form-control form-control-sm' +
+                    (type === 'color' ? ' form-control-color' : '') +
+                    (type === 'range' ? ' form-range border-0 shadow-none' : '')
+                "
+                :readonly="readonly"
+                :id="id"
+                :placeholder="placeHolder"
+                :disabled="disabled"
+                @input="handleInput"
+                @keydown="onKeyDown"
+                :value="modelValue"
+                :min="min"
+                :max="max"
+                :step="step"
+            />
+            <div v-if="actionBtnTxt !== undefined" class="input-group-append">
+                <button @click="onActionBtnClick" class="btn btn-primary" type="button">
+                    {{ actionBtnTxt }}
+                </button>
+            </div>
+        </div>
         <FormElementDescription
             v-if="descriptioToUse !== '' && descriptioToUse !== undefined"
             :description="descriptioToUse"
             :validate="validateDescription"
         ></FormElementDescription>
+        <!-- :disabled="!isActionBtnEnabled || isClosing"
+        @click="actionBtn" -->
+        <!-- <button type="button" class="btn btn-primary action-btn">TEST</button> -->
     </span>
 </template>
 
@@ -35,7 +45,6 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
-
 
 /**
  * FormInput component
@@ -53,9 +62,11 @@ export default class FormInput extends Vue {
     @Prop({ default: false }) disabled!: boolean;
     @Prop({ required: false }) filterFunc!: Function;
     @Prop({}) description!: string;
-    @Prop({ default: formInputDelayUpdate }) delayBetweenChangesDetected!: number;
+    @Prop({ default: formInputDelayUpdate })
+    delayBetweenChangesDetected!: number;
     @Prop({ default: false }) readonly!: boolean;
     @Prop({ default: true }) validateDescription!: boolean;
+    @Prop({ default: undefined }) actionBtnTxt!: string; // If undefined, no action button button
 
     // Below used for range.
     @Prop({ default: undefined }) min!: number;
@@ -104,6 +115,13 @@ export default class FormInput extends Vue {
     filterTimer: any = null;
 
     /**
+     * Runs when the user clicks the action button.
+     */
+    onActionBtnClick() {
+        this.$emit("onActionBtnClick");
+    }
+
+    /**
      * Let the parent component know of any changes, after user has not interacted
      * for a bit (to prevent rapid updates).
      *
@@ -119,7 +137,15 @@ export default class FormInput extends Vue {
                 let carot = e.target.selectionStart;
 
                 // Apply filter
-                e.target.value = this.filterFunc(e.target.value);
+                let newVal = this.filterFunc(e.target.value);
+                if (newVal === e.target.value) {
+                    // If the value didn't change, don't update the input
+                    return;
+                }
+
+                e.target.value = newVal;
+                this.$emit("update:modelValue", newVal);
+                this.$emit("onChange");
 
                 // Set carot location after vue nexttick
                 this.$nextTick(() => {

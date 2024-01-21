@@ -141,9 +141,11 @@ export default class AboutPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the
    * job running. About plugin does not have a job.
+   * 
+   * @returns {Promise<void>}  Resolves when the job is done.
    */
-  runJobInBrowser(): void {
-    return;
+  runJobInBrowser(): Promise<void> {
+    return Promise.resolve();
   }
 
   /**

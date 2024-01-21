@@ -24,10 +24,7 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import {
-    PluginParentClass,
-    RunJobReturn,
-} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     IUserArgCheckbox,
     UserArg,
@@ -78,6 +75,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     alwaysEnabled = true;
     accept = fileTypesAccepts;
     hotkey = "o";
+    skipLongRunningJobMsg = true;
 
     /**
      * Runs when the files are loaded.
@@ -147,7 +145,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 .catch((err) => {
                     throw err;
                 });
-            return false;
+            return;
         }
         // this.windowClosing = this.payload !== undefined;
     }
@@ -156,10 +154,10 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job running.
      *
      * @param {FileInfo} fileInfo  Information about the molecules to save.
-     * @returns {Promise<undefined>}  A promise that resolves when the job is
+     * @returns {Promise<void>}  A promise that resolves when the job is
      *     done. TODO: These are wrong throughout.
      */
-    runJobInBrowser(fileInfo: FileInfo): RunJobReturn {
+    runJobInBrowser(fileInfo: FileInfo): Promise<void> {
         // It's not a biotite file (e.g., a PDB file). NOTE: When loading a
         // multi-frame file, this fileInfo contains all frames (not yet
         // separated).

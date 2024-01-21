@@ -46,8 +46,10 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         let selecteds = getMoleculesFromStore().filters.keepSelected(
             true,
             true
@@ -58,7 +60,6 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
         }
 
         selecteds.forEach((node) => {
-            console.log(node.title, node.visible);
             node.visibleWithoutChildren = !node.visible;
             node.viewerDirty = true;
         });
@@ -81,7 +82,7 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
         //     });
         // }
 
-        return;
+        return Promise.resolve();
     }
 
     /**

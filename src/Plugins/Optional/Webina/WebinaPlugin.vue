@@ -53,13 +53,15 @@ import { WebinaQueue } from "./WebinaQueue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     ITreeNodeData,
+    TableHeaderSort,
     TreeNodeDataType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
-import * as api from "@/Api"
+import * as api from "@/Api";
 import { IQueueCallbacks } from "@/Queue/QueueTypes";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 /**
  * WebinaPlugin
@@ -107,8 +109,8 @@ export default class WebinaPlugin extends PluginParentClass {
 
     intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding. Uses a version of AutoDock Vina (Webina).`;
 
-    // msgOnJobsFinished =
-    //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
+    msgOnJobsFinished =
+        "Finished docking compounds (see molecular viewer). Some docked compounds might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the docked compounds.";
 
     userArgDefaults: UserArg[] = [
         // {
@@ -151,8 +153,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 }
                 return val;
             },
-            description:
-                "The number of processors to use for docking.",
+            description: "The number of processors to use for docking.",
         } as IUserArgNumber,
         {
             id: "exhaustiveness",
@@ -279,11 +280,193 @@ export default class WebinaPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
+        this.submitJobs();
+    }
+
+    /**
+     * Gets the data (e.g., score) from the PDBQT frame.
+     *
+     * @param {string} pdbqtFrame    The pdbqt frame.
+     * @param {any}    webinaParams  The webina parameters.
+     * @param {string} stdOut        The standard output.
+     * @param {string} protPath      The path to the protein.
+     * @param {boolean} keepOnlyBest Whether to keep only the best pose.
+     * @returns {any[]}  The data, the model name, and the score label.
+     */
+    private _getDataFromPDBQTFrame(
+        pdbqtFrame: string,
+        webinaParams: { [key: string]: any },
+        stdOut: string,
+        protPath: string,
+        keepOnlyBest: boolean
+    ): [{ [key: string]: ITreeNodeData }, string, string] {
+        const scoreOnly = webinaParams["score_only"];
+        const pdbqtOutLines = pdbqtFrame.split("\n");
+
+        const modelStr = pdbqtOutLines[0].trim();
+
+        const data: { [key: string]: ITreeNodeData } = {};
+        let scoreLabel = "";
+
+        const webinaParamsAsKeyVal: { [name: string]: any } = {};
+        const toRemove = ["ligand", "out", "receptor", "score_only"];
+        for (const paramName in webinaParams) {
+            if (toRemove.indexOf(paramName) !== -1) continue;
+            webinaParamsAsKeyVal[paramName] = webinaParams[paramName];
+        }
+
+        if (scoreOnly) {
+            // Estimated Free Energy of Binding   : -9.516 (kcal/mol) [=(1)+(2)+(3)+(4)]
+            // (1) Final Intermolecular Energy    : -14.801 (kcal/mol)
+            //     Ligand - Receptor              : -14.801 (kcal/mol)
+            //     Ligand - Flex side chains      : 0.000 (kcal/mol)
+            // (2) Final Total Internal Energy    : -0.773 (kcal/mol)
+            //     Ligand                         : -0.773 (kcal/mol)
+            //     Flex   - Receptor              : 0.000 (kcal/mol)
+            //     Flex   - Flex side chains      : 0.000 (kcal/mol)
+            // (3) Torsional Free Energy          : 5.285 (kcal/mol)
+            // (4) Unbound System's Energy        : -0.773 (kcal/mol)
+
+            console.log(stdOut);
+
+            const extractEnergy = (pattern: RegExp): number => {
+                const match = stdOut.match(pattern);
+                return match ? parseFloat(match[1]) : NaN;
+            };
+
+            const estimatedFreeEnergyOfBinding = extractEnergy(
+                /Estimated Free Energy of Binding\s*:\s*(-?[\d.]+)/
+            );
+            // const finalIntermolecularEnergy = extractEnergy(
+            //     /\(1\) Final Intermolecular Energy\s*:\s*(-?[\d.]+)/
+            // );
+            // const finalTotalInternalEnergy = extractEnergy(
+            //     /\(2\) Final Total Internal Energy\s*:\s*(-?[\d.]+)/
+            // );
+            // const torsionalFreeEnergy = extractEnergy(
+            //     /\(3\) Torsional Free Energy\s*:\s*(-?[\d.]+)/
+            // );
+            // const unboundSystemsEnergy = extractEnergy(
+            //     /\(4\) Unbound System's Energy\s*:\s*(-?[\d.]+)/
+            // );
+
+            scoreLabel = "Webina Scores: " + protPath;
+
+            data[scoreLabel] = {
+                data: {
+                    "Score (kcal/mol)": estimatedFreeEnergyOfBinding,
+                    ...webinaParamsAsKeyVal,
+                    // "Intermolecular (kcal/mol)":
+                    //     finalIntermolecularEnergy,
+                    // "Internal (kcal/mol)": finalTotalInternalEnergy,
+                    // "Torsional (kcal/mol)": torsionalFreeEnergy,
+                    // "Unbound System (kcal/mol)": unboundSystemsEnergy,
+                },
+                type: TreeNodeDataType.Table,
+                treeNodeId: "", // Fill in later
+                headerSort: TableHeaderSort.None,
+            };
+        } else {
+            scoreLabel = "Webina Docking Scores: " + protPath;
+            const lineWithScore = pdbqtOutLines.find((line: string) =>
+                line.startsWith("REMARK VINA")
+            );
+            const score = lineWithScore
+                ? parseFloat(lineWithScore.split(/\s+/)[3])
+                : 0;
+            data[scoreLabel] = {
+                data: {
+                    "Score (kcal/mol)": score,
+                    ...webinaParamsAsKeyVal,
+                },
+                type: TreeNodeDataType.Table,
+                treeNodeId: "", // Fill in later
+                headerSort: TableHeaderSort.None,
+            };
+        }
+
+        const modelName = keepOnlyBest
+            ? ""
+            : `:${modelStr.replace("MODEL", "model").replace(" ", "")}`;
+
+        return [data, modelName, scoreLabel];
+    }
+
+    /** 
+     * Converts the output pdbqt to a TreeNode.
+     *
+     * @param {string} title       The title of the TreeNode.
+     * @param {string} pdbqtOut    The pdbqt output.
+     * @param {string} cmpdSrc     The source of the compound.
+     * @param {any}    data        The data to associate with the TreeNode.
+     * @param {string} scoreLabel  The label of the score.
+     * @returns {Promise<TreeNode>}  A promise that resolves to the TreeNode.
+     */
+    private _outputPdbqtToTreeNodePromise(
+        title: string,
+        pdbqtOut: string,
+        cmpdSrc: string,
+        data: { [key: string]: ITreeNodeData },
+        scoreLabel: string
+    ): Promise<TreeNode> {
+        // Create fileinfo
+        const fileInfo = new FileInfo({
+            name: title + ".pdbqt",
+            contents: pdbqtOut,
+        });
+
+        return TreeNode.loadFromFileInfo(fileInfo)
+            .then((treeNode: TreeNode | void) => {
+                if (!treeNode) {
+                    throw new Error("Could not load file into tree node.");
+                }
+
+                // This has been loaded hierarchically. So the one
+                // terminal node is the actual TreeNode.
+                let terminalTreeNode = treeNode.nodes?.terminals.get(0);
+
+                if (terminalTreeNode) {
+                    terminalTreeNode.src = cmpdSrc;
+                    terminalTreeNode.data = data;
+                    terminalTreeNode.data[scoreLabel].treeNodeId =
+                        terminalTreeNode.id;
+                    terminalTreeNode.title = title;
+                } else {
+                    // This should never happen, but here for typescript.
+                    terminalTreeNode = treeNode;
+                }
+
+                return terminalTreeNode;
+            })
+            .catch((err: Error) => {
+                // TODO: FIX
+                throw err;
+                // messagesApi.popupError(
+                // `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+                // );
+            });
+    }
+
+    /**
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @param {any[]} payloads  The user arguments to pass to the "executable."
+     *                          Contains compound information.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
+     */
+    async runJobInBrowser(payloads: any[]): Promise<void> {
         const filePairs: IProtCmpdTreeNodePair[] =
             this.getUserArg("makemolinputparams");
 
-        if (filePairs.length === 0 || !filePairs[0].prot || !filePairs[0].cmpd) {
-            api.messages.popupError("Could not perform docking! You must select at least one compound and one protein.")
+        if (
+            filePairs.length === 0 ||
+            !filePairs[0].prot ||
+            !filePairs[0].cmpd
+        ) {
+            api.messages.popupError(
+                "Could not perform docking! You must select at least one compound and one protein."
+            );
             return;
         }
 
@@ -351,249 +534,108 @@ export default class WebinaPlugin extends PluginParentClass {
             };
         });
 
-        const procsPerJobBatch = webinaParams["cpu"]
+        const procsPerJobBatch = webinaParams["cpu"];
 
-        // For Webina, criticial to run only one webina calculation at a time. 
-        const simultBatches = 1
+        // For Webina, criticial to run only one webina calculation at a time.
+        const simultBatches = 1;
         const batchSize = 1;
 
-        const callbacks = {
-            // Doing it this way so molecules added to the viewer as they are
-            // docked (not all at once at the end).
-            onJobDone: (output: any) => {
-                console.log(output);
-            }
-        } as IQueueCallbacks
+        const initialCompoundsVisible = getSetting("initialCompoundsVisible");
 
-        new WebinaQueue("webina", inputs, callbacks, procsPerJobBatch, simultBatches, batchSize).done
-            .then((webinaOuts: any) => {
-                // TODO: Get any stdErr and show errors if they exist.
+        const newTreeNodesByInputProt: { [key: string]: TreeNode } = {};
 
-                debugger
-
-                // Add keep_only_best and output filename basename to the output
-                webinaOuts.forEach((webinaOut: any, i: number) => {
-                    webinaOut.keepOnlyBest = keepOnlyBest;
-                    webinaOut.scoreOnly = webinaParams["score_only"];
-                    webinaOut.origProtTreeNode = origAssociatedTreeNodes[i][0];
-                    webinaOut.origCmpdTreeNode = origAssociatedTreeNodes[i][1];
-                });
-
-                // Organize by protein
-                const byProtein: { [key: string]: any[] } = {};
-                webinaOuts.forEach((webinaOut: any) => {
-                    const protId = webinaOut.origProtTreeNode.id;
-                    if (!byProtein[protId]) {
-                        byProtein[protId] = [];
-                    }
-                    byProtein[protId].push(webinaOut);
-                });
-
-                // Get values
-                const byProts = Object.keys(byProtein).map((protId) => {
-                    return byProtein[protId];
-                });
-
-                this.submitJobs(byProts);
-                return;
-            })
-            .catch((err: Error) => {
-                // Intentionally not rethrowing error here. // TODO: fix this
-                messagesApi.popupError(
-                    `<p>Webina threw an error.</p><p>Error details: ${err.message}</p>`
-                );
-            });
-
-        // debugger;
-
-        // this.submitJobs(payloads); // , 10000);
-    }
-
-    /**
-     * Every plugin runs some job. This is the function that does the job
-     * running.
-     *
-     * @param {any[]} payloads  The user arguments to pass to the "executable."
-     *                          Contains compound information.
-     * @returns {Promise<any>}  A promise that resolves when the job is done.
-     */
-    async runJobInBrowser(payloads: any[]): Promise<any> {
-        // Here payloads is a list of outputs associated with a given protein
-        // receptor. Different proteins => this function called once for each
-        // protein.
-
-        debugger
-        const protPath = (
-            payloads[0].origProtTreeNode as TreeNode
-        ).descriptions.pathName(":");
-
-        // const ligPath = (
-        //     payloads[0].origCmpdTreeNode as TreeNode
-        // ).descriptions.pathName(":");
-
-        const treeNodesPromises: Promise<TreeNode>[] = [];
-        for (const payload of payloads) {
-            const pdbqtOuts = payload.output;
+        const onJobDoneFunc = async (webinaOut: any, jobIndex: number) => {
+            const origProtTreeNode = origAssociatedTreeNodes[jobIndex][0];
+            const origCmpdTreeNode = origAssociatedTreeNodes[
+                jobIndex
+            ][1] as TreeNode;
 
             // Split on lines that start with "MODEL"
-            let pdbqtOutsSeparate = pdbqtOuts.split(/\n(?=MODEL)/);
+            let pdbqtOutsSeparate = webinaOut.output.split(/\n(?=MODEL)/);
 
-            if (payload.keepOnlyBest) {
+            // If only keeping the best model, let's discard the others.
+            if (keepOnlyBest) {
                 pdbqtOutsSeparate = [pdbqtOutsSeparate[0]];
             }
 
+            const protPath = (
+                origProtTreeNode as TreeNode
+            ).descriptions.pathName(":");
+
+            // Go through each of the models in the output file.
             for (const pdbqtOut of pdbqtOutsSeparate) {
-                const pdbqtOutLines = pdbqtOut.split("\n");
-
-                const model = pdbqtOutLines[0].trim();
-
-                const data: { [key: string]: ITreeNodeData } = {};
-                let scoreLabel = "";
-
-                if (payload.scoreOnly) {
-                    // Estimated Free Energy of Binding   : -9.516 (kcal/mol) [=(1)+(2)+(3)+(4)]
-                    // (1) Final Intermolecular Energy    : -14.801 (kcal/mol)
-                    //     Ligand - Receptor              : -14.801 (kcal/mol)
-                    //     Ligand - Flex side chains      : 0.000 (kcal/mol)
-                    // (2) Final Total Internal Energy    : -0.773 (kcal/mol)
-                    //     Ligand                         : -0.773 (kcal/mol)
-                    //     Flex   - Receptor              : 0.000 (kcal/mol)
-                    //     Flex   - Flex side chains      : 0.000 (kcal/mol)
-                    // (3) Torsional Free Energy          : 5.285 (kcal/mol)
-                    // (4) Unbound System's Energy        : -0.773 (kcal/mol)
-
-                    console.log(payload.stdOut);
-
-                    const extractEnergy = (pattern: RegExp): number => {
-                        const match = payload.stdOut.match(pattern);
-                        return match ? parseFloat(match[1]) : NaN;
-                    };
-
-                    const estimatedFreeEnergyOfBinding = extractEnergy(
-                        /Estimated Free Energy of Binding\s*:\s*(-?[\d.]+)/
+                const [data, modelName, scoreLabel] =
+                    this._getDataFromPDBQTFrame(
+                        pdbqtOut,
+                        webinaParams,
+                        webinaOut.stdOut,
+                        protPath,
+                        keepOnlyBest
                     );
-                    // const finalIntermolecularEnergy = extractEnergy(
-                    //     /\(1\) Final Intermolecular Energy\s*:\s*(-?[\d.]+)/
-                    // );
-                    // const finalTotalInternalEnergy = extractEnergy(
-                    //     /\(2\) Final Total Internal Energy\s*:\s*(-?[\d.]+)/
-                    // );
-                    // const torsionalFreeEnergy = extractEnergy(
-                    //     /\(3\) Torsional Free Energy\s*:\s*(-?[\d.]+)/
-                    // );
-                    // const unboundSystemsEnergy = extractEnergy(
-                    //     /\(4\) Unbound System's Energy\s*:\s*(-?[\d.]+)/
-                    // );
 
-                    scoreLabel = "Webina Scores: " + protPath;
+                const protId = origProtTreeNode?.id as string;
 
-                    data[scoreLabel] = {
-                        data: {
-                            "Score (kcal/mol)": estimatedFreeEnergyOfBinding,
-                            // "Intermolecular (kcal/mol)":
-                            //     finalIntermolecularEnergy,
-                            // "Internal (kcal/mol)": finalTotalInternalEnergy,
-                            // "Torsional (kcal/mol)": torsionalFreeEnergy,
-                            // "Unbound System (kcal/mol)": unboundSystemsEnergy,
-                        },
-                        type: TreeNodeDataType.Table,
-                        treeNodeId: "", // Fill in later
-                    };
-                } else {
-                    scoreLabel = "Webina Docking Scores: " + protPath;
-                    data[scoreLabel] = {
-                        data: {
-                            "Score (kcal/mol)": parseFloat(
-                                pdbqtOutLines
-                                    .find((line: string) =>
-                                        line.startsWith("REMARK VINA")
-                                    )
-                                    .split(/\s+/)[3]
-                            ),
-                        },
-                        type: TreeNodeDataType.Table,
-                        treeNodeId: "", // Fill in later
-                    };
-                }
-
-                // Create fileinfo
-                const modelName = payload.keepOnlyBest
-                    ? ""
-                    : `:${model.replace("MODEL", "model").replace(" ", "")}`;
-                const fileInfo = new FileInfo({
-                    name: payload.origCmpdTreeNode.title + modelName + ".pdbqt",
-                    contents: pdbqtOut,
-                });
-
-                const treeNodePromise = TreeNode.loadFromFileInfo(fileInfo)
-                    .then((treeNode: TreeNode | void) => {
-                        if (!treeNode) {
-                            throw new Error(
-                                "Could not load file into tree node."
-                            );
-                        }
-
-                        // This has been loaded hierarchically. So the one
-                        // terminal node is the actual TreeNode.
-                        let terminalTreeNode = treeNode.nodes?.terminals.get(0);
-
-                        if (terminalTreeNode) {
-                            terminalTreeNode.src = payload.origCmpdTreeNode.src;
-                            terminalTreeNode.data = data;
-                            terminalTreeNode.data[scoreLabel].treeNodeId =
-                                terminalTreeNode.id;
-                            terminalTreeNode.title =
-                                payload.origCmpdTreeNode.title + modelName;
-                        } else {
-                            // This should never happen, but here for typescript.
-                            terminalTreeNode = treeNode;
-                        }
-
-                        return terminalTreeNode;
-                    })
-                    .catch((err: Error) => {
-                        // TODO: FIX
-                        throw err;
-                        // messagesApi.popupError(
-                        // `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
-                        // );
-                    });
-
-                treeNodesPromises.push(treeNodePromise);
-            }
-        }
-
-        return Promise.all(treeNodesPromises)
-            .then((dockedTreeNodes: TreeNode[]) => {
-                const initialCompoundsVisible = getSetting(
-                    "initialCompoundsVisible"
+                // Make a new treenode.
+                const dockedTreeNode = await this._outputPdbqtToTreeNodePromise(
+                    origCmpdTreeNode.title + modelName,
+                    pdbqtOut,
+                    origCmpdTreeNode.src as string,
+                    data,
+                    scoreLabel
                 );
 
-                // Only first 5 are visible
-                for (let i = 0; i < dockedTreeNodes.length; i++) {
-                    const dockedTreeNode = dockedTreeNodes[i];
-                    dockedTreeNode.visible = i < initialCompoundsVisible;
+                // Hide if not first few
+                if (jobIndex >= initialCompoundsVisible) {
+                    dockedTreeNode.visible = false;
                 }
 
                 // Get the top title of the protein. Because things have been
                 // organized by proteins, all these will be the same, so first
                 // one is as good as any.
-                const protTreeNode = payloads[0].origProtTreeNode as TreeNode;
+                const protTreeNode = origProtTreeNode as TreeNode;
                 const title = protTreeNode.getAncestry().get(0).title;
 
-                const rootNode =
-                    TreeNode.loadHierarchicallyFromTreeNodes(dockedTreeNodes);
+                const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
+                    dockedTreeNode,
+                ]);
 
                 rootNode.title = `${title}:docking`;
 
-                rootNode.addToMainTree();
+                if (!newTreeNodesByInputProt[protId]) {
+                    rootNode.addToMainTree();
+                    newTreeNodesByInputProt[protId] = rootNode;
+                } else {
+                    // Merge into the existing node
+                    const existingNode = newTreeNodesByInputProt[protId];
+                    existingNode.mergeInto(rootNode);
 
-                return dockedTreeNodes;
-            })
-            .catch((err: Error) => {
-                debugger;
-                throw err;
-            });
+                    // Not sure why I need to trigger reactivity explicitly here.
+                    getMoleculesFromStore().triggerReactivity();
+                }
+            }
+        };
+
+        const callbacks = {
+            // Doing it this way so molecules added to the viewer as they are
+            // docked (not all at once at the end).
+            onJobDone: onJobDoneFunc,
+        } as IQueueCallbacks;
+
+        await new WebinaQueue(
+            "webina",
+            inputs,
+            callbacks,
+            procsPerJobBatch,
+            simultBatches,
+            batchSize
+        ).done.catch((err: Error) => {
+            // Intentionally not rethrowing error here. // TODO: fix this
+            messagesApi.popupError(
+                `<p>Webina threw an error.</p><p>Error details: ${err.message}</p>`
+            );
+        });
+
+        return;
     }
 
     /**

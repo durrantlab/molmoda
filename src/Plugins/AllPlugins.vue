@@ -10,6 +10,7 @@ system uses these to autopopulate with plugins. -->
     <!-- TEMPLATE1 START -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
+    <CopyPlugin @onPluginSetup="onPluginSetup"></CopyPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <ErrorReportingPlugin @onPluginSetup="onPluginSetup"></ErrorReportingPlugin>
@@ -25,6 +26,7 @@ system uses these to autopopulate with plugins. -->
     <NavigatorWindowPlugin @onPluginSetup="onPluginSetup"></NavigatorWindowPlugin>
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
     <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
+    <PastePlugin @onPluginSetup="onPluginSetup"></PastePlugin>
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
     <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
@@ -65,6 +67,7 @@ import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 // TEMPLATE2 START
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
+import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
@@ -80,6 +83,7 @@ import MoveRegionsOnClickPlugin from "./Core/MoveRegionsOnClickPlugin.vue";
 import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
 import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
 import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
+import PastePlugin from "./Core/Clipboard/PastePlugin.vue";
 import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
 import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
@@ -116,6 +120,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     // TEMPLATE3 START
     ClearSelectionPlugin,
     CloneMolPlugin,
+    CopyPlugin,
     DataWindowPlugin,
     DeleteMolPlugin,
     ErrorReportingPlugin,
@@ -131,6 +136,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     NavigatorWindowPlugin,
     NewProjectPlugin,
     OpenMoleculesPlugin,
+    PastePlugin,
     RedoPlugin,
     RenameMolPlugin,
     SaveMoleculesPlugin,

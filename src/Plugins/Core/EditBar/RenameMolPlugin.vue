@@ -74,7 +74,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     * 
+     *
      * @param {any} payload  The payload (node id)
      */
     onBeforePopupOpen(payload: any) {
@@ -84,13 +84,14 @@ export default class RenameMolPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         if (this.nodesToActOn) {
-            console.log("YYY", this.getUserArg("newName"))
             this.nodesToActOn.get(0).title = this.getUserArg("newName");
         }
-        return;
+        return Promise.resolve();
     }
 
     /**
@@ -119,7 +120,7 @@ export default class RenameMolPlugin extends PluginParentClass {
                 .text("#newName-renamemol-item", "Compounds2")
                 .pressPopupButton(".action-btn", this.pluginId)
                 .wait(2)
-                .waitUntilRegex("#navigator", "Compounds2")
+                .waitUntilRegex("#navigator", "Compounds2"),
         };
     }
 }

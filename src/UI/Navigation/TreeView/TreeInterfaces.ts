@@ -116,6 +116,12 @@ export enum TreeNodeDataType {
     Graph,
 }
 
+export enum TableHeaderSort {
+    All,  // default
+    AllButFirst,
+    None
+}
+
 export interface ITreeNodeData {
     // Varies depending on type. TODO: Make more specific using ||
     data: any;  // Should be like {}, I think.
@@ -125,6 +131,8 @@ export interface ITreeNodeData {
     // The TreeNode that this data is associated with. It's the id to avoid
     // circular references when serializing.
     treeNodeId?: string;
+
+    headerSort?: TableHeaderSort;
 }
 
 // export interface IResidue extends TreeNode {}

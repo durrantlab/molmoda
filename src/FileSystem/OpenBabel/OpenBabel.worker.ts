@@ -290,6 +290,19 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
         });
 }
 
+/**
+ * If the input is a PDB file, and the output is a PDB file, then OpenBabel is
+ * not needed. This function checks for that case, and if so, returns the output
+ * files.
+ *
+ * @param {string[]}   args        The arguments that would be passed to Open
+ *                                 Babel.
+ * @param {FileInfo[]} inputFiles  The input files.
+ * @returns {boolean | Promise<any>}  If false, then this function is not
+ *                                    applicable. If a Promise, then this
+ *                                    function is applicable, and the output
+ *                                    files are ready.
+ */
 function easyParsePDBIfPossible(
     args: string[],
     inputFiles: any

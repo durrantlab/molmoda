@@ -151,7 +151,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job running.
      */
-    async runJobInBrowser(/* fileInfo: IFileInfo */) {
+    async runJobInBrowser(): Promise<void> {
         // Load the example project
 
         // Fetch the file "./example.biotite" file using fetch. It is a binary

@@ -41,14 +41,16 @@ export default class LogWindowPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = `Switch to the log panel.`;
+    intro = `Switch to the Log panel.`;
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * 
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         switchToGoldenLayoutPanel("Log");
-        return;
+        return Promise.resolve();
     }
 
     /**
@@ -60,7 +62,7 @@ export default class LogWindowPlugin extends PluginParentClass {
      */
     getTests(): ITest[] {
         // This is a test! Nothing specific to do but click the menu items.
-        
+
         return [];
         // {
         //     afterPluginCloses: new TestCmdList().wait(3),

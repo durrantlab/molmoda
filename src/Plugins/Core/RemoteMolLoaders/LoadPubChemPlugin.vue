@@ -48,10 +48,7 @@ import { loadRemote } from "./Utils";
 import * as api from "@/Api";
 import { appName } from "@/Core/GlobalVars";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import {
-    PluginParentClass,
-    RunJobReturn,
-} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { correctFilenameExt } from "@/FileSystem/Utils";
@@ -183,7 +180,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
      *
      * @param {string} filename  The filename to use.
-     * @returns {RunJobReturn} A promise that resolves when it is loaded.
+     * @returns {Promise<void>} A promise that resolves when it is loaded.
      */
     get2DVersion(filename: string): Promise<void> {
         return loadRemote(
@@ -224,16 +221,15 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     onBeforePopupOpen() {
         this.cid = "";
         this.molName = "";
-        this.molNameRespDescription =
-            `The name of the molecule. If given, ${appName} will automatically search PubChem for the corresponding Chemical Identification (CID) number.`;
+        this.molNameRespDescription = `The name of the molecule. If given, ${appName} will automatically search PubChem for the corresponding Chemical Identification (CID) number.`;
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
-     * @returns {RunJobReturn}  A promise that resolves the file object.
+     * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    runJobInBrowser(): RunJobReturn {
+    runJobInBrowser(): Promise<void> {
         let filename = "";
         if (this.molName !== "") {
             filename += slugify(this.molName) + "-";

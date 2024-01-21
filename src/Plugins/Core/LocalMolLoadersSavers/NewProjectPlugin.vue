@@ -27,14 +27,12 @@ import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
-import * as api from "@/Api";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import Alert from "@/UI/Layout/Alert.vue";
 
 /**
@@ -102,11 +100,13 @@ export default class NewProjectPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * 
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser(/* fileInfo: IFileInfo */) {
+    runJobInBrowser(): Promise<void> {
         setStoreIsDirty(false);
         window.location.reload();
-        return;
+        return Promise.resolve();
     }
 
     /**

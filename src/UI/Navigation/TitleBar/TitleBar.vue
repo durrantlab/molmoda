@@ -164,6 +164,10 @@ export default class TitleBar extends Vue {
         const numChildren = node.nodes?.length;
         const numTerminals = node.nodes?.terminals.length;
 
+        // NOTE: This is just to make sure the count is reactive. A silly hack.
+        const triggerId = node.nodes?.triggerId;
+        if (triggerId === "-234") return "";
+
         let s = `(${numChildren}`;
         if (numChildren !== numTerminals) {
             s += ` / ${numTerminals}`;

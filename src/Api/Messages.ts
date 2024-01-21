@@ -10,6 +10,7 @@ import {
 } from "@/UI/MessageAlerts/WaitSpinner";
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
+
 export const messagesApi = {
     /**
      * Displays a popup message.
@@ -33,6 +34,7 @@ export const messagesApi = {
         callBack: Function | undefined = undefined,
         neverClose = false
     ) {
+        // If popup already open, do not open another one.
         pluginsApi.runPlugin("simplemsg", {
             title,
             message,

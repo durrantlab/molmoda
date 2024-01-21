@@ -1,6 +1,6 @@
 import { IFileParts } from "./Utils";
 
-const regexAcceptableChars = "a-zA-Z\\d."
+const regexAcceptableChars = "\\w\\-."
 
 /**
  * Make sure a filename is valid by removing non-alphanumeric characters.

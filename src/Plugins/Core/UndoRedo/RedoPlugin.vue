@@ -60,10 +60,12 @@ export default class RedoPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * 
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         redo(this.$store);
-        return;
+        return Promise.resolve();
     }
 
     /**

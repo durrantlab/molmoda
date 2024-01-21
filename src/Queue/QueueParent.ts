@@ -210,14 +210,11 @@ export abstract class QueueParent {
         // Start jobs until the queue is full or there are no more jobs.
         // eslint-disable-next-line no-constant-condition
         while (true) {
-            if (this.jobsCancelling) {
-                return;
-            }
+            // Cancel in progress
+            if (this.jobsCancelling) return;
 
-            if (this._inputBatches.length === 0) {
-                // No more input batches to add.
-                break;
-            }
+            // No more input batches to add.
+            if (this._inputBatches.length === 0) break;
 
             if (
                 this._numProcsCurrentlyRunning + this._procsPerJobBatch >
@@ -228,10 +225,8 @@ export abstract class QueueParent {
             }
 
             const inputBatch = this._inputBatches.shift();
-            if (!inputBatch) {
-                // No more input batches to add.
-                break;
-            }
+            // No more input batches to add.
+            if (!inputBatch) break;
 
             // Add jobs to the _jobsCurrentlyRunning list.
             for (const jobInfo of inputBatch) {
@@ -309,7 +304,7 @@ export abstract class QueueParent {
      */
     private _onJobDone(jobInfo: IJobInfo) {
         if (this._callbacks && this._callbacks.onJobDone) {
-            this._callbacks.onJobDone(jobInfo.output);
+            this._callbacks.onJobDone(jobInfo.output, jobInfo.index);
         }
     }
 

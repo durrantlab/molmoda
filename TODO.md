@@ -110,24 +110,65 @@ The new 3dmoljs is based on typescript: https://github.com/3dmol/3Dmol.js Would
 be good to use that in time. You have a branch already, but it freezes after
 docking. Your only version doesn't somehow.
 
-# Ongoing: Important
+Would be nice to provide autosave option (to local storage) for when biotite
+crashes.
 
 Recently redid undo/redo. But load molecule and show/hide multiple times.
-    Eventually no molecule shows up.
+    Eventually no molecule shows up. (Good to fix, but seems like fringe case.)
+
+# Ongoing: Important
+
+Try docking on lots of processors on bob. Some error. Why? Put in webwqorker to fix?
+Can;t save biotite file after docking. Why not?
+Message to warn about wasm error on chrome.
+
+Explict copy as smiles
+
+Draw molecule should have text field that gives smiles. You'll need OpenBabel
+version that can convert to CML. Email sent to Yuri on Jan 19.
+
+Paste lots of different file types to test.
+Just paste c1ccccc1. Why "****:" in sublevels?
+
+# DONE
+
+When saving, if extension is PDB, open up and change to that.
+
+Save needs to append correct extension if it isn't already appended.
+
+copy plugin: need test
+paste plugin: need test
+
+Would be great to have copy/paste. Just use string, and Molecular Text to restore.
+
+Pressing enter copy/paste presses two buttons?
+
+paste molecule gives filename-specification option.
+
+Better explanations on copy and paste. Which formats, why chosen, other options.
+
+FileInfo should be able to guess at format. Update Molecular Text plugin accordingly.
+
+With docking, I'm not seeing same reactivity. Need to also add refreshId to
+TreeNode (not just TreeNodeList)?
+
+Try to close on open mol button in compiled version. Doesn't work!
+
+Show message if job doesnt finish in 10 seconds (look at job panel, with link)
+
+Get rid of RunJobReturn throughout. Just use Promise<void>
 
 On save biotite, _ should be allowed in filename. Also -. Works now, but action
 button doesn't update.
 
-Try docking on lots of processors on bob. Some error. Why?
+When you export table, don't include hidden columns.
+
+Dock with two proteins. Not data table headers. They are off.
+
+Docking scores in data table don't update immediately. Not reactive?
 
 When you dock, should also save docking parameteres to data. Together with
 score.
-
-Show message if job doesnt finish in 10 seconds (look at job panel, with link)
-
-Try to close on open button in compiled version. Doesn't work!
-
-# DONE
 
 Search through all getTests to make sure no empty tests.
 

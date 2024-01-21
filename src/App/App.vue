@@ -48,7 +48,6 @@ import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import { globalCredits } from "./GlobalCredits";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
-import { compile } from "vue";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore

@@ -10,7 +10,6 @@ export class HooksMixin extends Vue {
      *
      * @param  {any} payload  The payload passed to the popup if it is accessed
      *                        programatically.
-     *
      * @return {boolean | void}  If false, the popup will not open (abort).
      *                           Anything else, and the popup will open.
      * @document

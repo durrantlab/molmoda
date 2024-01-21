@@ -39,6 +39,11 @@ import { TestCmdList } from "@/Testing/TestCmdList";
  * @returns {any}  An object with two keys: options and validateFuncs
  */
 function getFormatInfos(): { [key: string]: any[] } {
+    // NOTE: There's some overlap here and with the FileInfo.guessFormat()
+    // function, but here formats things a little differently, accounts for
+    // unknown, etc. I'm going to leave for now, but be aware of the potential
+    // redundancy.
+
     // Keep only those keys whose values have validateContents defined
     const options: IUserArgOption[] = [];
     const validateFuncs: [(s: string) => boolean, string][] = [];

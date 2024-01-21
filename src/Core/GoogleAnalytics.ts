@@ -54,7 +54,6 @@ async function injectGoogleAnalyticsScriptIfNeeded() {
  *
  * @param  {string} eventName                    The event name.
  * @param  {string} eventAction                  The event action.
- * @param  {Record<string, any>} [eventOptions]  The event options.
  * @returns {void}
  * @see
  * https://developers.google.com/analytics/devguides/collection/gtagjs/events

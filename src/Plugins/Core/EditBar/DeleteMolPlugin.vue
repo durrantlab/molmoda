@@ -76,7 +76,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job running.
      */
-    async runJobInBrowser() {
+    async runJobInBrowser(): Promise<void> {
         if (this.nodesToActOn) {
             // debugger;
             const treeNodeList = this.$store.state.molecules as TreeNodeList;
@@ -124,7 +124,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
             // }
         }
 
-        return;
+        return Promise.resolve();
     }
 
     /**

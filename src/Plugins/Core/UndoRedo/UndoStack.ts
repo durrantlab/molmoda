@@ -4,25 +4,27 @@ import { store } from "@/Store";
 import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import * as api from "@/Api";
 
 let timeoutId: number;
 const maxItemsOnUndoStack = 10;
 let pauseAddToUndoStack = false;
 
-setInterval(() => {
-    console.log(
-        store.state.undoStack.map((m: any) => m.undoStackId).length, 
-        store.state.redoStack.map((m: any) => m.undoStackId).length, 
-    );
-}
-, 1000);
+// setInterval(() => {
+//     console.log(
+//         store.state.undoStack.map((m: any) => m.undoStackId).length,
+//         store.state.redoStack.map((m: any) => m.undoStackId).length,
+//     );
+// }
+// , 1000);
 
+/**
+ * Temporarily pauses adding to the undo stack.
+ */
 function _tmpPauseAddToUndoStack() {
     // Cancel any pending additions to undo stack
 
     window.clearTimeout(timeoutId);
-    
+
     // Prevent new ones.
     pauseAddToUndoStack = true;
 
@@ -32,14 +34,20 @@ function _tmpPauseAddToUndoStack() {
     }, 500);
 }
 
+/**
+ * Makes all molecules dirty.
+ *
+ * @param  {TreeNodeList} mols The molecules.
+ */
 function _makeAllMolsDirty(mols: TreeNodeList) {
-    mols.filters.onlyTerminal
-    .forEach((mol: TreeNode) => { mol.viewerDirty = true; });
+    mols.filters.onlyTerminal.forEach((mol: TreeNode) => {
+        mol.viewerDirty = true;
+    });
 }
 
 /**
  * Pushes a new item to the undo stack.
- * 
+ *
  * @param  {TreeNodeList} item The item to push.
  */
 function _addItemToUndoStack(item: TreeNodeList) {
@@ -91,7 +99,7 @@ export function addToUndoStackAfterUserInaction(molecules: TreeNodeList) {
 
 /**
  * Undo the last user action.
- * 
+ *
  * @param  {any} store The Vuex store.
  */
 export function undo(store: any) {
@@ -126,7 +134,7 @@ export function undo(store: any) {
                 name: "molecules",
                 val: lastItemOnUndoStack,
             });
-    
+
             // Make sure this undo isn't itself added to the undo stack.
             _tmpPauseAddToUndoStack();
         }
@@ -137,10 +145,10 @@ export function undo(store: any) {
 
 /**
  * Redo the last user action.
- * 
+ *
  * @param  {any} store The Vuex store.
  */
-export async function redo(store: any) {   
+export async function redo(store: any) {
     const redoStack = store.state.redoStack as TreeNodeList[];
 
     const lastItemRedoStack = redoStack.pop();
@@ -169,5 +177,4 @@ export async function redo(store: any) {
 
         // console.log("redo");
     }
-
 }

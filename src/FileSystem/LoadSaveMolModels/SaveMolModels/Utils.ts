@@ -132,5 +132,10 @@ export function saveTxtFiles(
         return api.fs.saveTxt(files[0]);
     }
 
+    // If compressed name does not end in ".zip", add it.
+    if (!compressedName.toLowerCase().endsWith(".zip")) {
+        compressedName += ".zip";
+    }
+
     return api.fs.saveZipWithTxtFiles(compressedName, files);
 }

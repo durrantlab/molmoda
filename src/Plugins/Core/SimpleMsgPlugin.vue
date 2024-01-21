@@ -30,8 +30,7 @@ import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import * as api from "@/Api";
-import { TestCmdList } from "@/Testing/TestCmdList";
+import { pluginsApi } from "@/Api/Plugins"
 
 /**
  * SimpleMsgPlugin
@@ -98,13 +97,16 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         if (this.callBack) {
             this.callBack();
         }
-        return;
+        return Promise.resolve();
     }
 
     /**
@@ -118,11 +120,11 @@ export default class SimpleMsgPlugin extends PluginParentClass {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 
-        api.plugins.runPlugin(this.pluginId, {
+        pluginsApi.runPlugin(this.pluginId, {
             title: "Test Title",
             message: "Test message",
             open: true, // open
-        } as ISimpleMsg);    
+        } as ISimpleMsg);
 
         return [];
     }

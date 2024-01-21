@@ -19,6 +19,7 @@ export class TreeNodeList {
     private _filters: TreeNodeListFilters;
     private _nodeActions: TreeNodeListNodeActions;
     private _copy: TreeNodeListCopies;
+    public triggerId = ""  // Purpose of this is just to trigger reactivity if needed
 
     // This is to keep track of titles. It takes a surprisingly long time to
     // generate this set on the fly.
@@ -41,6 +42,21 @@ export class TreeNodeList {
 
         // For chaining
         return this;
+    }
+
+    /**
+     * Triggers reactivity. This is useful on rare occasions you need to trigger
+     * reactivity explicitly. Tested on the main, root node. May work on others.
+     */
+    public triggerReactivity() {
+        this.triggerId = randomID()
+
+        this.nodes = this.nodes.map(n => n);
+
+        for (const node of this.nodes) {
+            node.triggerReactivity();
+            node.nodes?.triggerReactivity();
+        }
     }
 
     // private _updateTitles(): void {
@@ -362,7 +378,6 @@ export class TreeNodeList {
                     if (node.title.indexOf("undefined") >= 0) {
                         const {basename} = getFileNameParts(fileName);
                         node.title = basename + ":" + (i + 1).toString();
-                        debugger
                     }
                     node.visible = i < initialCompoundsVisible;
                     // node.treeExpanded = false;
@@ -440,7 +455,7 @@ export class TreeNodeList {
      *
      * @param  {string}          targetExt      The extension of the format to
      *                                          convert to.
-     * @param  {boolean}         [merge=false]  Whether to merge the models into
+     * @param  {boolean}         [merge=true]  Whether to merge the models into
      *                                          a single PDB string.
      * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
      */

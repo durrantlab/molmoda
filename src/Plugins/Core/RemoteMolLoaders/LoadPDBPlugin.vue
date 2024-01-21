@@ -16,10 +16,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { loadRemote } from "./Utils";
 import * as api from "@/Api";
-import {
-    PluginParentClass,
-    RunJobReturn,
-} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
@@ -98,9 +95,9 @@ export default class LoadPDBPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job running.
      *
      * @param {string} pdbId  The PDB ID to load.
-     * @returns {RunJobReturn}  A promise that resolves the file object.
+     * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    runJobInBrowser(pdbId: string): RunJobReturn {
+    runJobInBrowser(pdbId: string): Promise<void> {
         return loadRemote(
             `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
         )

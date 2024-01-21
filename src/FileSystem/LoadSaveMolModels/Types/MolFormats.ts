@@ -119,7 +119,14 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
             // Note that this will assume pdbqt and pqr files are pdb. But not
             // validating contents of those other files for now.
             const pdbRegex = /^(?:ATOM|HETATM)/m;
-            return pdbRegex.test(contents);
+
+            if (!pdbRegex.test(contents)) {
+                return false;
+            }
+
+            // Problem is that CIF also has ATOM/HETATM. Throw false if "loop_" in text.
+            const loopRegex = /^loop_$/m;
+            return !(loopRegex.test(contents));
         }
     },
     MOL2: {
@@ -224,9 +231,19 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
             }
 
             // Split and consider only first part.
-            const smiles = lines.map((line) => line.split(" ")[0]);
+            const smiles = lines.map((line) => line.trim().split(" ")[0]);
 
             for (let smile of smiles) {
+                if (smile.length === 0) {
+                    // Blank line?
+                    continue
+                }
+
+                // If smile can be parsed as a float, it's not a smiles
+                if (!isNaN(parseFloat(smile))) {
+                    return false;
+                }
+
                 // Remove valid characters to see if anything is left.
                 
                 // Letters

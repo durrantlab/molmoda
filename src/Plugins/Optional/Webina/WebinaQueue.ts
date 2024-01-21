@@ -7,6 +7,12 @@ import { ITest } from "@/Testing/TestCmd";
  * A calculate mol props queue.
  */
 export class WebinaQueue extends QueueParent {
+    /**
+     * Make a webina instance.
+     * 
+     * @param {*} WEBINA_MODULE  The webina module.
+     * @returns {Promise<any>}  Resolves with the webina instance.
+     */
     private _makeWebinaInstance(WEBINA_MODULE: any): Promise<any> {
         const startTime = performance.now();
         let std = "";
@@ -31,6 +37,13 @@ export class WebinaQueue extends QueueParent {
                 return;
             },
 
+            /**
+             * A function that runs before the program starts.
+             *
+             * @param {IJobInfo} jobInfo           The job info.
+             * @param {Function} doneCallbackFunc  The callback function to call
+             *                                     when the job is done.
+             */
             setupRun: function (
                 jobInfo: IJobInfo,
                 doneCallbackFunc: (jobInfo: IJobInfo) => void
@@ -53,7 +66,7 @@ export class WebinaQueue extends QueueParent {
             },
 
             preRun: [
-                (mod: any) => {
+                (/* mod: any */) => {
                     // // Get the PDBQT contents from this.jobInfoPayload, which
                     // // must be manually before running.
                     // const ligandPDBQT = mod.jobInfoPayload.input.pdbFiles.cmpd.contents;
@@ -197,14 +210,15 @@ export class WebinaQueue extends QueueParent {
     /**
      * Run a single job.
      *
-     * @param {IJobInfo} jobInfo  The job to run.
+     * @param {IJobInfo} jobInfo         The job to run.
+     * @param {*}        webinaInstance  The webina instance.
      * @returns {Promise<IJobInfo>}  The output job.
      */
     private async _runJob(
         jobInfo: IJobInfo,
         webinaInstance: any
     ): Promise<IJobInfo> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             webinaInstance.setupRun(jobInfo, resolve);
             const argsList = [];
 

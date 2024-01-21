@@ -62,6 +62,7 @@ import {
     TreeNodeDataType,
     SelectedType,
     ITreeNodeData,
+TableHeaderSort,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { slugify } from "@/Core/Utils";
@@ -104,27 +105,28 @@ export default class DataPanel extends Vue {
         // { [key: string]: ITableData }
         const allMols = this.$store.state.molecules as TreeNodeList;
 
+        // Note that below is only to ensure reactivity. Very hackish.
+        if (allMols.triggerId === "-1") return [];
+
         // First get all the visible or selected nodes.
         const nodes = allMols.flattened.filter(
             // mol_filter_ok
             (x: TreeNode) => x.visible || x.selected !== SelectedType.False
         );
 
-        const dataByTitle: { [key: string]: ITreeNodeData[] } = {};
+        const dataByTableTitle: { [key: string]: ITreeNodeData[] } = {};
         for (let idx = 0; idx < nodes.length; idx++) {
             let node = nodes.get(idx);
-            if (node.data === undefined) {
-                continue;
-            }
-            const titles = Object.keys(node.data);
-            titles.sort();
+            if (node.data === undefined) continue;
+            const tableTitles = Object.keys(node.data);
+            tableTitles.sort();
 
-            for (const title of titles) {
-                const data = node.data[title];
-                if (dataByTitle[title] === undefined) {
-                    dataByTitle[title] = [];
+            for (const tableTitle of tableTitles) {
+                const data = node.data[tableTitle];
+                if (dataByTableTitle[tableTitle] === undefined) {
+                    dataByTableTitle[tableTitle] = [];
                 }
-                dataByTitle[title].push({
+                dataByTableTitle[tableTitle].push({
                     ...data,
                     treeNodeId: node.id,
                 });
@@ -133,8 +135,8 @@ export default class DataPanel extends Vue {
 
         // Keep only the table data. TODO: Deal with graph data elsewhere
         const tableDataByTitle: { [key: string]: ITreeNodeData[] } = {};
-        for (const title in dataByTitle) {
-            tableDataByTitle[title] = dataByTitle[title].filter(
+        for (const title in dataByTableTitle) {
+            tableDataByTitle[title] = dataByTableTitle[title].filter(
                 (x) => x.type === TreeNodeDataType.Table
             );
         }
@@ -145,7 +147,8 @@ export default class DataPanel extends Vue {
         const falseFunc = () => false;
         for (const title in tableDataByTitle) {
             // Get the headers
-            const headers: string[] = [];
+            let headers: string[] = [];
+            
             for (const data of tableDataByTitle[title]) {
                 for (const header of Object.keys(data.data)) {
                     if (!headers.includes(header)) {
@@ -153,11 +156,38 @@ export default class DataPanel extends Vue {
                     }
                 }
             }
+            
+            let headerSort = TableHeaderSort.All
+            for (const data of tableDataByTitle[title]) {
+                if (data.headerSort === TableHeaderSort.AllButFirst) {
+                    headerSort = TableHeaderSort.AllButFirst;
+                    break;
+                }
+                if (data.headerSort === TableHeaderSort.None) {
+                    headerSort = TableHeaderSort.None;
+                    break;
+                }
+            }
 
-            // Sort headers case insensitive
-            headers.sort((a, b) =>
-                a.localeCompare(b, undefined, { sensitivity: "base" })
-            );
+            const firstHeader = headers[0];
+            const otherHeaders = headers.slice(1)
+            switch (headerSort) {
+                case TableHeaderSort.All:
+                    // Sort headers case insensitive
+                    headers.sort((a, b) =>
+                        a.localeCompare(b, undefined, { sensitivity: "base" })
+                    );
+                    break;
+                case TableHeaderSort.AllButFirst:
+                    otherHeaders.sort((a, b) =>
+                        a.localeCompare(b, undefined, { sensitivity: "base" })
+                    );
+                    headers = [firstHeader, ...otherHeaders]
+                    break;
+                case TableHeaderSort.None:
+                    // Do nothing
+                    break;
+            }
 
             const tableData: ITableData = {
                 headers: headers.map((x) => ({ text: x })),
@@ -176,7 +206,7 @@ export default class DataPanel extends Vue {
                 defaultRow[header] = "";
             }
 
-            tableData.rows = dataByTitle[title].map((data: ITreeNodeData) => {
+            tableData.rows = dataByTableTitle[title].map((data: ITreeNodeData) => {
                 // The title should reflect ancestors.
                 const treeNode = allMols.flattened.filters.onlyId(
                     data.treeNodeId as string

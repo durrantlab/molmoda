@@ -19,19 +19,20 @@ import * as api from "@/Api";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import {
-    PluginParentClass,
-    RunJobReturn,
-} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     UserArg,
     IUserArgCheckbox,
     IUserArgGroup,
     IUserArgSelect,
     IUserArgText,
+    IUserArgOption,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { getFormatDescriptions } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import {
+    getFormatDescriptions,
+    getFormatInfoGivenType,
+} from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { saveBiotite } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveBiotite";
 import {
     fileNameFilter,
@@ -95,7 +96,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             validateFunc: (filename: string): boolean => {
                 return matchesFilename(filename);
             },
-            delayBetweenChangesDetected: 0
+            delayBetweenChangesDetected: 0,
         } as IUserArgText,
         {
             id: "useBiotiteFormat",
@@ -169,6 +170,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     ];
 
     alwaysEnabled = true;
+    lastFilename = ""
 
     /**
      * Determine which into text to use.
@@ -200,7 +202,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     * 
+     *
      * @param {any} payload  The payload passed to the plugin.
      */
     onBeforePopupOpen(payload: any) {
@@ -226,10 +228,85 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     }
 
     /**
+     * Reacts to the filename extension changing.
+     */
+    reactToExtChange() {
+        // Now try to detect extension and open/close biotite appropriately.
+        const filename = this.getUserArg("filename");
+        // const useBiotite = this.getUserArg("useBiotiteFormat") as boolean;
+        // let newUseBiotite = useBiotite;
+
+        // const prts = getFileNameParts(this.getUserArg("filename"));
+        // const ext = prts.ext.toLowerCase();
+
+        // NOTE: not using getFileNameParts because I really do want the
+        // terminal part. So .pdb.biotite should be detected as .biotite.
+        const ext =
+            filename.indexOf(".") === -1
+                ? ""
+                : filename.split(".").pop().toLowerCase();
+
+        // if (ext !== "" && ext.length >= 3) {
+        //     // There is an extension
+        //     // newUseBiotite = ext.slice(0, 3) === "bio";
+        //     this.setUserArg("useBiotiteFormat", ext.slice(0, 3) === "bio");
+        // }
+
+        // if filename doesn't end in .biotite, then add it.
+        // if (this.lastUseBiotiteFormat !== useBiotite) {
+        //     const hasBiotiteExt =
+        //         filename.toLowerCase().slice(-8) === ".biotite";
+        //     if (useBiotite && !hasBiotiteExt) {
+        //         this.setUserArg("filename", filename + ".biotite");
+        //     } else if (!useBiotite && hasBiotiteExt) {
+        //         this.setUserArg("filename", filename.slice(0, -8));
+        //     }
+        // }
+
+        // Try to figure out if the extention matches any known formats.
+        if (filename !== this.lastFilename) {
+            // Doing it this way so that typing the extension updates it, but
+            // updating the extension is still possible. Otherwise, just obeys
+            // extension of present, user can't change via select.
+            const format = getFormatInfoGivenType(ext);
+            if (format) {
+                for (const userArgId of [
+                    "oneMolFileFormat",
+                    "nonCompoundFormat",
+                    "compoundFormat",
+                ]) {
+                    const userArgDefault = this.userArgDefaults.filter(
+                        (userArg) => userArg.id === userArgId
+                    )[0];
+                    const userArgDefaultOptionVals = (
+                        userArgDefault as IUserArgSelect
+                    ).options.map((option) => (option as IUserArgOption).val);
+    
+                    if (
+                        userArgDefaultOptionVals.indexOf(format.primaryExt) !== -1
+                    ) {
+                        this.setUserArg(userArgId, format.primaryExt);
+                    }
+                }
+            }
+
+            this.lastFilename = filename;
+        }
+
+        // this.lastUseBiotiteFormat = newUseBiotite;
+        // this.setUserArg("useBiotiteFormat", newUseBiotite);
+
+        // return newUseBiotite;
+    }
+
+    /**
      * Detects when user arguments have changed, and updates UI accordingly.
      */
     onUserArgChange() {
-        let useBiotite = this.getUserArg("useBiotiteFormat") as boolean;
+        this.reactToExtChange();
+        
+        const useBiotite = this.getUserArg("useBiotiteFormat") as boolean
+
         // this.setUserArgEnabled("molMergingGroup", !useBiotite);
         this.setUserArgEnabled("whichMolsGroup", !useBiotite);
         this.setUserArgEnabled("separateCompounds", !useBiotite);
@@ -282,10 +359,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @returns {RunJobReturn}  A promise that resolves when the job is done.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(): RunJobReturn {
-        const filename = this.getUserArg("filename");
+    runJobInBrowser(): Promise<void> {
+        let filename = this.getUserArg("filename");
         const useBiotiteFormat = this.getUserArg("useBiotiteFormat") as boolean;
         let compoundFormat = this.getUserArg("compoundFormat");
         let nonCompoundFormat = this.getUserArg("nonCompoundFormat");
@@ -300,6 +377,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         const saveSelected = this.getUserArg("saveSelected") as boolean;
 
         if (useBiotiteFormat) {
+            // If filename doesn't end in .biotite, add .biotite
+            if (filename.toLowerCase().slice(-8) !== ".biotite") {
+                filename = filename + ".biotite";
+            }
+
             saveBiotite(filename)
                 .then(() => {
                     if (this.appClosing) {

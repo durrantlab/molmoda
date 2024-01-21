@@ -127,6 +127,13 @@ export class TreeNodeDescriptions {
                 newTitle = titles.join(separator);
             }
 
+            if (newTitle.length > maxLength) {
+                // remove all lowercase vowels after first 5 characters
+                const firstPart = newTitle.slice(0, 5);
+                const secondPart = newTitle.slice(5);
+                newTitle = firstPart + secondPart.replace(/[aeiou]/g, "");
+            }
+            
             // If it's still too long, just give the molecule title.
             if (newTitle.length > maxLength && this.parentTreeNode.title) {
                 newTitle = this.parentTreeNode.title;

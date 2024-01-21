@@ -41,6 +41,7 @@ import {
     TreeNodeType,
     // IBox,
     SelectedType,
+TableHeaderSort,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
 import { messagesApi } from "@/Api/Messages";
@@ -97,7 +98,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     intro = `(1) Identify small-molecule binding pockets on protein surfaces and (2) calculate pocket properties using the fpocket algorithm (FPocketWeb).`;
 
     msgOnJobsFinished =
-        "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";
+        "Finished detecting pockets (see molecular viewer). Some pockets might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the detected pockets.";
 
     userArgDefaults: UserArg[] = [
         {
@@ -296,9 +297,9 @@ export default class FPocketWebPlugin extends PluginParentClass {
      *
      * @param {any} payload     The user arguments to pass to the "executable."
      *                          Contains compound information.
-     * @returns {Promise<any>}  A promise that resolves when the job is done.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(payload: any): Promise<any> {
+    runJobInBrowser(payload: any): Promise<void> {
         if (payload.stdErr !== "") {
             throw new Error(payload.stdErr);
         }
@@ -427,6 +428,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                         data: pocketProps[idx],
                         type: TreeNodeDataType.Table,
                         treeNodeId: node.id,
+                        headerSort: TableHeaderSort.None
                     } as ITreeNodeData,
                 },
             });

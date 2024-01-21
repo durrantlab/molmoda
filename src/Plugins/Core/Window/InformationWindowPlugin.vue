@@ -41,14 +41,16 @@ export default class InformationWindowPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = `Switch to the information panel.`;
+    intro = `Switch to the Information panel.`;
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * 
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         switchToGoldenLayoutPanel("Information");
-        return;
+        return Promise.resolve();
     }
 
     /**

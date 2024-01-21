@@ -17,10 +17,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import * as api from "@/Api";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import {
-    PluginParentClass,
-    RunJobReturn,
-} from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -110,9 +107,9 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job running.
      *
      * @param {string} uniprot  The requested uniprot id.
-     * @returns {RunJobReturn}  A promise that resolves the file object.
+     * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    runJobInBrowser(uniprot: string): RunJobReturn {
+    runJobInBrowser(uniprot: string): Promise<void> {
         return loadRemote(
             `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
         )

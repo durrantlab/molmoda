@@ -109,13 +109,12 @@ export default class MergeMolsPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @returns {Promise<void> | undefined}  If the job is asynchronous, return
-     *     a promise. Otherwise, return undefined.
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser(): Promise<void> | undefined {
+    runJobInBrowser(): Promise<void> {
         if (!this.nodesToActOn) {
             // Nothing to do.
-            return;
+            return Promise.resolve();
         }
 
         // We need to collect all the ids of the ones to keep. This includes the

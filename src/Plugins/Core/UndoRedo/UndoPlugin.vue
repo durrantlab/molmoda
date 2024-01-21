@@ -54,7 +54,9 @@ export default class UndoPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        const undoStackWithoutEmptys = this.$store.state.undoStack.filter((x: TreeNodeList) => x.length > 0);
+        const undoStackWithoutEmptys = this.$store.state.undoStack.filter(
+            (x: TreeNodeList) => x.length > 0
+        );
 
         if (undoStackWithoutEmptys.length === 0) {
             return "No additional undo is available.";
@@ -71,10 +73,12 @@ export default class UndoPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * 
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         undo(this.$store);
-        return;
+        return Promise.resolve();
     }
 
     /**

@@ -141,9 +141,9 @@ export default class ReducePlugin extends PluginParentClass {
      *
      * @param {any[]} payloads  The user arguments to pass to the "executable."
      *                          Contains compound information.
-     * @returns {Promise<any>}  A promise that resolves when the job is done.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    async runJobInBrowser(payloads: any[]): Promise<any> {
+    async runJobInBrowser(payloads: any[]): Promise<void> {
         const pdbOuts = payloads.map((payload) => payload.output);
 
         // Make fileInfos
@@ -209,7 +209,8 @@ export default class ReducePlugin extends PluginParentClass {
 
                 // treeNode.addToMainTree();
 
-                return protProtonatedTreeNodes;
+                // return protProtonatedTreeNodes;
+                return;
             })
             .catch((err: Error) => {
                 debugger;

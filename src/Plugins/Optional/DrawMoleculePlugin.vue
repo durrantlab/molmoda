@@ -12,6 +12,23 @@
             style="width: 100%; height: 400px"
             @click="onWidgetClick"
         ></div>
+        <!-- v-model="molName"
+        @onChange="searchByName"
+        :description="molNameRespDescription" -->
+        <FormWrapper class="mt-2">
+            <FormInput
+                v-model="currentSmiles"
+                ref="formMolName"
+                id="formMolName"
+                placeHolder="(Optional) Enter the Chemical Name (e.g., Aspirin)"
+                :delayBetweenChangesDetected="0"
+                :validateDescription="false"
+                actionBtnTxt="Load SMILES"
+                @onActionBtnClick="onActionBtnClick"
+            >
+            </FormInput>
+        </FormWrapper>
+        {{ currentSmiles }}
     </PluginComponent>
 </template>
 
@@ -33,6 +50,9 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { isTest } from "@/Testing/SetupTests";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import FormInput from "@/UI/Forms/FormInput.vue";
+import FormWrapper from "@/UI/Forms/FormWrapper.vue";
+import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * DrawMoleculePlugin
@@ -40,6 +60,8 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 @Options({
     components: {
         PluginComponent,
+        FormInput,
+        FormWrapper,
     },
 })
 export default class DrawMoleculePlugin extends PluginParentClass {
@@ -57,6 +79,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     intro = `Use the editor below to draw a small-molecule compound.`;
 
     userArgDefaults: UserArg[] = [];
+    currentSmiles = "";
 
     kekule: any;
     chemComposer: any;
@@ -133,6 +156,52 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     }
 
     /**
+     * Loads a smiles string into the editor.
+     *
+     * @param {string} smi  The smiles string.
+     * @returns {Promise<void>}  A promise that resolves when the smiles string
+     *                           is loaded.
+     */
+    async loadFromSmiles(smi: string): Promise<void> {
+        // Convert smi
+        const fileInfo = new FileInfo({
+            name: randomID() + ".smi",
+            contents: smi,
+        });
+
+        debugger
+
+        const contents = await convertFileInfosOpenBabel([fileInfo], "cml");
+        const testMol = this.kekule.IO.loadFormatData(contents[0], "sdf");
+        this.chemComposer.setChemObj(testMol);
+        return
+        // return contents[0];
+        // const cmlData = `<?xml version="1.0"?><molecule xmlns="http://www.xml-cml.org/schema"><atomArray><atom id="a1" elementType="C" hydrogenCount="4"/></atomArray></molecule>`;
+    }
+
+    /**
+     * Runs when the user presses the action button.
+     */
+    onActionBtnClick() {
+        // Seems too challenging to load SMI file into kekule. Going to use
+        // OpenBabel to convert to cml
+
+        this.loadFromSmiles(this.currentSmiles);
+
+        // this.kekule.OpenBabel.enable(() => {
+        //     debugger;
+        // });
+
+        // this.kekule.OpenBabel.enable(() => {
+        // debugger;
+        // this.chemComposer
+        //     .getEditor()
+        //     .setChemObjData('{"format": "smi", "data": "C1CCCCC1"}');
+        // });
+        this.isActionBtnEnabled = true;
+    }
+
+    /**
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
@@ -173,7 +242,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
-     *     Return void if there's nothing to return.
      */
     runJobInBrowser(args: any): Promise<void> {
         return Promise.resolve();
@@ -184,8 +252,12 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      * smiles string ready.
      */
     onWidgetClick() {
-        const smi = this.kekule.IO.saveFormatData(this.chemComposer.getChemObj(), "smi");
-        this.isActionBtnEnabled = smi !== "";        
+        alert("hi")
+        this.currentSmiles = this.kekule.IO.saveFormatData(
+            this.chemComposer.getChemObj(),
+            "smi"
+        );
+        this.isActionBtnEnabled = this.currentSmiles !== "";
     }
 
     /**

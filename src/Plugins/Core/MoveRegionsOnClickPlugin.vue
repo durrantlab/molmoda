@@ -125,10 +125,11 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @param {TreeNode} treeNode  The molecule container associated
-     *     with the region.
+     * @param {TreeNode} treeNode  The molecule container associated with the
+     *                             region.
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser(treeNode: TreeNode) {
+    runJobInBrowser(treeNode: TreeNode): Promise<void> {
         const newRegion = {
             ...treeNode.region,
             center: this.newCenter,
@@ -136,7 +137,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
         treeNode.region = newRegion;
         treeNode.viewerDirty = true;
 
-        return;
+        return Promise.resolve();
     }
 
     /**

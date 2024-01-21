@@ -208,8 +208,9 @@ export default class SettingsPlugin extends PluginParentClass {
      * running.
      *
      * @param {UserArg[]} args  The user arguments to pass to the "executable."
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    async runJobInBrowser(args: UserArg[]) {
+    async runJobInBrowser(args: UserArg[]): Promise<void> {
         // Keeping only id and val.
         args = args.map((arg) => {
             return {

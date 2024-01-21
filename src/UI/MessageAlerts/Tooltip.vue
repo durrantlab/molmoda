@@ -78,6 +78,9 @@ export default class Tooltip extends Vue {
         }
     }
 
+    /**
+     * Called when the component is mounted.
+     */
     mounted() {
         // No tool tips if teting.
         if (isTest) {

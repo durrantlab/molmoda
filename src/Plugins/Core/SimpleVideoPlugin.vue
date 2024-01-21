@@ -16,7 +16,7 @@
             <iframe
                 ref="iframe"
                 class="embed-responsive-item"
-                style="width: 100%; border: 0.5px solid black;"
+                style="width: 100%; border: 0.5px solid black"
                 credentialless
                 :src="'https://www.youtube.com/embed/' + youtubeID"
                 title="YouTube video player"
@@ -48,7 +48,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { Watch } from "vue-property-decorator";
-import * as api from "@/Api"
+import * as api from "@/Api";
 
 /**
  * SimpleVideoPlugin
@@ -112,18 +112,25 @@ export default class SimpleVideoPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         if (this.callBack) {
             this.callBack();
         }
-        return;
+        return Promise.resolve();
     }
 
     adjustVideoHeightInterval: any = undefined;
 
-    // Watch open
+    /**
+     * Watch for changes to the open property.
+     * 
+     * @param {boolean} newVal  The new value of the open property.
+     */
     @Watch("open")
     onOpenChange(newVal: boolean) {
         if (newVal) {
@@ -159,16 +166,16 @@ export default class SimpleVideoPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-     getTests(): ITest[] {
-         // Not going to test closing, etc. (Too much work.) But at least opens
-         // to see if an error occurs.
+    getTests(): ITest[] {
+        // Not going to test closing, etc. (Too much work.) But at least opens
+        // to see if an error occurs.
 
         api.plugins.runPlugin(this.pluginId, {
             title: "Test Title",
             message: "Test message",
             youtubeID: "H8VkRiHayeU",
             open: true, // open
-        } as ISimpleVideo);    
+        } as ISimpleVideo);
 
         return [];
     }

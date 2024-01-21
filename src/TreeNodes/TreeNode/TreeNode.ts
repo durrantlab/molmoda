@@ -72,6 +72,8 @@ export class TreeNode {
     styles?: IStyle[]; // styles and selections for this node
     region?: IRegion;
 
+    public triggerId = ""  // Purpose of this is just to trigger reactivity if needed
+
     private _descriptions: TreeNodeDescriptions;
     private _ancestry: TreeNodeAncestry;
 
@@ -109,6 +111,14 @@ export class TreeNode {
 
         // For chaining
         return this;
+    }
+
+    /**
+     * Triggers reactivity. This is useful on rare occasions you need to trigger
+     * reactivity explicitly. Tested on the main, root node. May work on others.
+     */
+    public triggerReactivity() {
+        this.triggerId = randomID()
     }
 
     // private fixTitle(title: string): string {

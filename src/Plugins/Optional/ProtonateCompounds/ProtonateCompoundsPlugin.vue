@@ -217,8 +217,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
-     * @returns {Promise<undefined>}  A promise that resolves when the job is
-     *     done.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
         return Promise.resolve();

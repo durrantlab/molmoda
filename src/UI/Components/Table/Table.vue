@@ -75,7 +75,13 @@
                             class="cell px-2"
                             :style="clickableRows ? 'cursor: pointer;' : ''"
                         >
-                            <Tooltip :tip="getCellToolTipText(getCell(row[header.text]))">
+                            <Tooltip
+                                :tip="
+                                    getCellToolTipText(
+                                        getCell(row[header.text])
+                                    )
+                                "
+                            >
                                 {{ getCell(row[header.text]).val }}
                                 <div
                                     v-if="
@@ -231,7 +237,7 @@ export default class Table extends Vue {
 
     /**
      * Get the header tool tip text.
-     * 
+     *
      * @param {IHeader} header  The header to get the tool tip text for.
      * @returns {string} The tool tip text.
      */
@@ -241,7 +247,7 @@ export default class Table extends Vue {
 
     /**
      * Get the cell tool tip text.
-     * 
+     *
      * @param {ICellValue} cellValue  The cell value to get the tool tip text for.
      * @returns {string | number} The tool tip text.
      */
@@ -410,9 +416,24 @@ export default class Table extends Vue {
         //   return row;
         // });
 
-        // If you use this one, alredy in the right format, but hidden columns
+        // If you use this one, already in the right format, but hidden columns
         // appear.
         const data = JSON.parse(JSON.stringify(this.tableData));
+
+        // Remove column "id" if it exists. TODO: Would be good to remove all
+        // hidden ones.
+        for (const header of data.headers) {
+            if (header.text === "id") {
+                const headerIndex = data.headers.indexOf(header);
+                data.headers.splice(headerIndex, 1);
+                
+                for (const row of data.rows) {
+                    delete row[header.text];
+                }
+                break;
+            }
+        }
+        
         data.headers = data.headers.map((h: IHeader) => h.text);
 
         if (format === "json") {

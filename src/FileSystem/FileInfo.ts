@@ -2,6 +2,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     getFormatInfoGivenType,
     IFormatInfo,
+    molFormatInformation,
 } from "./LoadSaveMolModels/Types/MolFormats";
 import { IFileInfo } from "./Types";
 import { getFileType } from "./Utils2";
@@ -46,7 +47,7 @@ export class FileInfo {
 
     /**
      * Returns the file type.
-     * 
+     *
      * @returns {string}  The file type.
      */
     public getFileType(): string {
@@ -55,11 +56,58 @@ export class FileInfo {
 
     /**
      * Returns the format info.
-     * 
+     *
      * @returns {IFormatInfo | undefined}  The format info.
      */
     public getFormatInfo(): IFormatInfo | undefined {
         const typ = this.getFileType();
         return getFormatInfoGivenType(typ);
+    }
+
+    /**
+     * Assigns the extension based on the contents. Guesses the format.
+     */
+    public assignExtByContents() {
+        const format = this.guessFormat();
+        if (format) {
+            this.name = this.name + "." + format.primaryExt;
+        }
+    }
+
+    /**
+     * Guesses the format.
+     *
+     * @returns {IFormatInfo | undefined}  The format info.
+     */
+    public guessFormat(): IFormatInfo | undefined {
+        const contents = this.contents.trim();
+
+        for (const formatID in molFormatInformation) {
+            const format = molFormatInformation[formatID];
+            if (format.validateContents === undefined) {
+                // No way of validating this one.
+                continue;
+            }
+
+            if (format === molFormatInformation.SMI) {
+                // Waiting until the end to do SMI (it's the most permissive)
+                continue;
+            }
+
+            if (format.validateContents(contents)) {
+                return format;
+            }
+        }
+
+        // Now try SMI
+        if (
+            molFormatInformation.SMI.validateContents &&
+            molFormatInformation.SMI.validateContents(contents)
+        ) {
+            return molFormatInformation.SMI;
+        }
+
+        // Return undefined if format not found.
+        return;
     }
 }

@@ -59,15 +59,18 @@ export default class SelectAllPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser() {
+    runJobInBrowser(): Promise<void> {
         const allNodes = (this.$store.state["molecules"] as TreeNodeList)
             .flattened;
         allNodes.forEach((n) => {
             n.selected = SelectedType.True;
         });
-        return;
+        return Promise.resolve();
     }
 
     /**

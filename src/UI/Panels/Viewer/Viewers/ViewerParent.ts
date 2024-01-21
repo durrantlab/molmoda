@@ -414,7 +414,6 @@ export abstract class ViewerParent {
                     // second copy of the region gets added before the promise
                     // resolves.
                     this.regionCache[id] = "pending";
-                    console.log(id + ":OPACITY4: "); // Sets opacity
                     addObjPromise = this.addRegion(
                         treeNode.region as IRegion
                     ).then((region: GenericRegionType) => {
@@ -805,7 +804,6 @@ export abstract class ViewerParent {
         // Rather than update the region, we remove it and re-add it. This is
         // because the 3DMoljs viewer does not have a way to update the position
         // as best I can tell.
-        console.log(id + ":OPACITY3: "); // Sets opacity
 
         this.addRegion(regionStyle)
             .then((region: GenericRegionType) => {

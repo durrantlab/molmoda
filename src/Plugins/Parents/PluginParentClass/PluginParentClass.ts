@@ -30,10 +30,13 @@ import {
 import { copyUserArgs } from "../UserInputUtils";
 import { logGAEvent } from "@/Core/GoogleAnalytics";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
-export type RunJobReturn = Promise<void> | void;
+// export type RunJobReturn = Promise<void>;
+
+const runningForAWhileTimers: {[key: string]: any} = {};
 
 /**
  * PluginParentClass
@@ -176,6 +179,13 @@ export abstract class PluginParentClass extends mixins(
     showInQueue = true;
 
     /**
+     * By default, the plugin will show a message if the job takes a long time
+     * to run. You can disable this message by setting skipLongRunningJobMsg to
+     * true.
+     */
+    skipLongRunningJobMsg = false;
+
+    /**
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
@@ -269,6 +279,19 @@ export abstract class PluginParentClass extends mixins(
         numProcessorsPerJob = 1,
         delayBetweenJobsMS?: number
     ) {
+        if (!this.skipLongRunningJobMsg) {
+            if (runningForAWhileTimers[this.pluginId] !== undefined) {
+                clearTimeout(runningForAWhileTimers[this.pluginId]);
+            }
+            runningForAWhileTimers[this.pluginId] = setTimeout(() => {
+                api.messages.popupMessage(
+                    "Job Running",
+                    "Your job is currently running. Check the Jobs panel to monitor job progress.",
+                    PopupVariant.Success
+                );
+            }, 5000);
+        }
+        
         if (parameterSets === undefined) {
             parameterSets = [undefined];
         }
@@ -311,8 +334,27 @@ export abstract class PluginParentClass extends mixins(
             doneInQueueStore(jobId);
         }
 
-        // Log plugin started
+        // Log plugin finished
         logGAEvent(this.pluginId, "jobFinished");
+
+        if (!this.skipLongRunningJobMsg) {
+            clearTimeout(runningForAWhileTimers[this.pluginId]);
+            delete runningForAWhileTimers[this.pluginId];
+            if (Object.keys(runningForAWhileTimers).length === 0) {
+                api.messages.closePopupMessage();
+            }
+        }
+
+        if (this.msgOnJobsFinished !== "") {
+            setTimeout(() => {
+                api.messages.popupMessage(
+                    "Job Finished",
+                    this.msgOnJobsFinished,
+                    PopupVariant.Success
+                );
+            }, delayForPopupOpenClose);
+        }
+
 
         // const jobs: IJobInfoToEndpoint[] = parameterSets.map(
         //     (p: IJobInfoToEndpoint) => {
@@ -339,10 +381,9 @@ export abstract class PluginParentClass extends mixins(
      *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
-     * @returns {RunJobReturn}  A promise that resolves when the job is done.
-     *     Return void if there's nothing to return.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    abstract runJobInBrowser(parameterSet: any): RunJobReturn;
+    abstract runJobInBrowser(parameterSet: any): Promise<void>;
 
     /**
      * Wraps around runJob to log start/end messages. It is called by the job
@@ -352,11 +393,9 @@ export abstract class PluginParentClass extends mixins(
      * @param {any}    [parameterSet]  The same parameterSets submitted via the
      *                                 submitJobs function, but one at a time.
      *                                 Optional.
-     * @returns {RunJobReturn}  A promise that resolves when the job is done.
-     *     Return void if there's nothing to return (so user not required to
-     *     use).
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    private _runJobInBrowser(jobId?: string, parameterSet?: any): RunJobReturn {
+    private async _runJobInBrowser(jobId?: string, parameterSet?: any): Promise<void> {
         if (this.runJobInBrowser === null) {
             // Below won't ever happen (wouldn't pass validation), but makes it
             // easy to avoid typescript error.
@@ -374,7 +413,7 @@ export abstract class PluginParentClass extends mixins(
 
         const startTime = new Date().getTime();
 
-        const jobResultFiles = this.runJobInBrowser(parameterSet);
+        await this.runJobInBrowser(parameterSet);
 
         let endLogTxt = "";
         if (this.logJob) {
@@ -382,39 +421,40 @@ export abstract class PluginParentClass extends mixins(
             endLogTxt = removeTerminalPunctuation(endLogTxt);
         }
 
-        if (jobResultFiles !== undefined) {
-            // It's a promise
-            return jobResultFiles
-                .then((files: FileInfo[] | FileInfo | void | undefined) => {
-                    if (files === undefined) {
-                        files = [];
-                    }
-                    // If files is not array, make it one
-                    if (!Array.isArray(files)) {
-                        files = [files];
-                    }
+        // if (jobResultFiles !== undefined) {
+        //     // It's a promise
+        //     return jobResultFiles
+        //         .then((files: FileInfo[] | FileInfo | void | undefined) => {
+        //             if (files === undefined) {
+        //                 files = [];
+        //             }
+        //             // If files is not array, make it one
+        //             if (!Array.isArray(files)) {
+        //                 files = [files];
+        //             }
 
-                    if (this.logJob) {
-                        endLogTxt +=
-                            " " +
-                            timeDiffDescription(
-                                new Date().getTime(),
-                                startTime
-                            );
-                        api.messages.log(endLogTxt, undefined, jobId);
-                    }
+        //             if (this.logJob) {
+        //                 endLogTxt +=
+        //                     " " +
+        //                     timeDiffDescription(
+        //                         new Date().getTime(),
+        //                         startTime
+        //                     );
+        //                 api.messages.log(endLogTxt, undefined, jobId);
+        //             }
 
-                    return; //  files;
-                })
-                .catch((error: Error) => {
-                    throw error;
-                });
-        } else if (this.logJob) {
-            // Proabably returned void.
-            endLogTxt +=
-                " " + timeDiffDescription(new Date().getTime(), startTime);
-            api.messages.log(endLogTxt, undefined, jobId);
-        }
+        //             return; //  files;
+        //         })
+        //         .catch((error: Error) => {
+        //             throw error;
+        //         });
+        // } else if (this.logJob) {
+        //     // Proabably returned void.
+        // }
+
+        endLogTxt +=
+            " " + timeDiffDescription(startTime, new Date().getTime());
+        api.messages.log(endLogTxt, undefined, jobId);
 
         // It's an object or undefined
         // if (this.logJob) {
