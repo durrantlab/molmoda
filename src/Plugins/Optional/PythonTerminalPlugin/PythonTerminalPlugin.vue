@@ -155,28 +155,18 @@ export default class PythonTerminalPlugin extends PluginParentClass {
   @Watch("updateViewport")
   onUpdateViewportCalled() {
     this.updateViewport = false;
-    const updatedFile = new TextDecoder("utf-8").decode(
+    let updatedFile = '{"molecules": [';
+    updatedFile += new TextDecoder("utf-8").decode(
       /* eslint-disable-next-line */
       // @ts-ignore
-      this.FS.readFile("/treeNodeUpdated.txt")
+      this.pyodide.FS.readFile("/treeNodeUpdated.txt")
     );
+    updatedFile += "]}";
+    console.warn("updatedFile: %s", updatedFile);
     const parsedFile = JSON.parse(updatedFile);
-    console.log("updatedFile", updatedFile);
-    console.log("JSON: ", parsedFile);
-    const originalMolecules = getMoleculesFromStore();
-    const updatedMolecules = parsedFile.molecules;
-    console.log("originalMolecules", originalMolecules);
-    console.log("updatedMolecules", updatedMolecules);
-    const molsToPassToPython = JSON.parse(this.molsToPassToPython());
-    console.log("molsToPassToPython", molsToPassToPython);
-    // using lowdasg.isEqual to compare two objects: parsedFile and originalMolecules
-    // if they are equal, then we don't need to update the viewport
-    // if (lowdash.isEqual(updatedMolecules, originalMolecules)) {
-    // console.log("equal");
-    // } else {
-    // console.log("not equal");
-
-    this.jsonStrToState(this.boxCoordinates)
+    console.warn("parsedFile", parsedFile);
+    const molsToPassToPython = JSON.parse(updatedFile);
+    this.jsonStrToState(updatedFile)
       .then((state: any) => {
         state.molecules.addToMainTree();
         return state;
