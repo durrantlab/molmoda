@@ -6,9 +6,9 @@
     :userArgs="userArgs"
     @onPopupDone="onPopupDone"
     :pluginId="pluginId"
-    @onUserArgChanged="onUserArgChanged"
+@onUserArgChanged="onUserArgChanged"
     modalWidth="xl"
-    :isActionBtnEnabled="false"
+:isActionBtnEnabled="false"
     :isCloseBtnEnabled="false"
     :infoPayload="infoPayload"
   >
@@ -28,9 +28,9 @@
       :commands="commands"
       :title="title"
       prompt="durrantlat@biotite-suitte $"
-      :hideButtons="true"
-      :history="bashHistory"
-    />
+  :hideButtons="true"
+  :history="bashHistory"
+  />
   </PluginComponent>
 </template>
 
@@ -203,6 +203,8 @@ export default class PythonTerminalPlugin extends PluginParentClass {
    * @param {any} message - the message to print to the console
    */
   customLog(message: any) {
+    this.nativeConsoleLog("customLog called");
+    debugger;
     if (typeof message.startsWith !== "function") return;
     if (message.startsWith(this.pyodidePrint)) {
       let customStringStripped = message
@@ -427,6 +429,9 @@ export default class PythonTerminalPlugin extends PluginParentClass {
 
   onPopupDone() {
     console.log("onPopupDone");
+    // eslint-disable-next-line
+    // @ts-ignore
+    window.pyodide = this.pyodide;
   }
   runJobInBrowser() {
     console.log("runJobInBrowser");
