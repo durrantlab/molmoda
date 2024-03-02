@@ -1,18 +1,33 @@
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-// import * as api from "@/Api/";
+import { isStatCollectionEnabled } from "../StatCollection/StatUtils";
+import * as api from "@/Api/";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 /**
  * Saves settings to local storage.
- * 
+ *
  * @param  {UserArg[]} settings  The settings to save.
  */
-export function saveSettings(settings: UserArg[]) {
+export async function saveSettings(settings: UserArg[]) {
+    // You cannot save settings if the user has not consented to cookies.
+    if (!(await isStatCollectionEnabled())) {
+        api.messages.popupMessage(
+            "Cookies Disallowed!",
+            "Your settings will be lost when you reload this page because you have disallowed cookies. Consider enabling cookies for a better user experience.",
+            PopupVariant.Warning,
+            () => {
+                api.plugins.runPlugin("statcollection");
+            }
+        );
+        return;
+    }
+
     localStorage.setItem("settings", JSON.stringify(settings));
 }
 
 /**
  * Gets settings from local storage.
- * 
+ *
  * @returns {UserArg[]}  The settings.
  */
 export function getSettings(): UserArg[] {
@@ -59,14 +74,12 @@ export function applySettings(settings: UserArg[]) {
     // leave this function here in case you ever want to implement something
     // similar (not just changing setting values, but actually changing
     // something in the UI).
-    
     // Convert the settings to a map for easy lookup.
     // const settingsMap = new Map<string, UserArg>();
     // for (const setting of settings) {
     //     settingsMap.set(setting.id, setting);
     // }
     // const defaults = defaultSettings();
-
     // const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
     // visualizationApi.viewerObj?.unLoadViewer();
     // setStoreVar("molViewer", molViewer);
@@ -74,14 +87,18 @@ export function applySettings(settings: UserArg[]) {
 
 /**
  * Get the default settings.
- * 
+ *
  * @returns {any}  The default settings.
  */
 export function defaultSettings(): any {
     // Leave one processor free
     const maxProcsAvailable = navigator.hardwareConcurrency || 4;
     const procsToRecommend =
-    maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
-    
-    return { maxProcs: procsToRecommend, initialCompoundsVisible: 20, molViewer: "3dmol" };
+        maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
+
+    return {
+        maxProcs: procsToRecommend,
+        initialCompoundsVisible: 50,
+        molViewer: "3dmol",
+    };
 }

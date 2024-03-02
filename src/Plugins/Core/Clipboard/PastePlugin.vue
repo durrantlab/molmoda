@@ -31,6 +31,8 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import * as api from "@/Api";
 import { isTest } from "@/Testing/SetupTests";
+import { getDesaltArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /** PastePlugin */
 @Options({
@@ -51,9 +53,19 @@ export default class PastePlugin extends PluginParentClass {
             id: "pastedMolName",
             label: "",
             val: "PastedMol",
-            placeHolder: "Pasted molecule name",
+            placeHolder: "Name of pasted molecule...",
             description: "The name of the new, pasted molecule.",
+            validateFunc: (val: string) => {
+                return val.length > 0;
+            },
+            warningFunc: (val: string) => {
+                if (val === "PastedMol") {
+                    return "Consider choosing a unique name so you can easily identify your molecule later.";
+                }
+                return "";
+            },
         } as IUserArgText,
+        getDesaltArg(),
     ];
     alwaysEnabled = true;
     logJob = false;
@@ -65,10 +77,10 @@ export default class PastePlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     * 
+     *
      * @param {any} payload  The payload (node id)
      */
-     onBeforePopupOpen(payload: any) {
+    onBeforePopupOpen(payload: any) {
         let formatMsg = `${appName} recognizes text pasted in any of the following formats: `;
 
         for (const formatID in molFormatInformation) {
@@ -83,7 +95,6 @@ export default class PastePlugin extends PluginParentClass {
         this.formatMsg = formatMsg.slice(0, -2) + ".";
     }
 
-
     /**
      * Pastes the molecule from the clipboard.
      */
@@ -91,12 +102,37 @@ export default class PastePlugin extends PluginParentClass {
         let txt = "";
         if (navigator.clipboard && !isTest) {
             txt = await navigator.clipboard.readText();
+            // if (txt.indexOf(" ") === -1 && txt.indexOf("\t") === -1) {
+            //     txt = txt + " PastedMol";
+            // }
         } else if (isTest) {
-            txt = "c1ccccc1";
+            // Get value of index from the url
+            const url = new URL(window.location.href);
+            const index = url.searchParams.get("index");
+            const axios = await dynamicImports.axios.module;
+            let resp: any;
+            if ([null, undefined, "0"].includes(index))
+                resp = await axios.get("testmols/example.can");
+            else if (index === "1")
+                resp = await axios.get("testmols/example.sdf");
+            else if (index === "2")
+                resp = await axios.get("testmols/example.pdb");
+            else if (index === "3")
+                resp = await axios.get("testmols/example.mol2");
+            else if (index === "4")
+                resp = await axios.get("testmols/example_mult.can");
+            else if (index === "5")
+                resp = await axios.get("testmols/example_mult.sdf");
+            else if (index === "6")
+                resp = await axios.get("testmols/example_mult.pdb");
+            else if (index === "7")
+                resp = await axios.get("testmols/example_mult.mol2");
+
+            txt = resp.data;
         }
 
         const fileInfo = new FileInfo({
-            name: "pastedFile",
+            name: "",
             contents: txt,
         });
 
@@ -110,7 +146,11 @@ export default class PastePlugin extends PluginParentClass {
 
         fileInfo.assignExtByContents();
 
-        const node = await TreeNode.loadFromFileInfo(fileInfo);
+        const node = await TreeNode.loadFromFileInfo(
+            fileInfo,
+            this.getUserArg("desalt"),
+            this.getUserArg("pastedMolName")
+        );
 
         if (node === undefined) {
             return;
@@ -120,25 +160,12 @@ export default class PastePlugin extends PluginParentClass {
         node.title = this.getUserArg("pastedMolName");
 
         node.addToMainTree();
-
-        // debugger;
-        // node.title = "PastedFile";
-
-        // const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
-        //     node,
-        // ]);
-
-        // // rootNode.title = "PastedFile";
-        // rootNode.addToMainTree();
-
-        // const format = fileInfo.guessFormat();
-        // debugger;
     }
 
     /**
      * Runs after the popup opens. Good for setting focus in text elements.
      */
-     onPopupOpen() {
+    onPopupOpen() {
         // Add click event listener to button with selection sel. Doing this
         // because it must happen immediately.
         document
@@ -167,7 +194,7 @@ export default class PastePlugin extends PluginParentClass {
     /**
      * Runs when the popup closes via done button. Here, does nothing.
      */
-     onPopupDone() {
+    onPopupDone() {
         this.submitJobs([]);
     }
 
@@ -183,10 +210,11 @@ export default class PastePlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest {
-        return {
+    async getTests(): Promise<ITest[]> {
+        // See paste function where actual molecules are loaded. Just need five tests.
+        const test = {
             pluginOpen: new TestCmdList().setUserArg(
                 "pastedMolName",
                 "my_molz",
@@ -197,6 +225,7 @@ export default class PastePlugin extends PluginParentClass {
                 "my_molz"
             ),
         };
+        return [test, test, test, test, test, test, test, test];
     }
 }
 </script>

@@ -13,6 +13,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from json.decoder import JSONDecodeError
 import html
+from simple_term_menu import TerminalMenu
 
 # import traceback
 import threading
@@ -28,9 +29,17 @@ import os
 # from selenium.webdriver.logging import LogEntries
 # from selenium.webdriver.logging import LogType
 
-root_url = "http://localhost:8080"
-#root_url = "https://durrantlab.pitt.edu/biotite/"
-#root_url = "https://durrantlab.pitt.edu/apps/biotite/beta/"
+# Make a menu to select the url
+urls = [
+    "http://localhost:8080",
+    "https://durrantlab.pitt.edu/apps/biotite/beta/",
+    "https://durrantlab.pitt.edu/biotite/",
+]
+
+menu = TerminalMenu(urls, title="Select the root URL")
+chosen_index = menu.show()
+
+root_url = urls[chosen_index]
 
 print("Using root URL: " + root_url)
 

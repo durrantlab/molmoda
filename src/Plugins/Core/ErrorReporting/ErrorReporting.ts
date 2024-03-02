@@ -2,6 +2,10 @@
 import { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { dynamicImports } from "../../../Core/DynamicImports";
 import { pluginsApi } from "@/Api/Plugins";
+import {
+    ISimpleMsg,
+    PopupVariant,
+} from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 interface IErrorData {
     message: string;
@@ -12,15 +16,13 @@ interface IErrorData {
     errorStack: string;
 }
 
-let errorLogged = false;
-
 /**
  * Setup error reporting.
  */
 export function errorReportingSetup() {
     /**
      * Catch unhandled errors.
-     * 
+     *
      * @param {string} message  The error message.
      * @param {string} source   The source.
      * @param {number} lineno   The line number.
@@ -43,7 +45,7 @@ export function errorReportingSetup() {
 
     /**
      * Catch unhandled promise rejections.
-     * 
+     *
      * @param {PromiseRejectionEvent} event  The event.
      */
     window.onunhandledrejection = function (event: PromiseRejectionEvent) {
@@ -54,17 +56,29 @@ export function errorReportingSetup() {
     };
 }
 
+let tmpErrorMsg = "";
+
+/**
+ * Set a temporary error message. Occasionally, I can detect that an error is
+ * about to come (e.g., when trying to dock a molecule that has not been
+ * desaulted). It is tricky to fully catch these WASM errors, but I can control
+ * the message at least.
+ *
+ * @param {string} msg  The message.
+ */
+export function setTempErrorMsg(msg: string) {
+    tmpErrorMsg = "TMPERRORMSG:" + msg;
+    setTimeout(() => {
+        tmpErrorMsg = "";
+    }, 2000);
+}
+
 /**
  * Send error data to the server if user has authorized.
- * 
+ *
  * @param {IErrorData} errorData  The error data.
  */
 async function sendErrorToServer(errorData: IErrorData) {
-    if (errorLogged) {
-        return;
-    }
-    errorLogged = true;
-
     // errorData["molecules"] = getMoleculesFromStore().serialize();
 
     let txt = "";
@@ -101,12 +115,41 @@ async function sendErrorToServer(errorData: IErrorData) {
         }
     }
 
-    pluginsApi.runPlugin("errorreporting", {txt, onApprove: async () => {
-        // Use AJAX (e.g., fetch, Axios, etc.) to send errorData to your PHP server.
-        const axios = await dynamicImports.axios.module;
-        await axios.post(
-            "https://durrantlab.pitt.edu/apps/biotite/log_error.php",
-            {"val": txt}
-        );
-    }});
+    if (tmpErrorMsg !== "") {
+        // Overwrite the error message with the temporary error message if it
+        // exists.
+        txt = tmpErrorMsg;
+        triggerErrorPopup(txt);
+    }
+}
+
+export async function reportErrorToServer(errTxt = "") {
+    // Use AJAX (e.g., fetch, Axios, etc.) to send errorData to your PHP server.
+    const axios = await dynamicImports.axios.module;
+    await axios.post("https://durrantlab.pitt.edu/apps/biotite/log_error.php", {
+        val: errTxt,
+    });
+}
+
+/**
+ * Trigger an error popup.
+ *
+ * @param {string}  errTxt                  The error message.
+ * @param {boolean} [informServer=true]     Whether to inform the server.
+ * @param {boolean} [simpleErrorMsg=false]  Whether to use a simple error message.
+ */
+export function triggerErrorPopup(
+    errTxt: string,
+    informServer = true,
+    simpleErrorMsg = false
+) {
+    if (simpleErrorMsg) errTxt = "TMPERRORMSG:" + errTxt;
+    pluginsApi.runPlugin("errorreporting", {
+        title: "",
+        message: errTxt,
+        variant: PopupVariant.Danger,
+        callBack: async () => {
+            if (informServer) await reportErrorToServer(errTxt);
+        },
+    } as ISimpleMsg);
 }

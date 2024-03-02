@@ -30,14 +30,18 @@ export const fileTypesAccepts =
  * Given an IFileInfo object (name, contents, type), load the molecule. Should
  * call only from TreeNodeList.load.
  *
- * @param  {FileInfo} fileInfo The file info object.
- * @param  {boolean} addToTree  Whether to add the molecule to the tree.
+ * @param  {FileInfo} fileInfo   The file info object.
+ * @param  {boolean}  addToTree  Whether to add the molecule to the tree.
+ * @param  {boolean}  desalt     Whether to desalt the molecule.
+ * @param  {string}   defaultTitle  The default title to use if none is found.
  * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the
  *     molecule is loaded.
  */
 export function _parseMoleculeFile(
     fileInfo: FileInfo,
-    addToTree = true
+    addToTree = true,
+    desalt = false,
+    defaultTitle = "Molecule"
 ): Promise<void | TreeNodeList> {
     const spinnerId = api.messages.startWaitSpinner();
 
@@ -56,7 +60,7 @@ export function _parseMoleculeFile(
             break;
         }
         case MolLoader.OpenBabel: {
-            promise = parseUsingOpenBabel(fileInfo, formatInfo);
+            promise = parseUsingOpenBabel(fileInfo, formatInfo, desalt);
             break;
         }
         case MolLoader.BiotiteFormat: {
@@ -90,6 +94,26 @@ export function _parseMoleculeFile(
             // file under single "Compounds").
             const topLevelName = getFileNameParts(fileInfo.name).basename;
             const mergedTreeNodeList = treeNodeList.merge(topLevelName);
+
+            // Make sure all terminal molecules have a title. A title of a
+            // terminal can be undefined if pasting, for example,
+            // `C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)[O-])C(=O)[O-].O.[Ca+2]`
+            // TODO: Would be good to figure out why this happens, rather than fixing it here.
+            mergedTreeNodeList.terminals.forEach((t) => {
+                if (t.title === undefined) {
+                    t.title = defaultTitle;
+                }
+                t.title = t.title.replace("*****", defaultTitle);
+
+                // If t.title starts with ":", remove that.
+                if (t.title.startsWith(":")) t.title = t.title.slice(1);
+            });
+
+            // if (treeNode.nodes && treeNode.nodes.terminals) {
+            //     treeNode.nodes.terminals.forEach((terminal) => {
+            //         terminal.title = terminal.title.replace("*****", defaultTitle);
+            //     });
+            // }
 
             if (addToTree) {
                 mergedTreeNodeList.addToMainTree();

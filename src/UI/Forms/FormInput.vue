@@ -27,9 +27,9 @@
             </div>
         </div>
         <FormElementDescription
-            v-if="descriptioToUse !== '' && descriptioToUse !== undefined"
-            :description="descriptioToUse"
+            :description="descriptionToUse"
             :validate="validateDescription"
+            :warning="warning"
         ></FormElementDescription>
         <!-- :disabled="!isActionBtnEnabled || isClosing"
         @click="actionBtn" -->
@@ -60,7 +60,8 @@ export default class FormInput extends Vue {
     @Prop({ default: "text" }) type!: string;
     @Prop({ default: "Enter value..." }) placeHolder!: string;
     @Prop({ default: false }) disabled!: boolean;
-    @Prop({ required: false }) filterFunc!: Function;
+    @Prop({ required: false }) filterFunc!: (val: any) => boolean;
+    @Prop({ required: false }) warningFunc!: (val: any) => string;
     @Prop({}) description!: string;
     @Prop({ default: formInputDelayUpdate })
     delayBetweenChangesDetected!: number;
@@ -94,12 +95,19 @@ export default class FormInput extends Vue {
         this.$emit("onKeyDown");
     }
 
+    get warning(): string {
+        if (this.warningFunc) {
+            return this.warningFunc(this.modelValue);
+        }
+        return "";
+    }
+
     /**
      * Get the description to use.
      *
      * @returns {string}  The description to use.
      */
-    get descriptioToUse(): string {
+    get descriptionToUse(): string {
         // return this.description;
         if (this.type !== "range") {
             return this.description;

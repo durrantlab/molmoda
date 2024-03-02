@@ -5,15 +5,35 @@
         @onPopupDone="onPopupDone"
         @onPopupCancel="onPopupCancel"
         @onUserArgChanged="onUserArgChanged"
-        :actionBtnTxt="'Yes, Support ' + appName"
-        cancelBtnTxt="No, Opt Out"
+        actionBtnTxt="Accept"
+        cancelBtnTxt="Decline"
     >
         <div>
-            <p>Dear user,</p>
+            <p>
+                We use cookies to store user settings and collect usage
+                statistics via Google Analytics (GA). Tracking usage helps us
+                convince funding agencies to provide the essential grants our
+                work relies on.
+            </p>
+
+            <p>
+                We'll never use GA to record your molecular structures or
+                analyses. GA only gathers basic user data like tracking IDs, IP
+                addresses, and device details. This data is sent to Google in
+                the U.S. for processing and so is subject to U.S. law.
+            </p>
+
+            <p>
+                {{ appName }} is accessible without cookies enabled. If you
+                enable cookies, you can disable them anytime through
+                <PluginPathLink plugin="settings"></PluginPathLink>
+            </p>
+
+            <!-- <p>Dear user,</p>
             <p>
                 We need your help! Would you please authorize us to use Google
-                Analytics 4 (GA4) to record limited information about your use
-                of {{appName}}?
+                Analytics 4 (GA) to record limited information about your use of
+                {{appName}}?
             </p>
 
             <p>
@@ -30,20 +50,21 @@
             </p>
 
             <p>
-                <b>What information?</b> We'll never use GA4 to record your
-                molecular structures or analyses. GA4 only gathers basic user
+                <b>What information?</b> We'll never use GA to record your
+                molecular structures or analyses. GA only gathers basic user
                 data like tracking IDs, IP addresses, and device details. This
                 data is sent to Google in the U.S. for processing and so is
                 subject to U.S. law.
             </p>
 
             <p>
-                <b>No strings attached.</b> {{appName}} is fully accessible without
-                GA4 enabled, but we hope you'll choose to help us out! You can
-                disable GA4 anytime through <i>{{appName}} → Settings...</i>
+                <b>No strings attached.</b> {{appName}} is fully accessible
+                without GA enabled, but we hope you'll choose to help us out!
+                You can disable GA anytime through <i>{{appName}} →
+                Settings...</i>
             </p>
 
-            <p>Is it alright if we enable GA4?</p>
+            <p>Is it alright if we enable GA?</p> -->
         </div>
     </PluginComponent>
 </template>
@@ -62,6 +83,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { isTest } from "@/Testing/SetupTests";
 import { appName } from "@/Core/GlobalVars";
 import * as api from "@/Api";
+import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
  * StatCollectionPlugin
@@ -69,6 +91,7 @@ import * as api from "@/Api";
 @Options({
     components: {
         PluginComponent,
+        PluginPathLink
     },
 })
 export default class StatCollectionPlugin extends PluginParentClass {
@@ -83,7 +106,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     ];
     pluginId = "statcollection";
     intro = "";
-    title = `Support ${appName} Development!`;
+    title = `Cookies Permission`;
     open = false;
 
     userArgDefaults: UserArg[] = [];
@@ -134,7 +157,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
      *
      * @returns {ITest[]}  The selenium test command(s).
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 

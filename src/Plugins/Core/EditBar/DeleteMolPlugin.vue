@@ -78,7 +78,6 @@ export default class DeleteMolPlugin extends PluginParentClass {
      */
     async runJobInBrowser(): Promise<void> {
         if (this.nodesToActOn) {
-            // debugger;
             const treeNodeList = this.$store.state.molecules as TreeNodeList;
 
             this.nodesToActOn.forEach((node) => {
@@ -134,12 +133,12 @@ export default class DeleteMolPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             // Test deleting a child node.
             {
                 beforePluginOpens: new TestCmdList()
-                    .loadExampleProtein(true)
+                    .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein"),
 
                 // Also test clicking on the navigator to delete.
@@ -163,7 +162,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
             // Also test deleting a root node.
             {
                 beforePluginOpens: new TestCmdList()
-                    .loadExampleProtein(true)
+                    .loadExampleMolecule(true)
                     .selectMoleculeInTree("4WP4"),
             },
         ];

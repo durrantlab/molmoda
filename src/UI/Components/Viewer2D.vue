@@ -14,6 +14,7 @@
             v-model="showSmilesPopup"
             title="Molecular Structure"
             cancelBtnTxt="Close"
+            id="molStructure"
         >
             <Viewer2D :smiles="smiles" :inPopup="true"></Viewer2D>
         </Popup>
@@ -205,7 +206,6 @@ export default class Viewer2D extends Vue {
                                 //   "transform: scale(" +
                                 //   (this.measuredContainerWidth / svgClientHeight).toFixed(3) +
                                 //   "); transform-origin: top left;";
-                                // debugger;
                                 // this.draw(0.9 * this.measuredContainerWidth / svgClientHeight);
                                 const factor =
                                     (0.99 * maxHeightToUse) / svgClientHeight;

@@ -1,19 +1,19 @@
 <template>
     <div :class="'input-group input-group-sm mb-' + mb">
         <span class="input-group-text" id="basic-addon1">
-            <font-awesome-icon
-                style="color: #212529"
+            <Icon
+                style="color: #212529;"
                 :icon="['fas', 'magnifying-glass']"
             />
         </span>
 
-        <input type="text" class="form-control" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" />
-        <!-- <button class="btn btn-link" type="button">
-            <font-awesome-icon
-                style="color: #212529"
-                :icon="['far', 'rectangle-xmark']"
-            />
-        </button> -->
+        <input
+            type="text"
+            class="form-control"
+            :value="modelValue"
+            @input="$emit('update:modelValue', $event.target.value)"
+            @keydown="onKeypress"
+        />
     </div>
 </template>
 
@@ -23,6 +23,7 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
+import Icon from "./Icon.vue";
 
 /**
  * FilterInput component
@@ -30,23 +31,24 @@ import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 @Options({
     components: {
         FormElementDescription,
+        Icon
     },
 })
 export default class FilterInput extends Vue {
     @Prop({ required: true }) list!: any[];
     @Prop({ required: true }) extractTextToFilterFunc!: (item: any) => string;
     @Prop({ default: "3" }) mb!: string;
-    @Prop({ required: true }) modelValue!: string;  // filterStr
+    @Prop({ required: true }) modelValue!: string; // filterStr
     // @Prop({ default: "placeholder" }) placeHolder!: string;
 
     /**
      * When the filter string changes, trigger onFilter.
-     * 
+     *
      * @param {string} newVal  The new value of the filter string.
      */
     @Watch("modelValue")
     onModelValueChange(newVal: string) {
-        this.$emit('update:modelValue', newVal);
+        this.$emit("update:modelValue", newVal);
         this.onFilter();
     }
 
@@ -57,6 +59,15 @@ export default class FilterInput extends Vue {
     onListChange() {
         this.onFilter();
     }
+
+    onKeypress(event: KeyboardEvent) {
+        // Detect escape key
+        if (event.key === "Escape") {
+            this.$emit("update:modelValue", "");
+            this.onFilter();
+        }
+    }
+
 
     /**
      * Filter the list per the filter text and emit the filtered list.
@@ -71,9 +82,11 @@ export default class FilterInput extends Vue {
         }
 
         // Get text to filter for each item in the list
-        const textToFilter = this.list.map((item) =>
-            this.extractTextToFilterFunc(item).toLowerCase()
-        );
+        const textToFilter = this.list.map((item) => {
+            let textToFilter = this.extractTextToFilterFunc(item);
+            if (textToFilter === undefined) textToFilter = "";
+            return textToFilter.toLowerCase();
+        });
 
         // Get indexes of items that match the search string
         const idxs = textToFilter

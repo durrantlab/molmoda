@@ -4,12 +4,12 @@ import {
     ISimpleMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import {
-    startWaitSpinner,
-    stopWaitSpinner,
-} from "@/UI/MessageAlerts/WaitSpinner";
-import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
+// Import startWaitSpinner as startWaitSpinnerSrc
+import { startWaitSpinner as startWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
+import { stopWaitSpinner as stopWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
+
+import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
 export const messagesApi = {
     /**
@@ -30,8 +30,7 @@ export const messagesApi = {
         title: string,
         message = "",
         variant = PopupVariant.Info,
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        callBack: Function | undefined = undefined,
+        callBack: any = undefined,
         neverClose = false
     ) {
         // If popup already open, do not open another one.
@@ -59,10 +58,12 @@ export const messagesApi = {
     /**
      * Displays an error popup.
      *
-     * @param  {string} message  The error message.
+     * @param  {string}   message     The error message.
+     * @param  {Function} [callBack]  A function to call when the popup is
+     *                                closed.
      */
-    popupError: function (message: string) {
-        this.popupMessage("Error", message, PopupVariant.Danger);
+    popupError: function (message: string, callBack?: any) {
+        this.popupMessage("Error", message, PopupVariant.Danger, callBack);
     },
 
     /**
@@ -72,7 +73,7 @@ export const messagesApi = {
      * @returns {string}  The id of the spinner.
      */
     startWaitSpinner: function (timeOut = 30000): string {
-        return startWaitSpinner(timeOut);
+        return startWaitSpinnerSrc(timeOut);
     },
 
     /**
@@ -81,7 +82,7 @@ export const messagesApi = {
      * @param {string} id  The id of the spinner.
      */
     stopWaitSpinner: function (id: string) {
-        stopWaitSpinner(id);
+        stopWaitSpinnerSrc(id);
     },
 
     /**

@@ -67,20 +67,20 @@ export default class SettingsPlugin extends PluginParentClass {
         } as IUserArgNumber,
         {
             id: "initialCompoundsVisible",
-            label: "Molecules initially visible",
-            val: 10,
+            label: "Compounds initially visible",
+            val: 50,
             description:
-                "Number of molecules initially visible when creating/loading many new molecules.",
+                "Number of compounds initially visible when creating/loading many new compounds.",
         } as IUserArgNumber,
         {
-            id: "statCollect",
-            label: "Collect usage statistics",
+            id: "allowCookies",
+            label: "Allow cookies",
             val: false,
-            description: `Report statistics on ${appName} usage to help the ${appName} team get grants for continued development.`
+            description: `Allow cookies so we can (1) save your user settings and (2) collect usage statistics to help us get grants for continued development.`
         },
         {
-            id: "statCollectAlert",
-            val: `Please consider allowing us to record limited information about your use of ${appName}! These statistics help us secure funding for continued development.`,
+            id: "allowCookiesAlert",
+            val: `Please allow cookies! They improve the user experience and help us secure much needed funding.`,
             type: UserArgType.Alert,
             enabled: false,
             alertType: "warning",
@@ -111,15 +111,15 @@ export default class SettingsPlugin extends PluginParentClass {
      * Set whether the user has allowed stats collection.
      */
     setStatCollectPetition() {
-        const currentVal = this.getUserArg("statCollect");
-        this.setUserArgEnabled("statCollectAlert", !currentVal);
+        const currentVal = this.getUserArg("allowCookies");
+        this.setUserArgEnabled("allowCookiesAlert", !currentVal);
     }
 
     /**
      * Runs when the user changes a user argument.
      */
     async onUserArgChange() {
-        const currentStatEnabledVal = this.getUserArg("statCollect");
+        const currentStatEnabledVal = this.getUserArg("allowCookies");
         const savedStatEnabledVal = await isStatCollectionEnabled();
 
         if (currentStatEnabledVal !== savedStatEnabledVal) {
@@ -170,7 +170,7 @@ export default class SettingsPlugin extends PluginParentClass {
         // );
 
         isStatCollectionEnabled().then((isSet) => {
-            this.setUserArg("statCollect", isSet);
+            this.setUserArg("allowCookies", isSet);
             this.setStatCollectPetition();
             return;
         })
@@ -199,7 +199,7 @@ export default class SettingsPlugin extends PluginParentClass {
         }
 
         // Also, allow stat collection
-        this.setUserArg("statCollect", true);
+        this.setUserArg("allowCookies", true);
         enableStats();
     }
 
@@ -219,7 +219,7 @@ export default class SettingsPlugin extends PluginParentClass {
             };
         });
 
-        saveSettings(args);
+        await saveSettings(args);
         applySettings(args);
         return;
     }
@@ -231,7 +231,7 @@ export default class SettingsPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium tests commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             {
                 closePlugin: new TestCmdList().click(

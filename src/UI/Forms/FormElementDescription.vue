@@ -1,12 +1,17 @@
 <template>
     <Alert
+        v-if="descriptionToUse !== '' || $slots.default !== undefined"
         type="light"
         class="lh-2"
         style="padding: 0; margin: 0; line-height: 1.1em; margin-top: 4px"
     >
         <small>
             <slot></slot>
-            <span v-if="description !== undefined" v-html="description"></span>
+            <span v-if="$slots.default !== undefined">&nbsp;</span>
+            <span
+                v-if="descriptionToUse !== ''"
+                v-html="descriptionToUse"
+            ></span>
         </small>
     </Alert>
 </template>
@@ -29,12 +34,12 @@ export default class FormElementDescription extends Vue {
     // NOTE: Prefer description, not the slot, because description is subject to
     // extra validation.
     @Prop({}) description!: string;
-    @Prop({default: true}) validate!: boolean;
-
+    @Prop({ default: "" }) warning!: string;
+    @Prop({ default: true }) validate!: boolean;
 
     /**
      * Validate the description when it changes.
-     * 
+     *
      * @param {string} newVal The new description.
      */
     @Watch("description")
@@ -46,6 +51,17 @@ export default class FormElementDescription extends Vue {
             console.error(msg);
             throw new Error(msg);
         }
+    }
+
+    get descriptionToUse(): string {
+        let desc = this.description;
+
+        if (desc === undefined) desc = "";
+
+        if (this.warning !== "") {
+            desc = `${desc} <span class="text-danger">${this.warning}</span>`;
+        }
+        return desc;
     }
 
     /**

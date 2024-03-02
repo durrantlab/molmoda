@@ -2,7 +2,7 @@ import { appName } from "@/Core/GlobalVars";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 export enum MolLoader {
-    Mol3D, // 3dmoljs. Always prefer over open babel when available.
+    Mol3D, // 3dmoljs.
     OpenBabel,
     BiotiteFormat,
     Zip,
@@ -134,7 +134,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["mol2", "ml2", "sy2"],
         description: "Sybyl Mol2",
         hasBondOrders: true,
-        loader: MolLoader.Mol3D,
+        loader: MolLoader.OpenBabel,  // MolLoader.Mol3D,  // NOTE: Decided to use openbabel for desalting.
         frameSeparators: [
             {
                 text: "\n@<TRIPOS>MOLECULE\n",
@@ -319,7 +319,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["xyz"],
         description: "XYZ cartesian coordinates",
         hasBondOrders: false,
-        loader: MolLoader.Mol3D,
+        loader:  MolLoader.Mol3D,
         // technically separated by number on own line, but niche case
         // frameSeparators: null
         extractMolNameRegex: [/^\d+\n(.+)$/gm], // second line, after number-only line

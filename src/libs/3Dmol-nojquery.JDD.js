@@ -18322,7 +18322,6 @@ $3Dmol.Fog = function ( hex, near, far ) {
 };
 
 $3Dmol.Fog.prototype.clone = function () {
-
     return new $3Dmol.Fog( this.color.getHex(), this.near, this.far );
 
 };
@@ -31350,9 +31349,13 @@ $3Dmol.GLViewer = (function() {
          * @function $3Dmol.GLViewer#enableFog
          * @param {boolean} fog whether to enable or disable the fog
          */
-        this.enableFog = function(fog){
+        this.enableFog = function(fog, near, far){
+            // NOTE: JDD added near, far. But doesn't work.
+            if (near === undefined) near = 100
+            if (far === undefined) far = 200
             if (fog) {
-                scene.fog = new $3Dmol.Fog(bgColor, 100, 200);
+                scene.fog = new $3Dmol.Fog(bgColor, near, far);
+                // show();
             } else {
                 config.disableFog = true;
                 show();

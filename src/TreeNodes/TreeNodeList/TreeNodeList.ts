@@ -125,7 +125,6 @@ export class TreeNodeList {
         // let newTitle = node.title;
 
         // if (this._titles.size > 0) {
-        //     debugger;
         //     // Does node.title already exist in this list? If so, rename it.
         //     let idx = 0;
         //     while (this._titles.has(newTitle)) {
@@ -345,15 +344,21 @@ export class TreeNodeList {
     /**
      * Loads a molecule into the list.
      *
-     * @param  {FileInfo} fileInfo  The file to load.
+     * @param  {FileInfo} fileInfo                   The file to load.
+     * @param  {boolean}  [desalt=false]             Whether to desalt the
+     *                                               molecule.
+     * @param  {string}   [defaultTitle="Molecule"]  The default title to use if
+     *                                               none is found.
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
      *     list of new nodes, or undefined on failure.
      */
-    public loadFromFileInfo(fileInfo: FileInfo): Promise<void | TreeNodeList> {
+    public loadFromFileInfo(fileInfo: FileInfo, desalt=false, defaultTitle="Molecule"): Promise<void | TreeNodeList> {
         const fileName = fileInfo.name;
         return _parseMoleculeFile(
             fileInfo,
-            false // don't add to tree
+            false, // don't add to tree
+            desalt,
+            defaultTitle
         )
             .then((treeNodeList: void | TreeNodeList) => {
                 if (!treeNodeList || treeNodeList.length === 0) {
@@ -478,7 +483,6 @@ export class TreeNodeList {
         for (const node of this._nodes) {
             node.addToMainTree();
         }
-        // getMoleculesFromStore().extend(this);
     }
 
     /**

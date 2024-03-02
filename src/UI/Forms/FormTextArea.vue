@@ -13,7 +13,6 @@
             :value="modelValue"
         />
         <FormElementDescription
-            v-if="description !== '' && description !== undefined"
             :description="description"
         ></FormElementDescription>
     </span>

@@ -116,21 +116,225 @@ crashes.
 Recently redid undo/redo. But load molecule and show/hide multiple times.
     Eventually no molecule shows up. (Good to fix, but seems like fringe case.)
 
-# Ongoing: Important
-
 Try docking on lots of processors on bob. Some error. Why? Put in webwqorker to fix?
 Can;t save biotite file after docking. Why not?
 Message to warn about wasm error on chrome.
 
 Explict copy as smiles
 
+Would be nice if up/down arrows worked for selecting molecules in tree.
+
+Good to in tree view to also indicate the number of molecules that are visible
+(not just the total).
+
+Can't focus on region?
+
+Would be nice if you could get info on any small molecule by searching PubChem,
+but in app.
+
+Invert selection would be nice.
+
+Would be nice to be able to increase or decrease the fog.
+
+Store state in memory, allow for reload if crash.
+
 Draw molecule should have text field that gives smiles. You'll need OpenBabel
 version that can convert to CML. Email sent to Yuri on Jan 19.
 
-Paste lots of different file types to test.
-Just paste c1ccccc1. Why "****:" in sublevels?
+Currently to select proteins, you can specify all visible, all selected, etc. It
+would be good to get this in a widget so users can select/deselect individually
+too. And maybe buttons to "add" and "replace" selection.
+Docking should have option to merge all proteins into one (for pockets between chains).
+
+Paste lots of molecules (as above). then click on submolecules. Lipinski panel
+doesn't update on right.
+
+If repeating pose because no output file, throw error.
+
+On detect pocket and docking, good to be able to specify wheether to include nucleic.
+
+Some way to indicate number of compounds selected in tree?
+
+Mouse over menu item, get description.
+
+Way to put file in url, so auto load?
+
+There's a bit of a mess with adding file infos to the viewer. PluginParentClass
+has addFileInfoToViewer. TreeNode and TreeNodeList also have separate
+loadFromFileInfo functions. Good to unify all this and enforce use of plugin's
+addFileInfoToViewer.
+
+Expand all option in tree?
+
+Invert selection would be nice.
+
+I don't think docking into a spherical egion really works. (Uses 20 x 20 x 20
+box regardless).
+
+Copy molecule. Name is internap tmp file. Good to use slugified title.
+
+# Ongoing: Important
+
+Label on save moleucle compoudns to different files is misleading. It saves it
+as a single file (proteina nd ligand)
+
+**** Try uploading tmp.can. Does it given an error (even once fixed)?
+
+Sulfonates don't get deprotonated (but phosphates do).
+OS(=O)(=O)OCCCCC
+OS(=O)(=O)CCCCCC
+Something's off, because `obabel -:"OS(=O)(=O)OCCCCCOP(=O)(O)O" -p 7 -ocan` deprotonates both
+
+Search for // Sometimes this plugin gets called with an empty message. TODO:. As
+implemented, I think this prevent programmatic closing of modals.
+
+**** Firefox video blocked.
+
+Play around with selecting multiple ones. Often messes up.
 
 # DONE
+
+Paste lots of different file types to test.
+
+**** On hiding too many molecules, only hide compounds. Don't hide proteins and
+things. Those should always appear. See initialCompoundsVisible
+
+Warning if 0,0,0 center of dockig box. STILL BAD. See work being done at FormSelectRegion.
+
+Do phosphates and sulfonates get deprotonated?
+
+Import SMILES string FILE (not paste). Still seeing **** in filename.
+
+Paste this and see what happens: C=CC[N+](C)(C)CC=C
+
+This one is bad:
+c1(nc(=O)n(CC[C@@H]([NH3])C(=O)[O])c(=O)n1Cc1c(F)cc(F)c(F)c1)Nc1cc2cn(C)nc2cc1Cl
+This one is ok:
+CN1C=C2C=C(NC3=NC(=O)N(CC[C@@H]([NH3])C([O])=O)C(=O)N3CC3=C(F)C=C(F)C(F)=C3)C(Cl)=CC2=N1
+But if optimize geometry, it improves. How to deal with this?
+
+Entirely hide (A), so all compounds invisible. Then click on a compound. (A) is
+not half visible (icon)
+
+Can the timer on tool tips disappear faster? Also, if new tool tip opens, all
+others close. Also, if tooltip at 0,0, never open it. That's an error.
+
+Isn't there an "X" icon on the filter box?
+
+May need to also revise message in settings.
+
+Revise cookie invite message.
+
+Improve this message: "If you reload this application, the changes you made to
+your settings will be lost because you have disallowed cookies. Conider enbling
+cookies for a better user experience."
+
+Reorder Protein menu items to make order more intuitive.
+
+Need to redo let-us-cookie message to mention it includes all cookies (like
+saving settings).
+
+Adding fog would be nice.
+
+*** Make compound go to line. Then back to stick. It is much thicker now. Why?
+
+Load 1xdn_interactions.biotite. Style not preserved.
+
+*** I think it gives 404 error when tries to report errors. Good to double
+check. (DONE? CHECK)
+
+Load /Users/jdurrant/Downloads/ttt/yencha_predocking.biotite. There are clearly
+35 ligands visible. Yet dock, and says only 25.
+
+*** When you load a file, update title appropriately (if not already set). When
+you load a file, update title appropriately (if not already set)
+
+Try to load pubchem: 18781742 . Gives 404, but no error in main system. Search
+for return this.get2DVersion(filename); to debug.
+
+**** "We recommend renaming this region to make it more descriptive." Search for ""We recommend renaming this region to make it more descriptive." Doesn't work.
+
+*** Backspace doens't trigger delete if popup open. Search for // TODO: Make
+sure no popup current open
+
+Get rid of parseUsing3DMolJs. Everything goes through open babel for
+consistency. (e.g., desalting).
+
+On coordinates input, if you press tab, immediately trigger keep it. Basically,
+tabbing quickly doesn't retain values.
+
+Try to dock this thing!
+/Users/jdurrant/Downloads/dksfhjgsdgkfjhgdfkhj2/DockedMoleculesLatest.Dhiya.biotite
+So many problems. Ligands marked as CA that aren't even CA.
+
+What about desalting molecules? Search for // JDD: UPDATE HERE.
+
+Replace **** with primary name if present.
+
+Paste two smiles at a time, like this:
+
+```
+O=S(=O)(O)c1ccc(N=Nc2c(O)ccc3cc(S(=O)(=O)O)ccc23)cc1
+C=CC(=O)OCCO
+```
+
+It does work, but the names are weird.
+
+Bold the one that says number of ligands/proteins/calculations.
+
+The default max number of ligands should be way higher. Maybe 50.
+
+If specified docking box is too big (> 20 x 20 x 20, throw a warning).
+
+If PastedFile, recommend renaming.
+
+Warn users if lots of rotatable bonds.
+    You really need to prevent docking when too many bonds.
+
+ErrorReportingPlugin should use SimpleMsgPlugin somehow. Seems redundant. (DONE?
+CHECK)
+
+Load /Users/jdurrant/Downloads/testtt.biotite and dock it. There is only one
+molecule flagged as having an error, but there are many such molecules. Need to
+fix. (DONE? CHECK)
+
+Would be good to have date/time on all messages.
+
+If Webina failes (and it does sometimes), you should continue with next ligand
+instead of stopping the whole thing. Need to get to the bottom of that. Try
+docking a molecule that is a salt. That will give you the error. DONE, but you
+need a test for this. Important edge case.
+
+Make an unusual representation on a protein (color by chain). Then protonate, so
+new protein added. Does not have the same style previously specified. When
+adding new protein (or compound or anything), good to use existing style.
+
+Could also response view in biotite via getInternalState and setInternalState. Or maybe just getView.
+
+When doing sticks on protein, make thinner. So disnitiguish between ligand.
+
+DefaultStyles.ts used to do default visualization (see
+ParseMolecularModels.worker.ts). But it should be taken from current viz
+settings. So probably needs to happen not on worker side. Search for console.warn("REPLACE BELOW EVENtuaLLY!"). Then search for  // **** Get styles
+
+Make docking warning bold red.
+
+May be possible to avoid circular reference problem: https://chat.openai.com/c/c4e9b6ee-cd54-4137-a061-66d851082aaf
+
+/Users/jdurrant/Downloads/poipoi/alphafold_model.pdb . Drag into biotite. You get an error. Why?
+
+Would be good to auto add version number.
+
+Search for: api.messages.popupError("Could not load PDB ID: " + pdbId);
+Popup never seems to happen. Use 9999 to trigger this error.
+
+Error with 7VBA Can't load 7VBA. Gives an error.
+
+Drag 7VBA.pdb into biotite. Opens load dialog when shouldn't.
+
+Obabel broken now. Also, 
+
+Just paste c1ccccc1. Why "****:" in sublevels?
 
 When saving, if extension is PDB, open up and change to that.
 

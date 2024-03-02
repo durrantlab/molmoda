@@ -1,12 +1,13 @@
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import type { FileInfo } from "../FileInfo";
+import { FileInfo } from "../FileInfo";
 import { IFileInfo } from "../Types";
 import {
     IFormatInfo,
     getFormatInfoGivenType,
 } from "../LoadSaveMolModels/Types/MolFormats";
 import { OpenBabelQueue } from "./OpenBabelQueue";
+import { isTest } from "@/Testing/SetupTests";
 
 /**
  * Runs OpenBabel.
@@ -69,10 +70,11 @@ function considerThreeDNeededWarning(
         (f) => f !== undefined && f.lacks3D === true
     );
 
-    let msgTimer = undefined
-    if (warningNeeded) {
+    let msgTimer = undefined;
+    if (warningNeeded && !isTest) {
         msgTimer = setTimeout(() => {
             // Warn user
+
             messagesApi.popupMessage(
                 "Warning",
                 "One or more input molecules does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.",
@@ -82,6 +84,30 @@ function considerThreeDNeededWarning(
     }
 
     return msgTimer;
+}
+
+/**
+ * Gets the formats that OpenBabel can read and write. NOTE: this breaks
+ * openbabel! It's not clear why. So just use it to see the formats (for
+ * debugging), then uncomment.
+ *
+ * @returns {Promise<IFormatInfo[]>}  A promise that resolves to the formats.
+ */
+export async function getObabelFormats(): Promise<IFormatInfo[]> {
+    const fakeFile = new FileInfo({
+        name: "fakeFile",
+        contents: "",
+    } as IFileInfo);
+    const obabelFormats = await runOpenBabel(
+        "getFormats",
+        [["-L", "formats"]],
+        // [["--version"]],
+        [fakeFile]
+    );
+
+    console.log(obabelFormats[0].stdOutOrErr);
+
+    return obabelFormats;
 }
 
 /**
@@ -142,11 +168,12 @@ async function separateFiles(
 /**
  * Converts molecules to another format using OpenBabel.
  *
- * @param  {FileInfo[]}  fileInfos     The information about the file to
- *                                     convert.
- * @param  {string}      targetFormat  The target extension.
- * @param  {boolean}     [gen3D]       Whether to assign 3D coordinates.
- * @param  {number}      [pH]          The pH to use for protonation.
+ * @param  {FileInfo[]}  fileInfos       The information about the file to
+ *                                       convert.
+ * @param  {string}      targetFormat    The target extension.
+ * @param  {boolean}     [gen3D]         Whether to assign 3D coordinates.
+ * @param  {number}      [pH]            The pH to use for protonation.
+ * @param  {boolean}     [desalt=false]  Whether to desalt the molecules.
  * @returns {Promise<string[]>}  A promise that resolves to the converted
  *    molecules.
  */
@@ -154,17 +181,22 @@ async function convertToNewFormat(
     fileInfos: FileInfo[],
     targetFormat: string,
     gen3D?: boolean,
-    pH?: number
+    pH?: number,
+    desalt = false
 ): Promise<string[]> {
     const cmdsList = fileInfos.map((fileInfo: FileInfo) => {
         const cmds = [fileInfo.name, "-m"]; // Note always dividing into multiple files.
+
+        if (desalt) {
+            cmds.push(...["-r"]);
+        }
 
         if (
             gen3D === true ||
             (fileInfo.auxData !== undefined &&
                 fileInfo.auxData.lacks3D === true)
         ) {
-            cmds.push(...["--gen3D"]);
+            cmds.push(...["--gen3D", "best"]);
         }
 
         if (pH !== undefined) {
@@ -199,11 +231,12 @@ async function convertToNewFormat(
 /**
  * Converts a molecule to another format using OpenBabel.
  *
- * @param  {FileInfo[]}  srcFileInfos   The information about the file to
- *                                      convert.
- * @param  {string}      targetFormat   The target extension.
- * @param  {boolean}     [gen3D]        Whether to assign 3D coordinates.
- * @param  {number}      [pH]           The pH to use for protonation.
+ * @param  {FileInfo[]}  srcFileInfos    The information about the file to
+ *                                       convert.
+ * @param  {string}      targetFormat    The target extension.
+ * @param  {boolean}     [gen3D]         Whether to assign 3D coordinates.
+ * @param  {number}      [pH]            The pH to use for protonation.
+ * @param  {boolean}     [desalt=false]  Whether to desalt the molecules.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */
@@ -211,11 +244,11 @@ export async function convertFileInfosOpenBabel(
     srcFileInfos: FileInfo[], // Can be multiple-model SDF file, for example.
     targetFormat: string,
     gen3D?: boolean,
-    pH?: number
+    pH?: number,
+    desalt=false
     // debug?: boolean
 ): Promise<string[]> {
     // Get info about the file
-    // if (debug) {debugger;}
     const formatInfos = srcFileInfos.map((f) => f.getFormatInfo());
 
     const msgTimer = considerThreeDNeededWarning(formatInfos);
@@ -226,10 +259,9 @@ export async function convertFileInfosOpenBabel(
         fileInfos,
         targetFormat,
         gen3D,
-        pH
+        pH,
+        desalt
     );
-
-    // debugger;
 
     // TODO: Report what's in the .stdOutAndErr property? Not sure needed.
 

@@ -105,29 +105,20 @@ function _alignAtomName(atomName: string, element?: string): string {
     // Inspired by
     // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L997
 
-    if (atomName === "") {
-        return "";
-    }
+    if (atomName === "") return "";
 
-    if (atomName.length >= 4) {
-        // Note this also converts atom names that take up the whole four
-        // characters.
-        return atomName.substring(0, 4);
-    }
+    // Note this also converts atom names that take up the whole four
+    // characters.
+    if (atomName.length >= 4) return atomName.substring(0, 4);
 
-    if (atomName.length === 1) {
-        return ` ${atomName}  `;
-    }
+    if (atomName.length === 1) return ` ${atomName}  `;
 
     if (element) {
-        if (element.length === 2) {
-            // Assume first two letters are the element
-            return _ljust(atomName, 4);
-        }
-        if (element.length === 1) {
-            // Assume first letter is the element
-            return " " + _ljust(atomName, 3);
-        }
+        // Assume first two letters are the element
+        if (element.length === 2) return _ljust(atomName, 4);
+
+        // Assume first letter is the element
+        if (element.length === 1) return " " + _ljust(atomName, 3);
     } else if (
         _twoLetterElems.indexOf(atomName.substring(0, 2).toUpperCase()) !== -1
     ) {

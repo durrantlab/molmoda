@@ -9,7 +9,7 @@
             <FormInput
                 v-model="smiles"
                 :readonly="true"
-                placeHolder="SMILES"
+                placeHolder="SMILES..."
             ></FormInput>
         </FormWrapper>
         <MolProps :smiles="smiles" :treeNode="treeNode" />

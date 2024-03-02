@@ -25,6 +25,8 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 // import BSToolTip from "bootstrap/js/dist/tooltip";
 
+const allOpenTooltips: {[key: string]: Tooltip} = {};
+
 /**
  * Tooltip component
  */
@@ -37,6 +39,7 @@ export default class Tooltip extends Vue {
 
     private tipLoaded = false;
     private tipObj: any = null;
+    private id = ""
 
     testMode = false;
 
@@ -45,7 +48,9 @@ export default class Tooltip extends Vue {
      */
     hideTip() {
         if (this.tipLoaded && this.tipObj !== null) {
+            this.tipLoaded = false;
             this.tipObj.hide();
+            delete allOpenTooltips[this.id];
         }
     }
 
@@ -63,12 +68,29 @@ export default class Tooltip extends Vue {
                     );
                     this.tipObj.show();
 
+                    // Make sure tip is not at 0, 0, a common bug that should be
+                    // avoided.
+                    // const box = this.tipObj.tip.getBoundingClientRect();
+                    // if (box.x === 0 && box.y === 0) {
+                    //     this.hideTip();
+                    //     return;
+                    // }
+
+                    // Make sure all other tool tips close.
+                    for (const key in allOpenTooltips) {
+                        if (key !== this.id) {
+                            allOpenTooltips[key].hideTip();
+                        }
+                    }
+
+                    // Add this to list of ones that are open.
+                    allOpenTooltips[this.id] = this;
+
                     // Always automatically close after 15 seconds. Probably
-                    // buggy by then. NOTE: I think this is solved with
-                    // mouseleave event now.
-                    // setTimeout(() => {
-                    //     this.tipObj.hide();
-                    // }, 15000);
+                    // buggy by then.
+                    setTimeout(() => {
+                        this.hideTip();
+                    }, 15000);
                     return;
                 })
                 .catch((err: any) => {
@@ -86,6 +108,8 @@ export default class Tooltip extends Vue {
         if (isTest) {
             this.testMode = true;
         }
+
+        this.id = Math.random().toString();
     }
 
     /** mounted function */

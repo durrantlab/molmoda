@@ -67,7 +67,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
             id: "pdbId",
             label: "",
             val: "",
-            placeHolder: "Enter PDB ID (e.g., 1XDN)",
+            placeHolder: "PDB ID (e.g., 1XDN)...",
             description: `The PDB ID of the molecular structure. Search the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a> if you're uncertain.`,
             filterFunc: (pdb: string): string => {
                 pdb = pdb.toUpperCase();
@@ -97,18 +97,31 @@ export default class LoadPDBPlugin extends PluginParentClass {
      * @param {string} pdbId  The PDB ID to load.
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    runJobInBrowser(pdbId: string): Promise<void> {
-        return loadRemote(
-            `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
-        )
-            .then((fileInfo: FileInfo): any => {
-                return this.addFileInfoToViewer(fileInfo);
-            })
-            .catch((err: string) => {
-                // TODO: Check if CIF exists?
-                api.messages.popupError(err);
-                // throw err;
-            });
+    async runJobInBrowser(pdbId: string): Promise<void> {
+        try {
+            const fileInfo = await loadRemote(
+                `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
+            );
+            return this.addFileInfoToViewer(fileInfo);
+        } catch (err) {
+            console.warn(err);
+        }
+
+        // If you get here, it failed. Try CIF.
+        try {
+            const fileInfo2 = await loadRemote(
+                `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`
+            );
+            return this.addFileInfoToViewer(fileInfo2);
+        } catch (err: any) {
+            // Failed a second time! Probably not a valid PDB.
+
+            api.messages.popupError(
+                "Could not load PDB ID " +
+                    pdbId +
+                    ". Are you sure this ID is valid?"
+            );
+        }
     }
 
     /**
@@ -116,20 +129,35 @@ export default class LoadPDBPlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest {
-        return {
-            pluginOpen: new TestCmdList().setUserArg(
-                "pdbId",
-                "1XDN",
-                this.pluginId
-            ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#navigator",
-                "1XDN"
-            ),
-        };
+    async getTests(): Promise<ITest[]> {
+        return [
+        {
+                pluginOpen: new TestCmdList().setUserArg(
+                    "pdbId",
+                    "1XDN",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "1XDN"
+                ),
+            },
+
+            // Below loads cif verson
+            {
+                pluginOpen: new TestCmdList().setUserArg(
+                    "pdbId",
+                    "7VBA",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "7VBA"
+                ),
+            },
+        ];
     }
 }
 </script>

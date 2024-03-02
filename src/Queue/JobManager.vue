@@ -126,7 +126,7 @@ export default class JobManager extends Vue {
                 return {
                     "": {
                         val: "",
-                        iconClasses: "far fa-rectangle-xmark",
+                        iconClasses: ["far", "fa-rectangle-xmark"],
                         iconClickEmitName: "cancelJob",
                         iconShowFilterFunc: (row: {
                             [key: string]: CellValue;

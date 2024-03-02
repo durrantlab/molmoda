@@ -32,8 +32,6 @@ export function saveBiotite(filename: string): Promise<undefined> {
  * @returns {Promise<any>} A promise that resolves when the save is complete.
  */
 function saveState(filename: string, state: any): Promise<any> {
-    // To save state to json, GLModel must be converted to IAtom[]. This makes
-    // copies (not in place).
     const newMolData = (state.molecules as TreeNodeList).serialize();
 
     const newState: { [key: string]: any } = {};
@@ -45,7 +43,19 @@ function saveState(filename: string, state: any): Promise<any> {
         newState[key] = key === "molecules" ? newMolData : state[key];
     }
 
-    const jsonStr = JSON.stringify(newState);
+    // Custom replacer function to handle circular references
+    const seen = new WeakSet();
+    const jsonStr = JSON.stringify(newState, (key, value) => {
+        if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+                // Circular reference found, discard key or you can replace it with something else
+                // console.warn("Circular reference found in state, discarding key", key);
+                return;
+            }
+            seen.add(value);
+        }
+        return value;
+    });
 
     // Create JSON file (compressed).
     return api.fs.saveTxt(

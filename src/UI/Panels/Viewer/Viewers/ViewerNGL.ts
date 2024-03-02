@@ -128,7 +128,6 @@
 //      * @param  {number} opacity  The opacity to show the region at.
 //      */
 //     showRegion(id: string, opacity: number) {
-//         // debugger;
 //         const region = this.lookup(id);
 //         if (region) {
 //             region.associatedRegionComponent.addRepresentation("buffer", {

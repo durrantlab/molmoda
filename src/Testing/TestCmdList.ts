@@ -16,7 +16,7 @@ import {
 import * as api from "@/Api";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
 
-let exampleLoaded = false;
+const examplesLoaded: string[] = [];
 
 /**
  * A container for test commmands, with added functions for common tasks.
@@ -111,16 +111,31 @@ export class TestCmdList {
      * @param {boolean} [expandInMoleculeTree=false]  Whether to expand the
      *                                                molecule tree to show the
      *                                                molecule.
+     * @param {string}  [url="4WP4.pdb"]              The URL of the molecule to
+     *                                                load.
+     * @param {number}  [testIdx]                     The index of the test.
+     *                                                Will not load file if
+     *                                                doesn't match. Note that
+     *                                                testIdx is 0-indexed.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
-    public loadExampleProtein(expandInMoleculeTree = false): TestCmdList {
-        if (exampleLoaded) {
+    public loadExampleMolecule(expandInMoleculeTree = false, url = "4WP4.pdb", testIdx?: number): TestCmdList {
+        if (examplesLoaded.indexOf(url) !== -1) {
             // Already loaded
             return this;
         }
 
-        exampleLoaded = true;
-        loadRemote("4WP4.pdb", false)
+        if (testIdx !== undefined) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const testIdxFrmURL = parseInt(urlParams.get("index") as string);
+            if (testIdxFrmURL !== testIdx) {
+                return this;
+                // Not the right test.
+            }
+        }
+
+        examplesLoaded.push(url);
+        loadRemote(url, false)
             .then((fileInfo: FileInfo) => {
                 return getMoleculesFromStore().loadFromFileInfo(fileInfo);
             })
@@ -179,7 +194,6 @@ export class TestCmdList {
     }
 
     // public expandEntireMoleculesTree(): TestCmdList {
-    //     debugger;
     //     const treeNodeList = getMoleculesFromStore();
     //     treeNodeList.flattened.forEach((node) => {
     //         node.treeExpanded = true;

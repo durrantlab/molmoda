@@ -130,7 +130,6 @@ export default class ReducePlugin extends PluginParentClass {
                 );
             });
 
-        // debugger;
 
         // this.submitJobs(payloads); // , 10000);
     }
@@ -198,7 +197,6 @@ export default class ReducePlugin extends PluginParentClass {
                     ]);
                     // console.log(payloads);
                     // console.log(pdbOuts);
-                    // debugger;
                     treeNode.title = payloads[i].title + ":protonated";
                     treeNode.addToMainTree();
                 }
@@ -225,9 +223,9 @@ export default class ReducePlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(),
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 ":protonated"

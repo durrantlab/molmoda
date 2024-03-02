@@ -81,6 +81,13 @@ export default class AddRegionPlugin extends PluginParentClass {
             label: "Name",
             id: "regionName",
             val: "region",
+            // description: "F.",
+            warningFunc: (val: string) => {
+                if (val === "region") {
+                    return "We recommend renaming this region to make it more descriptive.";
+                }
+                return "";
+            },
         },
         {
             type: UserArgType.Vector3D,
@@ -282,9 +289,9 @@ export default class AddRegionPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(true),
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "region"

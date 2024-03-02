@@ -46,10 +46,13 @@ export async function disableStats() {
         Cookies = await getJsCookie();
     }
     await removeStatCollectionCookie();
-    Cookies.set("statcollection", "false", {
-        expires: 3,
-        sameSite: "strict",
-    });
+    // NOTE: Below is intentionally commented out. NAR doesn't want any cookies
+    // set if used doesn't explicitly authorize.
+
+    // Cookies.set("statcollection", "false", {
+    //     expires: 3,
+    //     sameSite: "strict",
+    // });
 }
 
 /**

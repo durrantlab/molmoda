@@ -54,7 +54,7 @@ export default class SavePNGPlugin extends PluginParentClass {
             id: "filename",
             label: "",
             val: "",
-            placeHolder: "Enter Filename (e.g., my_image.png)",
+            placeHolder: "Filename (e.g., my_image.png)...",
             description: `The name of the PNG file to save. The extension ".png" will be automatically appended.`,
             filterFunc: (filename: string): string => {
                 return fileNameFilter(filename);
@@ -107,9 +107,9 @@ export default class SavePNGPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(),
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",
                 "test",

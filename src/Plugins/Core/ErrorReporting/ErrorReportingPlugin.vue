@@ -4,19 +4,24 @@
         v-model="open"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Yes, Send the Report"
-        cancelBtnTxt="No Thanks"
+        :actionBtnTxt="actionBtnTxtToUse"
+        :cancelBtnTxt="cancelBtnTxtToUse"
         :variant="popupVariant"
     >
-        <div>
-            <p>
-                Unfortunately, {{ appName }} encountered an unexpected error. We
-                would like to identify and fix the bug that caused this error.
-                May we send the following error report to our servers to help
-                with future debugging?
-            </p>
-            <pre>{{ errorTxt }}</pre>
-        </div>
+        <MessageList :messages="errorMsgs" />
+        <!-- <div> -->
+        <!-- {{ txtToUse }} -->
+        <!-- <span v-if="!hasTmpErrorMsg">
+                <p>
+                    Unfortunately, {{ appName }} encountered an unexpected
+                    error. We would like to identify and fix the bug that caused
+                    this error. May we send the following error report to our
+                    servers to help with future debugging?
+                </p>
+                <pre>{{ txtToUse }}</pre>
+            </span>
+            <p v-else>{{ txtToUse }}</p> -->
+        <!-- </div> -->
     </PluginComponent>
 </template>
 
@@ -31,8 +36,14 @@ import {
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { appName } from "@/Core/GlobalVars";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import {
+    ISimpleMsg,
+    PopupVariant,
+} from "@/UI/Layout/Popups/InterfacesAndEnums";
 import * as api from "@/Api";
+import MessageList from "@/UI/MessageAlerts/MessageList.vue";
+import { reportErrorToServer } from "./ErrorReporting";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * ErrorReportingPlugin
@@ -40,6 +51,7 @@ import * as api from "@/Api";
 @Options({
     components: {
         PluginComponent,
+        MessageList,
     },
 })
 export default class ErrorReportingPlugin extends PluginParentClass {
@@ -51,15 +63,50 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     title = `Unexpected Error!`;
     open = false;
 
+    errorMsgs: ISimpleMsg[] = [];
+    msgTxtsSeen: Set<string> = new Set();
+
     userArgDefaults: UserArg[] = [];
 
     popupVariant = PopupVariant.Danger;
-    errorTxt = "";
-    onApprove = () => { return; };
+    // errorTxt = "";
+    // onApprove = () => {
+    //     return;
+    // };
+
+    get actionBtnTxtToUse(): string {
+        // if (this.hasTmpErrorMsg) {
+        //     return "";
+        // }
+        return "Yes, Send the Report";
+    }
+
+    get cancelBtnTxtToUse(): string {
+        // if (this.hasTmpErrorMsg) {
+        //     return "Ok";
+        // }
+        return "No Thanks";
+    }
+
+    // get txtToUse(): string {
+    //     let errTxt = "";
+    //     const fixedErrorTxt = this.errorTxt.replace("TMPERRORMSG:", "");
+    //     if (!this.hasTmpErrorMsg) {
+    //         errTxt += `<p>Unfortunately, ${this.appName} encountered an unexpected error. We would like to identify and fix the bug that caused this error. May we send the following error report to our servers to help with future debugging?</p>`
+    //         errTxt += `<pre>${fixedErrorTxt}</pre>`;
+    //     } else {
+    //         errTxt += fixedErrorTxt;
+    //     }
+    //     return errTxt;
+    // }
+
+    // get hasTmpErrorMsg(): boolean {
+    //     return this.errorTxt.startsWith("TMPERRORMSG:");
+    // }
 
     /**
      * The name of the application.
-     * 
+     *
      * @returns {string} The name of the application.
      */
     get appName(): string {
@@ -70,13 +117,32 @@ export default class ErrorReportingPlugin extends PluginParentClass {
      * Runs when the user first starts the plugin. For example, if the plugin is
      * in a popup, this function would open the popup.
      *
-     * @param {any} [errorData]  Information about the message to display.
+     * @param {ISimpleMsg} [errorData]  Information about the message to display.
      * @returns {Promise<void>}       Promise that resolves when the plugin is
      *                                finished starting.
      */
-    async onPluginStart(errorData: any): Promise<void> {
-        this.errorTxt = errorData.txt;
-        this.onApprove = errorData.onApprove;
+    async onPluginStart(errorData: ISimpleMsg): Promise<void> {
+        // Modify the error message.
+        let errTxt = "";
+        const fixedErrorTxt = errorData.message.replace("TMPERRORMSG:", "");
+        if (!errorData.message.startsWith("TMPERRORMSG:")) {
+            errTxt += `<p>Unfortunately, ${this.appName} encountered an unexpected error. We would like to identify and fix the bug that caused this error. May we send the following error report to our servers to help with future debugging?</p>`;
+            errTxt += `<pre>${fixedErrorTxt}</pre>`;
+        } else {
+            errTxt += fixedErrorTxt;
+        }
+        errorData.message = errTxt;
+
+        // Add datetime string.
+        errorData.datetime = new Date().toLocaleString();
+
+        // This prevents same message from appearing twice (not useful).
+        if (this.msgTxtsSeen.has(errorData.message)) return;
+        this.msgTxtsSeen.add(errorData.message);
+
+        this.errorMsgs.unshift(errorData);
+        // this.errorTxt = errorData.txt;
+        // this.onApprove = errorData.onApprove;
         this.open = true;
     }
 
@@ -84,16 +150,21 @@ export default class ErrorReportingPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes. Does
      * not run with cancel button.
      */
-    onPopupDone() { 
-        this.onApprove();
+    onPopupDone() {
+        for (const msg of this.errorMsgs) {
+            if (msg.callBack) {
+                msg.callBack();
+            }
+        }
+        this.errorMsgs = [];
+        this.msgTxtsSeen.clear();
     }
 
-    
     /**
      * Called right before the plugin popup opens.
      */
     onBeforePopupOpen() {
-        this.errorTxt = "";
+        // this.errorTxt = "";
     }
 
     /**
@@ -117,11 +188,18 @@ export default class ErrorReportingPlugin extends PluginParentClass {
      *
      * @returns {ITest[]}  The selenium test command(s).
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 
-        api.plugins.runPlugin(this.pluginId, {});
+        const errTxt = "TMPERRORMSG:Test error";
+
+        api.plugins.runPlugin(this.pluginId, {
+            message: errTxt,
+            callBack: async () => {
+                await reportErrorToServer(errTxt);
+            },
+        });
 
         return [];
     }

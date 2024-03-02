@@ -38,6 +38,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
+import { getDesaltArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 
 /**
  * OpenMoleculesPlugin
@@ -63,12 +64,13 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     intro = "Open (load) molecule file(s).";
 
     userArgDefaults: UserArg[] = [
+        getDesaltArg(),
         {
             id: "hideOnLoad",
             type: UserArgType.Checkbox,
-            label: "Loaded molecules should not be visible",
+            label: "Loaded molecules should be invisible",
             description:
-                "If checked, the loaded molecules will not be initially visible in the molecular viewer. You will have to toggle their visibility by hand. Useful if you plan to load many molecules at once.",
+                "Loaded molecules initially invisible. You will have to toggle visibility by hand. Useful if you plan to load many molecules at once.",
             val: false,
         } as IUserArgCheckbox,
     ];
@@ -102,8 +104,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * (e.g., clear inputs from previous open).
      *
      * @param {any} payload  The payload passed to the plugin.
+     * @returns {boolean | void}  If false, the popup will not open.
      */
-    onBeforePopupOpen(payload: any) {
+    onBeforePopupOpen(payload: any): boolean | void {
         // Below is hackish...
         setTimeout(() => {
             // Give the component time to render
@@ -112,8 +115,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 formFile.clearFile();
             }
         }, delayForPopupOpenClose);
-
-        // debugger;
 
         if (payload !== undefined) {
             let fileList = payload as File[];
@@ -145,7 +146,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 .catch((err) => {
                     throw err;
                 });
-            return;
+            return false; // To prevent popup from opening.
         }
         // this.windowClosing = this.payload !== undefined;
     }
@@ -163,7 +164,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         // separated).
         return this.addFileInfoToViewer(
             fileInfo,
-            this.getUserArg("hideOnLoad")
+            this.getUserArg("hideOnLoad"),
+            this.getUserArg("desalt"),
+            ""
         );
     }
 
@@ -174,7 +177,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         const filesToTest = [
             // File, title-clicks,
             // ["two_files.zip", ["ligs"ompounds", "A"], "UNL:1"],
@@ -186,7 +189,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
             ["ligs.cif", "UNL:1"],
 
-            ["ligs.mol2", "ligs:3"],
+            ["ligs.mol2", ":frame3"],
             ["ligs.pdb", "UN3:1"],
             ["ligs.pdbqt", "UN3:1"],
             ["ligs.sdf", ":ligs:"],

@@ -60,7 +60,7 @@ export default class LogWindowPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // This is a test! Nothing specific to do but click the menu items.
 
         return [];

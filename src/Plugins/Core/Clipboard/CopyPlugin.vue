@@ -140,7 +140,6 @@ export default class CopyPlugin extends PluginParentClass {
      * Runs after the popup opens. Good for setting focus in text elements.
      */
      onPopupOpen() {
-        // debugger;
         // Copying terminal nodes only. So copying and pasting will not preserve
         // the hierarchy.
         const terminals = (this.$store.state["molecules"] as TreeNodeList)
@@ -227,10 +226,10 @@ export default class CopyPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
             beforePluginOpens: new TestCmdList()
-                .loadExampleProtein()
+                .loadExampleMolecule()
                 .selectMoleculeInTree("Protein"),
             afterPluginCloses: new TestCmdList(),
         };

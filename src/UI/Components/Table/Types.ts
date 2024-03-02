@@ -13,7 +13,7 @@ export interface ICellValue {
     // dates, but sort by timestamp).
     sortVal?: string | number;
 
-    iconClasses?: string;
+    iconClasses?: string[];
     iconClickEmitName?: string;
     iconShowFilterFunc?: (row: { [key: string]: CellValue }) => boolean;
 

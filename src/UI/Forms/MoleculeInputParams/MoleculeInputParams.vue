@@ -164,19 +164,19 @@ export default class MoleculeInputParams extends Vue {
         if (this.val.considerCompounds && this.val.considerProteins) {
             const total = nodeGroupsCount * compoundsNodesCount;
             numRuns = `${total} (${nodeGroupsCount} x ${compoundsNodesCount}) times`;
-            if (total === 0) warningClass = "text-danger";
+            if (total === 0) warningClass = "text-danger fw-bold";
         } else if (this.val.considerProteins) {
             numRuns = `${nodeGroupsCount} times (once for each protein)`;
-            if (nodeGroupsCount === 0) warningClass = "text-danger";
+            if (nodeGroupsCount === 0) warningClass = "text-danger fw-bold";
         } else if (this.val.considerCompounds) {
             numRuns = `${compoundsNodesCount} times (once for each compound)`;
-            if (compoundsNodesCount === 0) warningClass = "text-danger";
+            if (compoundsNodesCount === 0) warningClass = "text-danger fw-bold";
         } else {
             numRuns = "0 times";
-            warningClass = "text-danger";
+            warningClass = "text-danger fw-bold";
         }
 
-        return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found ${components}, <span class="${warningClass}">so this calculation will run ${numRuns}.</span>`;
+        return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found <b>${components}</b>, <span class="${warningClass}">so this calculation will run <b>${numRuns}</b>.</span>`;
     }
 
     /**
@@ -235,5 +235,9 @@ export default class MoleculeInputParams extends Vue {
 // Input of type color
 .form-control-color {
     width: 100%;
+}
+
+.fw-bold {
+    font-weight: bold;
 }
 </style>

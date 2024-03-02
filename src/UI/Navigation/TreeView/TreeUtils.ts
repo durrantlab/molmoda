@@ -166,7 +166,6 @@ export function mergeTreeNodes(
             throw err;
         });
 
-    // debugger;
     // const treeNode = nodeList.get(0);
 
     // // Keep going through the nodes of each container and merge them into the
@@ -197,7 +196,6 @@ export function mergeTreeNodes(
     //         ) {
     //             if (!mergedTreeNodePointer.nodes) {
     //                 // When does this happen?
-    //                 debugger;
     //                 break;
     //             }
 

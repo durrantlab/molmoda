@@ -169,10 +169,10 @@ for ts_file in ts_files:
     if ".catch(" in content:
         # import pdb; pdb.set_trace()
         for match in re.findall(r"\.catch\((.{0,200})", content, re.DOTALL):
-            if "throw" not in match:
+            if "throw" not in match and "reject" not in match:
                 add_error(
                     ts_file,
-                    "If you use .catch(), you must throw an error within the next few lines. Comment out 'throw err' in those rare cases where you want to ignore an error.",
+                    "If you use .catch(), you must throw an error or reject within the next few lines. Comment out 'throw err' in those rare cases where you want to ignore an error.",
                 )
     if "import(" in content and os.path.basename(ts_file) != "DynamicImports.ts":
         add_error(ts_file, "Use import() only in the DynamicImports.ts file.")

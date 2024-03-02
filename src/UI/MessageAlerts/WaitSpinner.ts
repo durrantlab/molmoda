@@ -39,7 +39,6 @@ export function stopWaitSpinner(id: string) {
  */
 export function startWaitSpinner(timeOut = 30000): string {
     // console.trace("startWaitSpinner");
-    // debugger;
 
     // We are starting the spinner
     const body = _getBody();

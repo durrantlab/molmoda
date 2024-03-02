@@ -147,7 +147,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 

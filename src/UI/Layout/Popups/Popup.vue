@@ -78,10 +78,8 @@
                     class="modal-footer alert alert-light fs-6 lh-sm"
                     style="display: inline-block"
                     v-html="footerTxt"
-                >
-                </div>
-                                    <!-- <small v-html="footerTxt" style="inline-block"></small> -->
-
+                ></div>
+                <!-- <small v-html="footerTxt" style="inline-block"></small> -->
             </div>
         </div>
     </div>
@@ -96,6 +94,7 @@ import { randomID } from "@/Core/Utils";
 import { PopupVariant } from "./InterfacesAndEnums";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
+import { popupClosed, popupOpened } from "./OpenPopupList";
 
 /**
  * Popup component
@@ -115,7 +114,7 @@ export default class Popup extends Vue {
     @Prop({ default: true }) isActionBtnEnabled!: boolean;
     @Prop({ default: false }) prohibitCancel!: boolean;
     @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
-    @Prop({ default: "" }) id!: string;
+    @Prop({ required: true }) id!: string;
     @Prop({}) onShown!: Function;
     @Prop({}) beforeShown!: Function;
     @Prop({ default: "default" }) modalWidth!: string;
@@ -140,20 +139,16 @@ export default class Popup extends Vue {
      * @param {boolean} newValue  The new value of the modelValue property.
      */
     @Watch("modelValue")
-    onModelValueChange(newValue: boolean) {
-        this.setupModal()
-            .then(() => {
-                if (newValue) {
-                    this.modal.show();
-                } else {
-                    this.modal.hide();
-                }
-                return;
-            })
-            .catch((err) => {
-                // Throw the error
-                throw err;
-            });
+    async onModelValueChange(newValue: boolean) {
+        await this.setupModal();
+        if (newValue) {
+            this.modal.show();
+            popupOpened(this.getId);
+        } else {
+            this.modal.hide();
+            popupClosed(this.getId);
+        }
+        return;
     }
 
     /**
@@ -217,12 +212,12 @@ export default class Popup extends Vue {
     /**
      * Runs when the cancel button is pressed.
      */
-     cancelBtn() {
+    cancelBtn() {
         setTimeout(() => {
             this.$emit("onCancel");
             this.$emit("update:modelValue", false);
         }, formInputDelayUpdate);
-     }
+    }
 
     /**
      * Runs when the action button is pressed.
@@ -230,7 +225,7 @@ export default class Popup extends Vue {
     actionBtn() {
         // This gets it to close immediately.
         this.isClosing = true;
-        
+
         setTimeout(() => {
             // This because you need to wait for user inputs to be finalized.
             this.$emit("onDone");
@@ -274,49 +269,42 @@ export default class Popup extends Vue {
      * @returns {Promise<any>}  A promise that resolves the modal when it is set
      *     up.
      */
-    setupModal(): Promise<any> {
+    async setupModal(): Promise<any> {
         // Dynamic import of bootstrap modal.
         if (this.modal !== undefined) {
-            return Promise.resolve(this.modal);
+            return this.modal;
         }
 
-        return dynamicImports.bootstrapModal.module
-            .then((Modal) => {
-                let modalElem = document.getElementById(
-                    this.getId
-                ) as HTMLElement;
+        const Modal = await dynamicImports.bootstrapModal.module;
+        let modalElem = document.getElementById(this.getId) as HTMLElement;
 
-                this.modal = new Modal(modalElem, {});
+        this.modal = new Modal(modalElem, {});
 
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                modalElem.addEventListener("shown.bs.modal", (_event) => {
-                    if (this.onShown) {
-                        this.onShown();
-                    }
-                    this.$emit("update:modelValue", true);
-                });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        modalElem.addEventListener("shown.bs.modal", (_event) => {
+            if (this.onShown) {
+                this.onShown();
+            }
+            this.$emit("update:modelValue", true);
+        });
 
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                modalElem.addEventListener("show.bs.modal", (_event) => {
-                    if (this.beforeShown) {
-                        this.beforeShown();
-                    }
-                });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        modalElem.addEventListener("show.bs.modal", (_event) => {
+            if (this.beforeShown) {
+                this.beforeShown();
+            }
+        });
 
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                modalElem.addEventListener("hidden.bs.modal", (_event) => {
-                    this.$emit("update:modelValue", false);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        modalElem.addEventListener("hidden.bs.modal", (_event) => {
+            this.$emit("update:modelValue", false);
 
-                    // Below fires regardless of how closed. In contrast, onDone fires if
-                    // click on actionBtn.
-                    this.$emit("onClosed");
-                });
+            // Below fires regardless of how closed. In contrast, onDone fires if
+            // click on actionBtn.
+            this.$emit("onClosed");
+        });
 
-                return this.modal;
-            })
-            .catch((err) => {
-                throw "Error loading bootstrap modal: " + err;
-            });
+        return this.modal;
     }
 
     /** mounted function */

@@ -42,6 +42,7 @@
         >)
       </li>
     </ul>
+    <p>This version of {{ appName }} was compiled on {{ appCompileTime }}.</p>
   </PluginComponent>
 </template>
 
@@ -49,7 +50,7 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { appDescription, appName } from "@/Core/GlobalVars";
+import { appDescription, appName, appCompileTime } from "@/Core/GlobalVars";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -125,6 +126,15 @@ export default class AboutPlugin extends PluginParentClass {
   }
 
   /**
+   * Get the compile time of the app.
+   *
+   * @returns {string} The compile time of the app.
+   */
+  get appCompileTime(): string {
+    return appCompileTime;
+  }
+
+  /**
    * Load the image before the popup opens.
    */
   onBeforePopupOpen() {
@@ -155,7 +165,7 @@ export default class AboutPlugin extends PluginParentClass {
    * @document
    * @returns {ITest}  The selenium test commands.
    */
-  getTests(): ITest {
+  async getTests(): Promise<ITest> {
     return {
       closePlugin: new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
     };

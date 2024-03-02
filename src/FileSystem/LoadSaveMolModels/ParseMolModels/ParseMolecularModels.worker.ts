@@ -13,14 +13,6 @@ import {
 import { randomID } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import {
-    ionSel,
-    lipidSel,
-    metalSel,
-    nucleicSel,
-    proteinSel,
-    solventSel,
-} from "../Types/ComponentSelections";
-import {
     proteinStyle,
     nucleicStyle,
     ligandsStyle,
@@ -28,7 +20,15 @@ import {
     lipidStyle,
     ionsStyle,
     solventStyle,
-} from "../Types/DefaultStyles";
+} from "../Types/Styles";
+import {
+    ionSel,
+    lipidSel,
+    metalSel,
+    nucleicSel,
+    proteinSel,
+    solventSel,
+} from "../Types/ComponentSelections";
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
@@ -212,7 +212,6 @@ function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
             }
         });
     });
-    // debugger;
     return dividedMolEntry;
 }
 
@@ -282,10 +281,9 @@ function collapseSingles(
 }
 
 /**
- * Adds the molecule type, style, and selections.
+ * Adds the molecule type.
  *
- * @param  {TreeNode}  treeNode  The molecule to add the type and style
- *                                        to.
+ * @param  {TreeNode}  treeNode  The molecule to add the type and style to.
  * @param  {IStyle[]} stylesAndSels The styles and selections to add.
  */
 function addMolTypeAndStyle(treeNode: TreeNode, stylesAndSels: IStyle[]) {
@@ -435,10 +433,10 @@ function divideAtomsIntoDistinctComponents(
         molFormatInfo
     );
 
-    const molName = getFileNameParts(data.fileInfo.name).basename
+    const molName = getFileNameParts(data.fileInfo.name).basename;
     const frameTitles = frames.map((f, i) => {
         return `${getNameFromContent(f, molFormatInfo)}:${molName}:${i + 1}`;
-    })
+    });
 
     // glviewer for use in webworker.
     return dynamicImports.mol3d.module.then(($3Dmol: any) => {
@@ -452,7 +450,10 @@ function divideAtomsIntoDistinctComponents(
             const frame = frames[frameIdx];
             const frameTitle = frameTitles[frameIdx];
             // const molWithAtomsToDivide = glviewer.makeGLModel_JDD(frame, data.format);
-            const molWithAtomsToDivide = glviewer.makeGLModel(frame, data.format);
+            const molWithAtomsToDivide = glviewer.makeGLModel(
+                frame,
+                data.format
+            );
 
             if (molWithAtomsToDivide.selectedAtoms({}).length === 0) {
                 // No atoms in model. Skip.
@@ -476,12 +477,26 @@ function divideAtomsIntoDistinctComponents(
                 molWithAtomsToDivide,
                 "Solvent"
             );
-            let metalAtomsByChain = organizeSelByChain(metalSel, molWithAtomsToDivide, "Metal");
-            const ionAtomsByChain = organizeSelByChain(ionSel, molWithAtomsToDivide, "Ion");
-            let lipidAtomsByChain = organizeSelByChain(lipidSel, molWithAtomsToDivide, "Lipid");
-            let compoundsByChain = organizeSelByChain({}, molWithAtomsToDivide, "Compound"); // Everything else is ligands
-
-            // debugger;
+            let metalAtomsByChain = organizeSelByChain(
+                metalSel,
+                molWithAtomsToDivide,
+                "Metal"
+            );
+            const ionAtomsByChain = organizeSelByChain(
+                ionSel,
+                molWithAtomsToDivide,
+                "Ion"
+            );
+            let lipidAtomsByChain = organizeSelByChain(
+                lipidSel,
+                molWithAtomsToDivide,
+                "Lipid"
+            );
+            let compoundsByChain = organizeSelByChain(
+                {},
+                molWithAtomsToDivide,
+                "Compound"
+            ); // Everything else is ligands
 
             // Further divide by residue (since each ligand is on its own residue,
             // not bound to any other).
@@ -493,7 +508,7 @@ function divideAtomsIntoDistinctComponents(
                 if (n.title.indexOf("undefined") > -1) {
                     n.title = frameTitle;
                 }
-            })
+            });
 
             // You don't need to divide solvent and ions by chain.
             const solventAtomsNoChain = flattenChains(solventAtomsByChain);
@@ -651,6 +666,12 @@ waitForDataFromMainThread()
             }
 
             nodesToConsider.forEach((node) => {
+                // TODO: In theory, you shouldn't need to set styles here,
+                // because they get reset in the main thread based on the
+                // current styles in the viewer. And yet when I remove styles
+                // setting from the worker, the solvent no longer appears in the
+                // viewer. I tried to figure out why, but struggled to find a
+                // solution. So I'm leaving it here for now.
                 switch (node.type) {
                     case TreeNodeType.Protein:
                         addMolTypeAndStyle(node, proteinStyle);

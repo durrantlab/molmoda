@@ -31,6 +31,7 @@ import { copyUserArgs } from "../UserInputUtils";
 import { logGAEvent } from "@/Core/GoogleAnalytics";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -495,7 +496,7 @@ export abstract class PluginParentClass extends mixins(
     }
 
     /** mounted function */
-    mounted() {
+    async mounted() {
         // Do some quick validation
         this._validatePlugin(this.pluginId, this.intro);
 
@@ -523,6 +524,7 @@ export abstract class PluginParentClass extends mixins(
                 if (msg !== null) {
                     api.messages.popupError(msg);
                 } else {
+                    if (isAnyPopupOpen()) return;
                     api.plugins.runPlugin(this.pluginId);
                 }
             });
@@ -532,7 +534,7 @@ export abstract class PluginParentClass extends mixins(
 
         this.onMounted();
 
-        createTestCmdsIfTestSpecified(this);
+        await createTestCmdsIfTestSpecified(this);
     }
 
     /**
@@ -540,13 +542,20 @@ export abstract class PluginParentClass extends mixins(
      * want to create a molecule from this object and add it to the main tree.
      * This is a helper function to do that.
      *
-     * @param {FileInfo} fileInfo  The fileInfo object.
-     * @param {boolean}  [hideOnLoad=false]  Whether to make the molecule visible
+     * @param {FileInfo} fileInfo                   The fileInfo object.
+     * @param {boolean}  [hideOnLoad=false]         Whether to make the molecule
+     *                                              visible or not. Defaults to
+     *                                              false.
+     * @param {boolean}  [desalt=false]             Whether to desalt the
+     *                                              molecule. Defaults to false.
+     * @param {string}   [defaultTitle="Molecule"]  The default title to use if
+     *                                              none is found. Defaults to
+     *                                              "Molecule".
      * @returns {Promise<void>}  A promise that resolves when the molecule is
      */
-    protected addFileInfoToViewer(fileInfo: FileInfo, hideOnLoad=false): Promise<void> {
+    protected addFileInfoToViewer(fileInfo: FileInfo, hideOnLoad=false, desalt=false, defaultTitle="Molecule"): Promise<void> {
         return new TreeNodeList()
-            .loadFromFileInfo(fileInfo)
+            .loadFromFileInfo(fileInfo, desalt, defaultTitle)
             .then((newTreeNodeList) => {
                 // Note: If loading biotite file, newTreeNodeList will be
                 // undefined.
@@ -589,8 +598,8 @@ export abstract class PluginParentClass extends mixins(
      *
      * @gooddefault
      * @document
-     * @returns {ITest[] | ITest | null}  The selenium test command(s). If null,
+     * @returns {Promise<ITest[] | ITest>}  The selenium test command(s). If null,
      * skips test (rarely used).
      */
-    abstract getTests(): ITest[] | ITest;
+    abstract getTests(): Promise<ITest[] | ITest>;
 }

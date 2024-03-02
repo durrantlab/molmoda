@@ -56,7 +56,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             id: "newName",
             label: "",
             val: "",
-            placeHolder: "Name of new cloned molecule",
+            placeHolder: "Name of new cloned molecule...",
             description: "The name of the new, cloned molecule.",
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
@@ -122,7 +122,7 @@ export default class CloneMolPlugin extends PluginParentClass {
                 throw err;
             });
 
-        // debugger  // Replace below with cloneMolsWithAncestry when ready.
+        // Replace below with cloneMolsWithAncestry when ready.
 
         // let nodeToActOn: TreeNode;
         // let clonedNode: Promise<TreeNode>;
@@ -201,12 +201,12 @@ export default class CloneMolPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commandss.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             // First test cloning
             {
                 beforePluginOpens: new TestCmdList()
-                    .loadExampleProtein(true)
+                    .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein"),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#navigator", ":cloned")

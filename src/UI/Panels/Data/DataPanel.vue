@@ -251,7 +251,6 @@ export default class DataPanel extends Vue {
      * @returns {string}  The name of the molecule in path-like format.
      */
     nodePathName(treeNode: TreeNode, allMols: TreeNodeList): string {
-        // debugger;
         return treeNode.descriptions.pathName("/", 30 /*35*/, allMols);
     }
 

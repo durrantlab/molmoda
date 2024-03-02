@@ -186,7 +186,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commandss.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             // First test without saving first
             {

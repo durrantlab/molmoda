@@ -75,10 +75,10 @@ export default class RedoPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
             beforePluginOpens: new TestCmdList()
-                .loadExampleProtein()
+                .loadExampleMolecule()
                 .click("#menu1-edit")
                 .click("#menu-plugin-undo")
                 .wait(3),

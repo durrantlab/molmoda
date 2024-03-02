@@ -49,7 +49,7 @@ export default class RenameMolPlugin extends PluginParentClass {
             id: "newName",
             label: "",
             val: "",
-            placeHolder: "New molecule name",
+            placeHolder: "Name of new molecule...",
             description: "The new name for this molecule.",
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
@@ -101,10 +101,10 @@ export default class RenameMolPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
             beforePluginOpens: new TestCmdList()
-                .loadExampleProtein(true)
+                .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein"),
             pluginOpen: new TestCmdList().setUserArg(
                 "newName",

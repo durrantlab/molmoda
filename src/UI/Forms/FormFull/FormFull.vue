@@ -37,6 +37,7 @@
                     v-model="makeGeneric(formElem).val"
                     :placeHolder="getPlaceHolder(formElem)"
                     :filterFunc="makeGeneric(formElem).filterFunc"
+                    :warningFunc="makeGeneric(formElem).warningFunc"
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
@@ -49,6 +50,7 @@
                     v-model.number="makeGeneric(formElem).val"
                     :placeHolder="getPlaceHolder(formElem)"
                     :filterFunc="makeGeneric(formElem).filterFunc"
+                    :warningFunc="makeGeneric(formElem).warningFunc"
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
@@ -64,6 +66,7 @@
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
                     :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected"
+                    :warningFunc="makeGeneric(formElem).warningFunc"
                 />
                 <FormInput
                     v-else-if="formElem.type === FormElementType.Range"
@@ -77,6 +80,7 @@
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
                     :delayBetweenChangesDetected="0"
+                    :warningFunc="makeGeneric(formElem).warningFunc"
                 />
                 <FormTextArea
                     v-else-if="formElem.type === FormElementType.TextArea"
@@ -126,8 +130,10 @@
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :filterFunc="makeGeneric(formElem).filterFunc"
+                    :warningFunc="makeGeneric(formElem).warningFunc"
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
+                    :delayBetweenChangesDetected="0"
                 />
 
                 <Alert
@@ -152,6 +158,7 @@
                     :disabled="disabled(formElem)"
                     :description="makeGeneric(formElem).description"
                     :regionName="makeGeneric(formElem).regionName"
+                    :warningFunc="makeGeneric(formElem).warningFunc"
                 ></FormSelectRegion>
             </FormWrapper>
         </span>
@@ -181,6 +188,7 @@ import FormVector3D from "../FormVector3D.vue";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
 import FormTextArea from "../FormTextArea.vue";
+import { isSentence } from "@/Core/Utils";
 
 /**
  * FormFull
@@ -375,6 +383,27 @@ export default class FormFull extends Vue {
     getPlaceHolder(formElem: any): string {
         // If placeholder given, use that.
         if (formElem.placeHolder !== undefined) {
+
+            // Placeholder must end in ...
+            if (!formElem.placeHolder.endsWith("...")) {
+                throw new Error(
+                    `FormFull: Placeholder must end in ...: ${formElem.placeHolder}`
+                );
+            }
+
+            // Placeholder must be sentence case
+            if (isSentence(formElem.placeHolder) === false) {
+                throw new Error(
+                    `FormFull: Placeholder must be sentence case: ${formElem.placeHolder}`
+                );
+            }
+
+            // Place holder should be a noun, not a verb
+            if (formElem.placeHolder.toLowerCase().startsWith("enter")) {
+                throw new Error(
+                    `FormFull: Placeholder should be a noun, not a verb: ${formElem.placeHolder}`
+                );
+            }
             return formElem.placeHolder;
         }
 

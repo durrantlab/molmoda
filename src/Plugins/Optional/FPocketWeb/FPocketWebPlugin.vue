@@ -62,7 +62,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
     },
 })
 export default class FPocketWebPlugin extends PluginParentClass {
-    menuPath = "Proteins/Detect Pockets...";
+    menuPath = "Proteins/[7] Detect Pockets...";
     title = "Pocket Detection";
     softwareCredits: ISoftwareCredit[] = [
         dynamicImports.fpocketweb.credit,
@@ -469,7 +469,6 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
         if (!providePseudoAtoms) {
             // Remove it
-            // debugger;
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore  // TODO: Fix this
@@ -526,11 +525,11 @@ export default class FPocketWebPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             // without pseudo atoms
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Pocket1Box"
@@ -538,7 +537,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
             },
             // Including pseudo atoms
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(),
                 pluginOpen: new TestCmdList().click(
                     "#providePseudoAtoms-fpocketweb-item"
                 ),

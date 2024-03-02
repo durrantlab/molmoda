@@ -14,8 +14,6 @@ import { FileInfo } from "../FileInfo";
 
 import * as Webobabel from "../../../public/js/obabel-wasm/obabel.js";
 
-// debugger;
-
 let oBabelModReady: any = undefined;
 let stdOutOrErr = "";
 let stdErr = "";
@@ -208,16 +206,25 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             // It's important that the input and output files be sufficiently
             // different. Because -m might overwrite an already existant file
             // otherwise.
-            const inputFileBaseWithoutNumbers = (<FileInfo>(
+            let inputFileBaseWithoutNumbers = (<FileInfo>(
                 inputFileActuallyUsed
-            )).name
-                .replace(/\d/g, "")
-                .split(".")[0];
+            )) as FileInfo | string;
+            if (inputFileBaseWithoutNumbers !== undefined) {
+                inputFileBaseWithoutNumbers = (
+                    inputFileBaseWithoutNumbers as FileInfo
+                ).name
+                    .replace(/\d/g, "")
+                    .split(".")[0];
+            }
+
             const outputFileBaseWithoutNumbers = outputFileActuallyUsed
                 ?.replace(/\d/g, "")
                 .split(".")[0];
 
-            if (inputFileBaseWithoutNumbers === outputFileBaseWithoutNumbers) {
+            if (
+                inputFileBaseWithoutNumbers === outputFileBaseWithoutNumbers &&
+                <FileInfo>inputFileActuallyUsed !== undefined
+            ) {
                 throw new Error(
                     "Input and output file names must be sufficiently different: " +
                         (<FileInfo>inputFileActuallyUsed).name +
@@ -248,7 +255,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 (fileName: string) => !filesBeforeRun.includes(fileName)
             );
 
-            if (newFiles.length === 0) {
+            if (newFiles.length === 0 && args.indexOf("-L") === -1 && args.indexOf("--version") === -1) {
                 // There was no new files for some reason. Output a warning, and
                 // return the input molecule.
                 console.error(
@@ -256,10 +263,6 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 );
                 newFiles = [inputFileActuallyUsed?.name];
             }
-
-            // if (newFiles[0].indexOf(".can") !== -1) {
-            //     debugger;
-            // }
 
             const contents: string[] = newFiles.map((fileName: string) => {
                 fileName = tmpDir + fileName;

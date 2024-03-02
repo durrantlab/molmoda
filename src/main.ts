@@ -14,6 +14,9 @@ import {
 } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
+// import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
+import * as api from "./Api";
+import { PopupVariant } from "./UI/Layout/Popups/InterfacesAndEnums";
 
 // api.sys.loadStatus.started = true;
 
@@ -42,6 +45,8 @@ async function main() {
         .use(store)
         .mount("#app");
 
+    // getObabelFormats();
+
     // For debugging...
     // (window as any).testids = () => {
     //     getMoleculesFromStore().flattened.forEach((m) => {
@@ -52,6 +57,34 @@ async function main() {
     //         }
     //     });
     // }
+
+    // setTimeout(() => {
+    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //     // @ts-ignore
+    //     throw new Error("Test error");
+    //     // api.messages.popupMessage(
+    //     //     "Job Running",
+    //     //     "Your job is currently running. Check the Jobs panel to monitor job progress.",
+    //     //     PopupVariant.Danger
+    //     // );
+    // }, 3000);
+
+    // setTimeout(() => {
+    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //     // @ts-ignore
+    //     throw new Error("Test error2");
+    //     // api.messages.popupMessage(
+    //     //     "Job Running",
+    //     //     "Your job is2 currently running. Check the Jobs panel to monitor job progress.",
+    //     //     PopupVariant.Danger
+    //     // );
+    // }, 6000);
+
+    // api.messages.popupError(
+    //     "<p>The following compile errors were found:</p><ul><li>" +
+    //         compileErrorsArray.join("</li><li>") +
+    //         "</li></ul>"
+    // );
 }
 
 main();

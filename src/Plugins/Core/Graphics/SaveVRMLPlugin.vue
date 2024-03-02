@@ -56,7 +56,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
             id: "filename",
             label: "",
             val: "",
-            placeHolder: "Enter Filename (e.g., my_model.vrml)",
+            placeHolder: "Filename (e.g., my_model.vrml)...",
             description: `The name of the VRML file to save. The extension ".vrml" will be automatically appended.`,
             filterFunc: (filename: string): string => {
                 return fileNameFilter(filename);
@@ -119,9 +119,9 @@ export default class SaveVRMLPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(),
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",
                 "test",

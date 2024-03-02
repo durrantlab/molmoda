@@ -81,14 +81,12 @@ import { capitalize } from "@/Core/Utils";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
-// @ts-ignore
-import isEqual from "lodash.isequal";
 import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorSelect from "./ColorSelect/ColorSelect.vue";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { defaultStyles } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
+import * as Styles from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 export interface IStyleForMolType {
@@ -199,25 +197,15 @@ export default class StylesForMolType extends Vue {
         // incompatible with hidden.
         switch (repName) {
             case "atoms-hidden":
-                if (style.line) {
-                    delete style.line;
-                }
-                if (style.stick) {
-                    delete style.stick;
-                }
-                if (style.sphere) {
-                    delete style.sphere;
-                }
+                if (style.line) delete style.line;
+                if (style.stick) delete style.stick;
+                if (style.sphere) delete style.sphere;
                 break;
             case "backbone-hidden":
-                if (style.cartoon) {
-                    delete style.cartoon;
-                }
+                if (style.cartoon) delete style.cartoon;
                 break;
             case "surface-hidden":
-                if (style.surface) {
-                    delete style.surface;
-                }
+                if (style.surface) delete style.surface;
                 break;
             default:
                 // Not hidden, so use specified value.
@@ -229,13 +217,19 @@ export default class StylesForMolType extends Vue {
                 // @ts-ignore
                 let val = style[repName];
                 if (val === undefined) {
-                    val = (defaultStyles[this.molType] as any)[0][repName];
                     // val should be like {color: 'spectrum'}.
+                    val = (Styles.currentStyles[this.molType] as any)[0][repName];
 
-                    if (val === undefined) {
-                        // Happens when turning surface on for first time.
-                        val = {};
-                    }
+                    // Happens when turning surface on for first time.
+                    if (val === undefined) val = {};
+                }
+
+                // If it's a protein and the representation is stick, set the
+                // radius to 0.2. The goal here is to make the protein stick be
+                // thinner than any ligand stick.
+
+                if (repName === "stick") {
+                    val["radius"] = (this.molType === "protein") ? 0.1 : 0.4;
                 }
 
                 (style as any)[repName] = val;
@@ -245,59 +239,22 @@ export default class StylesForMolType extends Vue {
         // other representations that might conflict with this one.
         switch (repName) {
             case "line":
-                if (style.stick) {
-                    delete style.stick;
-                }
-                if (style.sphere) {
-                    delete style.sphere;
-                }
+                if (style.stick) delete style.stick;
+                if (style.sphere) delete style.sphere;
                 break;
             case "stick":
-                if (style.line) {
-                    delete style.line;
-                }
-                if (style.sphere) {
-                    delete style.sphere;
-                }
+                if (style.line) delete style.line;
+                if (style.sphere) delete style.sphere;
                 break;
             case "sphere":
-                if (style.line) {
-                    delete style.line;
-                }
-                if (style.stick) {
-                    delete style.stick;
-                }
+                if (style.line) delete style.line;
+                if (style.stick) delete style.stick;
                 break;
         }
 
-        // iterate through terminal nodes
-        let molecules = this.$store.state["molecules"] as TreeNodeList;
+        Styles.currentStyles[this.molType] = [style];
 
-        const terminalNodes = molecules.filters.onlyTerminal;
-        for (let idx = 0; idx < terminalNodes.length; idx++) {
-            let node = terminalNodes.get(idx);
-            if (!node.type || !node.styles || !node.visible) {
-                continue;
-            }
-
-            // Check if the node type matches this style
-            if (node.type === this.molType) {
-                // Add the styles to the node list if it's not empty ({}).
-                node.styles = [];
-                if (!isEqual(style, {})) {
-                    node.styles.push(style);
-                }
-                // Mark this for rerendering in viewer.
-                node.viewerDirty = true;
-            }
-        }
-
-        // console.log("New molecules:", molecules);
-
-        this.$store.commit("setVar", {
-            name: "molecules",
-            val: molecules,
-        });
+        Styles.updateStylesInViewer(this.molType);
 
         // NOTE: No need to emit up. Parent component detects changes in
         // store.state.molecules.
@@ -317,8 +274,9 @@ export default class StylesForMolType extends Vue {
      * Runs when the Vue component is mounted.
      */
     mounted() {
-        this._setInitialSelectVals(this.style);
+        this._setInitialSelectedStyles(this.style);
         this.styleToUse = this.style;
+        this.updateMolecules(this.atomsOption);
     }
 
     /**
@@ -326,7 +284,7 @@ export default class StylesForMolType extends Vue {
      *
      * @param {IStyle} style  The style name to selectino to use.
      */
-    private _setInitialSelectVals(style: IStyle) {
+    private _setInitialSelectedStyles(style: IStyle) {
         if (style === undefined) {
             // Happens when used has hidden all styles.
             style = {};

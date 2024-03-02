@@ -19,13 +19,14 @@
                         @input="handleInput"
                         @keydown="onKeyDown"
                         :value="modelValue[axisIdx]"
+                        :delayBetweenChangesDetected="delayBetweenChangesDetected"
                     />
                 </div>
             </div>
         </div>
         <FormElementDescription
-            v-if="description !== undefined"
             :description="description"
+            :warning="warning"
         ></FormElementDescription>
     </span>
 </template>
@@ -55,6 +56,7 @@ export default class FormVector3D extends Vue {
     @Prop({}) description!: string;
     @Prop({ default: false }) readonly!: boolean;
     @Prop({ required: false }) filterFunc!: Function;
+    @Prop({ required: false }) warningFunc!: (val: any) => string;
     @Prop({ default: "" }) cls!: string;
     @Prop({ default: "" }) styl!: string;
     @Prop({ default: formInputDelayUpdate })
@@ -71,6 +73,13 @@ export default class FormVector3D extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onKeyDown(_e: KeyboardEvent) {
         this.$emit("onKeyDown");
+    }
+
+    get warning(): string {
+        if (this.warningFunc) {
+            return this.warningFunc(this.modelValue);
+        }
+        return "";
     }
 
     lastHandleInputTimeStamp = 0;

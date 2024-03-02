@@ -116,11 +116,11 @@ export default class NewProjectPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commandss.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             // First test without saving first
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(),
                 afterPluginCloses: new TestCmdList(),
             },
 

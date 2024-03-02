@@ -188,7 +188,6 @@ export function uncompress(s: string): Promise<FileInfo[]> {
         .then((zip: any) => {
             fileNames = Object.keys(zip.files);
             // fileSizes = zip.files.map((file: any) => file.size);
-            // debugger
             const promises = fileNames.map((f) => zip.files[f].async("string"));
             return Promise.all(promises);
         })

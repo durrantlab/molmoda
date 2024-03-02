@@ -78,7 +78,7 @@ export class ColorOptions {
             return this.nameToIndex("ColorCarbons");
         }
 
-        // If you get here, it's easy to determine based on deep equality.
+        // If you get here, it's easy to determine based on deep equality. 
         return this._colorStyles.findIndex((colorStyle) =>
             isEqual(colorStyle.colorStyle, style)
         );

@@ -14,6 +14,7 @@ export enum PopupVariant {
 export interface ISimpleMsg {
     title: string;
     message: string;
+    datetime?: string;
     variant?: PopupVariant;
     callBack?: Function;
     neverClose?: boolean;

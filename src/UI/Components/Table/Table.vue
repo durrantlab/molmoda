@@ -36,7 +36,7 @@
                             @click="headerClick(header)"
                         >
                             <span v-if="isHeaderSortable(header)">
-                                <font-awesome-icon
+                                <Icon
                                     style="color: #212529"
                                     :icon="['fa', headerIcon(header)]"
                                 />&nbsp;
@@ -96,7 +96,7 @@
                                         )
                                     "
                                 >
-                                    <font-awesome-icon
+                                    <Icon
                                         :icon="
                                             getCell(row[header.text])
                                                 .iconClasses
@@ -121,6 +121,7 @@ import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
+import Icon from "../Icon.vue";
 
 // Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
 interface ITableDataInternal {
@@ -134,6 +135,7 @@ interface ITableDataInternal {
 @Options({
     components: {
         Tooltip,
+        Icon,
     },
 })
 export default class Table extends Vue {
@@ -426,14 +428,14 @@ export default class Table extends Vue {
             if (header.text === "id") {
                 const headerIndex = data.headers.indexOf(header);
                 data.headers.splice(headerIndex, 1);
-                
+
                 for (const row of data.rows) {
                     delete row[header.text];
                 }
                 break;
             }
         }
-        
+
         data.headers = data.headers.map((h: IHeader) => h.text);
 
         if (format === "json") {

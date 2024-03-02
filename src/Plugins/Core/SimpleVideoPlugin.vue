@@ -24,6 +24,7 @@
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen
             ></iframe>
+            <p class="text-center pt-0 mb-1" style="margin-top: -10px;"><small><a :href="'https://www.youtube.com/watch?v=' + youtubeID" target="_blank">Watch on Youtube</a></small></p>
         </div>
 
         <p
@@ -166,7 +167,7 @@ export default class SimpleVideoPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 

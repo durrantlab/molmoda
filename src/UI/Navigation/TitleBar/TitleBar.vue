@@ -57,8 +57,8 @@
                 <IconSwitcher
                     class="title-element clickable"
                     :useFirst="treeDatum.visible"
-                    :iconID1="['far', 'eye']"
-                    :iconID2="['far', 'eye-slash']"
+                    :iconID1="visibleIconToUse"
+                    :iconID2="visibleIconToUse"
                     :icon2Style="{ color: 'lightgray' }"
                     :width="22"
                     @click="toggleVisible(treeDatumID)"
@@ -153,6 +153,43 @@ export default class TitleBar extends Vue {
     @Prop({ default: 0 }) depth!: number;
     @Prop({ default: undefined }) treeData!: TreeNodeList;
     @Prop({ default: "" }) filterStr!: string;
+
+    get visibleIconToUse(): string[] | string {
+        // Get all the children of the node.
+        const children = this.treeDatum.nodes?.flattened;
+
+        if (!children) return ["far", "fa-eye"];
+
+        let someVisible = undefined as boolean | undefined;
+        let someInvisible = undefined as boolean | undefined;
+
+        for (const child of children._nodes) {
+            if (child.visible) someVisible = true;
+            else someInvisible = true;
+
+            if (someVisible && someInvisible) {
+                // You can already tell that it's mixed, so exit early.
+                return "half_visible.svg";
+            }
+        }
+
+        if (someVisible && !someInvisible) {
+            // All the children all visible
+            this.treeDatum.visible = true;
+            return ["far", "fa-eye"];
+        }
+
+        // All the children are invisible
+        this.treeDatum.visible = false;
+        return ["far", "fa-eye-slash"];
+
+        // // If any of the children are not visible, use the half eye-slash icon.
+        // if (children?._nodes.some((node) => !node.visible)) {
+        //     // return ["far", "fa-rectangle-xmark"];
+        //     return "half_visible.svg";
+        // }
+        // return ['far', 'eye']
+    }
 
     /**
      * Get the string to indicate the number of children and terminals.

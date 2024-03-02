@@ -99,7 +99,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             val: false,
             description:
                 "Whether to regenerate 3D atomic coordinates given the new protonation state.",
-        },
+        }
     ];
 
     /**
@@ -230,17 +230,17 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(true),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"
                 ),
             },
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(true),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
                 pluginOpen: new TestCmdList().click(
                     "#regen3DCoords-protonatecomps-item"
                 ),

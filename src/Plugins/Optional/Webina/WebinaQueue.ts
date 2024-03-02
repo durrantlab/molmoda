@@ -2,6 +2,7 @@ import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
+import { setTempErrorMsg } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 
 /**
  * A calculate mol props queue.
@@ -19,6 +20,9 @@ export class WebinaQueue extends QueueParent {
         let stdOut = "";
         let stdErr = "";
 
+        let _doneCallbackFunc: (jobInfo: IJobInfo) => void;
+        let jobInfoPayload = {} as IJobInfo;
+
         // https://emscripten.org/docs/api_reference/module.html
 
         return WEBINA_MODULE({
@@ -32,7 +36,7 @@ export class WebinaQueue extends QueueParent {
             // preInit() { console.log("Pre-init"); },
 
             // You must manually set these two before running the module.
-            jobInfoPayload: {} as IJobInfo,
+            // jobInfoPayload: {} as IJobInfo,
             doneCallbackFunc: () => {
                 return;
             },
@@ -48,16 +52,17 @@ export class WebinaQueue extends QueueParent {
                 jobInfo: IJobInfo,
                 doneCallbackFunc: (jobInfo: IJobInfo) => void
             ) {
-                this.jobInfoPayload = jobInfo;
+                jobInfoPayload = jobInfo;
                 this.doneCallbackFunc = doneCallbackFunc;
+                _doneCallbackFunc = doneCallbackFunc;
 
                 // Get the PDBQT contents from this.jobInfoPayload, which
                 // must be manually before running.
 
                 const ligandPDBQT =
-                    this.jobInfoPayload.input.pdbFiles.cmpd.contents;
+                    jobInfoPayload.input.pdbFiles.cmpd.contents;
                 const receptorPDBQT =
-                    this.jobInfoPayload.input.pdbFiles.prot.contents;
+                    jobInfoPayload.input.pdbFiles.prot.contents;
 
                 // Save the contents of the files to the virtual
                 // file system
@@ -98,7 +103,7 @@ export class WebinaQueue extends QueueParent {
              */
             onExit(/* code */) {
                 // Update with output
-                this.jobInfoPayload.output = {
+                jobInfoPayload.output = {
                     std: std.trim(),
                     stdOut: stdOut.trim(),
                     stdErr: stdErr.trim(),
@@ -106,14 +111,14 @@ export class WebinaQueue extends QueueParent {
                 };
 
                 let output: string;
-                if (this.jobInfoPayload.input.webinaParams.score_only) {
+                if (jobInfoPayload.input.webinaParams.score_only) {
                     // Score only
 
                     // The output should be the input ligand.
-                    output = this.jobInfoPayload.input.pdbFiles.cmpd.contents.trim();
+                    output = jobInfoPayload.input.pdbFiles.cmpd.contents.trim();
 
                     const splitStr = "Estimated Free Energy of Binding";
-                    this.jobInfoPayload.output.scoreOnly =
+                    jobInfoPayload.output.scoreOnly =
                         splitStr + stdOut.trim().split(splitStr)[1];
                 } else {
                     // Actual docking, get from file.
@@ -124,17 +129,17 @@ export class WebinaQueue extends QueueParent {
                     });
                 }
 
-                this.jobInfoPayload.output.output = output;
+                jobInfoPayload.output.output = output;
 
                 // Clear the files to free up memory
                 (this as any).FS.unlink("/receptor.pdbqt");
                 (this as any).FS.unlink("/ligand.pdbqt");
-                if (this.jobInfoPayload.input.webinaParams.docking) {
+                if (jobInfoPayload.input.webinaParams.docking) {
                     (this as any).FS.unlink("/output.pdbqt");
                 }
 
                 // Resolve the promise with the output
-                this.doneCallbackFunc(this.jobInfoPayload);
+                this.doneCallbackFunc(jobInfoPayload);
             },
 
             // Monitor stdout and stderr output
@@ -156,9 +161,32 @@ export class WebinaQueue extends QueueParent {
              * @param {string} text  The text written to stderr.
              */
             printErr(text: string) {
-                console.log(text);
+                // Strangly, the warning "WARNING: At low exhaustiveness, it may
+                // be impossible to utilize all CPUs." registers as an error,
+                // but it shouldn't be one.
+                if (text.toLowerCase().indexOf("warning") !== -1) {
+                    stdOut += text + "\n";
+                    std += text + "\n";
+                    return;
+                }
+
+                console.log("ERROR:" + text);
                 stdErr += text + "\n";
                 std += text + "\n";
+
+                // Update with output
+                jobInfoPayload.output = {
+                    std: std.trim(),
+                    stdOut: stdOut.trim(),
+                    stdErr: stdErr.trim(),
+                    time: performance.now() - startTime,
+                    output: "{{ERROR}}"
+                };
+
+                setTempErrorMsg(`Could not dock compound: ${jobInfoPayload.input.inputNodeTitle} (skipped). Possible causes include (1) docking fragmented compounds (e.g., salts), (2) docking very large compounds, (3) docking compounds with atoms that are not in the AutoDock Vina forcefield (e.g., boron), and (4) using a computer with insufficient memory.`);
+
+                // Below is just dummy. Replace with useful values
+                _doneCallbackFunc(jobInfoPayload);
             },
         }).then((instance: any) => {
             // Probably not needed, but just in case
@@ -254,7 +282,7 @@ export class WebinaQueue extends QueueParent {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // No tests for this simple plugin.
         return [];
     }

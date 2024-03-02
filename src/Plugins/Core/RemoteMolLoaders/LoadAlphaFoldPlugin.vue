@@ -74,7 +74,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
             id: "uniprot",
             label: "",
             val: "",
-            placeHolder: "Enter UniProt Accession (e.g., P86927)",
+            placeHolder: "UniProt Accession (e.g., P86927)...",
             description: `The UniProt Accession of the protein structure. Search the
       <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a> if you're uncertain.`,
             filterFunc: (uniprot: string): string => {
@@ -138,7 +138,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
             pluginOpen: new TestCmdList().setUserArg(
                 "uniprot",

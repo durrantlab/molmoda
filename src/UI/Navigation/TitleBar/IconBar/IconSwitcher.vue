@@ -4,9 +4,9 @@
       :style="flexFixedWidth + (clickable ? 'cursor: pointer;' : '')"
       class="title-element"
     >
-      <div v-if="useFirst"><font-awesome-icon :icon="iconID1" /></div>
+      <div v-if="useFirst"><Icon :icon="iconID1" /></div>
       <div v-else>
-        <font-awesome-icon :icon="iconID2" :style="icon2Style" />
+        <Icon :icon="iconID2" :style="icon2Style" />
       </div>
     </div>
   </Tooltip>
@@ -16,6 +16,7 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
+import Icon from "@/UI/Components/Icon.vue";
 
 /**
  * IconSwitcher component
@@ -23,12 +24,13 @@ import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 @Options({
   components: {
     Tooltip,
+    Icon
   },
 })
 export default class IconSwitcher extends Vue {
   @Prop({ required: true }) useFirst!: boolean;
-  @Prop({ required: true }) iconID1!: Array<string>;
-  @Prop({ required: true }) iconID2!: Array<string>;
+  @Prop({ required: true }) iconID1!: string[] | string;
+  @Prop({ required: true }) iconID2!: string[] | string;
   @Prop({ default: 15 }) width!: number;
   @Prop({ default: {} }) icon2Style!: any;
   @Prop({ default: false }) clickable!: any;

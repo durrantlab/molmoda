@@ -11,8 +11,8 @@
 
         <!-- For molecules -->
         <Section title="Molecules">
-            <div v-if="visibleTreeNodes.length === 0" class="pb-2">
-                <p style="font-size: 14px">
+            <div v-if="visibleTreeNodes.length === 0" class="pb-0">
+                <p class="mb-0" style="font-size: 14px">
                     <span v-if="treeNodesWithModel.length === 0">
                         The workspace contains no molecules.
                     </span>
@@ -28,7 +28,7 @@
         <div
             v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0"
         >
-            <hr class="mt-4" />
+            <hr class="mt-4 mb-3" />
             <Section title="Region" class="pb-2">
                 <p style="font-size: 14px">
                     <span v-if="treeNodesWithRegions.length === 0">

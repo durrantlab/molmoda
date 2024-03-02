@@ -80,9 +80,9 @@ export default class SelectAllPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleProtein(true),
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
         };
     }
 }

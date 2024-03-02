@@ -423,7 +423,11 @@ export class Viewer3DMol extends ViewerParent {
                 viewer.setBackgroundColor(0xffffff);
                 this._mol3dObj = viewer;
 
-                console.warn('viewer.setViewStyle({style:"outline"})');
+                // Changing the thickness of the fog doesn't seem to be possible.
+                this._mol3dObj.enableFog(true);
+
+                // Adding subtle outline makes things easier to see.
+                viewer.setViewStyle({style:"outline", width: 0.02});
 
                 return this as ViewerParent;
             })
@@ -504,7 +508,6 @@ export class Viewer3DMol extends ViewerParent {
                 setTimeout(() => {
                     // Delay the callback so that the centering has time to
                     // finish.
-                    // debugger
                     callBack(atom.x, atom.y, atom.z);
                 }, 1000);
             }

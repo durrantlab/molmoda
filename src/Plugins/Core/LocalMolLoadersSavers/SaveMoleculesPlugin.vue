@@ -88,7 +88,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             id: "filename",
             label: "",
             val: "",
-            placeHolder: "Enter Filename (e.g., my_project.biotite)",
+            placeHolder: "Filename (e.g., my_project.biotite)...",
             description: `The name of the molecule file to save. The file extension will be automatically appended.`,
             filterFunc: (filename: string): string => {
                 return fileNameFilter(filename);
@@ -128,7 +128,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         } as IUserArgGroup,
         {
             id: "separateCompounds",
-            label: "Save each small-molecule compound to a separate file",
+            label: "Save each molecule to a separate file",
             val: true,
             enabled: false,
         } as IUserArgCheckbox,
@@ -492,10 +492,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         const biotiteJob = {
             beforePluginOpens: new TestCmdList()
-                .loadExampleProtein(true)
+                .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein"),
             pluginOpen: new TestCmdList().setUserArg(
                 "filename",

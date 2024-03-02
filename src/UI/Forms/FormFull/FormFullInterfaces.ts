@@ -43,7 +43,11 @@ interface IUserArg {
 
     label?: string;
 
+    // Action button not enabled unless this passes.
     validateFunc?: (val: any) => boolean;
+
+    // Adds a warning text to the Description. Doesn't prevent action button.
+    warningFunc?: (val: any) => string;
 
     enabled?: boolean;
 

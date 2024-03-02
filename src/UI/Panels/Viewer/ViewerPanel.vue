@@ -11,7 +11,7 @@ import * as api from "@/Api/";
 
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
-import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/DefaultStyles";
+import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 // import { ViewerNGL } from "./Viewers/ViewerNGL";
@@ -80,7 +80,7 @@ export default class ViewerPanel extends Vue {
 
     /**
      * Checks if the treeview has changed. This is the glue that connects the
-     * tree view navigator to the viewer. 
+     * tree view navigator to the viewer.
      *
      * Note: To help with code searching, this might be another way to describe
      * this function: @Watch("molecules")
@@ -131,7 +131,7 @@ export default class ViewerPanel extends Vue {
                 }
             }
 
-            await loadViewerLibPromise as Promise<any>;
+            (await loadViewerLibPromise) as Promise<any>;
 
             // if (allMolecules.length === 0) {
             //     // No molecules present
@@ -162,7 +162,7 @@ export default class ViewerPanel extends Vue {
         const spinnerId = api.messages.startWaitSpinner();
         try {
             // const visibleTerminalNodeModelsIds =
-                
+
             await this._updateStyleChanges();
             // this._zoomPerFocus(visibleTerminalNodeModelsIds);
             // api.visualization.viewer?.zoomOnFocused(visibleTerminalNodeModelsIds);
@@ -224,6 +224,7 @@ export default class ViewerPanel extends Vue {
                             style,
                             treeNode
                         );
+
                     api.visualization.viewerObj?.setMolecularStyle(
                         treeNode.id as string,
                         api.visualization.viewerObj?.convertSelection({}),
@@ -252,16 +253,29 @@ export default class ViewerPanel extends Vue {
             if (treeNode.styles.length > 0 && !spheresUsed) {
                 // If there's any style, no style is spheres, make sure unbonded
                 // atoms are visible.
+                // debugger;
                 const convertedStyle =
                     api.visualization.viewerObj?.convertStyle(
                         unbondedAtomsStyle,
                         treeNode
                     );
-                api.visualization.viewerObj?.setMolecularStyle(
-                    treeNode.id as string,
+                const convertedSel =
                     api.visualization.viewerObj?.convertSelection({
                         bonds: 0,
-                    }),
+                    });
+
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                // const atoms =
+                //     api.visualization.viewerObj?._mol3dObj.selectedAtoms(
+                //         treeNode.id as string,
+                //         convertedSel
+                //     );
+                // console.log(atoms, treeNode.type);
+
+                api.visualization.viewerObj?.setMolecularStyle(
+                    treeNode.id as string,
+                    convertedSel,
                     convertedStyle,
                     true
                 );
@@ -310,8 +324,12 @@ export default class ViewerPanel extends Vue {
                     treeNode.viewerDirty = false;
                 });
 
-                const visibleDirtyNodes = dirtyNodes.filter((treeNode: TreeNode) => treeNode.visible)
-                const invisibleDirtyNodes = dirtyNodes.filter((treeNode: TreeNode) => !treeNode.visible)
+                const visibleDirtyNodes = dirtyNodes.filter(
+                    (treeNode: TreeNode) => treeNode.visible
+                );
+                const invisibleDirtyNodes = dirtyNodes.filter(
+                    (treeNode: TreeNode) => !treeNode.visible
+                );
 
                 // Make sure invisible ones are really invisible.
                 for (let treeNode of invisibleDirtyNodes) {

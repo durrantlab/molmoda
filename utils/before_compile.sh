@@ -10,3 +10,12 @@ node_modules/ts-unused-exports/bin/ts-unused-exports tsconfig.json $(find src/ -
 cd -
 
 echo
+
+# Get current date and time as string. Include time zone, and use current
+# system's time zone.
+now=$(date +"%Y-%m-%d %H:%M %Z")
+# now=$(date +"%Y-%m-%d %H:%M")
+now_hash=$(echo $now | md5sum | cut -d " " -f 1)
+
+# Create a json file with this information
+echo "{\"date\": \"$now\", \"hash\": \"$now_hash\"}" > ../src/last_updated.json

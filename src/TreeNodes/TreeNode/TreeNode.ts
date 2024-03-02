@@ -22,6 +22,7 @@ import { store } from "@/Store";
 import * as api from "@/Api";
 import * as SetupTests from "@/Testing/SetupTests";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
+import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -72,7 +73,7 @@ export class TreeNode {
     styles?: IStyle[]; // styles and selections for this node
     region?: IRegion;
 
-    public triggerId = ""  // Purpose of this is just to trigger reactivity if needed
+    public triggerId = ""; // Purpose of this is just to trigger reactivity if needed
 
     private _descriptions: TreeNodeDescriptions;
     private _ancestry: TreeNodeAncestry;
@@ -118,7 +119,7 @@ export class TreeNode {
      * reactivity explicitly. Tested on the main, root node. May work on others.
      */
     public triggerReactivity() {
-        this.triggerId = randomID()
+        this.triggerId = randomID();
     }
 
     // private fixTitle(title: string): string {
@@ -386,14 +387,14 @@ export class TreeNode {
     public static loadHierarchicallyFromTreeNodes(
         treeNodes: TreeNode[],
         divideCompoundsByChain = true
-): TreeNode {
+    ): TreeNode {
         // Consider only the terminal nodes
         const allTreeNodes: TreeNode[] = [];
         for (const treeNode of treeNodes) {
             if (treeNode.nodes) {
                 const terminalNodes = treeNode.nodes.terminals;
 
-                // If the terminal nodes are titled "undefined:undefined", use the 
+                // If the terminal nodes are titled "undefined:undefined", use the
                 // title from the treeNode.
                 const nodes = terminalNodes._nodes;
                 if (nodes.length === 1) {
@@ -446,7 +447,7 @@ export class TreeNode {
                 categories["Compounds"] = newCompounds;
             } else {
                 categories["Compounds"] = {
-                    "A": categories["Compounds"],
+                    A: categories["Compounds"],
                 };
             }
         }
@@ -497,7 +498,7 @@ export class TreeNode {
                 }
 
                 let availableChains: string[] = [];
-    
+
                 for (const treeNode of categories[title]) {
                     if (availableChains.length === 0) {
                         availableChains = availableChainsOrig.slice();
@@ -548,19 +549,27 @@ export class TreeNode {
     /**
      * Get a new TreeNode from a file info object.
      *
-     * @param  {FileInfo} fileInfo  The file info object.
+     * @param  {FileInfo} fileInfo       The file info object.
+     * @param  {boolean}  desalt         Whether to desalt the molecule.
+     * @param  {string}   defaultTitle  The default title to use if needed.
      * @returns {Promise<void | TreeNode>}  The new TreeNode.
      */
-    public static loadFromFileInfo(
-        fileInfo: FileInfo
+    public static async loadFromFileInfo(
+        fileInfo: FileInfo,
+        desalt = false,
+        defaultTitle = "Molecule"
     ): Promise<void | TreeNode> {
         // NOTE: static
-        return _parseMoleculeFile(
+        const treeNodeList = await _parseMoleculeFile(
             fileInfo,
-            false // don't add to tree
-        ).then((treeNodeList: void | TreeNodeList) => {
-            return treeNodeList ? treeNodeList.get(0) : undefined;
-        });
+            false, // don't add to tree
+            desalt,
+            defaultTitle
+        );
+
+        if (treeNodeList === undefined) return undefined;
+
+        return treeNodeList.get(0);
     }
 
     /**
@@ -608,7 +617,6 @@ export class TreeNode {
     public mergeInto(otherNode: TreeNode) {
         // Verify that both have the same depth
         // if (this.depth !== otherNode.depth) {
-        //     debugger;
         //     throw new Error("Cannot merge nodes with different depths.");
         // }
 
@@ -683,6 +691,10 @@ export class TreeNode {
 
         // If you add new molecules to the tree, focus on everything.
         const viewer = await api.visualization.viewer;
+
+        // Set the style according to the current user specs.
+        updateStylesInViewer();
+
         viewer.zoomOnFocused();
     }
 

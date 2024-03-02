@@ -16,7 +16,6 @@
             </label>
         </div>
         <FormElementDescription
-            v-if="description !== undefined"
             :description="description"
         ></FormElementDescription>
     </span>

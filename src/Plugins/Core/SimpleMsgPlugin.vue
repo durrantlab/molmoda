@@ -5,14 +5,11 @@
         :cancelBtnTxt="neverClose ? '' : 'Ok'"
         actionBtnTxt=""
         @onClosed="onClosed"
-        :variant="variant"
+        :variant="variantToUse"
         @onUserArgChanged="onUserArgChanged"
     >
         <!-- modalWidth="default" -->
-        <p
-            style="overflow: hidden; text-overflow: ellipsis"
-            v-html="message"
-        ></p>
+    <MessageList :messages="simpleMsgs"></MessageList>
     </PluginComponent>
 </template>
 
@@ -30,7 +27,8 @@ import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { pluginsApi } from "@/Api/Plugins"
+import { pluginsApi } from "@/Api/Plugins";
+import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 
 /**
  * SimpleMsgPlugin
@@ -39,6 +37,7 @@ import { pluginsApi } from "@/Api/Plugins"
     components: {
         Popup,
         PluginComponent,
+        MessageList
     },
 })
 export default class SimpleMsgPlugin extends PluginParentClass {
@@ -57,16 +56,41 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     intro = "";
 
     // Below set via onPluginStart.
+    simpleMsgs: ISimpleMsg[] = [];
+
     title = "";
-    message = "";
-    variant = PopupVariant.Primary;
-    callBack: any = undefined;
+    // messages: string[] = [];
+    // variant = PopupVariant.Primary;
+    // callBack: any = undefined;
     neverClose = false;
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
+
+    get variantToUse(): PopupVariant {
+        // No messages.
+        if (this.simpleMsgs.length === 0) return PopupVariant.Primary;
+
+        // Variant not defined.
+        if (this.simpleMsgs[0].variant === undefined)
+            return PopupVariant.Primary;
+
+        // Only one message, so just use that associated variant.
+        if (this.simpleMsgs.length == 1) return this.simpleMsgs[0].variant;
+
+        // Get all the variants in this.simpleMsgs. Is there only one unique
+        // variant? Then use that one.
+        const variants = this.simpleMsgs.map((x) => x.variant);
+        const uniqueVariants = Array.from(new Set(variants));
+        if (uniqueVariants.length === 1 && uniqueVariants[0] !== undefined) {
+            return uniqueVariants[0];
+        }
+
+        // Multiple messages. Use Primary variant for whole modal.
+        return PopupVariant.Primary;
+    }
 
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
@@ -77,15 +101,30 @@ export default class SimpleMsgPlugin extends PluginParentClass {
      *                                finished starting.
      */
     async onPluginStart(payload: ISimpleMsg): Promise<void> {
-        this.title = payload.title;
-        this.message = payload.message;
-        this.callBack = payload.callBack;
-        this.variant =
-            payload.variant === undefined
-                ? PopupVariant.Primary
-                : payload.variant;
+        if (payload.message === "") {
+            // Sometimes this plugin gets called with an empty message. TODO:
+            // Not sure why. Good to investigate. Happens, for example, when you
+            // try to load PDB ID 9999.
+            return;
+        }
+
+        // Add datetime string.
+        payload.datetime = new Date().toLocaleString();
+
+        // Add at top of list.
+        this.simpleMsgs.unshift(payload);
+
+        // get all the titles in this.simpleMsgs. If there is only one unique
+        // title, use that. Otherwise, use "Messages".
+        const titles = this.simpleMsgs.map((x) => x.title);
+        const uniqueTitles = Array.from(new Set(titles));
+        this.title = uniqueTitles.length === 1 ? uniqueTitles[0] : "Messages";
+
         this.neverClose =
             payload.neverClose === undefined ? false : payload.neverClose;
+
+        // TODO: Only do below if one message. If multiple messages, disable
+        // programmatic closing of modal.
         this.open = payload.open !== undefined ? payload.open : true;
     }
 
@@ -103,9 +142,12 @@ export default class SimpleMsgPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
-        if (this.callBack) {
-            this.callBack();
+        for (const simpleMsg of this.simpleMsgs) {
+            if (simpleMsg.callBack) {
+                simpleMsg.callBack();
+            }
         }
+        this.simpleMsgs = [];
         return Promise.resolve();
     }
 
@@ -116,7 +158,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 

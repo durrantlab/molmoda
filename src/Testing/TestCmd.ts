@@ -392,7 +392,7 @@ function addTestDefaults(
  *
  * @param  {any} plugin  The plugin to test.
  */
-export function createTestCmdsIfTestSpecified(plugin: any) {
+export async function createTestCmdsIfTestSpecified(plugin: any) {
     if (PluginToTest.pluginToTest !== plugin.pluginId) {
         return;
     }
@@ -401,7 +401,7 @@ export function createTestCmdsIfTestSpecified(plugin: any) {
         return;
     }
 
-    let tests: ITest | ITest[] = plugin.getTests();
+    let tests: ITest | ITest[] = await plugin.getTests();
 
     // If tests is ITest, wrap it in an array.
     if (!Array.isArray(tests)) {

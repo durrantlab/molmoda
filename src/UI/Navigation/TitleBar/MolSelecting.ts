@@ -49,6 +49,7 @@ export function doSelecting(
         filterStr = filterStr.toLowerCase();
 
         const { flattened } = getMoleculesFromStore();
+
         // Go through flattened, save the node if it is selected.
         let mostRecentSelected: TreeNode | null = null;
         for (let idx = 0; idx < flattened.length; idx++) {
@@ -83,7 +84,6 @@ export function doSelecting(
             if (_checkNodePassesFilter(node, filterStr)) {
                 setSelectWithChildren(node, SelectedType.True);
             }
-            // debugger;
             return;
         }
     }

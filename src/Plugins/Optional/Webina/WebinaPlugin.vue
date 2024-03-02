@@ -52,6 +52,7 @@ import { messagesApi } from "@/Api/Messages";
 import { WebinaQueue } from "./WebinaQueue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
+    ISphereOrBox,
     ITreeNodeData,
     TableHeaderSort,
     TreeNodeDataType,
@@ -62,6 +63,8 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import * as api from "@/Api";
 import { IQueueCallbacks } from "@/Queue/QueueTypes";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { isTest } from "@/Testing/SetupTests";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 /**
  * WebinaPlugin
@@ -87,7 +90,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     authors: [
                         "Eberhardt, Jerome",
                         "Santos-Martins, Diogo",
-                        ".,..",
+                        // "...",
                     ],
                     journal: "J. Chem. Inf. Model.",
                     year: 2021,
@@ -136,7 +139,43 @@ export default class WebinaPlugin extends PluginParentClass {
             // label: "Region test",
             val: null, // To use default
             type: UserArgType.SelectRegion,
-            regionName: "Docking Box",
+            regionName: "Docking Region",
+            warningFunc: (val: ISphereOrBox) => {
+                console.log(val);
+                if (!val) return "";
+                if (
+                    val.center[0] === 0 &&
+                    val.center[1] === 0 &&
+                    val.center[2] === 0
+                ) {
+                    return "Your docking region is centered on (0, 0, 0). Change the coordinates or load from a region that encompasses your binding site.";
+                }
+
+                if (
+                    (val.radius && val.radius < 10) ||
+                    (val.dimensions &&
+                        (val.dimensions[0] < 10 ||
+                            val.dimensions[1] < 10 ||
+                            val.dimensions[2] < 10))
+                ) {
+                    return "Your docking region is very small. Consider increasing the dimensions to at least 10 Å.";
+                }
+
+                if (
+                    (val.radius && val.radius > 20) ||
+                    (val.dimensions &&
+                        (val.dimensions[0] > 20 ||
+                            val.dimensions[1] > 20 ||
+                            val.dimensions[2] > 20))
+                ) {
+                    return "Your docking region is very large. Consider reducing the dimensions to at most 20 Å.";
+                }
+
+                // if (val === "PastedMol") {
+                //     return "Consider choosing a unique name so you can easily identify your molecule later.";
+                // }
+                return "";
+            },
         } as IUserSelectRegion,
         {
             id: "cpu",
@@ -162,13 +201,30 @@ export default class WebinaPlugin extends PluginParentClass {
             val: 8,
             filterFunc: (val: number) => {
                 val = Math.round(val);
-                if (val < 1) {
-                    val = 1;
+                // Setting ming value to 4 because I occasionally get errors
+                // when less than 4.
+                if (val < 4) {
+                    val = 4;
                 }
                 return val;
             },
             description:
                 "How thoroughly to search for the pose. Roughly proportional to time.",
+        } as IUserArgNumber,
+        {
+            id: "maxRotBonds",
+            type: UserArgType.Number,
+            label: "Maximum rotatable bonds",
+            val: 15,
+            filterFunc: (val: number) => {
+                val = Math.round(val);
+                if (val < 0) {
+                    val = 0;
+                }
+                return val;
+            },
+            description:
+                "Compounds with too many rotatable bonds will be skipped to avoid excessive run times and less accurate predictions.",
         } as IUserArgNumber,
         {
             id: "score_only",
@@ -199,13 +255,13 @@ export default class WebinaPlugin extends PluginParentClass {
                 {
                     id: "seed",
                     type: UserArgType.Number,
-                    label: "Random seed",
+                    label: "Seed",
                     val: 1,
                     filterFunc: (val: number) => {
                         return Math.round(val);
                     },
                     description:
-                        "The explicit random seed. Useful if reproducibility is critical.",
+                        "The explicit seed. Useful if reproducibility is critical.",
                 } as IUserArgNumber,
                 {
                     id: "num_modes",
@@ -392,7 +448,7 @@ export default class WebinaPlugin extends PluginParentClass {
         return [data, modelName, scoreLabel];
     }
 
-    /** 
+    /**
      * Converts the output pdbqt to a TreeNode.
      *
      * @param {string} title       The title of the TreeNode.
@@ -408,7 +464,12 @@ export default class WebinaPlugin extends PluginParentClass {
         cmpdSrc: string,
         data: { [key: string]: ITreeNodeData },
         scoreLabel: string
-    ): Promise<TreeNode> {
+    ): Promise<TreeNode | void> {
+        if (pdbqtOut === "{{ERROR}}") {
+            throw new Error("Could not perform docking.");
+            // return Promise.resolve();
+        }
+
         // Create fileinfo
         const fileInfo = new FileInfo({
             name: title + ".pdbqt",
@@ -493,6 +554,7 @@ export default class WebinaPlugin extends PluginParentClass {
         webinaParams["out"] = "/output.pdbqt";
 
         let keepOnlyBest = webinaParams["keep_only_best"];
+        let maxRotBonds = webinaParams["maxRotBonds"];
 
         // A number of user args aren't actual webina parameters. Remove them.
         const notParams = [
@@ -501,6 +563,7 @@ export default class WebinaPlugin extends PluginParentClass {
             "warning",
             "makemolinputparams",
             "webinaAdvancedParams",
+            "maxRotBonds",
         ];
         notParams.forEach((notParam) => {
             if (webinaParams[notParam] !== undefined) {
@@ -520,9 +583,23 @@ export default class WebinaPlugin extends PluginParentClass {
             return [filePair.prot?.treeNode, filePair.cmpd?.treeNode];
         });
 
-        const inputs: any = filePairs.map((filePair) => {
+        let inputs: any = filePairs.map((filePair) => {
             filePair.prot.name = "/receptor.pdbqt";
             filePair.cmpd.name = "/ligand.pdbqt";
+
+            // Use a regular expression to find all occurrences of 'H'
+            let matches = filePair.cmpd.contents.match(/\nBRANCH/g);
+            let numRotBonds = matches ? matches.length : 0;
+
+            if (numRotBonds > maxRotBonds) {
+                api.messages.popupMessage(
+                    "Compound Exceeds Rotatable Bond Limit",
+                    `Will not dock compound: ${filePair.cmpd.treeNode?.title} (skipped). Compound has more than ${maxRotBonds} rotatable bonds (${numRotBonds}).`,
+                    PopupVariant.Warning
+                );
+                return null;
+            }
+
             return {
                 pdbFiles: filePair,
                 webinaParams: webinaParams,
@@ -531,8 +608,12 @@ export default class WebinaPlugin extends PluginParentClass {
                         (u) => u.id === "keep_only_best"
                     )[0] as UserArg
                 ).val,
+                inputNodeTitle: filePair.cmpd.treeNode?.title,
             };
         });
+
+        // Remove null values
+        inputs = inputs.filter((input: any) => input !== null);
 
         const procsPerJobBatch = webinaParams["cpu"];
 
@@ -584,6 +665,10 @@ export default class WebinaPlugin extends PluginParentClass {
                     scoreLabel
                 );
 
+                if (dockedTreeNode === undefined) {
+                    continue;
+                }
+
                 // Hide if not first few
                 if (jobIndex >= initialCompoundsVisible) {
                     dockedTreeNode.visible = false;
@@ -600,6 +685,14 @@ export default class WebinaPlugin extends PluginParentClass {
                 ]);
 
                 rootNode.title = `${title}:docking`;
+
+                if (isTest) {
+                    // If testing, append ":testdock" to all new molecules so
+                    // you can watch for them. #TODO: This is a little hacky.
+                    rootNode.nodes?.terminals.forEach((node) => {
+                        node.title += ":testdock";
+                    });
+                }
 
                 if (!newTreeNodesByInputProt[protId]) {
                     rootNode.addToMainTree();
@@ -645,7 +738,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         const webinaPluginOpenFactory = () => {
             return new TestCmdList()
                 .setUserArg("x-dimens-region", 10, this.pluginId)
@@ -661,7 +754,11 @@ export default class WebinaPlugin extends PluginParentClass {
         return [
             // Test just standard docking
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                    undefined,
+                    undefined,
+                    0
+                ),
                 pluginOpen: webinaPluginOpenFactory(),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
@@ -670,7 +767,11 @@ export default class WebinaPlugin extends PluginParentClass {
             },
             // Test score in place
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                    undefined,
+                    undefined,
+                    1
+                ),
                 pluginOpen: webinaPluginOpenFactory().click(
                     "#score_only-webina-item"
                 ),
@@ -681,13 +782,42 @@ export default class WebinaPlugin extends PluginParentClass {
             },
             // Test keep all poses
             {
-                beforePluginOpens: new TestCmdList().loadExampleProtein(),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                    undefined,
+                    undefined,
+                    2
+                ),
                 pluginOpen: webinaPluginOpenFactory().click(
                     "#keep_only_best-webina-item"
                 ),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "4WP4:docking"
+                ),
+            },
+
+            // Test bad ligands
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(false, "testmols/bad_ligs.can", 3)
+                    .wait(5)
+                    .loadExampleMolecule(undefined, undefined, 3),
+                pluginOpen: webinaPluginOpenFactory(),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    ".frame3. bad_ligs:1:testdock"
+                ),
+            },
+            {
+                // Test out ligands that have too many bonds.
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(false, "testmols/long_compound.can", 4)
+                    .wait(5)
+                    .loadExampleMolecule(undefined, undefined, 4),
+                pluginOpen: webinaPluginOpenFactory(),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "Will not dock compound"
                 ),
             },
         ];

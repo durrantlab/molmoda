@@ -135,6 +135,12 @@ export abstract class QueueParent {
             this._doneResolveFunc = resolve;
         });
 
+        if (inputs.length === 0) {
+            // If the queue is empty, just be done with it.
+            this._onQueueDone([]);
+            return;
+        }
+
         this._onQueueStart();
 
         // Copy inputs into IJobInfo[]. Use map.

@@ -55,7 +55,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
             id: "newName",
             label: "",
             val: "",
-            placeHolder: "Name of new merged molecule",
+            placeHolder: "Name of new merged molecule...",
             description: "The name of the new, merged molecule.",
             validateFunc: (newName: string): boolean => {
                 return newName.length > 0;
@@ -163,7 +163,6 @@ export default class MergeMolsPlugin extends PluginParentClass {
         //         );
         //     })
         //     .then((mergedTreeNode: TreeNode) => {
-        //         debugger;
         //         this.$store.commit("pushToMolecules", mergedTreeNode);
         //         return;
         //     })
@@ -179,11 +178,11 @@ export default class MergeMolsPlugin extends PluginParentClass {
      * @document
      * @returns {ITest[]}  The selenium test commands.
      */
-    getTests(): ITest[] {
+    async getTests(): Promise<ITest[]> {
         return [
             {
                 beforePluginOpens: new TestCmdList()
-                    .loadExampleProtein(true)
+                    .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein")
                     .selectMoleculeInTree("Compounds", true),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(

@@ -131,6 +131,11 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
             }
         }
 
+        // Add warning function if necessary (default if not given).
+        if (userArg.warningFunc === undefined) {
+            userArg.warningFunc = () => "";
+        }
+
         // Enabled by default
         if (userArg.enabled === undefined) {
             userArg.enabled = true;
@@ -161,6 +166,9 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
         if (origUserInput.validateFunc !== undefined) {
             userArg.validateFunc = origUserInput.validateFunc;
         }
+        if (origUserInput.warningFunc !== undefined) {
+            userArg.warningFunc = origUserInput.warningFunc;
+        }
 
         // If it's a MoleculeInput, turn it back into an object.
         if (
@@ -174,7 +182,6 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
         }
 
         // If it's a Region, turn it back into an object.
-        // debugger;
     }
 
     // this.inferUserInputTypes(userArgs);

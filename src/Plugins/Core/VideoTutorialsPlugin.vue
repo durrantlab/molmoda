@@ -97,7 +97,7 @@ export default class VideoTutorialsPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
             closePlugin: new TestCmdList().pressPopupButton(
                 ".cancel-btn",

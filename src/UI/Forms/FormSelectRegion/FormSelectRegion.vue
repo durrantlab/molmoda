@@ -35,6 +35,7 @@
                 :description="description"
                 @onChange="resetSelected"
                 styl="padding-left: 12px; padding-right: 12px;"
+                :delayBetweenChangesDetected="0"
             />
         </FormWrapper>
         <FormWrapper
@@ -68,13 +69,14 @@
                 :description="description"
                 @onChange="resetSelected"
                 styl="padding-left: 12px; padding-right: 12px;"
+                :delayBetweenChangesDetected="0"
             />
         </FormWrapper>
         <!-- </div> -->
         <!-- </div> -->
         <FormElementDescription
-            v-if="description !== undefined"
             :description="description"
+            :warning="warningToUse"
         ></FormElementDescription>
         <!-- <FormElementDescription
             v-if="regionsInTree === undefined"
@@ -142,11 +144,13 @@ export default class FormSelectRegion extends Vue {
     @Prop({}) description!: string;
     @Prop({ default: false }) readonly!: boolean;
     @Prop({ default: "" }) regionName!: string;
+    @Prop({ required: false }) warningFunc!: (val: any) => string;
     // @Prop({ required: false }) filterFunc!: Function;
 
     selectedRegionId = "noneSelected";
     modelValueToUse = defaultVals;
     isBox = true;
+    warningToUse = "";
 
     /**
      * Get the name of the region to use.
@@ -159,6 +163,24 @@ export default class FormSelectRegion extends Vue {
             return this.regionName + " ";
         }
         return this.regionName;
+    }
+
+    setWarning() {
+        if (this.warningFunc) {
+            const modelValueForWarning = JSON.parse(
+                JSON.stringify(this.modelValueToUse)
+            );
+
+            if (this.isBox) {
+                delete modelValueForWarning.radius;
+            } else {
+                delete modelValueForWarning.dimensions;
+            }
+
+            this.warningToUse = this.warningFunc(modelValueForWarning);
+            return;
+        }
+        this.warningToUse = "";
     }
 
     /**
@@ -207,6 +229,7 @@ export default class FormSelectRegion extends Vue {
         }
 
         this.modelValueToUse = this.modelValue;
+        this.setWarning();
     }
 
     /**

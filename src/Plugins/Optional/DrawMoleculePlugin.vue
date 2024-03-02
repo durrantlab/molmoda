@@ -15,7 +15,7 @@
         <!-- v-model="molName"
         @onChange="searchByName"
         :description="molNameRespDescription" -->
-        <FormWrapper class="mt-2">
+        <!-- <FormWrapper class="mt-2">
             <FormInput
                 v-model="currentSmiles"
                 ref="formMolName"
@@ -28,7 +28,7 @@
             >
             </FormInput>
         </FormWrapper>
-        {{ currentSmiles }}
+        {{ currentSmiles }} -->
     </PluginComponent>
 </template>
 
@@ -169,8 +169,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
             contents: smi,
         });
 
-        debugger
-
         const contents = await convertFileInfosOpenBabel([fileInfo], "cml");
         const testMol = this.kekule.IO.loadFormatData(contents[0], "sdf");
         this.chemComposer.setChemObj(testMol);
@@ -189,11 +187,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         this.loadFromSmiles(this.currentSmiles);
 
         // this.kekule.OpenBabel.enable(() => {
-        //     debugger;
-        // });
-
-        // this.kekule.OpenBabel.enable(() => {
-        // debugger;
         // this.chemComposer
         //     .getEditor()
         //     .setChemObjData('{"format": "smi", "data": "C1CCCCC1"}');
@@ -252,7 +245,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      * smiles string ready.
      */
     onWidgetClick() {
-        alert("hi")
         this.currentSmiles = this.kekule.IO.saveFormatData(
             this.chemComposer.getChemObj(),
             "smi"
@@ -265,7 +257,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      *
      * @returns {ITest}  The selenium test command(s).
      */
-    getTests(): ITest {
+    async getTests(): Promise<ITest> {
         return {
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",

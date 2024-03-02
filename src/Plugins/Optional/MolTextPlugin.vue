@@ -24,6 +24,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     IUserArgOption,
     IUserArgSelect,
+    IUserArgText,
     IUserArgTextArea,
     UserArg,
     UserArgType,
@@ -31,6 +32,8 @@ import {
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { getDesaltArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
  * A function that returns the options and validate functions for the available
@@ -115,10 +118,31 @@ export default class MolTextPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
+            id: "pastedMolName",
+            label: "",
+            val: "PastedMol",
+            placeHolder: "Name of the new molecule...",
+            description: "The name of the new molecule.",
+            validateFunc: (val: string) => {
+                return val.length > 0;
+            },
+            warningFunc: (val: string) => {
+                if (val === "PastedMol") {
+                    return "Consider choosing a unique name so you can easily identify your molecule later.";
+                }
+                return "";
+            },
+        } as IUserArgText,
+        {
             id: "molTextArea",
             val: "",
             type: UserArgType.TextArea,
-            placeHolder: "Molecular text here...",
+            placeHolder: "Molecular text...",
+            description:
+                "The contents of the molecule file. Type or paste the text here.",
+            validateFunc: (val: string) => {
+                return val.length > 0;
+            },
         } as IUserArgTextArea,
         {
             label: "Format",
@@ -126,6 +150,7 @@ export default class MolTextPlugin extends PluginParentClass {
             options: getFormatInfos().options,
             val: "unknown",
         } as IUserArgSelect,
+        getDesaltArg(),
     ];
 
     /**
@@ -152,7 +177,10 @@ export default class MolTextPlugin extends PluginParentClass {
             contents: this.getUserArg("molTextArea"),
         });
 
-        const treeNodePromise = TreeNode.loadFromFileInfo(fileInfo);
+        const treeNodePromise = TreeNode.loadFromFileInfo(
+            fileInfo,
+            this.getUserArg("desalt")
+        );
 
         if (treeNodePromise === undefined) {
             throw new Error("Could not load file.");
@@ -160,14 +188,14 @@ export default class MolTextPlugin extends PluginParentClass {
 
         treeNodePromise
             .then((node: any) => {
-                node.title = "PastedFile";
+                node.title = this.getUserArg("pastedMolName"); // "PastedFile";
                 node.type = TreeNodeType.Compound;
 
                 const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
                     node,
                 ]);
 
-                rootNode.title = "PastedFile";
+                rootNode.title = this.getUserArg("pastedMolName"); // "PastedFile";
                 rootNode.addToMainTree();
                 return;
             })
@@ -198,13 +226,27 @@ export default class MolTextPlugin extends PluginParentClass {
      *
      * @returns {ITest[]}  The selenium test command(s).
      */
-    getTests(): ITest[] {
-        const txts = [
-            "c1ccccc1",
-            "HETATM    1  C   UNL     1       0.982  -0.028  -0.094  1.00  0.00           C  \nHETATM    2  H   UNL     1       2.074  -0.028  -0.094  1.00  0.00           H  \nHETATM    3  H   UNL     1       0.618   0.313  -1.066  1.00  0.00           H  \nHETATM    4  H   UNL     1       0.618   0.642   0.687  1.00  0.00           H  \nHETATM    5  H   UNL     1       0.618  -1.040   0.096  1.00  0.00           H  ",
-            "@<TRIPOS>MOLECULE\n*****\n 5 4 0 0 0\nSMALL\nGASTEIGER\n\n@<TRIPOS>ATOM\n      1 C           1.0793   -0.0578    0.0194 C.3     1  UNL1       -0.0776\n      2 H           2.1715   -0.0578    0.0194 H       1  UNL1        0.0194\n      3 H           0.7152   -0.8023    0.7308 H       1  UNL1        0.0194\n      4 H           0.7152   -0.3016   -0.9811 H       1  UNL1        0.0194\n      5 H           0.7152    0.9306    0.3084 H       1  UNL1        0.0194\n@<TRIPOS>BOND\n     1     1     2    1\n     2     1     3    1\n     3     1     4    1\n     4     1     5    1",
-            "\n OpenBabel08312314413D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.9733   -0.0684    0.0679 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0655   -0.0684    0.0679 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6093    0.9241    0.3424 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.8023    0.7902 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.3269   -0.9288 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  1  4  1  0  0  0  0\n  1  5  1  0  0  0  0\nM  END\n$$$$",
+    async getTests(): Promise<ITest[]> {
+        const axios = await dynamicImports.axios.module;
+        const promises = [
+            axios.get("testmols/example.can"),
+            axios.get("testmols/example.sdf"),
+            axios.get("testmols/example.pdb"),
+            axios.get("testmols/example.mol2"),
+            axios.get("testmols/example_mult.can"),
+            axios.get("testmols/example_mult.sdf"),
+            axios.get("testmols/example_mult.pdb"),
+            axios.get("testmols/example_mult.mol2"),
         ];
+
+        const resps = await Promise.all(promises);
+        const txts = resps.map((resp) => resp.data);
+
+        // "c1ccccc1",
+        // "HETATM    1  C   UNL     1       0.982  -0.028  -0.094  1.00  0.00           C  \nHETATM    2  H   UNL     1       2.074  -0.028  -0.094  1.00  0.00           H  \nHETATM    3  H   UNL     1       0.618   0.313  -1.066  1.00  0.00           H  \nHETATM    4  H   UNL     1       0.618   0.642   0.687  1.00  0.00           H  \nHETATM    5  H   UNL     1       0.618  -1.040   0.096  1.00  0.00           H  ",
+        // "@<TRIPOS>MOLECULE\n*****\n 5 4 0 0 0\nSMALL\nGASTEIGER\n\n@<TRIPOS>ATOM\n      1 C           1.0793   -0.0578    0.0194 C.3     1  UNL1       -0.0776\n      2 H           2.1715   -0.0578    0.0194 H       1  UNL1        0.0194\n      3 H           0.7152   -0.8023    0.7308 H       1  UNL1        0.0194\n      4 H           0.7152   -0.3016   -0.9811 H       1  UNL1        0.0194\n      5 H           0.7152    0.9306    0.3084 H       1  UNL1        0.0194\n@<TRIPOS>BOND\n     1     1     2    1\n     2     1     3    1\n     3     1     4    1\n     4     1     5    1",
+        // "\n OpenBabel08312314413D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.9733   -0.0684    0.0679 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0655   -0.0684    0.0679 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6093    0.9241    0.3424 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.8023    0.7902 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.3269   -0.9288 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  1  4  1  0  0  0  0\n  1  5  1  0  0  0  0\nM  END\n$$$$",
+
         return txts.map((txt: string) => {
             return {
                 pluginOpen: new TestCmdList().setUserArg(
@@ -214,7 +256,7 @@ export default class MolTextPlugin extends PluginParentClass {
                 ),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
-                    "PastedFile"
+                    "PastedMol"
                 ),
             };
         });
