@@ -6,23 +6,23 @@ import type { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { ILog } from "@/UI/Panels/Log/LogUtils";
 
-export const biotiteStateKeysToRetain = ["molecules", "log"];
+export const molmodaStateKeysToRetain = ["molecules", "log"];
 
 /**
- * Uses biotite to parse the a molecular-model file. For biotite-native files.
+ * Uses molmoda to parse the a molecular-model file. For molmoda-native files.
  *
  * @param  {FileInfo} fileInfo  The file to parse.
  * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the file is
  *    parsed. The promise resolves to a TreeNodeList containing the frames. Can also
  *    resolve void.
  */
-export function parseUsingBiotite(
+export function parseUsingMolModa(
     fileInfo: FileInfo
 ): Promise<void | TreeNodeList> {
     return jsonStrToState(fileInfo.contents)
         .then((stateFromJson) => {
             // Update vueX store
-            for (const key of biotiteStateKeysToRetain) {
+            for (const key of molmodaStateKeysToRetain) {
                 switch (key) {
                     case "log":
                         pushToStoreList(key, stateFromJson[key]);
@@ -83,7 +83,7 @@ function fixLog() {
 }
 
 /**
- * Converts a json representation of the state (uncompressed biotite file) to a
+ * Converts a json representation of the state (uncompressed molmoda file) to a
  * state object.
  *
  * @param  {string} jsonStr  The json string.

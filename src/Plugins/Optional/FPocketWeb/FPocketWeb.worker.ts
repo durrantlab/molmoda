@@ -102,7 +102,7 @@ waitForDataFromMainThread()
                         },
 
                         "fpocketweb/"
-                        // Utils.curPath() + "FpocketWeb/"  // TODO: Good to implement something like this in biotite.
+                        // Utils.curPath() + "FpocketWeb/"  // TODO: Good to implement something like this in molmoda.
                     );
                 })
             );

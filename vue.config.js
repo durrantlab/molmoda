@@ -12,7 +12,7 @@ module.exports = defineConfig({
         },
     },
     publicPath: (process.env.NODE_ENV === "development") ? undefined : "./",
-    // publicPath: "/apps/biotite/beta/",
+    // publicPath: "/apps/molmoda/beta/",
 
     transpileDependencies: true,
 

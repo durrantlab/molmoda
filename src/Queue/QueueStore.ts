@@ -1,6 +1,6 @@
 // I'm going to store queue information here, not in VueJS queue. It won't be
 // reactive, but I like the separation, and I don't want queue information ever
-// being exported in a biotite file. TODO: Perhaps reconsider this
+// being exported in a molmoda file. TODO: Perhaps reconsider this
 // implementation later.
 
 import { IJobStatusInfo, JobStatus } from "./QueueTypes";

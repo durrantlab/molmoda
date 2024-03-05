@@ -42,7 +42,7 @@ export function saveTxt(params: FileInfo): Promise<any> {
     // params = _addExt(params, ".txt");
 
     // If doesn't end in ".zip" (case insensitive), add it.
-    const validCompressedExts = [".zip", ".biotite"];
+    const validCompressedExts = [".zip", ".molmoda", ".biotite"];
     if (
         params.compressedName &&
         !validCompressedExts.some((ext) =>

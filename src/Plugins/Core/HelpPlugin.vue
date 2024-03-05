@@ -70,7 +70,7 @@ import { appName } from "@/Core/GlobalVars";
 export default class HelpPlugin extends PluginParentClass {
     @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
 
-    menuPath = [`[3] ${appName}`, "[5] Help..."];
+    menuPath = [`${appName}`, "[5] Help..."];
     title = "Help";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -879,7 +879,7 @@
 //      */
 //     exportVRML(): string {
 //         api.messages.popupError(
-//             "The currently selected molecular viewer (NGL) does not support VRML export. Try switching to the 3Dmol.js viewer instead (biotite > Settings)."
+//             "The currently selected molecular viewer (NGL) does not support VRML export. Try switching to the 3Dmol.js viewer instead (molmoda > Settings)."
 //         );
 //         return "";
 //     }

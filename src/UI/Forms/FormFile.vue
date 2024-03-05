@@ -83,7 +83,8 @@ export default class FormFile extends Vue {
         let fileList = Array.from(files);
 
         filesToFileInfos(fileList, this.isZip, this.allAcceptableFileTypes)
-            .then((filesLoaded: (FileInfo | string)[]) => {
+            .then((filesLoaded: (FileInfo | string)[] | undefined) => {
+                if (filesLoaded === undefined) return;
                 const errorMsgs = filesLoaded.filter(
                     (a) => typeof a === "string"
                 );

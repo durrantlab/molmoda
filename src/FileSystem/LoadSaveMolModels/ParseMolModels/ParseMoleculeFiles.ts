@@ -5,7 +5,7 @@ import * as api from "@/Api";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseUsing3DMolJs } from "./_ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
-import { parseUsingBiotite } from "./_ParseUsingBiotite";
+import { parseUsingMolModa } from "./_ParseUsingMolModa";
 import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import type { FileInfo } from "@/FileSystem/FileInfo";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
@@ -63,8 +63,8 @@ export function _parseMoleculeFile(
             promise = parseUsingOpenBabel(fileInfo, formatInfo, desalt);
             break;
         }
-        case MolLoader.BiotiteFormat: {
-            return parseUsingBiotite(fileInfo).then((payload: any) => {
+        case MolLoader.MolModaFormat: {
+            return parseUsingMolModa(fileInfo).then((payload: any) => {
                 api.messages.stopWaitSpinner(spinnerId);
                 return payload;
             });

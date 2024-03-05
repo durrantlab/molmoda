@@ -3,19 +3,19 @@ import { setStoreIsDirty } from "@/Store/LoadAndSaveStore";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { biotiteStateKeysToRetain } from "../ParseMolModels/_ParseUsingBiotite";
+import { molmodaStateKeysToRetain } from "../ParseMolModels/_ParseUsingMolModa";
 
 /**
- * Runs the job when the user wants to save in the .biotite format.
+ * Runs the job when the user wants to save in the .molmoda format.
  *
  * @param {string} filename  The filename to save to.
  * @returns {Promise<undefined>}  A promise that resolves when the job is
  *     done.
  */
-export function saveBiotite(filename: string): Promise<undefined> {
-    // Add .biotite to end if not already there
-    if (!filename.endsWith(".biotite")) {
-        filename += ".biotite";
+export function saveMolModa(filename: string): Promise<undefined> {
+    // Add .molmoda to end if not already there
+    if (!filename.endsWith(".molmoda")) {
+        filename += ".molmoda";
     }
 
     return saveState(filename, store.state).then(() => {
@@ -36,7 +36,7 @@ function saveState(filename: string, state: any): Promise<any> {
 
     const newState: { [key: string]: any } = {};
     for (const key in state) {
-        if (biotiteStateKeysToRetain.indexOf(key) === -1) {
+        if (molmodaStateKeysToRetain.indexOf(key) === -1) {
             continue;
         }
 
@@ -60,7 +60,7 @@ function saveState(filename: string, state: any): Promise<any> {
     // Create JSON file (compressed).
     return api.fs.saveTxt(
         new FileInfo({
-            name: "biotite_file.json",
+            name: "molmoda_file.json",
             contents: jsonStr,
             compressedName: filename,
         })

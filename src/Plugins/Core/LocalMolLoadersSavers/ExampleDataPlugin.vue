@@ -48,17 +48,17 @@ export default class ExampleDataPlugin extends PluginParentClass {
     pluginId = "openexampleproject";
 
     exampleDescriptions: { [key: string]: string } = {
-        "1INW_just_prot_lig.biotite":
+        "1INW_just_prot_lig.molmoda":
             "Influenza neuraminidase bound to a sialic-acid analog (PDB: 1INW). All molecular components except the protein and analog have been removed.",
-        "1INW_pocket.biotite":
+        "1INW_pocket.molmoda":
             "Influenza neuraminidase bound to a sialic-acid analog, with the binding pocket identified using Proteins → Detect Pockets...",
-        "1INW_pocket_prot_protonated.biotite":
+        "1INW_pocket_prot_protonated.molmoda":
             "Influenza neuraminidase bound to a sialic-acid analog, with the protein protonated at pH 7 using Proteins → Protonation...",
-        "1INW_pocket_prot_protonated_pubchem_ligs.biotite":
+        "1INW_pocket_prot_protonated_pubchem_ligs.molmoda":
             "Protonated influenza neuraminidase bound to a sialic-acid analog, with additional neuraminidase ligands imported via File → PubChem...",
-        "1INW_pocket_prot_protonated_ligs_protonated.biotite":
+        "1INW_pocket_prot_protonated_ligs_protonated.molmoda":
             "Protonated influenza neuraminidase, with known ligands protonated at pH 7 using Compounds → Protonation... (Use this example data to test docking.)",
-        "1INW_pocket_prot_protonated_ligs_protonated_docked.biotite":
+        "1INW_pocket_prot_protonated_ligs_protonated_docked.molmoda":
             "Protonated influenza neuraminidase, with known ligands docked into the neuraminidase pocket using Docking → Compound Docking...",
     };
 
@@ -70,40 +70,40 @@ export default class ExampleDataPlugin extends PluginParentClass {
             options: [
                 {
                     description: "1INW protein/ligand complex",
-                    val: "1INW_just_prot_lig.biotite",
+                    val: "1INW_just_prot_lig.molmoda",
                 },
                 {
                     description: "1INW, binding pocket identified",
-                    val: "1INW_pocket.biotite",
+                    val: "1INW_pocket.molmoda",
                 },
                 {
                     description: "1INW, pocket, protein protonated",
-                    val: "1INW_pocket_prot_protonated.biotite",
+                    val: "1INW_pocket_prot_protonated.molmoda",
                 },
 
                 {
                     description:
                         "1INW, pocket, protein protonated, PubChem ligands",
-                    val: "1INW_pocket_prot_protonated_pubchem_ligs.biotite",
+                    val: "1INW_pocket_prot_protonated_pubchem_ligs.molmoda",
                 },
 
                 {
                     description: "1INW, pocket, protein and ligands protonated",
-                    val: "1INW_pocket_prot_protonated_ligs_protonated.biotite",
+                    val: "1INW_pocket_prot_protonated_ligs_protonated.molmoda",
                 },
 
                 {
                     description:
                         "1INW, pocket, protein and ligands protonated, docked",
-                    val: "1INW_pocket_prot_protonated_ligs_protonated_docked.biotite",
+                    val: "1INW_pocket_prot_protonated_ligs_protonated_docked.molmoda",
                 },
             ],
-            val: "1INW_just_prot_lig.biotite",
+            val: "1INW_just_prot_lig.molmoda",
         } as IUserArgSelect,
         {
             id: "descript",
             type: UserArgType.Alert,
-            val: this.exampleDescriptions["1INW_just_prot_lig.biotite"],
+            val: this.exampleDescriptions["1INW_just_prot_lig.molmoda"],
             alertType: "info",
         } as IUserArgAlert,
     ];
@@ -117,26 +117,26 @@ export default class ExampleDataPlugin extends PluginParentClass {
         let whichExample = this.getUserArg("which_example_data") as string;
         this.setUserArg("descript", this.exampleDescriptions[whichExample]);
         console.log(this.exampleDescriptions[whichExample]);
-        // // this.setUserArgEnabled("molMergingGroup", !useBiotite);
-        // this.setUserArgEnabled("whichMolsGroup", !useBiotite);
-        // this.setUserArgEnabled("separateCompounds", !useBiotite);
+        // // this.setUserArgEnabled("molMergingGroup", !useMolModa);
+        // this.setUserArgEnabled("whichMolsGroup", !useMolModa);
+        // this.setUserArgEnabled("separateCompounds", !useMolModa);
 
         // // Show onemol format or protein format, depending on whether
         // // mergeAllMolecules is true.
         // let separateCompounds = this.getUserArg("separateCompounds") as boolean;
         // this.setUserArgEnabled(
         //     "oneMolFileFormat",
-        //     !separateCompounds && !useBiotite
+        //     !separateCompounds && !useMolModa
         // );
         // this.setUserArgEnabled(
         //     "nonCompoundFormat",
-        //     separateCompounds && !useBiotite
+        //     separateCompounds && !useMolModa
         // );
 
         // // If separating out compounds, show compound format.
         // this.setUserArgEnabled(
         //     "compoundFormat",
-        //     separateCompounds && !useBiotite
+        //     separateCompounds && !useMolModa
         // );
     }
 
@@ -154,7 +154,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
     async runJobInBrowser(): Promise<void> {
         // Load the example project
 
-        // Fetch the file "./example.biotite" file using fetch. It is a binary
+        // Fetch the file "./example.molmoda" file using fetch. It is a binary
         // file.
         const axios = await dynamicImports.axios.module;
         const path = this.getUserArg("which_example_data");
@@ -168,11 +168,12 @@ export default class ExampleDataPlugin extends PluginParentClass {
         }); // You can adjust the type if needed.
 
         // Convert to a file
-        const file = new File([blob], "example.biotite");
+        const file = new File([blob], "example.molmoda");
 
         // Convert file to fileInfo
-        return filesToFileInfos([file], false, ["BIOTITE"]).then(
-            (fileInfos: (FileInfo | string)[]) => {
+        return filesToFileInfos([file], false, ["MOLMODA"]).then(
+            (fileInfos: (FileInfo | string)[] | undefined) => {
+                if (fileInfos === undefined) return;
                 this.addFileInfoToViewer(fileInfos[0] as FileInfo);
                 return;
             }

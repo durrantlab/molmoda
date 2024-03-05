@@ -21,8 +21,8 @@ function checkBadFileType(
     filename: string
 ): string | undefined {
     const type = getFileType(filename);
-    if (allAcceptableFileTypes.indexOf(type) === -1) {
-        return `Error loading "${filename}". Cannot load files of type ${type}.`;
+    if (type === undefined || allAcceptableFileTypes.indexOf(type) === -1) {
+        return `Error loading "${filename}". Cannot load files of this type.`;
     }
     return undefined;
 }
@@ -34,19 +34,21 @@ function checkBadFileType(
  *                                           loaded through <input>.
  * @param {boolean} isZip                    Whether the files are zip files.
  * @param {string[]} allAcceptableFileTypes  A list of acceptable file types.
- * @returns {Promise<FileInfo>} A promise that resolves to the converted file.
+ * @returns {Promise<FileInfo | string | undefined>} A promise that resolves to the converted file.
  */
 export function filesToFileInfos(
     fileList: File[],
     isZip: boolean,
     allAcceptableFileTypes: string[]
-): Promise<(FileInfo | string)[]> {
+): Promise<(FileInfo | string)[] | undefined> {
     // Type is file extension, uppercase.
 
     const fileInfoBatchesPromises: Promise<FileInfo[] | string>[] = [];
     for (const file of fileList) {
         const type = getFileType(file.name);
-        const treatAsZip = isZip || type == "BIOTITE" || type == "ZIP";
+        if (type === undefined) return Promise.resolve(undefined);
+
+        const treatAsZip = isZip || type == "MOLMODA" || type == "BIOTITE" || type == "ZIP";
 
         const fileInfoBatchPromise: Promise<FileInfo[] | string> = new Promise(
             (resolve, reject) => {
@@ -77,8 +79,8 @@ export function filesToFileInfos(
                             }),
                         ]);
                     } else {
-                        // It's a zip file (or a biotite file).
-                        resolve(fsApi.uncompress(fileContents)); // , "biotite_file.json");
+                        // It's a zip file (or a molmoda file).
+                        resolve(fsApi.uncompress(fileContents)); // , "molmoda_file.json");
                     }
                 };
 
@@ -107,11 +109,11 @@ export function filesToFileInfos(
                     flattenedFileInfos.push(fileInfoBatch);
                 } else {
                     for (const fileInfo of fileInfoBatch) {
-                        // Special exception for biotite files...
-                        if (fileInfo.name === "biotite_file.json") {
+                        // Special exception for molmoda files...
+                        if (["biotite_file.json", "molmoda_file.json"].indexOf(fileInfo.name) !== -1) {
                             fileInfo.name = correctFilenameExt(
                                 fileInfo.name,
-                                "BIOTITE"
+                                "MOLMODA"
                             );
                             flattenedFileInfos.push(fileInfo);
                             continue;

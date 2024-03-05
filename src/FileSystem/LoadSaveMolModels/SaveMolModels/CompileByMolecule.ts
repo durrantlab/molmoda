@@ -5,7 +5,7 @@ import { IMolsToConsider, ICompiledNodes } from "./Types";
 import { separateCompoundNonCompoundTerminalNodes } from "./Utils";
 
 /**
- * Runs the job when the user wants to save in a non-biotite format, by
+ * Runs the job when the user wants to save in a non-molmoda format, by
  * molecule.
  *
  * @param {IMolsToConsider} molsToConsider         The molecules to save.
@@ -20,7 +20,7 @@ export function compileByMolecule(
     molsToConsider: IMolsToConsider,
     keepCompoundsSeparate: boolean
 ): ICompiledNodes {
-    // Not using biotite format. Create ZIP file with protein and small
+    // Not using molmoda format. Create ZIP file with protein and small
     // molecules.
     let compoundNodes = new TreeNodeList();
     const nonCompoundNodesByMolecule: TreeNodeList[] = [];

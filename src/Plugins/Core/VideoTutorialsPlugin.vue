@@ -35,7 +35,7 @@ import * as api from "@/Api";
     },
 })
 export default class VideoTutorialsPlugin extends PluginParentClass {
-    menuPath = [`[3] ${appName}`, "[6] Video Tutorials..."];
+    menuPath = [`${appName}`, "[6] Video Tutorials..."];
     title = "Video Tutorials";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

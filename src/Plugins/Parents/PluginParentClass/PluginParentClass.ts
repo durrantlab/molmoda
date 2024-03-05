@@ -51,7 +51,7 @@ export abstract class PluginParentClass extends mixins(
     UserArgsMixin
 ) {
     /**
-     * The menu path for this plugin (e.g., `["[3] biotite", "[1] About"]` or
+     * The menu path for this plugin (e.g., `["[3] molmoda", "[1] About"]` or
      * `"File/Molecules/Import/[4] AlphaFold"`). Note that you can include a
      * priority (number) in brackets. The priority is stripped from the text,
      * but its value is used to order the menu item relative to others.
@@ -135,7 +135,7 @@ export abstract class PluginParentClass extends mixins(
 
     /**
      * Optionally define a hotkey (keyboard shortcut) to trigger this plugin.
-     * For example, "r". Note that biotite maps "r" to "ctrl+r" and "command+r"
+     * For example, "r". Note that molmoda maps "r" to "ctrl+r" and "command+r"
      * automatically, so no need to specify ctrl/command. If hotkey is not just
      * one letter (e.g., "backspace"), "ctrl+"" is not added. If a plugin has
      * multiple hotkeys, specify them as an array of strings.
@@ -557,7 +557,7 @@ export abstract class PluginParentClass extends mixins(
         return new TreeNodeList()
             .loadFromFileInfo(fileInfo, desalt, defaultTitle)
             .then((newTreeNodeList) => {
-                // Note: If loading biotite file, newTreeNodeList will be
+                // Note: If loading molmoda file, newTreeNodeList will be
                 // undefined.
                 if (newTreeNodeList) {
                     newTreeNodeList.addToMainTree();

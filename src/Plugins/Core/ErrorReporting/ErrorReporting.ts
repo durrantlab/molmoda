@@ -126,7 +126,7 @@ async function sendErrorToServer(errorData: IErrorData) {
 export async function reportErrorToServer(errTxt = "") {
     // Use AJAX (e.g., fetch, Axios, etc.) to send errorData to your PHP server.
     const axios = await dynamicImports.axios.module;
-    await axios.post("https://durrantlab.pitt.edu/apps/biotite/log_error.php", {
+    await axios.post("https://durrantlab.pitt.edu/apps/molmoda/log_error.php", {
         val: errTxt,
     });
 }

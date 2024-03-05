@@ -1,4 +1,4 @@
-// Entry point for all the save-molecule functions except biotite, which should
+// Entry point for all the save-molecule functions except molmoda, which should
 // be accessed directly.
 
 import { compileByMolecule } from "./CompileByMolecule";

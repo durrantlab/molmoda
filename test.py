@@ -33,8 +33,8 @@ import os
 # Make a menu to select the url
 urls = [
     "http://localhost:8080",
-    "https://durrantlab.pitt.edu/apps/biotite/beta/",
-    "https://durrantlab.pitt.edu/biotite/",
+    "https://durrantlab.pitt.edu/apps/molmoda/beta/",
+    "https://durrantlab.pitt.edu/molmoda/",
 ]
 
 menu = TerminalMenu(urls, title="Select the root URL")

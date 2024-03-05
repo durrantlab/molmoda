@@ -45,7 +45,7 @@ import { appName } from "@/Core/GlobalVars";
     },
 })
 export default class SettingsPlugin extends PluginParentClass {
-    menuPath = [`[3] ${appName}`, "[2] Settings..."];
+    menuPath = [`${appName}`, "[2] Settings..."];
     title = "Settings";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -124,7 +124,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 false,
                 this.accept.split(",").map((a) => a.toUpperCase().substring(1))
             )
-                .then((fileInfos: (FileInfo | string)[]) => {
+                .then((fileInfos: (FileInfo | string)[] | undefined) => {
+                    if (fileInfos === undefined) return;
+
                     const errorMsgs = fileInfos.filter(
                         (a) => typeof a === "string"
                     );
@@ -159,7 +161,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      *     done. TODO: These are wrong throughout.
      */
     runJobInBrowser(fileInfo: FileInfo): Promise<void> {
-        // It's not a biotite file (e.g., a PDB file). NOTE: When loading a
+        // It's not a molmoda file (e.g., a PDB file). NOTE: When loading a
         // multi-frame file, this fileInfo contains all frames (not yet
         // separated).
         return this.addFileInfoToViewer(
@@ -184,7 +186,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["four_mols.zip", ":ligs:"],
             // ["ligs.smi.zip", "ligs.smi:3"],
             ["ligs.can", ":ligs:"],
-            ["test.biotite", "ATP:501"],
+            ["test.molmoda", "ATP:501"],
 
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
             ["ligs.cif", "UNL:1"],

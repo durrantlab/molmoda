@@ -4,8 +4,9 @@
 import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType } from "./LoadSaveMolModels/Types/MolFormats";
 import { IFileInfo } from "./Types";
+import { messagesApi } from "@/Api/Messages";
 
-type FileInfo = IFileInfo;  // To avoid circular dependencies.
+type FileInfo = IFileInfo; // To avoid circular dependencies.
 
 /**
  * Given FileInfo object, returns a string representing the file type,
@@ -13,9 +14,9 @@ type FileInfo = IFileInfo;  // To avoid circular dependencies.
  *
  * @param  {FileInfo | string} fileInfo  The file to get the type of. Can be of
  *                                       type FileInfo, or just the filename.
- * @returns {string}  The type of the file, uppercase.
+ * @returns {string | undefined}  The type of the file, uppercase.
  */
-export function getFileType(fileInfo: FileInfo | string): string {
+export function getFileType(fileInfo: FileInfo | string): string | undefined {
     // If string provided, turn it into an FileInfo object.
     if (typeof fileInfo === "string") {
         fileInfo = {
@@ -59,7 +60,7 @@ export function getFileType(fileInfo: FileInfo | string): string {
         return formatInfo.primaryExt.toUpperCase();
     }
 
-    // If it's JSON, that's from biotite.
+    // If it's JSON, that's from molmoda.
     if (ext === "JSON") {
         return ext;
     }
@@ -76,5 +77,9 @@ export function getFileType(fileInfo: FileInfo | string): string {
     // return ext;
 
     // Throw error instead
-    throw new Error("Could not determine filetype for " + fileInfo.name);
+    messagesApi.popupError(
+        'Could not determine format of file "' + fileInfo.name + '"'
+    );
+    return;
+    // throw new Error("Could not determine filetype for " + fileInfo.name);
 }

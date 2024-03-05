@@ -33,7 +33,7 @@ import {
     getFormatDescriptions,
     getFormatInfoGivenType,
 } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { saveBiotite } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveBiotite";
+import { saveMolModa } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModa";
 import {
     fileNameFilter,
     getFileNameParts,
@@ -88,7 +88,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             id: "filename",
             label: "",
             val: "",
-            placeHolder: "Filename (e.g., my_project.biotite)...",
+            placeHolder: "Filename (e.g., my_project.molmoda)...",
             description: `The name of the molecule file to save. The file extension will be automatically appended.`,
             filterFunc: (filename: string): string => {
                 return fileNameFilter(filename);
@@ -99,8 +99,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             delayBetweenChangesDetected: 0,
         } as IUserArgText,
         {
-            id: "useBiotiteFormat",
-            label: "Save project in .biotite format",
+            id: "useMolModaFormat",
+            label: "Save project in .molmoda format",
             val: true,
         } as IUserArgCheckbox,
         {
@@ -137,7 +137,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             id: "oneMolFileFormat",
             val: "pdb",
             options: getFormatDescriptions(false).filter(
-                (option) => option.val !== "biotite"
+                (option) => option.val !== "molmoda"
             ),
             enabled: false,
         } as IUserArgSelect,
@@ -155,7 +155,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             options: getFormatDescriptions(true)
                 .filter(
                     // Prioritize formats with bonds
-                    (option) => option.val !== "biotite"
+                    (option) => option.val !== "molmoda"
                 )
                 .concat(
                     getFormatDescriptions(false).filter(
@@ -209,7 +209,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         this.appClosing = payload !== undefined;
 
         // Reset some form values
-        this.setUserArg("useBiotiteFormat", true);
+        this.setUserArg("useMolModaFormat", true);
         this.setUserArg("saveVisible", true);
         this.setUserArg("saveSelected", true);
         this.setUserArg("saveHiddenAndUnselected", false);
@@ -231,16 +231,16 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      * Reacts to the filename extension changing.
      */
     reactToExtChange() {
-        // Now try to detect extension and open/close biotite appropriately.
+        // Now try to detect extension and open/close molmoda appropriately.
         const filename = this.getUserArg("filename");
-        // const useBiotite = this.getUserArg("useBiotiteFormat") as boolean;
-        // let newUseBiotite = useBiotite;
+        // const useMolModa = this.getUserArg("useMolModaFormat") as boolean;
+        // let newUseMolModa = useMolModa;
 
         // const prts = getFileNameParts(this.getUserArg("filename"));
         // const ext = prts.ext.toLowerCase();
 
         // NOTE: not using getFileNameParts because I really do want the
-        // terminal part. So .pdb.biotite should be detected as .biotite.
+        // terminal part. So .pdb.molmoda should be detected as .molmoda.
         const ext =
             filename.indexOf(".") === -1
                 ? ""
@@ -248,17 +248,17 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
         // if (ext !== "" && ext.length >= 3) {
         //     // There is an extension
-        //     // newUseBiotite = ext.slice(0, 3) === "bio";
-        //     this.setUserArg("useBiotiteFormat", ext.slice(0, 3) === "bio");
+        //     // newUseMolModa = ext.slice(0, 3) === "bio";
+        //     this.setUserArg("useMolModaFormat", ext.slice(0, 3) === "bio");
         // }
 
-        // if filename doesn't end in .biotite, then add it.
-        // if (this.lastUseBiotiteFormat !== useBiotite) {
-        //     const hasBiotiteExt =
-        //         filename.toLowerCase().slice(-8) === ".biotite";
-        //     if (useBiotite && !hasBiotiteExt) {
-        //         this.setUserArg("filename", filename + ".biotite");
-        //     } else if (!useBiotite && hasBiotiteExt) {
+        // if filename doesn't end in .molmoda, then add it.
+        // if (this.lastUseMolModaFormat !== useMolModa) {
+        //     const hasMolModaExt =
+        //         filename.toLowerCase().slice(-8) === ".molmoda";
+        //     if (useMolModa && !hasMolModaExt) {
+        //         this.setUserArg("filename", filename + ".molmoda");
+        //     } else if (!useMolModa && hasMolModaExt) {
         //         this.setUserArg("filename", filename.slice(0, -8));
         //     }
         // }
@@ -293,10 +293,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             this.lastFilename = filename;
         }
 
-        // this.lastUseBiotiteFormat = newUseBiotite;
-        // this.setUserArg("useBiotiteFormat", newUseBiotite);
+        // this.lastUseMolModaFormat = newUseMolModa;
+        // this.setUserArg("useMolModaFormat", newUseMolModa);
 
-        // return newUseBiotite;
+        // return newUseMolModa;
     }
 
     /**
@@ -305,28 +305,28 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     onUserArgChange() {
         this.reactToExtChange();
         
-        const useBiotite = this.getUserArg("useBiotiteFormat") as boolean
+        const useMolModa = this.getUserArg("useMolModaFormat") as boolean
 
-        // this.setUserArgEnabled("molMergingGroup", !useBiotite);
-        this.setUserArgEnabled("whichMolsGroup", !useBiotite);
-        this.setUserArgEnabled("separateCompounds", !useBiotite);
+        // this.setUserArgEnabled("molMergingGroup", !useMolModa);
+        this.setUserArgEnabled("whichMolsGroup", !useMolModa);
+        this.setUserArgEnabled("separateCompounds", !useMolModa);
 
         // Show onemol format or protein format, depending on whether
         // mergeAllMolecules is true.
         let separateCompounds = this.getUserArg("separateCompounds") as boolean;
         this.setUserArgEnabled(
             "oneMolFileFormat",
-            !separateCompounds && !useBiotite
+            !separateCompounds && !useMolModa
         );
         this.setUserArgEnabled(
             "nonCompoundFormat",
-            separateCompounds && !useBiotite
+            separateCompounds && !useMolModa
         );
 
         // If separating out compounds, show compound format.
         this.setUserArgEnabled(
             "compoundFormat",
-            separateCompounds && !useBiotite
+            separateCompounds && !useMolModa
         );
     }
 
@@ -363,7 +363,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      */
     runJobInBrowser(): Promise<void> {
         let filename = this.getUserArg("filename");
-        const useBiotiteFormat = this.getUserArg("useBiotiteFormat") as boolean;
+        const useMolModaFormat = this.getUserArg("useMolModaFormat") as boolean;
         let compoundFormat = this.getUserArg("compoundFormat");
         let nonCompoundFormat = this.getUserArg("nonCompoundFormat");
         const oneMolFileFormat = this.getUserArg("oneMolFileFormat");
@@ -376,13 +376,13 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         const saveVisible = this.getUserArg("saveVisible") as boolean;
         const saveSelected = this.getUserArg("saveSelected") as boolean;
 
-        if (useBiotiteFormat) {
-            // If filename doesn't end in .biotite, add .biotite
-            if (filename.toLowerCase().slice(-8) !== ".biotite") {
-                filename = filename + ".biotite";
+        if (useMolModaFormat) {
+            // If filename doesn't end in .molmoda, add .molmoda
+            if (filename.toLowerCase().slice(-8) !== ".molmoda") {
+                filename = filename + ".molmoda";
             }
 
-            saveBiotite(filename)
+            saveMolModa(filename)
                 .then(() => {
                     if (this.appClosing) {
                         api.messages.popupMessage(
@@ -438,7 +438,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 ]) {
                     for (const fileInfo of fileInfos) {
                         if (fileInfo.treeNode) {
-                            const ext = fileInfo.getFileType().toLowerCase();
+                            let ext = fileInfo.getFileType()
+                            if (ext === undefined) {
+                                throw new Error("Should never happen, because converting from internal format!")
+                            }
+                            ext = ext.toLowerCase();
                             const filename = slugify(
                                 fileInfo.treeNode.descriptions.pathName("_", 0)
                             );
@@ -493,7 +497,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const biotiteJob = {
+        const molmodaJob = {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein"),
@@ -508,7 +512,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             ),
         };
 
-        const jobs = [biotiteJob];
+        const jobs = [molmodaJob];
 
         let idx = 0;
 
@@ -531,9 +535,9 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
             let pluginOpen = new TestCmdList()
                 .setUserArg("filename", "test", this.pluginId)
-                // .setUserArg("useBiotiteFormat", false, this.pluginId)
+                // .setUserArg("useMolModaFormat", false, this.pluginId)
                 .click(
-                    "#modal-savemolecules #useBiotiteFormat-savemolecules-item"
+                    "#modal-savemolecules #useMolModaFormat-savemolecules-item"
                 );
 
             if (visible === false) {
@@ -568,7 +572,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             // those.
 
             jobs.push({
-                ...biotiteJob,
+                ...molmodaJob,
                 pluginOpen: pluginOpen,
             });
         }

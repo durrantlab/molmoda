@@ -48,9 +48,9 @@ export class FileInfo {
     /**
      * Returns the file type.
      *
-     * @returns {string}  The file type.
+     * @returns {string | undefined}  The file type.
      */
-    public getFileType(): string {
+    public getFileType(): string | undefined {
         return getFileType(this);
     }
 
@@ -61,6 +61,7 @@ export class FileInfo {
      */
     public getFormatInfo(): IFormatInfo | undefined {
         const typ = this.getFileType();
+        if (typ === undefined) return;
         return getFormatInfoGivenType(typ);
     }
 

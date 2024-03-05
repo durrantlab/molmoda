@@ -4,7 +4,7 @@ import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 export enum MolLoader {
     Mol3D, // 3dmoljs.
     OpenBabel,
-    BiotiteFormat,
+    MolModaFormat,
     Zip,
 }
 
@@ -90,12 +90,12 @@ const smiLikeNames = [
 ];
 
 export const molFormatInformation: { [key: string]: IFormatInfo } = {
-    BIOTITE: {
-        primaryExt: "biotite",
-        exts: ["biotite"],
+    MOLMODA: {
+        primaryExt: "molmoda",
+        exts: ["molmoda", "biotite"],
         description: `${appName} Session`,
         hasBondOrders: true,
-        loader: MolLoader.BiotiteFormat,
+        loader: MolLoader.MolModaFormat,
     },
     CIF: {
         primaryExt: "cif",
