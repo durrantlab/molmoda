@@ -187,6 +187,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             // ["ligs.smi.zip", "ligs.smi:3"],
             ["ligs.can", ":ligs:"],
             ["test.molmoda", "ATP:501"],
+            ["test.biotite", "ATP:501"],
 
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
             ["ligs.cif", "UNL:1"],

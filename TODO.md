@@ -110,7 +110,7 @@ The new 3dmoljs is based on typescript: https://github.com/3dmol/3Dmol.js Would
 be good to use that in time. You have a branch already, but it freezes after
 docking. Your only version doesn't somehow.
 
-Would be nice to provide autosave option (to local storage) for when biotite
+Would be nice to provide autosave option (to local storage) for when MolModa
 crashes.
 
 Recently redid undo/redo. But load molecule and show/hide multiple times.

@@ -178,7 +178,17 @@ for ts_file in ts_files:
         add_error(ts_file, "Use import() only in the DynamicImports.ts file.")
 
     # Don't allow "MolModa" anywhere but in GlobalVars.ts
-    if (re.search(r"\bMolModa\b", content) or re.search(r"\bMolmoda\b", content) or re.search(r"\bmolmoda\b", content)) and "GlobalVars.ts" not in ts_file:
+    content_without_dot_molmoda = content.replace("MOLMODA:", '')
+    content_without_dot_molmoda = content_without_dot_molmoda.lower()
+    content_without_dot_molmoda = content_without_dot_molmoda.replace('"molmoda"', '')
+    content_without_dot_molmoda = content_without_dot_molmoda.replace(".molmoda", "")
+
+    # Remove comments
+    content_without_dot_molmoda = re.sub(r"//.*", "", content_without_dot_molmoda)
+    content_without_dot_molmoda = re.sub(r" \* .*", "", content_without_dot_molmoda)
+
+    has_mol_moda = re.search(r"\bmolmoda\b", content_without_dot_molmoda)
+    if has_mol_moda and "GlobalVars.ts" not in ts_file:
         add_error(
             ts_file,
             'The string "MolModa" should only be used in GlobalVars.ts. Import the app name from there.',

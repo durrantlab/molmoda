@@ -497,7 +497,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const molmodaJob = {
+        const molModaJob = {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein"),
@@ -512,7 +512,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             ),
         };
 
-        const jobs = [molmodaJob];
+        const jobs = [molModaJob];
 
         let idx = 0;
 
@@ -572,7 +572,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             // those.
 
             jobs.push({
-                ...molmodaJob,
+                ...molModaJob,
                 pluginOpen: pluginOpen,
             });
         }

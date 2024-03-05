@@ -1,4 +1,4 @@
-# biotite-suite2
+# molmoda-suite2
 
 ## Project setup
 ```
