@@ -386,6 +386,45 @@ function addTestDefaults(
     }
 }
 
+function makeFakeMouse() {
+    // Set body cursor to none
+    // document.body.style.cursor = "none";
+
+    // Add above CSS to the page
+    const style = document.createElement("style");
+    style.innerHTML = `
+        .custom-cursor {
+            position: absolute;
+            width: 37px;
+            height: 50px;
+            background-size: 100% 100%;
+            pointer-events: none;
+            z-index: 10000;
+            background-image: url('fake_cursor.png');
+        }
+    `;
+
+    document.head.appendChild(style);
+
+    // Create a new div element
+    const cursor = document.createElement("div");
+    cursor.className = "custom-cursor";
+    cursor.id = "customCursor";
+    document.body.appendChild(cursor);
+
+    // Move cursor off screen initially
+    cursor.style.left = "-100px";
+    cursor.style.top = "-100px";
+
+    document.addEventListener("mousemove", function (e) {
+        const cursor = document.getElementById("customCursor");
+        if (!cursor) return;
+        // Update the position of the custom cursor
+        cursor.style.left = e.pageX + "px";
+        cursor.style.top = e.pageY + "px";
+    });
+}
+
 /**
  * If running a selenium test, this function will generate the commands for the
  * test. Opens plugin, runs plugin-specific test, presses action button.
@@ -402,6 +441,8 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
     }
 
     let tests: ITest | ITest[] = await plugin.getTests();
+
+    makeFakeMouse();
 
     // If tests is ITest, wrap it in an array.
     if (!Array.isArray(tests)) {

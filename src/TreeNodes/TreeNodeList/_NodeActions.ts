@@ -85,66 +85,67 @@ export class TreeNodeListNodeActions {
     }
 
     /**
-     * Gets all the nodes, whether terminal or not.
+     * Gets all the nodes, whether terminal or not. I ended up prefering this
+     * version to the ones below because it preserves order.
      *
      * @returns {TreeNodeList}  The flat array of all nodes.
      */
-    // public get flattened(): TreeNodeList {
-    //     /**
-    //      * A recursive function to find the terminal leaves of mols.
-    //      *
-    //      * @param  {TreeNodeList} mls  The hierarchical array of TreeNode to
-    //      *                                search.
-    //      * @returns {TreeNodeList}  The flat array of nodes.
-    //      */
-    //     const findNodes = (mls: TreeNodeList): TreeNodeList => {
-    //         const allNodes = mls.newTreeNodeList();
+    public get flattened(): TreeNodeList {
+        /**
+         * A recursive function to find the terminal leaves of mols.
+         *
+         * @param  {TreeNodeList} mls  The hierarchical array of TreeNode to
+         *                                search.
+         * @returns {TreeNodeList}  The flat array of nodes.
+         */
+        const findNodes = (mls: TreeNodeList): TreeNodeList => {
+            const allNodes = mls.newTreeNodeList();
 
-    //         mls.forEach((mol: TreeNode) => {
-    //             allNodes.push(mol);
-    //             if (mol.nodes) {
-    //                 allNodes.extend(findNodes(mol.nodes));
-    //             }
-    //         });
-    //         return allNodes;
-    //     };
-    //     return findNodes(this.parentTreeNodeList);
-    // }
+            mls.forEach((mol: TreeNode) => {
+                allNodes.push(mol);
+                if (mol.nodes) {
+                    allNodes.extend(findNodes(mol.nodes));
+                }
+            });
+            return allNodes;
+        };
+        return findNodes(this.parentTreeNodeList);
+    }
 
     /**
      * Gets all the nodes, whether terminal or not.
      *
      * @returns {TreeNodeList}  The flat array of all nodes.
      */
-    public get flattened(): TreeNodeList {
-        // NOTE: This is adapted from ChatGPT's recommended revision of above
-        // function. I'm fairly certain it works the same, but if you run into
-        // errors, consider the differences between the two functions.
+    // public get flattened(): TreeNodeList {
+    //     // NOTE: This is adapted from ChatGPT's recommended revision of above
+    //     // function. I'm fairly certain it works the same, but if you run into
+    //     // errors, consider the differences between the two functions.
 
-        const allNodes: TreeNode[] = [];
-        const processedNodes = new Set<TreeNode>();
+    //     const allNodes: TreeNode[] = [];
+    //     const processedNodes = new Set<TreeNode>();
 
-        const stack = [this.parentTreeNodeList._nodes];
+    //     const stack = [this.parentTreeNodeList._nodes];
 
-        while (stack.length > 0) {
-            const nodes = stack.pop();
-            // Note nodes should not be null, but typescript doesn't know that.
-            // Don't want to do check for null every time.
+    //     while (stack.length > 0) {
+    //         const nodes = stack.pop();
+    //         // Note nodes should not be null, but typescript doesn't know that.
+    //         // Don't want to do check for null every time.
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            for (const node of nodes) {
-                if (!processedNodes.has(node)) {
-                    processedNodes.add(node);
-                    allNodes.push(node);
-                    if (node.nodes && node.nodes.length > 0) {
-                        stack.push(node.nodes._nodes);
-                    }
-                }
-            }
-        }
-        return this.parentTreeNodeList.newTreeNodeList(allNodes);
-    }
+    //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //         // @ts-ignore
+    //         for (const node of nodes) {
+    //             if (!processedNodes.has(node)) {
+    //                 processedNodes.add(node);
+    //                 allNodes.push(node);
+    //                 if (node.nodes && node.nodes.length > 0) {
+    //                     stack.push(node.nodes._nodes);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return this.parentTreeNodeList.newTreeNodeList(allNodes);
+    // }
 
     // /**
     //  * Gets all the nodes, whether terminal or not.

@@ -124,17 +124,10 @@ Explict copy as smiles
 
 Would be nice if up/down arrows worked for selecting molecules in tree.
 
-Good to in tree view to also indicate the number of molecules that are visible
-(not just the total).
-
 Can't focus on region?
 
 Would be nice if you could get info on any small molecule by searching PubChem,
 but in app.
-
-Invert selection would be nice.
-
-Would be nice to be able to increase or decrease the fog.
 
 Store state in memory, allow for reload if crash.
 
@@ -146,14 +139,7 @@ would be good to get this in a widget so users can select/deselect individually
 too. And maybe buttons to "add" and "replace" selection.
 Docking should have option to merge all proteins into one (for pockets between chains).
 
-Paste lots of molecules (as above). then click on submolecules. Lipinski panel
-doesn't update on right.
-
-If repeating pose because no output file, throw error.
-
 On detect pocket and docking, good to be able to specify wheether to include nucleic.
-
-Some way to indicate number of compounds selected in tree?
 
 Mouse over menu item, get description.
 
@@ -163,10 +149,6 @@ There's a bit of a mess with adding file infos to the viewer. PluginParentClass
 has addFileInfoToViewer. TreeNode and TreeNodeList also have separate
 loadFromFileInfo functions. Good to unify all this and enforce use of plugin's
 addFileInfoToViewer.
-
-Expand all option in tree?
-
-Invert selection would be nice.
 
 I don't think docking into a spherical egion really works. (Uses 20 x 20 x 20
 box regardless).
@@ -190,9 +172,31 @@ implemented, I think this prevent programmatic closing of modals.
 
 **** Firefox video blocked.
 
-Play around with selecting multiple ones. Often messes up.
+Good to report oyal job duration on callbacks from webina, etc., as parameters.
+
+No fullscreen
 
 # DONE
+
+Paste lots of molecules (as above). then click on submolecules. Lipinski panel
+doesn't update on right.
+
+If repeating pose because no output file, throw error.
+
+Good to in tree view to also indicate the number of molecules that are visible
+(not just the total).
+
+Invert selection would be nice.
+
+Would be nice to be able to increase or decrease the fog.
+
+Some way to indicate number of compounds selected in tree?
+
+Expand all option in tree?
+
+Invert selection would be nice.
+
+Play around with selecting multiple ones. Often messes up.
 
 Paste lots of different file types to test.
 

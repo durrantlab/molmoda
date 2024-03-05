@@ -32,7 +32,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class RenameMolPlugin extends PluginParentClass {
-    menuPath = "[4] Edit/Molecules/[1] Rename...";
+    menuPath = "[4] Navigator/Molecules/[1] Rename...";
     title = "Rename Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

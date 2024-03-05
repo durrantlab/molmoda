@@ -132,3 +132,9 @@
 .lm_popin:hover .lm_icon {
   opacity: 1;
 }
+
+/* max caused an error when returning to normal */
+/* not worth supporting */
+.lm_maximise {
+  display: none !important;
+}

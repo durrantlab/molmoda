@@ -39,7 +39,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class MergeMolsPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Molecules", "[5] Merge..."];
+    menuPath = ["Navigator", "Molecules", "[5] Merge..."];
     title = "Merge Molecules";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

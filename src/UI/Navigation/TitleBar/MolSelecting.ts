@@ -24,91 +24,110 @@ function _checkNodePassesFilter(node: TreeNode, filterStr: string): boolean {
     return node.title.toLowerCase().indexOf(filterStr) !== -1;
 }
 
+function _selectShiftDown(
+    filterStr: string,
+    idLastSelected: string,
+    nodeLastSelected: TreeNode
+): boolean {
+    const { flattened } = getMoleculesFromStore();
+
+    // Go through flattened, save the node if it is selected.
+    let mostRecentSelected: TreeNode | null = null;
+    for (let idx = 0; idx < flattened.length; idx++) {
+        const nd = flattened.get(idx);
+        if (nd.selected !== SelectedType.False) {
+            mostRecentSelected = nd;
+        }
+        if (nd.id === idLastSelected && mostRecentSelected !== null) {
+            // If one has been selected and you've reached this id, stop looking.
+            // So a previous one will be selected even if a subsequent one is
+            // closer. Using subsequent one only if necessary.
+            break;
+        }
+    }
+
+    filterStr = filterStr.toLowerCase();
+
+    if (
+        mostRecentSelected !== null &&
+        mostRecentSelected.id !== idLastSelected
+    ) {
+        // Note that if it is null, will treat as if shift not pressed (no
+        // return outside of associated if statement).
+        let selecting = false;
+        flattened.forEach((nd: TreeNode) => {
+            if (
+                (mostRecentSelected !== null &&
+                    nd.id === mostRecentSelected.id) ||
+                nd.id === idLastSelected
+            ) {
+                selecting = !selecting;
+            }
+            if (selecting && _checkNodePassesFilter(nd, filterStr)) {
+                setSelectWithChildren(nd, SelectedType.True);
+            }
+        });
+        if (_checkNodePassesFilter(nodeLastSelected, filterStr)) {
+            setSelectWithChildren(nodeLastSelected, SelectedType.True);
+        }
+        return true;
+    }
+    return false;
+}
+
+function _selectControlDown(nodeLastSelected: TreeNode) {
+    if (
+        nodeLastSelected.selected === SelectedType.True ||
+        nodeLastSelected.selected === SelectedType.ChildOfTrue
+    ) {
+        setSelectWithChildren(nodeLastSelected, SelectedType.False);
+    } else {
+        setSelectWithChildren(nodeLastSelected, SelectedType.True);
+    }
+}
+
 /**
  * Selects node(s) and their children. Accounts for different key combinations
  * (ctrl, shift, cmd).
  *
- * @param  {string}        id              The id of the last node selected.
+ * @param  {string}        idLastSelected  The id of the last node selected.
  * @param  {TreeNodeList}  molTreeData     The molecule tree data.
  * @param  {string}        [filterStr=""]  The filter string.
  */
 export function doSelecting(
-    id: string,
+    idLastSelected: string,
     molTreeData: TreeNodeList,
     filterStr = ""
 ) {
-    const node = molTreeData.filters.onlyId(id);
+    const nodeLastSelected = molTreeData.filters.onlyId(idLastSelected);
 
-    if (node === null) {
+    if (nodeLastSelected === null) {
         // Not much you can do.
         return;
     }
 
     // If shift key is down, selecting multiple items.
-    if (shiftKeyDown) {
-        filterStr = filterStr.toLowerCase();
-
-        const { flattened } = getMoleculesFromStore();
-
-        // Go through flattened, save the node if it is selected.
-        let mostRecentSelected: TreeNode | null = null;
-        for (let idx = 0; idx < flattened.length; idx++) {
-            const nd = flattened.get(idx);
-            if (nd.selected !== SelectedType.False) {
-                mostRecentSelected = nd;
-            }
-            if (nd.id === id && mostRecentSelected !== null) {
-                // If one has been selected and you've reached this id, stop looking.
-                // So a previous one will be selected even if a subsequent one is
-                // closer. Using subsequent one only if necessary.
-                break;
-            }
-        }
-
-        if (mostRecentSelected !== null && mostRecentSelected.id !== id) {
-            // Note that if it is null, will treat as if shift not pressed (no
-            // return outside of associated if statement).
-            let selecting = false;
-            flattened.forEach((nd: TreeNode) => {
-                if (
-                    (mostRecentSelected !== null &&
-                        nd.id === mostRecentSelected.id) ||
-                    nd.id === id
-                ) {
-                    selecting = !selecting;
-                }
-                if (selecting && _checkNodePassesFilter(nd, filterStr)) {
-                    setSelectWithChildren(nd, SelectedType.True);
-                }
-            });
-            if (_checkNodePassesFilter(node, filterStr)) {
-                setSelectWithChildren(node, SelectedType.True);
-            }
-            return;
-        }
+    if (
+        shiftKeyDown &&
+        _selectShiftDown(filterStr, idLastSelected, nodeLastSelected)
+    ) {
+        return;
     }
 
     // If control key is down, toggle selected and its children.
     if (controlKeyDown) {
-        if (
-            node.selected === SelectedType.True ||
-            node.selected === SelectedType.ChildOfTrue
-        ) {
-            setSelectWithChildren(node, SelectedType.False);
-        } else {
-            setSelectWithChildren(node, SelectedType.True);
-        }
+        _selectControlDown(nodeLastSelected);
         return;
     }
-    // No control or shift pressed if you get here.
 
+    // No control or shift pressed if you get here.
     const allNodesFlattened = getMoleculesFromStore().flattened;
     const numSelected = allNodesFlattened.reduce(
         (acc: number, nd: TreeNode) =>
             acc + (nd.selected === SelectedType.True ? 1 : 0),
         0
     );
-    const currentlySelected = node.selected;
+    const currentlySelected = nodeLastSelected.selected;
 
     // Unselect all nodes.
     unselectAll(allNodesFlattened);
@@ -116,7 +135,7 @@ export function doSelecting(
     // Select the one you clicked on if if was previously not selected, or
     // multiple ones were previously selected.
     if (currentlySelected === SelectedType.False || numSelected > 1) {
-        setSelectWithChildren(node, SelectedType.True);
+        setSelectWithChildren(nodeLastSelected, SelectedType.True);
     }
 }
 

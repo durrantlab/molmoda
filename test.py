@@ -14,6 +14,7 @@ from selenium.webdriver.common.keys import Keys
 from json.decoder import JSONDecodeError
 import html
 from simple_term_menu import TerminalMenu
+import shutil
 
 # import traceback
 import threading
@@ -49,6 +50,7 @@ class el:
         self.timeout = timeout
         self.driver = drvr
         self.poll_frequency_secs = 2
+
         try:
             self.el = WebDriverWait(
                 drvr, self.timeout, poll_frequency=self.poll_frequency_secs
@@ -262,11 +264,18 @@ def run_test(plugin_id):
             "test": test_lbl,
             "error": f"Failed to parse JSON: {cmds_str}",
         }
+    
+    if os.path.exists(f"./screenshots/{test_lbl}"):
+        shutil.rmtree(f"./screenshots/{test_lbl}")
+    if not os.path.exists("./screenshots"):
+        os.makedirs("./screenshots")
+    if not os.path.exists(f"./screenshots/{test_lbl}"):
+        os.makedirs(f"./screenshots/{test_lbl}")
 
     # print(f"Starting {test_lbl}...")
     try:
         # print(json.dumps(cmds, indent=4))
-        for cmd in cmds:
+        for cmd_idx, cmd in enumerate(cmds):
             # resp += f"   {json.dumps(cmd)}\n"
             if cmd["cmd"] == "click":
                 el(cmd["selector"], driver).click(
@@ -288,6 +297,10 @@ def run_test(plugin_id):
                 return [(plugin_id, i) for i in range(cmd["data"])]
             elif cmd["cmd"] == "checkBox":
                 el(cmd["selector"], driver).checkBox(cmd["data"])
+
+            screenshot_path = f"./screenshots/{test_lbl}/{test_lbl}_{cmd_idx}.png"            
+            driver.save_screenshot(screenshot_path)
+
         # resp = f"Passed: {test_lbl}"
         resp = {
             "status": "passed",
@@ -471,7 +484,8 @@ for test_name, test_idx, try_idx in failed_tests:
 #         print(f"   {test}: {all_test_results[test]}")
 #         # if all("passed" in i for i in all_test_results[test]):
 
-
+print("")
+print(urls[chosen_index])
 input("Done. Press Enter to end all tests...")
 
 # driver.quit()

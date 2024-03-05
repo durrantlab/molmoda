@@ -30,7 +30,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class SelectAllPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Selection", "[0] Select All"];
+    menuPath = ["[4] Edit", "Selection", "[0] All"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

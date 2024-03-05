@@ -35,7 +35,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class DeleteMolPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Molecules", "[3] Delete..."];
+    menuPath = ["Navigator", "Molecules", "[3] Delete..."];
     title = "Delete Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

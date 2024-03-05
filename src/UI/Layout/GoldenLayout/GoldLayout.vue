@@ -342,6 +342,7 @@ export default class GoldLayout extends Vue {
     height: 100%;
     z-index: 50;
 }
+
 </style>
 
 <style lang="scss">

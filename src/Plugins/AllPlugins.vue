@@ -10,11 +10,13 @@ system uses these to autopopulate with plugins. -->
     <!-- TEMPLATE1 START -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
+    <CollapseAllPlugin @onPluginSetup="onPluginSetup"></CollapseAllPlugin>
     <CopyPlugin @onPluginSetup="onPluginSetup"></CopyPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <ErrorReportingPlugin @onPluginSetup="onPluginSetup"></ErrorReportingPlugin>
     <ExampleDataPlugin @onPluginSetup="onPluginSetup"></ExampleDataPlugin>
+    <ExpandAllPlugin @onPluginSetup="onPluginSetup"></ExpandAllPlugin>
     <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
     <JobsWindowPlugin @onPluginSetup="onPluginSetup"></JobsWindowPlugin>
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
@@ -33,6 +35,7 @@ system uses these to autopopulate with plugins. -->
     <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
     <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
+    <SelectInvertPlugin @onPluginSetup="onPluginSetup"></SelectInvertPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
     <SimpleVideoPlugin @onPluginSetup="onPluginSetup"></SimpleVideoPlugin>
@@ -67,11 +70,13 @@ import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 // TEMPLATE2 START
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
+import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
 import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
 import ExampleDataPlugin from "./Core/LocalMolLoadersSavers/ExampleDataPlugin.vue";
+import ExpandAllPlugin from "./Core/ExpandAllPlugin.vue";
 import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
 import JobsWindowPlugin from "./Core/Window/JobsWindowPlugin.vue";
 import LoadAlphaFoldPlugin from "./Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue";
@@ -90,6 +95,7 @@ import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugi
 import SavePNGPlugin from "./Core/Graphics/SavePNGPlugin.vue";
 import SaveVRMLPlugin from "./Core/Graphics/SaveVRMLPlugin.vue";
 import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
+import SelectInvertPlugin from "./Core/SelectInvertPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
 import SimpleVideoPlugin from "./Core/SimpleVideoPlugin.vue";
@@ -120,11 +126,13 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     // TEMPLATE3 START
     ClearSelectionPlugin,
     CloneMolPlugin,
+    CollapseAllPlugin,
     CopyPlugin,
     DataWindowPlugin,
     DeleteMolPlugin,
     ErrorReportingPlugin,
     ExampleDataPlugin,
+    ExpandAllPlugin,
     InformationWindowPlugin,
     JobsWindowPlugin,
     LoadAlphaFoldPlugin,
@@ -143,6 +151,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SavePNGPlugin,
     SaveVRMLPlugin,
     SelectAllPlugin,
+    SelectInvertPlugin,
     SettingsPlugin,
     SimpleMsgPlugin,
     SimpleVideoPlugin,

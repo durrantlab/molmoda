@@ -19,7 +19,7 @@ export function checkAnyMolSelected(
 ): string | null {
     const num = numSelected(treeNodeList);
     if (num === 0) {
-        return `No ${noun}s are currently selected. First select a ${noun} by clicking on its name in the Molecules panel.`;
+        return `No ${noun}s are currently selected. First select a ${noun} by clicking on its name in the Navigator panel.`;
     }
 
     return null;
@@ -39,7 +39,7 @@ export function checkOneMolSelected(
 ): string | null {
     const num = numSelected(treeNodeList);
     if (num !== 1) {
-        return "First select one (and only one) molecule by clicking on its name in the Molecules panel.";
+        return "First select one (and only one) molecule by clicking on its name in the Navigator panel.";
     }
 
     return null;
@@ -59,7 +59,7 @@ export function checkMultipleMolsSelected(
 ): string | null {
     const num = numSelected(treeNodeList);
     if (num < 2) {
-        return `First select at least two molecules by clicking on their names in the Molecules panel. ${selectInstructionsLong}`;
+        return `First select at least two molecules by clicking on their names in the Navigator panel. ${selectInstructionsLong}`;
         // Click while holding down the Control, Command (Mac), and/or Shift keys to select multiple molecules.";
     }
 

@@ -21,6 +21,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 
 /**
  * ToggleVisiblePlugin
@@ -31,7 +32,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class ToggleVisiblePlugin extends PluginParentClass {
-    menuPath = ["Edit", "Molecules", "[5] Toggle Visible..."];
+    menuPath = ["Navigator", "Molecules", "[5] Toggle Visible..."];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
@@ -83,6 +84,16 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
         // }
 
         return Promise.resolve();
+    }
+
+    /**
+     * Check if this plugin can currently be used.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
+    checkPluginAllowed(): string | null {
+        return checkAnyMolSelected();
     }
 
     /**

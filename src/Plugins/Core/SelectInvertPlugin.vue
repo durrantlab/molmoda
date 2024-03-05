@@ -15,46 +15,33 @@ import {
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
-/** ClearSelectionPlugin */
+/** SelectInvertPlugin */
 @Options({
     components: {
         PluginComponent,
     },
 })
-export default class ClearSelectionPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Selection", "[1] Clear"];
+export default class SelectInvertPlugin extends PluginParentClass {
+    menuPath = ["Edit", "Selection", "[1] Inverse"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
-    contributorCredits: IContributorCredit[] = [
-        // {
-        //     name: "Jacob D. Durrant",
-        //     url: "http://durrantlab.com/",
-        // },
-    ];
-    pluginId = "clearselection";
+    contributorCredits: IContributorCredit[] = [];
+    pluginId = "selectinverse";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = "Clear the selection of all molecules.";
+    intro = "Invert which molecules are selected in the tree.";
 
-    /**
-     * Check if this plugin can currently be used.
-     *
-     * @returns {string | null}  If it returns a string, show that as an error
-     *     message. If null, proceed to run the plugin.
-     */
-    checkPluginAllowed(): string | null {
-        return checkAnyMolSelected();
-    }
+    hotkey = "i";
 
     /**
      * Every plugin runs some job. This is the function that does the job
@@ -66,11 +53,21 @@ export default class ClearSelectionPlugin extends PluginParentClass {
         const allNodes = (this.$store.state["molecules"] as TreeNodeList)
             .flattened;
         allNodes.forEach((n) => {
-            if (n.selected !== SelectedType.False) {
-                n.selected = SelectedType.False;
-            }
+            if (n.selected === SelectedType.False)
+                n.selected = SelectedType.True;
+            else n.selected = SelectedType.False;
         });
         return Promise.resolve();
+    }
+
+    /**
+     * Check if this plugin can currently be used.
+     *
+     * @returns {string | null}  If it returns a string, show that as an error
+     *     message. If null, proceed to run the plugin.
+     */
+     checkPluginAllowed(): string | null {
+        return checkAnyMolLoaded();
     }
 
     /**
@@ -82,9 +79,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList()
-                .loadExampleMolecule(true)
-                .selectMoleculeInTree("Protein"),
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
         };
     }
 }

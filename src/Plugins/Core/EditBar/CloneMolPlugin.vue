@@ -39,7 +39,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
     },
 })
 export default class CloneMolPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Molecules", "Clone..."];
+    menuPath = ["Navigator", "Molecules", "Clone..."];
     title = "Clone Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
