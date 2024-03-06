@@ -152,7 +152,7 @@ export default class App extends Vue {
 
     /** mounted function */
     mounted() {
-        api.messages.log(`${appName} suite started`);
+        api.messages.log(`${appName} started`);
 
         if (
             compileErrors.length > 0 &&

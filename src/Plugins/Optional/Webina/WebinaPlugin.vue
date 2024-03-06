@@ -141,7 +141,6 @@ export default class WebinaPlugin extends PluginParentClass {
             type: UserArgType.SelectRegion,
             regionName: "Docking Region",
             warningFunc: (val: ISphereOrBox) => {
-                console.log(val);
                 if (!val) return "";
                 if (
                     val.center[0] === 0 &&

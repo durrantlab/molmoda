@@ -172,11 +172,22 @@ implemented, I think this prevent programmatic closing of modals.
 
 **** Firefox video blocked.
 
+Why failed to parse JSON?
+
+Safari, try to dock. SharedArrayBuffer error. But still acts like it works.
+Also, how to enable this in safari? Headers seem to be set.
+
+console.log("ERR", err); . Should throw error more intelligently.
+
+# DONE
+
+Are errors thrown when testing (or always caught in modal)>
+
+MolText no trigger on enter.
+
 Good to report oyal job duration on callbacks from webina, etc., as parameters.
 
 No fullscreen
-
-# DONE
 
 Paste lots of molecules (as above). then click on submolecules. Lipinski panel
 doesn't update on right.

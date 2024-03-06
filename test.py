@@ -189,54 +189,44 @@ class el:
         raise Exception(msg)
 
 
-# os.environ['webdriver.chrome.driver'] = "/Users/jdurrant/Documents/Work/durrant_git/biotite-suite/utils/chromedriver_mac_arm64/chromedriver"
+def make_driver(browser):
+    if browser == "firefox":
+        options = webdriver.FirefoxOptions()
 
+        # Firefox can run in headless, but I prefer not. Good to have GUI just
+        # in case introduces some errors (don't trust headless). Will run chrome
+        # in headless, because it otherwise steals the focus.
+        # options.add_argument("-headless")
 
-def make_driver():
+        driver = webdriver.Firefox(options=options)
+    elif browser == "safari":
+        # Note importance of disabling certain features in safari to make it
+        # work: https://developer.apple.com/forums/thread/709225
+        driver = webdriver.Safari()
+    elif browser == "chrome":
+        options = webdriver.ChromeOptions()
+        # Chrome works well in headless! Also, prevents stealing focus.
+        options.add_argument("--headless=new")
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
-    # options = Options()
-    # options.BinaryLocation = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-    # driver_path = "/usr/bin/chromedriver"
-    # driver = webdriver.Chrome(options=options, service=Service(driver_path))
+    return driver
 
-    # Running headless speeds up tests. But then you get warnings.
-    # options.add_argument("--headless")
-
-    # options.add_argument("--no-sandbox")
-    # options.add_argument("--disable-dev-shm-usage")
-    # options.add_argument("--disable-extensions")
-    # options.add_argument("--disable-infobars")
-    # options.add_argument("--disable-gpu")
-
-    # options.add_argument("--window-size=3840,2160")
-    # options.add_argument("--auto-open-devtools-for-tabs")
-    # options.add_argument("--start-maximized")
-
-    # Download the driver here: https://sites.google.com/chromium.org/driver/
-
-    # Return the driver
-    # options = webdriver.ChromeOptions()
-    # return webdriver.Chrome(
-    #     service=ChromeService(ChromeDriverManager().install()), options=options
-    # )
-
-    # options = webdriver.EdgeOptions()
-    # return webdriver.Edge(options=options)
-
-    options = webdriver.FirefoxOptions()
-    return webdriver.Firefox(options=options)
-
+allowed_threads = {
+    "chrome": 4,
+    "firefox": 4,
+    "safari": 1,
+}
 
 drivers = {}
-
+browser = ""
 
 def run_test(plugin_id):
-
     global drivers
+    global browser
 
     key = threading.get_ident()
     if key not in drivers:
-        drivers[key] = make_driver()
+        drivers[key] = make_driver(browser)
 
     driver = drivers[key]
 
@@ -353,110 +343,87 @@ plugin_ids.sort()
 
 passed_tests = []
 
-for try_idx in range(4):
-    failed_tests = []
-    drivers = {}
+for browserToUse in ["chrome", "firefox", "safari"]:
+    # Set global var
+    browser = browserToUse
 
-    # plugin_ids.remove("about")  # Because cancel button. TODO: Good to account for this.
+    print("\nBrowser: " + browser + "\n")
 
-    # Get all the tests you'll run
+    plugin_ids_per_browser = plugin_ids.copy()
 
-    # while plugin_ids:
-    #     plugin_id = plugin_ids.pop(0)
-    #     result = run_test(plugin_id)
-    #     if result is not None:
-    #         plugin_ids.extend(result)
+    for try_idx in range(8):
+        failed_tests = []
+        drivers = {}
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        # Use a dictionary to map futures to the tests they represent (optional but
-        # can be useful)
-        futures_to_tests = {}
+        with ThreadPoolExecutor(max_workers=allowed_threads[browserToUse]) as executor:
+            # Use a dictionary to map futures to the tests they represent
+            # (optional but can be useful)
+            futures_to_tests = {}
 
-        results = []
+            results = []
 
-        while plugin_ids or futures_to_tests:
-            # While there are tests to submit or futures that haven't been processed
-            while plugin_ids:
-                test = plugin_ids.pop()
-                future = executor.submit(run_test, test)
-                futures_to_tests[future] = test
+            while plugin_ids_per_browser or futures_to_tests:
+                # While there are tests to submit or futures that haven't been processed
+                while plugin_ids_per_browser:
+                    test = plugin_ids_per_browser.pop()
+                    future = executor.submit(run_test, test)
+                    futures_to_tests[future] = test
 
-            # Use as_completed to gather results and remove completed futures
-            for future in as_completed(futures_to_tests):
-                test = futures_to_tests[future]
-                try:
-                    result = future.result()
+                # Use as_completed to gather results and remove completed futures
+                for future in as_completed(futures_to_tests):
+                    test = futures_to_tests[future]
+                    try:
+                        result = future.result()
 
-                    # Is result a list?
-                    if isinstance(result, list):
-                        plugin_ids.extend(result)
-                        print(f"Added tests: {json.dumps(result)}")
-                        continue
+                        # Is result a list?
+                        if isinstance(result, list):
+                            plugin_ids_per_browser.extend(result)
+                            print(f"Added tests: {json.dumps(result)}")
+                            continue
 
-                    # Not a list, so do nothing.
-                    # results.append(result)
-                    # print(f"Test {test} resulted in {result}")
-                    print(
-                        f"{result['status'][:1].upper()}{result['status'][1:]}: {result['test']} {result['error']}"
-                    )
-                    # if result["test"] not in all_test_results:
-                    # all_test_results[result["test"]] = []
-                    # all_test_results[result["test"]].append(
-                    #     result["status"] + " (try " + str(tryIdx + 1) + ")"
-                    # )
-                    # all_test_results[result["test"]] = (
-                    #     result["status"] + " (try " + str(tryIdx + 1) + ")"
-                    # )
+                        # Not a list, so do nothing.
+                        print(
+                            f"{result['status'][:1].upper()}{result['status'][1:]}: {result['test']} {result['error']}"
+                        )
+                        if result["status"] == "passed":
+                            # test is like ('clearselection', None)
+                            passed_tests.append([test[0], test[1], try_idx, browserToUse])
+                        else:
+                            failed_tests.append([test[0], test[1], try_idx, browserToUse])
+                    except Exception as e:
+                        print(f"Test {test} raised an exception: {e}")
+                        # all_test_results[test[0]] = f"failed (try {str(tryIdx + 1)})"
+                        failed_tests.append([test[0], test[1], try_idx, browserToUse])
+                    finally:
+                        del futures_to_tests[future]
 
-                    if result["status"] == "passed":
-                        passed_tests.append([test[0], test[1], try_idx])
-                    else:
-                        failed_tests.append([test[0], test[1], try_idx])
-                except Exception as e:
-                    print(f"Test {test} raised an exception: {e}")
-                    # all_test_results[test[0]] = f"failed (try {str(tryIdx + 1)})"
-                    failed_tests.append([test[0], test[1], try_idx])
-                finally:
-                    del futures_to_tests[future]
+        plugin_ids_per_browser = failed_tests
+        plugin_ids_per_browser.sort()
 
-    # print("")
-    # print("Tests that passed:")
-    # for test, value in all_test_results.items():
-    #     if "passed" in value:
-    #         print(f"   {test}: {all_test_results[test]}")
-    #         # if all("passed" in i for i in all_test_results[test]):
+        # Go through all the drivers and quit
+        for driver in drivers.values():
+            driver.quit()
+            if browser == "safari":
+                # Safari refuses to quit.
+                time.sleep(1)
+                os.system("pkill -9 Safari > /dev/null 2>&1")
+                time.sleep(1)
 
-    plugin_ids = failed_tests
-    plugin_ids.sort()
+        if not plugin_ids_per_browser:
+            break
 
-    # plugin_ids = [
-    #     test for test, value_ in all_test_results.items() if "failed" in value_
-    # ]
-    # plugin_ids2 = [
-    #     (i, None) if " #" not in i else (i.split(" #")[0], int(i.split(" #")[1]))
-    #     for i in plugin_ids
-    # ]
-    # plugin_ids2.sort()
-
-    # Go through all the drivers and quit
-    for driver in drivers.values():
-        driver.quit()
-
-    if not plugin_ids:
-        break
-
-    plugin_ids_str = ", ".join(
-        [i[0] if i[1] is None else f"{i[0]} #{str(i[1] + 1)}" for i in plugin_ids]
-    )
-    print(f"Will retry the following tests: {plugin_ids_str}")
+        plugin_ids_str = ", ".join(
+            [i[0] if i[1] is None else f"{i[0]} #{str(i[1] + 1)}" for i in plugin_ids_per_browser]
+        )
+        print(f"Will retry the following tests: {plugin_ids_str}")
 
 
 # import pdb; pdb.set_trace()
 
 print("")
 print("Tests that passed:")
-for test_name, test_idx, try_idx in passed_tests:
-    lbl = f"   {test_name}"
+for test_name, test_idx, try_idx, browser in passed_tests:
+    lbl = f"   {test_name}-{browser}"
     if test_idx is not None:
         lbl += f" #{test_idx + 1}"
     lbl += f" (try {try_idx + 1})"
@@ -468,12 +435,15 @@ for test_name, test_idx, try_idx in passed_tests:
 
 print("")
 print("Tests that failed:")
-for test_name, test_idx, try_idx in failed_tests:
-    lbl = f"   {test_name}"
+for test_name, test_idx, try_idx, browser in failed_tests:
+    lbl = f"   {test_name}-{browser}"
     if test_idx is not None:
         lbl += f" #{test_idx + 1}"
     lbl += f" (try {try_idx + 1})"
     print(lbl)
+
+if len(failed_tests) == 0:
+    print("   None!")
 
     # if "passed" in value:
     #     print(f"   {test}: {all_test_results[test]}")

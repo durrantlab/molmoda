@@ -8,6 +8,7 @@ import {
     updateProgressInQueueStore,
 } from "./QueueStore";
 import { IJobInfo, IQueueCallbacks } from "./QueueTypes";
+import { messagesApi } from "@/Api/Messages";
 
 /**
  * The parent class for all queues. This class is not meant to be used directly.
@@ -279,8 +280,13 @@ export abstract class QueueParent {
                     // Call the onError callback for each job in the batch.
                     this._onError(inputBatch, err);
 
-                    // TODO: Throw error here?
-                    throw err;
+                    let msg = err.message;
+                    if (msg.indexOf("SharedArrayBuffer") !== -1) {
+                        msg += ". Consider using Google Chrome."
+                    }
+                
+                    messagesApi.popupError(msg);
+                    throw new Error(msg);
                 });
         }
     }

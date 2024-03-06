@@ -6,6 +6,7 @@ import {
     ISimpleMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { isTest } from "@/Testing/SetupTests";
 
 interface IErrorData {
     message: string;
@@ -144,6 +145,7 @@ export function triggerErrorPopup(
     simpleErrorMsg = false
 ) {
     if (simpleErrorMsg) errTxt = "TMPERRORMSG:" + errTxt;
+    if (isTest) throw new Error(errTxt);
     pluginsApi.runPlugin("errorreporting", {
         title: "",
         message: errTxt,

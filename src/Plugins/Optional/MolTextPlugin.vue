@@ -5,6 +5,7 @@
         :isActionBtnEnabled="isActionBtnEnabled"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
+        :submitOnEnter="false"
     >
     </PluginComponent>
 </template>
