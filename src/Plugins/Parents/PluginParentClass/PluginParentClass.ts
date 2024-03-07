@@ -37,7 +37,7 @@ import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
 // export type RunJobReturn = Promise<RunJob> | RunJob;
 // export type RunJobReturn = Promise<void>;
 
-const runningForAWhileTimers: {[key: string]: any} = {};
+const runningForAWhileTimers: { [key: string]: any } = {};
 
 /**
  * PluginParentClass
@@ -113,7 +113,7 @@ export abstract class PluginParentClass extends mixins(
 
     /**
      * The payload to send to the plugin component via the infoPayload property.
-     * 
+     *
      * @returns {IInfoPayload}  The info payload.
      */
     get infoPayload(): IInfoPayload {
@@ -155,12 +155,13 @@ export abstract class PluginParentClass extends mixins(
     logJob = true;
 
     /**
-     * The message to show when all jobs have finished. If empty, no message is
-     * shown.
+     * The message to show when all jobs have finished. It is a string or a
+     * function. If the string is "", no message is shown. If the function
+     * returns undefined, no message is shown.
      *
-     * @type {string}
+     * @type {string | Function}
      */
-    msgOnJobsFinished = "";
+    msgOnJobsFinished: string | (() => string | undefined) = "";
 
     /**
      * If alwaysEnabled is set to true, this plugin will always load, even if
@@ -292,7 +293,7 @@ export abstract class PluginParentClass extends mixins(
                 );
             }, 5000);
         }
-        
+
         if (parameterSets === undefined) {
             parameterSets = [undefined];
         }
@@ -346,16 +347,20 @@ export abstract class PluginParentClass extends mixins(
             }
         }
 
-        if (this.msgOnJobsFinished !== "") {
+        const msgToUse =
+            typeof this.msgOnJobsFinished === "string"
+                ? this.msgOnJobsFinished
+                : this.msgOnJobsFinished();
+        if (msgToUse !== "" && msgToUse !== undefined) {
             setTimeout(() => {
+                // If this.msgOnJobsFinished is string...
                 api.messages.popupMessage(
                     "Job Finished",
-                    this.msgOnJobsFinished,
+                    msgToUse,
                     PopupVariant.Success
                 );
             }, delayForPopupOpenClose);
         }
-
 
         // const jobs: IJobInfoToEndpoint[] = parameterSets.map(
         //     (p: IJobInfoToEndpoint) => {
@@ -396,7 +401,10 @@ export abstract class PluginParentClass extends mixins(
      *                                 Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    private async _runJobInBrowser(jobId?: string, parameterSet?: any): Promise<void> {
+    private async _runJobInBrowser(
+        jobId?: string,
+        parameterSet?: any
+    ): Promise<void> {
         if (this.runJobInBrowser === null) {
             // Below won't ever happen (wouldn't pass validation), but makes it
             // easy to avoid typescript error.
@@ -453,8 +461,7 @@ export abstract class PluginParentClass extends mixins(
         //     // Proabably returned void.
         // }
 
-        endLogTxt +=
-            " " + timeDiffDescription(startTime, new Date().getTime());
+        endLogTxt += " " + timeDiffDescription(startTime, new Date().getTime());
         api.messages.log(endLogTxt, undefined, jobId);
 
         // It's an object or undefined
@@ -511,7 +518,7 @@ export abstract class PluginParentClass extends mixins(
                 hotkey: this.hotkey,
                 function: this.menuOpenPlugin,
                 pluginId: this.pluginId,
-                checkPluginAllowed: this.checkPluginAllowed
+                checkPluginAllowed: this.checkPluginAllowed,
             } as IMenuItem,
             pluginId: this.pluginId,
         } as IPluginSetupInfo);
@@ -553,7 +560,12 @@ export abstract class PluginParentClass extends mixins(
      *                                              "Molecule".
      * @returns {Promise<void>}  A promise that resolves when the molecule is
      */
-    protected addFileInfoToViewer(fileInfo: FileInfo, hideOnLoad=false, desalt=false, defaultTitle="Molecule"): Promise<void> {
+    protected addFileInfoToViewer(
+        fileInfo: FileInfo,
+        hideOnLoad = false,
+        desalt = false,
+        defaultTitle = "Molecule"
+    ): Promise<void> {
         return new TreeNodeList()
             .loadFromFileInfo(fileInfo, desalt, defaultTitle)
             .then((newTreeNodeList) => {
@@ -568,7 +580,7 @@ export abstract class PluginParentClass extends mixins(
                         });
                     }
 
-                    return
+                    return;
                 }
                 return;
             });

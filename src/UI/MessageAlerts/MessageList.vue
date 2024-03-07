@@ -43,7 +43,13 @@ import Alert from "../Layout/Alert.vue";
 export default class MessageList extends Vue {
     @Prop({ default: [] }) messages!: ISimpleMsg[];
 
-    alertTxt(simpleMsg: ISimpleMsg) {
+    /**
+     * The alert text to display.
+     * 
+     * @param {ISimpleMsg} simpleMsg The simple message.
+     * @returns {string} The alert text to display.
+     */
+    alertTxt(simpleMsg: ISimpleMsg): string {
         let resp = "";
         if (simpleMsg.title !== "") resp += `<b>${simpleMsg.title}</b>. `;
         resp += simpleMsg.message;

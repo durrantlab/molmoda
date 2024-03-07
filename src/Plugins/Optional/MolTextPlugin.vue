@@ -107,7 +107,7 @@ export default class MolTextPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [
         {
             name: "Yuri K. Kochnev",
-            url: "http://durrantlab.com/",
+            // url: "http://durrantlab.com/",
         },
     ];
     pluginId = "moltextplugin";
@@ -248,7 +248,7 @@ export default class MolTextPlugin extends PluginParentClass {
         // "@<TRIPOS>MOLECULE\n*****\n 5 4 0 0 0\nSMALL\nGASTEIGER\n\n@<TRIPOS>ATOM\n      1 C           1.0793   -0.0578    0.0194 C.3     1  UNL1       -0.0776\n      2 H           2.1715   -0.0578    0.0194 H       1  UNL1        0.0194\n      3 H           0.7152   -0.8023    0.7308 H       1  UNL1        0.0194\n      4 H           0.7152   -0.3016   -0.9811 H       1  UNL1        0.0194\n      5 H           0.7152    0.9306    0.3084 H       1  UNL1        0.0194\n@<TRIPOS>BOND\n     1     1     2    1\n     2     1     3    1\n     3     1     4    1\n     4     1     5    1",
         // "\n OpenBabel08312314413D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.9733   -0.0684    0.0679 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0655   -0.0684    0.0679 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6093    0.9241    0.3424 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.8023    0.7902 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.3269   -0.9288 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  1  4  1  0  0  0  0\n  1  5  1  0  0  0  0\nM  END\n$$$$",
 
-        return txts.map((txt: string) => {
+        const tests = txts.map((txt: string) => {
             return {
                 pluginOpen: new TestCmdList().setUserArg(
                     "molTextArea",
@@ -261,6 +261,21 @@ export default class MolTextPlugin extends PluginParentClass {
                 ),
             };
         });
+
+        // Final test to verify error catching
+        tests.push({
+            pluginOpen: new TestCmdList().setUserArg(
+                "molTextArea",
+                "C##moose",
+                this.pluginId
+            ),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#modal-simplemsg",
+                "File contained no valid"
+            ),
+        });
+
+        return tests;
     }
 }
 </script>

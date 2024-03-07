@@ -53,6 +53,11 @@ export default class FormElementDescription extends Vue {
         }
     }
 
+    /**
+     * The description to use.
+     *
+     * @returns {string} The description to use.
+     */
     get descriptionToUse(): string {
         let desc = this.description;
 

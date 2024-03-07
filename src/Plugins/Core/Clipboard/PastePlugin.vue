@@ -127,6 +127,8 @@ export default class PastePlugin extends PluginParentClass {
                 resp = await axios.get("testmols/example_mult.pdb");
             else if (index === "7")
                 resp = await axios.get("testmols/example_mult.mol2");
+            else if (index === "8")
+                resp = { data: "C##moose" };
 
             txt = resp.data;
         }
@@ -225,7 +227,22 @@ export default class PastePlugin extends PluginParentClass {
                 "my_molz"
             ),
         };
-        return [test, test, test, test, test, test, test, test];
+        const tests = [test, test, test, test, test, test, test, test];
+
+        // Final test to detect error catching
+        tests.push({
+            pluginOpen: new TestCmdList().setUserArg(
+                "pastedMolName",
+                "my_molz",
+                this.pluginId
+            ),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#modal-simplemsg",
+                "File contained no valid"
+            ),
+        });
+
+        return tests;
     }
 }
 </script>

@@ -155,12 +155,12 @@ box regardless).
 
 Copy molecule. Name is internap tmp file. Good to use slugified title.
 
+**** Try uploading tmp.can. Does it given an error (even once fixed)?
+
 # Ongoing: Important
 
 Label on save moleucle compoudns to different files is misleading. It saves it
 as a single file (proteina nd ligand)
-
-**** Try uploading tmp.can. Does it given an error (even once fixed)?
 
 Sulfonates don't get deprotonated (but phosphates do).
 OS(=O)(=O)OCCCCC
@@ -172,14 +172,18 @@ implemented, I think this prevent programmatic closing of modals.
 
 **** Firefox video blocked.
 
-Why failed to parse JSON?
+Why failed to parse JSON on some tests?
 
 Safari, try to dock. SharedArrayBuffer error. But still acts like it works.
-Also, how to enable this in safari? Headers seem to be set.
+Also, how to enable this in safari? Headers seem to be set. Just upgrade OS.
 
 console.log("ERR", err); . Should throw error more intelligently.
 
 # DONE
+
+Wherever you can, also give bad formats, etc., to test that.
+
+Yuri name spelled different ways.
 
 Are errors thrown when testing (or always caught in modal)>
 

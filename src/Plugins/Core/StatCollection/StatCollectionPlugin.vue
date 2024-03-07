@@ -101,7 +101,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [
         {
             name: "Yuri K. Kochnev",
-            url: "durrantlab.com",
+            // url: "durrantlab.com",
         },
     ];
     pluginId = "statcollection";

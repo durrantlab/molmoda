@@ -386,6 +386,10 @@ function addTestDefaults(
     }
 }
 
+/**
+ * If running a selenium test, this function will make a fake mouse that will
+ * appear in screen shots.
+ */
 function makeFakeMouse() {
     // Set body cursor to none
     // document.body.style.cursor = "none";

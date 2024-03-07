@@ -62,7 +62,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         //     url: "http://durrantlab.com/",
         // },
         {
-            name: "Yuri Kochnev",
+            name: "Yuri K. Kochnev",
         },
     ];
     pluginId = "protonatecomps";

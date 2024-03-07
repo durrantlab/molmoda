@@ -20,7 +20,6 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
-import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
@@ -155,6 +154,19 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "7VBA"
+                ),
+            },
+
+            // Check error checking
+            {
+                pluginOpen: new TestCmdList().setUserArg(
+                    "pdbId",
+                    "9999",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "Could not load"
                 ),
             },
         ];

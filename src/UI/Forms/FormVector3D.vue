@@ -75,6 +75,11 @@ export default class FormVector3D extends Vue {
         this.$emit("onKeyDown");
     }
 
+    /**
+     * The warning message.
+     *
+     * @returns {string} The warning message.
+     */
     get warning(): string {
         if (this.warningFunc) {
             return this.warningFunc(this.modelValue);

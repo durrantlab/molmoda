@@ -126,6 +126,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
                 return this.addFileInfoToViewer(fileInfo);
             })
             .catch((err: string) => {
+                err = "Could not load AlphaFold model with UniProt ID " + uniprot + ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?";
                 api.messages.popupError(err);
                 // throw err;
             });
@@ -136,23 +137,38 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    async getTests(): Promise<ITest> {
-        return {
-            pluginOpen: new TestCmdList().setUserArg(
-                "uniprot",
-                "P86927",
-                this.pluginId
-            ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#navigator",
-                "P86927"
-            ),
+    async getTests(): Promise<ITest[]> {
+        return [
+            {
+                pluginOpen: new TestCmdList().setUserArg(
+                    "uniprot",
+                    "P86927",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "P86927"
+                ),
 
-            // .waitUntilRegex("#styles", "Protein")
-            // .waitUntilRegex("#log", 'Job loadalphafold.*? ended')
-        };
+                // .waitUntilRegex("#styles", "Protein")
+                // .waitUntilRegex("#log", 'Job loadalphafold.*? ended')
+            },
+
+            // Below tests errors
+            {
+                pluginOpen: new TestCmdList().setUserArg(
+                    "uniprot",
+                    "P11111",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "Could not load"
+                ),
+            },
+        ];
     }
 }
 </script>

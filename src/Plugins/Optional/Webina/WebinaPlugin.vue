@@ -66,6 +66,8 @@ import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
+let msgOnJobsFinishedtoUse: string | undefined;
+
 /**
  * WebinaPlugin
  */
@@ -112,8 +114,9 @@ export default class WebinaPlugin extends PluginParentClass {
 
     intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding. Uses a version of AutoDock Vina (Webina).`;
 
-    msgOnJobsFinished =
-        "Finished docking compounds (see molecular viewer). Some docked compounds might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the docked compounds.";
+    msgOnJobsFinished = () => {
+        return msgOnJobsFinishedtoUse;
+    };
 
     userArgDefaults: UserArg[] = [
         // {
@@ -381,8 +384,6 @@ export default class WebinaPlugin extends PluginParentClass {
             //     Flex   - Flex side chains      : 0.000 (kcal/mol)
             // (3) Torsional Free Energy          : 5.285 (kcal/mol)
             // (4) Unbound System's Energy        : -0.773 (kcal/mol)
-
-            console.log(stdOut);
 
             const extractEnergy = (pattern: RegExp): number => {
                 const match = stdOut.match(pattern);
@@ -711,6 +712,21 @@ export default class WebinaPlugin extends PluginParentClass {
             // Doing it this way so molecules added to the viewer as they are
             // docked (not all at once at the end).
             onJobDone: onJobDoneFunc,
+            onQueueDone: (outputs: any[]) => {
+                // Remove errors
+                outputs = outputs.filter(
+                    (output) => output.output !== "{{ERROR}}"
+                );
+
+                if (outputs.length === 0) {
+                    msgOnJobsFinishedtoUse =
+                        "No compounds docked successfully.";
+                } else {
+                    const compounds =
+                        outputs.length == 1 ? "compound" : "compounds";
+                    msgOnJobsFinishedtoUse = `Finished docking ${outputs.length} ${compounds} (see molecular viewer). Some docked compounds might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the docked ${compounds}.`;
+                }
+            },
         } as IQueueCallbacks;
 
         await new WebinaQueue(

@@ -193,7 +193,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                 fileInfo.name = correctFilenameExt(filename, "SMI");
                 return fileInfo;
             })
-            .catch((err: string) => {
+            .catch((/* err: string */) => {
                 // api.messages.popupError(err);
                 // throw err;
                 return;
@@ -215,7 +215,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                 fileInfo.name = correctFilenameExt(filename, "SDF");
                 return fileInfo;
             })
-            .catch((err: string) => {
+            .catch((/* err: string */) => {
                 // api.messages.popupError(err);
                 // throw err;
                 return;
@@ -237,7 +237,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                 fileInfo.name = correctFilenameExt(filename, "SDF");
                 return fileInfo;
             })
-            .catch((err: string) => {
+            .catch((/*err: string*/) => {
                 // api.messages.popupError(err);
                 // throw err;
                 return;
@@ -339,7 +339,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest[]> {
         return [
-        {
+            {
                 pluginOpen: new TestCmdList()
                     .text("#modal-loadpubchem #formMolName", "Aspirin")
                     // TODO: Below could wait until value populated. Hoping it will take
@@ -359,6 +359,17 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "CID18781742"
+                ),
+            },
+
+            // Below to verify error catching. Not a valid CID.
+            {
+                pluginOpen: new TestCmdList()
+                    .text("#modal-loadpubchem #cid", "999912354323")
+                    .wait(5),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "Could not load"
                 ),
             },
         ];

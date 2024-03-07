@@ -3,6 +3,11 @@
 
 import { IUserArgCheckbox, UserArgType } from "./FormFullInterfaces";
 
+/**
+ * Returns a desalt argument for use in FormFull.
+ *
+ * @returns {IUserArgCheckbox}  The desalt argument.
+ */
 export function getDesaltArg(): IUserArgCheckbox {
     return {
         id: "desalt",

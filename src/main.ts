@@ -15,8 +15,6 @@ import {
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
-import * as api from "./Api";
-import { PopupVariant } from "./UI/Layout/Popups/InterfacesAndEnums";
 
 // api.sys.loadStatus.started = true;
 

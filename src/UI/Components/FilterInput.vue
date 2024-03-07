@@ -60,6 +60,11 @@ export default class FilterInput extends Vue {
         this.onFilter();
     }
 
+    /**
+     * Runs when user presses a key. Detects escape key to clear the filter.
+     *
+     * @param {KeyboardEvent} event  The key event.
+     */
     onKeypress(event: KeyboardEvent) {
         // Detect escape key
         if (event.key === "Escape") {

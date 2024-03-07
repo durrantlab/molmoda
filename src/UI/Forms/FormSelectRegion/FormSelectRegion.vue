@@ -165,6 +165,9 @@ export default class FormSelectRegion extends Vue {
         return this.regionName;
     }
 
+    /**
+     * Set the warning message (this.warningToUse).
+     */
     setWarning() {
         if (this.warningFunc) {
             const modelValueForWarning = JSON.parse(

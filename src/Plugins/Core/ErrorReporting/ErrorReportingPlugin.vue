@@ -43,7 +43,6 @@ import {
 import * as api from "@/Api";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { reportErrorToServer } from "./ErrorReporting";
-import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * ErrorReportingPlugin
@@ -74,6 +73,11 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     //     return;
     // };
 
+    /**
+     * The text to display on the action button.
+     *
+     * @returns {string} The text to display on the action button.
+     */
     get actionBtnTxtToUse(): string {
         // if (this.hasTmpErrorMsg) {
         //     return "";
@@ -81,6 +85,11 @@ export default class ErrorReportingPlugin extends PluginParentClass {
         return "Yes, Send the Report";
     }
 
+    /**
+     * The text to display on the cancel button.
+     *
+     * @returns {string} The text to display on the cancel button.
+     */
     get cancelBtnTxtToUse(): string {
         // if (this.hasTmpErrorMsg) {
         //     return "Ok";

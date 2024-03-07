@@ -124,6 +124,11 @@ async function sendErrorToServer(errorData: IErrorData) {
     }
 }
 
+/**
+ * Report an error to the server.
+ *
+ * @param {string} [errTxt=""]  The error message.
+ */
 export async function reportErrorToServer(errTxt = "") {
     // Use AJAX (e.g., fetch, Axios, etc.) to send errorData to your PHP server.
     const axios = await dynamicImports.axios.module;

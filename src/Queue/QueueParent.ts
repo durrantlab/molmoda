@@ -282,7 +282,7 @@ export abstract class QueueParent {
 
                     let msg = err.message;
                     if (msg.indexOf("SharedArrayBuffer") !== -1) {
-                        msg += ". Consider using Google Chrome."
+                        msg += ". Consider updating your Safari browser or using a different browser such as Google Chrome."
                     }
                 
                     messagesApi.popupError(msg);

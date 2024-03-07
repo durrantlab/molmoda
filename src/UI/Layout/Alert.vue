@@ -30,6 +30,11 @@ export default class Alert extends Vue {
     // NOTE: Dismissable not working/fully implemented. Would require jQuery.
     @Prop({ default: false }) dismissible!: boolean;
 
+    /**
+     * The classes for the alert.
+     *
+     * @returns {string} The classes for the alert.
+     */
     get classes(): string {
         let classes = `alert alert-${this.type}`;
         if (this.extraClasses !== "") classes += ` ${this.extraClasses}`;

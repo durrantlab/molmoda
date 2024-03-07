@@ -154,6 +154,11 @@ export default class TitleBar extends Vue {
     @Prop({ default: undefined }) treeData!: TreeNodeList;
     @Prop({ default: "" }) filterStr!: string;
 
+    /**
+     * Get the icon to use for the visible toggle.
+     *
+     * @returns {string[] | string} The icon to use for the visible toggle.
+     */
     get visibleIconToUse(): string[] | string {
         // Get all the children of the node.
         const children = this.treeDatum.nodes?.flattened;

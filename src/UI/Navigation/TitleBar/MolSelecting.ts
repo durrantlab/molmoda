@@ -24,6 +24,14 @@ function _checkNodePassesFilter(node: TreeNode, filterStr: string): boolean {
     return node.title.toLowerCase().indexOf(filterStr) !== -1;
 }
 
+/**
+ * Selects multiple nodes. Accounts for shift.
+ *
+ * @param  {string}   filterStr         The filter string.
+ * @param  {string}   idLastSelected    The id of the last node selected.
+ * @param  {TreeNode} nodeLastSelected  The last node selected.
+ * @returns {boolean}  Whether the shift key was down.
+ */
 function _selectShiftDown(
     filterStr: string,
     idLastSelected: string,
@@ -75,6 +83,11 @@ function _selectShiftDown(
     return false;
 }
 
+/**
+ * Selects a node and its children. Accounts for control.
+ *
+ * @param  {TreeNode} nodeLastSelected  The last node selected.
+ */
 function _selectControlDown(nodeLastSelected: TreeNode) {
     if (
         nodeLastSelected.selected === SelectedType.True ||

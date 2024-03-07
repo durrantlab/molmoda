@@ -70,7 +70,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [
         {
             name: "Yuri K. Kochnev",
-            url: "http://durrantlab.com/",
+            // url: "http://durrantlab.com/",
         },
     ];
     pluginId = "drawmoleculeplugin";

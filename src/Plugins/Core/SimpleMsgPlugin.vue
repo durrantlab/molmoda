@@ -69,6 +69,11 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     alwaysEnabled = true;
     logJob = false;
 
+    /**
+     * The variant to use for the popup.
+     *
+     * @returns {PopupVariant}  The variant to use for the popup.
+     */
     get variantToUse(): PopupVariant {
         // No messages.
         if (this.simpleMsgs.length === 0) return PopupVariant.Primary;

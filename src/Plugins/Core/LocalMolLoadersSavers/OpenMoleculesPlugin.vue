@@ -204,7 +204,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["4WP4.xyz", "4WP4:1"],
         ];
 
-        return filesToTest.map((fileToTest, idx) => {
+        const tests = filesToTest.map((fileToTest, idx) => {
             const name = fileToTest[0];
             // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
@@ -225,6 +225,21 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                     .waitUntilRegex("#navigator", substrng),
             };
         });
+
+        // Final test to verify error catching.
+        tests.push({
+            pluginOpen: new TestCmdList().setUserArg(
+                "formFile",
+                "file://./src/Testing/mols/nonsense_format.can",
+                this.pluginId
+            ),
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex("#modal-simplemsg", "File contained no valid")
+                // .expandMoleculesTree(titles)
+                // .waitUntilRegex("#navigator", substrng),
+        });
+
+        return tests;
     }
 }
 </script>

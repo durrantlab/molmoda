@@ -39,10 +39,26 @@ urls = [
 
 menu = TerminalMenu(urls, title="Select the root URL")
 chosen_index = menu.show()
-
 root_url = urls[chosen_index]
 
-print("Using root URL: " + root_url)
+browsers_to_use = []
+browser_choices = ["[s] standard three", "chrome", "chrome-headless", "firefox", "firefox-headless", "safari", "[d] done"]
+menu = TerminalMenu(browser_choices, title="Select the browsers to use")
+
+while True:
+    print("Selected browsers: " + ", ".join(browsers_to_use))
+    chosen_index2 = menu.show()
+    if chosen_index2 == len(browser_choices) - 1:
+        # Done
+        break
+    if browser_choices[chosen_index2] == "[s] standard three":
+        browsers_to_use.extend(["chrome-headless", "firefox", "safari"])
+    else:
+        browsers_to_use.append(browser_choices[chosen_index2])
+    browsers_to_use = list(set(browsers_to_use))
+    browsers_to_use.sort()
+
+print("\nUsing root URL: " + root_url)
 
 class el:
     def __init__(self, selector, drvr, timeout=50):
@@ -199,11 +215,18 @@ def make_driver(browser):
         # options.add_argument("-headless")
 
         driver = webdriver.Firefox(options=options)
+    elif browser == "firefox-headless":
+        options = webdriver.FirefoxOptions()
+        options.add_argument("-headless")
+        driver = webdriver.Firefox(options=options)
     elif browser == "safari":
         # Note importance of disabling certain features in safari to make it
         # work: https://developer.apple.com/forums/thread/709225
         driver = webdriver.Safari()
     elif browser == "chrome":
+        options = webdriver.ChromeOptions()
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    elif browser == "chrome-headless":
         options = webdriver.ChromeOptions()
         # Chrome works well in headless! Also, prevents stealing focus.
         options.add_argument("--headless=new")
@@ -213,7 +236,9 @@ def make_driver(browser):
 
 allowed_threads = {
     "chrome": 4,
+    "chrome-headless": 4,
     "firefox": 4,
+    "firefox-headless": 4,
     "safari": 1,
 }
 
@@ -343,9 +368,9 @@ plugin_ids.sort()
 
 passed_tests = []
 
-for browserToUse in ["chrome", "firefox", "safari"]:
+for browser_to_use in browsers_to_use:
     # Set global var
-    browser = browserToUse
+    browser = browser_to_use
 
     print("\nBrowser: " + browser + "\n")
 
@@ -355,7 +380,7 @@ for browserToUse in ["chrome", "firefox", "safari"]:
         failed_tests = []
         drivers = {}
 
-        with ThreadPoolExecutor(max_workers=allowed_threads[browserToUse]) as executor:
+        with ThreadPoolExecutor(max_workers=allowed_threads[browser_to_use]) as executor:
             # Use a dictionary to map futures to the tests they represent
             # (optional but can be useful)
             futures_to_tests = {}
@@ -387,13 +412,13 @@ for browserToUse in ["chrome", "firefox", "safari"]:
                         )
                         if result["status"] == "passed":
                             # test is like ('clearselection', None)
-                            passed_tests.append([test[0], test[1], try_idx, browserToUse])
+                            passed_tests.append([test[0], test[1], try_idx, browser_to_use])
                         else:
-                            failed_tests.append([test[0], test[1], try_idx, browserToUse])
+                            failed_tests.append([test[0], test[1], try_idx, browser_to_use])
                     except Exception as e:
                         print(f"Test {test} raised an exception: {e}")
                         # all_test_results[test[0]] = f"failed (try {str(tryIdx + 1)})"
-                        failed_tests.append([test[0], test[1], try_idx, browserToUse])
+                        failed_tests.append([test[0], test[1], try_idx, browser_to_use])
                     finally:
                         del futures_to_tests[future]
 
@@ -455,7 +480,7 @@ if len(failed_tests) == 0:
 #         # if all("passed" in i for i in all_test_results[test]):
 
 print("")
-print(urls[chosen_index])
-input("Done. Press Enter to end all tests...")
+print(urls[chosen_index] + "\n")
+# input("Done. Press Enter to end all tests...")
 
 # driver.quit()

@@ -25,15 +25,27 @@ export default class Icon extends Vue {
 
     svg = "";
 
+    /**
+     * Whether the icon is a Font Awesome icon.
+     *
+     * @returns {boolean} Whether the icon is a Font Awesome icon.
+     */
     get isFaIcon() {
         return this.icon instanceof Array;
     }
 
+    /**
+     * Update the icon when it changes.
+     */
     @Watch("icon")
     onIconChange() {
         this.updateIcon();
     }
 
+    /**
+     * Update the icon. If it's a Font Awesome icon, do nothing. If it's an SVG,
+     * fetch it and cache it.
+     */
     async updateIcon() {
         if (!this.isFaIcon) {
             const icon = this.icon as string;
@@ -57,6 +69,9 @@ export default class Icon extends Vue {
         }
     }
 
+    /**
+     * Update the icon when the component is mounted.
+     */
     mounted() {
         this.updateIcon();
     }
