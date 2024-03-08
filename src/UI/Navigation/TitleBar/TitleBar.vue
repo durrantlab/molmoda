@@ -392,6 +392,13 @@ export default class TitleBar extends Vue {
         let node = this.getNode(id);
         if (node !== null) {
             node.treeExpanded = !node.treeExpanded;
+
+            // If it has only one terminal node, just expand everything.
+            if (node.nodes?.terminals.length === 1) {
+                node.nodes.flattened.forEach((node2: TreeNode) => {
+                    node2.treeExpanded = true;
+                });
+            }
         }
     }
 

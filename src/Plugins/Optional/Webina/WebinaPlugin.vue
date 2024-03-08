@@ -579,7 +579,7 @@ export default class WebinaPlugin extends PluginParentClass {
             keepOnlyBest = true; // because there's only 1
         }
 
-        const origAssociatedTreeNodes = filePairs.map((filePair) => {
+        let origAssociatedTreeNodes = filePairs.map((filePair) => {
             return [filePair.prot?.treeNode, filePair.cmpd?.treeNode];
         });
 
@@ -612,8 +612,14 @@ export default class WebinaPlugin extends PluginParentClass {
             };
         });
 
-        // Remove null values
+        // Remove null values from inputs AND origAssociatedTreeNodes
+        for (let i = 0; i < inputs.length; i++) {
+            if (inputs[i] === null) origAssociatedTreeNodes[i] = [undefined];
+        }
         inputs = inputs.filter((input: any) => input !== null);
+        origAssociatedTreeNodes = origAssociatedTreeNodes.filter(
+            (input: any) => input[0] !== undefined
+        );
 
         const procsPerJobBatch = webinaParams["cpu"];
 

@@ -19,7 +19,9 @@
                         @input="handleInput"
                         @keydown="onKeyDown"
                         :value="modelValue[axisIdx]"
-                        :delayBetweenChangesDetected="delayBetweenChangesDetected"
+                        :delayBetweenChangesDetected="
+                            delayBetweenChangesDetected
+                        "
                     />
                 </div>
             </div>
@@ -100,6 +102,11 @@ export default class FormVector3D extends Vue {
         // It's important not to handle the input too rapidly. Good to give the
         // user time to fix any temporarily wrong values.
 
+        if (e.data === ".") {
+            // Not done typing in the whole number yet. Don't update.
+            return;
+        }
+
         const now = Date.now();
 
         if (
@@ -132,6 +139,7 @@ export default class FormVector3D extends Vue {
             }
 
             newVals[idx] = newVal;
+
             this.$emit("update:modelValue", newVals);
 
             // In some circumstances (e.g., changing values in an object), not reactive.

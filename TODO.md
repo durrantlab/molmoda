@@ -174,12 +174,26 @@ implemented, I think this prevent programmatic closing of modals.
 
 Why failed to parse JSON on some tests?
 
-Safari, try to dock. SharedArrayBuffer error. But still acts like it works.
-Also, how to enable this in safari? Headers seem to be set. Just upgrade OS.
-
 console.log("ERR", err); . Should throw error more intelligently.
 
+Load AlphaFold P234231. You get error, but then you get job running after a bit.
+
+Period on docking box, safari, causes problems.
+
+Some students are reporting problems with cache busting. Good to investigate
+that cache changes.
+
+Video tutorial says biotite. Just remove it.
+
 # DONE
+
+If only one terminal node, expand all children.
+
+If you rename a node, and it only has one terminal node, rename that terminal
+node to the same thing.
+
+Safari, try to dock. SharedArrayBuffer error. But still acts like it works.
+Also, how to enable this in safari? Headers seem to be set. Just upgrade OS.
 
 Wherever you can, also give bad formats, etc., to test that.
 

@@ -110,6 +110,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
     runJobInBrowser(uniprot: string): Promise<void> {
+        const errorMsg = "Could not load AlphaFold model with UniProt ID " + uniprot + ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?"
         return loadRemote(
             `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
         )
@@ -126,9 +127,8 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
                 return this.addFileInfoToViewer(fileInfo);
             })
             .catch((err: string) => {
-                err = "Could not load AlphaFold model with UniProt ID " + uniprot + ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?";
-                api.messages.popupError(err);
-                // throw err;
+                api.messages.popupError(errorMsg);
+                throw err;
             });
     }
 

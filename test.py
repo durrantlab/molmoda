@@ -223,6 +223,7 @@ def make_driver(browser):
         # Note importance of disabling certain features in safari to make it
         # work: https://developer.apple.com/forums/thread/709225
         driver = webdriver.Safari()
+        os.system("""osascript -e 'tell application "Safari" to activate'""")
     elif browser == "chrome":
         options = webdriver.ChromeOptions()
         driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)

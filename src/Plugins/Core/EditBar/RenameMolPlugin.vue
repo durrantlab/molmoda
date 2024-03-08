@@ -89,7 +89,13 @@ export default class RenameMolPlugin extends PluginParentClass {
      */
     runJobInBrowser(): Promise<void> {
         if (this.nodesToActOn) {
-            this.nodesToActOn.get(0).title = this.getUserArg("newName");
+            const nodeToActOn = this.nodesToActOn.get(0);
+            nodeToActOn.title = this.getUserArg("newName");
+
+            // If there is only one terminal node, update that node's title too.
+            if (nodeToActOn.nodes?.terminals.length === 1) {
+                nodeToActOn.nodes.terminals.get(0).title = this.getUserArg("newName");
+            }
         }
         return Promise.resolve();
     }

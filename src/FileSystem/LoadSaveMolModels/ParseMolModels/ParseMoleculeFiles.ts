@@ -27,6 +27,25 @@ export const fileTypesAccepts =
     ",.zip";
 
 /**
+ * Given a title, correct common problems with the title.
+ * 
+ * @param  {string} title  The title to fix.
+ * @param  {string} defaultTitle  The default title to use if none is found.
+ * @returns {string}  The fixed title.
+ */
+function _fixTitle(title: string, defaultTitle: string): string {
+    if (title === undefined) {
+        return defaultTitle;
+    }
+    title = title.replace("*****", defaultTitle);
+
+    // If t.title starts with ":", remove that.
+    if (title.startsWith(":")) title = title.slice(1);
+
+    return title;
+}
+
+/**
  * Given an IFileInfo object (name, contents, type), load the molecule. Should
  * call only from TreeNodeList.load.
  *
@@ -95,18 +114,12 @@ export function _parseMoleculeFile(
             const topLevelName = getFileNameParts(fileInfo.name).basename;
             const mergedTreeNodeList = treeNodeList.merge(topLevelName);
 
-            // Make sure all terminal molecules have a title. A title of a
+            // Make sure all molecules have a title. A title of a
             // terminal can be undefined if pasting, for example,
             // `C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)[O-])C(=O)[O-].O.[Ca+2]`
             // TODO: Would be good to figure out why this happens, rather than fixing it here.
-            mergedTreeNodeList.terminals.forEach((t) => {
-                if (t.title === undefined) {
-                    t.title = defaultTitle;
-                }
-                t.title = t.title.replace("*****", defaultTitle);
-
-                // If t.title starts with ":", remove that.
-                if (t.title.startsWith(":")) t.title = t.title.slice(1);
+            mergedTreeNodeList.flattened.forEach((t) => {
+                t.title = _fixTitle(t.title, defaultTitle);
             });
 
             // if (treeNode.nodes && treeNode.nodes.terminals) {
