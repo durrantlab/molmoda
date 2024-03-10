@@ -14,6 +14,13 @@ ExpiresDefault "access plus 1 year"
     Header set Cache-Control "max-age=31536000, public"
 </FilesMatch>
 
+# Prevent caching of index.html
+<FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>
+
 # Serve .can files as text/plain
 AddType text/plain .can
 AddType application/javascript .js

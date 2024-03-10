@@ -23,6 +23,7 @@ import * as api from "@/Api";
 import * as SetupTests from "@/Testing/SetupTests";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
+import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -549,14 +550,19 @@ export class TreeNode {
     /**
      * Get a new TreeNode from a file info object.
      *
-     * @param  {FileInfo} fileInfo       The file info object.
-     * @param  {boolean}  desalt         Whether to desalt the molecule.
-     * @param  {string}   defaultTitle  The default title to use if needed.
+     * @param  {FileInfo}       fileInfo           The file info object.
+     * @param  {boolean}        desalt             Whether to desalt the
+     *                                             molecule.
+     * @param  {IGen3DOptions}  [gen3D=undefined]  Whether and how to generate
+     *                                             3D.
+     * @param  {string}         defaultTitle       The default title to use if
+     *                                             needed.
      * @returns {Promise<void | TreeNode>}  The new TreeNode.
      */
     public static async loadFromFileInfo(
         fileInfo: FileInfo,
         desalt = false,
+        gen3D?: IGen3DOptions,
         defaultTitle = "Molecule"
     ): Promise<void | TreeNode> {
         // NOTE: static
@@ -564,6 +570,7 @@ export class TreeNode {
             fileInfo,
             false, // don't add to tree
             desalt,
+            gen3D,
             defaultTitle
         );
 

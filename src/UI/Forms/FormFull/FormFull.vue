@@ -99,6 +99,7 @@
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
+                    :description="makeGeneric(formElem).description"
                 />
                 <FormCheckBox
                     v-else-if="formElem.type === FormElementType.Checkbox"

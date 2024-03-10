@@ -30,7 +30,6 @@
                                             float: right;
                                             margin-left: 0.5rem;
                                         "
-
                                         class="d-none d-sm-block"
                                     >
                                         <img
@@ -55,12 +54,19 @@
                                             plugin="help"
                                             :title="appName + ' Help System'"
                                         >
-                                        </PluginPathLink>, view a
+                                        </PluginPathLink
+                                        >, read the
+                                        <PluginPathLink
+                                            plugin="documentation"
+                                            title="documentation"
+                                        ></PluginPathLink>,
+
+                                        <!-- , view a
                                         <PluginPathLink
                                             plugin="videotutorials"
                                             title=" helpful video tutorial"
                                         >
-                                        </PluginPathLink>,
+                                        </PluginPathLink>, -->
                                         or load some
                                         <PluginPathLink
                                             plugin="openexampleproject"
@@ -342,7 +348,6 @@ export default class GoldLayout extends Vue {
     height: 100%;
     z-index: 50;
 }
-
 </style>
 
 <style lang="scss">

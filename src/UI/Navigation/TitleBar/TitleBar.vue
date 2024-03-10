@@ -303,6 +303,11 @@ export default class TitleBar extends Vue {
             title = title.replace(": ", ":");
         }
 
+        // While it starts with :, remove.
+        while (title.startsWith(":")) {
+            title = title.slice(1);
+        }
+
         title = title.trim();
 
         while (title.indexOf("::") !== -1) {

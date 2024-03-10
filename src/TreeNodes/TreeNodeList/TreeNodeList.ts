@@ -10,6 +10,7 @@ import { TreeNodeListNodeActions } from "./_NodeActions";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils";
+import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * TreeNodeList class
@@ -19,7 +20,7 @@ export class TreeNodeList {
     private _filters: TreeNodeListFilters;
     private _nodeActions: TreeNodeListNodeActions;
     private _copy: TreeNodeListCopies;
-    public triggerId = ""  // Purpose of this is just to trigger reactivity if needed
+    public triggerId = ""; // Purpose of this is just to trigger reactivity if needed
 
     // This is to keep track of titles. It takes a surprisingly long time to
     // generate this set on the fly.
@@ -49,9 +50,9 @@ export class TreeNodeList {
      * reactivity explicitly. Tested on the main, root node. May work on others.
      */
     public triggerReactivity() {
-        this.triggerId = randomID()
+        this.triggerId = randomID();
 
-        this.nodes = this.nodes.map(n => n);
+        this.nodes = this.nodes.map((n) => n);
 
         for (const node of this.nodes) {
             node.triggerReactivity();
@@ -300,14 +301,12 @@ export class TreeNodeList {
 
     /**
      * Sorts the nodes.
-     * 
+     *
      * @param {Function} func  The function to call for each node. The function
      *                         should return a number indicating the sort order.
      * @returns {TreeNodeList}  This list, sorted (for chaining).
      */
-    public sort(
-        func: (a: TreeNode, b: TreeNode) => number
-    ): TreeNodeList {
+    public sort(func: (a: TreeNode, b: TreeNode) => number): TreeNodeList {
         this._nodes.sort(func);
         return this;
     }
@@ -344,20 +343,29 @@ export class TreeNodeList {
     /**
      * Loads a molecule into the list.
      *
-     * @param  {FileInfo} fileInfo                   The file to load.
-     * @param  {boolean}  [desalt=false]             Whether to desalt the
-     *                                               molecule.
-     * @param  {string}   [defaultTitle="Molecule"]  The default title to use if
-     *                                               none is found.
+     * @param  {FileInfo}      fileInfo                   The file to load.
+     * @param  {boolean}       [desalt=false]             Whether to desalt the
+     *                                                    molecule.
+     * @param {IGen3DOptions}  [gen3D=undefined]          Whether and how to
+     *                                                    generate 3D
+     *                                                    coordinates. 
+     * @param  {string}        [defaultTitle="Molecule"]  The default title to
+     *                                                    use if none is found.
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
      *     list of new nodes, or undefined on failure.
      */
-    public loadFromFileInfo(fileInfo: FileInfo, desalt=false, defaultTitle="Molecule"): Promise<void | TreeNodeList> {
+    public loadFromFileInfo(
+        fileInfo: FileInfo,
+        desalt = false,
+        gen3D?: IGen3DOptions,
+        defaultTitle = "Molecule"
+    ): Promise<void | TreeNodeList> {
         const fileName = fileInfo.name;
         return _parseMoleculeFile(
             fileInfo,
             false, // don't add to tree
             desalt,
+            gen3D,
             defaultTitle
         )
             .then((treeNodeList: void | TreeNodeList) => {
@@ -367,7 +375,9 @@ export class TreeNodeList {
                     return;
                 }
 
-                const initialCompoundsVisible = getSetting("initialCompoundsVisible");
+                const initialCompoundsVisible = getSetting(
+                    "initialCompoundsVisible"
+                );
 
                 // Expand some of the nodes so the user can see what was loaded.
                 treeNodeList._nodes[0].visible = true;
@@ -381,7 +391,7 @@ export class TreeNodeList {
                     const node = terminalNodes.get(i);
                     // If "undefined" in title, rename
                     if (node.title.indexOf("undefined") >= 0) {
-                        const {basename} = getFileNameParts(fileName);
+                        const { basename } = getFileNameParts(fileName);
                         node.title = basename + ":" + (i + 1).toString();
                     }
                     node.visible = i < initialCompoundsVisible;

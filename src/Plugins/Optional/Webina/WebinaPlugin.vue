@@ -701,6 +701,8 @@ export default class WebinaPlugin extends PluginParentClass {
                 }
 
                 if (!newTreeNodesByInputProt[protId]) {
+                    // NOTE: If you comment out below, non uncontrollable memory
+                    // expansion on docking
                     rootNode.addToMainTree();
                     newTreeNodesByInputProt[protId] = rootNode;
                 } else {

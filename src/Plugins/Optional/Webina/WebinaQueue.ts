@@ -206,8 +206,8 @@ export class WebinaQueue extends QueueParent {
         procs: number
     ): Promise<IJobInfo[]> {
         // Load webina dynamically.
-        const WEBINA_MODULE = await dynamicImports.webina.module;
-        const webinaInstance = await this._makeWebinaInstance(WEBINA_MODULE);
+        let WEBINA_MODULE = await dynamicImports.webina.module;
+        let webinaInstance = await this._makeWebinaInstance(WEBINA_MODULE);
 
         // Unfortunately, you can only run callMain on a module once. To make a
         // module reusable, you'd have to export a wrapper around the main
@@ -231,6 +231,10 @@ export class WebinaQueue extends QueueParent {
             const webinaOutput = await this._runJob(jobInfo, webinaInstance);
             outputs.push(webinaOutput);
         }
+
+        webinaInstance.wasmMemory = null;
+        webinaInstance = null;
+        WEBINA_MODULE = null;
 
         return outputs;
     }

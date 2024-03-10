@@ -33,7 +33,7 @@ import {
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { getDesaltArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { dynamicImports } from "@/Core/DynamicImports";
 
 /**
@@ -151,7 +151,7 @@ export default class MolTextPlugin extends PluginParentClass {
             options: getFormatInfos().options,
             val: "unknown",
         } as IUserArgSelect,
-        getDesaltArg(),
+        getDesaltUserArg(),
     ];
 
     /**

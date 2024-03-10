@@ -66,6 +66,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         },
     ];
     pluginId = "loadalphafold";
+    skipLongRunningJobMsg = true;
 
     intro = `Load a protein from the <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a>, a database of predicted protein structures.`;
 

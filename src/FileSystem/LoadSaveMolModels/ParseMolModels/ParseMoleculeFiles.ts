@@ -9,6 +9,7 @@ import { parseUsingMolModa } from "./_ParseUsingMolModa";
 import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import type { FileInfo } from "@/FileSystem/FileInfo";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
+import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -49,10 +50,14 @@ function _fixTitle(title: string, defaultTitle: string): string {
  * Given an IFileInfo object (name, contents, type), load the molecule. Should
  * call only from TreeNodeList.load.
  *
- * @param  {FileInfo} fileInfo   The file info object.
- * @param  {boolean}  addToTree  Whether to add the molecule to the tree.
- * @param  {boolean}  desalt     Whether to desalt the molecule.
- * @param  {string}   defaultTitle  The default title to use if none is found.
+ * @param  {FileInfo}      fileInfo           The file info object.
+ * @param  {boolean}       addToTree          Whether to add the molecule to the
+ *                                            tree.
+ * @param  {boolean}       desalt             Whether to desalt the molecule.
+ * @param  {IGen3DOptions} [gen3D=undefined]  Whether and how to generate 3D
+ *                                            coordinates. 
+ * @param  {string}        defaultTitle       The default title to use if none
+ *                                            is found.
  * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the
  *     molecule is loaded.
  */
@@ -60,6 +65,7 @@ export function _parseMoleculeFile(
     fileInfo: FileInfo,
     addToTree = true,
     desalt = false,
+    gen3D?: IGen3DOptions,
     defaultTitle = "Molecule"
 ): Promise<void | TreeNodeList> {
     const spinnerId = api.messages.startWaitSpinner();
@@ -79,7 +85,7 @@ export function _parseMoleculeFile(
             break;
         }
         case MolLoader.OpenBabel: {
-            promise = parseUsingOpenBabel(fileInfo, formatInfo, desalt);
+            promise = parseUsingOpenBabel(fileInfo, formatInfo, desalt, gen3D);
             break;
         }
         case MolLoader.MolModaFormat: {

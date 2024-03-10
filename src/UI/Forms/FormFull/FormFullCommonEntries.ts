@@ -8,7 +8,7 @@ import { IUserArgCheckbox, UserArgType } from "./FormFullInterfaces";
  *
  * @returns {IUserArgCheckbox}  The desalt argument.
  */
-export function getDesaltArg(): IUserArgCheckbox {
+export function getDesaltUserArg(): IUserArgCheckbox {
     return {
         id: "desalt",
         type: UserArgType.Checkbox,

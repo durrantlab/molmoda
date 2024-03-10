@@ -157,10 +157,12 @@ Copy molecule. Name is internap tmp file. Good to use slugified title.
 
 **** Try uploading tmp.can. Does it given an error (even once fixed)?
 
+How does it handle flat SD or SDF files?
+
 # Ongoing: Important
 
-Label on save moleucle compoudns to different files is misleading. It saves it
-as a single file (proteina nd ligand)
+Option in load modal to generate 3D coordinates or not. If regenerate, then
+option to specify level (best, etc.). By default, not best. Taking too long.
 
 Sulfonates don't get deprotonated (but phosphates do).
 OS(=O)(=O)OCCCCC
@@ -170,22 +172,33 @@ Something's off, because `obabel -:"OS(=O)(=O)OCCCCCOP(=O)(O)O" -p 7 -ocan` depr
 Search for // Sometimes this plugin gets called with an empty message. TODO:. As
 implemented, I think this prevent programmatic closing of modals.
 
-**** Firefox video blocked.
+Firefox video blocked.
 
 Why failed to parse JSON on some tests?
 
 console.log("ERR", err); . Should throw error more intelligently.
 
-Load AlphaFold P234231. You get error, but then you get job running after a bit.
+Search for this: // NOTE: If you comment out below, non uncontrollable memory
 
-Period on docking box, safari, causes problems.
+# DONE
+
+Search for: "One or more input molecules" and update with tip.
+
+For protonate plugin, need to specify degree of 3D gen.
 
 Some students are reporting problems with cache busting. Good to investigate
 that cache changes.
 
-Video tutorial says biotite. Just remove it.
+Label on save moleucle compoudns to different files is misleading. It saves it
+as a single file (proteina nd ligand)
 
-# DONE
+Does save all as pdb work?
+
+Load AlphaFold P234231. You get error, but then you get job running after a bit.
+
+Period on docking box, safari, causes problems.
+
+Video tutorial says biotite. Just remove it.
 
 If only one terminal node, expand all children.
 

@@ -133,7 +133,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             enabled: false,
         } as IUserArgCheckbox,
         {
-            label: "File format for all molecules, saved to a single file",
+            label: "File format for all molecules, each entry saved to a single file",
             id: "oneMolFileFormat",
             val: "pdb",
             options: getFormatDescriptions(false).filter(

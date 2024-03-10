@@ -34,7 +34,12 @@ import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
-import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
+import {
+    IGen3DOptions,
+    WhichMolsGen3D,
+    convertFileInfosOpenBabel,
+    getGen3DUserArg,
+} from "@/FileSystem/OpenBabel/OpenBabel";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     SelectedType,
@@ -57,10 +62,6 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     title = "Protonate/Deprotonate Compounds";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [
-        // {
-        //     name: "Jacob D. Durrant",
-        //     url: "http://durrantlab.com/",
-        // },
         {
             name: "Yuri K. Kochnev",
         },
@@ -92,14 +93,19 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             description: "Physiological pH is 7.4.",
         },
 
-        {
-            type: UserArgType.Checkbox,
-            id: "regen3DCoords",
-            label: "Regenerate 3D coordinates",
-            val: false,
-            description:
-                "Whether to regenerate 3D atomic coordinates given the new protonation state.",
-        }
+        // {
+        //     type: UserArgType.Checkbox,
+        //     id: "regen3DCoords",
+        //     label: "Regenerate 3D coordinates",
+        //     val: false,
+        //     description:
+        //         "Whether to regenerate 3D atomic coordinates given the new protonation state.",
+        // },
+        getGen3DUserArg(
+            "Regenerate 3D coordinates",
+            "Whether to regenerate 3D atomic coordinates given the new protonation state.",
+            true
+        ),
     ];
 
     /**
@@ -131,9 +137,14 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const pH = this.getUserArg("pH");
-        const regen3DCoords = this.getUserArg("regen3DCoords");
+        // const regen3DCoords = this.getUserArg("regen3DCoords");
 
-        return convertFileInfosOpenBabel(compounds, "mol2", regen3DCoords, pH)
+        const gen3DParams = {
+            whichMols: WhichMolsGen3D.All,
+            level: this.getUserArg("gen3D"),
+        } as IGen3DOptions;
+
+        return convertFileInfosOpenBabel(compounds, "mol2", gen3DParams, pH)
             .then((molTexts: string[]) => {
                 // Make new fileinfos with protonated files
                 // const treeNodes: TreeNode[] = [];
@@ -241,9 +252,14 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             },
             {
                 beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
-                pluginOpen: new TestCmdList().click(
-                    "#regen3DCoords-protonatecomps-item"
+                pluginOpen: new TestCmdList().setUserArg(
+                    "gen3D",
+                    "medium",
+                    this.pluginId
                 ),
+                // .click(
+                //     "#regen3DCoords-protonatecomps-item"
+                // ),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"

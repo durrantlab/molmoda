@@ -8,6 +8,88 @@ import {
 } from "../LoadSaveMolModels/Types/MolFormats";
 import { OpenBabelQueue } from "./OpenBabelQueue";
 import { isTest } from "@/Testing/SetupTests";
+import {
+    IUserArgOption,
+    IUserArgSelect,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
+
+export enum WhichMolsGen3D {
+    All,
+    None,
+    OnlyIfLacks3D,
+}
+
+enum Gen3DLevel {
+    None = "none",
+    Fastest = "fastest",
+    Fast = "fast",
+    Medium = "medium",
+    Better = "better",
+    Best = "best",
+    Default = "medium",
+}
+
+export interface IGen3DOptions {
+    whichMols: WhichMolsGen3D;
+    level?: Gen3DLevel;
+}
+
+export function getGen3DUserArg(
+    label: string,
+    description: string,
+    includeNoneOption = false
+): IUserArgSelect {
+    const options = [
+        {
+            description:
+                "fastest: no forcefield optimization or conformer search",
+            val: "fastest",
+        },
+        {
+            description:
+                "fast: quick forcefield optimization, no conformer search",
+            val: "fast",
+        },
+        {
+            description:
+                "medium: quick forcefield optimization and fast conformer search",
+            val: "medium",
+        },
+        {
+            description:
+                "better: medium forcefield optimization and fast conformer search",
+            val: "better",
+        },
+        {
+            description:
+                "best: max forcefield optimization and thorough conformer search",
+            val: "best",
+        },
+    ] as IUserArgOption[];
+
+    let defaultVal = "medium";
+
+    if (includeNoneOption) {
+        options.unshift({
+            description:
+                "recommended: quick forcefield optimization and fast conformer search",
+            val: "medium",
+        });
+        options.unshift({
+            description: "none: do not generate 3D coordinates",
+            val: "none",
+        });
+        defaultVal = "none";
+    }
+
+    return {
+        label: label,
+        description: description,
+        id: "gen3D",
+        val: defaultVal,
+        options: options,
+    } as IUserArgSelect;
+}
 
 /**
  * Runs OpenBabel.
@@ -77,7 +159,7 @@ function considerThreeDNeededWarning(
 
             messagesApi.popupMessage(
                 "Warning",
-                "One or more input molecules does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.",
+                "<p>One or more input molecules does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.</p><p>Tip: You can select the method for generating coordinates via <i>File → Open...</i> to speed up the calculation or improve the quality of the generated structures.</p>",
                 PopupVariant.Warning
             );
         }, 2000);
@@ -168,19 +250,19 @@ async function separateFiles(
 /**
  * Converts molecules to another format using OpenBabel.
  *
- * @param  {FileInfo[]}  fileInfos       The information about the file to
- *                                       convert.
- * @param  {string}      targetFormat    The target extension.
- * @param  {boolean}     [gen3D]         Whether to assign 3D coordinates.
- * @param  {number}      [pH]            The pH to use for protonation.
- * @param  {boolean}     [desalt=false]  Whether to desalt the molecules.
+ * @param  {FileInfo[]}    fileInfos       The information about the file to
+ *                                         convert.
+ * @param  {string}        targetFormat    The target extension.
+ * @param  {IGen3DOptions} [gen3D]         Whether to assign 3D coordinates.
+ * @param  {number}        [pH]            The pH to use for protonation.
+ * @param  {boolean}       [desalt=false]  Whether to desalt the molecules.
  * @returns {Promise<string[]>}  A promise that resolves to the converted
  *    molecules.
  */
 async function convertToNewFormat(
     fileInfos: FileInfo[],
     targetFormat: string,
-    gen3D?: boolean,
+    gen3D?: IGen3DOptions,
     pH?: number,
     desalt = false
 ): Promise<string[]> {
@@ -191,13 +273,39 @@ async function convertToNewFormat(
             cmds.push(...["-r"]);
         }
 
-        if (
-            gen3D === true ||
-            (fileInfo.auxData !== undefined &&
-                fileInfo.auxData.lacks3D === true)
-        ) {
-            cmds.push(...["--gen3D", "best"]);
+        // If not specified, set to only if lacks 3d.
+        let whichMols =
+            gen3D?.whichMols === undefined
+                ? WhichMolsGen3D.OnlyIfLacks3D
+                : gen3D.whichMols;
+        if (gen3D?.level === Gen3DLevel.None) {
+            // A second way to say no 3D generation.
+            whichMols = WhichMolsGen3D.None;
         }
+
+        // If not specified, set to default
+        const level =
+            (gen3D?.level === undefined) ? Gen3DLevel.Default : gen3D.level;
+
+        switch (whichMols) {
+            case WhichMolsGen3D.All:
+                cmds.push(...["--gen3D", level]);
+                break;
+            case WhichMolsGen3D.OnlyIfLacks3D:
+                if (fileInfo.auxData.lacks3D === true)
+                    cmds.push(...["--gen3D", level]);
+                break;
+            default:
+                break;
+        }
+
+        // if (
+        //     gen3D === true ||
+        //     (fileInfo.auxData !== undefined &&
+        //         fileInfo.auxData.lacks3D === true)
+        // ) {
+        //     cmds.push(...["--gen3D", "best"]);
+        // }
 
         if (pH !== undefined) {
             cmds.push(...["-p", pH.toString()]);
@@ -212,6 +320,8 @@ async function convertToNewFormat(
         if (formatInfo?.extraObabelArgs !== undefined) {
             cmds.push(...formatInfo.extraObabelArgs);
         }
+
+        // console.log(cmds);
 
         return cmds;
     });
@@ -243,9 +353,9 @@ async function convertToNewFormat(
 export async function convertFileInfosOpenBabel(
     srcFileInfos: FileInfo[], // Can be multiple-model SDF file, for example.
     targetFormat: string,
-    gen3D?: boolean,
+    gen3D?: IGen3DOptions,
     pH?: number,
-    desalt=false
+    desalt = false
     // debug?: boolean
 ): Promise<string[]> {
     // Get info about the file

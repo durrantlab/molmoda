@@ -14,6 +14,7 @@ system uses these to autopopulate with plugins. -->
     <CopyPlugin @onPluginSetup="onPluginSetup"></CopyPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
+    <DocumentationLinkPlugin @onPluginSetup="onPluginSetup"></DocumentationLinkPlugin>
     <ErrorReportingPlugin @onPluginSetup="onPluginSetup"></ErrorReportingPlugin>
     <ExampleDataPlugin @onPluginSetup="onPluginSetup"></ExampleDataPlugin>
     <ExpandAllPlugin @onPluginSetup="onPluginSetup"></ExpandAllPlugin>
@@ -43,7 +44,6 @@ system uses these to autopopulate with plugins. -->
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
     <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
-    <VideoTutorialsPlugin @onPluginSetup="onPluginSetup"></VideoTutorialsPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
@@ -74,6 +74,7 @@ import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
 import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
+import DocumentationLinkPlugin from "./Core/DocumentationLinkPlugin.vue";
 import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
 import ExampleDataPlugin from "./Core/LocalMolLoadersSavers/ExampleDataPlugin.vue";
 import ExpandAllPlugin from "./Core/ExpandAllPlugin.vue";
@@ -103,7 +104,6 @@ import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
-import VideoTutorialsPlugin from "./Core/VideoTutorialsPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
@@ -130,6 +130,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     CopyPlugin,
     DataWindowPlugin,
     DeleteMolPlugin,
+    DocumentationLinkPlugin,
     ErrorReportingPlugin,
     ExampleDataPlugin,
     ExpandAllPlugin,
@@ -159,7 +160,6 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     StylesWindowPlugin,
     ToggleVisiblePlugin,
     UndoPlugin,
-    VideoTutorialsPlugin,
     ViewerWindowPlugin,
 
     AddRegionPlugin,

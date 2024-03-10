@@ -31,7 +31,7 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import * as api from "@/Api";
 import { isTest } from "@/Testing/SetupTests";
-import { getDesaltArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { dynamicImports } from "@/Core/DynamicImports";
 
 /** PastePlugin */
@@ -65,7 +65,7 @@ export default class PastePlugin extends PluginParentClass {
                 return "";
             },
         } as IUserArgText,
-        getDesaltArg(),
+        getDesaltUserArg(),
     ];
     alwaysEnabled = true;
     logJob = false;

@@ -27,6 +27,8 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     IUserArgCheckbox,
+    IUserArgOption,
+    IUserArgSelect,
     UserArg,
     UserArgType,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -38,7 +40,12 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
-import { getDesaltArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import {
+    IGen3DOptions,
+    WhichMolsGen3D,
+    getGen3DUserArg,
+} from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * OpenMoleculesPlugin
@@ -53,26 +60,25 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     menuPath = "[3] File/[1] Project/[0] Open...";
     title = "Open Molecule Files";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
-    contributorCredits: IContributorCredit[] = [
-        // {
-        //     name: "Jacob D. Durrant",
-        //     url: "http://durrantlab.com/",
-        // },
-    ];
+    contributorCredits: IContributorCredit[] = [];
     filesToLoad: FileInfo[] = [];
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
 
     userArgDefaults: UserArg[] = [
-        getDesaltArg(),
+        getDesaltUserArg(),
         {
             id: "hideOnLoad",
             type: UserArgType.Checkbox,
             label: "Loaded molecules should be invisible",
             description:
-                "Loaded molecules initially invisible. You will have to toggle visibility by hand. Useful if you plan to load many molecules at once.",
+                "If checked, molecules will be initially invisible. You will have to toggle visibility by hand. Useful if you plan to load many molecules at once.",
             val: false,
         } as IUserArgCheckbox,
+        getGen3DUserArg(
+            "Method for generating 3D coordinates",
+            "If your file lacks 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored. Try different methods only if your imported molecules have incorrect geometries."
+        ),
     ];
     alwaysEnabled = true;
     accept = fileTypesAccepts;
@@ -143,6 +149,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
                     this.filesToLoad = toLoad;
                     this.onPopupDone();
+
                     return;
                 })
                 .catch((err) => {
@@ -164,10 +171,19 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         // It's not a molmoda file (e.g., a PDB file). NOTE: When loading a
         // multi-frame file, this fileInfo contains all frames (not yet
         // separated).
+
+        const gen3DParams = {
+            whichMols: WhichMolsGen3D.OnlyIfLacks3D,
+            level: this.getUserArg("gen3D"),
+        } as IGen3DOptions;
+
+        // Note that below not only adds to viewer, but performs necessary
+        // files conversions, generates 3D geometry, etc.
         return this.addFileInfoToViewer(
             fileInfo,
             this.getUserArg("hideOnLoad"),
             this.getUserArg("desalt"),
+            gen3DParams,
             ""
         );
     }
@@ -233,10 +249,12 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 "file://./src/Testing/mols/nonsense_format.can",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList()
-                .waitUntilRegex("#modal-simplemsg", "File contained no valid")
-                // .expandMoleculesTree(titles)
-                // .waitUntilRegex("#navigator", substrng),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#modal-simplemsg",
+                "File contained no valid"
+            ),
+            // .expandMoleculesTree(titles)
+            // .waitUntilRegex("#navigator", substrng),
         });
 
         return tests;
