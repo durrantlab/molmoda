@@ -662,7 +662,8 @@ export default class WebinaPlugin extends PluginParentClass {
 
                 const protId = origProtTreeNode?.id as string;
 
-                // Make a new treenode.
+                // Make a new treenode. Note that this also converts the pdbqt
+                // file to a GLModel.
                 const dockedTreeNode = await this._outputPdbqtToTreeNodePromise(
                     origCmpdTreeNode.title + modelName,
                     pdbqtOut,
@@ -703,6 +704,8 @@ export default class WebinaPlugin extends PluginParentClass {
                 if (!newTreeNodesByInputProt[protId]) {
                     // NOTE: If you comment out below, non uncontrollable memory
                     // expansion on docking
+
+                    // Note: At this point, rootNode contains GLModel (already parsed).
                     rootNode.addToMainTree();
                     newTreeNodesByInputProt[protId] = rootNode;
                 } else {

@@ -14,40 +14,44 @@ import { IMolData } from "@/Core/WebWorkers/WorkerHelper";
  * @param  {string}   format        The format of the molecule.
  * @returns {Promise<TreeNode>} A promise that resolves the molecule.
  */
-export function parseMolecularModelFromTexts(
+export async function parseMolecularModelFromTexts(
     fileInfos: FileInfo[],
-    format: string,
+    format: string
 ): Promise<TreeNodeList> {
     const parseMolecularModelsWorker = new Worker(
         new URL("./ParseMolecularModels.worker", import.meta.url)
     );
 
-    const workerParams = fileInfos.map(fi => {
-        return { fileInfo: fi.serialize ? fi.serialize() : fi, format }
-    }) as IMolData[];
+    try {
+        const workerParams = fileInfos.map((fi) => {
+            return { fileInfo: fi.serialize ? fi.serialize() : fi, format };
+        }) as IMolData[];
 
-    return runWorker(parseMolecularModelsWorker, workerParams)
-        .then((molecularDataDeserialized: any) => {
-            return treeNodeListDeserialize(molecularDataDeserialized);
-            // const promises = molecularDataNodeList.map(
-            //     (molecularDatum: TreeNode) => atomsToModels(molecularDatum)
-            // );
-            // return Promise.all(promises);
-        })
-        .then((molecularDataNodeList: TreeNodeList) => {
-            molecularDataNodeList.forEach((molecularDatum: TreeNode) => {
-                const fileName = molecularDatum.src;
+        const molecularDataDeserialized = await runWorker(
+            parseMolecularModelsWorker,
+            workerParams
+        );
 
-                // Set molName as src on all terminal nodes
-                molecularDatum.src = fileName;
-                const children = molecularDatum.nodes;
-                if (children) {
-                    children.filters.onlyTerminal.forEach((node: TreeNode) => {
-                        node.src = fileName;
-                    });
-                }
-            });
+        const molecularDataNodeList = await treeNodeListDeserialize(
+            molecularDataDeserialized
+        );
 
-            return molecularDataNodeList;
+        molecularDataNodeList.forEach((molecularDatum: TreeNode) => {
+            const fileName = molecularDatum.src;
+
+            // Set molName as src on all terminal nodes
+            molecularDatum.src = fileName;
+            const children = molecularDatum.nodes;
+            if (children) {
+                children.filters.onlyTerminal.forEach((node: TreeNode) => {
+                    node.src = fileName;
+                });
+            }
         });
+
+        return molecularDataNodeList;
+    } finally {
+        // Terminate the worker to free up resources
+        parseMolecularModelsWorker.terminate();
+    }
 }

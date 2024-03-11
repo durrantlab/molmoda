@@ -205,7 +205,7 @@ function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
 
         // Get the chain to use.
         let curChain: string;
-        if (chainsAvailable.has(atoms[0].chain)) {
+        if (atoms[0] && atoms[0].chain && chainsAvailable.has(atoms[0].chain)) {
             // The current chain is one that's availble. So use that.
             curChain = atoms[0].chain;
         } else {

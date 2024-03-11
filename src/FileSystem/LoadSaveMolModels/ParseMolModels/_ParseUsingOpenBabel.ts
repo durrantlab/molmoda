@@ -44,6 +44,7 @@ export function parseUsingOpenBabel(
                     name: name,
                 });
             });
+
             return parseMolecularModelFromTexts(
                 fileInfos,
                 targetFormat

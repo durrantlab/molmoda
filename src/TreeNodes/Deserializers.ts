@@ -17,7 +17,7 @@ import { newTreeNode, newTreeNodeList } from "./TreeNodeMakers";
  * @returns {Promise<TreeNode>}    A promise that resolves the deserialized
  * TreeNode.
  */
-function treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
+function _treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
     const newNode = newTreeNode(nodeSerial as TreeNode);
     return dynamicImports.mol3d.module
         .then(($3Dmol: any) => {
@@ -66,7 +66,7 @@ export function treeNodeListDeserialize(
     nodes: ITreeNode[]
 ): Promise<TreeNodeList> {
     const nodePromises = nodes.map((node: ITreeNode) => {
-        return treeNodeDeserialize(node);
+        return _treeNodeDeserialize(node);
     });
     return Promise.all(nodePromises).then((nodes: TreeNode[]) => {
         return newTreeNodeList(nodes);
@@ -98,7 +98,7 @@ export function treeNodeDeepClone(
     node: TreeNode,
     assignNewIds = false
 ): Promise<TreeNode> {
-    return treeNodeDeserialize(node.serialize()).then((cloned: TreeNode) => {
+    return _treeNodeDeserialize(node.serialize()).then((cloned: TreeNode) => {
         if (assignNewIds) {
             cloned.reassignAllIds();
         }

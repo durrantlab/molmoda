@@ -159,6 +159,8 @@ Copy molecule. Name is internap tmp file. Good to use slugified title.
 
 How does it handle flat SD or SDF files?
 
+Can you not trigger cntrl-C and cntrl-V if text selected?
+
 # Ongoing: Important
 
 Option in load modal to generate 3D coordinates or not. If regenerate, then
@@ -179,6 +181,7 @@ Why failed to parse JSON on some tests?
 console.log("ERR", err); . Should throw error more intelligently.
 
 Search for this: // NOTE: If you comment out below, non uncontrollable memory
+Ultimately, it all comes from parseMolecularModelFromTexts()
 
 # DONE
 
