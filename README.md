@@ -2,13 +2,13 @@
 
 Molecular docking advances early-stage drug discovery by predicting the
 geometries and affinities of small-molecule compounds bound to drug-target
-receptors, predictions that researchers can leverage in prioritizing drug
+receptors. Researchers can leverage these predictions to prioritize drug
 candidates for experimental testing. MolModa provides a secure, accessible
-environment where users can perform molecular docking entirely in the their web
+environment where users can perform molecular docking entirely in their web
 browsers.
 
-This respository contains MolModa's source code. Users can access an already
-compiled version of MolModa without login or registration at
+This repository contains MolModa's source code. Users can access a compiled
+version of MolModa without login or registration at
 [https://durrantlab.com/molmoda](https://durrantlab.com/molmoda).
 
 ## Project setup
