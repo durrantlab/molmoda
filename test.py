@@ -270,10 +270,15 @@ def run_test(plugin_id):
     test_lbl = f"{plugin_id}{plugin_idx_str}"
     # resp = f"Result of {test_lbl}: "
 
-    cmds_str = el("#test-cmds", driver).text
-    try:
-        cmds = json.loads(cmds_str)
-    except Exception as JSONDecodeError:
+    cmds_str = None
+    for t in range(4):
+        cmds_str = el("#test-cmds", driver).text
+        try:
+            cmds = json.loads(cmds_str)
+            break
+        except Exception as JSONDecodeError:
+            time.sleep(0.25)
+    if cmds_str is None:
         print(f"Failed to parse JSON: {cmds_str}")
         return {
             "status": "failed",
