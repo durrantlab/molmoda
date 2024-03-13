@@ -48,6 +48,7 @@ import Viewer2D from "@/UI/Components/Viewer2D.vue";
 import { globalCredits } from "./GlobalCredits";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import { checkIfUrlOpen } from "@/FileSystem/UrlOpen";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -170,6 +171,8 @@ export default class App extends Vue {
                     "</li></ul>"
             );
         }
+
+        checkIfUrlOpen();
     }
 }
 </script>

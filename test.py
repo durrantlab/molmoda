@@ -348,8 +348,22 @@ def run_test(plugin_id):
 # If first argument given, use that as plugin_id
 if len(sys.argv) > 1:
     # job index also given.
-    subjob_idx = int(sys.argv[2]) - 1 if len(sys.argv) > 2 else None
-    plugin_ids = [(sys.argv[1], subjob_idx)]
+    # subjob_idx = int(sys.argv[2]) - 1 if len(sys.argv) > 2 else None
+    # plugin_ids = [(sys.argv[1], subjob_idx)]
+
+    subjob_idx = None
+    plugin_ids = []
+    # Go through each of the arguments. If it's a number, set subjob_idx. If
+    # it's a string, add it to plugin_ids.
+    for arg in sys.argv[1:]:
+        try:
+            subjob_idx = int(arg) - 1
+        except ValueError:
+            plugin_ids.append(arg)
+    
+    # Now add the subjob_idx to the plugin_ids
+    plugin_ids = [(i, subjob_idx) for i in plugin_ids]
+
 else:
     # Get ID's of all plugins
     plugin_ids = []
@@ -358,10 +372,20 @@ else:
             content = f.read()
         plugin_id = re.search(r'[^:]\bpluginId *?= *?"(.+)"', content, re.MULTILINE)[1]
         plugin_ids.append((plugin_id, None))
+
+# Some plugins are not allowed
+plugin_ids = [
+    i
+    for i in plugin_ids
+    if "simplemsg" not in i[0] and "redo" not in i[0] and "testplugin" not in i[0]
+]
+
+# some plugins are disallowed only for safari
+if "safari" in browsers_to_use:
     plugin_ids = [
         i
         for i in plugin_ids
-        if "simplemsg" not in i[0] and "redo" not in i[0] and "testplugin" not in i[0]
+        if "documentation" not in i[0]
     ]
 
 plugin_ids.sort()

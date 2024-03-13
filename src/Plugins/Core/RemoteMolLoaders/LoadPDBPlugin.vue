@@ -99,9 +99,8 @@ export default class LoadPDBPlugin extends PluginParentClass {
      */
     async runJobInBrowser(pdbId: string): Promise<void> {
         try {
-            const fileInfo = await loadRemote(
-                `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`
-            );
+            const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
+            const fileInfo = await loadRemote(url);
             return this.addFileInfoToViewer(fileInfo);
         } catch (err) {
             console.warn(err);
@@ -109,9 +108,8 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
         // If you get here, it failed. Try CIF.
         try {
-            const fileInfo2 = await loadRemote(
-                `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`
-            );
+            const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
+            const fileInfo2 = await loadRemote(url);
             return this.addFileInfoToViewer(fileInfo2);
         } catch (err: any) {
             // Failed a second time! Probably not a valid PDB.
@@ -133,7 +131,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest[]> {
         return [
-        {
+            {
                 pluginOpen: new TestCmdList().setUserArg(
                     "pdbId",
                     "1XDN",
