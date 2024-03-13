@@ -5,18 +5,20 @@
         </a>
     </li>
     <li v-else>
-        <a
-            :class="'dropdown-item pt-0' + (disabled ? ' disabled' : '')"
-            style="padding-bottom: 2px; pointer-events: all"
-            @click="runFunction(menuData)"
-            href="#"
-            :id="'menu-plugin-' + idSlug"
-        >
-            {{ menuData.text?.replace("_", "") }}
-            <div v-if="showHotkey" style="float: right" class="text-muted">
-                {{ hotkeyPrefix }}{{ menuData.hotkey?.toUpperCase() }}
-            </div>
-        </a>
+        <Tooltip :tip="introductionTxt(menuData.pluginId)" placement="right">
+            <a
+                :class="'dropdown-item pt-0' + (disabled ? ' disabled' : '')"
+                style="padding-bottom: 2px; pointer-events: all"
+                @click="runFunction(menuData)"
+                href="#"
+                :id="'menu-plugin-' + idSlug"
+            >
+                {{ menuData.text?.replace("_", "") }}
+                <div v-if="showHotkey" style="float: right" class="text-muted">
+                    {{ hotkeyPrefix }}{{ menuData.hotkey?.toUpperCase() }}
+                </div>
+            </a>
+        </Tooltip>
     </li>
 </template>
 
@@ -30,6 +32,8 @@ import { Prop } from "vue-property-decorator";
 import { IMenuItem } from "./Menu";
 import { slugify } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
+import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 
 let collapseHamburger: any;
 let hamburgerMenu: HTMLElement;
@@ -38,7 +42,7 @@ let hamburgerMenu: HTMLElement;
  * MenuActionLink component
  */
 @Options({
-    components: {},
+    components: { Tooltip },
 })
 export default class MenuActionLink extends Vue {
     @Prop() menuData!: IMenuItem;
@@ -46,6 +50,19 @@ export default class MenuActionLink extends Vue {
 
     hotkeyPrefix = "Ctrl+";
     // disabled = false;
+
+    introductionTxt(pluginId: string | undefined): string {
+        if (pluginId === undefined) {
+            return "";
+        }
+
+        let txt = loadedPlugins[pluginId].intro;
+
+        // Get text, but not any HTML tags.
+        txt = txt.replace(/<[^>]*>?/gm, "");
+        
+        return txt;
+    }
 
     /**
      * Whether the menu item is disabled.
@@ -55,8 +72,10 @@ export default class MenuActionLink extends Vue {
     get disabled(): boolean {
         const checkPluginAllowed = this.menuData.checkPluginAllowed;
         if (checkPluginAllowed) {
-            const pluginAllowed = checkPluginAllowed(this.$store.state.molecules);
-            return (pluginAllowed !== null);
+            const pluginAllowed = checkPluginAllowed(
+                this.$store.state.molecules
+            );
+            return pluginAllowed !== null;
         }
         return false;
     }

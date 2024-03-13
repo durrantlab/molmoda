@@ -38,7 +38,7 @@ export default class ExpandAllPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = "Expand all the nodes in the tree navigator.";
+    intro = "Expand all the nodes in the Navigator panel.";
 
     // hotkey = "i";
 

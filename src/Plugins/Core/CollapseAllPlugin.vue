@@ -38,7 +38,7 @@ export default class CollapseAllPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
-    intro = "Collapse all the nodes in the tree navigator.";
+    intro = "Collapse all the nodes in the Navigator panel.";
 
     // hotkey = "i";
 

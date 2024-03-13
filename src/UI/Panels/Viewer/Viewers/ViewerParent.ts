@@ -394,7 +394,7 @@ export abstract class ViewerParent {
                     // treeNode.model might be a proxy, so need to use toRaw.
 
                     // This should run first
-                    
+
                     addObjPromise = this.addGLModel(toRaw(treeNode.model) as GLModel)
                     .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
