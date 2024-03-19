@@ -46,6 +46,11 @@ import {
     WhichMolsGen3D,
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
+import { getFileType } from "@/FileSystem/Utils2";
+import {
+    IFormatInfo,
+    getFormatInfoGivenType,
+} from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 
 /**
  * OpenMoleculesPlugin
@@ -160,6 +165,89 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         // this.windowClosing = this.payload !== undefined;
     }
 
+    isFlatSdfOrMol2(frmt: IFormatInfo, fileInfo: FileInfo): boolean {
+        // It's an sdf or mol2 file (already checked).
+        const lines = fileInfo.contents.split("\n");
+
+        // Initialize arrays to store the x, y, and z coordinates
+        const xCoords: number[] = [];
+        const yCoords: number[] = [];
+        const zCoords: number[] = [];
+
+        if (frmt.primaryExt === "sdf") {
+            // Loop through the lines where coordinates are expected
+            for (let line of lines.slice(4)) {
+                // Coordinates start from the 5th line in SDF format. Stop at
+                // the end of the molecule specification
+                if (line.trim() === "$$$$") break;
+
+                // If no period is found, we're no longer in the coordinates
+                // section
+                if (!line.includes(".")) break;
+
+                line = line.trim();
+                while (line.includes("  ")) {
+                    line = line.replace("  ", " ");
+                }
+                const parts = line.split(/\s+/);
+
+                try {
+                    // Append the x, y, and z coordinates to their respective arrays
+                    xCoords.push(parseFloat(parts[0]));
+                    yCoords.push(parseFloat(parts[1]));
+                    zCoords.push(parseFloat(parts[2]));
+                } catch (error) {
+                    // If conversion to float fails or parts are not as
+                    // expected, we're no longer in the coordinates section
+                    break;
+                }
+            }
+        } else if (frmt.primaryExt === "mol2") {
+            let inAtomSection = false;
+
+            // Loop through the lines to find the ATOM section
+            for (let line of lines) {
+                line = line.trim();
+
+                // Check for the start of the ATOM section
+                if (line === "@<TRIPOS>ATOM") {
+                    inAtomSection = true;
+                    continue;
+                }
+
+                // Check for the end of the ATOM section, which is the start of the BOND section
+                if (line === "@<TRIPOS>BOND") break;
+
+                // Process lines within the ATOM section
+                if (inAtomSection) {
+                    // Simplify spaces to ensure consistent splitting
+                    while (line.includes("  ")) {
+                        line = line.replace("  ", " ");
+                    }
+
+                    const parts = line.split(/\s+/);
+
+                    try {
+                        // Append the x, y, and z coordinates to their respective arrays
+                        xCoords.push(parseFloat(parts[2])); // x-coordinate is the 3rd column in ATOM section
+                        yCoords.push(parseFloat(parts[3])); // y-coordinate is the 4th column in ATOM section
+                        zCoords.push(parseFloat(parts[4])); // z-coordinate is the 5th column in ATOM section
+                    } catch (error) {
+                        // If conversion to float fails or parts are not as expected, skip this line
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // Check if all coordinates in any of the arrays are 0
+        const allXZero = xCoords.every((x) => x === 0);
+        const allYZero = yCoords.every((y) => y === 0);
+        const allZZero = zCoords.every((z) => z === 0);
+
+        return allXZero || allYZero || allZZero;
+    }
+
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
@@ -176,6 +264,20 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
             level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
+
+        // MOL2 and SDF files can be both 2D and 3D.
+        const typ = getFileType(fileInfo);
+        if (typ !== undefined) {
+            const frmt = getFormatInfoGivenType(typ);
+            // eslint-disable-next-line sonarjs/no-collapsible-if
+            if (
+                frmt !== undefined &&
+                ["sdf", "mol2"].includes(frmt.primaryExt) &&
+                this.isFlatSdfOrMol2(frmt, fileInfo)
+            ) {
+                gen3DParams.whichMols = WhichMolsGen3D.All;
+            }
+        }
 
         // Note that below not only adds to viewer, but performs necessary
         // files conversions, generates 3D geometry, etc.
@@ -218,6 +320,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["4WP4.pdbqt", "A"],
             ["4WP4.pqr", "TOU:101"],
             ["4WP4.xyz", "4WP4:1"],
+            ["flat.mol2", "flat"]
         ];
 
         const tests = filesToTest.map((fileToTest, idx) => {
