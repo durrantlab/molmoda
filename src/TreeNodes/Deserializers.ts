@@ -17,42 +17,42 @@ import { newTreeNode, newTreeNodeList } from "./TreeNodeMakers";
  * @returns {Promise<TreeNode>}    A promise that resolves the deserialized
  * TreeNode.
  */
-function _treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
+async function _treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
     const newNode = newTreeNode(nodeSerial as TreeNode);
-    return dynamicImports.mol3d.module
-        .then(($3Dmol: any) => {
-            // Deserialize and model.
-            if (nodeSerial.model) {
-                const model = new $3Dmol.GLModel();
-                model.addAtoms(nodeSerial.model);
-                newNode.model = model;
+    const $3Dmol = await dynamicImports.mol3d.module;
 
-                // The model should not be reactive or alterable after loaded.
-                // Note that this dramatically improves performance in vue, but
-                // any changes to the model will require recreating it entirely.
-                Object.freeze(newNode.model);
-            }
+    // Deserialize and model if it is not a 3Dmol model or an IFileInfo.
+    if (nodeSerial.model && !(nodeSerial.model as any).name && !(nodeSerial.model as any).content) {
+        const model = new $3Dmol.GLModel();
+        model.addAtoms(nodeSerial.model);
+        newNode.model = model;
 
-            return nodeSerial as ITreeNode;
-        })
-        .then((nodeSerial: ITreeNode) => {
-            // Deserialize nodes.
-            return nodeSerial.nodes
-                ? treeNodeListDeserialize(
-                      nodeSerial.nodes as unknown as ITreeNode[]
-                  )
-                : Promise.resolve(undefined);
-        })
-        .then((nodes: TreeNodeList | undefined) => {
-            if (nodes !== undefined) {
-                newNode.nodes = nodes;
-            }
-            return newNode;
-        })
-        .catch((err: any) => {
-            throw err;
-        });
-    // return node;
+        // The model should not be reactive or alterable after loaded.
+        // Note that this dramatically improves performance in vue, but
+        // any changes to the model will require recreating it entirely.
+        Object.freeze(newNode.model);
+    }
+
+    // Deserialize nodes.
+    const nodes = await (nodeSerial.nodes
+        ? treeNodeListDeserialize(nodeSerial.nodes as unknown as ITreeNode[])
+        : Promise.resolve(undefined));
+
+    if (nodes !== undefined) {
+        newNode.nodes = nodes;
+    }
+    return newNode;
+
+    // return dynamicImports.mol3d.module
+    //     .then(($3Dmol: any) => {
+    //         return nodeSerial as ITreeNode;
+    //     })
+    //     .then((nodeSerial: ITreeNode) => {})
+    //     .then((nodes: TreeNodeList | undefined) => {})
+    //     .catch((err: any) => {
+    //         throw err;
+    //     });
+    // // return node;
 }
 
 /**

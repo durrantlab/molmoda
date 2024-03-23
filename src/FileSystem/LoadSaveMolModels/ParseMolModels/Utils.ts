@@ -35,7 +35,7 @@ export async function parseMolecularModelFromTexts(
         
         const molecularDataNodeList = await treeNodeListDeserialize(
             molecularDataDeserialized
-            );
+        );
             
         // (window as any).testing_var = {
         //     workerParams: workerParams[0].fileInfo.contents,

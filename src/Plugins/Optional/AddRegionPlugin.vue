@@ -37,6 +37,10 @@ import {
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { Options } from "vue-class-component";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
+import { IEasyAtom } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
+import { EasyParserPDB } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserPDB";
+import { IFileInfo } from "@/FileSystem/Types";
+import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 
 /**
  * AddRegionPlugin
@@ -166,24 +170,30 @@ export default class AddRegionPlugin extends PluginParentClass {
         let min_z = Infinity;
 
         nodes.forEach((node) => {
-            const mol = node.model as GLModel;
-            if (mol) {
-                const atoms = mol.selectedAtoms({}) as IAtom[];
-                for (let i = 0; i < atoms.length; i = i + 10) {
-                    // NOTE: Look at every 10th atom to speed up the calculation.
-                    cnt += 1;
-                    const atom = atoms[i];
-                    x += atom.x as number;
-                    y += atom.y as number;
-                    z += atom.z as number;
+            if (!node.model) {
+                return;
+            }
 
-                    max_x = Math.max(max_x, atom.x as number);
-                    max_y = Math.max(max_y, atom.y as number);
-                    max_z = Math.max(max_z, atom.z as number);
-                    min_x = Math.min(min_x, atom.x as number);
-                    min_y = Math.min(min_y, atom.y as number);
-                    min_z = Math.min(min_z, atom.z as number);
-                }
+            // Get the atoms. Look at every 10th atom to speed up the
+            // calculation
+            let atoms: IAtom[] | IEasyAtom[] = [];
+            let easyModel = makeEasyParser(node.model);
+            for (let i = 0; i < easyModel.length; i = i + 10) {
+                atoms.push(easyModel.parseAtom(i));
+            }
+
+            for (const atom of atoms) {
+                cnt += 1;
+                x += atom.x as number;
+                y += atom.y as number;
+                z += atom.z as number;
+
+                max_x = Math.max(max_x, atom.x as number);
+                max_y = Math.max(max_y, atom.y as number);
+                max_z = Math.max(max_z, atom.z as number);
+                min_x = Math.min(min_x, atom.x as number);
+                min_y = Math.min(min_y, atom.y as number);
+                min_z = Math.min(min_z, atom.z as number);
             }
         });
 

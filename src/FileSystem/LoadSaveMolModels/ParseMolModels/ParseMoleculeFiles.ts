@@ -75,6 +75,14 @@ export function _parseMoleculeFile(
         return Promise.reject();
     }
 
+    // Adjust desalt perameter if needed
+    if (formatInfo.neverDesalt === true) {
+        console.warn(
+            `File format ${formatInfo.description} does not support desalting.`
+        );
+        desalt = false;
+    }
+
     // For 3dmoljs and openbabel loading, models should be merged. So save the
     // promise instead of returning immediately.
     let promise: Promise<TreeNodeList>;

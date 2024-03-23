@@ -15,6 +15,7 @@ from json.decoder import JSONDecodeError
 import html
 from simple_term_menu import TerminalMenu
 import shutil
+from webdriver_manager.chrome import ChromeDriverManager
 
 # import traceback
 import threading

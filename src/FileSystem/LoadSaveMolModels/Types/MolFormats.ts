@@ -26,6 +26,9 @@ export interface IFormatInfo {
     saveWarning?: string;
     extraObabelArgs?: string[];
 
+    // For some formats, should never desalt (not small molecules).
+    neverDesalt?: boolean;
+
     // Whenever possible, don't set this variable. Use primaryExt instead. But
     // there are rare occasions when the format name for obabel might differ
     // than the primary extension.
@@ -95,6 +98,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["molmoda", "biotite"],
         description: `${appName} Session`,
         hasBondOrders: true,
+        neverDesalt: true,
         loader: MolLoader.MolModaFormat,
     },
     CIF: {
@@ -105,6 +109,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken. Actually, open babel too. Doesn't do multi-frame CIF files.
         frameSeparators: cifLikeSeparators,
         extractMolNameRegex: cifLikeNames,
+        neverDesalt: true,
     },
     PDB: {
         primaryExt: "pdb",
@@ -115,6 +120,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         frameSeparators: pdbLikeSeparators,
         extractMolNameRegex: pdbLikeNames,
         saveWarning: "PDB" + noBondOrdersWarning,
+        neverDesalt: true,
         validateContents: (contents: string) => {
             // Note that this will assume pdbqt and pqr files are pdb. But not
             // validating contents of those other files for now.
@@ -153,9 +159,10 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["mcif", "mmcif"],
         description: "Macromolecular Crystallographic Info",
         hasBondOrders: false, // Not sure
-        loader: MolLoader.Mol3D,
+        loader: MolLoader.OpenBabel, // Mol3D, // now all formats but PDB, MOL2 = open babel
         frameSeparators: cifLikeSeparators,
         extractMolNameRegex: cifLikeNames,
+        neverDesalt: true,
     },
     SDF: {
         primaryExt: "sdf",
@@ -190,6 +197,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         frameSeparators: pdbLikeSeparators,
         extractMolNameRegex: pdbLikeNames,
         extraObabelArgs: ["-xr"], // Rigid (for receptor)
+        neverDesalt: true,
     },
     PDBQTLIG: {
         // NOTE: This is meant for ligands converted to PDBQT. Let's just
@@ -202,6 +210,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         frameSeparators: pdbLikeSeparators,
         extractMolNameRegex: pdbLikeNames,
         obabelFormatName: "pdbqt",
+        neverDesalt: true,
         // extraObabelArgs: ["-xr"],  // Rigid (for receptor)
     },
     PQR: {
@@ -209,9 +218,10 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["pqr"],
         description: "PQR",
         hasBondOrders: false,
-        loader: MolLoader.Mol3D,
+        loader: MolLoader.OpenBabel,  // Mol3D,  // now all formats but PDB, MOL2 = open babel
         frameSeparators: pdbLikeSeparators,
         extractMolNameRegex: pdbLikeNames,
+        neverDesalt: true,
     },
     SMI: {
         primaryExt: "smi",
@@ -319,11 +329,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["xyz"],
         description: "XYZ cartesian coordinates",
         hasBondOrders: false,
-        loader:  MolLoader.Mol3D,
+        loader: MolLoader.OpenBabel,  // Mol3D,  // now all formats but PDB, MOL2 = open babel
         // technically separated by number on own line, but niche case
         // frameSeparators: null
         extractMolNameRegex: [/^\d+\n(.+)$/gm], // second line, after number-only line
         saveWarning: "XYZ" + noBondOrdersWarning,
+        neverDesalt: true,
     },
     MMTF: {
         // NOTE: binary format
@@ -331,7 +342,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["mmtf"],
         description: "Macromolecular transmission",
         hasBondOrders: false, // Not sure
-        loader: MolLoader.Mol3D,
+        loader: MolLoader.OpenBabel, // .Mol3D,  // now all formats but PDB, MOL2 = open babel
+        neverDesalt: true,
     },
 
     ZIP: {
@@ -340,6 +352,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         description: "ZIP archive",
         hasBondOrders: false, // Not sure
         loader: MolLoader.Zip,
+        neverDesalt: true,
     },
 };
 

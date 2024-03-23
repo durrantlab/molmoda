@@ -188,15 +188,14 @@ export abstract class ViewerParent {
         if (model) {
             this.showMolecule(id);
             this._makeAtomsHoverableAndClickable(model, id);
-            debugger
-            this.renderAll()
-            .then(() => {
-                debugger;
-                return
-            })
-            .catch((err) => {
-                debugger;
-            });
+            this.renderAll();
+            // .then(() => {
+            //     debugger;
+            //     return
+            // })
+            // .catch((err) => {
+            //     debugger;
+            // });
             return;
         }
 

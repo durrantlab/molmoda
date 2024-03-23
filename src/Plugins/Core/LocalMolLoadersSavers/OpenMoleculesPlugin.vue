@@ -318,8 +318,8 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["4WP4.pdb", "TOU:101"],
             ["4WP4.pdb.zip", "TOU:101"],
             ["4WP4.pdbqt", "A"],
-            ["4WP4.pqr", "TOU:101"],
-            ["4WP4.xyz", "4WP4:1"],
+            ["4WP4.pqr", "TOU:101"], // 
+            ["4WP4.xyz", "4WP4"], // 
             ["flat.mol2", "flat"]
         ];
 

@@ -264,15 +264,6 @@ export default class ViewerPanel extends Vue {
                         bonds: 0,
                     });
 
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                // const atoms =
-                //     api.visualization.viewerObj?._mol3dObj.selectedAtoms(
-                //         treeNode.id as string,
-                //         convertedSel
-                //     );
-                // console.log(atoms, treeNode.type);
-
                 api.visualization.viewerObj?.setMolecularStyle(
                     treeNode.id as string,
                     convertedSel,

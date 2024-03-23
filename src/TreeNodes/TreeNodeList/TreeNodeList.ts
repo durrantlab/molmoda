@@ -348,7 +348,7 @@ export class TreeNodeList {
      *                                                    molecule.
      * @param {IGen3DOptions}  [gen3D=undefined]          Whether and how to
      *                                                    generate 3D
-     *                                                    coordinates. 
+     *                                                    coordinates.
      * @param  {string}        [defaultTitle="Molecule"]  The default title to
      *                                                    use if none is found.
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
@@ -475,11 +475,25 @@ export class TreeNodeList {
      * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
      */
     public toFileInfos(targetExt: string, merge = true): Promise<FileInfo[]> {
+        // Determine if in worker
+        const inWorker =
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            typeof WorkerGlobalScope !== "undefined" &&
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            self instanceof WorkerGlobalScope;
+
         // Start spinner
-        const spinnerId = messagesApi.startWaitSpinner();
+        let spinnerId: any;
+        if (!inWorker) {
+            spinnerId = messagesApi.startWaitSpinner();
+        }
         return _convertTreeNodeList(this, targetExt, merge).then(
             (fileInfos: FileInfo[]) => {
-                messagesApi.stopWaitSpinner(spinnerId);
+                if (!inWorker) {
+                    messagesApi.stopWaitSpinner(spinnerId);
+                }
                 return fileInfos;
             }
         );

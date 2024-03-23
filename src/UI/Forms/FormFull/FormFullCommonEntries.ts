@@ -14,7 +14,7 @@ export function getDesaltUserArg(): IUserArgCheckbox {
         type: UserArgType.Checkbox,
         label: "Desalt molecules",
         description:
-            "Removes any counterions and keeps only the largest fragment.",
+            "If appropriate for the file format, removes any counterions and keeps only the largest fragment.",
         val: true,
     } as IUserArgCheckbox;
 }

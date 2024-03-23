@@ -6,6 +6,8 @@ import {
     standardProteinResidues,
     solventSel,
 } from "../Types/ComponentSelections";
+import { makeEasyParser } from "../ParseMolModels/EasyParser";
+import { IEasyAtom } from "../ParseMolModels/EasyParser/EasyParserParent";
 
 // Inspired by
 // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L576
@@ -175,15 +177,8 @@ function _createPDBLine(isProt: boolean, atom: IAtom): string {
  * @param  {GLModel|IAtom[]} mol  The GLModel or atom list.
  * @returns {IAtom[]}  The list of atoms.
  */
-function _getAtomsOfModel(mol: GLModel | IAtom[]): IAtom[] {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (mol.selectedAtoms) {
-        // It's GLModel
-        return (mol as GLModel).selectedAtoms({});
-    }
-
-    return mol as IAtom[];
+function _getAtomsOfModel(mol: GLModel | IAtom[]): IEasyAtom[] {
+    return makeEasyParser(mol).atoms;
 }
 
 /**
@@ -275,6 +270,9 @@ export function _convertTreeNodeListToPDB(
         for (const atom of atoms) {
             // See https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html
 
+            // Note that bonds are not implemented given new EasyParser
+            // replacement for GLModel.
+
             const isProt = standardProteinResidues.indexOf(atom.resn) !== -1;
             const pdbLine = _createPDBLine(isProt, atom);
 
@@ -297,6 +295,10 @@ export function _convertTreeNodeListToPDB(
             let conect = "CONECT";
             conect += _rjust((atom.serial as number).toString(), 5);
             for (const bondedAtomIdx of atom.bonds as number[]) {
+                if (atoms[bondedAtomIdx] === undefined) {
+                    continue;
+                }
+
                 const bondedAtomSerial = atoms[bondedAtomIdx].serial as number;
                 conect += _rjust(bondedAtomSerial.toString(), 5);
             }

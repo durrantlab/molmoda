@@ -21,7 +21,7 @@ const _stickStyle: IStyle = {
     stick: {},
 };
 
-export const proteinStyle: IStyle[] = [
+export const defaultProteinStyle: IStyle[] = [
     {
         cartoon: {
             color: "spectrum",
@@ -29,29 +29,29 @@ export const proteinStyle: IStyle[] = [
     },
 ];
 
-export const nucleicStyle: IStyle[] = [_stickStyle];
+export const defaultNucleicStyle: IStyle[] = [_stickStyle];
 
-export const ligandsStyle: IStyle[] = [_stickStyle];
+export const defaultLigandsStyle: IStyle[] = [_stickStyle];
 
-export const metalsStyle: IStyle[] = [_sphereStyle];
+export const defaultMetalsStyle: IStyle[] = [_sphereStyle];
 
-export const lipidStyle: IStyle[] = [_stickStyle];
+export const defaultLipidStyle: IStyle[] = [_stickStyle];
 
-export const ionsStyle: IStyle[] = [_sphereStyle];
+export const defaultIonsStyle: IStyle[] = [_sphereStyle];
 
-export const solventStyle: IStyle[] = [_stickStyle];
+export const defaultSolventStyle: IStyle[] = [_stickStyle];
 
 // Empty on purpose to satisfy typescript
 const regionStyle: IStyle[] = [];
 
 export const currentStyles: { [key in TreeNodeType]: IStyle[] } = {
-    [TreeNodeType.Protein]: proteinStyle,
-    [TreeNodeType.Nucleic]: nucleicStyle,
-    [TreeNodeType.Compound]: ligandsStyle,
-    [TreeNodeType.Metal]: metalsStyle,
-    [TreeNodeType.Lipid]: lipidStyle,
-    [TreeNodeType.Ions]: ionsStyle,
-    [TreeNodeType.Solvent]: solventStyle,
+    [TreeNodeType.Protein]: defaultProteinStyle,
+    [TreeNodeType.Nucleic]: defaultNucleicStyle,
+    [TreeNodeType.Compound]: defaultLigandsStyle,
+    [TreeNodeType.Metal]: defaultMetalsStyle,
+    [TreeNodeType.Lipid]: defaultLipidStyle,
+    [TreeNodeType.Ions]: defaultIonsStyle,
+    [TreeNodeType.Solvent]: defaultSolventStyle,
     [TreeNodeType.Region]: regionStyle,
 };
 
@@ -71,13 +71,19 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
     const molecules = getMoleculesFromStore();
 
     // iterate through terminal nodes
+    // debugger
     const terminalNodes = molecules.filters.onlyTerminal;
     for (let idx = 0; idx < terminalNodes.length; idx++) {
         const terminalNode = terminalNodes.get(idx);
 
         // Terminal node must have a type, styles, and be visible.
-        if (!terminalNode.type || !terminalNode.styles || !terminalNode.visible)
+        if (
+            !terminalNode.type // ||
+            // !terminalNode.styles // ||
+            // !terminalNode.visible
+        ) {
             continue;
+        }
 
         // Iterate through the node types you're considering.
         for (let i = 0; i < treeNodeTypes.length; i++) {
@@ -86,11 +92,15 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
 
             // Check if the node type matches this type. If not, skip to the
             // next node.
-            if (terminalNode.type !== molType) continue;
+            if (terminalNode.type !== molType) {
+                continue;
+            }
 
             // Add the styles to the node list if it's not empty ({}).
             terminalNode.styles = [];
-            if (!isEqual(style, {})) terminalNode.styles.push(style[0]);
+            if (!isEqual(style, {})) {
+                terminalNode.styles.push(style[0]);
+            }
             // TODO: Why style[0] above? Can the length ever be more than 1?
 
             // Mark this for rerendering in viewer.

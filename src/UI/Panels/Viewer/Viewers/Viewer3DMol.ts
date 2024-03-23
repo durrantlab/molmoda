@@ -14,6 +14,9 @@ import {
     GenericLabelType,
     GenericRegionType,
 } from "./Types";
+import { IFileInfo } from "@/FileSystem/Types";
+import { FileInfo } from "@/FileSystem/FileInfo";
+import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 
 /**
  * Viewer3DMol
@@ -123,7 +126,11 @@ export class Viewer3DMol extends ViewerParent {
      */
     clearMoleculeStyles(id: string) {
         const model = this.lookup(id);
-        model.setStyle({}, {});
+
+        if (model && model.setStyle) {
+            // because regions don't have setStyle
+            model.setStyle({}, {});
+        }
     }
 
     /**
@@ -178,9 +185,25 @@ export class Viewer3DMol extends ViewerParent {
      * @param  {GLModel} model  The model to add.
      * @returns {Promise<GLModel>}  The model that was added.
      */
-    addGLModel(model: GLModel): Promise<GLModel> {
+    addGLModel(model: GLModel | IFileInfo): Promise<GLModel> {
         // this._mol3dObj.addRawModel_JDD(model);
-        const newMol = this._mol3dObj.addGLModel(model, true);
+        let newMol: GLModel;
+        if ((model as IFileInfo).name && (model as IFileInfo).contents) {
+            // It's an IFileInfo.
+
+            // Get the format
+            const typ = new FileInfo(model as IFileInfo).getFileType();
+            const format = getFormatInfoGivenType(typ as string);
+            const ext = format?.primaryExt;
+
+            newMol = this._mol3dObj.addModel((model as IFileInfo).contents, ext, {keepH: true});
+
+            // Remove all styles
+            newMol.setStyle({}, {});
+        } else {
+            newMol = this._mol3dObj.addGLModel(model, true);
+        }
+
         // const newMol = this._mol3dObj.addGLModel({}, true);
         return Promise.resolve(newMol);
     }

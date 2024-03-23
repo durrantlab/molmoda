@@ -24,6 +24,9 @@ import * as SetupTests from "@/Testing/SetupTests";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
+import { IFileInfo } from "@/FileSystem/Types";
+import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { IEasyAtom } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -42,7 +45,7 @@ export interface ITreeNode {
 
     // These are specifically for terminal nodes
     styles?: IStyle[]; // styles and selections for this node
-    model?: IAtom[] | GLModel;
+    model?: IAtom[] | GLModel | IFileInfo;
     region?: IRegion;
 
     // These are specifically for non-terminal nodes
@@ -70,7 +73,7 @@ export class TreeNode {
     nodes?: TreeNodeList; // Next level down in menu. So if molecule,
 
     // These are specifically for terminal nodes
-    model?: IAtom[] | GLModel; // IAtom in worker, GLMoldel in main thread
+    model?: IAtom[] | GLModel | IFileInfo; // IAtom in worker, GLMoldel in main thread
     styles?: IStyle[]; // styles and selections for this node
     region?: IRegion;
 
@@ -223,6 +226,8 @@ export class TreeNode {
                         ? (this.nodes as TreeNodeList).serialize()
                         : this.nodes;
             } else if (key === "model" && this.model) {
+                // If stored as GLModel (depreciated), convert to IAtom[] so
+                // serializable.
                 if ((this.model as GLModel).selectedAtoms !== undefined) {
                     obj["model"] = (this.model as GLModel).selectedAtoms({});
 
@@ -344,7 +349,7 @@ export class TreeNode {
             // If there's no model, use first available chain.
             chain = availableChains.shift();
         } else {
-            const firstAtom = (treeNode.model as GLModel).selectedAtoms({})[0];
+            const firstAtom = makeEasyParser(treeNode.model).parseAtom(0);
             if (!firstAtom) {
                 // If there are no atoms in the model, use first
                 // available chain.
@@ -725,10 +730,10 @@ export class TreeNode {
         nodesWithModels.forEach((node: TreeNode) => {
             const model = node.model as GLModel;
             // Get atoms
-            const atoms = model.selectedAtoms({});
-            xs.push(...atoms.map((atom: IAtom) => atom.x));
-            ys.push(...atoms.map((atom: IAtom) => atom.y));
-            zs.push(...atoms.map((atom: IAtom) => atom.z));
+            const {atoms} = makeEasyParser(model);
+            xs.push(...atoms.map((atom: IEasyAtom) => atom.x));
+            ys.push(...atoms.map((atom: IEasyAtom) => atom.y));
+            zs.push(...atoms.map((atom: IEasyAtom) => atom.z));
         });
 
         // Get min and max x, y, and z

@@ -13,13 +13,13 @@ import {
 import { randomID } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import {
-    proteinStyle,
-    nucleicStyle,
-    ligandsStyle,
-    metalsStyle,
-    lipidStyle,
-    ionsStyle,
-    solventStyle,
+    defaultProteinStyle,
+    defaultNucleicStyle,
+    defaultLigandsStyle,
+    defaultMetalsStyle,
+    defaultLipidStyle,
+    defaultIonsStyle,
+    defaultSolventStyle,
 } from "../Types/Styles";
 import {
     ionSel,
@@ -34,6 +34,8 @@ import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { _convertTreeNodeListToPDB } from "../ConvertMolModels/_ConvertTreeNodeListToPDB";
+import { IFileInfo } from "@/FileSystem/Types";
 
 let glviewer: any;
 
@@ -635,18 +637,27 @@ function addParentIds(treeNode: TreeNode) {
 }
 
 waitForDataFromMainThread()
-    .then((data: IMolData[]) => {
-        const promises = data.map((d) => divideAtomsIntoDistinctComponents(d));
-        return Promise.all([Promise.resolve(data), ...promises]);
-    })
-    .then((payload: any[]) => {
-        const data = payload[0] as IMolData[];
+    .then(async (molData: IMolData[]) => {
+        // Format MUST be pdb or mol2 here. Should have converted using
+        // openbabel first.
+        for (const molDatum of molData) {
+            if (["pdb", "mol2"].indexOf(molDatum.format) === -1) {
+                throw new Error(
+                    `Format must be pdb or mol2. Got ${molDatum.format}.`
+                );
+            }
+        }
+        
+        const promises = molData.map((d) => divideAtomsIntoDistinctComponents(d));
+        const payload = await Promise.all([Promise.resolve(molData), ...promises]);
+
+        molData = payload[0] as IMolData[];
         const organizedAtomsFramesList = payload.slice(1) as TreeNodeList[];
 
         // Add source to all nodes
         for (let i = 0; i < organizedAtomsFramesList.length; i++) {
             for (let j = 0; j < organizedAtomsFramesList[i].length; j++) {
-                organizedAtomsFramesList[i].get(j).src = data[i].fileInfo.name;
+                organizedAtomsFramesList[i].get(j).src = molData[i].fileInfo.name;
             }
         }
 
@@ -668,31 +679,33 @@ waitForDataFromMainThread()
             nodesToConsider.forEach((node) => {
                 // TODO: In theory, you shouldn't need to set styles here,
                 // because they get reset in the main thread based on the
-                // current styles in the viewer. And yet when I remove styles
-                // setting from the worker, the solvent no longer appears in the
-                // viewer. I tried to figure out why, but struggled to find a
-                // solution. So I'm leaving it here for now.
+                // current styles in the viewer (see addToMainTree). And yet
+                // when I remove styles setting from the worker, the solvent no
+                // longer appears in the viewer. I tried to figure out why, but
+                // struggled to find a solution. So I'm leaving it here for now.
+                // NOTE: I'm pretty sure styles now no longer needs to be set
+                // here, but leaving because I hope to refactor later.
                 switch (node.type) {
                     case TreeNodeType.Protein:
-                        addMolTypeAndStyle(node, proteinStyle);
+                        addMolTypeAndStyle(node, defaultProteinStyle);
                         break;
                     case TreeNodeType.Nucleic:
-                        addMolTypeAndStyle(node, nucleicStyle);
+                        addMolTypeAndStyle(node, defaultNucleicStyle);
                         break;
                     case TreeNodeType.Compound:
-                        addMolTypeAndStyle(node, ligandsStyle);
+                        addMolTypeAndStyle(node, defaultLigandsStyle);
                         break;
                     case TreeNodeType.Metal:
-                        addMolTypeAndStyle(node, metalsStyle);
+                        addMolTypeAndStyle(node, defaultMetalsStyle);
                         break;
                     case TreeNodeType.Lipid:
-                        addMolTypeAndStyle(node, lipidStyle);
+                        addMolTypeAndStyle(node, defaultLipidStyle);
                         break;
                     case TreeNodeType.Ions:
-                        addMolTypeAndStyle(node, ionsStyle);
+                        addMolTypeAndStyle(node, defaultIonsStyle);
                         break;
                     case TreeNodeType.Solvent:
-                        addMolTypeAndStyle(node, solventStyle);
+                        addMolTypeAndStyle(node, defaultSolventStyle);
                         break;
                 }
             });
@@ -711,9 +724,19 @@ waitForDataFromMainThread()
             }
         );
 
+        // TODO: Converting to PDB here is a hack. Eventually, need to rewrite
+        // this whole worker to never use 3Dmoljs in the first place.
+        const pdbTxts = _convertTreeNodeListToPDB(organizedAtomsFramesFixed.terminals, false);
+        organizedAtomsFramesFixed.terminals.forEach((node: TreeNode, idx: number) => {
+            node.model = {
+                name: "tmp.pdb",
+                contents: pdbTxts[idx],
+            } as IFileInfo
+        });
+
         sendResponseToMainThread(organizedAtomsFramesFixed.serialize());
 
-        return;
+        return
     })
     .catch((err: any) => {
         throw err;
