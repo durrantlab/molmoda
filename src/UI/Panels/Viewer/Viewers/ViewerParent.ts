@@ -167,6 +167,7 @@ export abstract class ViewerParent {
         if (model) {
             this.hideMolecule(id);
             this._makeAtomsNotHoverableAndClickable(model);
+            // this.removeObject(id);  // TODO: Testing
             this.renderAll();
             return;
         }
@@ -187,7 +188,15 @@ export abstract class ViewerParent {
         if (model) {
             this.showMolecule(id);
             this._makeAtomsHoverableAndClickable(model, id);
-            this.renderAll();
+            debugger
+            this.renderAll()
+            .then(() => {
+                debugger;
+                return
+            })
+            .catch((err) => {
+                debugger;
+            });
             return;
         }
 
@@ -496,9 +505,9 @@ export abstract class ViewerParent {
     /**
      * Render all the molecules and surfaces currently added to the viewer.
      *
-     * @returns void
+     * @returns Promise<void>
      */
-    abstract renderAll(): void;
+    abstract renderAll(): Promise<void>;
 
     /**
      * Zoom in on a set of models.

@@ -33,6 +33,10 @@ export class Viewer3DMol extends ViewerParent {
         const mol = this.lookup(id);
         if (mol) {
             this._mol3dObj.removeModel(mol);
+
+            // Remove from cache too
+            this.molCache[id] = null;
+            delete this.molCache[id];
         }
     }
 
@@ -177,6 +181,7 @@ export class Viewer3DMol extends ViewerParent {
     addGLModel(model: GLModel): Promise<GLModel> {
         // this._mol3dObj.addRawModel_JDD(model);
         const newMol = this._mol3dObj.addGLModel(model, true);
+        // const newMol = this._mol3dObj.addGLModel({}, true);
         return Promise.resolve(newMol);
     }
 
@@ -427,7 +432,7 @@ export class Viewer3DMol extends ViewerParent {
                 this._mol3dObj.enableFog(true);
 
                 // Adding subtle outline makes things easier to see.
-                viewer.setViewStyle({style:"outline", width: 0.02});
+                viewer.setViewStyle({ style: "outline", width: 0.02 });
 
                 return this as ViewerParent;
             })
@@ -486,6 +491,14 @@ export class Viewer3DMol extends ViewerParent {
      */
     makeAtomsNotClickable(model: GLModel) {
         model.setClickable({}, false);
+
+        // Above doesn't remove the callback, which I think can take up quite a
+        // bit of space. Let's remove it.
+        model.selectedAtoms({}).forEach((atom: any) => {
+            if (atom.callback) {
+                delete atom.callback;
+            }
+        });
     }
 
     /**
@@ -500,6 +513,9 @@ export class Viewer3DMol extends ViewerParent {
         model: GLModel,
         callBack: (x: number, y: number, z: number) => any
     ) {
+        // Remove existing clickable
+        this.makeAtomsNotClickable(model);
+
         model.setClickable(
             {},
             true,
@@ -522,6 +538,17 @@ export class Viewer3DMol extends ViewerParent {
      */
     makeAtomsNotHoverable(model: GLModel) {
         model.setHoverable({}, false);
+
+        // Below doesn't remove callbacks. They take up quite a bit of memory, I
+        // think. Let's remove them.
+        model.selectedAtoms({}).forEach((atom: any) => {
+            if (atom.hover_callback) {
+                delete atom.hover_callback;
+            }
+            if (atom.unhover_callback) {
+                delete atom.unhover_callback;
+            }
+        });
     }
 
     /**
@@ -538,6 +565,8 @@ export class Viewer3DMol extends ViewerParent {
         onHoverInCallBack: (x: number, y: number, z: number) => any,
         onHoverOutCallBack: () => any
     ) {
+        this.makeAtomsNotHoverable(model);
+
         model.setHoverable(
             {},
             true,

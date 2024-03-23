@@ -27,14 +27,34 @@ export async function parseMolecularModelFromTexts(
             return { fileInfo: fi.serialize ? fi.serialize() : fi, format };
         }) as IMolData[];
 
+        // molecularDataDeserialized is a pure javascript object
         const molecularDataDeserialized = await runWorker(
             parseMolecularModelsWorker,
             workerParams
         );
-
+        
         const molecularDataNodeList = await treeNodeListDeserialize(
             molecularDataDeserialized
-        );
+            );
+            
+        // (window as any).testing_var = {
+        //     workerParams: workerParams[0].fileInfo.contents,
+        //     molecularDataDeserialized: molecularDataDeserialized,
+        //     molecularDataNodeList: molecularDataNodeList
+        // };
+
+        // For aspirin:
+        //   Txt on disk: 
+        //   molecularDataDeserialized: 6.0 KB
+        //   molecularDataNodeList: 12.8 KB
+        // For 1XDN:
+        //   Txt on disk: 451 KB
+        //   molecularDataDeserialized is 604 KB
+        //   molecularDataNodeList is 877 KB.
+        // For 2HU4:
+        //   Txt on disk: 2.0 MB
+        //   molecularDataDeserialized is 5.642 MB
+        //   molecularDataNodeList is 8.602 MB
 
         molecularDataNodeList.forEach((molecularDatum: TreeNode) => {
             const fileName = molecularDatum.src;

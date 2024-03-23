@@ -55,7 +55,7 @@ export default class FormFile extends Vue {
     get acceptableFileTypesMsg(): string {
         return (
             "Acceptable file types: " +
-            this.accept.toUpperCase().replace(/,/g, ", ")
+            this.accept.replace(".biotite,", "").toUpperCase().replace(/,/g, ", ")
         );
     }
 
