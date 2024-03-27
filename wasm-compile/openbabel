@@ -1,0 +1,157 @@
+# Use an Emscripten base image
+FROM trzeci/emscripten:latest
+
+# Set environment variables for library paths
+ENV BOOST_VERSION=1.75.0 \
+  BOOST_VERSION_UNDERSCORE=1_75_0 \
+  ZLIB_VERSION=1.2.11 \
+  LIBXML2_VERSION=2.9.1 \
+  EIGEN_VERSION=3.3.9 \
+  INCHI_VERSION=1.05 \
+  OPENBABEL_VERSION=3.1.1
+
+# Install dependencies
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  build-essential \
+  cmake \
+  autoconf \
+  libtool \
+  automake \
+  llvm \
+  git \
+  wget \
+  pkg-config \
+  libssl-dev \
+  python3 \
+  python3-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# Set CPPFLAGS to include the Python header directory
+# ENV CPPFLAGS="-I/usr/include/python3.x -I/usr/include/python3.xm"
+# Copy Python header files to the appropriate directory
+# RUN cp -r /usr/include/python3.* /usr/include/python3.xm /usr/include/python3.x
+
+# Download and build Boost
+RUN wget -O /boost.tar.gz https://boostorg.jfrog.io/artifactory/main/release/$BOOST_VERSION/source/boost_$BOOST_VERSION_UNDERSCORE.tar.gz && \
+  tar -xzf /boost.tar.gz && \
+  ls -l / && \
+  rm /boost.tar.gz && \
+  mv boost_$BOOST_VERSION_UNDERSCORE /boost && \
+  cd /boost && \
+  ./bootstrap.sh && \
+  ./b2 toolset=emscripten link=static variant=release  \
+  --with-system --with-filesystem --with-program_options \
+  -j$(nproc) install
+
+
+# Download and build zlib
+RUN wget -O /zlib.tar.gz https://github.com/madler/zlib/archive/refs/tags/v$ZLIB_VERSION.tar.gz && \
+  tar -xzf /zlib.tar.gz && \
+  rm /zlib.tar.gz && \
+  mv zlib-$ZLIB_VERSION /zlib && \
+  cd /zlib && \
+  emcmake cmake . && \
+  emmake make install
+
+ENV CPPFLAGS="-I/usr/include/python3.7m"
+
+# Download and build libxml2
+RUN wget -O /libxml2.tar.gz https://github.com/GNOME/libxml2/archive/refs/tags/v$LIBXML2_VERSION.tar.gz && \
+  tar -xzf /libxml2.tar.gz && \
+  rm /libxml2.tar.gz && \
+  mv libxml2-$LIBXML2_VERSION /libxml2 && \
+  cd /libxml2 && \
+  ./autogen.sh && \
+  emconfigure ./configure --with-zlib=/zlib --disable-shared --without-python && \
+  emmake make -j$(nproc) install
+
+# Download and build Eigen
+RUN wget --no-check-certificate -O /eigen.tar.gz https://gitlab.com/libeigen/eigen/-/archive/$EIGEN_VERSION/eigen-$EIGEN_VERSION.tar.gz && \
+  tar -xzf /eigen.tar.gz && \
+  rm /eigen.tar.gz && \
+  mv eigen-$EIGEN_VERSION /eigen && \
+  cd /eigen && \
+  mkdir build && \
+  cd build && \
+  emcmake cmake .. && \
+  emmake make -j$(nproc) install
+
+# Download and build InChI library
+# RUN wget -O /inchi.tar.gz https://git.code.sf.net/p/inchi/code.git/archive/refs/tags/v$INCHI_VERSION.tar.gz && \
+# RUN git clone --depth 1 https://github.com/IUPAC-InChI/InChI.git /inchi
+
+# RUN cd /inchi && \
+# mkdir build && \
+# cd build && \
+# emcmake cmake .. && \
+# emmake make -j$(nproc) install
+
+# Clone and compile wasi-libc
+RUN git clone https://github.com/WebAssembly/wasi-libc.git /wasi-libc && \
+  cd /wasi-libc && \
+  make -j$(nproc) && \
+  make install
+
+# Copy the builtins library to LLVM bin/wasi directory
+# RUN BUILTINS_PATH=$(find /wasi-libc -name "libclang_rt.builtins-wasm32.a" | head -n 1) && \
+# LLVM_BINDIR=$(llvm-config --bindir) && \
+# cp $BUILTINS_PATH $LLVM_BINDIR/../lib/clang/*/lib/wasi/libclang_rt.builtins-wasm32.a
+
+# Download and copy precompiled InChI library
+RUN git clone https://github.com/rapodaca/inchi-wasm.git /inchi
+
+ENV WASI_LIBC_HOME=/usr/local/lib/wasm32-wasi
+
+RUN wget -O libclang_rt.builtins-wasm32.a https://github.com/jedisct1/libclang_rt.builtins-wasm32.a/blob/master/precompiled/llvm-10-to-14/libclang_rt.builtins-wasm32.a && \
+  cp libclang_rt.builtins-wasm32.a /usr/local/lib/wasm32-wasi/
+
+# RUN cd /inchi && \
+# sh bin/build-wasm.sh
+#
+
+# Clone Open Babel repository
+RUN git clone --depth 1 https://github.com/openbabel/openbabel.git /openbabel
+
+# Build Open Babel with tests disabled
+RUN cd /openbabel && \
+  mkdir build && \
+  cd build && \
+  emcmake cmake .. \
+  -DOPENBABEL_USE_SYSTEM_EIGEN=ON \
+  -DOPENBABEL_USE_SYSTEM_ZLIB=OFF \
+  -DZLIB_LIBRARY=/usr/local/lib/libz.a \
+  -DZLIB_INCLUDE_DIR=/usr/local/include \
+  -DOPENBABEL_USE_SYSTEM_LIBXML2=OFF \
+  -DLIBXML2_LIBRARIES=/usr/local/lib/libxml2.a \
+  -DLIBXML2_INCLUDE_DIR=/usr/local/include/libxml2/libxml \
+  -DOPENBABEL_USE_SYSTEM_INCHI=OFF \
+  -DINCHI_LIBRARIES=/usr/local/lib/libinchi.a \
+  -DOPENBABEL_USE_SYSTEM_BOOST=OFF \
+  -DBoost_NO_SYSTEM_PATHS=ON \
+  -DBOOST_ROOT="/usr/local/bin" \
+  -DBoost_INCLUDE_DIR="/usr/local/include" \ 
+  -DBoost_LIBRARY_DIR="/usr/local/lib" \
+  -DBoost_USE_STATIC_LIBS=OFF \
+  -DOPENBABEL_BUILD_GUI=OFF \
+  -DOPENBABEL_BUILD_GUI_PLUGIN=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DOPENBABEL_ENABLE_DOCS=OFF \
+  -DOPENBABEL_ENABLE_TESTS=OFF \
+  -DOPENBABEL_ENABLE_TUTORIALS=OFF \
+  -DOPENBABEL_ENABLE_WARNINGS=OFF \
+  -DCMAKE_INSTALL_PREFIX=/usr/local \
+  -DWITH_STATIC_LIBXML=ON \
+  -DBUILD_SHARED=OFF \
+  -DCMAKE_EXE_LINKER_FLAGS="-static" \
+  -DCMAKE_FIND_LIBRARY_SUFFIXES=".a" \
+  -DCMAKE_EXE_LINKER_FLAGS_RELEASE="-static-libgcc -static-libstdc++" \
+  && \
+  emmake make -j$(nproc) install
+#
+# # Cleanup
+RUN apt-get clean && \
+  rm -rf /var/lib/apt/lists/* /boost /zlib /libxml2 /eigen /inchi
+#
+# Set the default command
+CMD ["bash"]
