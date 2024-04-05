@@ -57,3 +57,16 @@ public/docs
 old
 TODO.md
 *.old*
+backups
+make_alex_docs.sh
+
+utils/chromedriver-mac-arm64/
+utils/codebase.txt
+wasm-compile/vina/support/boost_1_75_0/
+wasm-compile/vina/support/compile.out
+wasm-compile/vina/support/include/
+wasm-compile/vina/support/out/
+wasm-compile/vina/support/temp
+
+
+old_*

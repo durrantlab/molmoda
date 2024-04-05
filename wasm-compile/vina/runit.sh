@@ -69,8 +69,10 @@ sed -i "" "s|++11|++11 -s MALLOC=mimalloc|g" Makefile
 # Use pthreads. Note that PTHREAD_POOL_SIZE indicates the number of workers that
 # are created initially, but additional workers can be created as required.
 # PTHREAD_POOL_SIZE is not a hard cap. JDD TODO: Note that changing this to
-# navigator.hardwareConcurrency did not fix the memory problem.
+# navigator.hardwareConcurrency did not fix the memory problem. Also, 8 did not
+# fix the memory problem.
 sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE='navigator.hardwareConcurrency'|g" Makefile
+# sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE=8|g" Makefile
 
 # Prevent Webina from running automatically (run only when the callMain is
 # called).
