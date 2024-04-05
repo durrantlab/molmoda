@@ -7,7 +7,6 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { makeEasyParser } from "../ParseMolModels/EasyParser";
-import { IEasyAtom } from "../ParseMolModels/EasyParser/EasyParserParent";
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
@@ -99,7 +98,7 @@ function getFilename(treeNode: TreeNode, ext: string): string {
     let txtPrts = [getFileNameParts(treeNode.src as string).basename];
 
     const easyMol = makeEasyParser(treeNode.model);
-    const firstAtom: IEasyAtom = easyMol.parseAtom(0);
+    const firstAtom: IAtom = easyMol.parseAtom(0);
 
     if (treeNode.type === TreeNodeType.Compound) {
         const resn = firstAtom.resn ? firstAtom.resn.trim() : "";

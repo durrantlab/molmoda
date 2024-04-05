@@ -6,8 +6,11 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 let timeoutId: number;
-const maxItemsOnUndoStack = 10;
 let pauseAddToUndoStack = false;
+
+// Don't make this too big. The undo stack can take up a lot of memory. TODO:
+// Perhaps in time you could store it in localstorage or something.
+const maxItemsOnUndoStack = 2;
 
 // setInterval(() => {
 //     console.log(

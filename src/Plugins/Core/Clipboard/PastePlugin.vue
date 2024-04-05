@@ -151,6 +151,7 @@ export default class PastePlugin extends PluginParentClass {
         const node = await TreeNode.loadFromFileInfo(
             fileInfo,
             this.getUserArg("desalt"),
+            undefined,
             this.getUserArg("pastedMolName")
         );
 

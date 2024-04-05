@@ -7,7 +7,14 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { getFormatInfoGivenType } from "../../Types/MolFormats";
 import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { EasyParserIAtomList } from "./EasyParserIAtomList";
+import { EasyParserMol2 } from "./EasyParserMol2";
 
+/**
+ * This function creates an EasyParser object from a given source.
+ * 
+ * @param {IFileInfo | GLModel | IAtom[] | undefined} src The source to parse.
+ * @returns {EasyParserParent} The EasyParser object.
+ */
 export function makeEasyParser(src: IFileInfo | GLModel | IAtom[] | undefined): EasyParserParent {
     // If undefined, return an empty parser.
     if (src === undefined) {
@@ -32,5 +39,5 @@ export function makeEasyParser(src: IFileInfo | GLModel | IAtom[] | undefined): 
     }
 
     // TODO: Below should be mol2!
-    return new EasyParserPDB(src);
+    return new EasyParserMol2(src);
 }

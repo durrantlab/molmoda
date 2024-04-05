@@ -58,6 +58,7 @@ export function _convertTreeNodeList(
     // }
 
     // if (formatInf.hasBondOrders !== true || calculateBondOrders) {
+    
     // Use PDB as intermediary. First, convert the mol containers to a PDB
     // string.
     molTxts = _convertTreeNodeListToPDB(treeNodeList, merge);

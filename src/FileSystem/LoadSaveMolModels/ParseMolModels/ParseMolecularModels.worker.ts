@@ -11,7 +11,6 @@ import {
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomID } from "@/Core/Utils";
-import { dynamicImports } from "@/Core/DynamicImports";
 import {
     defaultProteinStyle,
     defaultNucleicStyle,
@@ -30,14 +29,13 @@ import {
     solventSel,
 } from "../Types/ComponentSelections";
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
-import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { _convertTreeNodeListToPDB } from "../ConvertMolModels/_ConvertTreeNodeListToPDB";
 import { IFileInfo } from "@/FileSystem/Types";
-
-let glviewer: any;
+import { makeEasyParser } from "./EasyParser";
+import { EasyParserParent } from "./EasyParser/EasyParserParent";
+import { convertIAtomsToIFileInfoPDB } from "../ConvertMolModels/_ConvertIAtoms";
 
 enum NodesOrModel {
     Nodes,
@@ -81,16 +79,21 @@ function _getDefaultTreeNode(
 /**
  * Divides a molecule into chains.
  *
- * @param  {any}     sel     The selection to divide (e.g., a selection that
- *                           gets all protein atoms).
- * @param  {GLModel} mol     The molecule with the atoms. Note that the atoms
- *                           specified by sel end up getting removed, because
- *                           the function moves them into their own molecules.
- * @param  {string}  molName The name of the entry.
+ * @param  {any}     sel           The selection to divide (e.g., a selection
+ *                                 that gets all protein atoms).
+ * @param  {EasyParserParent} mol  The molecule with the atoms. Note that the
+ *                                 atoms specified by sel end up getting
+ *                                 removed, because the function moves them into
+ *                                 their own molecules.
+ * @param  {string}  molName       The name of the entry.
  * @returns {TreeNode} The molecule with the chains.
  */
-function organizeSelByChain(sel: any, mol: GLModel, molName: string): TreeNode {
-    let selectedAtoms = mol.selectedAtoms(sel);
+function organizeSelByChain(
+    sel: any,
+    mol: EasyParserParent,
+    molName: string
+): TreeNode {
+    let selectedAtoms = mol.selectedAtoms(sel, true);
 
     // If chain is " " for any atom, set it to "X"
     selectedAtoms = selectedAtoms.map((atom: IAtom) => {
@@ -99,6 +102,8 @@ function organizeSelByChain(sel: any, mol: GLModel, molName: string): TreeNode {
         }
         return atom;
     });
+
+    // ****
 
     const treeNode = _getDefaultTreeNode(molName);
     let lastChainID = "";
@@ -121,7 +126,7 @@ function organizeSelByChain(sel: any, mol: GLModel, molName: string): TreeNode {
 
         (nodeList.get(nodeList.length - 1).model as IAtom[]).push(atom);
     });
-    mol.removeAtoms(selectedAtoms);
+    // mol.removeAtoms(selectedAtoms);
 
     return treeNode;
 }
@@ -423,7 +428,7 @@ function getNameFromContent(
  * @param  {IMolData} data The molecular data.
  * @returns {Promise<TreeNode>} The divided molecule.
  */
-function divideAtomsIntoDistinctComponents(
+function dividePDBAtomsIntoDistinctComponents(
     data: IMolData
 ): Promise<TreeNodeList> {
     // Any molecules that share bonds are the same component.
@@ -440,139 +445,176 @@ function divideAtomsIntoDistinctComponents(
         return `${getNameFromContent(f, molFormatInfo)}:${molName}:${i + 1}`;
     });
 
-    // glviewer for use in webworker.
-    return dynamicImports.mol3d.module.then(($3Dmol: any) => {
-        if (!glviewer) {
-            glviewer = $3Dmol.createViewer("", {});
+    const fileContentsAllFrames: TreeNodeList = new TreeNodeList();
+
+    for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
+        const frame = frames[frameIdx];
+        const frameTitle = frameTitles[frameIdx];
+        const molWithAtomsToDivide = makeEasyParser({
+            contents: frame,
+            name: `tmp.${data.format}`,
+        } as IFileInfo);
+
+        if (molWithAtomsToDivide.length === 0) {
+            // No atoms in model. Skip.
+            continue;
         }
 
-        const fileContentsAllFrames: TreeNodeList = new TreeNodeList();
+        // Check if has multiple frames
+        let proteinAtomsByChain = organizeSelByChain(
+            proteinSel,
+            molWithAtomsToDivide,
+            "Protein"
+        );
 
-        for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
-            const frame = frames[frameIdx];
-            const frameTitle = frameTitles[frameIdx];
-            // const molWithAtomsToDivide = glviewer.makeGLModel_JDD(frame, data.format);
-            const molWithAtomsToDivide = glviewer.makeGLModel(
-                frame,
-                data.format
-            );
+        let nucleicAtomsByChain = organizeSelByChain(
+            nucleicSel,
+            molWithAtomsToDivide,
+            "Nucleic"
+        );
+        const solventAtomsByChain = organizeSelByChain(
+            solventSel,
+            molWithAtomsToDivide,
+            "Solvent"
+        );
+        let metalAtomsByChain = organizeSelByChain(
+            metalSel,
+            molWithAtomsToDivide,
+            "Metal"
+        );
 
-            if (molWithAtomsToDivide.selectedAtoms({}).length === 0) {
-                // No atoms in model. Skip.
-                continue;
+        // note modifying 3dmoljs selection to accomodate eazyParser format.
+        let ionSelToUse = {};
+        for (const sel of ionSel.or) {
+            ionSelToUse = {
+                ...ionSelToUse,
+                ...sel,
+            };
+        }
+        const ionAtomsByChain = organizeSelByChain(
+            ionSelToUse,
+            molWithAtomsToDivide,
+            "Ion"
+        );
+
+        let lipidAtomsByChain = organizeSelByChain(
+            lipidSel,
+            molWithAtomsToDivide,
+            "Lipid"
+        );
+        let compoundsByChain = organizeSelByChain(
+            {},
+            molWithAtomsToDivide,
+            "Compound"
+        ); // Everything else is ligands
+
+        // Further divide by residue (since each ligand is on its own residue,
+        // not bound to any other).
+        compoundsByChain = divideChainsIntoResidues(compoundsByChain);
+
+        // If any of the terminal nodes on compoundsByChain contains
+        // undefined, redefine it per the frame title.
+        compoundsByChain.nodes?.terminals._nodes.forEach((n: TreeNode) => {
+            if (n.title.indexOf("undefined") > -1) {
+                n.title = frameTitle;
             }
+        });
 
-            // Check if 3dmol GLModel has multiple frames
+        // You don't need to divide solvent and ions by chain.
+        const solventAtomsNoChain = flattenChains(solventAtomsByChain);
+        const ionAtomsNoChain = flattenChains(ionAtomsByChain);
 
-            let proteinAtomsByChain = organizeSelByChain(
-                proteinSel,
-                molWithAtomsToDivide,
-                "Protein"
-            );
-            let nucleicAtomsByChain = organizeSelByChain(
-                nucleicSel,
-                molWithAtomsToDivide,
-                "Nucleic"
-            );
-            const solventAtomsByChain = organizeSelByChain(
-                solventSel,
-                molWithAtomsToDivide,
-                "Solvent"
-            );
-            let metalAtomsByChain = organizeSelByChain(
-                metalSel,
-                molWithAtomsToDivide,
-                "Metal"
-            );
-            const ionAtomsByChain = organizeSelByChain(
-                ionSel,
-                molWithAtomsToDivide,
-                "Ion"
-            );
-            let lipidAtomsByChain = organizeSelByChain(
-                lipidSel,
-                molWithAtomsToDivide,
-                "Lipid"
-            );
-            let compoundsByChain = organizeSelByChain(
-                {},
-                molWithAtomsToDivide,
-                "Compound"
-            ); // Everything else is ligands
-
-            // Further divide by residue (since each ligand is on its own residue,
-            // not bound to any other).
-            compoundsByChain = divideChainsIntoResidues(compoundsByChain);
-
-            // If any of the terminal nodes on compoundsByChain contains
-            // undefined, redefine it per the frame title.
-            compoundsByChain.nodes?.terminals._nodes.forEach((n: TreeNode) => {
-                if (n.title.indexOf("undefined") > -1) {
-                    n.title = frameTitle;
-                }
-            });
-
-            // You don't need to divide solvent and ions by chain.
-            const solventAtomsNoChain = flattenChains(solventAtomsByChain);
-            const ionAtomsNoChain = flattenChains(ionAtomsByChain);
-
-            // For everything else, if given chain has one item, collapse it.
-            if (COLLAPSE_ONE_NODE_LEVELS) {
-                compoundsByChain = collapseSingles(compoundsByChain, true);
-                proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
-                nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
-                metalAtomsByChain = collapseSingles(metalAtomsByChain);
-                lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
-            }
-
-            proteinAtomsByChain.type = TreeNodeType.Protein;
-            nucleicAtomsByChain.type = TreeNodeType.Nucleic;
-            compoundsByChain.type = TreeNodeType.Compound;
-            metalAtomsByChain.type = TreeNodeType.Metal;
-            lipidAtomsByChain.type = TreeNodeType.Lipid;
-            ionAtomsNoChain.type = TreeNodeType.Ions;
-            solventAtomsNoChain.type = TreeNodeType.Solvent;
-
-            let molName = data.fileInfo.name;
-
-            // Remove extension from name
-            molName = getFileNameParts(molName).basename;
-
-            // Add name from content if you like (decided against it)
-            // molName =
-            //     molName +
-            //     (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
-            // const molNameFromContent = getNameFromContent(frame, molFormatInfo);
-            // if (molNameFromContent !== "") {
-            //     molName = `${molNameFromContent}:${molName}`;
-            // }
-
-            // Page into single object
-            let fileContents = new TreeNode({
-                title: frameTitle, // molName,
-                viewerDirty: true,
-                treeExpanded: false,
-                visible: true,
-                focused: false,
-                selected: SelectedType.False,
-                nodes: new TreeNodeList([
-                    proteinAtomsByChain,
-                    nucleicAtomsByChain,
-                    compoundsByChain,
-                    metalAtomsByChain,
-                    lipidAtomsByChain,
-                    ionAtomsNoChain,
-                    solventAtomsNoChain,
-                ]),
-            });
-
-            fileContents = cleanUpFileContents(fileContents);
-
-            fileContentsAllFrames.push(fileContents);
+        // For everything else, if given chain has one item, collapse it.
+        if (COLLAPSE_ONE_NODE_LEVELS) {
+            compoundsByChain = collapseSingles(compoundsByChain, true);
+            proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
+            nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
+            metalAtomsByChain = collapseSingles(metalAtomsByChain);
+            lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
         }
 
-        return fileContentsAllFrames;
-    });
+        proteinAtomsByChain.type = TreeNodeType.Protein;
+        nucleicAtomsByChain.type = TreeNodeType.Nucleic;
+        compoundsByChain.type = TreeNodeType.Compound;
+        metalAtomsByChain.type = TreeNodeType.Metal;
+        lipidAtomsByChain.type = TreeNodeType.Lipid;
+        ionAtomsNoChain.type = TreeNodeType.Ions;
+        solventAtomsNoChain.type = TreeNodeType.Solvent;
+
+        let molName = data.fileInfo.name;
+
+        // Remove extension from name
+        molName = getFileNameParts(molName).basename;
+
+        // Add name from content if you like (decided against it)
+        // molName =
+        //     molName +
+        //     (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
+        // const molNameFromContent = getNameFromContent(frame, molFormatInfo);
+        // if (molNameFromContent !== "") {
+        //     molName = `${molNameFromContent}:${molName}`;
+        // }
+
+        // Page into single object
+        let fileContents = new TreeNode({
+            title: frameTitle, // molName,
+            viewerDirty: true,
+            treeExpanded: false,
+            visible: true,
+            focused: false,
+            selected: SelectedType.False,
+            nodes: new TreeNodeList([
+                proteinAtomsByChain,
+                nucleicAtomsByChain,
+                compoundsByChain,
+                metalAtomsByChain,
+                lipidAtomsByChain,
+                ionAtomsNoChain,
+                solventAtomsNoChain,
+            ]),
+        });
+
+        fileContents = cleanUpFileContents(fileContents);
+
+        fileContentsAllFrames.push(fileContents);
+    }
+
+    return Promise.resolve(fileContentsAllFrames);
+}
+
+/**
+ * Given molecular data from the main thread, convert it into a TreeNode object
+ * divided by component (protien, compound, solvent, etc.). For mol2 files.
+ * 
+ * @param  {IMolData} data The molecular data.
+ * @returns {Promise<TreeNode>} The divided molecule.
+ */
+async function divideMol2AtomsIntoDistinctComponents(
+    data: IMolData
+): Promise<TreeNodeList> {
+    // For Mol2, just assume its a compound. Assign chain A to all atoms.
+    const molName = getFileNameParts(data.fileInfo.name).basename;
+
+    // Put it all in a compound
+    // let compoundsByChain = organizeSelByChain({}, molWithAtomsToDivide, "Compound");
+
+    const molNode = _getDefaultTreeNode(molName, NodesOrModel.Model);
+    molNode.model = data.fileInfo;
+    molNode.type = TreeNodeType.Compound;
+
+    const chainNode = _getDefaultTreeNode("A", NodesOrModel.Nodes);
+    chainNode.type = TreeNodeType.Compound;
+
+    const compoundNode = _getDefaultTreeNode("Compounds", NodesOrModel.Nodes);
+    compoundNode.type = TreeNodeType.Compound;
+
+    const rootNode = _getDefaultTreeNode(molName, NodesOrModel.Nodes);
+
+    rootNode.nodes = new TreeNodeList([compoundNode]);
+    compoundNode.nodes = new TreeNodeList([chainNode]);
+    chainNode.nodes = new TreeNodeList([molNode]);
+
+    return new TreeNodeList([rootNode]);
 }
 
 /**
@@ -638,6 +680,11 @@ function addParentIds(treeNode: TreeNode) {
 
 waitForDataFromMainThread()
     .then(async (molData: IMolData[]) => {
+        if (molData.length === 0) {
+            sendResponseToMainThread([]);
+            return;
+        }
+
         // Format MUST be pdb or mol2 here. Should have converted using
         // openbabel first.
         for (const molDatum of molData) {
@@ -647,17 +694,25 @@ waitForDataFromMainThread()
                 );
             }
         }
-        
-        const promises = molData.map((d) => divideAtomsIntoDistinctComponents(d));
-        const payload = await Promise.all([Promise.resolve(molData), ...promises]);
 
-        molData = payload[0] as IMolData[];
-        const organizedAtomsFramesList = payload.slice(1) as TreeNodeList[];
+        // NOTE: Ligands already divided into frames. No need to divide them.
+
+        const promises = molData.map((d) => {
+            if (d.format === "pdb") {
+                return dividePDBAtomsIntoDistinctComponents(d);
+            }
+
+            // TODO: Need to implement this for mol2 files.
+            return divideMol2AtomsIntoDistinctComponents(d);
+        });
+
+        const organizedAtomsFramesList = await Promise.all(promises);
 
         // Add source to all nodes
         for (let i = 0; i < organizedAtomsFramesList.length; i++) {
             for (let j = 0; j < organizedAtomsFramesList[i].length; j++) {
-                organizedAtomsFramesList[i].get(j).src = molData[i].fileInfo.name;
+                organizedAtomsFramesList[i].get(j).src =
+                    molData[i].fileInfo.name;
             }
         }
 
@@ -724,19 +779,49 @@ waitForDataFromMainThread()
             }
         );
 
-        // TODO: Converting to PDB here is a hack. Eventually, need to rewrite
-        // this whole worker to never use 3Dmoljs in the first place.
-        const pdbTxts = _convertTreeNodeListToPDB(organizedAtomsFramesFixed.terminals, false);
-        organizedAtomsFramesFixed.terminals.forEach((node: TreeNode, idx: number) => {
-            node.model = {
-                name: "tmp.pdb",
-                contents: pdbTxts[idx],
-            } as IFileInfo
-        });
+        organizedAtomsFramesFixed.terminals.forEach(
+            (node: TreeNode, idx: number) => {
+                // If node.model is a list, it's a list of atoms that need to be
+                // converted to pdb.
+                if (Array.isArray(node.model)) {
+                    // Convert to pdb
+                    node.model = convertIAtomsToIFileInfoPDB(node.model);
+                } else {
+                    // It's mol2, already in text format.
+                    node.model = {
+                        name: "tmp.mol2",
+                        contents: (node.model as IFileInfo).contents,
+                    } as IFileInfo;
+                }
+            }
+        );
+
+        // const JSZip = await dynamicImports.jsZip.module;
+        // const zip = new JSZip();
+        // organizedAtomsFramesFixed.terminals.forEach(
+        //     (node: TreeNode, idx: number) => {
+        //         if (node.model) {
+        //             zip.file("tmp.zip", (node.model as IFileInfo).contents);
+        //             // const content = zip.generate({type : "string"});
+
+        //             // Generate the compressed string
+        //             // eslint-disable-next-line promise/no-nesting
+        //             const ttt = zip.generateAsync({ type: "base64" })
+        //             .then(function (
+        //                 compressedString: string
+        //             ) {
+        //                 // Use or store your compressedString somewhere
+        //                 console.log(compressedString);
+        //                 debugger
+        //                 return;
+        //             });
+        //         }
+        //     }
+        // );
 
         sendResponseToMainThread(organizedAtomsFramesFixed.serialize());
 
-        return
+        return;
     })
     .catch((err: any) => {
         throw err;

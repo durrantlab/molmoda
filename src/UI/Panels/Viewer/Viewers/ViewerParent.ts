@@ -6,8 +6,8 @@ import {
     IBox,
     IArrow,
     ICylinder,
+    IAtom,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { GLModel } from "../GLModelType";
 import {
     GenericModelType,
     GenericSurfaceType,
@@ -28,6 +28,7 @@ import { store } from "@/Store";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 import { toRaw } from 'vue'
+import { IFileInfo } from "@/FileSystem/Types";
 
 /**
  * Sets the loadViewerLibPromise variable.
@@ -167,7 +168,6 @@ export abstract class ViewerParent {
         if (model) {
             this.hideMolecule(id);
             this._makeAtomsNotHoverableAndClickable(model);
-            // this.removeObject(id);  // TODO: Testing
             this.renderAll();
             return;
         }
@@ -189,13 +189,6 @@ export abstract class ViewerParent {
             this.showMolecule(id);
             this._makeAtomsHoverableAndClickable(model, id);
             this.renderAll();
-            // .then(() => {
-            //     debugger;
-            //     return
-            // })
-            // .catch((err) => {
-            //     debugger;
-            // });
             return;
         }
 
@@ -295,10 +288,10 @@ export abstract class ViewerParent {
      * format. Returns same model, but now it's been added to viewer and is in
      * that viewer's format.
      *
-     * @param  {GLModel} model  The model to add.
+     * @param  {IAtom[] | IFileInfo} model  The model to add.
      * @returns {GenericModelType}  The model that was added.
      */
-    abstract addGLModel(model: GLModel): Promise<GenericModelType>;
+    abstract addModel(model: IAtom[] | IFileInfo): Promise<GenericModelType>;
 
     /**
      * Adds a sphere to the viewer.
@@ -403,7 +396,7 @@ export abstract class ViewerParent {
 
                     // This should run first
 
-                    addObjPromise = this.addGLModel(toRaw(treeNode.model) as GLModel)
+                    addObjPromise = this.addModel(toRaw(treeNode.model) as IAtom[] | IFileInfo)
                     .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
 
@@ -666,7 +659,7 @@ export abstract class ViewerParent {
         // Remove 3dmoljs from dom
         const viewer = document.getElementById("mol-viewer");
         if (viewer) {
-            viewer.innerHTML = "";
+            viewer.innerText = "";
         }
 
         // All tree nodes are now dirty (so will be rerendered if new viewer

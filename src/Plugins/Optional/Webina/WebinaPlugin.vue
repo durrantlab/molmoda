@@ -702,9 +702,6 @@ export default class WebinaPlugin extends PluginParentClass {
                 }
 
                 if (!newTreeNodesByInputProt[protId]) {
-                    // NOTE: If you comment out below, non uncontrollable memory
-                    // expansion on docking
-
                     // Note: At this point, rootNode contains GLModel (already parsed).
                     rootNode.addToMainTree();
                     newTreeNodesByInputProt[protId] = rootNode;
@@ -831,7 +828,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 pluginOpen: webinaPluginOpenFactory(),
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
-                    ".frame3. bad_ligs:1:testdock"
+                    "frame3:bad_ligs:testdock"
                 ),
             },
             {

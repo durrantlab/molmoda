@@ -51,6 +51,12 @@ export default class MenuActionLink extends Vue {
     hotkeyPrefix = "Ctrl+";
     // disabled = false;
 
+    /**
+     * Gets the introduction text for the plugin.
+     * 
+     * @param {string | undefined}  pluginId The plugin ID.
+     * @returns {string} The introduction text for the plugin.
+     */
     introductionTxt(pluginId: string | undefined): string {
         if (pluginId === undefined) {
             return "";
@@ -59,7 +65,7 @@ export default class MenuActionLink extends Vue {
         let txt = loadedPlugins[pluginId].intro;
 
         // Get text, but not any HTML tags.
-        txt = txt.replace(/<[^>]*>?/gm, "");
+        txt = txt.replace(/<[^>]*>?/g, "");
         
         return txt;
     }

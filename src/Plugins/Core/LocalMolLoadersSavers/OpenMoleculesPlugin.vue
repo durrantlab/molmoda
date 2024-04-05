@@ -27,8 +27,6 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     IUserArgCheckbox,
-    IUserArgOption,
-    IUserArgSelect,
     UserArg,
     UserArgType,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -165,6 +163,13 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         // this.windowClosing = this.payload !== undefined;
     }
 
+    /**
+     * Checks if the SDF or MOL2 file is flat.
+     * 
+     * @param {IFormatInfo} frmt      The format information.
+     * @param {FileInfo}    fileInfo  The file information.
+     * @returns {boolean}  True if the file is flat, false otherwise.
+     */
     isFlatSdfOrMol2(frmt: IFormatInfo, fileInfo: FileInfo): boolean {
         // It's an sdf or mol2 file (already checked).
         const lines = fileInfo.contents.split("\n");
@@ -301,20 +306,21 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         const filesToTest = [
             // File, title-clicks,
             // ["two_files.zip", ["ligs"ompounds", "A"], "UNL:1"],
-            ["four_mols.zip", ":ligs:"],
+            ["four_mols.zip", ":ligs"],
             // ["ligs.smi.zip", "ligs.smi:3"],
-            ["ligs.can", ":ligs:"],
-            ["test.molmoda", "ATP:501"],
-            ["test.biotite", "ATP:501"],
+            ["ligs.can", ":ligs"],
+            ["test_old_format.molmoda", "ATP:501"],
+            ["test_old_format.biotite", "ATP:501"],
+            ["test_new_format.molmoda", "ATP:501"],
 
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
             ["ligs.cif", "UNL:1"],
 
-            ["ligs.mol2", ":frame3"],
+            ["ligs.mol2", "frame3"],
             ["ligs.pdb", "UN3:1"],
             ["ligs.pdbqt", "UN3:1"],
-            ["ligs.sdf", ":ligs:"],
-            ["ligs.smi", ":ligs:"],
+            ["ligs.sdf", ":ligs"],
+            ["ligs.smi", ":ligs"],
             ["4WP4.pdb", "TOU:101"],
             ["4WP4.pdb.zip", "TOU:101"],
             ["4WP4.pdbqt", "A"],

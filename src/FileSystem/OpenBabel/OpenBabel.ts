@@ -34,6 +34,14 @@ export interface IGen3DOptions {
     level?: Gen3DLevel;
 }
 
+/**
+ * Gets the user argument select for specifying how to generate 3D coordinates.
+ *
+ * @param {string}  label              The label for the argument.
+ * @param {string}  description        The description for the argument.
+ * @param {boolean} includeNoneOption  Whether to include the "none" option.
+ * @returns {IUserArgSelect}  The user argument.
+ */
 export function getGen3DUserArg(
     label: string,
     description: string,
@@ -285,15 +293,16 @@ async function convertToNewFormat(
 
         // If not specified, set to default
         const level =
-            (gen3D?.level === undefined) ? Gen3DLevel.Default : gen3D.level;
+            gen3D?.level === undefined ? Gen3DLevel.Default : gen3D.level;
 
         switch (whichMols) {
             case WhichMolsGen3D.All:
                 cmds.push(...["--gen3D", level]);
                 break;
             case WhichMolsGen3D.OnlyIfLacks3D:
-                if (fileInfo.auxData.lacks3D === true)
+                if (fileInfo.auxData.lacks3D === true) {
                     cmds.push(...["--gen3D", level]);
+                }
                 break;
             default:
                 break;

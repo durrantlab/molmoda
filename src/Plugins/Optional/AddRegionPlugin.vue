@@ -34,12 +34,8 @@ import {
     RegionType,
     TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import { Options } from "vue-class-component";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
-import { IEasyAtom } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
-import { EasyParserPDB } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserPDB";
-import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 
 /**
@@ -176,7 +172,7 @@ export default class AddRegionPlugin extends PluginParentClass {
 
             // Get the atoms. Look at every 10th atom to speed up the
             // calculation
-            let atoms: IAtom[] | IEasyAtom[] = [];
+            let atoms: IAtom[] = [];
             let easyModel = makeEasyParser(node.model);
             for (let i = 0; i < easyModel.length; i = i + 10) {
                 atoms.push(easyModel.parseAtom(i));

@@ -3,6 +3,7 @@ import { ViewerParent } from "./ViewerParent";
 import { dynamicImports } from "@/Core/DynamicImports";
 import {
     IArrow,
+    IAtom,
     IBox,
     ICylinder,
     ISphere,
@@ -17,6 +18,7 @@ import {
 import { IFileInfo } from "@/FileSystem/Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertIAtoms";
 
 /**
  * Viewer3DMol
@@ -77,6 +79,9 @@ export class Viewer3DMol extends ViewerParent {
         const model = this.lookup(id);
         if (model) {
             model.hide();
+
+            // also remove it to free up memory, at the cost of speed.
+            this._removeModel(id);
         }
     }
 
@@ -185,26 +190,30 @@ export class Viewer3DMol extends ViewerParent {
      * @param  {GLModel} model  The model to add.
      * @returns {Promise<GLModel>}  The model that was added.
      */
-    addGLModel(model: GLModel | IFileInfo): Promise<GLModel> {
-        // this._mol3dObj.addRawModel_JDD(model);
-        let newMol: GLModel;
-        if ((model as IFileInfo).name && (model as IFileInfo).contents) {
-            // It's an IFileInfo.
+    addModel(model: IAtom[] | IFileInfo): Promise<GLModel> {
+        if (
+            (model as IFileInfo).name === undefined &&
+            (model as IFileInfo).contents === undefined
+        ) {
+            // This should rarely occur. The model should be an IFileInfo with
+            // the text of the model. But if loading old MolModa files, it might
+            // be IAtom[]. Convert to pdb text so these old files load.
 
-            // Get the format
-            const typ = new FileInfo(model as IFileInfo).getFileType();
-            const format = getFormatInfoGivenType(typ as string);
-            const ext = format?.primaryExt;
-
-            newMol = this._mol3dObj.addModel((model as IFileInfo).contents, ext, {keepH: true});
-
-            // Remove all styles
-            newMol.setStyle({}, {});
-        } else {
-            newMol = this._mol3dObj.addGLModel(model, true);
+            model = convertIAtomsToIFileInfoPDB(model as IAtom[]);
         }
 
-        // const newMol = this._mol3dObj.addGLModel({}, true);
+        // Get the format
+        const typ = new FileInfo(model as IFileInfo).getFileType();
+        const format = getFormatInfoGivenType(typ as string);
+        const ext = format?.primaryExt;
+
+        const newMol = this._mol3dObj.addModel((model as IFileInfo).contents, ext, {
+            keepH: true,
+        });
+
+        // Remove all styles
+        newMol.setStyle({}, {});
+
         return Promise.resolve(newMol);
     }
 
@@ -516,12 +525,14 @@ export class Viewer3DMol extends ViewerParent {
         model.setClickable({}, false);
 
         // Above doesn't remove the callback, which I think can take up quite a
-        // bit of space. Let's remove it.
-        model.selectedAtoms({}).forEach((atom: any) => {
-            if (atom.callback) {
-                delete atom.callback;
-            }
-        });
+        // bit of space. Let's remove it. NOTE: In practice, this occasionally
+        // causes an error.
+
+        // model.selectedAtoms({}).forEach((atom: any) => {
+        //     if (atom.callback) {
+        //         delete atom.callback;
+        //     }
+        // });
     }
 
     /**
@@ -563,15 +574,16 @@ export class Viewer3DMol extends ViewerParent {
         model.setHoverable({}, false);
 
         // Below doesn't remove callbacks. They take up quite a bit of memory, I
-        // think. Let's remove them.
-        model.selectedAtoms({}).forEach((atom: any) => {
-            if (atom.hover_callback) {
-                delete atom.hover_callback;
-            }
-            if (atom.unhover_callback) {
-                delete atom.unhover_callback;
-            }
-        });
+        // think. Let's remove them. NOTE: In practice, this occasionally causes
+        // an error.
+        // model.selectedAtoms({}).forEach((atom: any) => {
+        //     if (atom.hover_callback) {
+        //         delete atom.hover_callback;
+        //     }
+        //     if (atom.unhover_callback) {
+        //         delete atom.unhover_callback;
+        //     }
+        // });
     }
 
     /**

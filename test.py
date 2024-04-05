@@ -15,7 +15,7 @@ from json.decoder import JSONDecodeError
 import html
 from simple_term_menu import TerminalMenu
 import shutil
-from webdriver_manager.chrome import ChromeDriverManager
+import subprocess
 
 # import traceback
 import threading
@@ -226,13 +226,23 @@ def make_driver(browser):
         driver = webdriver.Safari()
         os.system("""osascript -e 'tell application "Safari" to activate'""")
     elif browser == "chrome":
+        # NOTE: If this ever starts running really slow, you probably aren't
+        # using arm64-compiled version of chrome. 
+
+        # brew install chromedriver (to update too)
+
+        # Java on mac can run in both arm64 and x86_64. This forces arm64, since
+        # you test on a mac.
+        service = Service(executable_path='utils/chromedriver_wrapper.sh')
         options = webdriver.ChromeOptions()
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        driver = webdriver.Chrome(service=service, options=options)
     elif browser == "chrome-headless":
+        service = Service(executable_path='utils/chromedriver_wrapper.sh')
         options = webdriver.ChromeOptions()
         # Chrome works well in headless! Also, prevents stealing focus.
         options.add_argument("--headless=new")
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        driver = webdriver.Chrome(service=service, options=options)
+        # driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
     return driver
 
@@ -407,7 +417,7 @@ for browser_to_use in browsers_to_use:
 
     plugin_ids_per_browser = plugin_ids.copy()
 
-    for try_idx in range(8):
+    for try_idx in range(4):
         failed_tests = []
         drivers = {}
 

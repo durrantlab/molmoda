@@ -29,19 +29,21 @@ export const fileTypesAccepts =
 
 /**
  * Given a title, correct common problems with the title.
- * 
+ *
  * @param  {string} title  The title to fix.
  * @param  {string} defaultTitle  The default title to use if none is found.
  * @returns {string}  The fixed title.
  */
 function _fixTitle(title: string, defaultTitle: string): string {
-    if (title === undefined) {
+    if ([undefined, ""].indexOf(title) !== -1) {
         return defaultTitle;
     }
     title = title.replace("*****", defaultTitle);
 
     // If t.title starts with ":", remove that.
-    if (title.startsWith(":")) title = title.slice(1);
+    if (title.startsWith(":")) {
+        title = title.slice(1);
+    }
 
     return title;
 }
@@ -55,7 +57,7 @@ function _fixTitle(title: string, defaultTitle: string): string {
  *                                            tree.
  * @param  {boolean}       desalt             Whether to desalt the molecule.
  * @param  {IGen3DOptions} [gen3D=undefined]  Whether and how to generate 3D
- *                                            coordinates. 
+ *                                            coordinates.
  * @param  {string}        defaultTitle       The default title to use if none
  *                                            is found.
  * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the

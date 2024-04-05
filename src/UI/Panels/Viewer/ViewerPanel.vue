@@ -297,7 +297,6 @@ export default class ViewerPanel extends Vue {
         return Promise.all(addMolPromises)
             .then((treeNodes: TreeNode[]) => {
                 const surfacePromises: Promise<any>[] = [];
-
                 // Keep track of visible molecules so you can zoom on them
                 // later.
                 visibleTerminalNodeModelsIds = treeNodes

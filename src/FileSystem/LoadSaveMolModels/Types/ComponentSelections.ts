@@ -100,11 +100,13 @@ export const metalSel = {
     ],
 };
 
+// NOTE: Keeping this in 3dmoljs selection format, but note that this gets
+// modified for use with the EasyParser in the worker.
 export const ionSel = {
     or: [
-        { elem: ["K", "Na", "Cl", "Br", "I", "F"] },
+        { elem: ["K", "Na"]},  // , "Cl", "Br", "I", "F"] },
         // See http://prody.csb.pitt.edu/manual/reference/atomic/flags.html
-        { resn: ["CL", "IOD", "K", "NA", "CLA", "POT", "SOD"] },
+        { resn: ["CL", "BR", "I", "F", "IOD", "K", "NA", "CLA", "POT", "SOD", "SO4", "PO4", "NH4", "NH3", "ACT"] },
     ],
     bonds: 0,
 };

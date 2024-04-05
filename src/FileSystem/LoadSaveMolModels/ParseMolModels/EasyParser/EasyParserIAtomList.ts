@@ -5,18 +5,31 @@
 // respectively. It doens't need to have a lot of functionality. It just needs
 // to be light on memory.
 
-import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
-import { EasyParserParent, IEasyAtom } from "./EasyParserParent";
+import { EasyParserParent } from "./EasyParserParent";
 import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // This is here for backwards compatibility (in case loading old molmoda file).
 
+/**
+ * A parser for GLModel.
+ */
 export class EasyParserIAtomList extends EasyParserParent {
-    _load(atomList: IAtom[]): void {
-        this._atoms = atomList as IEasyAtom[];
+    /**
+     * Load the source.
+     *
+     * @param {IAtom[]} src  The source to parse.
+     */
+    _load(src: IAtom[]): void {
+        this._atoms = src as IAtom[];
     }
 
-    parseAtom(idx: number): IEasyAtom {
-        return this._atoms[idx] as IEasyAtom;
+    /**
+     * Parse an atom.
+     *
+     * @param {number} idx The index of the atom.
+     * @returns {IAtom} The parsed atom.
+     */
+    parseAtom(idx: number): IAtom {
+        return this._atoms[idx] as IAtom;
     }
 }

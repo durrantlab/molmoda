@@ -5,10 +5,11 @@
         tabindex="-1"
         @keypress="onKeypress"
         data-bs-backdrop="static"
+        ref="dialog"
     >
         <div :class="'modal-dialog ' + modalWidthToUse" v-if="modelValue">
             <div class="modal-content">
-                <div :class="headerClasses">
+                <div :class="headerClasses" ref="header">
                     <h5 class="modal-title">{{ title }}</h5>
                     <button
                         v-if="cancelXBtn && !prohibitCancel"
@@ -116,10 +117,15 @@ export default class Popup extends Vue {
     @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
     @Prop({ required: true }) id!: string;
     @Prop({}) onShown!: Function;
-    @Prop({}) beforeShown!: Function;
+    @Prop({}) onBeforeShown!: Function;
     @Prop({ default: "default" }) modalWidth!: string;
     @Prop({ default: "" }) footerTxt!: string;
     @Prop({ default: true }) submitOnEnter!: boolean;
+
+    // If below is true, you'll still be able to interact with the page behind
+    // the modal. I don't think this is currently used, but thought I'd leave it
+    // in case it's ever needed.
+    @Prop({ default: false }) floating!: boolean;
 
     idToUse = "";
 
@@ -282,16 +288,13 @@ export default class Popup extends Vue {
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         modalElem.addEventListener("shown.bs.modal", (_event) => {
-            if (this.onShown) {
-                this.onShown();
-            }
-            this.$emit("update:modelValue", true);
+            this.onModalShown();
         });
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         modalElem.addEventListener("show.bs.modal", (_event) => {
-            if (this.beforeShown) {
-                this.beforeShown();
+            if (this.onBeforeShown) {
+                this.onBeforeShown();
             }
         });
 
@@ -307,10 +310,84 @@ export default class Popup extends Vue {
         return this.modal;
     }
 
+    onModalShown() {
+        this.makeDraggable();
+        this.$nextTick(() => {
+            if (this.floating) {
+                const dialog = this.$refs.dialog as HTMLElement;
+                dialog.style.pointerEvents = "none";
+                (
+                    document.querySelector(".modal-backdrop") as HTMLElement
+                ).style.display = "none";
+
+                // Below if you ever need to restore, for reference:
+                // this.$refs.modal.style.pointerEvents = "auto";
+                // this.$refs.modal.querySelector(
+                //     ".modal-backdrop"
+                // ).style.display = "block";
+            }
+        });
+        if (this.onShown) {
+            this.onShown();
+        }
+        this.$emit("update:modelValue", true);
+    }
+
+    makeDraggable() {
+        const dialog = this.$refs.dialog as HTMLElement;
+        const header = this.$refs.header as HTMLElement;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let initialX = 0;
+        let initialY = 0;
+
+        header.addEventListener("mousedown", (e: MouseEvent) => {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            initialX = dialog.offsetLeft;
+            initialY = dialog.offsetTop;
+
+            document.addEventListener("mousemove", onMouseMove);
+            document.addEventListener("mouseup", onMouseUp);
+        });
+
+        const onMouseMove = (e: MouseEvent) => {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            dialog.style.left = initialX + dx + "px";
+            dialog.style.top = initialY + dy + "px";
+        };
+
+        const onMouseUp = () => {
+            isDragging = false;
+            document.removeEventListener("mousemove", onMouseMove);
+            document.removeEventListener("mouseup", onMouseUp);
+
+            // If dialog is up against the top, move it down a bit.
+            if (dialog.offsetTop < 0) {
+                dialog.style.top = "0px";
+            }
+        };
+    }
+
     /** mounted function */
     // mounted() {}
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.modal-header {
+    /* Cursor shows a grabbable hand icon when hovering */
+    cursor: grab;
+}
+
+.modal-header:active {
+    /* Cursor changes to a grabbing hand icon when the header is clicked and
+    held */
+    cursor: grabbing;
+}
+</style>

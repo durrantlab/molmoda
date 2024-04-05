@@ -532,7 +532,9 @@ export abstract class PluginParentClass extends mixins(
                 if (msg !== null) {
                     api.messages.popupError(msg);
                 } else {
-                    if (isAnyPopupOpen()) return;
+                    if (isAnyPopupOpen()) {
+                        return;
+                    }
                     api.plugins.runPlugin(this.pluginId);
                 }
             });
@@ -560,7 +562,7 @@ export abstract class PluginParentClass extends mixins(
      *                                                    false.
      * @param {IGen3DOptions}  [gen3D=undefined]          Whether and how to
      *                                                    generate 3D
-     *                                                    coordinates. 
+     *                                                    coordinates.
      * @param {string}         [defaultTitle="Molecule"]  The default title to
      *                                                    use if none is found.
      *                                                    Defaults to
@@ -573,7 +575,7 @@ export abstract class PluginParentClass extends mixins(
         hideOnLoad = false,
         desalt = false,
         gen3D?: IGen3DOptions,
-        defaultTitle = "Molecule",
+        defaultTitle = "Molecule"
     ): Promise<void> {
         return new TreeNodeList()
             .loadFromFileInfo(fileInfo, desalt, gen3D, defaultTitle)

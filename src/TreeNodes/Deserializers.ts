@@ -1,4 +1,3 @@
-import { dynamicImports } from "@/Core/DynamicImports";
 import type { ITreeNode, TreeNode } from "./TreeNode/TreeNode";
 import type { TreeNodeList } from "./TreeNodeList/TreeNodeList";
 import { newTreeNode, newTreeNodeList } from "./TreeNodeMakers";
@@ -19,17 +18,26 @@ import { newTreeNode, newTreeNodeList } from "./TreeNodeMakers";
  */
 async function _treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
     const newNode = newTreeNode(nodeSerial as TreeNode);
-    const $3Dmol = await dynamicImports.mol3d.module;
+    
+    // Below no longer necessary. Viewer now uses IAtom[] instead of 3Dmol model.
+    // // Deserialize and model if it is not a 3Dmol model or an IFileInfo.
+    // const $3Dmol = await dynamicImports.mol3d.module;
+    // if (nodeSerial.model && !(nodeSerial.model as any).name && !(nodeSerial.model as any).content) {
+    //     const model = new $3Dmol.GLModel();
+    //     model.addAtoms(nodeSerial.model);
+    //     newNode.model = model;
 
-    // Deserialize and model if it is not a 3Dmol model or an IFileInfo.
+    //     // The model should not be reactive or alterable after loaded.
+    //     // Note that this dramatically improves performance in vue, but
+    //     // any changes to the model will require recreating it entirely.
+    //     Object.freeze(newNode.model);
+    // }
+
+    // The model should not be reactive or alterable after loaded. Note that
+    // this dramatically improves performance in vue (especially when using old
+    // biotite format), but any changes to the model will require recreating it
+    // entirely.
     if (nodeSerial.model && !(nodeSerial.model as any).name && !(nodeSerial.model as any).content) {
-        const model = new $3Dmol.GLModel();
-        model.addAtoms(nodeSerial.model);
-        newNode.model = model;
-
-        // The model should not be reactive or alterable after loaded.
-        // Note that this dramatically improves performance in vue, but
-        // any changes to the model will require recreating it entirely.
         Object.freeze(newNode.model);
     }
 

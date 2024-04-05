@@ -255,16 +255,21 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 (fileName: string) => !filesBeforeRun.includes(fileName)
             );
 
-            if (newFiles.length === 0 && args.indexOf("-L") === -1 && args.indexOf("--version") === -1) {
+            if (
+                newFiles.length === 0 &&
+                args.indexOf("-L") === -1 &&
+                args.indexOf("--version") === -1
+            ) {
                 // There was no new files for some reason. Output a warning, and
                 // return the input molecule.
-                console.error(
-                    "No new files were created. Sending back input file."
-                );
+                console.error("No new files were created.");
                 newFiles = [inputFileActuallyUsed?.name];
             }
 
             const contents: string[] = newFiles.map((fileName: string) => {
+                if (fileName === inputFileActuallyUsed?.name) {
+                    return "{ERROR}";
+                }
                 fileName = tmpDir + fileName;
                 return mod.files.readFile(fileName);
             });
@@ -311,7 +316,9 @@ function easyParsePDBIfPossible(
     inputFiles: any
 ): boolean | Promise<any> {
     const testArgs = args.filter((arg) => arg !== "-m" && arg !== "-O");
-    if (testArgs.length !== 2) return false;
+    if (testArgs.length !== 2) {
+        return false;
+    }
 
     // If here, testArgs is like ['tmpmol0.pdb', 'tmp0.pdb']
 
@@ -320,12 +327,15 @@ function easyParsePDBIfPossible(
     if (
         !fileExt.includes(testArgs[0].slice(-4)) ||
         testArgs[0].slice(-4) !== testArgs[1].slice(-4)
-    )
+    ) {
         return false;
+    }
 
     // Find the file without iterating over the entire array
     const fileInfoToUse = inputFiles.find((f: any) => f.name === testArgs[0]);
-    if (!fileInfoToUse) return false;
+    if (!fileInfoToUse) {
+        return false;
+    }
 
     // Find lines that are, in their entirety, either END or ENDMDL. Split the
     // contents on those lines.

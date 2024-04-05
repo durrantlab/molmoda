@@ -51,8 +51,18 @@ export default class MessageList extends Vue {
      */
     alertTxt(simpleMsg: ISimpleMsg): string {
         let resp = "";
-        if (simpleMsg.title !== "") resp += `<b>${simpleMsg.title}</b>. `;
+
+        const header = `<b>${simpleMsg.title}</b>. `
+        if (simpleMsg.title !== "") {
+            resp += header;
+        }
         resp += simpleMsg.message;
+
+        // If messages started with <p>, but bold title inside <p>
+        if (resp.startsWith(header + "<p>")) {
+            resp = resp.slice(header.length + 3);
+            resp = "<p>" + header + resp;
+        }
 
         // Add date time if it exists
         if (simpleMsg.datetime !== undefined) {

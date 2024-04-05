@@ -78,10 +78,11 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
 
         // Terminal node must have a type, styles, and be visible.
         if (
-            !terminalNode.type // ||
-            // !terminalNode.styles // ||
+            !terminalNode.type ||
+            !terminalNode.styles // ||
             // !terminalNode.visible
         ) {
+            // Note that regions do not have styles.
             continue;
         }
 

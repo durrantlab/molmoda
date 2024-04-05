@@ -26,7 +26,6 @@ import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Style
 import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { IEasyAtom } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -579,7 +578,9 @@ export class TreeNode {
             defaultTitle
         );
 
-        if (treeNodeList === undefined) return undefined;
+        if (treeNodeList === undefined) {
+            return undefined;
+        }
 
         return treeNodeList.get(0);
     }
@@ -730,10 +731,10 @@ export class TreeNode {
         nodesWithModels.forEach((node: TreeNode) => {
             const model = node.model as GLModel;
             // Get atoms
-            const {atoms} = makeEasyParser(model);
-            xs.push(...atoms.map((atom: IEasyAtom) => atom.x));
-            ys.push(...atoms.map((atom: IEasyAtom) => atom.y));
-            zs.push(...atoms.map((atom: IEasyAtom) => atom.z));
+            const { atoms } = makeEasyParser(model);
+            xs.push(...atoms.map((atom: IAtom) => atom.x as number));
+            ys.push(...atoms.map((atom: IAtom) => atom.y as number));
+            zs.push(...atoms.map((atom: IAtom) => atom.z as number));
         });
 
         // Get min and max x, y, and z

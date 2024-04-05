@@ -7,36 +7,7 @@ import {
     solventSel,
 } from "../Types/ComponentSelections";
 import { makeEasyParser } from "../ParseMolModels/EasyParser";
-import { IEasyAtom } from "../ParseMolModels/EasyParser/EasyParserParent";
-
-// Inspired by
-// https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L576
-
-const _twoLetterElems = [
-    "AL",
-    "AS",
-    "AU",
-    "BE",
-    "BR",
-    "CL",
-    "CO",
-    "CU",
-    "EU",
-    "FE",
-    "GD",
-    "HG",
-    "IR",
-    "MG",
-    "MN",
-    "MO",
-    "NI",
-    "PT",
-    "RH",
-    "RU",
-    "SE",
-    "TA",
-    "ZN",
-];
+import { twoLetterElems } from "../NameVars";
 
 const chainOptions = [
     "A",
@@ -107,22 +78,32 @@ function _alignAtomName(atomName: string, element?: string): string {
     // Inspired by
     // https://github.com/MDAnalysis/mdanalysis/blob/f542aa485983f8d3dd250b36a886061f696c3e97/package/MDAnalysis/coordinates/PDB.py#L997
 
-    if (atomName === "") return "";
+    if (atomName === "") {
+        return "";
+    }
 
     // Note this also converts atom names that take up the whole four
     // characters.
-    if (atomName.length >= 4) return atomName.substring(0, 4);
+    if (atomName.length >= 4) {
+        return atomName.substring(0, 4);
+    }
 
-    if (atomName.length === 1) return ` ${atomName}  `;
+    if (atomName.length === 1) {
+        return ` ${atomName}  `;
+    }
 
     if (element) {
         // Assume first two letters are the element
-        if (element.length === 2) return _ljust(atomName, 4);
+        if (element.length === 2) {
+            return _ljust(atomName, 4);
+        }
 
         // Assume first letter is the element
-        if (element.length === 1) return " " + _ljust(atomName, 3);
+        if (element.length === 1) {
+            return " " + _ljust(atomName, 3);
+        }
     } else if (
-        _twoLetterElems.indexOf(atomName.substring(0, 2).toUpperCase()) !== -1
+        twoLetterElems.indexOf(atomName.substring(0, 2).toUpperCase()) !== -1
     ) {
         // Element is unknown.
         return _ljust(atomName, 4);
@@ -177,7 +158,7 @@ function _createPDBLine(isProt: boolean, atom: IAtom): string {
  * @param  {GLModel|IAtom[]} mol  The GLModel or atom list.
  * @returns {IAtom[]}  The list of atoms.
  */
-function _getAtomsOfModel(mol: GLModel | IAtom[]): IEasyAtom[] {
+function _getAtomsOfModel(mol: GLModel | IAtom[]): IAtom[] {
     return makeEasyParser(mol).atoms;
 }
 
