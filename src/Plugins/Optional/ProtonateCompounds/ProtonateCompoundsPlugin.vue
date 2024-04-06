@@ -68,7 +68,8 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     ];
     pluginId = "protonatecomps";
 
-    intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking. Uses the Open Babel library to guess at proper protonation states.`;
+    intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking.`
+    details = `Uses the Open Babel library to guess at proper protonation states.`;
 
     userArgDefaults: UserArg[] = [
         {

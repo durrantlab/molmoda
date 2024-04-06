@@ -1,5 +1,6 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { dynamicImports } from "./DynamicImports";
+import { dynamicImports } from "../DynamicImports";
+import { DataFormat, IData } from "./FSInterfaces";
 
 /**
  * Adds an extension if missing.
@@ -204,16 +205,47 @@ export function uncompress(s: string): Promise<FileInfo[]> {
 
                 const contents = fileContents[i];
 
-                fileInfos.push(new FileInfo({
-                    name: fileName.split("/").pop() as string, // basename
-                    // Getting file size not supported with zip. You could
-                    // implement, though.
-                    // size: 0,
-                    contents: contents,
-                    // type: type,
-                }));
+                fileInfos.push(
+                    new FileInfo({
+                        name: fileName.split("/").pop() as string, // basename
+                        // Getting file size not supported with zip. You could
+                        // implement, though.
+                        // size: 0,
+                        contents: contents,
+                        // type: type,
+                    })
+                );
             }
             return fileInfos;
         });
     // }
+}
+
+export function saveData(
+    data: IData,
+    filename: string,
+    format: DataFormat | string
+) {
+    if (format === DataFormat.JSON) {
+        saveTxt(
+            new FileInfo({
+                name: filename,
+                contents: JSON.stringify(data.rows, null, 2),
+            })
+        );
+    } else {
+        dynamicImports.sheetsjs.module
+            .then((sheetsjs) => {
+                const wb = sheetsjs.utils.book_new();
+                const ws = sheetsjs.utils.json_to_sheet(data.rows, {
+                    header: data.headers,
+                });
+                sheetsjs.utils.book_append_sheet(wb, ws, "Sheet1");
+                sheetsjs.writeFile(wb, filename);
+                return;
+            })
+            .catch((err: any) => {
+                throw err;
+            });
+    }
 }

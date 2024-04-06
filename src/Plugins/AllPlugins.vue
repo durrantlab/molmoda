@@ -48,6 +48,7 @@ system uses these to autopopulate with plugins. -->
 
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
+    <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <MolTextPlugin @onPluginSetup="onPluginSetup"></MolTextPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
@@ -108,6 +109,7 @@ import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
+import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import MolTextPlugin from "./Optional/MolTextPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
@@ -164,6 +166,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 
     AddRegionPlugin,
     DrawMoleculePlugin,
+    EvalScreenPlugin,
     FPocketWebPlugin,
     MolTextPlugin,
     ProtonateCompoundsPlugin,

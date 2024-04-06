@@ -8,11 +8,12 @@ export class ValidationMixin extends Vue {
     /**
      * Validates the plugin to make sure all children define what they should,
      * etc.
-     * 
+     *
      * @param {string} pluginId  The plugin ID.
      * @param {string} intro     The plugin intro.
+     * @param {string} details   The plugin details.
      */
-    protected _validatePlugin(pluginId: string, intro: string) {
+    protected _validatePlugin(pluginId: string, intro: string, details: string) {
         if (pluginId !== pluginId.toLowerCase()) {
             throw new Error(
                 "Plugin id must be lowercase. Plugin id: " + pluginId
@@ -23,6 +24,21 @@ export class ValidationMixin extends Vue {
         if (!(isSentence(intro))) {
             throw new Error(
                 "Plugin intro must be a sentence (start with capital letter, end with punctuation). Plugin id: " + pluginId + ". Intro: " + intro
+            );
+        }
+
+        // Sentence must be no longer than 100 characters, after HTML tags removed.
+        const introWithoutHtml = intro.replace(/<[^>]*>?/gm, "");
+        if (introWithoutHtml.length > 100) {
+            throw new Error(
+                "Plugin intro must be no longer than 100 characters. Use the details property if you need a more extended introduction. Plugin id: " + pluginId + ". Intro: " + introWithoutHtml + " Length: " + introWithoutHtml.length + "."
+            );
+        }
+
+        // Made sure details is also a sentence.
+        if ((details !== "") && !(isSentence(details))) {
+            throw new Error(
+                "Plugin details must be a sentence (start with capital letter, end with punctuation). Plugin id: " + pluginId + ". Details: " + details
             );
         }
 

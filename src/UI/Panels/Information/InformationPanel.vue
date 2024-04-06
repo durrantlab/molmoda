@@ -13,6 +13,14 @@
             ></FormInput>
         </FormWrapper>
         <MolProps :smiles="smiles" :treeNode="treeNode" />
+        <Alert
+            type="warning"
+            extraStyle="display: inline-block;"
+            :minimal="true"
+            >These molecular properties depend on protonation. Use
+            <PluginPathLink plugin="protonatecomps"></PluginPathLink> to
+            protonate your compound(s) at a specific pH.</Alert
+        >
     </div>
 </template>
 
@@ -27,6 +35,8 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 import { getFirstSelected, getSmilesOfTreeNode } from "./Utils";
+import Alert from "@/UI/Layout/Alert.vue";
+import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
  * InformationPanel component
@@ -38,6 +48,8 @@ import { getFirstSelected, getSmilesOfTreeNode } from "./Utils";
         Table,
         FormInput,
         FormWrapper,
+        Alert,
+        PluginPathLink,
     },
 })
 export default class InformationPanel extends Vue {
@@ -84,12 +96,17 @@ export default class InformationPanel extends Vue {
         this.getSmilesTimeout = setTimeout(() => {
             getSmilesOfTreeNode(firstSelected)
                 .then((smi) => {
+                    // Keep only smiles string (not name). Use split and regex
+                    // to keep everything before the first whitespace (space,
+                    // tab, etc.)
+                    smi = smi.split(/\s/)[0];
+
                     // If smi has more than 5 "*", it's probably not valid.
                     if (smi.split("*").length > 5) {
                         return;
                     }
 
-                    this.smiles = smi.replace(" ", "\t").split("\t")[0];
+                    this.smiles = smi; // smi.replace(" ", "\t").split("\t")[0];
                     this.treeNode = firstSelected;
                     return;
                 })

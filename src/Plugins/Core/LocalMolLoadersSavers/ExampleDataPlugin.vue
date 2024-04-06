@@ -108,7 +108,8 @@ export default class ExampleDataPlugin extends PluginParentClass {
         } as IUserArgAlert,
     ];
     alwaysEnabled = true;
-    intro = `Append an example project to the current workspace. Useful for exploring and testing the ${appName} interface.`;
+    intro = `Append an example project to the current workspace.`
+    details = `Useful for exploring and testing the ${appName} interface.`;
 
     /**
      * Detects when user arguments have changed, and updates UI accordingly.

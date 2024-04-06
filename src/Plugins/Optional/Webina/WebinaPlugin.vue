@@ -112,7 +112,8 @@ export default class WebinaPlugin extends PluginParentClass {
     ];
     pluginId = "webina";
 
-    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding. Uses a version of AutoDock Vina (Webina).`;
+    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding.`
+    details = `Uses a version of AutoDock Vina (Webina).`;
 
     msgOnJobsFinished = () => {
         return msgOnJobsFinishedtoUse;
@@ -231,17 +232,17 @@ export default class WebinaPlugin extends PluginParentClass {
         {
             id: "score_only",
             type: UserArgType.Checkbox,
-            label: "Score only",
+            label: "Score existing poses, without redocking",
             val: false,
             description:
-                "Scores the existing pose, without repositioning the compound.",
+                "Scores existing docked or crystallographic poses, without repositioning compounds.",
         } as IUserArgCheckbox,
         {
             id: "keep_only_best",
             type: UserArgType.Checkbox,
-            label: "Keep only best",
+            label: "Keep only highest-scoring pose for each compound",
             val: true,
-            description: "Keep only the best predicted pose for each compound.",
+            description: "Docking generates multiple poses; the top-scoring pose is often correct, but sometimes alternatives may be more accurate.",
         } as IUserArgCheckbox,
         {
             id: "webinaAdvancedParams",

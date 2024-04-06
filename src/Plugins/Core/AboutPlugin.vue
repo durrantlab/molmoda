@@ -50,7 +50,7 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { appDescription, appName, appCompileTime } from "@/Core/GlobalVars";
+import { appDescription, appName, appCompileTime, appIntro, appDetails } from "@/Core/GlobalVars";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -77,7 +77,8 @@ export default class AboutPlugin extends PluginParentClass {
     },
   ];
   pluginId = "about";
-  intro = appDescription;
+  intro = appIntro;
+  details = appDetails;
 
   userArgDefaults: UserArg[] = [];
   alwaysEnabled = true;

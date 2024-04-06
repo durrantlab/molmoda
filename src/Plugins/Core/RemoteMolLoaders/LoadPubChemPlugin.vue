@@ -98,7 +98,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     molNameRespDescription = "";
     skipLongRunningJobMsg = true;
 
-    intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a>, a database of small molecules.`;
+    intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a> of small molecules.`;
 
     userArgDefaults: UserArg[] = [getDesaltUserArg()];
     alwaysEnabled = true;

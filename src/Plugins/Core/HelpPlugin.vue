@@ -39,7 +39,7 @@
                     <small v-html="citationsToShow(plugin)"></small>
                 </p>
 
-                <p v-html="plugin.intro" class="ms-2 mt-1"></p>
+                <p v-html="plugin.intro + ' ' + plugin.details" class="ms-2 mt-1"></p>
             </span>
         </span>
     </PluginComponent>

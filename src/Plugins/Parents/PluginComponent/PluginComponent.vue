@@ -23,7 +23,14 @@
     >
         <!-- <span v-if="openToUse"> -->
         <!-- :footerTxt="citationTxt" -->
-        <p v-if="infoPayload.intro !== ''" v-html="infoPayload.intro"></p>
+        <p
+            v-if="infoPayload.intro !== ''"
+            v-html="
+                infoPayload.intro +
+                ' ' 
+                + (infoPayload.details ? infoPayload.details : '')
+            "
+        ></p>
         <span v-if="citationsTxt !== ''" v-html="citationsTxt"></span>
         <slot></slot>
         <FormFull

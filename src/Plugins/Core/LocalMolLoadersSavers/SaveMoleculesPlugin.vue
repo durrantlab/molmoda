@@ -75,7 +75,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     ];
     pluginId = "savemolecules";
 
-    intro = `Save molecules to the disk. The ${appName} format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
+    intro = `Save molecules to the disk.`
+    details = `The ${appName} format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
 
     hotkey = "s";
 

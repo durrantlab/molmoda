@@ -18,6 +18,10 @@ import { Prop, Watch } from "vue-property-decorator";
 import Table from "./Table/Table.vue";
 import { ITableData } from "./Table/Types";
 
+const alreadyCalculatedLipinski: {[key: string]: any} = {}
+const alreadyCalculatedCounts: {[key: string]: any} = {}
+const alreadyCalculatedOther: {[key: string]: any} = {}
+
 /**
  * MolProps component
  */
@@ -44,7 +48,21 @@ export default class MolProps extends Vue {
     onSmiles() {
         // Don't calculate twice! If it has lipinskiTitle, assume it also has
         // countsTitle and otherTitle.
-        if (this.treeNode?.data && this.treeNode.data[lipinskiTitle]) {
+        // if (this.treeNode?.data && this.treeNode.data[lipinskiTitle]) {
+        //     // console.log("Already calculated.");
+        //     return;
+        // }
+
+        if (alreadyCalculatedLipinski[this.smiles]) {
+            this.lipinskiTableData = this.convertDescriptorsToTableData(
+                alreadyCalculatedLipinski[this.smiles]
+            );
+            this.countsTableData = this.convertDescriptorsToTableData(
+                alreadyCalculatedCounts[this.smiles]
+            );
+            this.otherTableData = this.convertDescriptorsToTableData(
+                alreadyCalculatedOther[this.smiles]
+            );
             // console.log("Already calculated.");
             return;
         }
@@ -56,12 +74,18 @@ export default class MolProps extends Vue {
                 this.lipinskiTableData = this.convertDescriptorsToTableData(
                     resp.lipinski
                 );
+                alreadyCalculatedLipinski[this.smiles] = resp.lipinski;
+
                 this.countsTableData = this.convertDescriptorsToTableData(
                     resp.counts
                 );
+                alreadyCalculatedCounts[this.smiles] = resp.counts;
+
                 this.otherTableData = this.convertDescriptorsToTableData(
                     resp.other
                 );
+                alreadyCalculatedOther[this.smiles] = resp.other;
+
                 return;
             })
             .catch((err: Error) => {

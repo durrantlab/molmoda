@@ -3,6 +3,7 @@
         v-if="descriptionToUse !== '' || $slots.default !== undefined"
         type="light"
         class="lh-2"
+        extraClasses="p-0 m-0"
         style="padding: 0; margin: 0; line-height: 1.1em; margin-top: 4px"
     >
         <small>

@@ -2,6 +2,11 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { _convertTreeNodeListToPDB } from "./_ConvertTreeNodeListToPDB";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
+import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IFileInfo } from "@/FileSystem/Types";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 
 // function bondOrdersAssigned(treeNodes: TreeNode[]): boolean {
 //     const bondOrders: Set<number> = new Set();
@@ -34,7 +39,6 @@ export function _convertTreeNodeList(
     merge = true
 ): Promise<FileInfo[]> {
     targetExt = targetExt.toLowerCase();
-    let molTxts: string[] = [];
 
     // let calculateBondOrders = false;
     // if (formatInf.hasBondOrders === true) {
@@ -58,22 +62,44 @@ export function _convertTreeNodeList(
     // }
 
     // if (formatInf.hasBondOrders !== true || calculateBondOrders) {
-    
-    // Use PDB as intermediary. First, convert the mol containers to a PDB
-    // string.
-    molTxts = _convertTreeNodeListToPDB(treeNodeList, merge);
 
-    const fileInfos = molTxts.map(
-        (molTxt: string, idx: number) =>
-            new FileInfo({
-                name: `tmpmol${idx}.pdb`,
-                contents: molTxt,
-            })
-    );
+    // Get all the models from the tree nodes.
+    const mols = treeNodeList.filters
+        .keepModels()
+        .map((treeNode: TreeNode) => treeNode.model as GLModel | IAtom[] | IFileInfo[]);
+    
+    const allModelsAreIFileInfos = mols.every((mol) => {
+        return mol.contents && mol.name;
+    })
+
+    let fileInfos: FileInfo[] = [];
+    if (merge || !allModelsAreIFileInfos) {
+        // If you need to merge the molecules, or if the models are not
+        // IFileInfos, go through a PDB intermediate.
+        
+        // Use PDB as intermediary. First, convert the mol containers to a PDB
+        // string.
+        let molTxts: string[] = [];
+        molTxts = _convertTreeNodeListToPDB(treeNodeList, merge);
+    
+        fileInfos = molTxts.map(
+            (molTxt: string, idx: number) =>
+                new FileInfo({
+                    name: `tmpmol${idx}.pdb`,
+                    contents: molTxt,
+                })
+        );
+    } else {
+        // If the models are already IFileInfos (and no merging), just use them.
+        fileInfos = mols.map((mol: IFileInfo, idx: number) => {
+            const {ext} = getFileNameParts(mol.name);
+            mol.name = `tmpmol${idx}.${ext}`;
+            return new FileInfo(mol)
+        });
+    }
 
     return convertFileInfosOpenBabel(fileInfos, targetExt).then(
         (contents: string[]) => {
-
             return contents.map((content: string) => {
                 return new FileInfo({
                     name: `tmpmol.${targetExt}`,

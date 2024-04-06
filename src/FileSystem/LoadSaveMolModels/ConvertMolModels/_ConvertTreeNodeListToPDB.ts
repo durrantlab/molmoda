@@ -8,6 +8,7 @@ import {
 } from "../Types/ComponentSelections";
 import { makeEasyParser } from "../ParseMolModels/EasyParser";
 import { twoLetterElems } from "../NameVars";
+import { IFileInfo } from "@/FileSystem/Types";
 
 const chainOptions = [
     "A",
@@ -158,7 +159,7 @@ function _createPDBLine(isProt: boolean, atom: IAtom): string {
  * @param  {GLModel|IAtom[]} mol  The GLModel or atom list.
  * @returns {IAtom[]}  The list of atoms.
  */
-function _getAtomsOfModel(mol: GLModel | IAtom[]): IAtom[] {
+function _getAtomsOfModel(mol: GLModel | IAtom[] | IFileInfo): IAtom[] {
     return makeEasyParser(mol).atoms;
 }
 
@@ -169,7 +170,7 @@ function _getAtomsOfModel(mol: GLModel | IAtom[]): IAtom[] {
  * @param  {GLModel[]|IAtom[][]} mols  The molecules to merge.
  * @returns {IAtom[]}  The list of atoms.
  */
-function _mergeMols(mols: GLModel[] | IAtom[][]): IAtom[] {
+function _mergeMols(mols: GLModel[] | IAtom[][] | IFileInfo[]): IAtom[] {
     let curIdx = 0;
     let curSerial = 1;
     const chainsAvailable: Set<string> = new Set(chainOptions);
@@ -224,7 +225,7 @@ export function _convertTreeNodeListToPDB(
 ): string[] {
     let mols = treeNodeList.filters
         .keepModels()
-        .map((treeNode: TreeNode) => treeNode.model as GLModel | IAtom[]);
+        .map((treeNode: TreeNode) => treeNode.model as GLModel | IAtom[] | IFileInfo[]);
     // .filhter((mol) => Array.isArray(mol) && mol.length > 0);
     // mol is 3dmoljs molecule object.
 
@@ -238,7 +239,7 @@ export function _convertTreeNodeListToPDB(
     if (merge) {
         // Note that this converts mols from array to models (GLModel), to
         // arrays of atoms. But should still work.
-        mols = [_mergeMols(mols as GLModel[] | IAtom[][])];
+        mols = [_mergeMols(mols)];
     }
 
     // let curSerial = 1;

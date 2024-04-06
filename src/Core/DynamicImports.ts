@@ -88,7 +88,7 @@ export const dynamicImports = {
                     issue: 6,
                     pages: "1132-1138",
                 },
-            ]
+            ],
         },
         /**
          * Gets the module.
@@ -138,6 +138,26 @@ export const dynamicImports = {
             ).then((mod) => {
                 return mod.default;
             });
+        },
+    } as IDynamicImport,
+    chartJs: {
+        credit: {
+            name: "Chart.js",
+            url: "https://www.chartjs.org/",
+            license: Licenses.MIT,
+        },
+
+        /**
+         * Gets the Chart.js module.
+         *
+         * @returns {Promise<any>} A promise that resolves to the Chart.js module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "chartjs" */
+                /* webpackMode: "lazy" */
+                "chart.js/auto"
+            );
         },
     } as IDynamicImport,
     mol3d: {
@@ -592,5 +612,5 @@ export const dynamicImports = {
                 return mod.default;
             });
         },
-    }
+    },
 };

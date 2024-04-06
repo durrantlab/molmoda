@@ -236,4 +236,8 @@ body.waiting * {
 //     background-color: rgba(0,0,0,.5);
 //     box-shadow: 0 0 1px rgba(255,255,255,.5);
 // }
+
+.subtle-box {
+    border: 1px solid rgb(223, 226, 230);
+}
 </style>

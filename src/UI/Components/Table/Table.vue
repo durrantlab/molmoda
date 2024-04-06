@@ -1,24 +1,18 @@
 <template>
-    <div style="border: 1px solid #dfe2e6" class="mb-3">
+    <div class="subtle-box mb-3">
         <span v-if="tableDataToUse.headers.length > 0" class="table-title px-2">
             {{ caption }}
         </span>
         <slot name="afterHeader"></slot>
 
         <div class="table-responsive">
-            <!--  -->
             <table
                 :class="
                     'table table-striped table-hover table-sm mb-0 pb-0 table-borderless' +
                     (noFixedTable ? '' : ' fixed-table')
                 "
             >
-                <!-- style="border-top: 1px solid #dfe2e6;" -->
-                <!-- <caption v-if="caption !== ''" class="pb-0 caption-top" style="font-weight:550; font-size:14px; font-style:italic;">
-        {{ caption }} 
-        </caption> -->
                 <thead style="border-top: 0">
-                    <!-- class="table-light"> -->
                     <tr>
                         <th
                             v-for="header of tableDataToUse.headers"
@@ -113,15 +107,14 @@
 </template>
 
 <script lang="ts">
-import { dynamicImports } from "@/Core/DynamicImports";
-import { saveTxt } from "@/Core/FS";
+import { saveData } from "@/Core/FS/FS";
 import { slugify } from "@/Core/Utils";
-import { FileInfo } from "@/FileSystem/FileInfo";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
 import Icon from "../Icon.vue";
+import { IDataRows } from "@/Core/FS/FSInterfaces";
 
 // Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
 interface ITableDataInternal {
@@ -420,7 +413,7 @@ export default class Table extends Vue {
 
         // If you use this one, already in the right format, but hidden columns
         // appear.
-        const data = JSON.parse(JSON.stringify(this.tableData));
+        const data = JSON.parse(JSON.stringify(this.tableData)) as ITableDataInternal;
 
         // Remove column "id" if it exists. TODO: Would be good to remove all
         // hidden ones.
@@ -436,30 +429,12 @@ export default class Table extends Vue {
             }
         }
 
-        data.headers = data.headers.map((h: IHeader) => h.text);
+        const dataToSave = {
+            headers: data.headers.map((h: IHeader) => h.text),
+            rows: data.rows as IDataRows
+        };
 
-        if (format === "json") {
-            saveTxt(
-                new FileInfo({
-                    name: filename,
-                    contents: JSON.stringify(data.rows, null, 2),
-                })
-            );
-        } else {
-            dynamicImports.sheetsjs.module
-                .then((sheetsjs) => {
-                    const wb = sheetsjs.utils.book_new();
-                    const ws = sheetsjs.utils.json_to_sheet(data.rows, {
-                        header: data.headers,
-                    });
-                    sheetsjs.utils.book_append_sheet(wb, ws, "Sheet1");
-                    sheetsjs.writeFile(wb, filename);
-                    return;
-                })
-                .catch((err: any) => {
-                    throw err;
-                });
-        }
+        saveData(dataToSave, filename, format);
     }
 
     /**
@@ -514,3 +489,4 @@ table {
     font-size: 16px;
 }
 </style>
+@/Core/FS/FS

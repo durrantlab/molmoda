@@ -58,7 +58,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
     pluginId = "loadpdb";
     skipLongRunningJobMsg = true;
 
-    intro = `Load a molecular structure from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of biological molecules (e.g., proteins and nucleic acids).`;
+    intro = `Load a molecule from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of proteins, nucleic acids, etc.`;
 
     hotkey = "d";
 

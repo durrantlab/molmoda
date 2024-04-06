@@ -81,6 +81,7 @@ export interface IInfoPayload {
     userArgs: UserArg[];
     pluginId: string;
     intro: string;
+    details?: string;
     softwareCredits: ISoftwareCredit[];
     contributorCredits: IContributorCredit[];
 }

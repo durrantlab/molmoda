@@ -94,13 +94,20 @@ export abstract class PluginParentClass extends mixins(
     abstract pluginId: string;
 
     /**
-     * A short description of the plugin. This is shown at the top of the
-     * plugin. It should first describe what the plugin does, then how it does
-     * it. Be brief.
+     * A very short description of what the plugin does. This is shown at the
+     * top of the plugin. Be brief.
      *
      * @type {string}
      */
     abstract intro: string;
+
+    /**
+     * An optional expanded introduction, also shown at the top of the plugin.
+     * It should describe how the program does what it does. Be brief.
+     *
+     * @type {string}
+     */
+    details = "";
 
     /**
      * A list of user arguments. Note that `userArgDefaults` defines the default
@@ -118,11 +125,13 @@ export abstract class PluginParentClass extends mixins(
      * @returns {IInfoPayload}  The info payload.
      */
     get infoPayload(): IInfoPayload {
+        // check if this has details
         return {
             title: this.title,
             userArgs: this.userArgs,
             pluginId: this.pluginId,
             intro: this.intro || "",
+            details: this.details,
             softwareCredits: this.softwareCredits,
             contributorCredits: this.contributorCredits,
         };
@@ -506,7 +515,7 @@ export abstract class PluginParentClass extends mixins(
     /** mounted function */
     async mounted() {
         // Do some quick validation
-        this._validatePlugin(this.pluginId, this.intro);
+        this._validatePlugin(this.pluginId, this.intro, this.details);
 
         registerLoadedPlugin(this);
 

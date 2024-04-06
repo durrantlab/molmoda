@@ -60,7 +60,8 @@ export default class ReducePlugin extends PluginParentClass {
     ];
     pluginId = "reduce";
 
-    intro = `Protonate/deprotonate proteins, in preparation for docking. Uses the reduce program to guess at proper protonation states.`;
+    intro = `Protonate/deprotonate proteins, in preparation for docking.`
+    details = `Uses the reduce program to guess at proper protonation states.`;
 
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";

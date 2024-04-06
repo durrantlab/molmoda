@@ -95,7 +95,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
     ];
     pluginId = "fpocketweb";
 
-    intro = `(1) Identify small-molecule binding pockets on protein surfaces and (2) calculate pocket properties using the fpocket algorithm (FPocketWeb).`;
+    intro = `Identify small-molecule binding pockets on protein surfaces.`
+    details = `Also calculate pocket properties using the fpocket algorithm (FPocketWeb).`;
 
     msgOnJobsFinished =
         "Finished detecting pockets (see molecular viewer). Some pockets might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the detected pockets.";

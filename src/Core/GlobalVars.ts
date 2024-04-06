@@ -7,7 +7,9 @@ export const appCompileTime = compileTimeInfo.date;
 console.log(appName + " " + appVersion + ".");
 console.log("Last compiled: " + appCompileTime);
 
-export const appDescription = `${appName} ${appVersion} is a browser-based suite for computer-aided drug discovery, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>. It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.`;
+export const appIntro = `${appName} ${appVersion} is a browser-based drug-discovery suite, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>.`;
+export const appDetails = `It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.`;
+export const appDescription = `${appIntro} ${appDetails}`
 
 // Though it is hackish, occasionally I just wait for the popup to open before
 // doing anything. Good to define a single global constant that determines this

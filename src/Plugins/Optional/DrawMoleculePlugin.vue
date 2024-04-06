@@ -15,7 +15,7 @@
         <!-- v-model="molName"
         @onChange="searchByName"
         :description="molNameRespDescription" -->
-        <!-- <FormWrapper class="mt-2">
+        <FormWrapper v-if="testEditing" class="mt-2">
             <FormInput
                 v-model="currentSmiles"
                 ref="formMolName"
@@ -28,7 +28,7 @@
             >
             </FormInput>
         </FormWrapper>
-        {{ currentSmiles }} -->
+        <!-- {{ currentSmiles }} -->
     </PluginComponent>
 </template>
 
@@ -76,7 +76,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     pluginId = "drawmoleculeplugin";
     title = "Draw Molecule";
 
-    intro = `Use the editor below to draw a small-molecule compound.`;
+    intro = `Use the editor to draw a small-molecule compound.`;
 
     userArgDefaults: UserArg[] = [];
     currentSmiles = "";
@@ -86,6 +86,10 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
     isActionBtnEnabled = false;
 
+    // Toggle below to test editing. Once implementation complete, may remove
+    // toggle implementation.
+    testEditing = true;
+
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
@@ -94,6 +98,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         dynamicImports.kekule.module
             .then((module: any) => {
                 this.kekule = module.Kekule;
+                // this.kekule = (window as any).Kekule;
                 this.chemComposer = new this.kekule.Editor.Composer(
                     this.$refs["chemComposer"]
                 );
@@ -163,16 +168,45 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      *                           is loaded.
      */
     async loadFromSmiles(smi: string): Promise<void> {
+        debugger;
+
         // Convert smi
-        const fileInfo = new FileInfo({
-            name: randomID() + ".smi",
-            contents: smi,
+        // const fileInfo = new FileInfo({
+        //     name: randomID() + ".smi",
+        //     contents: smi,
+        // });
+
+        // const contents = await convertFileInfosOpenBabel([fileInfo], "cml");
+        // const testMol = this.kekule.IO.loadFormatData(contents[0], "sdf");
+
+        this.kekule.OpenBabel.enable((error: any) => {
+            debugger;
+            if (!error) {
+                console.log("OpenBabel wasm loaded and can be accessed!");
+            }
         });
 
-        const contents = await convertFileInfosOpenBabel([fileInfo], "cml");
-        const testMol = this.kekule.IO.loadFormatData(contents[0], "sdf");
-        this.chemComposer.setChemObj(testMol);
-        return
+        // const testMol = this.kekule.IO.loadFormatData(smi, "smi");
+        // this.chemComposer.setChemObj(testMol);
+
+        // this.chemComposer.getEditor().setChemObjData('{"format": "smi", "data": "C1CCCCC1"}');
+
+        // this.kekule.OpenBabel.enable((error: any) => {
+        //     debugger;
+        //     if (!error) {
+        //         var smiles = "c1ccccc1";
+        //         var mol = this.kekule.IO.loadFormatData(smiles, "smi");
+        //         // the molecule loaded from SMILES by OpenBabel has no coordinates for atoms, and you can generate them manually
+        //         var generator =
+        //             new this.kekule.Calculator.ObStructure2DGenerator();
+        //         generator.setSourceMol(mol);
+        //         generator.executeSync(function () {
+        //             var newMol = generator.getGeneratedMol();
+        //             console.log(newMol);
+        //         });
+        //     }
+        // });
+        return;
         // return contents[0];
         // const cmlData = `<?xml version="1.0"?><molecule xmlns="http://www.xml-cml.org/schema"><atomArray><atom id="a1" elementType="C" hydrogenCount="4"/></atomArray></molecule>`;
     }

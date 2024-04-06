@@ -94,6 +94,14 @@ module.exports = defineConfig({
                         from: "node_modules/@rdkit/rdkit/dist/RDKit_minimal.wasm",
                         to: "js/RDKit_minimal.wasm",
                     },
+
+                    // Below is to get kekulejs open babel to work. TODO: Would
+                    // be great just to use standard molmoda openbabel, but we'd
+                    // need to get cml format working.
+                    {
+                        from: "node_modules/kekule/dist/extra",
+                        to: "js/extra",
+                    }
                 ],
             })
         );
