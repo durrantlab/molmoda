@@ -57,7 +57,9 @@ export class OpenBabelQueue extends QueueParent {
                         // New lines become spaces.
                         toAdd = toAdd.replace(/\n/g, " ");
 
-                        errMsg = "One or more input molecules could not be processed. Details: " + errMsg + toAdd + "\n";
+                        if (inputs[i].surpressMsgs !== false) {
+                            errMsg = "One or more input molecules could not be processed. Details: " + errMsg + toAdd + "\n";
+                        }
                     }
                 }
                 if (errMsg !== "") {

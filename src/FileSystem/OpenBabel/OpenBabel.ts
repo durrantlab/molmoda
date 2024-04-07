@@ -117,7 +117,8 @@ export function getGen3DUserArg(
 function runOpenBabel(
     appId: string,
     argsLists: string[][],
-    inputFiles: FileInfo[] | IFileInfo[]
+    inputFiles: FileInfo[] | IFileInfo[],
+    surpressMsgs = false
 ): Promise<any> {
     // Quick validation to make sure argsLists is in right format.
     if (argsLists.length > 0 && !Array.isArray(argsLists[0])) {
@@ -140,6 +141,7 @@ function runOpenBabel(
         payloads.push({
             args: argsLists[i],
             inputFile: inputFiles[i],
+            surpressMsgs
         });
     }
 
@@ -262,7 +264,8 @@ async function separateFiles(
  *                                         convert.
  * @param  {string}        targetFormat    The target extension.
  * @param  {IGen3DOptions} [gen3D]         Whether to assign 3D coordinates.
- * @param  {number}        [pH]            The pH to use for protonation.
+ * @param  {number | null} [pH]            The pH to use for protonation. If
+ *                                         null, removes hydrogen atoms.
  * @param  {boolean}       [desalt=false]  Whether to desalt the molecules.
  * @returns {Promise<string[]>}  A promise that resolves to the converted
  *    molecules.
@@ -271,8 +274,9 @@ async function convertToNewFormat(
     fileInfos: FileInfo[],
     targetFormat: string,
     gen3D?: IGen3DOptions,
-    pH?: number,
-    desalt = false
+    pH?: number | null,
+    desalt = false,
+    surpressMsgs = false
 ): Promise<string[]> {
     const cmdsList = fileInfos.map((fileInfo: FileInfo) => {
         const cmds = [fileInfo.name, "-m"]; // Note always dividing into multiple files.
@@ -316,8 +320,11 @@ async function convertToNewFormat(
         //     cmds.push(...["--gen3D", "best"]);
         // }
 
-        if (pH !== undefined) {
+        if (pH !== undefined && pH !== null) {
             cmds.push(...["-p", pH.toString()]);
+        } else if (pH === null) {
+            // Removes hydrogens. Good for 2D visualizations.
+            cmds.push(...["-d"]);
         }
 
         // Are there additional arguments to pass to OpenBabel?
@@ -339,7 +346,8 @@ async function convertToNewFormat(
     const convertedFileContents = await runOpenBabel(
         "convert",
         cmdsList,
-        fileInfos
+        fileInfos,
+        surpressMsgs
     );
 
     // The output files are located in the .outputFiles properties.
@@ -354,7 +362,8 @@ async function convertToNewFormat(
  *                                       convert.
  * @param  {string}      targetFormat    The target extension.
  * @param  {boolean}     [gen3D]         Whether to assign 3D coordinates.
- * @param  {number}      [pH]            The pH to use for protonation.
+ * @param  {number}      [pH]            The pH to use for protonation. If null,
+ *                                       removes hydrogens (-d).
  * @param  {boolean}     [desalt=false]  Whether to desalt the molecules.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
@@ -363,8 +372,9 @@ export async function convertFileInfosOpenBabel(
     srcFileInfos: FileInfo[], // Can be multiple-model SDF file, for example.
     targetFormat: string,
     gen3D?: IGen3DOptions,
-    pH?: number,
-    desalt = false
+    pH?: number | null,
+    desalt = false,
+    surpressMsgs = false
     // debug?: boolean
 ): Promise<string[]> {
     // Get info about the file
@@ -379,7 +389,8 @@ export async function convertFileInfosOpenBabel(
         targetFormat,
         gen3D,
         pH,
-        desalt
+        desalt,
+        surpressMsgs
     );
 
     // TODO: Report what's in the .stdOutAndErr property? Not sure needed.

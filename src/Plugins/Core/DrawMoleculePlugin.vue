@@ -7,28 +7,31 @@
         modalWidth="xl"
         :isActionBtnEnabled="isActionBtnEnabled"
     >
-        <div
-            ref="chemComposer"
-            style="width: 100%; height: 400px"
-            @click="onWidgetClick"
-        ></div>
-        <!-- v-model="molName"
+        <template #afterForm>
+            <div
+                ref="chemComposer"
+                style="width: 100%; height: 400px"
+                class="mt-4"
+            ></div>
+            <!-- @click="onWidgetUpdated" -->
+            <!-- @keyup="onWidgetUpdated" -->
+            <!-- v-model="molName"
         @onChange="searchByName"
         :description="molNameRespDescription" -->
-        <FormWrapper v-if="testEditing" class="mt-2">
-            <FormInput
-                v-model="currentSmiles"
-                ref="formMolName"
-                id="formMolName"
-                placeHolder="(Optional) Enter the Chemical Name (e.g., Aspirin)"
-                :delayBetweenChangesDetected="0"
-                :validateDescription="false"
-                actionBtnTxt="Load SMILES"
-                @onActionBtnClick="onActionBtnClick"
-            >
-            </FormInput>
-        </FormWrapper>
-        <!-- {{ currentSmiles }} -->
+            <FormWrapper v-if="testEditing" class="mt-2">
+                <FormInput
+                    v-model="currentSmiles"
+                    placeHolder="SMILES..."
+                    :delayBetweenChangesDetected="500"
+                    :validateDescription="false"
+                    @onChange="onUpdateSMILES"
+                >
+                    <!-- actionBtnTxt="Update" -->
+                    <!-- @onActionBtnClick="onUpdateBtnClick" -->
+                </FormInput>
+            </FormWrapper>
+            <!-- {{ currentSmiles }} -->
+        </template>
     </PluginComponent>
 </template>
 
@@ -38,7 +41,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import { Options } from "vue-class-component";
 
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { IUserArgText, UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
     ISoftwareCredit,
     IContributorCredit,
@@ -53,6 +56,9 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
+
+// See
+// https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
 
 /**
  * DrawMoleculePlugin
@@ -76,9 +82,28 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     pluginId = "drawmoleculeplugin";
     title = "Draw Molecule";
 
-    intro = `Use the editor to draw a small-molecule compound.`;
+    intro = `Use a molecular editor to draw or edit a small-molecule compound.`;
+    details =
+        "You can also update the SMILES string directly by typing in a text field under the editor.";
 
-    userArgDefaults: UserArg[] = [];
+    userArgDefaults: UserArg[] = [
+        {
+            id: "drawMolName",
+            label: "",
+            val: "DrawMolecule",
+            placeHolder: "Name of the new molecule...",
+            description: "The name of the new molecule.",
+            validateFunc: (val: string) => {
+                return val.length > 0;
+            },
+            warningFunc: (val: string) => {
+                if (val === "DrawMolecule") {
+                    return "Consider choosing a unique name so you can easily identify your molecule later.";
+                }
+                return "";
+            },
+        } as IUserArgText,
+    ];
     currentSmiles = "";
 
     kekule: any;
@@ -93,14 +118,26 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     *
+     * @param {any} payload  The payload (if editing existing molecule)
      */
-    onBeforePopupOpen() {
+    onBeforePopupOpen(payload: any) {
+        this.currentSmiles = "";
+
+        if (payload) {
+            this.currentSmiles = payload.smiles;
+            this.setUserArg("drawMolName", payload.name);
+        }
+    }
+
+    onPopupOpen() {
         dynamicImports.kekule.module
             .then((module: any) => {
-                this.kekule = module.Kekule;
-                // this.kekule = (window as any).Kekule;
+                // this.kekule = module.Kekule;
+                this.kekule = module;
+                const chemComposerRef = this.$refs["chemComposer"];
                 this.chemComposer = new this.kekule.Editor.Composer(
-                    this.$refs["chemComposer"]
+                    chemComposerRef
                 );
                 this.chemComposer
                     .setEnableOperHistory(true)
@@ -141,6 +178,25 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                         // "textAlign",
                     ]);
 
+                this.chemComposer
+                    .getEditor()
+                    .on("editObjsUpdated", (e: any) => {
+                        let mol =
+                            this.kekule.ChemStructureUtils.getTotalStructFragment(
+                                this.chemComposer.getChemObj()
+                            );
+                        if (mol) {
+                            this.onWidgetUpdated();
+                        }
+                    });
+
+                // this.chemComposer
+                //     .getRenderConfigs()
+                //     .getMoleculeDisplayConfigs()
+                //     .setDefHydrogenDisplayLevel(
+                //         this.kekule.Render.HydrogenDisplayLevel.NONE
+                //     );
+
                 // If it's a test, throw in a methane for testing.
                 if (isTest) {
                     const cmlData = `<?xml version="1.0"?><molecule xmlns="http://www.xml-cml.org/schema"><atomArray><atom id="a1" elementType="C" hydrogenCount="4"/></atomArray></molecule>`;
@@ -150,6 +206,10 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                     );
                     this.chemComposer.setChemObj(testMol);
                     this.isActionBtnEnabled = true;
+                }
+
+                if (this.currentSmiles !== "") {
+                    this.onUpdateSMILES();
                 }
 
                 // this.chemComposer.setDimension('200px', '200px');
@@ -168,63 +228,94 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      *                           is loaded.
      */
     async loadFromSmiles(smi: string): Promise<void> {
-        debugger;
+        // TODO: Below would be nice. Good to use molmoda's openbabel instead of
+        // loading kekule's openbabel.
 
-        // Convert smi
-        // const fileInfo = new FileInfo({
-        //     name: randomID() + ".smi",
-        //     contents: smi,
-        // });
+        // Convert smi to sdf
+        const fileInfo = new FileInfo({
+            name: randomID() + ".smi",
+            contents: smi,
+        });
+
+        let mol2Txts: string[] = [];
+        mol2Txts = await convertFileInfosOpenBabel(
+            [fileInfo],
+            "mol2",
+            undefined,
+            null,
+            undefined,
+            true
+        );
+        if (mol2Txts.length === 0) {
+            // throw new Error("Failed to convert SMILES to MOL2.");
+            return;
+        }
+        const mol2Txt = mol2Txts[0];
 
         // const contents = await convertFileInfosOpenBabel([fileInfo], "cml");
         // const testMol = this.kekule.IO.loadFormatData(contents[0], "sdf");
 
+        // setChemObjData does not preserve chirality
+
+        // Indigo does not do chirality
+        // this.kekule.Indigo.enable((error: any) => {
+        //     if (!error) {
+        //         const payload = {
+        //             format: "smi",
+        //             data: smi,
+        //         };
+        //         this.chemComposer
+        //             .getEditor()
+        //             .setChemObjData(JSON.stringify(payload));
+        //         // .setChemObjData('{"format": "smi", "data": "' + smi + '"}');
+        //     }
+        // });
+
         this.kekule.OpenBabel.enable((error: any) => {
-            debugger;
             if (!error) {
-                console.log("OpenBabel wasm loaded and can be accessed!");
+                // console.log(mol2Txt);
+                // const payload = {
+                //     "format": "mol2",
+                //     "data": mol2Txt,
+                // }
+                // this.chemComposer
+                //     .getEditor()
+                //     .setChemObjData(JSON.stringify(payload));
+
+                const mol = this.kekule.IO.loadFormatData(mol2Txt, "mol2");
+                // const mol = this.kekule.IO.loadFormatData(smi, "smi");
+
+                // the molecule loaded from SMILES by OpenBabel has no
+                // coordinates for atoms, and you can generate them manually
+                const generator =
+                    new this.kekule.Calculator.ObStructure2DGenerator();
+                generator.setSourceMol(mol);
+                generator.executeSync(() => {
+                    const newMol = generator.getGeneratedMol();
+                    // this.chemComposer
+                    //     .getRenderConfigs()
+                    //     .getMoleculeDisplayConfigs()
+                    //     .setDefHydrogenDisplayLevel(
+                    //         this.kekule.Render.HydrogenDisplayLevel.NONE
+                    //     );
+                    this.chemComposer.setChemObj(newMol);
+
+                    // this.chemComposer.repaint();
+                });
             }
         });
 
-        // const testMol = this.kekule.IO.loadFormatData(smi, "smi");
-        // this.chemComposer.setChemObj(testMol);
-
-        // this.chemComposer.getEditor().setChemObjData('{"format": "smi", "data": "C1CCCCC1"}');
-
-        // this.kekule.OpenBabel.enable((error: any) => {
-        //     debugger;
-        //     if (!error) {
-        //         var smiles = "c1ccccc1";
-        //         var mol = this.kekule.IO.loadFormatData(smiles, "smi");
-        //         // the molecule loaded from SMILES by OpenBabel has no coordinates for atoms, and you can generate them manually
-        //         var generator =
-        //             new this.kekule.Calculator.ObStructure2DGenerator();
-        //         generator.setSourceMol(mol);
-        //         generator.executeSync(function () {
-        //             var newMol = generator.getGeneratedMol();
-        //             console.log(newMol);
-        //         });
-        //     }
-        // });
         return;
-        // return contents[0];
-        // const cmlData = `<?xml version="1.0"?><molecule xmlns="http://www.xml-cml.org/schema"><atomArray><atom id="a1" elementType="C" hydrogenCount="4"/></atomArray></molecule>`;
     }
 
     /**
      * Runs when the user presses the action button.
      */
-    onActionBtnClick() {
+    onUpdateSMILES() {
         // Seems too challenging to load SMI file into kekule. Going to use
         // OpenBabel to convert to cml
 
         this.loadFromSmiles(this.currentSmiles);
-
-        // this.kekule.OpenBabel.enable(() => {
-        // this.chemComposer
-        //     .getEditor()
-        //     .setChemObjData('{"format": "smi", "data": "C1CCCCC1"}');
-        // });
         this.isActionBtnEnabled = true;
     }
 
@@ -243,14 +334,14 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         const treeNode = TreeNode.loadFromFileInfo(myFile);
         treeNode
             .then((node: any) => {
-                node.title = "DrawMolecule";
+                node.title = this.getUserArg("drawMolName");
                 node.type = TreeNodeType.Compound;
 
                 const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
                     node,
                 ]);
 
-                rootNode.title = "DrawMolecule";
+                rootNode.title = this.getUserArg("drawMolName");
                 rootNode.addToMainTree();
                 return;
             })
@@ -278,7 +369,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      * Detects when widget is clicked. Enables action button if there is a valid
      * smiles string ready.
      */
-    onWidgetClick() {
+    onWidgetUpdated() {
         this.currentSmiles = this.kekule.IO.saveFormatData(
             this.chemComposer.getChemObj(),
             "smi"

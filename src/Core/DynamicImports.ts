@@ -1,54 +1,60 @@
 import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
+import { waitForCondition } from "./Utils";
 
 interface IDynamicImport {
     credit: ISoftwareCredit;
     module: Promise<any>;
 }
 
-// const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
+const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
 
 /**
  * Adds a js file to the header. This is useful when you can't do a legitimate
  * dynamic import.
  *
  * @param  {string} id          The id of the library.
- * @param  {string} url         The url of the js file to add to the header.
- * @param  {Function} callback  The callback to call when the library is loaded.
+ * @param  {string} jsUrl         The url of the js file to add to the header.
+ * @param  {Function} moduleReady  The callback to call when the library is loaded.
  * @returns {Promise<undefined>}  A promise that resolves when the script is
  *     loaded.
  */
-// function addJsToHeader(
-//     id: string,
-//     url: string,
-//     callback: () => Promise<any>
-// ): Promise<undefined> {
-//     if (modulesAlreadyAddedToHeader[id] !== undefined) {
-//         // Already loaded;
-//         // (window as any)["OpenBabel"] =
-//         //     modulesAlreadyAddedToHeader[id];
-//         return Promise.resolve(modulesAlreadyAddedToHeader[id]);
-//     }
+function addToHeader(
+    id: string,
+    jsUrl: string,
+    getModule: () => any,
+    cssUrl?: string
+): Promise<any> {
+    if (modulesAlreadyAddedToHeader[id] !== undefined) {
+        // Already loaded;
+        // (window as any)["OpenBabel"] =
+        //     modulesAlreadyAddedToHeader[id];
+        return Promise.resolve(modulesAlreadyAddedToHeader[id]);
+    }
 
-//     modulesAlreadyAddedToHeader[id] = new Promise((resolve) => {
-//         const script = document.createElement("script");
-//         script.src = url;
-//         script.onload = () => {
-//             setTimeout(() => {
-//                 callback() // custom callback returns a promise
-//                     .then((module) => {
-//                         resolve(module);
-//                         return;
-//                     })
-//                     .catch((err) => {
-//                         throw err;
-//                     });
-//             }, 5000);
-//         };
-//         document.head.appendChild(script);
-//     });
+    // Add css to header
+    if (cssUrl) {
+        const css = document.createElement("link");
+        css.rel = "stylesheet";
+        css.type = "text/css";
+        css.href = cssUrl;
+        document.head.appendChild(css);
+    }
 
-//     return modulesAlreadyAddedToHeader[id];
-// }
+    modulesAlreadyAddedToHeader[id] = new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = jsUrl;
+        script.onload = async () => {
+            await waitForCondition(() => {
+                return getModule() !== undefined;
+            }, 100);
+
+            resolve(getModule());
+        };
+        document.head.appendChild(script);
+    });
+
+    return modulesAlreadyAddedToHeader[id];
+}
 
 export const dynamicImports = {
     jsZip: {
@@ -96,26 +102,33 @@ export const dynamicImports = {
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
-            const themePromise = import(
-                /* webpackChunkName: "kekule-theme" */
-                /* webpackMode: "lazy" */
-                /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-                // @ts-ignore
-                "kekule/theme/default"
-            );
-            const libPromise = import(
-                /* webpackChunkName: "kekule" */
-                /* webpackMode: "lazy" */
-                /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-                // @ts-ignore
-                "kekule"
+            return addToHeader(
+                "kekule",
+                "js/kekule/kekule.min.js",
+                () => (window as any).Kekule,
+                "js/kekule/kekule.css"
             );
 
-            return Promise.all([themePromise, libPromise]).then(
-                (mods: any[]) => {
-                    return mods[1];
-                }
-            );
+            // const themePromise = import(
+            //     /* webpackChunkName: "kekule-theme" */
+            //     /* webpackMode: "lazy" */
+            //     /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+            //     // @ts-ignore
+            //     "kekule/theme/default"
+            // );
+            // const libPromise = import(
+            //     /* webpackChunkName: "kekule" */
+            //     /* webpackMode: "lazy" */
+            //     /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+            //     // @ts-ignore
+            //     "kekule"
+            // );
+
+            // return Promise.all([themePromise, libPromise]).then(
+            //     (mods: any[]) => {
+            //         return mods[1];
+            //     }
+            // );
         },
     } as IDynamicImport,
     fileSaver: {

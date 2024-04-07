@@ -74,7 +74,7 @@ export function checkMultipleMolsSelected(
  *                                            all molecules if not specified.
  * @returns {number}  The number of molecules selected.
  */
-function numSelected(treeNodeList?: TreeNodeList): number {
+export function numSelected(treeNodeList?: TreeNodeList): number {
     if (treeNodeList === undefined) {
         treeNodeList = getMoleculesFromStore();
     }

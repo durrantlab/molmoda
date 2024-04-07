@@ -98,10 +98,10 @@ module.exports = defineConfig({
                     // Below is to get kekulejs open babel to work. TODO: Would
                     // be great just to use standard molmoda openbabel, but we'd
                     // need to get cml format working.
-                    {
-                        from: "node_modules/kekule/dist/extra",
-                        to: "js/extra",
-                    }
+                    // {
+                    //     from: "node_modules/kekule/dist/extra",
+                    //     to: "js/extra",
+                    // }
                 ],
             })
         );

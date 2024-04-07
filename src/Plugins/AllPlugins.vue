@@ -8,6 +8,7 @@ system uses these to autopopulate with plugins. -->
     <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
 
     <!-- TEMPLATE1 START -->
+    <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <CollapseAllPlugin @onPluginSetup="onPluginSetup"></CollapseAllPlugin>
@@ -15,6 +16,8 @@ system uses these to autopopulate with plugins. -->
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <DocumentationLinkPlugin @onPluginSetup="onPluginSetup"></DocumentationLinkPlugin>
+    <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
+    <EditCompoundPlugin @onPluginSetup="onPluginSetup"></EditCompoundPlugin>
     <ErrorReportingPlugin @onPluginSetup="onPluginSetup"></ErrorReportingPlugin>
     <ExampleDataPlugin @onPluginSetup="onPluginSetup"></ExampleDataPlugin>
     <ExpandAllPlugin @onPluginSetup="onPluginSetup"></ExpandAllPlugin>
@@ -25,6 +28,7 @@ system uses these to autopopulate with plugins. -->
     <LoadPubChemPlugin @onPluginSetup="onPluginSetup"></LoadPubChemPlugin>
     <LogWindowPlugin @onPluginSetup="onPluginSetup"></LogWindowPlugin>
     <MergeMolsPlugin @onPluginSetup="onPluginSetup"></MergeMolsPlugin>
+    <MolTextPlugin @onPluginSetup="onPluginSetup"></MolTextPlugin>
     <MoveRegionsOnClickPlugin @onPluginSetup="onPluginSetup"></MoveRegionsOnClickPlugin>
     <NavigatorWindowPlugin @onPluginSetup="onPluginSetup"></NavigatorWindowPlugin>
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
@@ -46,11 +50,8 @@ system uses these to autopopulate with plugins. -->
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
 
-    <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
-    <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
-    <MolTextPlugin @onPluginSetup="onPluginSetup"></MolTextPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
@@ -69,6 +70,7 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 
 // TEMPLATE2 START
+import AddRegionPlugin from "./Core/AddRegionPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
@@ -76,6 +78,8 @@ import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import DocumentationLinkPlugin from "./Core/DocumentationLinkPlugin.vue";
+import DrawMoleculePlugin from "./Core/DrawMoleculePlugin.vue";
+import EditCompoundPlugin from "./Core/EditCompoundPlugin.vue";
 import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
 import ExampleDataPlugin from "./Core/LocalMolLoadersSavers/ExampleDataPlugin.vue";
 import ExpandAllPlugin from "./Core/ExpandAllPlugin.vue";
@@ -86,6 +90,7 @@ import LoadPDBPlugin from "./Core/RemoteMolLoaders/LoadPDBPlugin.vue";
 import LoadPubChemPlugin from "./Core/RemoteMolLoaders/LoadPubChemPlugin.vue";
 import LogWindowPlugin from "./Core/Window/LogWindowPlugin.vue";
 import MergeMolsPlugin from "./Core/EditBar/MergeMolsPlugin.vue";
+import MolTextPlugin from "./Core/MolTextPlugin.vue";
 import MoveRegionsOnClickPlugin from "./Core/MoveRegionsOnClickPlugin.vue";
 import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
 import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
@@ -107,11 +112,8 @@ import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 
-import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
-import DrawMoleculePlugin from "./Optional/DrawMoleculePlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
-import MolTextPlugin from "./Optional/MolTextPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
@@ -126,6 +128,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     HelpPlugin,
 
     // TEMPLATE3 START
+    AddRegionPlugin,
     ClearSelectionPlugin,
     CloneMolPlugin,
     CollapseAllPlugin,
@@ -133,6 +136,8 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     DataWindowPlugin,
     DeleteMolPlugin,
     DocumentationLinkPlugin,
+    DrawMoleculePlugin,
+    EditCompoundPlugin,
     ErrorReportingPlugin,
     ExampleDataPlugin,
     ExpandAllPlugin,
@@ -143,6 +148,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     LoadPubChemPlugin,
     LogWindowPlugin,
     MergeMolsPlugin,
+    MolTextPlugin,
     MoveRegionsOnClickPlugin,
     NavigatorWindowPlugin,
     NewProjectPlugin,
@@ -164,11 +170,8 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     UndoPlugin,
     ViewerWindowPlugin,
 
-    AddRegionPlugin,
-    DrawMoleculePlugin,
     EvalScreenPlugin,
     FPocketWebPlugin,
-    MolTextPlugin,
     ProtonateCompoundsPlugin,
     ReducePlugin,
     WebinaPlugin,

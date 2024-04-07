@@ -102,7 +102,7 @@ export function formatTimestamp(timestamp: number): string {
 
 /**
  * Given a string, returns true if it is a sentence.
- * 
+ *
  * @param {string} txt  The string to check.
  * @returns {boolean}  True if the string is a sentence.
  */
@@ -136,4 +136,27 @@ export function isSentence(txt: string): boolean {
         lastChar === ":" ||
         lastChar === ")"
     );
+}
+
+/**
+ * Wait for a condition to be true.
+ *
+ * @param {Function} conditionFunc         The function that returns the
+ *                                         condition.
+ * @param {number}   [checkFrequency=100]  The frequency to check the condition.
+ * @returns {Promise<undefined>}  A promise that resolves when the condition is
+ *     true.
+ */
+export function waitForCondition(
+    conditionFunc: () => boolean,
+    checkFrequency = 100
+): Promise<undefined> {
+    return new Promise((resolve) => {
+        const interval = setInterval(() => {
+            if (conditionFunc()) {
+                clearInterval(interval);
+                resolve(undefined);
+            }
+        }, checkFrequency);
+    });
 }

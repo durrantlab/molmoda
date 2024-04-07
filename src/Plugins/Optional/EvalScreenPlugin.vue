@@ -642,6 +642,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {
+        alert("tests needed!");
         // TODO:
         // const axios = await dynamicImports.axios.module;
         // const promises = [
