@@ -19,7 +19,7 @@ compiled version of MolModa online, without login or registration, at
 If you wish to run MolModa locally:
 
 1. Download a compiled version from the
-   [https://github.com/durrantlab/molmoda/releases](GitHub releases page).
+   [https://github.com/durrantlab/molmoda/releases/](GitHub releases page).
 2. Extract the contents of the zip file.
 3. Using a command-line terminal, change into the extracted directory.
 4. Start a webserver in that directory. This step requires some expertise and is
@@ -34,8 +34,9 @@ If you wish to run MolModa locally:
 Compiling MolModa from source is technically challenging and should only be
 necessary for developers who wish to modify the app. MolModa compilation
 requires a UNIX-like operating system (e.g., Linux or macOS). Windows users can
-use the Windows Subsystem for Linux (WSL). It also requires node.js and the npm
-package manager. Here are some general steps to compile MolModa from source:
+use the Windows Subsystem for Linux (WSL). Compiling also requires node.js and
+the npm package manager. Here are some general steps to compile MolModa from
+source:
 
 1. Clone this repository: `git clone https://github.com/durrantlab/molmoda.git`
 2. Change into the cloned directory: `cd molmoda`
