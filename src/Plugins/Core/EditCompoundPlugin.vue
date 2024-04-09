@@ -34,7 +34,7 @@ export default class EditCompoundPlugin extends PluginParentClass {
     // @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
     // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
-    menuPath = ["Compounds", "[9] Edit"];
+    menuPath = ["Compounds", "[9] Edit..."];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
