@@ -1,5 +1,5 @@
 <template>
-    <div class="subtle-box mb-3">
+    <div class="subtle-box mb-3" v-if="tableDataToUse">
         <span v-if="tableDataToUse.headers.length > 0" class="table-title px-2">
             {{ caption }}
         </span>
@@ -44,7 +44,7 @@
                 </thead>
                 <tfoot>
                     <tr>
-                        <td :colspan="tableData.headers.length" class="px-2">
+                        <td :colspan="tableData?.headers.length" class="px-2">
                             Download as
                             <a @click.prevent="download('csv')" href="#">CSV</a
                             >,
@@ -375,6 +375,10 @@ export default class Table extends Vue {
      * @param {number} rowIdx  The index of the row that was clicked.
      */
     rowClicked(rowIdx: number) {
+        if (this.tableDataToUse === undefined) {
+            return;
+        }
+
         // move meta data to top level for convenience.
         let toEmit = {
             ...this.tableDataToUse.rows[rowIdx],

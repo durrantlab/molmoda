@@ -59,6 +59,7 @@ import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
+// https://partridgejiang.github.io/Kekule.js/documents/index.html
 
 /**
  * DrawMoleculePlugin
@@ -125,8 +126,11 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         this.currentSmiles = "";
 
         if (payload) {
+            this.title = "Edit Molecule";
             this.currentSmiles = payload.smiles;
             this.setUserArg("drawMolName", payload.name);
+        } else {
+            this.title = "Draw Molecule";
         }
     }
 
@@ -299,8 +303,12 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                     //         this.kekule.Render.HydrogenDisplayLevel.NONE
                     //     );
                     this.chemComposer.setChemObj(newMol);
+                    this.chemComposer.getEditor().scrollClientToObject(newMol);
 
-                    // this.chemComposer.repaint();
+                    // See https://github.com/partridgejiang/Kekule.js/issues/305
+                    // composer.getEditor().zoomTo(0.75);
+                    // composer.getEditor().setInitialZoom(1);
+
                 });
             }
         });

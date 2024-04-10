@@ -1,5 +1,5 @@
 <template>
-    <span>
+    <span v-if="countsTableData !== null" >
         <Table :tableData="lipinskiTableData" caption="Lipinski Properties" />
         <Table :tableData="otherTableData" caption="Other Properties" />
         <Table :tableData="countsTableData" caption="Counts" />
@@ -34,9 +34,9 @@ export default class MolProps extends Vue {
     @Prop({ default: "" }) smiles!: string;
     @Prop({ default: undefined }) treeNode!: TreeNode | undefined;
 
-    lipinskiTableData: ITableData = { headers: [], rows: [] };
-    countsTableData: ITableData = { headers: [], rows: [] };
-    otherTableData: ITableData = { headers: [], rows: [] };
+    lipinskiTableData: ITableData | null = null;  //  = { headers: [], rows: [] };
+    countsTableData: ITableData | null = null;  //  = { headers: [], rows: [] };
+    otherTableData: ITableData | null = null;  //  = { headers: [], rows: [] };
 
     props = "";
 
@@ -97,15 +97,19 @@ export default class MolProps extends Vue {
      * Given a list of descriptors, convert to an ITableData object.
      *
      * @param {any[][]} descriptors  List of descriptors
-     * @returns {ITableData}         Table data
+     * @returns {ITableData | null}         Table data
      */
     convertDescriptorsToTableData(
         descriptors: [string, number, string][]
-    ): ITableData {
+    ): ITableData | null {
         if (!descriptors.map) {
-            console.trace();
-            debugger;
+            return null;
         }
+
+        if (descriptors.length === 0) {
+            return null;
+        }
+
         const headers = descriptors.map((d: any[]) => {
             return { text: d[0], note: d[2] };
         });

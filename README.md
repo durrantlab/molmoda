@@ -19,9 +19,11 @@ compiled version of MolModa online, without login or registration, at
 If you wish to run MolModa locally:
 
 1. Download a compiled version from the
-   [https://github.com/durrantlab/molmoda/releases/](GitHub releases page).
+   [GitHub releases page](https://github.com/durrantlab/molmoda/releases/).
 2. Extract the contents of the zip file.
-3. Using a command-line terminal, change into the extracted directory.
+3. Change into the extracted directory using a command-line terminal (e.g., the
+   Terminal app on macOS, the Command Prompt on Windows, or a terminal emulator
+   on Linux).
 4. Start a webserver in that directory. This step requires some expertise and is
    beyond the scope of this README file, but we provide a simple Python-based
    server (`server.py`) in the extracted folder that you can run via `python3
