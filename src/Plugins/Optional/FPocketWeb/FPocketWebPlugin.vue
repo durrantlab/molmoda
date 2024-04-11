@@ -516,6 +516,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 if (idx >= numInitiallyVisible) {
                     node.visible = false;
                 }
+
+                node.type = TreeNodeType.Other;
             });
     }
 

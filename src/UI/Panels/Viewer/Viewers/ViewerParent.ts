@@ -27,7 +27,7 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { store } from "@/Store";
 
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
-import { toRaw } from 'vue'
+import { toRaw } from "vue";
 import { IFileInfo } from "@/FileSystem/Types";
 
 /**
@@ -296,18 +296,23 @@ export abstract class ViewerParent {
     /**
      * Adds a sphere to the viewer.
      *
-     * @param  {ISphere} region  The sphere to add.
+     * @param  {ISphere} region   The sphere to add.
+     * @param  {string}  [label]  The label of the sphere.
      * @returns {GenericRegionType}  The sphere that was added.
      */
-    abstract addSphere(region: ISphere): Promise<GenericRegionType>;
+    abstract addSphere(
+        region: ISphere,
+        label?: string
+    ): Promise<GenericRegionType>;
 
     /**
      * Adds a box to the viewer.
      *
-     * @param  {IBox} region  The box to add.
+     * @param  {IBox}   region   The box to add.
+     * @param  {string} [label]  The label of the box.
      * @returns {GenericRegionType}  The box that was added.
      */
-    abstract addBox(region: IBox): Promise<GenericRegionType>;
+    abstract addBox(region: IBox, label?: string): Promise<GenericRegionType>;
 
     /**
      * Adds a arrow to the viewer.
@@ -328,7 +333,7 @@ export abstract class ViewerParent {
     /**
      * Adds a region to the viewer.
      *
-     * @param  {IRegion} region  The region to add.
+     * @param  {IRegion} region   The region to add.
      * @returns {GenericRegionType}  The region that was added.
      */
     addRegion(region: IRegion): Promise<GenericRegionType> {
@@ -396,8 +401,10 @@ export abstract class ViewerParent {
 
                     // This should run first
 
-                    addObjPromise = this.addModel(toRaw(treeNode.model) as IAtom[] | IFileInfo)
-                    .then((visMol: GenericModelType) => {
+                    addObjPromise = this.addModel(
+                        toRaw(treeNode.model) as IAtom[] | IFileInfo
+                    )
+                        .then((visMol: GenericModelType) => {
                             this.molCache[id] = visMol;
 
                             // Below now handled elsewhere (when showMolecule or
@@ -806,8 +813,10 @@ export abstract class ViewerParent {
         // because the 3DMoljs viewer does not have a way to update the position
         // as best I can tell.
 
+        // Always remove any old regions.
+        
         this.addRegion(regionStyle)
-            .then((region: GenericRegionType) => {
+        .then((region: GenericRegionType) => {
                 this._removeRegion(id);
                 this.regionCache[id] = region;
                 return;

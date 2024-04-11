@@ -3,6 +3,7 @@
 
 export VINA_VERSION=1.2.3
 export DEBUG=0
+export ALLOW_MEMORY_GROWTH=1  # Recommend yes
 
 # Change to the /support/ directory
 cd ./support/
@@ -51,16 +52,18 @@ sed -i "" "s|++11|++11 -s MODULARIZE=1 -s EXPORT_ES6=1 -s 'EXPORT_NAME=\"WEBINA_
 # use precise 32-bit float operations instead of the default imprecise operations
 sed -i "" "s|++11|++11 -s PRECISE_F32=1|g" Makefile
 
-# Allow memory growth. JDD TODO: BELOW DOES NOT FIX PROBLEM. STILL MEMORY ISSUE
-# AT LIGAND 97: Uncaught (in promise) RuntimeError: Aborted(RangeError:
-# WebAssembly.instantiate(): Out of memory: Cannot allocate Wasm memory for new
-# instance)
-# sed -i "" "s|++11|++11 -sALLOW_MEMORY_GROWTH|g" Makefile
-
-# If you don't allow memory growth, make sure INITIAL_MEMORY is large enough.
-# 128 MB is not enough. 256 MB is not enough. 512MB is enough if not using
-# MALLOC=mimalloc. but 1024MB is enoguh with MALLOC=mimalloc.
-sed -i "" "s|++11|++11 -s INITIAL_MEMORY=1024MB|g" Makefile
+if [ $ALLOW_MEMORY_GROWTH -eq 1 ]; then
+  # Allow memory growth. Note that allowing memory growth didn't fix "Out of
+  # memory: Cannot allocate Wasm memory for new instance" errors. But it did
+  # introduce errors when students specified unreasonably large docking boxes.
+  # Best to just let memory grow.
+  sed -i "" "s|++11|++11 -sALLOW_MEMORY_GROWTH|g" Makefile
+else
+  # If you don't allow memory growth, make sure INITIAL_MEMORY is large enough.
+  # 128 MB is not enough. 256 MB is not enough. 512MB is enough if not using
+  # MALLOC=mimalloc. but 1024MB is enoguh with MALLOC=mimalloc.
+  sed -i "" "s|++11|++11 -s INITIAL_MEMORY=1024MB|g" Makefile
+fi
 
 # Use mimalloc instead of the default malloc. This is supposed to be faster and
 # more memory efficient. https://emscripten.org/docs/porting/pthreads.html
@@ -68,10 +71,12 @@ sed -i "" "s|++11|++11 -s MALLOC=mimalloc|g" Makefile
 
 # Use pthreads. Note that PTHREAD_POOL_SIZE indicates the number of workers that
 # are created initially, but additional workers can be created as required.
-# PTHREAD_POOL_SIZE is not a hard cap. JDD TODO: Note that changing this to
+# PTHREAD_POOL_SIZE is not a hard cap. Note that changing this to
 # navigator.hardwareConcurrency did not fix the memory problem. Also, 8 did not
-# fix the memory problem.
-sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE='navigator.hardwareConcurrency'|g" Makefile
+# fix the memory problem. So might as well keep it lower to conserve memory
+# where possible.
+sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE=2|g" Makefile
+# sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE='navigator.hardwareConcurrency'|g" Makefile
 # sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_SIZE=8|g" Makefile
 
 # Prevent Webina from running automatically (run only when the callMain is

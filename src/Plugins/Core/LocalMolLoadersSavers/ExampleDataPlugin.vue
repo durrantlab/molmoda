@@ -60,6 +60,9 @@ export default class ExampleDataPlugin extends PluginParentClass {
             "Protonated influenza neuraminidase, with known ligands protonated at pH 7 using Compounds → Protonation... (Use this example data to test docking.)",
         "1INW_pocket_prot_protonated_ligs_protonated_docked.molmoda":
             "Protonated influenza neuraminidase, with known ligands docked into the neuraminidase pocket using Docking → Compound Docking...",
+        "TGFR1_docked.molmoda":
+            "Virtual screen targeting TGFβ Type I Receptor Kinase, described in the MolModa publication. (Use this example data to calculate ROC and EF curves.)",
+        "LARP1_leadopt.molmoda": "m7G and analogs bound to LARP1 DM15. Shows how MolModa can assist in lead optimization, as described in the MolModa publication.",
     };
 
     userArgDefaults: UserArg[] = [
@@ -97,6 +100,16 @@ export default class ExampleDataPlugin extends PluginParentClass {
                         "1INW, pocket, protein and ligands protonated, docked",
                     val: "1INW_pocket_prot_protonated_ligs_protonated_docked.molmoda",
                 },
+                {
+                    description:
+                        "TGFR1 virtual screen (from MolModa publication)",
+                    val: "TGFR1_docked.molmoda",
+                },
+                {
+                    description:
+                        "LARP1 lead optimization (from MolModa publication)",
+                    val: "LARP1_leadopt.molmoda",
+                },
             ],
             val: "1INW_just_prot_lig.molmoda",
         } as IUserArgSelect,
@@ -108,7 +121,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
         } as IUserArgAlert,
     ];
     alwaysEnabled = true;
-    intro = `Append an example project to the current workspace.`
+    intro = `Append an example project to the current workspace.`;
     details = `Useful for exploring and testing the ${appName} interface.`;
 
     /**

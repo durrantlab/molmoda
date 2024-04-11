@@ -21,7 +21,7 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import StylesForMolType, { IStyleForMolType } from "./StylesForMolType.vue";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
@@ -60,6 +60,8 @@ export default class StylesAllMolTypes extends Vue {
                 continue;
             }
             // if (node.type === "metal") { continue; }  // Can't change metal style
+
+            if (node.type === TreeNodeType.Other) { continue; }  // Can't change other style
 
             if (allStyles[node.type] === undefined) {
                 allStyles[node.type] = [];

@@ -41,6 +41,8 @@ export const defaultIonsStyle: IStyle[] = [_sphereStyle];
 
 export const defaultSolventStyle: IStyle[] = [_stickStyle];
 
+// export const defaultOtherStyle: IStyle[] = [_sphereStyle];
+
 // Empty on purpose to satisfy typescript
 const regionStyle: IStyle[] = [];
 
@@ -53,6 +55,7 @@ export const currentStyles: { [key in TreeNodeType]: IStyle[] } = {
     [TreeNodeType.Ions]: defaultIonsStyle,
     [TreeNodeType.Solvent]: defaultSolventStyle,
     [TreeNodeType.Region]: regionStyle,
+    [TreeNodeType.Other]: [],  // Must be defined explicitly (TreeNode.styles = [{...}])
 };
 
 /**
@@ -79,10 +82,12 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
         // Terminal node must have a type, styles, and be visible.
         if (
             !terminalNode.type ||
-            !terminalNode.styles // ||
+            !terminalNode.styles ||
+            terminalNode.type === TreeNodeType.Other // ||
             // !terminalNode.visible
         ) {
-            // Note that regions do not have styles.
+            // Note that regions do not have styles. Also, don't mess with Other nodes. The styles of these
+            // must be set explicitly (TreeNode.styles = [{...}])
             continue;
         }
 

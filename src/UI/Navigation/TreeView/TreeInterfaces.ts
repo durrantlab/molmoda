@@ -28,6 +28,7 @@ export enum TreeNodeType {
     Ions = "ions",
     Solvent = "solvent",
     Region = "region",
+    Other = "other"  // For things like fpocket volume atoms
 }
 
 export enum SelectedType {

@@ -19,6 +19,24 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertIAtoms";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+
+const _treeNodeTitleCache: { [key: string]: string } = {};
+function getTreeNodeTitle(id: string): string | null {
+    if (_treeNodeTitleCache[id]) {
+        return _treeNodeTitleCache[id];
+    }
+
+    // Get the title from the tree node
+    const treeNode = getMoleculesFromStore().filters.onlyId(id);
+
+    if (treeNode) {
+        _treeNodeTitleCache[id] = treeNode.title;
+        return treeNode.title;
+    }
+
+    return null;
+}
 
 /**
  * Viewer3DMol
@@ -27,6 +45,10 @@ export class Viewer3DMol extends ViewerParent {
     private _mol3dObj: any;
     private _zoomToModelsTimeout: any;
     private _renderAllTimeout: any;
+
+    // Keep track of labels on regions so you can show and hide them with the
+    // region itself.
+    private _regionLabels: { [key: string]: GenericLabelType } = {};
 
     /**
      * Removes a model from the viewer.
@@ -57,6 +79,11 @@ export class Viewer3DMol extends ViewerParent {
         if (region) {
             this._mol3dObj.removeShape(region);
         }
+
+        // Also remove label
+        // if (this._regionLabels[id]) {
+        //     this.removeLabel(this._regionLabels[id]);
+        // }
     }
 
     /**
@@ -94,6 +121,11 @@ export class Viewer3DMol extends ViewerParent {
         const region = this.lookup(id);
         if (region) {
             region.hidden = true;
+
+            if (this._regionLabels[id]) {
+                this.removeLabel(this._regionLabels[id]);
+                delete this._regionLabels[id];
+            }
         }
     }
 
@@ -121,6 +153,26 @@ export class Viewer3DMol extends ViewerParent {
         if (region) {
             region.hidden = false;
             region.opacity = opacity;
+
+            const title = getTreeNodeTitle(id);
+
+            if (title) {
+                // Also add label
+                if (this._regionLabels[id]) {
+                    this.removeLabel(id);
+                    delete this._regionLabels[id];
+                }
+
+                this._regionLabels[id] = this.addLabel(
+                    title,
+                    region.x,
+                    region.y,
+                    region.z,
+                    "center",
+                    14,
+                    // false
+                );
+            }
         }
     }
 
@@ -207,9 +259,13 @@ export class Viewer3DMol extends ViewerParent {
         const format = getFormatInfoGivenType(typ as string);
         const ext = format?.primaryExt;
 
-        const newMol = this._mol3dObj.addModel((model as IFileInfo).contents, ext, {
-            keepH: true,
-        });
+        const newMol = this._mol3dObj.addModel(
+            (model as IFileInfo).contents,
+            ext,
+            {
+                keepH: true,
+            }
+        );
 
         // Remove all styles
         newMol.setStyle({}, {});
@@ -261,6 +317,7 @@ export class Viewer3DMol extends ViewerParent {
         });
 
         this._setRegionOpacity(box, region?.opacity);
+
         return Promise.resolve(box);
     }
 
@@ -405,17 +462,24 @@ export class Viewer3DMol extends ViewerParent {
     /**
      * Adds a label to the viewer
      *
-     * @param  {string} lblTxt  The text of the label.
-     * @param  {number} x       The x coordinate.
-     * @param  {number} y       The y coordinate.
-     * @param  {number} z       The z coordinate.
+     * @param  {string} lblTxt                      The text of the label.
+     * @param  {number} x                           The x coordinate.
+     * @param  {number} y                           The y coordinate.
+     * @param  {number} z                           The z coordinate.
+     * @param  {string} [alignment="bottomCenter"]  The alignment of the label.
+     * @param  {number} [fontSize=18]               The font size of the label.
+     * @param  {boolean} [inFront=true]             Whether the label should be
+     *                                              in front of the molecule.
      * @returns {GenericLabelType}  The label.
      */
     addLabel(
         lblTxt: string,
         x: number,
         y: number,
-        z: number
+        z: number,
+        alignment = "bottomCenter",
+        fontSize = 18,
+        inFront = true
     ): GenericLabelType {
         return this._mol3dObj.addLabel(
             lblTxt,
@@ -428,8 +492,9 @@ export class Viewer3DMol extends ViewerParent {
                 borderColor: "black",
                 backgroundOpacity: 0.9,
                 // screenOffset: $3Dmol.Vector2(10, 10),
-                inFront: true,
-                alignment: "bottomCenter", // 'bottomLeft'
+                inFront: inFront,
+                alignment: alignment, // 'bottomLeft'
+                fontSize: fontSize
             }
         );
     }

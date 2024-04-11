@@ -144,15 +144,20 @@ export default class ColorSelect extends Vue {
      *                        {"cartoon":{"color":"spectrum"}}.
      */
     private _setColorStyleDefaultsIfMissing(style: IStyle) {
-
         // If the value (IColorStyle) of style is {}, set to default color scheme.
 
         // If it's sticks, you should remove the radius. This is because radius
         // varies depending on molecule type (protein vs. compound). Make deep
         // copy of style.
-        const styleAsObjForRef = JSON.parse(JSON.stringify(style)) as {
-            [key: string]: IColorStyle;
-        };
+        let styleAsObjForRef: { [key: string]: IColorStyle };
+        try {
+            styleAsObjForRef = JSON.parse(JSON.stringify(style)) as {
+                [key: string]: IColorStyle;
+            };
+        } catch (e) {
+            debugger
+            return;
+        }
 
         // remove radius if it's there
         if (
