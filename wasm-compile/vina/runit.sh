@@ -2,7 +2,7 @@
 # trouble doing this in docker, so I will do it in the host system.
 
 export VINA_VERSION=1.2.3
-export DEBUG=0
+export DEBUG=1
 export ALLOW_MEMORY_GROWTH=1  # Recommend yes
 
 # Change to the /support/ directory
@@ -18,6 +18,12 @@ else
     wget https://github.com/ccsb-scripps/AutoDock-Vina/archive/refs/tags/v$VINA_VERSION.zip
     unzip v$VINA_VERSION.zip
     rm v$VINA_VERSION.zip
+
+    # We must modify the main.cpp file to expose a wrapper around the main
+    # function (to be able to reuse the instance rather than creating a new one
+    # each time).
+    sed -i "" "1s|^|#include <emscripten.h>\n|" AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
+    echo -e "extern \"C\"\n {\n void EMSCRIPTEN_KEEPALIVE vina_main(int argc, char *argv[]) {\n main(argc, argv);\n}\n }\n" >> AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
 fi
 
 # Remove any previous compilation
@@ -81,8 +87,8 @@ sed -i "" "s|++11|++11 -s USE_PTHREADS=1 -s PROXY_TO_PTHREAD=1 -s PTHREAD_POOL_S
 
 # Prevent Webina from running automatically (run only when the callMain is
 # called).
-sed -i "" "s|++11|++11 -s EXPORTED_RUNTIME_METHODS='[\"callMain\", \"FS\"]'|g" Makefile
 sed -i "" "s|++11|++11 -s INVOKE_RUN=0|g" Makefile
+# sed -i "" "s|++11|++11 -s EXPORTED_RUNTIME_METHODS='[\"callMain\", \"FS\"]'|g" Makefile
 
 # Os makes for smaller filesize, but O3 is faster. File size difference isn't
 # that big.
@@ -107,6 +113,20 @@ else
   # Remove debugging symbols
   sed -i "" "s|++11|++11 -s DISABLE_EXCEPTION_CATCHING=1|g" Makefile
 fi
+
+# Don't forget to export the vina_main function
+# sed -i "" "s|++11|++11 -s EXPORTED_RUNTIME_METHODS=callMain,FS|g" Makefile
+
+# This one is for Yuri's method
+sed -i "" "s|++11|++11 -s EXPORTED_FUNCTIONS=_main,_vina_main_wrapper,_malloc,_free -s EXPORTED_RUNTIME_METHODS=callMain,cwrap,FS,ccall,stackAlloc,allocateUTF8,ALLOC_NORMAL,intArrayFromString,setValue,allocateUTF8OnStack|g" Makefile
+
+# Set Optimization level. O2 works for webina. Os works too. O3 gives this
+# error: Uncaught (in promise) TypeError: Failed to execute 'decode' on
+# 'TextDecoder': The provided ArrayBufferView value must not be shared.
+
+# O2 test: 194054.85000000894 secs
+# Os test: 120966.29500000179 secs
+sed -i "" "s|++11|++11 -Os|g" Makefile
 
 # Now we will modify the makefile_common file
 

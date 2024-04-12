@@ -4,13 +4,15 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
 import { setTempErrorMsg } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 
+const USE_YURI_METHOD = false;
+
 /**
  * A calculate mol props queue.
  */
 export class WebinaQueue extends QueueParent {
     /**
      * Make a webina instance.
-     * 
+     *
      * @param {*} WEBINA_MODULE  The webina module.
      * @returns {Promise<any>}  Resolves with the webina instance.
      */
@@ -26,6 +28,8 @@ export class WebinaQueue extends QueueParent {
         // https://emscripten.org/docs/api_reference/module.html
 
         return WEBINA_MODULE({
+            noExitRuntime: USE_YURI_METHOD,
+
             noInitialRun: true,
 
             // stderr will log when any file is read.
@@ -59,8 +63,7 @@ export class WebinaQueue extends QueueParent {
                 // Get the PDBQT contents from this.jobInfoPayload, which
                 // must be manually before running.
 
-                const ligandPDBQT =
-                    jobInfoPayload.input.pdbFiles.cmpd.contents;
+                const ligandPDBQT = jobInfoPayload.input.pdbFiles.cmpd.contents;
                 const receptorPDBQT =
                     jobInfoPayload.input.pdbFiles.prot.contents;
 
@@ -102,6 +105,7 @@ export class WebinaQueue extends QueueParent {
              * A function that runs when the program exits.
              */
             onExit(/* code */) {
+                debugger;
                 // Update with output
                 jobInfoPayload.output = {
                     std: std.trim(),
@@ -180,10 +184,12 @@ export class WebinaQueue extends QueueParent {
                     stdOut: stdOut.trim(),
                     stdErr: stdErr.trim(),
                     time: performance.now() - startTime,
-                    output: "{{ERROR}}"
+                    output: "{{ERROR}}",
                 };
 
-                setTempErrorMsg(`Could not dock compound: ${jobInfoPayload.input.inputNodeTitle} (skipped). There are many possible causes, including: (1) docking compounds with atoms that are not in the AutoDock Vina forcefield (e.g., boron), (2) docking physically impossible compounds (e.g., a single fluorine atom bound to two or more other atoms), (3) docking fragmented compounds (e.g., salts), (4) docking very large compounds, and (5) using a computer with insufficient memory.`);
+                setTempErrorMsg(
+                    `Could not dock compound: ${jobInfoPayload.input.inputNodeTitle} (skipped). There are many possible causes, including: (1) docking compounds with atoms that are not in the AutoDock Vina forcefield (e.g., boron), (2) docking physically impossible compounds (e.g., a single fluorine atom bound to two or more other atoms), (3) docking fragmented compounds (e.g., salts), (4) docking very large compounds, and (5) using a computer with insufficient memory.`
+                );
 
                 // Below is just dummy. Replace with useful values
                 _doneCallbackFunc(jobInfoPayload);
@@ -223,7 +229,7 @@ export class WebinaQueue extends QueueParent {
 
         // Assert inputBatch has only one job.
         if (inputBatch.length !== 1) {
-            throw new Error("Webina inputBatch can have only one item!")
+            throw new Error("Webina inputBatch can have only one item!");
         }
 
         const outputs: IJobInfo[] = [];
@@ -237,6 +243,43 @@ export class WebinaQueue extends QueueParent {
         WEBINA_MODULE = null;
 
         return outputs;
+    }
+
+    private viaCWrap(webinaInstance: any, argsList: string[]) {
+        const webinaJSFunc = webinaInstance.cwrap(
+            "vina_main_wrapper",
+            // return type
+            null,
+            // parameters. Num params, and a pointer to the array of
+            // pointers
+            ["number", "number"]
+        );
+
+        // Add "vina" to the beginning of the argsList
+        argsList.unshift("vina");
+
+        const argsPointers = argsList.map((arg) =>
+            webinaInstance.allocateUTF8(arg, "i8", webinaInstance.ALLOC_NORMAL)
+        );
+
+        // Allocate memory for the array of pointers
+        const argsArrayPtr = webinaInstance._malloc(argsPointers.length * 4);
+
+        argsPointers.forEach((argPtr, index) => {
+            // Set the pointers in the allocated array
+            webinaInstance.setValue(argsArrayPtr + index * 4, argPtr, "i32");
+        });
+
+        console.warn("This never seems to exit... Also blocks main thread, and I'm not sure it respects nproc");
+        webinaJSFunc(argsList.length, argsArrayPtr);
+
+        // Free the allocated memory if necessary
+        argsPointers.forEach((argPtr) => webinaInstance._free(argPtr));
+        webinaInstance._free(argsArrayPtr);
+
+        const output = (this as any).FS.readFile("/output.pdbqt", {
+            encoding: "utf8",
+        });
     }
 
     /**
@@ -257,7 +300,7 @@ export class WebinaQueue extends QueueParent {
             for (const key in jobInfo.input.webinaParams) {
                 const val = jobInfo.input.webinaParams[key];
                 if (val === undefined) {
-                  continue;
+                    continue;
                 }
                 if ([true, "true"].indexOf(val) !== -1) {
                     argsList.push(`--${key}`);
@@ -269,8 +312,48 @@ export class WebinaQueue extends QueueParent {
                 }
             }
 
-            return webinaInstance.callMain(argsList);
-        })
+            if (USE_YURI_METHOD) {
+                this.viaCWrap(webinaInstance, argsList);
+                // STOP HERE FOR TESTING
+                debugger;
+            } else {
+                // Rename --receptor and --ligand to --receptors and --ligands
+                const receptorIdx = argsList.indexOf("--receptor");
+                if (receptorIdx !== -1) {
+                    argsList[receptorIdx] = "--receptors";
+                }
+                const ligandIdx = argsList.indexOf("--ligand");
+                if (ligandIdx !== -1) {
+                    argsList[ligandIdx] = "--ligands";
+                }
+    
+                // REplace receptor values with value,value
+                // const receptorsIdx = argsList.indexOf("--receptors");
+                // if (receptorsIdx !== -1) {
+                //     const receptors = argsList[receptorsIdx + 1];
+                //     argsList[receptorsIdx + 1] = receptors + "," + receptors;
+                // }
+    
+                // Same with ligands
+                const ligandsIdx = argsList.indexOf("--ligands");
+                if (ligandsIdx !== -1) {
+                    const ligands = argsList[ligandsIdx + 1];
+                    argsList[ligandsIdx + 1] = ligands + "," + ligands;
+                }
+    
+                // remove --out and its value
+                const outIdx = argsList.indexOf("--out");
+                if (outIdx !== -1) {
+                    argsList.splice(outIdx, 2);
+                }
+
+                debugger;
+    
+                return webinaInstance.callMain(argsList);
+            }
+
+
+        });
         // .then((resp: any) => {
         //     return resp;
         // // })
