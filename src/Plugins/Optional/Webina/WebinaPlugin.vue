@@ -65,6 +65,7 @@ import { IQueueCallbacks } from "@/Queue/QueueTypes";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { USE_YURI_METHOD } from "./WebinaConsts";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
@@ -584,9 +585,9 @@ export default class WebinaPlugin extends PluginParentClass {
             return [filePair.prot?.treeNode, filePair.cmpd?.treeNode];
         });
 
-        let inputs: any = filePairs.map((filePair) => {
-            filePair.prot.name = "/receptor.pdbqt";
-            filePair.cmpd.name = "/ligand.pdbqt";
+        let inputs: any = filePairs.map((filePair, idx) => {
+            filePair.prot.name = `/receptor_${idx}.pdbqt`;
+            filePair.cmpd.name = `/ligand_${idx}.pdbqt`;
 
             // Use a regular expression to find all occurrences of 'H'
             let matches = filePair.cmpd.contents.match(/\nBRANCH/g);
@@ -625,8 +626,10 @@ export default class WebinaPlugin extends PluginParentClass {
         const procsPerJobBatch = webinaParams["cpu"];
 
         // For Webina, criticial to run only one webina calculation at a time.
+        // But if not using Yuri mode, you can run multiple ligands at once, so
+        // let's do it in batches of 250.
         const simultBatches = 1;
-        const batchSize = 1;
+        const batchSize = USE_YURI_METHOD ? 1 : 250;
 
         const initialCompoundsVisible = getSetting("initialCompoundsVisible");
 

@@ -2,7 +2,7 @@
 # trouble doing this in docker, so I will do it in the host system.
 
 export VINA_VERSION=1.2.3
-export DEBUG=1
+export DEBUG=0
 export ALLOW_MEMORY_GROWTH=1  # Recommend yes
 
 # Change to the /support/ directory

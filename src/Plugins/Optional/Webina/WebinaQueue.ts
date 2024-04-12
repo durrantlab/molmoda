@@ -3,8 +3,7 @@ import { IJobInfo } from "@/Queue/QueueTypes";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
 import { setTempErrorMsg } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
-
-const USE_YURI_METHOD = false;
+import { USE_YURI_METHOD } from "./WebinaConsts";
 
 /**
  * A calculate mol props queue.
@@ -21,6 +20,7 @@ export class WebinaQueue extends QueueParent {
         let std = "";
         let stdOut = "";
         let stdErr = "";
+        let fileCheckingTimer: any = null;
 
         let _doneCallbackFunc: (jobInfo: IJobInfo) => void;
         let jobInfoPayload = {} as IJobInfo;
@@ -53,24 +53,69 @@ export class WebinaQueue extends QueueParent {
              *                                     when the job is done.
              */
             setupRun: function (
-                jobInfo: IJobInfo,
+                jobInfos: IJobInfo[],
                 doneCallbackFunc: (jobInfo: IJobInfo) => void
             ) {
-                jobInfoPayload = jobInfo;
+                // jobInfoPayload = jobInfo;  // TODO: WHAT IS THIS?
                 this.doneCallbackFunc = doneCallbackFunc;
                 _doneCallbackFunc = doneCallbackFunc;
+
+                // Save the pdbqt files to the virtual filesystem.
+                const filesAlreadySaved = new Set<string>();
+                for (const jobInfo of jobInfos) {
+                    const ligandPDBQTFilename =
+                        jobInfo.input.pdbFiles.cmpd.name;
+                    if (!filesAlreadySaved.has(ligandPDBQTFilename)) {
+                        const ligandPDBQTContents =
+                            jobInfo.input.pdbFiles.cmpd.contents;
+                        this.FS.writeFile(
+                            ligandPDBQTFilename,
+                            ligandPDBQTContents
+                        );
+                        filesAlreadySaved.add(ligandPDBQTFilename);
+                    }
+                    const receptorPDBQTFilename =
+                        jobInfo.input.pdbFiles.prot.name;
+                    if (!filesAlreadySaved.has(receptorPDBQTFilename)) {
+                        const receptorPDBQTContents =
+                            jobInfo.input.pdbFiles.prot.contents;
+                        this.FS.writeFile(
+                            receptorPDBQTFilename,
+                            receptorPDBQTContents
+                        );
+                        filesAlreadySaved.add(receptorPDBQTFilename);
+                    }
+                }
+
+                // Check for out files every 500ms
+                if (fileCheckingTimer) {
+                    clearInterval(fileCheckingTimer);
+                }
+                fileCheckingTimer = setInterval(() => {
+                    // Get all the *.out files
+                    const outFiles = this.FS.readdir("/").filter((filename: string) =>
+                        filename.endsWith(".out")
+                    );
+
+                    if (outFiles.length > 0) {
+                        // Check for the output file
+                        debugger
+                        // clearInterval(fileCheckingTimer);
+                        // this.onExit(0);
+                    }
+                }, 500);
 
                 // Get the PDBQT contents from this.jobInfoPayload, which
                 // must be manually before running.
 
-                const ligandPDBQT = jobInfoPayload.input.pdbFiles.cmpd.contents;
-                const receptorPDBQT =
-                    jobInfoPayload.input.pdbFiles.prot.contents;
+                // const ligandPDBQT = jobInfoPayload.input.pdbFiles.cmpd.contents;
+                // const receptorPDBQT =
+                //     jobInfoPayload.input.pdbFiles.prot.contents;
 
-                // Save the contents of the files to the virtual
-                // file system
-                this.FS.writeFile("/receptor.pdbqt", receptorPDBQT);
-                this.FS.writeFile("/ligand.pdbqt", ligandPDBQT);
+                // // Save the contents of the files to the virtual
+                // // file system
+                // this.FS.writeFile("/receptor.pdbqt", receptorPDBQT);
+                // this.FS.writeFile("/ligand.pdbqt", ligandPDBQT);
             },
 
             preRun: [
@@ -228,15 +273,17 @@ export class WebinaQueue extends QueueParent {
         // must run one webina instance on multiple processors.
 
         // Assert inputBatch has only one job.
-        if (inputBatch.length !== 1) {
+        if (inputBatch.length !== 1 && USE_YURI_METHOD) {
             throw new Error("Webina inputBatch can have only one item!");
         }
 
         const outputs: IJobInfo[] = [];
-        for (const jobInfo of inputBatch) {
-            const webinaOutput = await this._runJob(jobInfo, webinaInstance);
-            outputs.push(webinaOutput);
-        }
+        // for (const jobInfo of inputBatch) {
+        //     const webinaOutput = await this._runJob(jobInfo, webinaInstance);
+        //     outputs.push(webinaOutput);
+        // }
+
+        const webinaOutput = await this._runJob(inputBatch, webinaInstance);
 
         webinaInstance.wasmMemory = null;
         webinaInstance = null;
@@ -245,7 +292,7 @@ export class WebinaQueue extends QueueParent {
         return outputs;
     }
 
-    private viaCWrap(webinaInstance: any, argsList: string[]) {
+    private _viaCWrap(webinaInstance: any, argsList: string[]) {
         const webinaJSFunc = webinaInstance.cwrap(
             "vina_main_wrapper",
             // return type
@@ -270,7 +317,9 @@ export class WebinaQueue extends QueueParent {
             webinaInstance.setValue(argsArrayPtr + index * 4, argPtr, "i32");
         });
 
-        console.warn("This never seems to exit... Also blocks main thread, and I'm not sure it respects nproc");
+        console.warn(
+            "This never seems to exit... Also blocks main thread, and I'm not sure it respects nproc"
+        );
         webinaJSFunc(argsList.length, argsArrayPtr);
 
         // Free the allocated memory if necessary
@@ -290,15 +339,18 @@ export class WebinaQueue extends QueueParent {
      * @returns {Promise<IJobInfo>}  The output job.
      */
     private async _runJob(
-        jobInfo: IJobInfo,
+        jobInfos: IJobInfo[],
         webinaInstance: any
     ): Promise<IJobInfo> {
         return new Promise((resolve) => {
-            webinaInstance.setupRun(jobInfo, resolve);
-            const argsList = [];
+            webinaInstance.setupRun(jobInfos, resolve);
+            const argsList: string[] = [];
 
-            for (const key in jobInfo.input.webinaParams) {
-                const val = jobInfo.input.webinaParams[key];
+            // All the parameters are the same (except for receptors), so just
+            // get the first one.
+            const firstJobInfo = jobInfos[0];
+            for (const key in firstJobInfo.input.webinaParams) {
+                const val = firstJobInfo.input.webinaParams[key];
                 if (val === undefined) {
                     continue;
                 }
@@ -313,10 +365,11 @@ export class WebinaQueue extends QueueParent {
             }
 
             if (USE_YURI_METHOD) {
-                this.viaCWrap(webinaInstance, argsList);
+                this._viaCWrap(webinaInstance, argsList);
                 // STOP HERE FOR TESTING
                 debugger;
             } else {
+                debugger;
                 // Rename --receptor and --ligand to --receptors and --ligands
                 const receptorIdx = argsList.indexOf("--receptor");
                 if (receptorIdx !== -1) {
@@ -326,33 +379,40 @@ export class WebinaQueue extends QueueParent {
                 if (ligandIdx !== -1) {
                     argsList[ligandIdx] = "--ligands";
                 }
-    
-                // REplace receptor values with value,value
-                // const receptorsIdx = argsList.indexOf("--receptors");
-                // if (receptorsIdx !== -1) {
-                //     const receptors = argsList[receptorsIdx + 1];
-                //     argsList[receptorsIdx + 1] = receptors + "," + receptors;
-                // }
-    
+
+                // Get all the unique receptors and ligands, avoiding
+                // redundancies but preserving order.
+                const receptorFilenames = jobInfos
+                    .map((jobInfo) => jobInfo.input.pdbFiles.prot.name)
+                    .filter(
+                        (value, index, self) => self.indexOf(value) === index
+                    );
+                const ligandFilenames = jobInfos
+                    .map((jobInfo) => jobInfo.input.pdbFiles.cmpd.name)
+                    .filter(
+                        (value, index, self) => self.indexOf(value) === index
+                    );
+
+                // Replace receptor values with value,value
+                const receptorsIdx = argsList.indexOf("--receptors");
+                if (receptorsIdx !== -1) {
+                    argsList[receptorsIdx + 1] = receptorFilenames.join(",");
+                }
+
                 // Same with ligands
                 const ligandsIdx = argsList.indexOf("--ligands");
                 if (ligandsIdx !== -1) {
-                    const ligands = argsList[ligandsIdx + 1];
-                    argsList[ligandsIdx + 1] = ligands + "," + ligands;
+                    argsList[ligandsIdx + 1] = ligandFilenames.join(",");
                 }
-    
-                // remove --out and its value
+
+                // remove --out and its value (will be generated by webina wasm binary)
                 const outIdx = argsList.indexOf("--out");
                 if (outIdx !== -1) {
                     argsList.splice(outIdx, 2);
                 }
 
-                debugger;
-    
                 return webinaInstance.callMain(argsList);
             }
-
-
         });
         // .then((resp: any) => {
         //     return resp;
