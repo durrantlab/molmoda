@@ -37,10 +37,10 @@ export abstract class QueueParent {
     // How many processors are being currently used by jobs in the queue.
     private _numProcsCurrentlyRunning = 0;
 
-    private _callbacks: IQueueCallbacks | undefined;
+    public _callbacks: IQueueCallbacks | undefined;
 
     // The total number of jobs
-    private _numTotalJobs: number;
+    protected _numTotalJobs: number;
 
     // An id unique to this queue.
     private _id: string;
@@ -55,38 +55,50 @@ export abstract class QueueParent {
     public done: Promise<any>;
     public _doneResolveFunc: any;
 
+    private _onJobAfterQueueDone: boolean;
+
     /**
      * The class constructor.
      *
-     * @param {string|undefined} jobTypeId                 A string that
-     *                                                     identifies the type
-     *                                                     of job.
-     * @param {any[]}            inputs                    An flat array of
-     *                                                     inputs to be
-     *                                                     processed.
-     * @param {IQueueCallbacks}  [callbacks=undefined]     The callbacks to be
-     *                                                     used by the queue, if
-     *                                                     any.
-     * @param {number}           [procsPerJobBatch=1]      The number of
-     *                                                     processors that can
-     *                                                     be used by each batch
-     *                                                     of jobs.
-     * @param {number}           [simulBatches=undefined]  The max number of
-     *                                                     batches to run
-     *                                                     simultaneously. If
-     *                                                     undefined, calculated
-     *                                                     as maxProcs /
-     *                                                     procsPerJobBatch (to
-     *                                                     run as many batches
-     *                                                     at same time as
-     *                                                     possible). 
-     * @param {number}           [batchSize=undefined]     The number of jobs
-     *                                                     per batch. If
-     *                                                     undefined, calculated
-     *                                                     as inputs.length /
-     *                                                     simulBatches.
-     * @param {boolean}          [showInQueue=true]        Whether to show this
-     *                                                     job in the queue.
+     * @param {string|undefined} jobTypeId                   A string that
+     *                                                       identifies the type
+     *                                                       of job.
+     * @param {any[]}            inputs                      An flat array of
+     *                                                       inputs to be
+     *                                                       processed.
+     * @param {IQueueCallbacks}  [callbacks=undefined]       The callbacks to be
+     *                                                       used by the queue,
+     *                                                       if any.
+     * @param {number}           [procsPerJobBatch=1]        The number of
+     *                                                       processors that can
+     *                                                       be used by each
+     *                                                       batch of jobs.
+     * @param {number}           [simulBatches=undefined]    The max number of
+     *                                                       batches to run
+     *                                                       simultaneously. If
+     *                                                       undefined,
+     *                                                       calculated as
+     *                                                       maxProcs /
+     *                                                       procsPerJobBatch
+     *                                                       (to run as many
+     *                                                       batches at same
+     *                                                       time as possible). 
+     * @param {number}           [batchSize=undefined]       The number of jobs
+     *                                                       per batch. If
+     *                                                       undefined,
+     *                                                       calculated as
+     *                                                       inputs.length /
+     *                                                       simulBatches.
+     * @param {boolean}          [showInQueue=true]          Whether to show
+     *                                                       this job in the
+     *                                                       queue.
+     * @param {boolean}          [onJobAfterQueueDone=true]  Whether to run the
+     *                                                       onJobDone callback
+     *                                                       after the queue is
+     *                                                       done. Set to false
+     *                                                       if you want to run
+     *                                                       the onJobDone
+     *                                                       callback yourself.
      */
     constructor(
         jobTypeId: string,
@@ -95,13 +107,15 @@ export abstract class QueueParent {
         procsPerJobBatch = 1,
         simulBatches?: number,
         batchSize: number | undefined = undefined,
-        showInQueue = true
+        showInQueue = true,
+        onJobAfterQueueDone = true
     ) {
         this._numTotalJobs = inputs.length;
         this._procsPerJobBatch = procsPerJobBatch;
         this._callbacks = callbacks;
         this.jobsCancelling = false;
         this._showInQueue = showInQueue;
+        this._onJobAfterQueueDone = onJobAfterQueueDone;
 
         // Adjust max number of processors to be used by the queue if necessary.
         // Useful if there are very few items in the queue.
@@ -218,10 +232,14 @@ export abstract class QueueParent {
         // eslint-disable-next-line no-constant-condition
         while (true) {
             // Cancel in progress
-            if (this.jobsCancelling) return;
+            if (this.jobsCancelling) {
+              return;
+            }
 
             // No more input batches to add.
-            if (this._inputBatches.length === 0) break;
+            if (this._inputBatches.length === 0) {
+              break;
+            }
 
             if (
                 this._numProcsCurrentlyRunning + this._procsPerJobBatch >
@@ -233,7 +251,9 @@ export abstract class QueueParent {
 
             const inputBatch = this._inputBatches.shift();
             // No more input batches to add.
-            if (!inputBatch) break;
+            if (!inputBatch) {
+              break;
+            }
 
             // Add jobs to the _jobsCurrentlyRunning list.
             for (const jobInfo of inputBatch) {
@@ -252,8 +272,10 @@ export abstract class QueueParent {
                     }
 
                     // Call the onJobDone callback for each job in the batch.
-                    for (const jobInfo of inputBatch) {
-                        this._onJobDone(jobInfo);
+                    if (this._onJobAfterQueueDone) {
+                        for (const jobInfo of inputBatch) {
+                            this._onJobDone(jobInfo);
+                        }
                     }
 
                     // Call the onProgress callback.
@@ -366,7 +388,7 @@ export abstract class QueueParent {
      *
      * @param {number} percent  The percent of jobs that have been completed.
      */
-    private _onProgress(percent: number) {
+    protected _onProgress(percent: number) {
         if (this._showInQueue) {
             updateProgressInQueueStore(this._id, percent);
         }

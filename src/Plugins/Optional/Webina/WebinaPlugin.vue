@@ -65,6 +65,7 @@ import { IQueueCallbacks } from "@/Queue/QueueTypes";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { secsToTime } from "@/Core/Utils";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
@@ -112,7 +113,7 @@ export default class WebinaPlugin extends PluginParentClass {
     ];
     pluginId = "webina";
 
-    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding.`
+    intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding.`;
     details = `Uses a version of AutoDock Vina (Webina).`;
 
     msgOnJobsFinished = () => {
@@ -242,7 +243,8 @@ export default class WebinaPlugin extends PluginParentClass {
             type: UserArgType.Checkbox,
             label: "Keep only highest-scoring pose for each compound",
             val: true,
-            description: "Docking generates multiple poses; the top-scoring pose is often correct, but sometimes alternatives may be more accurate.",
+            description:
+                "Docking generates multiple poses; the top-scoring pose is often correct, but sometimes alternatives may be more accurate.",
         } as IUserArgCheckbox,
         {
             id: "webinaAdvancedParams",
@@ -350,6 +352,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * @param {string} stdOut        The standard output.
      * @param {string} protPath      The path to the protein.
      * @param {boolean} keepOnlyBest Whether to keep only the best pose.
+     * @param {number}  time         The time it took to dock.
      * @returns {any[]}  The data, the model name, and the score label.
      */
     private _getDataFromPDBQTFrame(
@@ -357,7 +360,8 @@ export default class WebinaPlugin extends PluginParentClass {
         webinaParams: { [key: string]: any },
         stdOut: string,
         protPath: string,
-        keepOnlyBest: boolean
+        keepOnlyBest: boolean,
+        time?: number
     ): [{ [key: string]: ITreeNodeData }, string, string] {
         const scoreOnly = webinaParams["score_only"];
         const pdbqtOutLines = pdbqtFrame.split("\n");
@@ -431,6 +435,7 @@ export default class WebinaPlugin extends PluginParentClass {
             const score = lineWithScore
                 ? parseFloat(lineWithScore.split(/\s+/)[3])
                 : 0;
+
             data[scoreLabel] = {
                 data: {
                     "Score (kcal/mol)": score,
@@ -441,6 +446,10 @@ export default class WebinaPlugin extends PluginParentClass {
                 headerSort: TableHeaderSort.None,
             };
         }
+
+        // if (time) {
+        //     data[scoreLabel].data["Time"] = secsToTime(time / 1000);
+        // }
 
         const modelName = keepOnlyBest
             ? ""
@@ -467,8 +476,8 @@ export default class WebinaPlugin extends PluginParentClass {
         scoreLabel: string
     ): Promise<TreeNode | void> {
         if (pdbqtOut === "{{ERROR}}") {
-            throw new Error("Could not perform docking.");
-            // return Promise.resolve();
+            // throw new Error("Could not perform docking.");
+            return Promise.resolve();
         }
 
         // Create fileinfo
@@ -625,9 +634,9 @@ export default class WebinaPlugin extends PluginParentClass {
         const procsPerJobBatch = webinaParams["cpu"];
 
         // You can run multiple ligands at once, so let's do it in batches of
-        // 250.
+        // 1000.
         const simultBatches = 1;
-        const batchSize = 250;
+        const batchSize = 1000;
 
         const initialCompoundsVisible = getSetting("initialCompoundsVisible");
 
@@ -638,6 +647,11 @@ export default class WebinaPlugin extends PluginParentClass {
             const origCmpdTreeNode = origAssociatedTreeNodes[
                 jobIndex
             ][1] as TreeNode;
+
+            // If there was an error, throw it so it can be caught (inform user).
+            if (webinaOut.output === "{{ERROR}}") {
+                throw new Error("Could not perform docking.");
+            }
 
             // Split on lines that start with "MODEL"
             let pdbqtOutsSeparate = webinaOut.output.split(/\n(?=MODEL)/);
@@ -659,7 +673,8 @@ export default class WebinaPlugin extends PluginParentClass {
                         webinaParams,
                         webinaOut.stdOut,
                         protPath,
-                        keepOnlyBest
+                        keepOnlyBest,
+                        webinaOut.time
                     );
 
                 const protId = origProtTreeNode?.id as string;
@@ -723,6 +738,7 @@ export default class WebinaPlugin extends PluginParentClass {
             // docked (not all at once at the end).
             onJobDone: onJobDoneFunc,
             onQueueDone: (outputs: any[]) => {
+                // debugger;
                 // Remove errors
                 outputs = outputs.filter(
                     (output) => output.output !== "{{ERROR}}"
@@ -745,7 +761,9 @@ export default class WebinaPlugin extends PluginParentClass {
             callbacks,
             procsPerJobBatch,
             simultBatches,
-            batchSize
+            batchSize,
+            true,
+            false
         ).done.catch((err: Error) => {
             // Intentionally not rethrowing error here. // TODO: fix this
             messagesApi.popupError(
@@ -764,11 +782,11 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const webinaPluginOpenFactory = () => {
+        const webinaPluginOpenFactory = (dimen=10) => {
             return new TestCmdList()
-                .setUserArg("x-dimens-region", 10, this.pluginId)
-                .setUserArg("y-dimens-region", 10, this.pluginId)
-                .setUserArg("z-dimens-region", 10, this.pluginId)
+                .setUserArg("x-dimens-region", dimen, this.pluginId)
+                .setUserArg("y-dimens-region", dimen, this.pluginId)
+                .setUserArg("z-dimens-region", dimen, this.pluginId)
                 .setUserArg("x-center-region", 6.322, this.pluginId)
                 .setUserArg("y-center-region", 9.638, this.pluginId)
                 .setUserArg("z-center-region", 18.939, this.pluginId)
@@ -805,6 +823,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     "4WP4:docking"
                 ),
             },
+
             // Test keep all poses
             {
                 beforePluginOpens: new TestCmdList().loadExampleMolecule(
@@ -833,8 +852,9 @@ export default class WebinaPlugin extends PluginParentClass {
                     "frame3:bad_ligs:testdock"
                 ),
             },
+
+            // Test out ligands that have too many bonds.
             {
-                // Test out ligands that have too many bonds.
                 beforePluginOpens: new TestCmdList()
                     .loadExampleMolecule(false, "testmols/long_compound.can", 4)
                     .wait(5)
@@ -843,6 +863,21 @@ export default class WebinaPlugin extends PluginParentClass {
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
                     "Will not dock compound"
+                ),
+            },
+
+            // Test just standard docking, but with a very large docking box
+            // (blind docking) to stress the memory.
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                    undefined,
+                    undefined,
+                    5
+                ),
+                pluginOpen: webinaPluginOpenFactory(50),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "4WP4:docking"
                 ),
             },
         ];

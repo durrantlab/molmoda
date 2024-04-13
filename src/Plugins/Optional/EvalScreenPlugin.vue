@@ -24,7 +24,7 @@
                 <Alert type="info">
                     Your screen includes
                     <strong>{{ numActives }}</strong> active compounds and
-                    <strong>{{ numIactives }}</strong> inactive compounds.
+                    <strong>{{ numIactives }}</strong> other compounds.
                 </Alert>
 
                 <h6>Receiver Operating Characteristic (ROC) Curve</h6>
@@ -57,7 +57,7 @@
                         The AUROC of your screen is
                         <strong>{{ auroc.toFixed(3) }}</strong
                         >. If you randomly select one of your active compounds
-                        and one of your inactive compounds, the active will have
+                        and one of your other compounds, the active will have
                         the better docking score
                         <strong>{{ (auroc * 100).toFixed(1) }}%</strong> of the
                         time.
@@ -135,7 +135,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import Alert from "@/UI/Layout/Alert.vue";
 
-interface IActivesInactives {
+interface IActivesOthers {
     labelScores: [number, number][];
     calcAnalysis: boolean;
 }
@@ -157,7 +157,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
     pluginId = "evalscreen";
 
     intro = `Calculate receiver operating characteristic and enrichment factor curves.`
-    details = `Analyzes the docking scores of both known-active and inactive compounds to assess how well docking prioritizes the known actives.`;
+    details = `Analyzes the docking scores of both known-active and other (inactive or decoy) compounds to assess how well docking prioritizes the known actives.`;
     title = "Evaluate Docking Performance";
 
     isActionBtnEnabled = false;
@@ -177,12 +177,12 @@ export default class EvalScreenPlugin extends PluginParentClass {
                 "Label to identify compounds that are active (per experiment). The names of all actives must contain this text.",
         } as IUserArgText,
         {
-            id: "inactiveLabel",
+            id: "otherLabel",
             label: "",
-            val: "inactive",
-            placeHolder: "Inactives label...",
+            val: "other",
+            placeHolder: "Others label...",
             description:
-                "Label to identify inactive compounds. The names of all inactives must contain this text.",
+                "Label to identify other compounds (inactives or decoys). The names of all compounds that are not known actives must contain this text.",
         } as IUserArgText,
         {
             id: "caseInsensitive",
@@ -265,27 +265,27 @@ export default class EvalScreenPlugin extends PluginParentClass {
     }
 
     /**
-     * Get the actives and inactives from the user arguments.
+     * Get the actives and others from the user arguments.
      *
-     * @returns {IActivesInactives}  The labeled scores and whether to calculate
+     * @returns {IActivesOthers}  The labeled scores and whether to calculate
      *                               the analysis.
      */
-    getActivesInactives(): IActivesInactives {
+    getActivesOthers(): IActivesOthers {
         const actives = this.getUserArg("activesLabel");
-        const inactives = this.getUserArg("inactiveLabel");
+        const others = this.getUserArg("otherLabel");
 
         const matchingActives = this.dockedCompoundsWithSubstr(actives);
-        const matchingInactives = this.dockedCompoundsWithSubstr(inactives);
+        const matchingOthers = this.dockedCompoundsWithSubstr(others);
 
         const matchingActiveTitles = new Set(
             matchingActives.map((node) => node.title) as string[]
         );
-        const matchingInactiveTitles = new Set(
-            matchingInactives.map((node) => node.title) as string[]
+        const matchingOtherTitles = new Set(
+            matchingOthers.map((node) => node.title) as string[]
         );
 
         const activeScores = this.getScores(matchingActives);
-        const inactiveScores = this.getScores(matchingInactives);
+        const otherScores = this.getScores(matchingOthers);
 
         this.warnings = [];
         let calcAnalysis = true;
@@ -299,20 +299,20 @@ export default class EvalScreenPlugin extends PluginParentClass {
             calcAnalysis = false;
         }
 
-        if (inactiveScores.length === 0) {
+        if (otherScores.length === 0) {
             this.analysisVisible = false;
             this.warnings.push([
-                `No compounds found that contain the inactive label "${inactives}".`,
+                `No compounds found that contain the other label "${others}".`,
                 "danger",
             ]);
             calcAnalysis = false;
         }
 
-        // Do matchingActiveIDs and matchingInactiveTitles have any overlap
+        // Do matchingActiveIDs and matchingOtherTitles have any overlap
         // (intersection)?
         const intersection = new Set(
             [...matchingActiveTitles].filter((x) =>
-                matchingInactiveTitles.has(x)
+                matchingOtherTitles.has(x)
             )
         );
         if (intersection.size > 0) {
@@ -324,7 +324,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
                 start = `Some compounds (${intersection.size}) are`;
             }
             this.warnings.push([
-                `${start} labeled as both active ("${actives}") and inactive ("${inactives}"). Examples: ${this.examplesSummary(
+                `${start} labeled as both active ("${actives}") and other ("${others}"). Examples: ${this.examplesSummary(
                     intersection
                 )}.`,
                 "danger",
@@ -337,31 +337,31 @@ export default class EvalScreenPlugin extends PluginParentClass {
         }
 
         // Are there any compounds in this.compoundsWithDockingScores that
-        // aren't in matchingActiveIDs or matchingInactiveIDs?
+        // aren't in matchingActiveIDs or matchingOtherIDs?
         const allCompoundsTitles = new Set(
             this.compoundsWithDockingScores.map(
                 (node) => node.title
             ) as string[]
         );
-        const allCompoundsNotInActivesOrInactives = new Set(
+        const allCompoundsNotInActivesOrOthers = new Set(
             [...allCompoundsTitles].filter(
                 (x) =>
                     !matchingActiveTitles.has(x) &&
-                    !matchingInactiveTitles.has(x)
+                    !matchingOtherTitles.has(x)
             )
         );
-        if (allCompoundsNotInActivesOrInactives.size > 0) {
+        if (allCompoundsNotInActivesOrOthers.size > 0) {
             this.analysisVisible = false;
             let msg = "";
-            if (allCompoundsNotInActivesOrInactives.size === 1) {
+            if (allCompoundsNotInActivesOrOthers.size === 1) {
                 msg = `One compound (${
-                    allCompoundsNotInActivesOrInactives.values().next().value
-                }) is not labeled as active ("${actives}") or inactive ("${inactives}"). It will be excluded from the analysis.`;
+                    allCompoundsNotInActivesOrOthers.values().next().value
+                }) is not labeled as active ("${actives}") or other ("${others}"). It will be excluded from the analysis.`;
             } else {
                 msg = `Some compounds (${
-                    allCompoundsNotInActivesOrInactives.size
-                }) are not labeled as actives ("${actives}") or inactives ("${inactives}"). They will be excluded from the analysis. Examples: ${this.examplesSummary(
-                    allCompoundsNotInActivesOrInactives
+                    allCompoundsNotInActivesOrOthers.size
+                }) are not labeled as actives ("${actives}") or others ("${others}"). They will be excluded from the analysis. Examples: ${this.examplesSummary(
+                    allCompoundsNotInActivesOrOthers
                 )}.`;
             }
             this.warnings.push([msg, "warning"]);
@@ -370,10 +370,10 @@ export default class EvalScreenPlugin extends PluginParentClass {
         const activesLabeled = activeScores.map((score: number) => {
             return [score, 1] as [number, number];
         });
-        const inactivesLabeled = inactiveScores.map((score: number) => {
+        const othersLabeled = otherScores.map((score: number) => {
             return [score, 0] as [number, number];
         });
-        const labelScores = activesLabeled.concat(inactivesLabeled);
+        const labelScores = activesLabeled.concat(othersLabeled);
 
         return { labelScores, calcAnalysis };
     }
@@ -382,7 +382,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
      * Calculate the ROC curve and AUROC.
      *
      * @param {number[][]} labelScores  The scores and labels (1 for active, 0
-     *                                  for inactive).
+     *                                  for other).
      */
     calcROC(labelScores: [number, number][]) {
         // Calculate ROC curve from scratch.
@@ -399,7 +399,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         const totalActivesCount = labelScores.filter((score) => {
             return score[1] === 1;
         }).length;
-        const totalInactivesCount = labelScores.filter((score) => {
+        const totalOthersCount = labelScores.filter((score) => {
             return score[1] === 0;
         }).length;
 
@@ -414,12 +414,12 @@ export default class EvalScreenPlugin extends PluginParentClass {
                 return score[1] === 1;
             }).length;
 
-            const numInactives = meetsThreshold.filter((score) => {
+            const numOthers = meetsThreshold.filter((score) => {
                 return score[1] === 0;
             }).length;
 
             TPR.push(numActives / totalActivesCount);
-            FPR.push(numInactives / totalInactivesCount);
+            FPR.push(numOthers / totalOthersCount);
         }
 
         this.rocData = TPR.map((_, i) => {
@@ -447,7 +447,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
      * when the user arguments change. Access the arguments using this.userArgs.
      */
     onUserArgChange() {
-        const { labelScores, calcAnalysis } = this.getActivesInactives();
+        const { labelScores, calcAnalysis } = this.getActivesOthers();
 
         if (!calcAnalysis) {
             return;
@@ -558,7 +558,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         }
 
         if (compounds.length === 1) {
-            return "Only one compound has a docking score. To evaluate a virtual screen, you must dock at least one true ligand and one inactive ligand.";
+            return "Only one compound has a docking score. To evaluate a virtual screen, you must dock at least one true ligand and one other (inactive or decoy) molecule.";
         }
 
         return null;

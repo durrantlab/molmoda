@@ -3,11 +3,14 @@ import { IJobInfo } from "@/Queue/QueueTypes";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
 import { setTempErrorMsg } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
+import { messagesApi } from "@/Api/Messages";
 
 /**
  * A calculate mol props queue.
  */
 export class WebinaQueue extends QueueParent {
+    private _jobCounter = 0;
+
     /**
      * Make a webina instance.
      *
@@ -21,10 +24,19 @@ export class WebinaQueue extends QueueParent {
         let stdErr = "";
         let fileCheckingTimer: any = null;
 
-        let _doneCallbackFunc: (jobInfo: IJobInfo) => void;
-        let jobInfoPayload = {} as IJobInfo;
+        let _onQueueDoneCallbackFunc: (webinaOuts: string[]) => void; // the resolve from below
+        let _onJobDoneCallbackFunc: (webinaOut: any, jobIndex: number) => void;
+        // const jobInfoPayload = {} as IJobInfo; // TODO: Eventually, not const
 
         // https://emscripten.org/docs/api_reference/module.html
+
+        const allOutputs: any[] = [];
+        let allJobInfos: (IJobInfo | undefined)[] = [];
+
+        const updateProgressByOneJob = () => {
+            this._jobCounter++;
+            this._onProgress(this._jobCounter / this._numTotalJobs);
+        }
 
         return WEBINA_MODULE({
             noInitialRun: true,
@@ -36,29 +48,90 @@ export class WebinaQueue extends QueueParent {
 
             // preInit() { console.log("Pre-init"); },
 
-            // You must manually set these two before running the module.
-            // jobInfoPayload: {} as IJobInfo,
-            doneCallbackFunc: () => {
-                return;
+            processCompleteOutFiles: function () {
+                // Get all the *.out files
+                const outFiles = this.FS.readdir("/").filter(
+                    (filename: string) => filename.endsWith(".out")
+                );
+
+                if (outFiles.length > 0) {
+                    for (const outFilename of outFiles) {
+                        const idx = parseInt(outFilename.split("--")[0]);
+
+                        const jobInfoPayload = allJobInfos[idx] as IJobInfo;
+
+                        // Update with output
+                        jobInfoPayload.output = {
+                            std: std.trim(),
+                            stdOut: stdOut.trim(),
+                            stdErr: stdErr.trim(),
+                            time: performance.now() - startTime,
+                        };
+
+                        let output: string;
+                        if (jobInfoPayload.input.webinaParams.score_only) {
+                            // Score only
+
+                            // The output should be the input ligand.
+                            output =
+                                jobInfoPayload.input.pdbFiles.cmpd.contents.trim();
+
+                            const splitStr = "Estimated Free Energy of Binding";
+                            jobInfoPayload.output.scoreOnly =
+                                splitStr + stdOut.trim().split(splitStr)[1];
+                        } else {
+                            // Actual docking, get from file.
+
+                            // Read the contents of the output file
+                            output = this.FS.readFile(outFilename, {
+                                encoding: "utf8",
+                            });
+                        }
+
+                        jobInfoPayload.output.output = output;
+
+                        // Clear the output to free up memory (note that
+                        // receptor ligands cleared up at end, see onExit).
+                        (this as any).FS.unlink(outFilename);
+
+                        _onJobDoneCallbackFunc(jobInfoPayload.output, idx);
+
+                        allOutputs.push(jobInfoPayload);
+                        allJobInfos[idx] = undefined; // Done with this jobinfo
+                        updateProgressByOneJob();
+                    }
+
+                    // Reset for next calculation
+                    std = "";
+                    stdOut = "";
+                    stdErr = "";
+                }
             },
 
             /**
              * A function that runs before the program starts.
              *
              * @param {IJobInfo} jobInfo           The job info.
-             * @param {Function} doneCallbackFunc  The callback function to call
+             * @param {Function} onQueueDone  The callback function to call
              *                                     when the job is done.
              */
             setupRun: function (
                 jobInfos: IJobInfo[],
-                doneCallbackFunc: (jobInfo: IJobInfo) => void
+                onQueueDone: () => void,
+                onJobDone: (webinaOut: any, jobIndex: number) => void
             ) {
-                // jobInfoPayload = jobInfo;  // TODO: WHAT IS THIS?
-                this.doneCallbackFunc = doneCallbackFunc;
-                _doneCallbackFunc = doneCallbackFunc;
+                allJobInfos = [...jobInfos];
+
+                _onQueueDoneCallbackFunc = onQueueDone;
+                _onJobDoneCallbackFunc = onJobDone;
+
+                this.processCompleteOutFiles =
+                    this.processCompleteOutFiles.bind(this);
 
                 // Save the pdbqt files to the virtual filesystem.
                 const filesAlreadySaved = new Set<string>();
+                const receptorFilenames: string[] = [];
+                const ligandFilenames: string[] = [];
                 for (const jobInfo of jobInfos) {
                     const ligandPDBQTFilename =
                         jobInfo.input.pdbFiles.cmpd.name;
@@ -69,6 +142,7 @@ export class WebinaQueue extends QueueParent {
                             ligandPDBQTFilename,
                             ligandPDBQTContents
                         );
+                        ligandFilenames.push(ligandPDBQTFilename);
                         filesAlreadySaved.add(ligandPDBQTFilename);
                     }
                     const receptorPDBQTFilename =
@@ -80,27 +154,31 @@ export class WebinaQueue extends QueueParent {
                             receptorPDBQTFilename,
                             receptorPDBQTContents
                         );
+                        receptorFilenames.push(receptorPDBQTFilename);
                         filesAlreadySaved.add(receptorPDBQTFilename);
                     }
                 }
+
+                // Save the receptor and ligand filenames to the virtual
+                // filesystem.
+                this.FS.writeFile(
+                    "/receptor_list.txt",
+                    receptorFilenames.join("\n")
+                );
+                this.FS.writeFile(
+                    "/ligand_list.txt",
+                    ligandFilenames.join("\n")
+                );
 
                 // Check for out files every 500ms
                 if (fileCheckingTimer) {
                     clearInterval(fileCheckingTimer);
                 }
-                fileCheckingTimer = setInterval(() => {
-                    // Get all the *.out files
-                    const outFiles = this.FS.readdir("/").filter(
-                        (filename: string) => filename.endsWith(".out")
-                    );
-
-                    if (outFiles.length > 0) {
-                        // Check for the output file
-                        debugger;
-                        // clearInterval(fileCheckingTimer);
-                        // this.onExit(0);
-                    }
-                }, 500);
+                fileCheckingTimer = setInterval(
+                    this.processCompleteOutFiles,
+                    // Assuming will never dock more than 4 per second.
+                    250
+                );
 
                 // Get the PDBQT contents from this.jobInfoPayload, which
                 // must be manually before running.
@@ -147,45 +225,24 @@ export class WebinaQueue extends QueueParent {
              * A function that runs when the program exits.
              */
             onExit(/* code */) {
-                debugger;
-                // Update with output
-                jobInfoPayload.output = {
-                    std: std.trim(),
-                    stdOut: stdOut.trim(),
-                    stdErr: stdErr.trim(),
-                    time: performance.now() - startTime,
-                };
+                this.processCompleteOutFiles();
 
-                let output: string;
-                if (jobInfoPayload.input.webinaParams.score_only) {
-                    // Score only
-
-                    // The output should be the input ligand.
-                    output = jobInfoPayload.input.pdbFiles.cmpd.contents.trim();
-
-                    const splitStr = "Estimated Free Energy of Binding";
-                    jobInfoPayload.output.scoreOnly =
-                        splitStr + stdOut.trim().split(splitStr)[1];
-                } else {
-                    // Actual docking, get from file.
-
-                    // Read the contents of the output file
-                    output = (this as any).FS.readFile("/output.pdbqt", {
-                        encoding: "utf8",
-                    });
+                // Delete any files that end in pdbqt or txt. Now cleaning up.
+                const allFiles = this.FS.readdir("/");
+                for (const filename of allFiles) {
+                    if (
+                        filename.endsWith(".pdbqt") ||
+                        filename.endsWith(".txt")
+                    ) {
+                        this.FS.unlink(filename);
+                    }
                 }
 
-                jobInfoPayload.output.output = output;
-
-                // Clear the files to free up memory
-                (this as any).FS.unlink("/receptor.pdbqt");
-                (this as any).FS.unlink("/ligand.pdbqt");
-                if (jobInfoPayload.input.webinaParams.docking) {
-                    (this as any).FS.unlink("/output.pdbqt");
-                }
+                // Stop the timer that checks for output files
+                clearInterval(fileCheckingTimer);
 
                 // Resolve the promise with the output
-                this.doneCallbackFunc(jobInfoPayload);
+                _onQueueDoneCallbackFunc(allOutputs);
             },
 
             // Monitor stdout and stderr output
@@ -196,9 +253,39 @@ export class WebinaQueue extends QueueParent {
              * @param {string} text  The text written to stdout.
              */
             print(text: string) {
-                console.log(text);
-                stdOut += text + "\n";
-                std += text + "\n";
+                // Keep only ones that start with ERROR RUN:
+                if (!text.startsWith("ERROR RUN:")) {
+                    console.log(text);
+                    stdOut += text + "\n";
+                    std += text + "\n";
+                    return;
+                }
+
+                // It's an error.
+                const jobIdx = parseInt(text.split("ERROR RUN: ")[1].trim());
+                const jobInfoPayload = allJobInfos[jobIdx] as IJobInfo;
+
+                if (jobInfoPayload === undefined) {
+                    return;
+                }
+
+                // Update with output
+                jobInfoPayload.output = {
+                    std: std.trim(),
+                    stdOut: stdOut.trim(),
+                    stdErr: stdErr.trim(),
+                    time: performance.now() - startTime,
+                    output: "{{ERROR}}",
+                };
+
+                setTempErrorMsg(
+                    `Could not dock compound: ${jobInfoPayload.input.inputNodeTitle} (skipped). There are many possible causes, including: (1) docking compounds with atoms that are not in the AutoDock Vina forcefield (e.g., boron), (2) docking physically impossible compounds (e.g., a single fluorine atom bound to two or more other atoms), (3) docking fragmented compounds (e.g., salts), (4) docking very large compounds, and (5) using a computer with insufficient memory.`
+                );
+
+                // Below is just dummy. Replace with useful values
+                _onJobDoneCallbackFunc(jobInfoPayload.output, jobIdx);
+                allOutputs.push(jobInfoPayload);
+                allJobInfos[jobIdx] = undefined; // Done with this jobinfo
             },
 
             /**
@@ -220,21 +307,12 @@ export class WebinaQueue extends QueueParent {
                 stdErr += text + "\n";
                 std += text + "\n";
 
-                // Update with output
-                jobInfoPayload.output = {
-                    std: std.trim(),
-                    stdOut: stdOut.trim(),
-                    stdErr: stdErr.trim(),
-                    time: performance.now() - startTime,
-                    output: "{{ERROR}}",
-                };
-
-                setTempErrorMsg(
-                    `Could not dock compound: ${jobInfoPayload.input.inputNodeTitle} (skipped). There are many possible causes, including: (1) docking compounds with atoms that are not in the AutoDock Vina forcefield (e.g., boron), (2) docking physically impossible compounds (e.g., a single fluorine atom bound to two or more other atoms), (3) docking fragmented compounds (e.g., salts), (4) docking very large compounds, and (5) using a computer with insufficient memory.`
+                // This is probably a catastrophic error that effects the entire
+                // job, not a specific protein/receptor (which is handled via
+                // print above).
+                messagesApi.popupError(
+                    `An error occurred during docking. The job likely aborted. You might try clearing your cache or running in incognito mode. ${text}`
                 );
-
-                // Below is just dummy. Replace with useful values
-                _doneCallbackFunc(jobInfoPayload);
             },
         }).then((instance: any) => {
             // Probably not needed, but just in case
@@ -257,159 +335,87 @@ export class WebinaQueue extends QueueParent {
         let WEBINA_MODULE = await dynamicImports.webina.module;
         let webinaInstance = await this._makeWebinaInstance(WEBINA_MODULE);
 
-        // Unfortunately, you can only run callMain on a module once. To make a
-        // module reusable, you'd have to export a wrapper around the main
-        // function. It would be very complicated. Creating new instances of the
-        // webina module is an option, but in practice that causes memory
-        // problems after running about 100 times. I believe the only reasonable
-        // solution is to ensure each inputBatch has only one item, and that
-        // only one batch is running at a time. Note that each webina job can
-        // use multiple processors, so this approach doesn't preclude that.
-        // Basically, you can't turn the job into one that's embarassingly
-        // parallel (running many webina instances on a single process). You
-        // must run one webina instance on multiple processors.
+        const onJobDone = (this as WebinaQueue)._callbacks?.onJobDone;
 
-        // Assert inputBatch has only one job.
-        // if (inputBatch.length !== 1) {
-        //     throw new Error("Webina inputBatch can have only one item!");
-        // }
+        const argsList = this._makeArgList(inputBatch);
+        // const onQueueDoneFunc = this._callbacks.onQueueDone;
 
-        const outputs: IJobInfo[] = [];
-        // for (const jobInfo of inputBatch) {
-        //     const webinaOutput = await this._runJob(jobInfo, webinaInstance);
-        //     outputs.push(webinaOutput);
-        // }
+        console.log(argsList);
 
-        const webinaOutput = await this._runJob(inputBatch, webinaInstance);
+        const outputs = await new Promise((resolve) => {
+            webinaInstance.setupRun(inputBatch, resolve, onJobDone);
+            return webinaInstance.callMain(argsList);
+        });
 
         webinaInstance.wasmMemory = null;
         webinaInstance = null;
         WEBINA_MODULE = null;
 
-        return outputs;
+        return outputs as IJobInfo[];
     }
 
-    private _viaCWrap(webinaInstance: any, argsList: string[]) {
-        const webinaJSFunc = webinaInstance.cwrap(
-            "vina_main_wrapper",
-            // return type
-            null,
-            // parameters. Num params, and a pointer to the array of
-            // pointers
-            ["number", "number"]
-        );
+    private _makeArgList(jobInfos: IJobInfo[]): string[] {
+        const argsList: string[] = [];
 
-        // Add "vina" to the beginning of the argsList
-        argsList.unshift("vina");
+        // All the parameters are the same (except for receptors), so just
+        // get the first one.
+        const firstJobInfo = jobInfos[0];
+        for (const key in firstJobInfo.input.webinaParams) {
+            const val = firstJobInfo.input.webinaParams[key];
+            if (val === undefined) {
+                continue;
+            }
+            if ([true, "true"].indexOf(val) !== -1) {
+                argsList.push(`--${key}`);
+            } else if ([false, "false"].indexOf(val) !== -1) {
+                // do nothing
+            } else {
+                argsList.push(`--${key}`);
+                argsList.push(val.toString());
+            }
+        }
 
-        const argsPointers = argsList.map((arg) =>
-            webinaInstance.allocateUTF8(arg, "i8", webinaInstance.ALLOC_NORMAL)
-        );
+        // Remove --receptor and --ligand (and value)
+        const receptorIdx = argsList.indexOf("--receptor");
+        if (receptorIdx !== -1) {
+            argsList.splice(receptorIdx, 2);
+        }
+        const ligandIdx = argsList.indexOf("--ligand");
+        if (ligandIdx !== -1) {
+            argsList.splice(ligandIdx, 2);
+        }
 
-        // Allocate memory for the array of pointers
-        const argsArrayPtr = webinaInstance._malloc(argsPointers.length * 4);
+        // remove --out and its value (will be generated by webina wasm binary)
+        const outIdx = argsList.indexOf("--out");
+        if (outIdx !== -1) {
+            argsList.splice(outIdx, 2);
+        }
 
-        argsPointers.forEach((argPtr, index) => {
-            // Set the pointers in the allocated array
-            webinaInstance.setValue(argsArrayPtr + index * 4, argPtr, "i32");
-        });
-
-        console.warn(
-            "This never seems to exit... Also blocks main thread, and I'm not sure it respects nproc"
-        );
-        webinaJSFunc(argsList.length, argsArrayPtr);
-
-        // Free the allocated memory if necessary
-        argsPointers.forEach((argPtr) => webinaInstance._free(argPtr));
-        webinaInstance._free(argsArrayPtr);
-
-        const output = (this as any).FS.readFile("/output.pdbqt", {
-            encoding: "utf8",
-        });
+        return argsList;
     }
 
-    /**
-     * Run a single job.
-     *
-     * @param {IJobInfo} jobInfo         The job to run.
-     * @param {*}        webinaInstance  The webina instance.
-     * @returns {Promise<IJobInfo>}  The output job.
-     */
-    private async _runJob(
-        jobInfos: IJobInfo[],
-        webinaInstance: any
-    ): Promise<IJobInfo> {
-        return new Promise((resolve) => {
-            webinaInstance.setupRun(jobInfos, resolve);
-            const argsList: string[] = [];
+    // /**
+    //  * Run a single job.
+    //  *
+    //  * @param {IJobInfo} jobInfo         The job to run.
+    //  * @param {*}        webinaInstance  The webina instance.
+    //  * @returns {Promise<IJobInfo>}  The output job.
+    //  */
+    // private async _runJob(
+    //     jobInfos: IJobInfo[],
+    //     webinaInstance: any
+    // ): Promise<IJobInfo> {
+    //     const onJobDone = (this as WebinaQueue)._callbacks?.onJobDone;
 
-            // All the parameters are the same (except for receptors), so just
-            // get the first one.
-            const firstJobInfo = jobInfos[0];
-            for (const key in firstJobInfo.input.webinaParams) {
-                const val = firstJobInfo.input.webinaParams[key];
-                if (val === undefined) {
-                    continue;
-                }
-                if ([true, "true"].indexOf(val) !== -1) {
-                    argsList.push(`--${key}`);
-                } else if ([false, "false"].indexOf(val) !== -1) {
-                    // do nothing
-                } else {
-                    argsList.push(`--${key}`);
-                    argsList.push(val.toString());
-                }
-            }
+    //     const argsList = this._makeArgList(jobInfos);
+    //     // const onQueueDoneFunc = this._callbacks.onQueueDone;
+    //     await new Promise((resolve) => {
+    //         webinaInstance.setupRun(jobInfos, resolve, onJobDone);
+    //         return webinaInstance.callMain(argsList);
+    //     })
 
-            debugger;
-            // Rename --receptor and --ligand to --receptors and --ligands
-            const receptorIdx = argsList.indexOf("--receptor");
-            if (receptorIdx !== -1) {
-                argsList[receptorIdx] = "--receptors";
-            }
-            const ligandIdx = argsList.indexOf("--ligand");
-            if (ligandIdx !== -1) {
-                argsList[ligandIdx] = "--ligands";
-            }
-
-            // Get all the unique receptors and ligands, avoiding
-            // redundancies but preserving order.
-            const receptorFilenames = jobInfos
-                .map((jobInfo) => jobInfo.input.pdbFiles.prot.name)
-                .filter((value, index, self) => self.indexOf(value) === index);
-            const ligandFilenames = jobInfos
-                .map((jobInfo) => jobInfo.input.pdbFiles.cmpd.name)
-                .filter((value, index, self) => self.indexOf(value) === index);
-
-            // Replace receptor values with value,value
-            const receptorsIdx = argsList.indexOf("--receptors");
-            if (receptorsIdx !== -1) {
-                argsList[receptorsIdx + 1] = receptorFilenames.join(",");
-            }
-
-            // Same with ligands
-            const ligandsIdx = argsList.indexOf("--ligands");
-            if (ligandsIdx !== -1) {
-                argsList[ligandsIdx + 1] = ligandFilenames.join(",");
-            }
-
-            // remove --out and its value (will be generated by webina wasm binary)
-            const outIdx = argsList.indexOf("--out");
-            if (outIdx !== -1) {
-                argsList.splice(outIdx, 2);
-            }
-
-            return webinaInstance.callMain(argsList);
-        });
-        // .then((resp: any) => {
-        //     return resp;
-        // // })
-        // .catch((err) => {
-        //     reject(err);
-        //     console.error(err);
-        //     throw err;
-        // })
-    }
+    //     return jobInfos[0];
+    // }
 
     /**
      * Gets the test commands for the plugin. For advanced use.

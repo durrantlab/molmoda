@@ -160,3 +160,37 @@ export function waitForCondition(
         }, checkFrequency);
     });
 }
+
+export function secsToTime(secs: number): string {
+    const days = Math.floor(secs / 86400);
+    const hours = Math.floor(secs / 3600);
+    const minutes = Math.floor(secs / 60);
+    const seconds = secs % 60;
+
+    let timeStr = "";
+    if (days == 1) {
+        timeStr += "1 day, ";
+    } else if (days > 1) {
+        timeStr += `${days} days, `;
+    }
+
+    if (hours == 1) {
+        timeStr += "1 hr, ";
+    } else if (hours > 1) {
+        timeStr += `${hours} hrs, `;
+    }
+
+    if (minutes == 1) {
+        timeStr += "1 min, ";
+    } else if (minutes > 1) {
+        timeStr += `${minutes} mins, `;
+    }
+
+    if (seconds == 1) {
+        timeStr += "1 sec";
+    } else {
+        timeStr += `${seconds.toFixed(1)} secs`;
+    }
+
+    return timeStr;
+}

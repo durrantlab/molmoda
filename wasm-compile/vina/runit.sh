@@ -19,11 +19,15 @@ else
     unzip v$VINA_VERSION.zip
     rm v$VINA_VERSION.zip
 
-    # We must modify the main.cpp file to expose a wrapper around the main
-    # function (to be able to reuse the instance rather than creating a new one
-    # each time).
-    sed -i "" "1s|^|#include <emscripten.h>\n|" AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
-    echo -e "extern \"C\"\n {\n void EMSCRIPTEN_KEEPALIVE vina_main(int argc, char *argv[]) {\n main(argc, argv);\n}\n }\n" >> AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
+    # We must modify the main.cpp file to expose a wrapper that can parse
+    # arguments for us (to dock multiple ligands).
+    sed -i "" "s|int main(|int vina_main(|g" AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
+    echo "" >> AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
+    cat new_main.cpp >> AutoDock-Vina-$VINA_VERSION/src/main/main.cpp
+
+    # exit(0) is not allowed in emscripten. We must replace it with throw
+    # std::runtime_error("Error message"); in every file.
+    find AutoDock-Vina-$VINA_VERSION/src/ -type f -name "*.cpp" -exec sed -i "" "s|exit(EXIT_FAILURE)|throw std::runtime_error(\"Error message\")|g" {} \;
 fi
 
 # Remove any previous compilation
@@ -63,11 +67,11 @@ if [ $ALLOW_MEMORY_GROWTH -eq 1 ]; then
   # memory: Cannot allocate Wasm memory for new instance" errors. But it did
   # introduce errors when students specified unreasonably large docking boxes.
   # Best to just let memory grow.
-  sed -i "" "s|++11|++11 -sALLOW_MEMORY_GROWTH|g" Makefile
+  sed -i "" "s|++11|++11 -s ALLOW_MEMORY_GROWTH|g" Makefile
 else
   # If you don't allow memory growth, make sure INITIAL_MEMORY is large enough.
   # 128 MB is not enough. 256 MB is not enough. 512MB is enough if not using
-  # MALLOC=mimalloc. but 1024MB is enoguh with MALLOC=mimalloc.
+  # MALLOC=mimalloc. but 1024MB is enough with MALLOC=mimalloc.
   sed -i "" "s|++11|++11 -s INITIAL_MEMORY=1024MB|g" Makefile
 fi
 
@@ -110,15 +114,19 @@ if [ $DEBUG -eq 1 ]; then
   sed -i "" "s|++11|++11 -sASSERTIONS|g" Makefile
   sed -i "" "s|++11|++11 -sNO_DISABLE_EXCEPTION_CATCHING|g" Makefile
 else
-  # Remove debugging symbols
-  sed -i "" "s|++11|++11 -s DISABLE_EXCEPTION_CATCHING=1|g" Makefile
+  # Remove debugging symbols, except for main, because there you need to be able
+  # to catch exceptions.
+
+  # sed -i "" "s|++11|++11 -s DISABLE_EXCEPTION_CATCHING=1|g" Makefile
+  sed -i "" "s|++11|++11 -s DISABLE_EXCEPTION_CATCHING=2 -s EXCEPTION_CATCHING_ALLOWED=['main']|g" Makefile
 fi
 
 # Don't forget to export the vina_main function
 # sed -i "" "s|++11|++11 -s EXPORTED_RUNTIME_METHODS=callMain,FS|g" Makefile
 
 # This one is for Yuri's method
-sed -i "" "s|++11|++11 -s EXPORTED_FUNCTIONS=_main,_vina_main_wrapper,_malloc,_free -s EXPORTED_RUNTIME_METHODS=callMain,cwrap,FS,ccall,stackAlloc,allocateUTF8,ALLOC_NORMAL,intArrayFromString,setValue,allocateUTF8OnStack|g" Makefile
+sed -i "" "s|++11|++11 -s EXPORTED_RUNTIME_METHODS=callMain,cwrap,FS,ccall,stackAlloc,allocateUTF8,ALLOC_NORMAL,intArrayFromString,setValue,allocateUTF8OnStack|g" Makefile
+# sed -i "" "s|++11|++11 -s EXPORTED_FUNCTIONS=_main,_vina_main_wrapper,_malloc,_free -s EXPORTED_RUNTIME_METHODS=callMain,cwrap,FS,ccall,stackAlloc,allocateUTF8,ALLOC_NORMAL,intArrayFromString,setValue,allocateUTF8OnStack|g" Makefile
 
 # Set Optimization level. O2 works for webina. Os works too. O3 gives this
 # error: Uncaught (in promise) TypeError: Failed to execute 'decode' on
