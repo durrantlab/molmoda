@@ -1,4 +1,4 @@
-# MolModa 1.0.0
+# MolModa 1.0.1
 
 Molecular docking advances early-stage drug discovery by predicting the
 geometries and affinities of small-molecule compounds bound to drug-target

@@ -18,10 +18,11 @@
             <!-- v-model="molName"
         @onChange="searchByName"
         :description="molNameRespDescription" -->
-            <FormWrapper v-if="testEditing" class="mt-2">
+            <FormWrapper v-if="testEditing" class="mt-2" id="draw-smiles-wrapper">
                 <FormInput
                     v-model="currentSmiles"
                     placeHolder="SMILES..."
+                    id="draw-smiles"
                     :delayBetweenChangesDetected="500"
                     :validateDescription="false"
                     @onChange="onUpdateSMILES"
@@ -392,6 +393,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
+            // pluginOpen: new TestCmdList().wait(2).waitUntilRegex("#draw-smiles-wrapper", "C"),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "DrawMolecule"

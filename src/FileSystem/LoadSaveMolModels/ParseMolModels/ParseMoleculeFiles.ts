@@ -119,9 +119,25 @@ export function _parseMoleculeFile(
             // }
 
             if (treeNodeList.length === 0) {
-                api.messages.popupError(
-                    "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>"
-                );
+                let msg =
+                    "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>";
+
+                // Get first 5 lines of fileInfo.contents
+                if (fileInfo.contents.trim() !== "") {
+                    // const first5Lines = fileInfo.contents
+                    //     .split("\n")
+                    //     .slice(0, 5);
+                    // let first5LinesStr = first5Lines.join("\n");
+
+                    // // Add line ... if appropriate
+                    // first5LinesStr +=
+                    //     fileInfo.contents.length > first5LinesStr.length
+                    //         ? "\n..."
+                    //         : "";
+
+                    msg += `<p>File contents:</p><code><textarea disabled class="form-control" rows="3">${fileInfo.contents}</textarea>`;
+                }
+                api.messages.popupError(msg);
                 return treeNodeList;
             }
 

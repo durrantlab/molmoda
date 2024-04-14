@@ -1,7 +1,7 @@
 {
   "name": "MolModa",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.1",
+  "private": false,
   "scripts": {
     "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",
     "build": "cd utils && ./before_compile.sh && cd .. && vue-cli-service --progress --verbose build && cd utils && ./after_compile.sh && cd ..",

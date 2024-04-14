@@ -1,7 +1,7 @@
 import compileTimeInfo from "../last_updated.json";
 
 export let appName = "MolModa";
-export let appVersion = "1.0.0";
+export let appVersion = "1.0.1";
 export const appCompileTime = compileTimeInfo.date;
 
 console.log(appName + " " + appVersion + ".");

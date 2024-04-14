@@ -156,23 +156,25 @@ export class Viewer3DMol extends ViewerParent {
 
             const title = getTreeNodeTitle(id);
 
-            if (title) {
-                // Also add label
-                if (this._regionLabels[id]) {
-                    this.removeLabel(id);
-                    delete this._regionLabels[id];
-                }
+            // TODO: Disabling region labels for now because of lack of
+            // time, but enable in next version.
+            // if (title) {
+            //     // Also add label
+            //     if (this._regionLabels[id]) {
+            //         this.removeLabel(id);
+            //         delete this._regionLabels[id];
+            //     }
 
-                this._regionLabels[id] = this.addLabel(
-                    title,
-                    region.x,
-                    region.y,
-                    region.z,
-                    "center",
-                    14,
-                    // false
-                );
-            }
+            //     this._regionLabels[id] = this.addLabel(
+            //         title,
+            //         region.x,
+            //         region.y,
+            //         region.z,
+            //         "center",
+            //         14,
+            //         // false
+            //     );
+            // }
         }
     }
 

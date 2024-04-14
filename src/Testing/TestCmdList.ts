@@ -15,6 +15,7 @@ import {
 } from "./TestCmd";
 import * as api from "@/Api";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
+import { openRemoteFile } from "@/FileSystem/UrlOpen";
 
 const examplesLoaded: string[] = [];
 
@@ -119,7 +120,11 @@ export class TestCmdList {
      *                                                testIdx is 0-indexed.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
-    public loadExampleMolecule(expandInMoleculeTree = false, url = "4WP4.pdb", testIdx?: number): TestCmdList {
+    public loadExampleMolecule(
+        expandInMoleculeTree = false,
+        url = "4WP4.pdb",
+        testIdx?: number
+    ): TestCmdList {
         if (examplesLoaded.indexOf(url) !== -1) {
             // Already loaded
             return this;
@@ -135,22 +140,30 @@ export class TestCmdList {
         }
 
         examplesLoaded.push(url);
-        loadRemote(url, false)
-            .then((fileInfo: FileInfo) => {
-                return getMoleculesFromStore().loadFromFileInfo(fileInfo);
-            })
-            .then(() => {
-                expandAndShowAllMolsInTree();
-                return api.visualization.viewer;
-            })
-            .then((v) => {
-                v.zoomOnFocused();
-                return;
-            })
-            .catch((err: string) => {
-                api.messages.popupError(err);
-                // throw err;
-            });
+
+        // If its biotite, load it differently
+        // If url ends in .molmoda
+        if (url.endsWith(".molmoda")) {
+            // Load the file
+            openRemoteFile(url);
+        } else {
+            loadRemote(url, false)
+                .then((fileInfo: FileInfo) => {
+                    return getMoleculesFromStore().loadFromFileInfo(fileInfo);
+                })
+                .then(() => {
+                    expandAndShowAllMolsInTree();
+                    return api.visualization.viewer;
+                })
+                .then((v) => {
+                    v.zoomOnFocused();
+                    return;
+                })
+                .catch((err: string) => {
+                    api.messages.popupError(err);
+                    // throw err;
+                });
+        }
 
         this.waitUntilRegex("#styles", "Protein");
         if (expandInMoleculeTree) {

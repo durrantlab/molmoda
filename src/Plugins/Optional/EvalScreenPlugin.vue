@@ -134,6 +134,7 @@ import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import Alert from "@/UI/Layout/Alert.vue";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 interface IActivesOthers {
     labelScores: [number, number][];
@@ -156,7 +157,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "evalscreen";
 
-    intro = `Calculate receiver operating characteristic and enrichment factor curves.`
+    intro = `Calculate receiver operating characteristic and enrichment factor curves.`;
     details = `Analyzes the docking scores of both known-active and other (inactive or decoy) compounds to assess how well docking prioritizes the known actives.`;
     title = "Evaluate Docking Performance";
 
@@ -311,9 +312,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         // Do matchingActiveIDs and matchingOtherTitles have any overlap
         // (intersection)?
         const intersection = new Set(
-            [...matchingActiveTitles].filter((x) =>
-                matchingOtherTitles.has(x)
-            )
+            [...matchingActiveTitles].filter((x) => matchingOtherTitles.has(x))
         );
         if (intersection.size > 0) {
             this.analysisVisible = false;
@@ -346,8 +345,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         const allCompoundsNotInActivesOrOthers = new Set(
             [...allCompoundsTitles].filter(
                 (x) =>
-                    !matchingActiveTitles.has(x) &&
-                    !matchingOtherTitles.has(x)
+                    !matchingActiveTitles.has(x) && !matchingOtherTitles.has(x)
             )
         );
         if (allCompoundsNotInActivesOrOthers.size > 0) {
@@ -642,58 +640,25 @@ export default class EvalScreenPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {
-        alert("tests needed!");
-        // TODO:
-        // const axios = await dynamicImports.axios.module;
-        // const promises = [
-        //     axios.get("testmols/example.can"),
-        //     axios.get("testmols/example.sdf"),
-        //     axios.get("testmols/example.pdb"),
-        //     axios.get("testmols/example.mol2"),
-        //     axios.get("testmols/example_mult.can"),
-        //     axios.get("testmols/example_mult.sdf"),
-        //     axios.get("testmols/example_mult.pdb"),
-        //     axios.get("testmols/example_mult.mol2"),
-        // ];
+        return [
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                    true,
+                    "./TGFR1_docked.molmoda"
+                ),
+                pluginOpen: new TestCmdList().waitUntilRegex(
+                    "#modal-evalscreen",
+                    "0.871"
+                ),
+                closePlugin: new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
+                afterPluginCloses: new TestCmdList()
 
-        // const resps = await Promise.all(promises);
-        // const txts = resps.map((resp) => resp.data);
-
-        // // "c1ccccc1",
-        // // "HETATM    1  C   UNL     1       0.982  -0.028  -0.094  1.00  0.00           C  \nHETATM    2  H   UNL     1       2.074  -0.028  -0.094  1.00  0.00           H  \nHETATM    3  H   UNL     1       0.618   0.313  -1.066  1.00  0.00           H  \nHETATM    4  H   UNL     1       0.618   0.642   0.687  1.00  0.00           H  \nHETATM    5  H   UNL     1       0.618  -1.040   0.096  1.00  0.00           H  ",
-        // // "@<TRIPOS>MOLECULE\n*****\n 5 4 0 0 0\nSMALL\nGASTEIGER\n\n@<TRIPOS>ATOM\n      1 C           1.0793   -0.0578    0.0194 C.3     1  UNL1       -0.0776\n      2 H           2.1715   -0.0578    0.0194 H       1  UNL1        0.0194\n      3 H           0.7152   -0.8023    0.7308 H       1  UNL1        0.0194\n      4 H           0.7152   -0.3016   -0.9811 H       1  UNL1        0.0194\n      5 H           0.7152    0.9306    0.3084 H       1  UNL1        0.0194\n@<TRIPOS>BOND\n     1     1     2    1\n     2     1     3    1\n     3     1     4    1\n     4     1     5    1",
-        // // "\n OpenBabel08312314413D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.9733   -0.0684    0.0679 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0655   -0.0684    0.0679 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6093    0.9241    0.3424 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.8023    0.7902 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.3269   -0.9288 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  1  4  1  0  0  0  0\n  1  5  1  0  0  0  0\nM  END\n$$$$",
-
-        // const tests = txts.map((txt: string) => {
-        //     return {
-        //         pluginOpen: new TestCmdList().setUserArg(
-        //             "molTextArea",
-        //             txt,
-        //             this.pluginId
-        //         ),
-        //         afterPluginCloses: new TestCmdList().waitUntilRegex(
-        //             "#navigator",
-        //             "PastedMol"
-        //         ),
-        //     };
-        // });
-
-        // // Final test to verify error catching
-        // tests.push({
-        //     pluginOpen: new TestCmdList().setUserArg(
-        //         "molTextArea",
-        //         "C##moose",
-        //         this.pluginId
-        //     ),
-        //     afterPluginCloses: new TestCmdList().waitUntilRegex(
-        //         "#modal-simplemsg",
-        //         "File contained no valid"
-        //     ),
-        // });
-
-        // return tests;
-
-        return [];
+                // afterPluginCloses: new TestCmdList().waitUntilRegex(
+                //     "#modal-simplemsg",
+                //     "No compounds found"
+                // ),
+            },
+        ];
     }
 }
 </script>

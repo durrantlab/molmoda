@@ -55,8 +55,9 @@ export default class EditCompoundPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        const selecteds = getMoleculesFromStore().terminals.filters.keepSelected()
-        
+        const selecteds =
+            getMoleculesFromStore().terminals.filters.keepSelected();
+
         if (selecteds.length !== 1) {
             return "First select one (and only one) compound by clicking on its name in the Navigator panel.";
         }
@@ -73,7 +74,7 @@ export default class EditCompoundPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     * 
+     *
      * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
@@ -89,7 +90,7 @@ export default class EditCompoundPlugin extends PluginParentClass {
 
         pluginsApi.runPlugin("drawmoleculeplugin", {
             smiles: smiles,
-            name: name + ":edited"
+            name: name + ":edited",
         });
         return Promise.resolve();
     }
@@ -99,19 +100,22 @@ export default class EditCompoundPlugin extends PluginParentClass {
      *
      * @gooddefault
      * @document
-     * @returns {ITest}  The selenium test commands.
+     * @returns {ITest[]}  The selenium test commands.
      */
-    async getTests(): Promise<ITest> {
-        alert("tests needed!");
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-            // pluginOpen: [this.testSetUserArg("filename", "test")],
-            // afterPluginCloses: new TestCmdList()
-            //   .wait(3)
-        };
+    async getTests(): Promise<ITest[]> {
+        return [
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(true)
+                    .selectMoleculeInTree("Compounds"),
+                pluginOpen: new TestCmdList().wait(2).text("#draw-smiles", "OOOO"),
+                closePlugin: new TestCmdList().click("#modal-drawmoleculeplugin .action-btn"),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", "TOU:101:edited")
+            },
+        ];
     }
 }
 </script>
 
 <style scoped lang="scss"></style>
-

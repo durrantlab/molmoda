@@ -153,10 +153,25 @@ class el:
             self.el.click()
 
     def wait_until_contains_regex(self, regex):
+
+        # Define a lambda function to check if the element's innerHTML matches the regex
         try:
-            self.el = WebDriverWait(
+            wait = WebDriverWait(
                 self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
-            ).until(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
+            )
+            
+            def check(driver):
+                inner_html = self.el.get_attribute("innerHTML")
+
+                # print(f"Checking innerHTML: {inner_html}")  # Print the innerHTML for debugging                
+                # with open("tmp.txt", "w") as f:
+                #     f.write(inner_html)
+                # os.system("cat tmp.txt | pbcopy; rm tmp.txt")
+                
+                return re.search(regex, inner_html)
+        
+            self.el = wait.until(check)
+            # .until(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
         except TimeoutException as e:
             self.throw_error(
                 f"{self.selector} does not contain [[{regex}]] after {self.timeout} seconds"
@@ -282,6 +297,7 @@ def run_test(plugin_id):
     # resp = f"Result of {test_lbl}: "
 
     cmds_str = None
+    cmds = None
     for t in range(4):
         cmds_str = el("#test-cmds", driver).text
         try:
@@ -289,6 +305,11 @@ def run_test(plugin_id):
             break
         except Exception as JSONDecodeError:
             time.sleep(0.25)
+
+    if cmds is None:
+        print(f"No commands found. Are you sure you specified an actual plugin id?")
+        sys.exit(1)
+
     if cmds_str is None:
         print(f"Failed to parse JSON: {cmds_str}")
         return {
@@ -308,6 +329,7 @@ def run_test(plugin_id):
     try:
         # print(json.dumps(cmds, indent=4))
         for cmd_idx, cmd in enumerate(cmds):
+            # print(cmd)
             # resp += f"   {json.dumps(cmd)}\n"
             if cmd["cmd"] == "click":
                 el(cmd["selector"], driver).click(

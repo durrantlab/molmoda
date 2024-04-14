@@ -2,17 +2,8 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 
-/**
- * Check if the URL has an open parameter and open the file if it does.
- * This function is called when the app is loaded.
- * 
- * @returns {Promise<void>}  A promise that resolves when the file is opened.
- */
-export async function checkIfUrlOpen() {
-    // Check of src is in the url. If it is, get its value.
-    const urlParams = new URLSearchParams(window.location.search);
-    const url = urlParams.get("open");
-
+// TODO: Good to move this elsewhere, perhaps in FS.
+export async function openRemoteFile(url: string) {
     if (url === null) {
         return;
     }
@@ -40,6 +31,19 @@ export async function checkIfUrlOpen() {
     } catch (error) {
         messagesApi.popupError("Error fetching and opening the file. " + error);
     }
+}
+
+/**
+ * Check if the URL has an open parameter and open the file if it does.
+ * This function is called when the app is loaded.
+ * 
+ * @returns {Promise<void>}  A promise that resolves when the file is opened.
+ */
+export async function checkIfUrlOpen() {
+    // Check of src is in the url. If it is, get its value.
+    const urlParams = new URLSearchParams(window.location.search);
+    const url = urlParams.get("open");
+    await openRemoteFile(url as string);
 }
 
 /**
