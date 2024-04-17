@@ -38,6 +38,10 @@ export interface IFormatInfo {
     // file. For example, if the file is a PDB file, you might want to check
     // that it contains ATOM lines.
     validateContents?: (contents: string) => boolean;
+
+    // In some cases, you might want to pre-process text before loading it. (To
+    // clean up SMILES strings, for example).
+    textPreProcessor?: (text: string) => string;
 }
 
 const pdbLikeSeparators = [
@@ -311,7 +315,8 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
 
             // const smiRegex = /^[A-Z][a-z]?(?:[-=]?\(?\d?[A-Z][a-z]?\d?\)?)*$/m;
             // return smiRegex.test(contents);
-        }
+        },
+        textPreProcessor: smiPreProcessor
     },
     CAN: {
         primaryExt: "can",
@@ -323,6 +328,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         extractMolNameRegex: smiLikeNames,
         saveWarning: "CAN" + noCoordinatesWarning,
         lacks3D: true,
+        textPreProcessor: smiPreProcessor
     },
     XYZ: {
         primaryExt: "xyz",
@@ -355,6 +361,20 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         neverDesalt: true,
     },
 };
+
+function smiPreProcessor(text: string): string {
+    // Go through each line, and trim it. This aims to remove any leading
+    // spaces.
+    const lines = text.split("\n");
+    const processedLines = lines.map((line) => line.trim());
+    text = processedLines.join("\n");
+
+
+    // Remove any empty lines.
+    text = text.replace(/^\s*\n/gm, "");
+
+    return text;
+}
 
 /**
  * Get the descriptions of the available formats (for use in saving-molecule

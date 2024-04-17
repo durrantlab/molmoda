@@ -128,6 +128,7 @@ import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
 import { IMenuItem, IMenuSubmenu } from "../Menu/Menu";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";
 import { IContextMenuOption } from "../ContextMenu/ContextMenuInterfaces";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 interface IIconsToDisplay {
     visible?: boolean;
@@ -417,8 +418,12 @@ export default class TitleBar extends Vue {
 
         if (node !== null) {
             let newVisible = !node.visible;
+
+            // Make this one the appropriate visibility
             node.visible = newVisible;
             node.viewerDirty = true;
+
+            // Similarly update the visibility on all children.
             const children = node.nodes;
             if (children) {
                 children.flattened.forEach((node2: TreeNode) => {
@@ -426,6 +431,13 @@ export default class TitleBar extends Vue {
                     node2.viewerDirty = true;
                 });
             }
+
+            // Now also update visibility on anything that is selected.
+            const selecteds = getMoleculesFromStore().filters.keepSelected(true, true);
+            selecteds.forEach((node2: TreeNode) => {
+                node2.visible = newVisible;
+                node2.viewerDirty = true;
+            });
         }
     }
 

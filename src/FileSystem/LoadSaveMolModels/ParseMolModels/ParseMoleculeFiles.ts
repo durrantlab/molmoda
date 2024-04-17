@@ -85,6 +85,11 @@ export function _parseMoleculeFile(
         desalt = false;
     }
 
+    // Apply text pre processor.
+    if (formatInfo.textPreProcessor) {
+        fileInfo.contents = formatInfo.textPreProcessor(fileInfo.contents);
+    }
+
     // For 3dmoljs and openbabel loading, models should be merged. So save the
     // promise instead of returning immediately.
     let promise: Promise<TreeNodeList>;
