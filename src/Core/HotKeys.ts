@@ -8,6 +8,14 @@ let hotkeys: any = undefined;
 export let shiftKeyDown = false;
 export let controlKeyDown = false;
 
+function isTextSelected(): boolean {
+    const selection = window.getSelection();
+    if (selection === null) {
+        return false;
+    }
+    return selection.toString().length > 0;
+}
+
 // Detect click anywhere, but only once. Don't start listening for shift and
 // control until then.
 let clickDetected = false;
@@ -68,6 +76,13 @@ export function registerHotkeys(
     pluginId: string,
     callback: (e: KeyboardEvent) => void
 ) {
+    const callBackWrapper = (e: KeyboardEvent) => {
+        if (isTextSelected()) {
+            return;
+        }
+        callback(e);
+    }
+
     // If hotkeys is a string, make it an array.
     if (typeof hotkeys === "string") {
         hotkeys = [hotkeys];
@@ -101,7 +116,7 @@ export function registerHotkeys(
     hotkeyslibPromise()
         .then((hotkeysLib) => {
             hotkeysUsed.add(hotkeys as string);
-            hotkeysLib(hotkeys, callback);
+            hotkeysLib(hotkeys, callBackWrapper);
             return;
         })
         .catch((err) => {
