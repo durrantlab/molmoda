@@ -139,6 +139,9 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         }
     }
 
+    /**
+     * Runs when the popup opens. Good for loading external libraries.
+     */
     onPopupOpen() {
         dynamicImports.kekule.module
             .then((module: any) => {
@@ -189,7 +192,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
                 this.chemComposer
                     .getEditor()
-                    .on("editObjsUpdated", (e: any) => {
+                    .on("editObjsUpdated", (/* e: any */) => {
                         let mol =
                             this.kekule.ChemStructureUtils.getTotalStructFragment(
                                 this.chemComposer.getChemObj()

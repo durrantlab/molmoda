@@ -310,6 +310,9 @@ export default class Popup extends Vue {
         return this.modal;
     }
 
+    /**
+     * Runs when the modal is shown.
+     */
     onModalShown() {
         this.makeDraggable();
         this.$nextTick(() => {
@@ -333,6 +336,9 @@ export default class Popup extends Vue {
         this.$emit("update:modelValue", true);
     }
 
+    /**
+     * Makes the dialog draggable.
+     */
     makeDraggable() {
         const dialog = this.$refs.dialog as HTMLElement;
         const header = this.$refs.header as HTMLElement;

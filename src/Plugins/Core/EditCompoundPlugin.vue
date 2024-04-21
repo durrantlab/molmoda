@@ -8,16 +8,13 @@
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import * as api from "@/Api";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { pluginsApi } from "@/Api/Plugins";
-import { numSelected } from "./CheckUseAllowedUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";

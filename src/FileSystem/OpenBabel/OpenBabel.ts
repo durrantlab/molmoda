@@ -111,6 +111,7 @@ export function getGen3DUserArg(
  *                                               file), requires string[][].
  * @param {FileInfo[] | IFileInfo[]} inputFiles  The input files to pass to
  *                                               OpenBabel.
+ * @param {boolean}      [surpressMsgs=false]    Whether to surpress messages.
  * @returns {Promise<any>}  A promise that resolves to the output of the
  *     program. Void if there is an error?
  */
@@ -260,13 +261,17 @@ async function separateFiles(
 /**
  * Converts molecules to another format using OpenBabel.
  *
- * @param  {FileInfo[]}    fileInfos       The information about the file to
- *                                         convert.
- * @param  {string}        targetFormat    The target extension.
- * @param  {IGen3DOptions} [gen3D]         Whether to assign 3D coordinates.
- * @param  {number | null} [pH]            The pH to use for protonation. If
- *                                         null, removes hydrogen atoms.
- * @param  {boolean}       [desalt=false]  Whether to desalt the molecules.
+ * @param  {FileInfo[]}    fileInfos             The information about the file
+ *                                               to convert.
+ * @param  {string}        targetFormat          The target extension.
+ * @param  {IGen3DOptions} [gen3D]               Whether to assign 3D
+ *                                               coordinates.
+ * @param  {number | null} [pH]                  The pH to use for protonation.
+ *                                               If null, removes hydrogen
+ *                                               atoms.
+ * @param  {boolean}       [desalt=false]        Whether to desalt the
+ *                                               molecules.
+ * @param  {boolean}       [surpressMsgs=false]  Whether to surpress messages.
  * @returns {Promise<string[]>}  A promise that resolves to the converted
  *    molecules.
  */
@@ -358,13 +363,14 @@ async function convertToNewFormat(
 /**
  * Converts a molecule to another format using OpenBabel.
  *
- * @param  {FileInfo[]}  srcFileInfos    The information about the file to
- *                                       convert.
- * @param  {string}      targetFormat    The target extension.
- * @param  {boolean}     [gen3D]         Whether to assign 3D coordinates.
- * @param  {number}      [pH]            The pH to use for protonation. If null,
- *                                       removes hydrogens (-d).
- * @param  {boolean}     [desalt=false]  Whether to desalt the molecules.
+ * @param  {FileInfo[]}  srcFileInfos          The information about the file to
+ *                                             convert.
+ * @param  {string}      targetFormat          The target extension.
+ * @param  {boolean}     [gen3D]               Whether to assign 3D coordinates.
+ * @param  {number}      [pH]                  The pH to use for protonation. If
+ *                                             null, removes hydrogens (-d).
+ * @param  {boolean}     [desalt=false]        Whether to desalt the molecules.
+ * @param  {boolean}     [surpressMsgs=false]  Whether to surpress messages.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */

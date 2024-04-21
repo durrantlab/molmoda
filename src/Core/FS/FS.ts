@@ -221,6 +221,13 @@ export function uncompress(s: string): Promise<FileInfo[]> {
     // }
 }
 
+/**
+ * Saves tabular data to a file.
+ *
+ * @param {IData}  data      The data to save.
+ * @param {string} filename  The name of the file to save.
+ * @param {DataFormat | string} format   The format to save the data in.
+ */
 export function saveData(
     data: IData,
     filename: string,

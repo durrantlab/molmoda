@@ -23,6 +23,10 @@ import { ChartRatios, ChartType, IChartDataPoint } from "./ChartInterfaces";
 import { slugify } from "@/Core/Utils";
 
 // Assuming you have a dynamicImports object similar to the chartJsLoader example
+
+/**
+ * Chart component.
+ */
 @Options({
     components: {},
 })
@@ -45,10 +49,18 @@ export default class Chart extends Vue {
 
     private chartInstance: any = null;
 
+    /**
+     * Mounted lifecycle hook.
+     */
     async mounted() {
         await this.createChart();
     }
 
+    /**
+     * Get the x-axis label to use.
+     * 
+     * @returns {string}  The x-axis label to use.
+     */
     get xAxisLabelToUse(): string {
         return (
             this.xAxisLabel +
@@ -56,6 +68,11 @@ export default class Chart extends Vue {
         );
     }
 
+    /**
+     * Get the y-axis label to use.
+     * 
+     * @returns {string}  The y-axis label to use.
+     */
     get yAxisLabelToUse(): string {
         return (
             this.yAxisLabel +
@@ -63,11 +80,19 @@ export default class Chart extends Vue {
         );
     }
 
+    /**
+     * Called when the data changes. Recreates the chart.
+     */
     @Watch("data", { deep: true })
     async onDataChange() {
         await this.createChart();
     }
 
+    /**
+     * Download the chart as a file.
+     * 
+     * @param {string} format  The format to download as.
+     */
     async download(format: string) {
         const filename = slugify(this.title) + "." + format;
         if (format === "png") {
@@ -95,6 +120,9 @@ export default class Chart extends Vue {
         }
     }
 
+    /**
+     * Create the chart.
+     */
     async createChart() {
         const chartJs = await dynamicImports.chartJs.module; // Load Chart.js dynamically
         if (this.chartInstance) {

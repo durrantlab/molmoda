@@ -20,7 +20,6 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 // import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgsMixin } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
-import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
     doneInQueueStore,
@@ -32,7 +31,6 @@ import { logGAEvent } from "@/Core/GoogleAnalytics";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
-import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;

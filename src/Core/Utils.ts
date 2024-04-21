@@ -161,6 +161,12 @@ export function waitForCondition(
     });
 }
 
+/**
+ * Given a number of seconds, produces a string that describes the time.
+ * 
+ * @param {number} secs  The number of seconds.
+ * @returns {string}  A description of the time.
+ */
 export function secsToTime(secs: number): string {
     const days = Math.floor(secs / 86400);
     const hours = Math.floor(secs / 3600);

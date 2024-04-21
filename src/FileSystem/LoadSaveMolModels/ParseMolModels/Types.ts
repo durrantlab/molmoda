@@ -10,6 +10,12 @@ export interface ILoadMolParams {
     defaultTitle?: string;
 }
 
+/**
+ * Add default values to the load mol params.
+ * 
+ * @param {ILoadMolParams} params  The params to add defaults to.
+ * @returns {ILoadMolParams}  The params with defaults added.
+ */
 export function addDefaultLoadMolParams(
     params: ILoadMolParams
 ): ILoadMolParams {

@@ -10,7 +10,6 @@ import { TreeNodeListNodeActions } from "./_NodeActions";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils";
-import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 /**
@@ -490,6 +489,8 @@ export class TreeNodeList {
     /**
      * A helper function tht adds all the nodes in this list to the molecules in
      * the vuex store.
+     * 
+     * @param {string | null} tag  The tag to add to the main tree.
      */
     public addToMainTree(tag: string | null) {
         for (const node of this._nodes) {

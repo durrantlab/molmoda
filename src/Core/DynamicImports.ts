@@ -12,9 +12,10 @@ const modulesAlreadyAddedToHeader: { [key: string]: Promise<any> } = {};
  * Adds a js file to the header. This is useful when you can't do a legitimate
  * dynamic import.
  *
- * @param  {string} id          The id of the library.
- * @param  {string} jsUrl         The url of the js file to add to the header.
- * @param  {Function} moduleReady  The callback to call when the library is loaded.
+ * @param  {string}   id         The id of the library.
+ * @param  {string}   jsUrl      The url of the js file to add to the header.
+ * @param  {Function} getModule  A function that returns the module.
+ * @param  {string}   cssUrl     The url of the css file to add to the header.
  * @returns {Promise<undefined>}  A promise that resolves when the script is
  *     loaded.
  */

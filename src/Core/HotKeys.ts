@@ -8,6 +8,11 @@ let hotkeys: any = undefined;
 export let shiftKeyDown = false;
 export let controlKeyDown = false;
 
+/**
+ * Check if text is selected.
+ * 
+ * @returns {boolean}  Whether text is selected.
+ */
 function isTextSelected(): boolean {
     const selection = window.getSelection();
     if (selection === null) {

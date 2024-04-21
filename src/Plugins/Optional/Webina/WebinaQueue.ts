@@ -48,6 +48,10 @@ export class WebinaQueue extends QueueParent {
 
             // preInit() { console.log("Pre-init"); },
 
+            /**
+             * A function that runs when a Webina output file is complete. It
+             * reads the output file and updates the job info.
+             */
             processCompleteOutFiles: function () {
                 // Get all the *.out files
                 const outFiles = this.FS.readdir("/").filter(
@@ -111,9 +115,11 @@ export class WebinaQueue extends QueueParent {
             /**
              * A function that runs before the program starts.
              *
-             * @param {IJobInfo} jobInfo           The job info.
-             * @param {Function} onQueueDone  The callback function to call
-             *                                     when the job is done.
+             * @param {IJobInfo[]} jobInfos   The job infos.
+             * @param {Function} onQueueDone  The callback function to call when
+             *                                the job is done.
+             * @param {Function} onJobDone    The callback function to call when
+             *                                the job is done.
              */
             setupRun: function (
                 jobInfos: IJobInfo[],
@@ -354,6 +360,12 @@ export class WebinaQueue extends QueueParent {
         return outputs as IJobInfo[];
     }
 
+    /**
+     * Make the argument list for the webina wasm binary.
+     *
+     * @param {IJobInfo[]} jobInfos  The job infos.
+     * @returns {string[]}  The argument list.
+     */
     private _makeArgList(jobInfos: IJobInfo[]): string[] {
         const argsList: string[] = [];
 

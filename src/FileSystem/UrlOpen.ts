@@ -2,7 +2,12 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 
-// TODO: Good to move this elsewhere, perhaps in FS.
+/**
+ * Open a remote file using its URL. TODO: Good to move this elsewhere, perhaps
+ * in FS.
+ *
+ * @param {string} url  The URL of the file to open.
+ */
 export async function openRemoteFile(url: string) {
     if (url === null) {
         return;

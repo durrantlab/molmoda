@@ -362,6 +362,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
     },
 };
 
+/**
+ * Pre-process SMILES strings to remove any leading or trailing spaces.
+ *
+ * @param  {string} text  The text to pre-process.
+ * @returns {string}  The pre-processed text.
+ */
 function smiPreProcessor(text: string): string {
     // Go through each line, and trim it. This aims to remove any leading
     // spaces.

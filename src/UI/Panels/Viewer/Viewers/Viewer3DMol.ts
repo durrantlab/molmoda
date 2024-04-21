@@ -22,6 +22,13 @@ import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/Conv
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 const _treeNodeTitleCache: { [key: string]: string } = {};
+
+/**
+ * Gets the title of a tree node.
+ *
+ * @param {string} id The id of the tree node (cached if possible).
+ * @returns {string | null} The title of the tree node. null if not found.
+ */
 function getTreeNodeTitle(id: string): string | null {
     if (_treeNodeTitleCache[id]) {
         return _treeNodeTitleCache[id];
@@ -154,7 +161,7 @@ export class Viewer3DMol extends ViewerParent {
             region.hidden = false;
             region.opacity = opacity;
 
-            const title = getTreeNodeTitle(id);
+            // const title = getTreeNodeTitle(id);
 
             // TODO: Disabling region labels for now because of lack of
             // time, but enable in next version.

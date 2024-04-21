@@ -28,7 +28,7 @@ export class ValidationMixin extends Vue {
         }
 
         // Sentence must be no longer than 100 characters, after HTML tags removed.
-        const introWithoutHtml = intro.replace(/<[^>]*>?/gm, "");
+        const introWithoutHtml = intro.replace(/<[^>]*>?/g, "");
         if (introWithoutHtml.length > 100) {
             throw new Error(
                 "Plugin intro must be no longer than 100 characters. Use the details property if you need a more extended introduction. Plugin id: " + pluginId + ". Intro: " + introWithoutHtml + " Length: " + introWithoutHtml.length + "."

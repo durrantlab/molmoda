@@ -23,7 +23,6 @@ import * as api from "@/Api";
 import * as SetupTests from "@/Testing/SetupTests";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
-import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
@@ -685,6 +684,8 @@ export class TreeNode {
 
     /**
      * A helper function. Adds this node to the molecules in the vuex store.
+     *
+     * @param {string | null} tag  The tag to add to this node.
      */
     public async addToMainTree(tag: string | null) {
         this.reassignAllIds();

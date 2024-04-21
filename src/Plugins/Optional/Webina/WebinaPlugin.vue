@@ -65,7 +65,6 @@ import { IQueueCallbacks } from "@/Queue/QueueTypes";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { secsToTime } from "@/Core/Utils";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 

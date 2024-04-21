@@ -54,6 +54,13 @@ import FormCheckBox from "../FormCheckBox.vue";
 import { MoleculeInput } from "./MoleculeInput";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
+/**
+ * Returns a string with the number and noun, pluralized if necessary.
+ *
+ * @param {number} num  The number.
+ * @param {string} noun  The noun.
+ * @returns {string}  The string with the number and noun, pluralized if necessary.
+ */
 function numAndNoun(num: number, noun: string): string {
     return num === 1 ? `1 ${noun}` : `${num} ${noun}s`;
 }

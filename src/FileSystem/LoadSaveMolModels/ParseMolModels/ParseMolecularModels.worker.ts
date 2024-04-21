@@ -780,7 +780,7 @@ waitForDataFromMainThread()
         );
 
         organizedAtomsFramesFixed.terminals.forEach(
-            (node: TreeNode, idx: number) => {
+            (node: TreeNode) => {
                 // If node.model is a list, it's a list of atoms that need to be
                 // converted to pdb.
                 if (Array.isArray(node.model)) {
