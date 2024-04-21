@@ -178,10 +178,11 @@ export default class MolTextPlugin extends PluginParentClass {
             contents: this.getUserArg("molTextArea"),
         });
 
-        const treeNodePromise = TreeNode.loadFromFileInfo(
+        const treeNodePromise = TreeNode.loadFromFileInfo({
             fileInfo,
-            this.getUserArg("desalt")
-        );
+            tag: this.pluginId,
+            desalt: this.getUserArg("desalt"),
+        });
 
         if (treeNodePromise === undefined) {
             throw new Error("Could not load file.");
@@ -197,7 +198,7 @@ export default class MolTextPlugin extends PluginParentClass {
                 ]);
 
                 rootNode.title = this.getUserArg("pastedMolName"); // "PastedFile";
-                rootNode.addToMainTree();
+                rootNode.addToMainTree(this.pluginId);
                 return;
             })
             .catch((err: any) => {

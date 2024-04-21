@@ -240,4 +240,8 @@ body.waiting * {
 .subtle-box {
     border: 1px solid rgb(223, 226, 230);
 }
+
+.lm_stack {
+    overflow: hidden;
+}
 </style>

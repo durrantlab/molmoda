@@ -148,11 +148,11 @@ export default class PastePlugin extends PluginParentClass {
 
         fileInfo.assignExtByContents();
 
-        const node = await TreeNode.loadFromFileInfo(
+        const node = await TreeNode.loadFromFileInfo({
             fileInfo,
-            this.getUserArg("desalt"),
-            undefined,
-            this.getUserArg("pastedMolName")
+            tag: this.pluginId,
+            desalt: this.getUserArg("desalt"),
+            defaultTitle: this.getUserArg("pastedMolName")}
         );
 
         if (node === undefined) {
@@ -162,7 +162,7 @@ export default class PastePlugin extends PluginParentClass {
         node.visible = true;
         node.title = this.getUserArg("pastedMolName");
 
-        node.addToMainTree();
+        node.addToMainTree(this.pluginId);
     }
 
     /**

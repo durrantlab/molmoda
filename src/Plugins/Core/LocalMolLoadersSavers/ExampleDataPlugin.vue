@@ -60,8 +60,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
             "Protonated influenza neuraminidase, with known ligands protonated at pH 7 using Compounds → Protonation... (Use this example data to test docking.)",
         "1INW_pocket_prot_protonated_ligs_protonated_docked.molmoda":
             "Protonated influenza neuraminidase, with known ligands docked into the neuraminidase pocket using Docking → Compound Docking...",
-        "TGFR1_docked.molmoda":
-            `Virtual screen targeting TGFβ Type I Receptor Kinase, described in the ${appName} publication. (Use this example data to calculate ROC and EF curves.)`,
+        "TGFR1_docked.molmoda": `Virtual screen targeting TGFβ Type I Receptor Kinase, described in the ${appName} publication. (Use this example data to calculate ROC and EF curves.)`,
         "LARP1_leadopt.molmoda": `m7G and analogs bound to LARP1 DM15. Shows how ${appName} can assist in lead optimization, as described in the ${appName} publication.`,
     };
 
@@ -101,13 +100,11 @@ export default class ExampleDataPlugin extends PluginParentClass {
                     val: "1INW_pocket_prot_protonated_ligs_protonated_docked.molmoda",
                 },
                 {
-                    description:
-                        `TGFR1 virtual screen (from ${appName} publication)`,
+                    description: `TGFR1 virtual screen (from ${appName} publication)`,
                     val: "TGFR1_docked.molmoda",
                 },
                 {
-                    description:
-                        `LARP1 lead optimization (from ${appName} publication)`,
+                    description: `LARP1 lead optimization (from ${appName} publication)`,
                     val: "LARP1_leadopt.molmoda",
                 },
             ],
@@ -188,7 +185,10 @@ export default class ExampleDataPlugin extends PluginParentClass {
         return filesToFileInfos([file], false, ["MOLMODA"]).then(
             (fileInfos: (FileInfo | string)[] | undefined) => {
                 if (fileInfos === undefined) return;
-                this.addFileInfoToViewer(fileInfos[0] as FileInfo);
+                this.addFileInfoToViewer({
+                    fileInfo: fileInfos[0] as FileInfo,
+                    tag: this.pluginId,
+                });
                 return;
             }
         );

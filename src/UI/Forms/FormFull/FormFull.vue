@@ -121,6 +121,7 @@
                     @onChange="onDataUpdated"
                     :id="itemId(formElem)"
                     :disabled="disabled(formElem)"
+                    :tag="id"
                 >
                 </MoleculeInputParams>
 

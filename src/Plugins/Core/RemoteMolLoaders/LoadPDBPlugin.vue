@@ -101,7 +101,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
         try {
             const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
             const fileInfo = await loadRemote(url);
-            return this.addFileInfoToViewer(fileInfo);
+            return this.addFileInfoToViewer({ fileInfo, tag: this.pluginId });
         } catch (err) {
             console.warn(err);
         }
@@ -110,7 +110,10 @@ export default class LoadPDBPlugin extends PluginParentClass {
         try {
             const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
             const fileInfo2 = await loadRemote(url);
-            return this.addFileInfoToViewer(fileInfo2);
+            return this.addFileInfoToViewer({
+                fileInfo: fileInfo2,
+                tag: this.pluginId,
+            });
         } catch (err: any) {
             // Failed a second time! Probably not a valid PDB.
 

@@ -165,7 +165,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
     /**
      * Checks if the SDF or MOL2 file is flat.
-     * 
+     *
      * @param {IFormatInfo} frmt      The format information.
      * @param {FileInfo}    fileInfo  The file information.
      * @returns {boolean}  True if the file is flat, false otherwise.
@@ -287,11 +287,14 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         // Note that below not only adds to viewer, but performs necessary
         // files conversions, generates 3D geometry, etc.
         return this.addFileInfoToViewer(
-            fileInfo,
-            this.getUserArg("hideOnLoad"),
-            this.getUserArg("desalt"),
-            gen3DParams,
-            ""
+            {
+                fileInfo,
+                desalt: this.getUserArg("desalt"),
+                gen3D: gen3DParams,
+                defaultTitle: "",
+                tag: this.pluginId
+            },
+            this.getUserArg("hideOnLoad")
         );
     }
 
@@ -324,9 +327,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["4WP4.pdb", "TOU:101"],
             ["4WP4.pdb.zip", "TOU:101"],
             ["4WP4.pdbqt", "A"],
-            ["4WP4.pqr", "TOU:101"], // 
-            ["4WP4.xyz", "4WP4"], // 
-            ["flat.mol2", "flat"]
+            ["4WP4.pqr", "TOU:101"], //
+            ["4WP4.xyz", "4WP4"], //
+            ["flat.mol2", "flat"],
         ];
 
         const tests = filesToTest.map((fileToTest, idx) => {

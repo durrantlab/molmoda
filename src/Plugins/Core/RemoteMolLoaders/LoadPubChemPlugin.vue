@@ -304,11 +304,11 @@ export default class LoadPubChemPlugin extends PluginParentClass {
             return;
         }
 
-        return this.addFileInfoToViewer(
+        return this.addFileInfoToViewer({
             fileInfo,
-            undefined,
-            this.getUserArg("desalt")
-        );
+            desalt: this.getUserArg("desalt"),
+            tag: this.pluginId,
+        });
 
         // return (
         //     loadRemote(

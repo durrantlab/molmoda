@@ -149,7 +149,10 @@ export class TestCmdList {
         } else {
             loadRemote(url, false)
                 .then((fileInfo: FileInfo) => {
-                    return getMoleculesFromStore().loadFromFileInfo(fileInfo);
+                    return getMoleculesFromStore().loadFromFileInfo({
+                        fileInfo,
+                        tag: null
+                    });
                 })
                 .then(() => {
                     expandAndShowAllMolsInTree();

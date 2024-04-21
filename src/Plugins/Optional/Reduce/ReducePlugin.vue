@@ -60,7 +60,7 @@ export default class ReducePlugin extends PluginParentClass {
     ];
     pluginId = "reduce";
 
-    intro = `Protonate/deprotonate proteins, in preparation for docking.`
+    intro = `Protonate/deprotonate proteins, in preparation for docking.`;
     details = `Uses the reduce program to guess at proper protonation states.`;
 
     // msgOnJobsFinished =
@@ -131,7 +131,6 @@ export default class ReducePlugin extends PluginParentClass {
                 );
             });
 
-
         // this.submitJobs(payloads); // , 10000);
     }
 
@@ -157,7 +156,10 @@ export default class ReducePlugin extends PluginParentClass {
         // Convert to tree nodes
         const treeNodesPromises: Promise<TreeNode>[] = fileInfos.map(
             (fileInfo) => {
-                return TreeNode.loadFromFileInfo(fileInfo)
+                return TreeNode.loadFromFileInfo({
+                    fileInfo,
+                    tag: this.pluginId,
+                })
                     .then((treeNode: TreeNode | void) => {
                         if (!treeNode) {
                             throw new Error(
@@ -199,7 +201,7 @@ export default class ReducePlugin extends PluginParentClass {
                     // console.log(payloads);
                     // console.log(pdbOuts);
                     treeNode.title = payloads[i].title + ":protonated";
-                    treeNode.addToMainTree();
+                    treeNode.addToMainTree(this.pluginId);
                 }
 
                 // const treeNode = TreeNode.loadHierarchicallyFromTreeNodes(protProtonatedTreeNodes);

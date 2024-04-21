@@ -68,7 +68,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     ];
     pluginId = "protonatecomps";
 
-    intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking.`
+    intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking.`;
     details = `Uses the Open Babel library to guess at proper protonation states.`;
 
     userArgDefaults: UserArg[] = [
@@ -157,7 +157,10 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                         auxData: compounds[i].treeNode?.title,
                         // treeNode: compounds[i].treeNode,
                     });
-                    const treeNode = TreeNode.loadFromFileInfo(fileInfo);
+                    const treeNode = TreeNode.loadFromFileInfo({
+                        fileInfo,
+                        tag: this.pluginId,
+                    });
                     treeNodePromises.push(treeNode);
                 }
 
@@ -200,7 +203,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
                 rootNode.title = "Compounds:protonated";
 
-                rootNode.addToMainTree();
+                rootNode.addToMainTree(this.pluginId);
                 return;
             })
             .catch((err: any): void => {

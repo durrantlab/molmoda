@@ -41,7 +41,7 @@ import {
     TreeNodeType,
     // IBox,
     SelectedType,
-TableHeaderSort,
+    TableHeaderSort,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
 import { messagesApi } from "@/Api/Messages";
@@ -95,7 +95,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     ];
     pluginId = "fpocketweb";
 
-    intro = `Identify small-molecule binding pockets on protein surfaces.`
+    intro = `Identify small-molecule binding pockets on protein surfaces.`;
     details = `Also calculate pocket properties using the fpocket algorithm (FPocketWeb).`;
 
     msgOnJobsFinished =
@@ -255,7 +255,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
         // Combine into payloads
         const payloads: any[] = pdbFiles.map((pdbFile) => {
             // Put path in auxData
-            pdbFile.auxData = pdbFile.treeNode?.descriptions.pathName(":")
+            pdbFile.auxData = pdbFile.treeNode?.descriptions.pathName(":");
 
             // Remove treenodes from payloads because doesn't serialize.
             delete pdbFile.treeNode;
@@ -315,12 +315,13 @@ export default class FPocketWebPlugin extends PluginParentClass {
             console.warn(stdErr);
         }
         const promises = [
-            TreeNode.loadFromFileInfo(
-                new FileInfo({
+            TreeNode.loadFromFileInfo({
+                fileInfo: new FileInfo({
                     name: payload.origFileName,
                     contents: outPdbFileTxt,
-                })
-            ),
+                }),
+                tag: this.pluginId
+            }),
             Promise.resolve(pocketProps),
         ];
 
@@ -374,7 +375,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 (treeNode) => treeNode.type !== TreeNodeType.Protein
             );
 
-            outPdbFileTreeNode.addToMainTree();
+            outPdbFileTreeNode.addToMainTree(this.pluginId);
 
             // this.$store.commit("pushToMolecules", outPdbFileTreeNode);
 
@@ -429,7 +430,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                         data: pocketProps[idx],
                         type: TreeNodeDataType.Table,
                         treeNodeId: node.id,
-                        headerSort: TableHeaderSort.None
+                        headerSort: TableHeaderSort.None,
                     } as ITreeNodeData,
                 },
             });

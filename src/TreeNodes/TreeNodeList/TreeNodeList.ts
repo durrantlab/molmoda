@@ -11,6 +11,7 @@ import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils";
 import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
+import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 /**
  * TreeNodeList class
@@ -343,31 +344,18 @@ export class TreeNodeList {
     /**
      * Loads a molecule into the list.
      *
-     * @param  {FileInfo}      fileInfo                   The file to load.
-     * @param  {boolean}       [desalt=false]             Whether to desalt the
-     *                                                    molecule.
-     * @param {IGen3DOptions}  [gen3D=undefined]          Whether and how to
-     *                                                    generate 3D
-     *                                                    coordinates.
-     * @param  {string}        [defaultTitle="Molecule"]  The default title to
-     *                                                    use if none is found.
+     * @param  {ILoadMolParams} params  The parameters for loading the molecule.
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
      *     list of new nodes, or undefined on failure.
      */
-    public loadFromFileInfo(
-        fileInfo: FileInfo,
-        desalt = false,
-        gen3D?: IGen3DOptions,
-        defaultTitle = "Molecule"
+    public loadFromFileInfo(params: ILoadMolParams
     ): Promise<void | TreeNodeList> {
-        const fileName = fileInfo.name;
-        return _parseMoleculeFile(
-            fileInfo,
-            false, // don't add to tree
-            desalt,
-            gen3D,
-            defaultTitle
-        )
+        const fileName = params.fileInfo.name;
+        
+        // Do not add to tree
+        params.addToTree = false;
+
+        return _parseMoleculeFile(params)
             .then((treeNodeList: void | TreeNodeList) => {
                 if (!treeNodeList || treeNodeList.length === 0) {
                     // Apparently wasn't possible to parse molecule.
@@ -503,9 +491,9 @@ export class TreeNodeList {
      * A helper function tht adds all the nodes in this list to the molecules in
      * the vuex store.
      */
-    public addToMainTree() {
+    public addToMainTree(tag: string | null) {
         for (const node of this._nodes) {
-            node.addToMainTree();
+            node.addToMainTree(tag);
         }
     }
 

@@ -26,6 +26,7 @@ import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Style
 import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -41,6 +42,7 @@ export interface ITreeNode {
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
     data?: { [key: string]: ITreeNodeData }; // key is title of chart, etc.
+    tags?: string[]; // tags for this node. Mostly just plugin ids of plugins used to generate this node.
 
     // These are specifically for terminal nodes
     styles?: IStyle[]; // styles and selections for this node
@@ -67,6 +69,7 @@ export class TreeNode {
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
     data?: { [key: string]: ITreeNodeData }; // key is title of chart, etc.
+    tags?: string[]; // tags for this node. Mostly just plugin ids of plugins used to generate this node.
 
     // These are specifically for non-terminal nodes
     nodes?: TreeNodeList; // Next level down in menu. So if molecule,
@@ -105,6 +108,7 @@ export class TreeNode {
         this.focused = params.focused;
         this.viewerDirty = params.viewerDirty;
         this.data = params.data;
+        this.tags = params.tags;
         this.nodes = params.nodes;
         this.model = params.model;
         this.styles = params.styles;
@@ -554,29 +558,18 @@ export class TreeNode {
     /**
      * Get a new TreeNode from a file info object.
      *
-     * @param  {FileInfo}       fileInfo           The file info object.
-     * @param  {boolean}        desalt             Whether to desalt the
-     *                                             molecule.
-     * @param  {IGen3DOptions}  [gen3D=undefined]  Whether and how to generate
-     *                                             3D.
-     * @param  {string}         defaultTitle       The default title to use if
-     *                                             needed.
+     * @param  {ILoadMolParams} params  The parameters.
      * @returns {Promise<void | TreeNode>}  The new TreeNode.
      */
     public static async loadFromFileInfo(
-        fileInfo: FileInfo,
-        desalt = false,
-        gen3D?: IGen3DOptions,
-        defaultTitle = "Molecule"
+        params: ILoadMolParams
     ): Promise<void | TreeNode> {
         // NOTE: static
-        const treeNodeList = await _parseMoleculeFile(
-            fileInfo,
-            false, // don't add to tree
-            desalt,
-            gen3D,
-            defaultTitle
-        );
+
+        // Do not add to the tree
+        params.addToTree = false;
+
+        const treeNodeList = await _parseMoleculeFile(params);
 
         if (treeNodeList === undefined) {
             return undefined;
@@ -693,13 +686,32 @@ export class TreeNode {
     /**
      * A helper function. Adds this node to the molecules in the vuex store.
      */
-    public async addToMainTree() {
+    public async addToMainTree(tag: string | null) {
         this.reassignAllIds();
 
         if (SetupTests.isTest) {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
         }
+
+        if (tag) {
+            // Update this nodes tag
+            if (this.tags === undefined) {
+                this.tags = [];
+            }
+            this.tags.push(tag);
+
+            // Update the tags of any children.
+            if (this.nodes) {
+                this.nodes.flattened.forEach((t) => {
+                    if (t.tags === undefined) {
+                        t.tags = [];
+                    }
+                    t.tags.push(tag);
+                });
+            }
+        }
+
         getMoleculesFromStore().push(this);
 
         // If you add new molecules to the tree, focus on everything.

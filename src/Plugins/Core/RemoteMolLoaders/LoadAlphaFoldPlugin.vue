@@ -111,7 +111,10 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
     runJobInBrowser(uniprot: string): Promise<void> {
-        const errorMsg = "Could not load AlphaFold model with UniProt ID " + uniprot + ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?"
+        const errorMsg =
+            "Could not load AlphaFold model with UniProt ID " +
+            uniprot +
+            ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?";
         return loadRemote(
             `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
         )
@@ -125,7 +128,10 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
                 throw new Error("No PDB file found.");
             })
             .then((fileInfo: FileInfo): any => {
-                return this.addFileInfoToViewer(fileInfo);
+                return this.addFileInfoToViewer({
+                    fileInfo,
+                    tag: this.pluginId,
+                });
             })
             .catch((err: string) => {
                 api.messages.popupError(errorMsg);

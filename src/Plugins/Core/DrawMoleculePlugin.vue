@@ -18,7 +18,11 @@
             <!-- v-model="molName"
         @onChange="searchByName"
         :description="molNameRespDescription" -->
-            <FormWrapper v-if="testEditing" class="mt-2" id="draw-smiles-wrapper">
+            <FormWrapper
+                v-if="testEditing"
+                class="mt-2"
+                id="draw-smiles-wrapper"
+            >
                 <FormInput
                     v-model="currentSmiles"
                     placeHolder="SMILES..."
@@ -309,7 +313,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                     // See https://github.com/partridgejiang/Kekule.js/issues/305
                     // composer.getEditor().zoomTo(0.75);
                     // composer.getEditor().setInitialZoom(1);
-
                 });
             }
         });
@@ -340,7 +343,10 @@ export default class DrawMoleculePlugin extends PluginParentClass {
             ),
         });
 
-        const treeNode = TreeNode.loadFromFileInfo(myFile);
+        const treeNode = TreeNode.loadFromFileInfo({
+            fileInfo: myFile,
+            tag: this.pluginId,
+        });
         treeNode
             .then((node: any) => {
                 node.title = this.getUserArg("drawMolName");
@@ -351,7 +357,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                 ]);
 
                 rootNode.title = this.getUserArg("drawMolName");
-                rootNode.addToMainTree();
+                rootNode.addToMainTree(this.pluginId);
                 return;
             })
             .catch((err: any) => {

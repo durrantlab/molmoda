@@ -486,7 +486,7 @@ export default class WebinaPlugin extends PluginParentClass {
             contents: pdbqtOut,
         });
 
-        return TreeNode.loadFromFileInfo(fileInfo)
+        return TreeNode.loadFromFileInfo({ fileInfo, tag: this.pluginId })
             .then((treeNode: TreeNode | void) => {
                 if (!treeNode) {
                     throw new Error("Could not load file into tree node.");
@@ -720,7 +720,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
                 if (!newTreeNodesByInputProt[protId]) {
                     // Note: At this point, rootNode contains GLModel (already parsed).
-                    rootNode.addToMainTree();
+                    rootNode.addToMainTree(this.pluginId);
                     newTreeNodesByInputProt[protId] = rootNode;
                 } else {
                     // Merge into the existing node
@@ -782,7 +782,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const webinaPluginOpenFactory = (dimen=10) => {
+        const webinaPluginOpenFactory = (dimen = 10) => {
             return new TestCmdList()
                 .setUserArg("x-dimens-region", dimen, this.pluginId)
                 .setUserArg("y-dimens-region", dimen, this.pluginId)

@@ -23,7 +23,10 @@
                 id="otherMols"
             />
             <FormCheckBox
-                v-if="val.considerProteins && val.allowUserToToggleIncludeMetalsSolventAsProtein"
+                v-if="
+                    val.considerProteins &&
+                    val.allowUserToToggleIncludeMetalsSolventAsProtein
+                "
                 v-model="val.includeMetalsSolventAsProtein"
                 text="Count metals/solvent as part of the protein"
                 id="countMetalsSolvent"
@@ -33,9 +36,7 @@
       <Alert type="info">{{ summary }}</Alert>
     </FormWrapper> -->
 
-        <FormElementDescription
-            :description="summary"
-        ></FormElementDescription>
+        <FormElementDescription :description="summary"></FormElementDescription>
     </span>
 </template>
 
@@ -53,6 +54,10 @@ import FormCheckBox from "../FormCheckBox.vue";
 import { MoleculeInput } from "./MoleculeInput";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
+function numAndNoun(num: number, noun: string): string {
+    return num === 1 ? `1 ${noun}` : `${num} ${noun}s`;
+}
+
 /**
  * CombineProteins component
  */
@@ -66,8 +71,8 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
     },
 })
 export default class MoleculeInputParams extends Vue {
-    @Prop({ default: new MoleculeInput() })
-    modelValue!: MoleculeInput;
+    @Prop({ default: new MoleculeInput() }) modelValue!: MoleculeInput;
+    @Prop({ required: true }) tag!: string; // pluginID
 
     // Shadows modelValue
     val: MoleculeInput = new MoleculeInput();
@@ -141,21 +146,16 @@ export default class MoleculeInputParams extends Vue {
         const compoundsNodes = mergedByMols.compoundsNodes ?? [];
         const compoundsNodesCount = compoundsNodes.length;
 
+        // compoundNodes has all the compounds. nodeGroups has all the proteins.
+        // (all terminal nodes).
+
         if (this.val.considerProteins) {
-            prts.push(
-                nodeGroupsCount !== 1
-                    ? `${nodeGroupsCount} proteins`
-                    : "1 protein"
-                //  + ` (${this.listMols(nodeGroups[0])})` // TODO: First mol for now. Need to think about this. Parent?
-            );
+            prts.push(numAndNoun(nodeGroupsCount, "protein"));
+            //  + ` (${this.listMols(nodeGroups[0])})` // TODO: First mol for now. Need to think about this. Parent?
         }
 
         if (this.val.considerCompounds) {
-            prts.push(
-                compoundsNodesCount !== 1
-                    ? `${compoundsNodesCount} compounds`
-                    : "1 compound" //  + ` (${this.listMols(compoundsNodes)})`
-            );
+            prts.push(numAndNoun(compoundsNodesCount, "compound"));
         }
         let components = prts.join(" and ");
 
@@ -176,7 +176,57 @@ export default class MoleculeInputParams extends Vue {
             warningClass = "text-danger fw-bold";
         }
 
-        return `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found <b>${components}</b>, <span class="${warningClass}">so this calculation will run <b>${numRuns}</b>.</span>`;
+        let msg = `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found <b>${components}</b>, <span class="${warningClass}">so this calculation will run <b>${numRuns}</b>.</span>`;
+
+        // Do any of the proteins already have this tag?
+        let numProtsAlreadyWithTag = 0;
+        for (const nodeGroup of nodeGroups) {
+            for (const nd of nodeGroup.terminals.nodes) {
+                if (nd.tags === undefined) continue;
+                if (nd.tags.includes(this.tag)) {
+                    numProtsAlreadyWithTag++;
+                }
+            }
+        }
+        // Do any of the compounds already have this tag?
+        let numCompsAlreadyWithTag = 0;
+        for (const nd of (compoundsNodes as TreeNodeList).nodes) {
+            if (nd.tags === undefined) continue;
+            if (nd.tags.includes(this.tag)) {
+                numCompsAlreadyWithTag++;
+            }
+        }
+
+        if (numProtsAlreadyWithTag > 0 || numCompsAlreadyWithTag > 0) {
+            const compsAlreadyWithTag = [];
+            if (numProtsAlreadyWithTag > 0) {
+                compsAlreadyWithTag.push(
+                    numAndNoun(numProtsAlreadyWithTag, "protein")
+                );
+            }
+            if (numCompsAlreadyWithTag > 0) {
+                compsAlreadyWithTag.push(
+                    numAndNoun(numCompsAlreadyWithTag, "compound")
+                );
+            }
+            const compsAlreadyWithTagStr = compsAlreadyWithTag.join(" and ");
+
+            const pronoun =
+                numProtsAlreadyWithTag + numCompsAlreadyWithTag > 1
+                    ? "them"
+                    : "it";
+
+            const were = numProtsAlreadyWithTag + numCompsAlreadyWithTag > 1
+                ? "were"
+                : "was";
+
+            msg += ` <span class="text-danger fw-bold">Warning: Of these molecules, ${compsAlreadyWithTagStr} ${were} created with this same plugin. Are you sure you want to include ${pronoun} again?</span>`;
+        }
+
+        // msg += numProtsAlreadyWithTag + " " + numCompsAlreadyWithTag;
+        // debugger;
+
+        return msg;
     }
 
     /**

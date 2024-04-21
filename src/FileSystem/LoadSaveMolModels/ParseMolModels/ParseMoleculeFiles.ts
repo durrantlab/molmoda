@@ -7,9 +7,8 @@ import { parseUsing3DMolJs } from "./_ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
 import { parseUsingMolModa } from "./_ParseUsingMolModa";
 import { molFormatInformation, MolLoader } from "../Types/MolFormats";
-import type { FileInfo } from "@/FileSystem/FileInfo";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
-import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
+import { addDefaultLoadMolParams, ILoadMolParams } from "./Types";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -52,27 +51,18 @@ function _fixTitle(title: string, defaultTitle: string): string {
  * Given an IFileInfo object (name, contents, type), load the molecule. Should
  * call only from TreeNodeList.load.
  *
- * @param  {FileInfo}      fileInfo           The file info object.
- * @param  {boolean}       addToTree          Whether to add the molecule to the
- *                                            tree.
- * @param  {boolean}       desalt             Whether to desalt the molecule.
- * @param  {IGen3DOptions} [gen3D=undefined]  Whether and how to generate 3D
- *                                            coordinates.
- * @param  {string}        defaultTitle       The default title to use if none
- *                                            is found.
+ * @param  {ILoadMolParams} params  The parameters for loading the molecule.
  * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the
  *     molecule is loaded.
  */
 export function _parseMoleculeFile(
-    fileInfo: FileInfo,
-    addToTree = true,
-    desalt = false,
-    gen3D?: IGen3DOptions,
-    defaultTitle = "Molecule"
+    params: ILoadMolParams
 ): Promise<void | TreeNodeList> {
+    params = addDefaultLoadMolParams(params);
+
     const spinnerId = api.messages.startWaitSpinner();
 
-    const formatInfo = fileInfo.getFormatInfo();
+    const formatInfo = params.fileInfo.getFormatInfo();
     if (formatInfo === undefined) {
         return Promise.reject();
     }
@@ -82,12 +72,14 @@ export function _parseMoleculeFile(
         console.warn(
             `File format ${formatInfo.description} does not support desalting.`
         );
-        desalt = false;
+        params.desalt = false;
     }
 
     // Apply text pre processor.
     if (formatInfo.textPreProcessor) {
-        fileInfo.contents = formatInfo.textPreProcessor(fileInfo.contents);
+        params.fileInfo.contents = formatInfo.textPreProcessor(
+            params.fileInfo.contents
+        );
     }
 
     // For 3dmoljs and openbabel loading, models should be merged. So save the
@@ -96,15 +88,20 @@ export function _parseMoleculeFile(
 
     switch (formatInfo.loader) {
         case MolLoader.Mol3D: {
-            promise = parseUsing3DMolJs(fileInfo, formatInfo);
+            promise = parseUsing3DMolJs(params.fileInfo, formatInfo);
             break;
         }
         case MolLoader.OpenBabel: {
-            promise = parseUsingOpenBabel(fileInfo, formatInfo, desalt, gen3D);
+            promise = parseUsingOpenBabel(
+                params.fileInfo,
+                formatInfo,
+                params.desalt,
+                params.gen3D
+            );
             break;
         }
         case MolLoader.MolModaFormat: {
-            return parseUsingMolModa(fileInfo).then((payload: any) => {
+            return parseUsingMolModa(params.fileInfo).then((payload: any) => {
                 api.messages.stopWaitSpinner(spinnerId);
                 return payload;
             });
@@ -128,7 +125,7 @@ export function _parseMoleculeFile(
                     "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>";
 
                 // Get first 5 lines of fileInfo.contents
-                if (fileInfo.contents.trim() !== "") {
+                if (params.fileInfo.contents.trim() !== "") {
                     // const first5Lines = fileInfo.contents
                     //     .split("\n")
                     //     .slice(0, 5);
@@ -140,7 +137,7 @@ export function _parseMoleculeFile(
                     //         ? "\n..."
                     //         : "";
 
-                    msg += `<p>File contents:</p><code><textarea disabled class="form-control" rows="3">${fileInfo.contents}</textarea>`;
+                    msg += `<p>File contents:</p><code><textarea disabled class="form-control" rows="3">${params.fileInfo.contents}</textarea>`;
                 }
                 api.messages.popupError(msg);
                 return treeNodeList;
@@ -148,7 +145,9 @@ export function _parseMoleculeFile(
 
             // Merge the tree nodes into one (so all compounds of multi-compound
             // file under single "Compounds").
-            const topLevelName = getFileNameParts(fileInfo.name).basename;
+            const topLevelName = getFileNameParts(
+                params.fileInfo.name
+            ).basename;
             const mergedTreeNodeList = treeNodeList.merge(topLevelName);
 
             // Make sure all molecules have a title. A title of a
@@ -156,7 +155,7 @@ export function _parseMoleculeFile(
             // `C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)[O-])C(=O)[O-].O.[Ca+2]`
             // TODO: Would be good to figure out why this happens, rather than fixing it here.
             mergedTreeNodeList.flattened.forEach((t) => {
-                t.title = _fixTitle(t.title, defaultTitle);
+                t.title = _fixTitle(t.title, params.defaultTitle as string);
             });
 
             // if (treeNode.nodes && treeNode.nodes.terminals) {
@@ -165,8 +164,8 @@ export function _parseMoleculeFile(
             //     });
             // }
 
-            if (addToTree) {
-                mergedTreeNodeList.addToMainTree();
+            if (params.addToTree) {
+                mergedTreeNodeList.addToMainTree(params.tag);
             }
 
             api.messages.stopWaitSpinner(spinnerId);

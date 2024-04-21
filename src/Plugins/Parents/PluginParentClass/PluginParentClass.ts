@@ -33,6 +33,7 @@ import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
 import { IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
+import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -561,38 +562,25 @@ export abstract class PluginParentClass extends mixins(
      * want to create a molecule from this object and add it to the main tree.
      * This is a helper function to do that.
      *
-     * @param {FileInfo}       fileInfo                   The fileInfo object.
-     * @param {boolean}        [hideOnLoad=false]         Whether to make the
-     *                                                    molecule visible or
-     *                                                    not. Defaults to
-     *                                                    false.
-     * @param {boolean}        [desalt=false]             Whether to desalt the
-     *                                                    molecule. Defaults to
-     *                                                    false.
-     * @param {IGen3DOptions}  [gen3D=undefined]          Whether and how to
-     *                                                    generate 3D
-     *                                                    coordinates.
-     * @param {string}         [defaultTitle="Molecule"]  The default title to
-     *                                                    use if none is found.
-     *                                                    Defaults to
-     *                                                    "Molecule".
+     * @param {ILoadMolParams} params              The parameters for loading
+     *                                             the molecule.
+     * @param {boolean}        [hideOnLoad=false]  Whether to make the molecule
+     *                                             visible or not. Defaults to
+     *                                             false.
      * @returns {Promise<void>}  A promise that resolves when the molecule is
      *                           added to the main tree.
      */
     protected addFileInfoToViewer(
-        fileInfo: FileInfo,
-        hideOnLoad = false,
-        desalt = false,
-        gen3D?: IGen3DOptions,
-        defaultTitle = "Molecule"
+        params: ILoadMolParams,
+        hideOnLoad = false
     ): Promise<void> {
         return new TreeNodeList()
-            .loadFromFileInfo(fileInfo, desalt, gen3D, defaultTitle)
+            .loadFromFileInfo(params)
             .then((newTreeNodeList) => {
                 // Note: If loading molmoda file, newTreeNodeList will be
                 // undefined.
                 if (newTreeNodeList) {
-                    newTreeNodeList.addToMainTree();
+                    newTreeNodeList.addToMainTree(this.pluginId);
 
                     if (hideOnLoad) {
                         newTreeNodeList.flattened.forEach((n) => {

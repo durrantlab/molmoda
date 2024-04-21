@@ -28,7 +28,7 @@ export function parseUsingMolModa(
                         pushToStoreList(key, stateFromJson[key]);
                         break;
                     case "molecules":
-                        (stateFromJson[key] as TreeNodeList).addToMainTree();
+                        (stateFromJson[key] as TreeNodeList).addToMainTree(null);
                         break;
                 }
             }
