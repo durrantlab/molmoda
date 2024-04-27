@@ -21,6 +21,7 @@ system uses these to autopopulate with plugins. -->
     <ErrorReportingPlugin @onPluginSetup="onPluginSetup"></ErrorReportingPlugin>
     <ExampleDataPlugin @onPluginSetup="onPluginSetup"></ExampleDataPlugin>
     <ExpandAllPlugin @onPluginSetup="onPluginSetup"></ExpandAllPlugin>
+    <FetcherPermissionPlugin @onPluginSetup="onPluginSetup"></FetcherPermissionPlugin>
     <InformationWindowPlugin @onPluginSetup="onPluginSetup"></InformationWindowPlugin>
     <JobsWindowPlugin @onPluginSetup="onPluginSetup"></JobsWindowPlugin>
     <LoadAlphaFoldPlugin @onPluginSetup="onPluginSetup"></LoadAlphaFoldPlugin>
@@ -83,6 +84,7 @@ import EditCompoundPlugin from "./Core/EditCompoundPlugin.vue";
 import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
 import ExampleDataPlugin from "./Core/LocalMolLoadersSavers/ExampleDataPlugin.vue";
 import ExpandAllPlugin from "./Core/ExpandAllPlugin.vue";
+import FetcherPermissionPlugin from "./Core/FetcherPermissionPlugin.vue";
 import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
 import JobsWindowPlugin from "./Core/Window/JobsWindowPlugin.vue";
 import LoadAlphaFoldPlugin from "./Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue";
@@ -141,6 +143,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ErrorReportingPlugin,
     ExampleDataPlugin,
     ExpandAllPlugin,
+    FetcherPermissionPlugin,
     InformationWindowPlugin,
     JobsWindowPlugin,
     LoadAlphaFoldPlugin,

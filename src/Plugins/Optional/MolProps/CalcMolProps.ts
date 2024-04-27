@@ -1,5 +1,6 @@
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { CalcMolPropsQueue } from "./CalcMolPropsQueue";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 export interface ICalcMolProps {
     lipinski: [string, number, string][];
@@ -24,7 +25,7 @@ export const otherTitle = "Other Chemical Properties";
  *                                                             containers.
  * @returns {Promise<ICalcMolProps[]>}  The calculated molecular properties.
  */
-export function calcMolProps(
+export async function calcMolProps(
     smilesStrs: string[],
     associatedTreeNodes?: (TreeNode | undefined)[]
 ): Promise<ICalcMolProps[]> {
@@ -87,8 +88,10 @@ export function calcMolProps(
         };
     });
 
+    const maxProcs = await getSetting("maxProcs");
+
     // Batching 25 at a time. This was chosen arbitrarily.
-    return new CalcMolPropsQueue("molProps", payloads, undefined, 1).done
+    return new CalcMolPropsQueue("molProps", payloads, maxProcs, undefined, 1).done
         .then((calculatedProps: any) => {
             for (let i = 0; i < calculatedProps.length; i++) {
                 const calculatedProp = calculatedProps[i];

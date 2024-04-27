@@ -115,6 +115,8 @@ export default class WebinaPlugin extends PluginParentClass {
     intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding.`;
     details = `Uses a version of AutoDock Vina (Webina).`;
 
+    maxProcs = 1;
+
     msgOnJobsFinished = () => {
         return msgOnJobsFinishedtoUse;
     };
@@ -184,17 +186,8 @@ export default class WebinaPlugin extends PluginParentClass {
             id: "cpu",
             type: UserArgType.Number,
             label: "Number of processors",
-            val: getSetting("maxProcs"),
-            filterFunc: (val: number) => {
-                val = Math.round(val);
-                if (val < 1) {
-                    val = 1;
-                }
-                if (val > getSetting("maxProcs")) {
-                    val = getSetting("maxProcs");
-                }
-                return val;
-            },
+            val: 1,
+            filterFunc: this.maxProcFilterFunc,
             description: "The number of processors to use for docking.",
         } as IUserArgNumber,
         {
@@ -300,6 +293,17 @@ export default class WebinaPlugin extends PluginParentClass {
         } as IUserArgGroup,
     ];
 
+    maxProcFilterFunc(val: number) {
+        val = Math.round(val);
+        if (val < 1) {
+            val = 1;
+        }
+        if (val > this.maxProcs) {
+            val = this.maxProcs;
+        }
+        return val;
+    }
+
     /**
      * Runs before the popup opens. Starts importing the modules needed for the
      * plugin.
@@ -307,6 +311,16 @@ export default class WebinaPlugin extends PluginParentClass {
     onBeforePopupOpen() {
         // You're probably going to need fpocketweb
         // dynamicImports.fpocketweb.module;
+
+        getSetting("maxProcs")
+            .then((maxProcs) => {
+                this.maxProcs = maxProcs;
+                this.setUserArg("cpu", this.maxProcs);
+                return;
+            })
+            .catch((err: Error) => {
+                throw err;
+            });
     }
 
     /**
@@ -637,7 +651,7 @@ export default class WebinaPlugin extends PluginParentClass {
         const simultBatches = 1;
         const batchSize = 1000;
 
-        const initialCompoundsVisible = getSetting("initialCompoundsVisible");
+        const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
 
         const newTreeNodesByInputProt: { [key: string]: TreeNode } = {};
 
@@ -754,9 +768,12 @@ export default class WebinaPlugin extends PluginParentClass {
             },
         } as IQueueCallbacks;
 
+        const maxProcs = await getSetting("maxProcs");
+
         await new WebinaQueue(
             "webina",
             inputs,
+            maxProcs,
             callbacks,
             procsPerJobBatch,
             simultBatches,

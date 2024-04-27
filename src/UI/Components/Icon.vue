@@ -8,7 +8,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { dynamicImports } from "@/Core/DynamicImports";
+import { fetcher } from "@/Core/Fetcher";
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 
@@ -53,12 +53,7 @@ export default class Icon extends Vue {
                 cachedIcons[icon] = "";
 
                 // Fetch the icon
-                const axios = await dynamicImports.axios.module;
-                const resp = await axios.get(icon, {
-                    responseType: "text",
-                });
-
-                const svgTxt = resp.data;
+                const svgTxt = await fetcher(icon);
 
                 cachedIcons[icon] = svgTxt;
                 this.svg = svgTxt;

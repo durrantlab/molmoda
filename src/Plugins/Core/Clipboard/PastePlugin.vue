@@ -32,7 +32,7 @@ import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFo
 import * as api from "@/Api";
 import { isTest } from "@/Testing/SetupTests";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
-import { dynamicImports } from "@/Core/DynamicImports";
+import { fetcher } from "@/Core/Fetcher";
 
 /** PastePlugin */
 @Options({
@@ -109,28 +109,25 @@ export default class PastePlugin extends PluginParentClass {
             // Get value of index from the url
             const url = new URL(window.location.href);
             const index = url.searchParams.get("index");
-            const axios = await dynamicImports.axios.module;
-            let resp: any;
+            // let txt: any;
             if ([null, undefined, "0"].includes(index))
-                resp = await axios.get("testmols/example.can");
+                txt = await fetcher("testmols/example.can");
             else if (index === "1")
-                resp = await axios.get("testmols/example.sdf");
+                txt = await fetcher("testmols/example.sdf");
             else if (index === "2")
-                resp = await axios.get("testmols/example.pdb");
+                txt = await fetcher("testmols/example.pdb");
             else if (index === "3")
-                resp = await axios.get("testmols/example.mol2");
+                txt = await fetcher("testmols/example.mol2");
             else if (index === "4")
-                resp = await axios.get("testmols/example_mult.can");
+                txt = await fetcher("testmols/example_mult.can");
             else if (index === "5")
-                resp = await axios.get("testmols/example_mult.sdf");
+                txt = await fetcher("testmols/example_mult.sdf");
             else if (index === "6")
-                resp = await axios.get("testmols/example_mult.pdb");
+                txt = await fetcher("testmols/example_mult.pdb");
             else if (index === "7")
-                resp = await axios.get("testmols/example_mult.mol2");
+                txt = await fetcher("testmols/example_mult.mol2");
             else if (index === "8")
-                resp = { data: "C##moose" };
-
-            txt = resp.data;
+                txt = "C##moose";
         }
 
         const fileInfo = new FileInfo({

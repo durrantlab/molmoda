@@ -347,72 +347,71 @@ export class TreeNodeList {
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
      *     list of new nodes, or undefined on failure.
      */
-    public loadFromFileInfo(params: ILoadMolParams
+    public async loadFromFileInfo(
+        params: ILoadMolParams
     ): Promise<void | TreeNodeList> {
         const fileName = params.fileInfo.name;
-        
+
         // Do not add to tree
         params.addToTree = false;
 
-        return _parseMoleculeFile(params)
-            .then((treeNodeList: void | TreeNodeList) => {
-                if (!treeNodeList || treeNodeList.length === 0) {
-                    // Apparently wasn't possible to parse molecule.
-                    // TODO: Show error message?
-                    return;
-                }
+        const treeNodeList: void | TreeNodeList = await _parseMoleculeFile(
+            params
+        );
 
-                const initialCompoundsVisible = getSetting(
-                    "initialCompoundsVisible"
-                );
+        if (!treeNodeList || treeNodeList.length === 0) {
+            // Apparently wasn't possible to parse molecule.
+            // TODO: Show error message?
+            return;
+        }
 
-                // Expand some of the nodes so the user can see what was loaded.
-                treeNodeList._nodes[0].visible = true;
+        const initialCompoundsVisible = await getSetting(
+            "initialCompoundsVisible"
+        );
 
-                // Get all the terminal nodes.
-                const terminalNodes = treeNodeList.terminals;
+        // Expand some of the nodes so the user can see what was loaded.
+        treeNodeList._nodes[0].visible = true;
 
-                // Rename the nodes in treeNodeList and make some of them
-                // invisible.
-                for (let i = 0; i < terminalNodes.length; i++) {
-                    const node = terminalNodes.get(i);
-                    // If "undefined" in title, rename
-                    if (node.title.indexOf("undefined") >= 0) {
-                        const { basename } = getFileNameParts(fileName);
-                        node.title = basename + ":" + (i + 1).toString();
-                    }
-                    node.visible = i < initialCompoundsVisible;
-                    // node.treeExpanded = false;
-                }
+        // Get all the terminal nodes.
+        const terminalNodes = treeNodeList.terminals;
 
-                // If there are more than MAX_VISIBLE nodes, let user know some not visible.
-                if (terminalNodes.length > initialCompoundsVisible) {
-                    // Expand trees to make the user aware of hidden molecules.
-                    // NOTE: I decided against the below for consistency. Leave
-                    // commented out in case you want to revisit this.
+        // Rename the nodes in treeNodeList and make some of them
+        // invisible.
+        for (let i = 0; i < terminalNodes.length; i++) {
+            const node = terminalNodes.get(i);
+            // If "undefined" in title, rename
+            if (node.title.indexOf("undefined") >= 0) {
+                const { basename } = getFileNameParts(fileName);
+                node.title = basename + ":" + (i + 1).toString();
+            }
+            node.visible = i < initialCompoundsVisible;
+            // node.treeExpanded = false;
+        }
 
-                    // treeNodeList._nodes[0].treeExpanded = true;
-                    // treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
-                    //     node.treeExpanded = true;
-                    // });
-                    // treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
-                    //     node.treeExpanded = true;
-                    // });
+        // If there are more than MAX_VISIBLE nodes, let user know some not visible.
+        if (terminalNodes.length > initialCompoundsVisible) {
+            // Expand trees to make the user aware of hidden molecules.
+            // NOTE: I decided against the below for consistency. Leave
+            // commented out in case you want to revisit this.
 
-                    // A message helps too.
-                    messagesApi.popupMessage(
-                        "Some Molecules not Visible",
-                        `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
-                        PopupVariant.Info
-                    );
-                }
+            // treeNodeList._nodes[0].treeExpanded = true;
+            // treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
+            //     node.treeExpanded = true;
+            // });
+            // treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
+            //     node.treeExpanded = true;
+            // });
 
-                this.extend(treeNodeList);
-                return treeNodeList;
-            })
-            .catch((error: Error) => {
-                throw error;
-            });
+            // A message helps too.
+            messagesApi.popupMessage(
+                "Some Molecules not Visible",
+                `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+                PopupVariant.Info
+            );
+        }
+
+        this.extend(treeNodeList);
+        return treeNodeList;
     }
 
     /**
@@ -489,7 +488,7 @@ export class TreeNodeList {
     /**
      * A helper function tht adds all the nodes in this list to the molecules in
      * the vuex store.
-     * 
+     *
      * @param {string | null} tag  The tag to add to the main tree.
      */
     public addToMainTree(tag: string | null) {

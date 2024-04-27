@@ -8,6 +8,7 @@ import {
 // Import startWaitSpinner as startWaitSpinnerSrc
 import { startWaitSpinner as startWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
 import { stopWaitSpinner as stopWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
+import { stopAllWaitSpinners as stopAllWaitSpinnersSrc } from "@/UI/MessageAlerts/WaitSpinner";
 
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
@@ -83,6 +84,13 @@ export const messagesApi = {
      */
     stopWaitSpinner: function (id: string) {
         stopWaitSpinnerSrc(id);
+    },
+
+    /**
+     * Stops all wait spinners.
+     */
+    stopAllWaitSpinners: function () {
+        stopAllWaitSpinnersSrc();
     },
 
     /**

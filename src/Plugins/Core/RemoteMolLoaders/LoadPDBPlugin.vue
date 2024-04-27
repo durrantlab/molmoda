@@ -14,7 +14,7 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { loadRemote } from "./Utils";
+import { loadRemoteToFileInfo } from "./Utils";
 import * as api from "@/Api";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -100,7 +100,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
     async runJobInBrowser(pdbId: string): Promise<void> {
         try {
             const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
-            const fileInfo = await loadRemote(url);
+            const fileInfo = await loadRemoteToFileInfo(url);
             return this.addFileInfoToViewer({ fileInfo, tag: this.pluginId });
         } catch (err) {
             console.warn(err);
@@ -109,7 +109,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
         // If you get here, it failed. Try CIF.
         try {
             const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
-            const fileInfo2 = await loadRemote(url);
+            const fileInfo2 = await loadRemoteToFileInfo(url);
             return this.addFileInfoToViewer({
                 fileInfo: fileInfo2,
                 tag: this.pluginId,

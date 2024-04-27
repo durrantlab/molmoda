@@ -36,7 +36,7 @@ async function main() {
     // api.sys.loadStatus.menuFinalized = true;
     const store = setupVueXStore();
 
-    applySettings(getSettings());
+    applySettings(await getSettings());
 
     createApp(App)
         .component("font-awesome-icon", FontAwesomeIcon)

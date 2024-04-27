@@ -2,6 +2,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { isStatCollectionEnabled } from "../StatCollection/StatUtils";
 import * as api from "@/Api/";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { localStorageGetItem, localStorageSetItem } from "@/Core/LocalStorage";
 
 /**
  * Saves settings to local storage.
@@ -22,7 +23,7 @@ export async function saveSettings(settings: UserArg[]) {
         return;
     }
 
-    localStorage.setItem("settings", JSON.stringify(settings));
+    await localStorageSetItem("settings", JSON.stringify(settings));
 }
 
 /**
@@ -30,8 +31,8 @@ export async function saveSettings(settings: UserArg[]) {
  *
  * @returns {UserArg[]}  The settings.
  */
-export function getSettings(): UserArg[] {
-    const settingsJson = localStorage.getItem("settings");
+export async function getSettings(): Promise<UserArg[]> {
+    const settingsJson = await localStorageGetItem("settings");
     if (settingsJson === null) {
         return [];
     }
@@ -44,8 +45,8 @@ export function getSettings(): UserArg[] {
  * @param  {string} id  The id of the setting.
  * @returns {any}  The value of the setting.
  */
-export function getSetting(id: string): any {
-    const settings = getSettings();
+export async function getSetting(id: string): Promise<any> {
+    const settings = await getSettings();
     for (const setting of settings) {
         if (setting.id === id) {
             return setting.val;

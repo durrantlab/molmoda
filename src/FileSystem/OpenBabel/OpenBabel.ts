@@ -12,6 +12,7 @@ import {
     IUserArgOption,
     IUserArgSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 export enum WhichMolsGen3D {
     All,
@@ -115,7 +116,7 @@ export function getGen3DUserArg(
  * @returns {Promise<any>}  A promise that resolves to the output of the
  *     program. Void if there is an error?
  */
-function runOpenBabel(
+async function runOpenBabel(
     appId: string,
     argsLists: string[][],
     inputFiles: FileInfo[] | IFileInfo[],
@@ -142,11 +143,13 @@ function runOpenBabel(
         payloads.push({
             args: argsLists[i],
             inputFile: inputFiles[i],
-            surpressMsgs
+            surpressMsgs,
         });
     }
 
-    return new OpenBabelQueue(appId, payloads).done;
+    const maxProcs = (await getSetting("maxProcs")) as number;
+
+    return await new OpenBabelQueue(appId, payloads, maxProcs).done;
 }
 
 /**

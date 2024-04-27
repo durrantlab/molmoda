@@ -27,8 +27,8 @@ import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { filesToFileInfos } from "@/FileSystem/Utils";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { appName } from "@/Core/GlobalVars";
+import { ResponseType, fetcher } from "@/Core/Fetcher";
 
 /**
  * ExampleDataPlugin
@@ -167,14 +167,13 @@ export default class ExampleDataPlugin extends PluginParentClass {
 
         // Fetch the file "./example.molmoda" file using fetch. It is a binary
         // file.
-        const axios = await dynamicImports.axios.module;
         const path = this.getUserArg("which_example_data");
-        const response = await axios.get(path, {
-            responseType: "arraybuffer",
+        const data = await fetcher(path, {
+            responseType: ResponseType.ARRAY_BUFFER,
         });
 
         // Convert to blob
-        const blob = new Blob([response.data], {
+        const blob = new Blob([data], {
             type: "application/octet-stream",
         }); // You can adjust the type if needed.
 

@@ -74,7 +74,7 @@ export default class CloneMolPlugin extends PluginParentClass {
      * 
      * @param {any} payload  The payload (node id)
      */
-    public onBeforePopupOpen(payload: any) {
+    onBeforePopupOpen(payload: any) {
         setNodesToActOn(this, payload);
 
         const nodeToActOn = (this.nodesToActOn as TreeNodeList).get(0);

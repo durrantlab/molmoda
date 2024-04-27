@@ -1,6 +1,6 @@
-import { dynamicImports } from "@/Core/DynamicImports";
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
+import { ResponseType, fetcher } from "@/Core/Fetcher";
 
 /**
  * Open a remote file using its URL. TODO: Good to move this elsewhere, perhaps
@@ -13,14 +13,9 @@ export async function openRemoteFile(url: string) {
         return;
     }
 
-    const axios = await dynamicImports.axios.module;
-
     try {
         // Fetch the file from the remote URL using axios
-        const response = await axios.get(url, { responseType: "blob" });
-
-        // The response is a Blob, directly accessible as response.data
-        const blob = response.data;
+        const blob = await fetcher(url, { responseType: ResponseType.BLOB });
 
         // Create a File object from the Blob.
         const filename = url.split("/").pop() as string;

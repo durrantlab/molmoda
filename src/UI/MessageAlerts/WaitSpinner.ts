@@ -3,7 +3,7 @@ let _body: any;
 
 /**
  * Returns the body element.
- * 
+ *
  * @returns {HTMLBodyElement}  The body element.
  */
 function _getBody(): HTMLBodyElement {
@@ -15,7 +15,7 @@ function _getBody(): HTMLBodyElement {
 
 /**
  * Stops a wait spinner.
- * 
+ *
  * @param {string} id  The id of the spinner.
  */
 export function stopWaitSpinner(id: string) {
@@ -32,8 +32,17 @@ export function stopWaitSpinner(id: string) {
 }
 
 /**
+ * Stops all wait spinners.
+ */
+export function stopAllWaitSpinners() {
+    for (const id in spinnerMotives) {
+        stopWaitSpinner(id);
+    }
+}
+
+/**
  * Starts a wait spinner. Returns an id that can be used to stop the spinner.
- * 
+ *
  * @param {number} [timeOut=30000]  The timeout in milliseconds.
  * @returns {string}  The id of the spinner.
  */
@@ -43,7 +52,7 @@ export function startWaitSpinner(timeOut = 30000): string {
     // We are starting the spinner
     const body = _getBody();
     body.classList.add("waiting");
-    
+
     // Keep track of the spinner
     const id = Math.random().toString(36).substring(2);
     spinnerMotives[id] = setTimeout(() => {

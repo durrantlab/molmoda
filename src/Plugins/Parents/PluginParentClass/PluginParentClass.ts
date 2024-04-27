@@ -260,7 +260,7 @@ export abstract class PluginParentClass extends mixins(
      * @gooddefault
      * @document
      */
-    public onPopupDone(): void {
+    public onPopupDone(): void | Promise<void> {
         this.submitJobs(this.userArgs);
     }
 

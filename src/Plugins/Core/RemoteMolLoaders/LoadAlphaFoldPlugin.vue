@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import { loadRemote } from "./Utils";
+import { loadRemoteToFileInfo } from "./Utils";
 import {
     IContributorCredit,
     ISoftwareCredit,
@@ -115,14 +115,14 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
             "Could not load AlphaFold model with UniProt ID " +
             uniprot +
             ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?";
-        return loadRemote(
+        return loadRemoteToFileInfo(
             `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
         )
             .then((fileInfo: FileInfo) => {
-                let pdbUrl = (fileInfo.contents[0] as any)["pdbUrl"]; // TODO: When would there be more than one entry?
+                let pdbUrl = (JSON.parse(fileInfo.contents)[0] as any)["pdbUrl"]; // TODO: When would there be more than one entry?
                 if (pdbUrl) {
                     // Load the PDB file.
-                    return loadRemote(pdbUrl);
+                    return loadRemoteToFileInfo(pdbUrl);
                 }
                 // Throw error
                 throw new Error("No PDB file found.");

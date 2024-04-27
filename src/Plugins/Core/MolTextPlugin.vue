@@ -35,6 +35,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { fetcher } from "@/Core/Fetcher";
 
 /**
  * A function that returns the options and validate functions for the available
@@ -229,20 +230,18 @@ export default class MolTextPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {
-        const axios = await dynamicImports.axios.module;
         const promises = [
-            axios.get("testmols/example.can"),
-            axios.get("testmols/example.sdf"),
-            axios.get("testmols/example.pdb"),
-            axios.get("testmols/example.mol2"),
-            axios.get("testmols/example_mult.can"),
-            axios.get("testmols/example_mult.sdf"),
-            axios.get("testmols/example_mult.pdb"),
-            axios.get("testmols/example_mult.mol2"),
+            fetcher("testmols/example.can"),
+            fetcher("testmols/example.sdf"),
+            fetcher("testmols/example.pdb"),
+            fetcher("testmols/example.mol2"),
+            fetcher("testmols/example_mult.can"),
+            fetcher("testmols/example_mult.sdf"),
+            fetcher("testmols/example_mult.pdb"),
+            fetcher("testmols/example_mult.mol2"),
         ];
 
-        const resps = await Promise.all(promises);
-        const txts = resps.map((resp) => resp.data);
+        const txts = await Promise.all(promises);
 
         // "c1ccccc1",
         // "HETATM    1  C   UNL     1       0.982  -0.028  -0.094  1.00  0.00           C  \nHETATM    2  H   UNL     1       2.074  -0.028  -0.094  1.00  0.00           H  \nHETATM    3  H   UNL     1       0.618   0.313  -1.066  1.00  0.00           H  \nHETATM    4  H   UNL     1       0.618   0.642   0.687  1.00  0.00           H  \nHETATM    5  H   UNL     1       0.618  -1.040   0.096  1.00  0.00           H  ",

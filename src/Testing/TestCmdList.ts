@@ -1,7 +1,7 @@
 // A container for test commmands, with added functions for common tasks.
 
 import type { FileInfo } from "@/FileSystem/FileInfo";
-import { loadRemote } from "@/Plugins/Core/RemoteMolLoaders/Utils";
+import { loadRemoteToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/Utils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import {
     ITestCommand,
@@ -147,7 +147,7 @@ export class TestCmdList {
             // Load the file
             openRemoteFile(url);
         } else {
-            loadRemote(url, false)
+            loadRemoteToFileInfo(url, false)
                 .then((fileInfo: FileInfo) => {
                     return getMoleculesFromStore().loadFromFileInfo({
                         fileInfo,

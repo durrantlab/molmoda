@@ -235,7 +235,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     /**
      * Runs when the user presses the action button and the popup closes.
      */
-    onPopupDone() {
+    async onPopupDone(): Promise<void> {
         const pdbFiles: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const userArgsNotFpocketArgs = [
@@ -265,31 +265,39 @@ export default class FPocketWebPlugin extends PluginParentClass {
             };
         });
 
-        new FPocketWebQueue("fpocket", payloads, undefined, 1).done
-            .then((fpocketOuts: any) => {
-                // Add the original name and whether to return points too. NOTE:
-                // This is per protein.
-                fpocketOuts.forEach((fpocketOut: any, i: number) => {
-                    fpocketOut.origFileName = pdbFiles[i].name;
-                    // fpocketOut.label =
-                    //     pdbFiles[i].treeNode?.descriptions.pathName(":");
-                    fpocketOut.label = pdbFiles[i].auxData;
-                    fpocketOut.providePseudoAtoms = (
-                        this.userArgs.filter(
-                            (u) => u.id === "providePseudoAtoms"
-                        )[0] as UserArg
-                    ).val;
-                });
+        const maxProcs = await getSetting("maxProcs");
 
-                this.submitJobs(fpocketOuts);
-                return;
-            })
-            .catch((err: Error) => {
-                // Intentionally not rethrowing error here.
-                messagesApi.popupError(
-                    `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
-                );
+        try {
+            const fpocketOuts: any = await new FPocketWebQueue(
+                "fpocket",
+                payloads,
+                maxProcs,
+                undefined,
+                1
+            ).done;
+
+            // Add the original name and whether to return points too. NOTE:
+            // This is per protein.
+            fpocketOuts.forEach((fpocketOut: any, i: number) => {
+                fpocketOut.origFileName = pdbFiles[i].name;
+                // fpocketOut.label =
+                //     pdbFiles[i].treeNode?.descriptions.pathName(":");
+                fpocketOut.label = pdbFiles[i].auxData;
+                fpocketOut.providePseudoAtoms = (
+                    this.userArgs.filter(
+                        (u) => u.id === "providePseudoAtoms"
+                    )[0] as UserArg
+                ).val;
             });
+
+            this.submitJobs(fpocketOuts);
+            return;
+        } catch (err: any) {
+            // Intentionally not rethrowing error here.
+            messagesApi.popupError(
+                `<p>FPocketWeb threw an error, likely because it could not detect any pockets.</p><p>Error details: ${err.message}</p>`
+            );
+        }
     }
 
     /**
@@ -300,7 +308,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
      *                          Contains compound information.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(payload: any): Promise<void> {
+    async runJobInBrowser(payload: any): Promise<void> {
         if (payload.stdErr !== "") {
             throw new Error(payload.stdErr);
         }
@@ -320,70 +328,70 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     name: payload.origFileName,
                     contents: outPdbFileTxt,
                 }),
-                tag: this.pluginId
+                tag: this.pluginId,
             }),
             Promise.resolve(pocketProps),
         ];
 
-        return Promise.all(promises).then((payload2: any[]) => {
-            const outPdbFileTreeNode = payload2[0] as TreeNode | void;
-            const pocketProps = payload2[1] as any[];
+        const payload2: any[] = await Promise.all(promises);
 
-            if (outPdbFileTreeNode === undefined) {
-                return;
-            }
+        const outPdbFileTreeNode = payload2[0] as TreeNode | void;
+        const pocketProps2 = payload2[1] as any[];
 
-            outPdbFileTreeNode.title = "Pockets: " + payload.label;
+        if (outPdbFileTreeNode === undefined) {
+            return;
+        }
 
-            // const numInitiallyVisible = 5;
+        outPdbFileTreeNode.title = "Pockets: " + payload.label;
 
-            // Update the compounds (names, style)
-            // let firstNodeId = "";
+        // const numInitiallyVisible = 5;
 
-            // Make everything visible to start.
-            outPdbFileTreeNode.visible = true;
+        // Update the compounds (names, style)
+        // let firstNodeId = "";
 
-            if (outPdbFileTreeNode.nodes) {
-                this._addBoxes(outPdbFileTreeNode, pocketProps);
+        // Make everything visible to start.
+        outPdbFileTreeNode.visible = true;
 
-                this._processPocketPseudoAtoms(
-                    outPdbFileTreeNode,
-                    providePseudoAtoms
-                );
+        if (outPdbFileTreeNode.nodes) {
+            await this._addBoxes(outPdbFileTreeNode, pocketProps2);
 
-                // Title "Compounds"
-                const compoundsNode = outPdbFileTreeNode.nodes
-                    .lookup([TreeNodeType.Compound])
-                    .get(0);
-                compoundsNode.title = "Pockets";
-                // compoundsNode.visible = true;
-
-                // Hide anything that isn't Pockets, since it's probably also in
-                // another molecule.
-                for (const node of outPdbFileTreeNode.nodes._nodes) {
-                    if (node.title !== "Pockets") {
-                        node.visible = false;
-                    }
-                    // else {
-                    //     firstNodeId = node.id as string;
-                    // }
-                }
-            }
-
-            // Remove protein
-            outPdbFileTreeNode.nodes = outPdbFileTreeNode.nodes?.filter(
-                (treeNode) => treeNode.type !== TreeNodeType.Protein
+            await this._processPocketPseudoAtoms(
+                outPdbFileTreeNode,
+                providePseudoAtoms
             );
 
-            outPdbFileTreeNode.addToMainTree(this.pluginId);
+            // Title "Compounds"
+            const compoundsNode = outPdbFileTreeNode.nodes
+                .lookup([TreeNodeType.Compound])
+                .get(0);
+            compoundsNode.title = "Pockets";
+            // compoundsNode.visible = true;
 
-            // this.$store.commit("pushToMolecules", outPdbFileTreeNode);
+            // Hide anything that isn't Pockets, since it's probably also in
+            // another molecule.
+            for (const node of outPdbFileTreeNode.nodes._nodes) {
+                if (node.title !== "Pockets") {
+                    node.visible = false;
+                }
+                // else {
+                //     firstNodeId = node.id as string;
+                // }
+            }
+        }
 
-            // this.$nextTick(() => {
-            //     selectProgramatically(firstNodeId);
-            // });
-            return;
-        });
+        // Remove protein
+        outPdbFileTreeNode.nodes = outPdbFileTreeNode.nodes?.filter(
+            (treeNode) => treeNode.type !== TreeNodeType.Protein
+        );
+
+        outPdbFileTreeNode.addToMainTree(this.pluginId);
+
+        // this.$store.commit("pushToMolecules", outPdbFileTreeNode);
+
+        // this.$nextTick(() => {
+        //     selectProgramatically(firstNodeId);
+        // });
+        return;
     }
 
     /**
@@ -392,8 +400,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
      * @param {TreeNode} outPdbFileTreeNode    The tree node to add the boxes to.
      * @param {any[]} pocketProps              The properties of the pockets.
      */
-    _addBoxes(outPdbFileTreeNode: TreeNode, pocketProps: any[]) {
-        const numInitiallyVisible = getSetting("initialCompoundsVisible");
+    async _addBoxes(outPdbFileTreeNode: TreeNode, pocketProps: any[]) {
+        const numInitiallyVisible = await getSetting("initialCompoundsVisible");
         const pseudoAtomNodes = outPdbFileTreeNode.nodes?.lookup([
             TreeNodeType.Compound,
             "*",
@@ -454,15 +462,15 @@ export default class FPocketWebPlugin extends PluginParentClass {
      * @param {TreeNode} outPdbFileTreeNode    The tree node to process.
      * @param {boolean} providePseudoAtoms     Whether to provide pseudo atoms.
      */
-    _processPocketPseudoAtoms(
+    async _processPocketPseudoAtoms(
         outPdbFileTreeNode: TreeNode,
         providePseudoAtoms: boolean
-    ) {
+    ): Promise<void> {
         if (outPdbFileTreeNode.nodes === undefined) {
             return;
         }
 
-        const numInitiallyVisible = getSetting("initialCompoundsVisible");
+        const numInitiallyVisible = await getSetting("initialCompoundsVisible");
 
         // Get the index of the node with type compound
         const compoundNodeIdx = outPdbFileTreeNode.nodes._nodes.findIndex(

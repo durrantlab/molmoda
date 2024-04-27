@@ -157,12 +157,15 @@ for ts_file in ts_files:
     # try:
     with open(ts_file, "r") as file:
         content = file.read()
-    # except:
-        # import pdb; pdb.set_trace()
-
-    # No use fetch( anywhere. Prefer axios.get.
+    # No use fetch( anywhere. Prefer fetcher().
     if "fetch(" in content:
-        add_error(ts_file, "Use axios.get instead of fetch.")
+        add_error(ts_file, "Use fetcher() instead of fetch.")
+
+    if "axios.get" in content and "Fetcher.ts" not in ts_file:
+        add_error(ts_file, "Use fetcher() instead of axios.get.")
+
+    if "localStorage." in content and "LocalStorage.ts" not in ts_file:
+        add_error(ts_file, "Use the LocalStorage class instead of localStorage.setItem or localStorage.getItem.")
 
     # if ".catch(" in content, there must be a "throw" within the next few
     # lines. Use regex.
@@ -193,7 +196,7 @@ for ts_file in ts_files:
             ts_file,
             'The string "MolModa" should only be used in GlobalVars.ts. Import the app name from there.',
         )
-        
+
 
     # Try to avoid filtering molecules directly. Use the shallowFilters
     # subclass.

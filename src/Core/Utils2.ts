@@ -12,10 +12,10 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
  *                             used.
  * @returns {any[][]} A list of batches
  */
-export function batchify<T>(lst: T[], numBatches?: number | null): T[][] {
+export async function batchify<T>(lst: T[], numBatches?: number | null): Promise<T[][]> {
     // If batchSize is not specified, use number of available processors
     if (numBatches === undefined || numBatches === null) {
-        numBatches = getSetting("maxProcs") as number;
+        numBatches = await getSetting("maxProcs") as number;
     }
     const batchSize = Math.ceil(lst.length / numBatches);
     

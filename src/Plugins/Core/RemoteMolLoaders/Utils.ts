@@ -1,5 +1,6 @@
 import * as api from "@/Api";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { fetcher } from "@/Core/Fetcher";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
@@ -10,7 +11,10 @@ import { FileInfo } from "@/FileSystem/FileInfo";
  * @returns {Promise<FileInfo>} A promise that resolves the file info (name,
  *     contents, type).
  */
-export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
+export function loadRemoteToFileInfo(
+    url: string,
+    validateUrl = true
+): Promise<FileInfo> {
     const spinnerId = api.messages.startWaitSpinner();
     return new Promise((resolve, reject) => {
         const urlUpper = url.toUpperCase();
@@ -23,26 +27,38 @@ export function loadRemote(url: string, validateUrl = true): Promise<FileInfo> {
             reject(`The URL should start with http:// or https://.`);
             return;
         }
-        
-        dynamicImports.axios.module
-            .then((axios) => {
-                return axios.get(url);
-            })
-            .then((resp) => {
-                const flnm = url.split("/").pop() as string;
-                api.messages.stopWaitSpinner(spinnerId);
-                return resolve(
-                    new FileInfo({
-                        name: flnm,
-                        contents: resp.data as string,
-                    })
-                );
-            })
-            .catch((err) => {
-                api.messages.stopWaitSpinner(spinnerId);
-                reject(err);
-                // reject(`Could not load the URL ${url}: ` + err.message);
-                // api.messages.waitSpinner(false);
-            });
+
+        // debugger;
+
+        try {
+            fetcher(url)
+                .then((txt) => {
+                    const flnm = url.split("/").pop() as string;
+                    api.messages.stopWaitSpinner(spinnerId);
+                    return resolve(
+                        new FileInfo({
+                            name: flnm,
+                            contents: txt,
+                        })
+                    );
+                })
+                .catch((err) => {
+                    api.messages.stopWaitSpinner(spinnerId);
+                    reject(err);
+                    // reject(`Could not load the URL ${url}: ` + err.message);
+                    // api.messages.waitSpinner(false);
+                });
+        } catch (err) {
+            api.messages.stopWaitSpinner(spinnerId);
+            reject(err);
+        }
+
+        // })
+        // .catch((err) => {
+        //     api.messages.stopWaitSpinner(spinnerId);
+        //     reject(err);
+        //     // reject(`Could not load the URL ${url}: ` + err.message);
+        //     // api.messages.waitSpinner(false);
+        // });
     });
 }

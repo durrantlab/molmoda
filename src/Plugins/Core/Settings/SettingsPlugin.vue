@@ -140,36 +140,39 @@ export default class SettingsPlugin extends PluginParentClass {
      */
     onBeforePopupOpen() {
         // Get values from localstorage.
-        const savedSettings = getSettings();
-        const maxProcs = savedSettings.filter(
-            (setting) => setting.id === "maxProcs"
-        )[0]?.val;
-        const initialCompoundsVisible = savedSettings.filter(
-            (setting) => setting.id === "initialCompoundsVisible"
-        )[0]?.val;
-        // const molViewer = savedSettings.filter(
-        //     (setting) => setting.id === "molViewer"
-        // )[0]?.val;
+        getSettings()
+        .then((savedSettings) => {
+            const maxProcs = savedSettings.filter(
+                (setting) => setting.id === "maxProcs"
+            )[0]?.val;
+            const initialCompoundsVisible = savedSettings.filter(
+                (setting) => setting.id === "initialCompoundsVisible"
+            )[0]?.val;
+            // const molViewer = savedSettings.filter(
+            //     (setting) => setting.id === "molViewer"
+            // )[0]?.val;
+    
+            const defaults = defaultSettings();
+    
+            // Update the userArgs with the saved values.
+            this.setUserArg(
+                "maxProcs",
+                maxProcs ? parseInt(maxProcs as string) : defaults.maxProcs
+            );
+            this.setUserArg(
+                "initialCompoundsVisible",
+                initialCompoundsVisible
+                    ? parseInt(initialCompoundsVisible as string)
+                    : defaults.initialCompoundsVisible
+            );
+            // this.setUserArg(
+            //     "molViewer",
+            //     molViewer ? molViewer : defaults.molViewer
+            // );
 
-        const defaults = defaultSettings();
-
-        // Update the userArgs with the saved values.
-        this.setUserArg(
-            "maxProcs",
-            maxProcs ? parseInt(maxProcs as string) : defaults.maxProcs
-        );
-        this.setUserArg(
-            "initialCompoundsVisible",
-            initialCompoundsVisible
-                ? parseInt(initialCompoundsVisible as string)
-                : defaults.initialCompoundsVisible
-        );
-        // this.setUserArg(
-        //     "molViewer",
-        //     molViewer ? molViewer : defaults.molViewer
-        // );
-
-        isStatCollectionEnabled().then((isSet) => {
+            return isStatCollectionEnabled();
+        })
+        .then((isSet) => {
             this.setUserArg("allowCookies", isSet);
             this.setStatCollectPetition();
             return;

@@ -45,7 +45,7 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { loadRemote } from "./Utils";
+import { loadRemoteToFileInfo } from "./Utils";
 import * as api from "@/Api";
 import { appName } from "@/Core/GlobalVars";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -156,15 +156,15 @@ export default class LoadPubChemPlugin extends PluginParentClass {
             this.cid = "";
         };
 
-        loadRemote(
+        loadRemoteToFileInfo(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${this.molName}/synonyms/JSON`
         )
             .then((fileInfo: FileInfo) => {
-                let cid = fileInfo.contents.InformationList.Information[0].CID;
+                const jsonResp = JSON.parse(fileInfo.contents);
+                let cid = jsonResp.InformationList.Information[0].CID;
                 this.cid = cid;
 
-                let synonyms =
-                    fileInfo.contents.InformationList.Information[0].Synonym;
+                let synonyms = jsonResp.InformationList.Information[0].Synonym;
                 synonyms = synonyms.filter(
                     (synonym: string) =>
                         synonym.toLowerCase() !== this.molName.toLowerCase()
@@ -187,7 +187,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      *     loaded.
      */
     get1DVersion(filename: string): Promise<FileInfo | void> {
-        return loadRemote(
+        return loadRemoteToFileInfo(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${this.cid}/property/IsomericSMILES/TXT`
         )
             .then((fileInfo: FileInfo) => {
@@ -209,7 +209,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      *     loaded.
      */
     get2DVersion(filename: string): Promise<FileInfo | void> {
-        return loadRemote(
+        return loadRemoteToFileInfo(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=2d&response_type=display`
         )
             .then((fileInfo: FileInfo) => {
@@ -231,7 +231,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      *     loaded.
      */
     get3DVersion(filename: string): Promise<FileInfo | void> {
-        return loadRemote(
+        return loadRemoteToFileInfo(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/${this.cid}/record/SDF/?record_type=3d&response_type=display`
         )
             .then((fileInfo: FileInfo) => {

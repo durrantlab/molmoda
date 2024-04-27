@@ -1,4 +1,4 @@
-import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import * as api from "@/Plugins/LoadedPlugins";
 
 export const pluginsApi = {
     /**
@@ -9,7 +9,7 @@ export const pluginsApi = {
      *                              (optional).
      */
     runPlugin: function (pluginName: string, params?: any) {
-        const plugin = loadedPlugins[pluginName];
+        const plugin = api.loadedPlugins[pluginName];
         if (plugin.onPluginStart !== null) {
             plugin.onPluginStart(params);
         }
@@ -19,8 +19,8 @@ export const pluginsApi = {
      * Closes all plugins.
      */
     closeAllPlugins: function () {
-        for (const pluginName in loadedPlugins) {
-            const plugin = loadedPlugins[pluginName];
+        for (const pluginName in api.loadedPlugins) {
+            const plugin = api.loadedPlugins[pluginName];
             if (plugin.open) {
                 plugin.closePopup();
             }

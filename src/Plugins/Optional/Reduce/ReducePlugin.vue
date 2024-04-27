@@ -103,7 +103,7 @@ export default class ReducePlugin extends PluginParentClass {
     /**
      * Runs when the user presses the action button and the popup closes.
      */
-    onPopupDone() {
+    async onPopupDone(): Promise<void> {
         const fileInfos: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const distantAncestorTitles = fileInfos.map((f) => {
@@ -113,7 +113,9 @@ export default class ReducePlugin extends PluginParentClass {
             return f.treeNode.getAncestry().get(0).title;
         });
 
-        new ReduceQueue("reduce", fileInfos, undefined, 1).done
+        const maxProcs = await getSetting("maxProcs");
+
+        new ReduceQueue("reduce", fileInfos, maxProcs, undefined, 1).done
             .then((reduceOuts: any) => {
                 // TODO: Get any stdErr and show errors if they exist.
 
@@ -183,40 +185,35 @@ export default class ReducePlugin extends PluginParentClass {
             }
         );
 
-        return Promise.all(treeNodesPromises)
-            .then((protProtonatedTreeNodes: TreeNode[]) => {
-                const initialCompoundsVisible = getSetting(
-                    "initialCompoundsVisible"
-                );
+        const protProtonatedTreeNodes = (await Promise.all(
+            treeNodesPromises
+        )) as TreeNode[];
+        const initialCompoundsVisible = await getSetting(
+            "initialCompoundsVisible"
+        );
 
-                // Only first 5 are visible
-                for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
-                    const protProtonatedTreeNode = protProtonatedTreeNodes[i];
-                    protProtonatedTreeNode.visible =
-                        i < initialCompoundsVisible;
+        // Only first 5 are visible
+        for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
+            const protProtonatedTreeNode = protProtonatedTreeNodes[i];
+            protProtonatedTreeNode.visible = i < initialCompoundsVisible;
 
-                    const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([
-                        protProtonatedTreeNode,
-                    ]);
-                    // console.log(payloads);
-                    // console.log(pdbOuts);
-                    treeNode.title = payloads[i].title + ":protonated";
-                    treeNode.addToMainTree(this.pluginId);
-                }
+            const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([
+                protProtonatedTreeNode,
+            ]);
+            // console.log(payloads);
+            // console.log(pdbOuts);
+            treeNode.title = payloads[i].title + ":protonated";
+            treeNode.addToMainTree(this.pluginId);
+        }
 
-                // const treeNode = TreeNode.loadHierarchicallyFromTreeNodes(protProtonatedTreeNodes);
+        // const treeNode = TreeNode.loadHierarchicallyFromTreeNodes(protProtonatedTreeNodes);
 
-                // treeNode.title = "Moose";
+        // treeNode.title = "Moose";
 
-                // treeNode.addToMainTree();
+        // treeNode.addToMainTree();
 
-                // return protProtonatedTreeNodes;
-                return;
-            })
-            .catch((err: Error) => {
-                debugger;
-                throw err;
-            });
+        // return protProtonatedTreeNodes;
+        return;
     }
 
     /**

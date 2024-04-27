@@ -1,6 +1,5 @@
 // The purpose of this class is to maintain
 
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import {
     doneInQueueStore,
     makeUniqJobId,
@@ -103,6 +102,7 @@ export abstract class QueueParent {
     constructor(
         jobTypeId: string,
         inputs: any[],
+        maxProcs: number,
         callbacks?: IQueueCallbacks,
         procsPerJobBatch = 1,
         simulBatches?: number,
@@ -119,7 +119,7 @@ export abstract class QueueParent {
 
         // Adjust max number of processors to be used by the queue if necessary.
         // Useful if there are very few items in the queue.
-        this._maxTotalProcs = getSetting("maxProcs");
+        this._maxTotalProcs = maxProcs;
         this._maxTotalProcs = Math.min(
             this._maxTotalProcs,
             this._numTotalJobs * this._procsPerJobBatch

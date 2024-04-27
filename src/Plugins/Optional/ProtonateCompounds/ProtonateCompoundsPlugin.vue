@@ -134,7 +134,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
      *
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
-    onPopupDone(): Promise<void> {
+    async onPopupDone(): Promise<void> {
         const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const pH = this.getUserArg("pH");
@@ -145,70 +145,71 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
 
-        return convertFileInfosOpenBabel(compounds, "mol2", gen3DParams, pH)
-            .then((molTexts: string[]) => {
-                // Make new fileinfos with protonated files
-                // const treeNodes: TreeNode[] = [];
-                const treeNodePromises: Promise<void | TreeNode>[] = [];
-                for (let i = 0; i < molTexts.length; i++) {
-                    const fileInfo = new FileInfo({
-                        name: compounds[i].name,
-                        contents: molTexts[i],
-                        auxData: compounds[i].treeNode?.title,
-                        // treeNode: compounds[i].treeNode,
-                    });
-                    const treeNode = TreeNode.loadFromFileInfo({
-                        fileInfo,
-                        tag: this.pluginId,
-                    });
-                    treeNodePromises.push(treeNode);
-                }
+        const molTexts = (await convertFileInfosOpenBabel(
+            compounds,
+            "mol2",
+            gen3DParams,
+            pH
+        )) as string[];
 
-                return Promise.all(treeNodePromises);
-            })
-            .then((treeNodes: (void | TreeNode)[]) => {
-                const initialCompoundsVisible = getSetting(
-                    "initialCompoundsVisible"
-                );
-
-                treeNodes = treeNodes.map((n, i) => {
-                    if (n === undefined) {
-                        return undefined;
-                    }
-
-                    if (n.nodes) {
-                        // Should have only one terminal
-                        n = n.nodes.terminals.get(0);
-                    }
-
-                    n.visible = i < initialCompoundsVisible;
-                    n.selected = SelectedType.False;
-                    n.focused = false;
-                    n.viewerDirty = true;
-                    n.type = TreeNodeType.Compound;
-
-                    const compound = compounds[i];
-                    if (compound.treeNode !== undefined) {
-                        n.title = compound.treeNode.title;
-                    }
-                    return n;
-                });
-
-                const onlyTreeNodes = treeNodes.filter(
-                    (tn) => tn !== undefined
-                ) as TreeNode[];
-
-                const rootNode =
-                    TreeNode.loadHierarchicallyFromTreeNodes(onlyTreeNodes);
-
-                rootNode.title = "Compounds:protonated";
-
-                rootNode.addToMainTree(this.pluginId);
-                return;
-            })
-            .catch((err: any): void => {
-                throw err;
+        // Make new fileinfos with protonated files
+        // const treeNodes: TreeNode[] = [];
+        const treeNodePromises: Promise<void | TreeNode>[] = [];
+        for (let i = 0; i < molTexts.length; i++) {
+            const fileInfo = new FileInfo({
+                name: compounds[i].name,
+                contents: molTexts[i],
+                auxData: compounds[i].treeNode?.title,
+                // treeNode: compounds[i].treeNode,
             });
+            const treeNode = TreeNode.loadFromFileInfo({
+                fileInfo,
+                tag: this.pluginId,
+            });
+            treeNodePromises.push(treeNode);
+        }
+
+        let treeNodes = (await Promise.all(
+            treeNodePromises
+        )) as (void | TreeNode)[];
+
+        const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
+
+        treeNodes = treeNodes.map((n, i) => {
+            if (n === undefined) {
+                return undefined;
+            }
+
+            if (n.nodes) {
+                // Should have only one terminal
+                n = n.nodes.terminals.get(0);
+            }
+
+            n.visible = i < initialCompoundsVisible;
+            n.selected = SelectedType.False;
+            n.focused = false;
+            n.viewerDirty = true;
+            n.type = TreeNodeType.Compound;
+
+            const compound = compounds[i];
+            if (compound.treeNode !== undefined) {
+                n.title = compound.treeNode.title;
+            }
+            return n;
+        });
+
+        const onlyTreeNodes = treeNodes.filter(
+            (tn) => tn !== undefined
+        ) as TreeNode[];
+
+        const rootNode =
+            TreeNode.loadHierarchicallyFromTreeNodes(onlyTreeNodes);
+
+        rootNode.title = "Compounds:protonated";
+
+        rootNode.addToMainTree(this.pluginId);
+
+        return;
 
         // // Make sure the filenames are unique.
         // for (let i = 0; i < compounds.length; i++) {
