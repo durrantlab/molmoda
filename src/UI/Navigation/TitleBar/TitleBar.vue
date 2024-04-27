@@ -432,12 +432,15 @@ export default class TitleBar extends Vue {
                 });
             }
 
-            // Now also update visibility on anything that is selected.
-            const selecteds = getMoleculesFromStore().filters.keepSelected(true, true);
-            selecteds.forEach((node2: TreeNode) => {
-                node2.visible = newVisible;
-                node2.viewerDirty = true;
-            });
+            // Now also update visibility on anything that is selected, if the
+            // current one is selected.
+            if (node.selected !== SelectedType.False) {
+                const selecteds = getMoleculesFromStore().filters.keepSelected(true, true);
+                selecteds.forEach((node2: TreeNode) => {
+                    node2.visible = newVisible;
+                    node2.viewerDirty = true;
+                });
+            }
         }
     }
 
