@@ -1,75 +1,100 @@
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { isStatCollectionEnabled } from "../StatCollection/StatUtils";
-import * as api from "@/Api/";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { localStorageGetItem, localStorageSetItem } from "@/Core/LocalStorage";
 
 /**
- * Saves settings to local storage.
+ * Get the default settings.
+ *
+ * @returns {any}  The default settings.
+ */
+export async function defaultSettings(): Promise<any> {
+    // Leave one processor free
+    const maxProcsAvailable = navigator.hardwareConcurrency || 4;
+    const procsToRecommend =
+        maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
+
+    // For allowCookies, try to use existing value if it is available.
+    // Otherwise, use false as default.
+    const allowCookies = await localStorageGetItem("allowCookies", false);
+
+    return {
+        maxProcs: procsToRecommend,
+        initialCompoundsVisible: 50,
+        molViewer: "3dmol",
+        allowCookies: allowCookies,
+    };
+}
+
+/**
+ * Saves settings to local storage. Note that not just accessing local storage
+ * directly because this also converts from UserArg[] to an object, considers
+ * defaults, etc.
  *
  * @param  {UserArg[]} settings  The settings to save.
  */
 export async function saveSettings(settings: UserArg[]) {
-    // You cannot save settings if the user has not consented to cookies.
-    if (!(await isStatCollectionEnabled())) {
-        api.messages.popupMessage(
-            "Cookies Disallowed!",
-            "Your settings will be lost when you reload this page because you have disallowed cookies. Consider enabling cookies for a better user experience.",
-            PopupVariant.Warning,
-            () => {
-                api.plugins.runPlugin("statcollection");
-            }
-        );
-        return;
+    // Convert list of userargs into an object.
+    const settingsObj: any = {};
+    for (const setting of settings) {
+        settingsObj[setting.id] = setting.val;
+    }
+    delete settingsObj["allowCookiesAlert"];
+
+    // Now get the default values (in cases you need them, and for the keys).
+    const defaults = await defaultSettings();
+
+    // Sanity check: if a setting is not in the defaults, throw an error.
+    for (const key in settingsObj) {
+        if (defaults[key] === undefined) {
+            throw new Error(
+                `Setting ${key} has no default value specified in defaultSettings().`
+            );
+        }
     }
 
-    await localStorageSetItem("settings", JSON.stringify(settings));
+    for (const key in defaults) {
+        const val =
+            settingsObj[key] === undefined ? defaults[key] : settingsObj[key];
+        localStorageSetItem(key, val, 0.000173611);
+    }
+
+    // await localStorageSetItem("settings", settings);
 }
 
 /**
- * Gets settings from local storage.
+ * Gets settings from local storage. Not just accessing local storage directly
+ * because this accounts for defaults (if not set).
  *
  * @returns {UserArg[]}  The settings.
  */
-export async function getSettings(): Promise<UserArg[]> {
-    const settingsJson = await localStorageGetItem("settings");
-    if (settingsJson === null) {
-        return [];
+export async function getSettings(): Promise<{ [key: string]: any }> {
+    const settings = await defaultSettings();
+    for (const key in settings) {
+        // Set to what's in local storage, if available.
+        settings[key] = await localStorageGetItem(key, settings[key]);
     }
-    return JSON.parse(settingsJson) as UserArg[];
+
+    return settings;
 }
 
 /**
- * Gets the value of a specific setting, using default value if not present.
+ * Gets the value of a specific setting, using default value if not present. Not
+ * just accessing local storage directly because this accounts for defaults (if
+ * not set).
  *
  * @param  {string} id  The id of the setting.
  * @returns {any}  The value of the setting.
  */
 export async function getSetting(id: string): Promise<any> {
     const settings = await getSettings();
-    for (const setting of settings) {
-        if (setting.id === id) {
-            return setting.val;
-        }
-    }
-
-    // Get default
-    const defaults = defaultSettings();
-    for (const settingId in defaults) {
-        if (settingId === id) {
-            return defaults[settingId];
-        }
-    }
-
-    return undefined;
+    return settings[id];
 }
 
 /**
  * Given settings, apply them (meaning, update app per settings).
  *
- * @param  {UserArg[]} settings  The settings to apply.
+ * @param  {any} settings  The settings to apply.
  */
-export function applySettings(settings: UserArg[]) {
+export function applySettings(settings: { [key: string]: any }) {
     // NOTE: Previously this was necessary to change the molecular viewer
     // without having to reload. We're now just using one viewer, but good to
     // leave this function here in case you ever want to implement something
@@ -80,26 +105,8 @@ export function applySettings(settings: UserArg[]) {
     // for (const setting of settings) {
     //     settingsMap.set(setting.id, setting);
     // }
-    // const defaults = defaultSettings();
+    // const defaults = await defaultSettings();
     // const molViewer = settingsMap.get("molViewer")?.val ?? defaults.molViewer;
     // visualizationApi.viewerObj?.unLoadViewer();
     // setStoreVar("molViewer", molViewer);
-}
-
-/**
- * Get the default settings.
- *
- * @returns {any}  The default settings.
- */
-export function defaultSettings(): any {
-    // Leave one processor free
-    const maxProcsAvailable = navigator.hardwareConcurrency || 4;
-    const procsToRecommend =
-        maxProcsAvailable - 1 > 0 ? maxProcsAvailable - 1 : 1;
-
-    return {
-        maxProcs: procsToRecommend,
-        initialCompoundsVisible: 50,
-        molViewer: "3dmol",
-    };
 }

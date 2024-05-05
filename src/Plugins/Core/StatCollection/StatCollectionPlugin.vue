@@ -5,7 +5,7 @@
         @onPopupDone="onPopupDone"
         @onPopupCancel="onPopupCancel"
         @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Accept"
+        actionBtnTxt="Allow"
         cancelBtnTxt="Decline"
     >
         <div>
@@ -106,7 +106,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     ];
     pluginId = "statcollection";
     intro = "";
-    title = `Cookies Permission`;
+    title = `Allow Cookies?`;
     open = false;
 
     userArgDefaults: UserArg[] = [];

@@ -606,11 +606,11 @@ export const dynamicImports = {
         },
     },
 
-    jsCookie: {
+    dexie: {
         credit: {
-            name: "js-cookie",
-            url: "https://github.com/js-cookie/js-cookie",
-            license: Licenses.MIT,
+            name: "dexie",
+            url: "https://github.com/dexie/Dexie.js",
+            license: Licenses.Apache2,
         },
         /**
          * Gets the module.
@@ -619,9 +619,9 @@ export const dynamicImports = {
          */
         get module(): Promise<any> {
             return import(
-                /* webpackChunkName: "js-cookie" */
+                /* webpackChunkName: "dexie" */
                 /* webpackMode: "lazy" */
-                "js-cookie"
+                "dexie"
             ).then((mod: any) => {
                 return mod.default;
             });

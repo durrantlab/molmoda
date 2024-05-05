@@ -37,6 +37,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { enableStats, isStatCollectionEnabled, removeStatCollectionCookie } from "../StatCollection/StatUtils";
 import { appName } from "@/Core/GlobalVars";
+import { defaults } from "chart.js";
 
 /** SettingsPlugin */
 @Options({
@@ -140,29 +141,25 @@ export default class SettingsPlugin extends PluginParentClass {
      */
     onBeforePopupOpen() {
         // Get values from localstorage.
-        getSettings()
-        .then((savedSettings) => {
-            const maxProcs = savedSettings.filter(
-                (setting) => setting.id === "maxProcs"
-            )[0]?.val;
-            const initialCompoundsVisible = savedSettings.filter(
-                (setting) => setting.id === "initialCompoundsVisible"
-            )[0]?.val;
+        const settingsPromises = [getSettings(), defaultSettings()];
+
+        Promise.all(settingsPromises)
+        .then(([savedSettings, defaults]) => {
+            const maxProcs = savedSettings["maxProcs"];
+            const initialCompoundsVisible = savedSettings["initialCompoundsVisible"]
             // const molViewer = savedSettings.filter(
             //     (setting) => setting.id === "molViewer"
             // )[0]?.val;
-    
-            const defaults = defaultSettings();
-    
+
             // Update the userArgs with the saved values.
             this.setUserArg(
                 "maxProcs",
-                maxProcs ? parseInt(maxProcs as string) : defaults.maxProcs
+                maxProcs ? maxProcs : defaults.maxProcs
             );
             this.setUserArg(
                 "initialCompoundsVisible",
                 initialCompoundsVisible
-                    ? parseInt(initialCompoundsVisible as string)
+                    ? initialCompoundsVisible
                     : defaults.initialCompoundsVisible
             );
             // this.setUserArg(
@@ -193,8 +190,8 @@ export default class SettingsPlugin extends PluginParentClass {
     /**
      * Set the default settings.
      */
-    setDefaults() {
-        const defaults = defaultSettings();
+    async setDefaults() {
+        const defaults = await defaultSettings();
         
         for (const setting in defaults) {
             const val = defaults[setting];

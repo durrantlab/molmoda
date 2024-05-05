@@ -1,51 +1,33 @@
-import { dynamicImports } from "@/Core/DynamicImports";
-
-let Cookies: any = undefined;
-
-/**
- * Gets the js-cookie module.
- *
- * @returns {Promise<any>}  A promise that resolves the js-cookie module.
- */
-export async function getJsCookie(): Promise<any> {
-    return dynamicImports.jsCookie.module;
-}
+import { localStorageGetItem, localStorageRemoveItem, localStorageSetItem } from "@/Core/LocalStorage";
 
 /**
  * Removes the stat-collection cookie.
  */
 export async function removeStatCollectionCookie() {
-    if (Cookies === undefined) {
-        Cookies = await getJsCookie();
-    }
-    Cookies.remove("statcollection");
+    await localStorageRemoveItem("statcollection");
 }
-
 
 /**
  * Enables stat collection.
  */
 export async function enableStats() {
-    if (Cookies === undefined) {
-        Cookies = await getJsCookie();
-    }
     await removeStatCollectionCookie();
-    Cookies.set("statcollection", "true", {
-        // Note that there is a max value you can use. Seems to be around
-        // 400. Good to use 365.
-        expires: 365,
-        sameSite: "strict",
-    });
+    await localStorageSetItem("statcollection", true);
+
+    // Cookies.set("statcollection", "true", {
+    //     // Note that there is a max value you can use. Seems to be around
+    //     // 400. Good to use 365.
+    //     expires: 365,
+    //     sameSite: "strict",
+    // });
 }
 
 /**
  * Disables stat collection.
  */
 export async function disableStats() {
-    if (Cookies === undefined) {
-        Cookies = await getJsCookie();
-    }
     await removeStatCollectionCookie();
+
     // NOTE: Below is intentionally commented out. NAR doesn't want any cookies
     // set if used doesn't explicitly authorize.
 
@@ -62,17 +44,7 @@ export async function disableStats() {
  *                              is enabled.
  */
 export async function isStatCollectionEnabled(): Promise<boolean> {
-    if (Cookies === undefined) {
-        Cookies = await getJsCookie();
-    }
-
-    const status = Cookies.get("statcollection");
-
-    if (status === undefined) {
-        return false;
-    }
-
-    return status === "true";
+    return await localStorageGetItem("statcollection", false);
 }
 
 /**
@@ -82,11 +54,6 @@ export async function isStatCollectionEnabled(): Promise<boolean> {
  *                              is set.
  */
 export async function isStatStatusSet(): Promise<boolean> {
-    if (Cookies === undefined) {
-        Cookies = await getJsCookie();
-    }
-
-    const status = Cookies.get("statcollection");
-
-    return !(status === undefined);
+    const status = await localStorageGetItem("statcollection", null);
+    return status !== null;
 }
