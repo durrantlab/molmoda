@@ -9,6 +9,8 @@ import { NameValPair } from "./StoreInterfaces";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
+import { localStorageGetItem, localStorageSetItem } from "@/Core/LocalStorage";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 const _commonMutations = {
     /**
@@ -199,3 +201,15 @@ export function setupVueXStore(): Store<any> {
 
     return store;
 }
+
+setInterval(async () => {
+    // If cookies not allowed, features in unacailable.
+    if (!await localStorageGetItem("allowCookies", false)) {
+        return;
+    }
+    const dataToSave = store.state.molecules.serialize()
+    localStorageSetItem(
+        "autoSave",
+        dataToSave
+    )
+}, 5000);

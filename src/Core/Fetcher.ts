@@ -3,6 +3,9 @@
 import { dynamicImports } from "./DynamicImports";
 import * as pluginsApi from "@/Api/Plugins";
 import { delayForPopupOpenClose } from "./GlobalVars";
+import { localStorageGetItem, localStorageSetItem } from "./LocalStorage";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { isTest } from "@/Testing/SetupTests";
 
 export enum ResponseType {
     JSON = "json",
@@ -48,9 +51,12 @@ export async function fetcher(
         urlUpper.slice(0, 8) === "HTTPS://";
     const isExternal =
         startsWithHttp && !url.startsWith(window.location.origin);
+    const allowExternalWebAccess = (await getSetting(
+        "allowExternalWebAccess"
+    )) as boolean;
 
-    let permissionResp = "allowed"; // for internal
-    if (isExternal) {
+    let permissionResp = "allowed"; // for internal urls (!isExternal).
+    if (isExternal && !allowExternalWebAccess && !isTest) {
         permissionResp = await new Promise((resolve) => {
             // Stop the spinner
             pluginsApi.pluginsApi.runPlugin("fetcherpermission", {
@@ -65,8 +71,11 @@ export async function fetcher(
                         resolve("allowed");
                     }, delayForPopupOpenClose);
                 },
-                onAllowAll: () => {
+                onAllowAll: async () => {
                     // TODO: Update settings for allow all
+
+                    localStorageSetItem("allowExternalWebAccess", true);
+
                     setTimeout(() => {
                         resolve("allowed");
                     }, delayForPopupOpenClose);

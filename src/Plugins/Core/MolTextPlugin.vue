@@ -191,6 +191,12 @@ export default class MolTextPlugin extends PluginParentClass {
 
         treeNodePromise
             .then((node: any) => {
+                if (node === undefined) {
+                    // Happens with invalid molecule. Error should be detected
+                    // elsewhere. To trigger (example), use "C##moose"
+                    return;
+                }
+
                 node.title = this.getUserArg("pastedMolName"); // "PastedFile";
                 node.type = TreeNodeType.Compound;
 

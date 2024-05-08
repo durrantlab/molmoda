@@ -218,7 +218,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
-        if (this.onBeforePopupOpen(payload) === false) {
+        if (await this.onBeforePopupOpen(payload) === false) {
             return;
         }
 

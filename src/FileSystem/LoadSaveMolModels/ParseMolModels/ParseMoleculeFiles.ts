@@ -9,6 +9,7 @@ import { parseUsingMolModa } from "./_ParseUsingMolModa";
 import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { addDefaultLoadMolParams, ILoadMolParams } from "./Types";
+import { listWaitSpinnersForDebug, stopAllWaitSpinners } from "@/UI/MessageAlerts/WaitSpinner";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -123,6 +124,8 @@ export function _parseMoleculeFile(
             if (treeNodeList.length === 0) {
                 let msg =
                     "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>";
+
+                stopAllWaitSpinners();
 
                 // Get first 5 lines of fileInfo.contents
                 if (params.fileInfo.contents.trim() !== "") {

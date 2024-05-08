@@ -13,6 +13,10 @@ function _getBody(): HTMLBodyElement {
     return _body;
 }
 
+export function listWaitSpinnersForDebug(): any {
+    console.log(spinnerMotives);
+}
+
 /**
  * Stops a wait spinner.
  *

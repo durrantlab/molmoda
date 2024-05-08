@@ -127,7 +127,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      *
      * @param {any} payload  The payload (if editing existing molecule)
      */
-    onBeforePopupOpen(payload: any) {
+     async onBeforePopupOpen(payload: any) {
         this.currentSmiles = "";
 
         if (payload) {

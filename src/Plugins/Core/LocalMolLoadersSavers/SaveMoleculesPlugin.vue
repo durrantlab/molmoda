@@ -206,7 +206,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      *
      * @param {any} payload  The payload passed to the plugin.
      */
-    onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         this.appClosing = payload !== undefined;
 
         // Reset some form values

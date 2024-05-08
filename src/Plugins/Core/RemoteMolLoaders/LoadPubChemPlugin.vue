@@ -266,7 +266,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         this.cid = "";
         this.molName = "";
         this.molNameRespDescription = `The name of the molecule. If given, ${appName} will automatically search PubChem for the corresponding Chemical Identification (CID) number.`;

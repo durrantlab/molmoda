@@ -220,6 +220,11 @@ class el:
         # self.driver.quit()
         raise Exception(msg)
 
+def make_chrome_driver(options):
+    service = Service(executable_path='utils/chromedriver_wrapper.sh')
+    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+    return webdriver.Chrome(service=service, options=options)
+
 
 def make_driver(browser):
     if browser == "firefox":
@@ -248,18 +253,36 @@ def make_driver(browser):
 
         # Java on mac can run in both arm64 and x86_64. This forces arm64, since
         # you test on a mac.
-        service = Service(executable_path='utils/chromedriver_wrapper.sh')
         options = webdriver.ChromeOptions()
-        driver = webdriver.Chrome(service=service, options=options)
+        driver = make_chrome_driver(options)
     elif browser == "chrome-headless":
-        service = Service(executable_path='utils/chromedriver_wrapper.sh')
         options = webdriver.ChromeOptions()
         # Chrome works well in headless! Also, prevents stealing focus.
         options.add_argument("--headless=new")
-        driver = webdriver.Chrome(service=service, options=options)
-        # driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-
+        driver = make_chrome_driver(options)
     return driver
+
+def do_logs_have_errors(driver):
+    logs = driver.get_log('browser')
+
+    # Get all the logs that are SEVERE, WARNING, or ERROR
+    logs_to_keep = [l for l in logs if l["level"] in ["SEVERE", "ERROR"]]
+
+    # Don't keep ones with "404 (Not Found)". This should be handeled
+    # separately.
+    logs_to_keep = [
+        l for l in logs_to_keep 
+        if "message" in l 
+        and "status of 404" not in l["message"] 
+        and "status code 404" not in l["message"] 
+        and "status of 400" not in l["message"]
+        and "404 (Not Found)" not in l["message"]
+    ]
+
+    if not logs_to_keep:
+        return False
+    else:
+        return " ".join([l["message"] for l in logs_to_keep])
 
 allowed_threads = {
     "chrome": 4,
@@ -298,7 +321,7 @@ def run_test(plugin_id):
 
     cmds_str = None
     cmds = None
-    for t in range(4):
+    for _ in range(4):
         cmds_str = el("#test-cmds", driver).text
         try:
             cmds = json.loads(cmds_str)
@@ -307,7 +330,7 @@ def run_test(plugin_id):
             time.sleep(0.25)
 
     if cmds is None:
-        print(f"No commands found. Are you sure you specified an actual plugin id?")
+        print("No commands found. Are you sure you specified an actual plugin id?")
         sys.exit(1)
 
     if cmds_str is None:
@@ -317,7 +340,7 @@ def run_test(plugin_id):
             "test": test_lbl,
             "error": f"Failed to parse JSON: {cmds_str}",
         }
-    
+
     if os.path.exists(f"./screenshots/{test_lbl}"):
         shutil.rmtree(f"./screenshots/{test_lbl}")
     if not os.path.exists("./screenshots"):
@@ -355,6 +378,10 @@ def run_test(plugin_id):
             screenshot_path = f"./screenshots/{test_lbl}/{test_lbl}_{cmd_idx}.png"            
             driver.save_screenshot(screenshot_path)
 
+            js_errs = do_logs_have_errors(driver)
+            if js_errs != False:
+                raise Exception(f"JavaScript error: {js_errs}")
+
         # resp = f"Passed: {test_lbl}"
         resp = {
             "status": "passed",
@@ -373,6 +400,10 @@ def run_test(plugin_id):
             "test": test_lbl,
             "error": str(e),
         }
+
+    js_errs = do_logs_have_errors(driver)
+    if js_errs != False:
+        raise Exception(f"JavaScript error: {js_errs}")
 
     # driver.quit()
     return resp

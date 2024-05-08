@@ -3,6 +3,7 @@ import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import * as PluginToTest from "./PluginToTest";
 import { TestCmdList } from "./TestCmdList";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { store } from "@/Store";
 
 enum TestCommand {
     Click = "click",
@@ -23,6 +24,17 @@ export interface ITestCommand {
 
 type IConvertedTest = { [key: string]: ITestCommand[] };
 
+export function addTestsToCmdList(cmds: any[]) {
+    const testsStr = store.state.test.cmds;
+    const tests = testsStr === "" ? [] : JSON.parse(testsStr);
+    tests.push(...cmds);
+    store.commit("setVar", {
+        name: "cmds",
+        val: JSON.stringify(tests),
+        module: "test",
+    });
+}
+
 /**
  * A class to generate the command to type text into a selector.  Should only be
  * called from class TestCmdList. The parent that all test commands should
@@ -35,6 +47,25 @@ export abstract class _TestCmdParent {
      * @returns {ITestCommand}  The command.
      */
     abstract get cmd(): ITestCommand;
+
+
+
+    /**
+     * On rare occasions, you might want to add a test directly to the list,
+     * outside of the TestCmdList system. Not recommended, but you can use this
+     * if needed.
+     */
+    addToCmdList() {
+        addTestsToCmdList([this.cmd])
+        // const testsStr = store.state.test.cmds;
+        // const tests = testsStr === "" ? [] : JSON.parse(testsStr);
+        // tests.push(this.cmd);
+        // store.commit("setVar", {
+        //     name: "cmds",
+        //     val: JSON.stringify(tests),
+        //     module: "test",
+        // });
+    }
 }
 
 /**
@@ -491,11 +522,12 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
     // If the plugin is not menu accessible, can't test it. Just pass it.
     // Example: moveregionsonclick
     if (plugin.menuPath === null) {
-        plugin.$store.commit("setVar", {
-            name: "cmds",
-            val: JSON.stringify([]),
-            module: "test",
-        });
+        addTestsToCmdList([]);
+        // plugin.$store.commit("setVar", {
+        //     name: "cmds",
+        //     val: JSON.stringify([]),
+        //     module: "test",
+        // });
         return;
     }
 
@@ -512,9 +544,11 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
         new _TestWait(0.5).cmd,
     ] as ITestCommand[];
 
-    plugin.$store.commit("setVar", {
-        name: "cmds",
-        val: JSON.stringify(cmds),
-        module: "test",
-    });
+    addTestsToCmdList(cmds);
+
+    // plugin.$store.commit("setVar", {
+    //     name: "cmds",
+    //     val: JSON.stringify(cmds),
+    //     module: "test",
+    // });
 }

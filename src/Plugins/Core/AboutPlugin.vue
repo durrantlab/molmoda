@@ -138,7 +138,7 @@ export default class AboutPlugin extends PluginParentClass {
   /**
    * Load the image before the popup opens.
    */
-  onBeforePopupOpen() {
+  async onBeforePopupOpen() {
     this.lazyLoadedImg = "./img/icons/android-chrome-192x192.png";
   }
 

@@ -19,6 +19,10 @@ export const standardProteinResidues = [
     "VAL",
     "TRP",
     "TYR",
+    
+    // Will usually be terminal residues
+    "ACE",
+    "NMA"
 ]
 
 export const proteinSel = {

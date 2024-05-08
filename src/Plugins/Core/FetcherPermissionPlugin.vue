@@ -16,8 +16,8 @@
         <p>{{ myAppName }} would like to access a third-party web resource:</p>
         <p>{{ url }}</p>
         <p>
-            To protect your data, {{ myAppName }} does not communicate with
-            other servers without your permission. You may "Deny" this request,
+            To protect your data, {{ myAppName }} will not communicate with this
+            resource without your permission. You may "Deny" this request,
             "Allow" this request, or "Allow All" requests to any third-party
             resource, both now and in the future (see also Settings...).
             <!-- <PluginPathLink plugin="settings"></PluginPathLink>) -->
@@ -34,18 +34,16 @@
 import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-import {
-    ISimpleMsg,
-    PopupVariant,
-} from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { ISimpleMsg } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest, _TestClick, _TestWait } from "@/Testing/TestCmd";
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { appName } from "@/Core/GlobalVars";
+import { TestCmdList } from "@/Testing/TestCmdList";
 // import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
@@ -100,7 +98,12 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
         this.url = payload.url;
         this.onDeny = payload.onDeny;
         this.onAllow = payload.onAllow;
-        this.onAllowAll = payload.onAllowAll;
+        this.onAllowAll = () => {
+            // For secondary button, doesn't close automatically.
+            this.closePopup();
+
+            payload.onAllowAll();
+        };
 
         messagesApi.stopAllWaitSpinners();
 
@@ -135,13 +138,26 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
         // Not going to test closing, etc. (Too much work.) But at least opens
         // to see if an error occurs.
 
-        alert("NEED TO IMPLEMENT!");
-
+        // No way to specify url, etc., via standdard test system. So doing it
+        // manually.
         pluginsApi.runPlugin(this.pluginId, {
-            title: "Test Title",
-            message: "Test message",
-            open: true, // open
-        } as ISimpleMsg);
+            url: "https://files.rcsb.org/view/1XDN.pdb",
+            onDeny: this.onDeny,
+            onAllow: this.onAllow,
+            onAllowAll: this.onAllowAll,
+        });
+        setTimeout(() => {
+            pluginsApi.runPlugin(this.pluginId, {
+                url: "https://files.rcsb.org/view/1XDN.pdb",
+                onDeny: this.onDeny,
+                onAllow: this.onAllow,
+                onAllowAll: this.onAllowAll,
+            });
+        }, 5000);
+
+        new _TestClick("#modal-fetcherpermission .action-btn").addToCmdList();
+        new _TestWait(5).addToCmdList();
+        new _TestClick("#modal-fetcherpermission .action-btn2").addToCmdList();
 
         return [];
     }

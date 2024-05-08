@@ -38,6 +38,7 @@ export function errorReportingSetup() {
             colno: colno,
             errorStack: error ? error.stack : null,
         } as IErrorData;
+
         sendErrorToServer(data);
 
         // rethrow the error (not necessary)
@@ -66,12 +67,13 @@ let tmpErrorMsg = "";
  * the message at least.
  *
  * @param {string} msg  The message.
+ * @param {number} duration  How long this tmp error message is valid.
  */
-export function setTempErrorMsg(msg: string) {
+export function setTempErrorMsg(msg: string, duration = 2000) {
     tmpErrorMsg = "TMPERRORMSG:" + msg;
     setTimeout(() => {
         tmpErrorMsg = "";
-    }, 2000);
+    }, duration);
 }
 
 /**
@@ -149,14 +151,27 @@ export function triggerErrorPopup(
     informServer = true,
     simpleErrorMsg = false
 ) {
-    if (simpleErrorMsg) errTxt = "TMPERRORMSG:" + errTxt;
-    if (isTest) throw new Error(errTxt);
+    if (tmpErrorMsg !== "") {
+        errTxt = tmpErrorMsg;
+    }
+
+    if (simpleErrorMsg) {
+        errTxt = "TMPERRORMSG:" + errTxt;
+    }
+
+    // if (isTest) {
+    //     // If it's a test, I want to throw the actual error so I can flag it.
+    //     throw new Error(errTxt);
+    // }
+
     pluginsApi.runPlugin("errorreporting", {
         title: "",
         message: errTxt,
         variant: PopupVariant.Danger,
         callBack: async () => {
-            if (informServer) await reportErrorToServer(errTxt);
+            if (informServer) {
+                await reportErrorToServer(errTxt);
+            }
         },
     } as ISimpleMsg);
 }

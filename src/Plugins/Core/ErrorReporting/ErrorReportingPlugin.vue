@@ -172,7 +172,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     /**
      * Called right before the plugin popup opens.
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         // this.errorTxt = "";
     }
 

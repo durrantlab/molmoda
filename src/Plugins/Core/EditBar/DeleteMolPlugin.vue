@@ -56,10 +56,10 @@ export default class DeleteMolPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Will almost always need this, so requiring
      * children to define it.
-     * 
+     *
      * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         setNodesToActOn(this, payload);
     }
 
@@ -157,7 +157,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
                     .pressPopupButton(".action-btn", this.pluginId)
                     .wait(2)
                     .waitUntilNotRegex("#navigator", "Compounds")
-                    .waitUntilNotRegex("#navigator", "Solvent")
+                    .waitUntilNotRegex("#navigator", "Solvent"),
             },
             // Also test deleting a root node.
             {

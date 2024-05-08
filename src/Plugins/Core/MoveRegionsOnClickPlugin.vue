@@ -80,7 +80,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
      * @return {boolean | void}  If false, the popup will not open (abort).
      *                            Anything else, and the popup will open.
      */
-    onBeforePopupOpen(payload: [number, number, number]) {
+    async onBeforePopupOpen(payload: [number, number, number]) {
         // Save new center.
         this.newCenter = payload;
         return;

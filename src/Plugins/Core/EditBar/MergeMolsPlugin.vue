@@ -73,7 +73,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
      * 
      * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         setNodesToActOn(this, payload, true);
 
         // Generate the suggested title for merged molecule.

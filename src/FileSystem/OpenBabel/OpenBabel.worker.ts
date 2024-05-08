@@ -262,7 +262,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             ) {
                 // There was no new files for some reason. Output a warning, and
                 // return the input molecule.
-                console.error("No new files were created.");
+                console.warn("No new files were created.");
                 newFiles = [inputFileActuallyUsed?.name];
             }
 

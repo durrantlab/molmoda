@@ -113,9 +113,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * (e.g., clear inputs from previous open).
      *
      * @param {any} payload  The payload passed to the plugin.
-     * @returns {boolean | void}  If false, the popup will not open.
+     * @returns {Promise<boolean | void>}  If false, the popup will not open.
      */
-    onBeforePopupOpen(payload: any): boolean | void {
+    async onBeforePopupOpen(payload: any): Promise<boolean | void> {
         // Below is hackish...
         setTimeout(() => {
             // Give the component time to render
@@ -128,36 +128,28 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         if (payload !== undefined) {
             let fileList = payload as File[];
             // this.payload = undefined;
-            filesToFileInfos(
+            const fileInfos = await filesToFileInfos(
                 fileList,
                 false,
                 this.accept.split(",").map((a) => a.toUpperCase().substring(1))
-            )
-                .then((fileInfos: (FileInfo | string)[] | undefined) => {
-                    if (fileInfos === undefined) return;
+            );
+            if (fileInfos === undefined) return;
 
-                    const errorMsgs = fileInfos.filter(
-                        (a) => typeof a === "string"
-                    );
+            const errorMsgs = fileInfos.filter((a) => typeof a === "string");
 
-                    if (errorMsgs.length > 0) {
-                        api.messages.popupError(
-                            "<p>" + errorMsgs.join("</p><p>") + "</p>"
-                        );
-                    }
+            if (errorMsgs.length > 0) {
+                api.messages.popupError(
+                    "<p>" + errorMsgs.join("</p><p>") + "</p>"
+                );
+            }
 
-                    const toLoad = fileInfos.filter(
-                        (a) => typeof a !== "string"
-                    ) as FileInfo[];
+            const toLoad = fileInfos.filter(
+                (a) => typeof a !== "string"
+            ) as FileInfo[];
 
-                    this.filesToLoad = toLoad;
-                    this.onPopupDone();
+            this.filesToLoad = toLoad;
+            this.onPopupDone();
 
-                    return;
-                })
-                .catch((err) => {
-                    throw err;
-                });
             return false; // To prevent popup from opening.
         }
         // this.windowClosing = this.payload !== undefined;
@@ -292,7 +284,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 desalt: this.getUserArg("desalt"),
                 gen3D: gen3DParams,
                 defaultTitle: "",
-                tag: this.pluginId
+                tag: this.pluginId,
             },
             this.getUserArg("hideOnLoad")
         );

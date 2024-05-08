@@ -80,7 +80,7 @@ export default class PastePlugin extends PluginParentClass {
      *
      * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         let formatMsg = `${appName} recognizes text pasted in any of the following formats: `;
 
         for (const formatID in molFormatInformation) {
@@ -112,10 +112,8 @@ export default class PastePlugin extends PluginParentClass {
             // let txt: any;
             if ([null, undefined, "0"].includes(index))
                 txt = await fetcher("testmols/example.can");
-            else if (index === "1")
-                txt = await fetcher("testmols/example.sdf");
-            else if (index === "2")
-                txt = await fetcher("testmols/example.pdb");
+            else if (index === "1") txt = await fetcher("testmols/example.sdf");
+            else if (index === "2") txt = await fetcher("testmols/example.pdb");
             else if (index === "3")
                 txt = await fetcher("testmols/example.mol2");
             else if (index === "4")
@@ -126,8 +124,7 @@ export default class PastePlugin extends PluginParentClass {
                 txt = await fetcher("testmols/example_mult.pdb");
             else if (index === "7")
                 txt = await fetcher("testmols/example_mult.mol2");
-            else if (index === "8")
-                txt = "C##moose";
+            else if (index === "8") txt = "C##moose";
         }
 
         const fileInfo = new FileInfo({
@@ -149,8 +146,8 @@ export default class PastePlugin extends PluginParentClass {
             fileInfo,
             tag: this.pluginId,
             desalt: this.getUserArg("desalt"),
-            defaultTitle: this.getUserArg("pastedMolName")}
-        );
+            defaultTitle: this.getUserArg("pastedMolName"),
+        });
 
         if (node === undefined) {
             return;

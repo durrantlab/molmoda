@@ -21,6 +21,7 @@ export async function defaultSettings(): Promise<any> {
         initialCompoundsVisible: 50,
         molViewer: "3dmol",
         allowCookies: allowCookies,
+        allowExternalWebAccess: false,
     };
 }
 
@@ -54,7 +55,7 @@ export async function saveSettings(settings: UserArg[]) {
     for (const key in defaults) {
         const val =
             settingsObj[key] === undefined ? defaults[key] : settingsObj[key];
-        localStorageSetItem(key, val, 0.000173611);
+        await localStorageSetItem(key, val);  // , 0.000173611);
     }
 
     // await localStorageSetItem("settings", settings);

@@ -4,6 +4,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
 import { setTempErrorMsg } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 import { messagesApi } from "@/Api/Messages";
+import { prepForErrorCustomMsg } from "./WebinaErrors";
 
 /**
  * A calculate mol props queue.
@@ -284,9 +285,7 @@ export class WebinaQueue extends QueueParent {
                     output: "{{ERROR}}",
                 };
 
-                setTempErrorMsg(
-                    `Could not dock compound: ${jobInfoPayload.input.inputNodeTitle} (skipped). There are many possible causes, including: (1) docking compounds with atoms that are not in the AutoDock Vina forcefield (e.g., boron), (2) docking physically impossible compounds (e.g., a single fluorine atom bound to two or more other atoms), (3) docking fragmented compounds (e.g., salts), (4) docking very large compounds, and (5) using a computer with insufficient memory.`
-                );
+                prepForErrorCustomMsg(jobInfoPayload.input.inputNodeTitle);
 
                 // Below is just dummy. Replace with useful values
                 _onJobDoneCallbackFunc(jobInfoPayload.output, jobIdx);

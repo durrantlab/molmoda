@@ -18,8 +18,10 @@ import { Options } from "vue-class-component";
 import {
     UserArg,
     IUserArgNumber,
-UserArgType,
-IUserArgAlert,
+    UserArgType,
+    IUserArgAlert,
+    IUserArgOption,
+    IUserArgSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -35,9 +37,12 @@ import {
 } from "./LoadSaveSettings";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { enableStats, isStatCollectionEnabled, removeStatCollectionCookie } from "../StatCollection/StatUtils";
+import {
+    enableStats,
+    isStatCollectionEnabled,
+    removeStatCollectionCookie,
+} from "../StatCollection/StatUtils";
 import { appName } from "@/Core/GlobalVars";
-import { defaults } from "chart.js";
 
 /** SettingsPlugin */
 @Options({
@@ -60,11 +65,31 @@ export default class SettingsPlugin extends PluginParentClass {
 
     userArgDefaults: UserArg[] = [
         {
+            id: "allowCookies",
+            label: "Allow cookies",
+            val: false,
+            description: `Allow cookies so we can (1) save your user settings and (2) collect usage statistics to help us get grants for continued development.`,
+        },
+        {
+            id: "allowCookiesAlert",
+            val: `Please allow cookies! They improve the user experience and help us secure much needed funding.`,
+            type: UserArgType.Alert,
+            enabled: false,
+            alertType: "warning",
+        } as IUserArgAlert,
+        {
+            id: "allowExternalWebAccess",
+            label: "Allow access to all external web resources",
+            val: false,
+            description: `${appName} requires user permission to access external web resources. To avoid having to approve each individually, you may authorize all.`,
+        },
+        {
             // type: UserArgType.Number,
             id: "maxProcs",
             label: "Maximum number of available processors",
             val: 0,
-            description: "Maximum number of processors available for any one job.",
+            description:
+                "Maximum number of processors available for any one job.",
         } as IUserArgNumber,
         {
             id: "initialCompoundsVisible",
@@ -73,40 +98,40 @@ export default class SettingsPlugin extends PluginParentClass {
             description:
                 "Number of compounds initially visible when creating/loading many new compounds.",
         } as IUserArgNumber,
+
+        // Leaving below because don't want to entirely refactor it out, in case
+        // I restore this feature later. But it is never visible (enabled:
+        // false).
         {
-            id: "allowCookies",
-            label: "Allow cookies",
-            val: false,
-            description: `Allow cookies so we can (1) save your user settings and (2) collect usage statistics to help us get grants for continued development.`
-        },
-        {
-            id: "allowCookiesAlert",
-            val: `Please allow cookies! They improve the user experience and help us secure much needed funding.`,
-            type: UserArgType.Alert,
+            type: UserArgType.Select,
+            id: "molViewer",
+            label: "Molecular viewer library",
+            val: "3dmol",
             enabled: false,
-            alertType: "warning",
-        } as IUserArgAlert
-        // {
-        //     type: UserArgType.Select,
-        //     id: "molViewer",
-        //     label: "Molecular viewer library",
-        //     val: "3dmol",
-        //     enabled: false,
-        //     description: "Only 3Dmol.js is currently supported.",
-        //     options: [
-        //         {
-        //             val: "3dmol",
-        //             description: "3Dmol.js",
-        //         } as IUserArgOption,
-        //         {
-        //             val: "ngl",
-        //             description: "NGL Viewer",
-        //         } as IUserArgOption,
-        //     ],
-        // } as IUserArgSelect,
+            description: "Only 3Dmol.js is currently supported.",
+            options: [
+                {
+                    val: "3dmol",
+                    description: "3Dmol.js",
+                } as IUserArgOption,
+                {
+                    val: "ngl",
+                    description: "NGL Viewer",
+                } as IUserArgOption,
+            ],
+        } as IUserArgSelect,
     ];
     alwaysEnabled = true;
     logJob = false;
+
+    /**
+     * Get the app name.
+     *
+     * @returns {string}  The app name.
+     */
+    get appName(): string {
+        return appName;
+    }
 
     /**
      * Set whether the user has allowed stats collection.
@@ -139,44 +164,62 @@ export default class SettingsPlugin extends PluginParentClass {
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         // Get values from localstorage.
         const settingsPromises = [getSettings(), defaultSettings()];
 
-        Promise.all(settingsPromises)
-        .then(([savedSettings, defaults]) => {
-            const maxProcs = savedSettings["maxProcs"];
-            const initialCompoundsVisible = savedSettings["initialCompoundsVisible"]
-            // const molViewer = savedSettings.filter(
-            //     (setting) => setting.id === "molViewer"
-            // )[0]?.val;
+        const [savedSettings, defaults] = await Promise.all(settingsPromises);
 
-            // Update the userArgs with the saved values.
-            this.setUserArg(
-                "maxProcs",
-                maxProcs ? maxProcs : defaults.maxProcs
-            );
-            this.setUserArg(
-                "initialCompoundsVisible",
-                initialCompoundsVisible
-                    ? initialCompoundsVisible
-                    : defaults.initialCompoundsVisible
-            );
-            // this.setUserArg(
-            //     "molViewer",
-            //     molViewer ? molViewer : defaults.molViewer
-            // );
+        // This settings system is error prone, so I'm going to do some
+        // validaton here. Specifically, make sure all the userarg
+        // settings are also present in defaults.
+        const userArgSettingIds = this.userArgDefaults
+            .filter((a) => a.type !== UserArgType.Alert)
+            .map((a) => a.id);
+        const defaultSettingIds = Object.keys(defaults);
 
-            return isStatCollectionEnabled();
-        })
-        .then((isSet) => {
-            this.setUserArg("allowCookies", isSet);
-            this.setStatCollectPetition();
-            return;
-        })
-        .catch((err) => {
-            throw err;
+        // Make sure that every userArg setting is also in defaults.
+        userArgSettingIds.forEach((id) => {
+            if (!defaultSettingIds.includes(id)) {
+                throw new Error(
+                    `Setting "${id}" is in userArgDefaults but not in defaults. You need to update the defaults.`
+                );
+            }
         });
+
+        // Now done validating. Continue with setting the values.
+
+        for (const settingName in defaults) {
+            const val = savedSettings[settingName];
+            this.setUserArg(settingName, val ? val : defaults[settingName]);
+        }
+
+        // const maxProcs = savedSettings["maxProcs"];
+        // const initialCompoundsVisible =
+        //     savedSettings["initialCompoundsVisible"];
+        // // const molViewer = savedSettings.filter(
+        // //     (setting) => setting.id === "molViewer"
+        // // )[0]?.val;
+
+        // // Update the userArgs with the saved values.
+        // this.setUserArg(
+        //     "maxProcs",
+        //     maxProcs ? maxProcs : defaults.maxProcs
+        // );
+        // this.setUserArg(
+        //     "initialCompoundsVisible",
+        //     initialCompoundsVisible
+        //         ? initialCompoundsVisible
+        //         : defaults.initialCompoundsVisible
+        // );
+        // // this.setUserArg(
+        // //     "molViewer",
+        // //     molViewer ? molViewer : defaults.molViewer
+        // // );
+
+        const isSet = await isStatCollectionEnabled();
+        this.setUserArg("allowCookies", isSet);
+        this.setStatCollectPetition();
     }
 
     /**
@@ -192,7 +235,7 @@ export default class SettingsPlugin extends PluginParentClass {
      */
     async setDefaults() {
         const defaults = await defaultSettings();
-        
+
         for (const setting in defaults) {
             const val = defaults[setting];
             this.setUserArg(setting, val);
@@ -233,10 +276,32 @@ export default class SettingsPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest[]> {
         return [
+            // Test without cookies enabled
             {
-                closePlugin: new TestCmdList().click(
-                    "#modal-settings .cancel-btn"
+                closePlugin: new TestCmdList()
+                    .click("#modal-settings .btn-primary")
+                    .waitUntilRegex(
+                        "#modal-simplemsg",
+                        "Your settings will be lost"
+                    ),
+            },
+            // Test with cookies enabled
+            {
+                pluginOpen: new TestCmdList().click(
+                    "#allowCookies-settings-item"
                 ),
+                closePlugin: new TestCmdList()
+                    .click("#modal-settings .action-btn")
+            },
+            // Cookies enabled and load defaults
+            {
+                pluginOpen: new TestCmdList().click(
+                    "#allowCookies-settings-item"
+                ),
+                closePlugin: new TestCmdList()
+                    .click("#modal-settings .action-btn2")
+                    .wait(5)
+                    .click("#modal-settings .action-btn")
             },
         ];
     }

@@ -77,7 +77,7 @@ export default class RenameMolPlugin extends PluginParentClass {
      *
      * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         setNodesToActOn(this, payload);
         this.setUserArg("newName", this.nodesToActOn.get(0).title);
     }

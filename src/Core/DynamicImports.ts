@@ -610,7 +610,7 @@ export const dynamicImports = {
         credit: {
             name: "dexie",
             url: "https://github.com/dexie/Dexie.js",
-            license: Licenses.Apache2,
+            license: Licenses.APACHE2,
         },
         /**
          * Gets the module.

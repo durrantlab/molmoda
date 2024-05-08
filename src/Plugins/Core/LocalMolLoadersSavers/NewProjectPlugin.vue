@@ -75,7 +75,7 @@ export default class NewProjectPlugin extends PluginParentClass {
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         if (!storeIsDirty) {
             // Since store is not dirty, just reload page.
             window.location.reload();

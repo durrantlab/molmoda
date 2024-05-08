@@ -220,7 +220,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
     /**
      * Load the image before the popup opens.
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         this.onUserArgChange();
     }
 

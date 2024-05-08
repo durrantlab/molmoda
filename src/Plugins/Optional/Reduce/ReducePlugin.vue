@@ -85,7 +85,7 @@ export default class ReducePlugin extends PluginParentClass {
      * Runs before the popup opens. Starts importing the modules needed for the
      * plugin.
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         // You're probably going to need fpocketweb
         // dynamicImports.fpocketweb.module;
     }

@@ -93,10 +93,9 @@ export default class CopyPlugin extends PluginParentClass {
      *
      * @param {any} payload  The payload (node id)
      */
-    onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         this.formatMsg = "Your molecules will be copied as...";
     }
-
 
     /**
      * Copies the molecules to the clipboard.
@@ -139,7 +138,7 @@ export default class CopyPlugin extends PluginParentClass {
     /**
      * Runs after the popup opens. Good for setting focus in text elements.
      */
-     onPopupOpen() {
+    onPopupOpen() {
         // Copying terminal nodes only. So copying and pasting will not preserve
         // the hierarchy.
         const terminals = (this.$store.state["molecules"] as TreeNodeList)
@@ -208,7 +207,7 @@ export default class CopyPlugin extends PluginParentClass {
     /**
      * Runs when the popup closes via done button. Here, does nothing.
      */
-     onPopupDone() {
+    onPopupDone() {
         this.submitJobs([]);
     }
 

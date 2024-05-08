@@ -65,6 +65,8 @@ import { IQueueCallbacks } from "@/Queue/QueueTypes";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { triggerErrorPopup } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
+import { prepForErrorCustomMsg } from "./WebinaErrors";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
@@ -308,19 +310,13 @@ export default class WebinaPlugin extends PluginParentClass {
      * Runs before the popup opens. Starts importing the modules needed for the
      * plugin.
      */
-    onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         // You're probably going to need fpocketweb
         // dynamicImports.fpocketweb.module;
 
-        getSetting("maxProcs")
-            .then((maxProcs) => {
-                this.maxProcs = maxProcs;
-                this.setUserArg("cpu", this.maxProcs);
-                return;
-            })
-            .catch((err: Error) => {
-                throw err;
-            });
+        const maxProcs = await getSetting("maxProcs");
+        this.maxProcs = maxProcs;
+        this.setUserArg("cpu", this.maxProcs);
     }
 
     /**
@@ -651,7 +647,9 @@ export default class WebinaPlugin extends PluginParentClass {
         const simultBatches = 1;
         const batchSize = 1000;
 
-        const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
+        const initialCompoundsVisible = await getSetting(
+            "initialCompoundsVisible"
+        );
 
         const newTreeNodesByInputProt: { [key: string]: TreeNode } = {};
 
@@ -663,7 +661,17 @@ export default class WebinaPlugin extends PluginParentClass {
 
             // If there was an error, throw it so it can be caught (inform user).
             if (webinaOut.output === "{{ERROR}}") {
-                throw new Error("Could not perform docking.");
+                // throw new Error("Could not perform docking.");
+
+                // Rather than triggering the error as above, let's just call
+                // the error modal directly.
+                prepForErrorCustomMsg(origCmpdTreeNode.title);
+                triggerErrorPopup(
+                    "Could not perform docking.",
+                    false, // informServer
+                    false // simpleErrorMsg
+                );
+                return;
             }
 
             // Split on lines that start with "MODEL"
@@ -770,23 +778,24 @@ export default class WebinaPlugin extends PluginParentClass {
 
         const maxProcs = await getSetting("maxProcs");
 
-        await new WebinaQueue(
-            "webina",
-            inputs,
-            maxProcs,
-            callbacks,
-            procsPerJobBatch,
-            simultBatches,
-            batchSize,
-            true,
-            false
-        ).done.catch((err: Error) => {
+        try {
+            await new WebinaQueue(
+                "webina",
+                inputs,
+                maxProcs,
+                callbacks,
+                procsPerJobBatch,
+                simultBatches,
+                batchSize,
+                true,
+                false
+            ).done;
+        } catch (err: any) {
             // Intentionally not rethrowing error here. // TODO: fix this
             messagesApi.popupError(
                 `<p>Webina threw an error.</p><p>Error details: ${err.message}</p>`
             );
-        });
-
+        }
         return;
     }
 
@@ -863,10 +872,9 @@ export default class WebinaPlugin extends PluginParentClass {
                     .wait(5)
                     .loadExampleMolecule(undefined, undefined, 3),
                 pluginOpen: webinaPluginOpenFactory(),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "frame3:bad_ligs:testdock"
-                ),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-errorreporting", "Could not dock")
+                    .waitUntilRegex("#navigator", "frame3:bad_ligs:testdock"),
             },
 
             // Test out ligands that have too many bonds.
