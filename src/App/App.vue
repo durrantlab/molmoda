@@ -9,11 +9,11 @@
                 min-height: 56px;
                 height: 56px;
             "
-            class="bg-light"
+            class="bg-light hide-on-app-closed"
         >
             <Menu :menuData="menuData" />
         </div>
-        <div style="flex-grow: 5">
+        <div style="flex-grow: 5" class="hide-on-app-closed">
             <GoldLayout />
         </div>
         <AllPlugins

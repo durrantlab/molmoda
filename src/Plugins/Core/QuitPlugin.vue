@@ -1,0 +1,122 @@
+<template>
+    <PluginComponent
+        v-model="open"
+        :infoPayload="infoPayload"
+        @onUserArgChanged="onUserArgChanged"
+    ></PluginComponent>
+</template>
+
+<script lang="ts">
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
+import { Options } from "vue-class-component";
+import {
+    IContributorCredit,
+    ISoftwareCredit,
+} from "@/Plugins/PluginInterfaces";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/TestCmd";
+import { TestCmdList } from "@/Testing/TestCmdList";
+import { appName } from "@/Core/GlobalVars";
+import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
+import * as api from "@/Api";
+import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
+
+/** QuitPlugin */
+@Options({
+    components: {
+        PluginComponent,
+    },
+})
+export default class QuitPlugin extends PluginParentClass {
+    menuPath = ["File", "Project", "[9] Quit"];
+    title = "";
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [];
+    pluginId = "quitplugin";
+    noPopup = true;
+    userArgDefaults: UserArg[] = [];
+    alwaysEnabled = true;
+    logJob = false;
+    intro = "Quits " + appName + ".";
+    skipLongRunningJobMsg = true;
+
+    // hotkey = "i";
+
+    /**
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
+     */
+    async runJobInBrowser(): Promise<void> {
+        if (this.$store.state.molecules.length === 0) {
+            closeDownApp();
+            return Promise.resolve();
+        }
+
+        // There are some molecules, so you need to prompt to save them. This
+        // servers the same role as the alert that popups up when user closes
+        // the tab, but here we can be more elegant about it.
+        const resp = await api.messages.popupYesNo(
+            "Would you like to save your session before quitting?",
+            "Save Before Quitting?",
+            "Save",
+            "Don't Save",
+            true
+        );
+
+        // Note that if Cancel, does nothing.
+        if (resp === YesNo.Yes) {
+            api.plugins.runPlugin("savemolecules", true);
+        } else if (resp === YesNo.No) {
+            closeDownApp();
+        }
+
+        return Promise.resolve();
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+    async getTests(): Promise<ITest[]> {
+        return [
+            // Test cancel button
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 0),
+                closePlugin: new TestCmdList().click("#modal-yesnomsg .cancel-btn")
+            },
+            // Test don't save button
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 1),
+                closePlugin: new TestCmdList().click("#modal-yesnomsg .action-btn"),
+                afterPluginCloses: new TestCmdList().click("#modal-simplemsg .cancel-btn")
+            },
+            // Test the save button
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 2),
+                closePlugin: new TestCmdList().click("#modal-yesnomsg .action-btn2"),
+                afterPluginCloses: new TestCmdList()
+                    .text("#modal-savemolecules #filename-savemolecules-item", "tmpfile")
+                    .click("#modal-savemolecules .action-btn")
+                    .click("#modal-simplemsg .cancel-btn")
+            },
+            // Test on empty project
+            {
+                closePlugin: new TestCmdList().click("#modal-simplemsg .cancel-btn") // .click("#modal-yesnomsg .action-btn2"),
+                // afterPluginCloses: new TestCmdList()
+                //     .click("#modal-simplemsg .cancel-btn")
+            },
+
+        ];
+    }
+}
+</script>
+
+<style scoped lang="scss"></style>

@@ -1,5 +1,3 @@
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
-
 /**
  * Create a random id.
  *
@@ -39,6 +37,3 @@ export function waitForCondition(
     });
 }
 
-// export async function closeDownApp(): Promise<void> {
-
-// }

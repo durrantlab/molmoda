@@ -10,7 +10,7 @@
         <div :class="'modal-dialog ' + modalWidthToUse" v-if="modelValue">
             <div class="modal-content">
                 <div :class="headerClasses" ref="header">
-                    <h5 class="modal-title">{{ title }}</h5>
+                    <h5 class="modal-title">{{ titleToUse }}</h5>
                     <button
                         v-if="cancelXBtn && !prohibitCancel"
                         type="button"
@@ -96,6 +96,7 @@ import { PopupVariant } from "./InterfacesAndEnums";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
 import { popupClosed, popupOpened } from "./OpenPopupList";
+import { capitalizeEachWork } from "@/Core/Utils/StringUtils";
 
 /**
  * Popup component
@@ -140,6 +141,10 @@ export default class Popup extends Vue {
     // property. Use with caution. Should always restore to true quickly.
     isClosing = false;
 
+    get titleToUse(): string {
+        return capitalizeEachWork(this.title);
+    }
+
     /**
      * Watch for changes to the modelValue property. Show the popup accordingly.
      *
@@ -159,7 +164,9 @@ export default class Popup extends Vue {
     }
 
     get btn1Class(): string {
-        return (this.styleBtn1AsCancel === true) ? "btn-secondary" : "btn-primary";
+        return this.styleBtn1AsCancel === true
+            ? "btn-secondary"
+            : "btn-primary";
     }
 
     /**
@@ -311,6 +318,17 @@ export default class Popup extends Vue {
             // click on actionBtn.
             this.$emit("onClosed");
         });
+
+        // Implemented ability to close modal with escape (controllable).
+        modalElem.addEventListener(
+            "keydown",
+            (event) => {
+                if (event.key === "Escape" && this.prohibitCancel) {
+                    event.stopPropagation(); // Prevents the modal from closing
+                }
+            },
+            true
+        );
 
         return this.modal;
     }

@@ -24,6 +24,7 @@ export interface ISimpleMsg {
 export enum YesNo {
     Yes,
     No,
+    Cancel
 }
 
 export interface IYesNoMsg {
@@ -32,6 +33,7 @@ export interface IYesNoMsg {
     title?: string;
     yesBtnTxt?: string;
     noBtnTxt?: string;
+    showCancelBtn?: boolean;
 }
 
 export interface ISimpleVideo extends ISimpleMsg {

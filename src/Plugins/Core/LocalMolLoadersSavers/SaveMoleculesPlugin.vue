@@ -53,9 +53,8 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { appName } from "@/Core/GlobalVars";
-import { deleteAutoSave, stopAutoSaveTimer } from "@/Store/AutoSave";
-import { unregisterWarnSaveOnClose } from "@/Store/LoadAndSaveStore";
 import { slugify } from "@/Core/Utils/StringUtils";
+import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 
 /**
  * SaveMoleculesPlugin
@@ -389,20 +388,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
             await saveMolModa(filename);
 
             if (this.appClosing) {
-                // Clear the autosave
-                stopAutoSaveTimer();
-                await deleteAutoSave();
-                unregisterWarnSaveOnClose();
-
-                api.messages.popupMessage(
-                    "Session Ended",
-                    "Your file has been saved. You may now close/reload this tab/window.",
-                    PopupVariant.Info,
-                    () => {
-                        // Reload the page
-                        window.location.reload();
-                    }
-                );
+                closeDownApp("Your file has been saved. ");
             }
 
             return Promise.resolve();

@@ -2,14 +2,16 @@
     <PluginComponent
         :infoPayload="infoPayload"
         v-model="open"
-        cancelBtnTxt=""
+        :cancelBtnTxt='showCancelBtn ? "Cancel" : ""'
         :actionBtnTxt="noBtnTxt"
         :actionBtnTxt2="yesBtnTxt"
         @onPopupDone="onPopupDone"
         @onPopupDone2="yesFunc"
         @onClosed="onClosed"
         @onUserArgChanged="onUserArgChanged"
-        :styleBtn1AsCancel="true"
+        :styleBtn1AsCancel="!showCancelBtn"
+        :prohibitCancel="!showCancelBtn"
+        @onCancel="onCancel"
     >
         <!-- :variant="variantToUse" -->
         {{ message }}
@@ -61,6 +63,7 @@ export default class YesNoPlugin extends PluginParentClass {
     callBack = (val: YesNo) => {
         return;
     };
+    showCancelBtn = true;
 
     title = "";
     showInQueue = false;
@@ -68,6 +71,7 @@ export default class YesNoPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     alwaysEnabled = true;
     logJob = false;
+
 
     yesFunc() {
         this.callBack(YesNo.Yes);
@@ -79,6 +83,10 @@ export default class YesNoPlugin extends PluginParentClass {
     // No func
     onPopupDone() {
         this.callBack(YesNo.No);
+    }
+
+    onCancel() {
+        this.callBack(YesNo.Cancel);
     }
 
     /**
@@ -95,6 +103,7 @@ export default class YesNoPlugin extends PluginParentClass {
         this.yesBtnTxt = payload.yesBtnTxt ?? "Yes";
         this.noBtnTxt = payload.noBtnTxt ?? "No";
         this.callBack = payload.callBack;
+        this.showCancelBtn = payload.showCancelBtn ?? false;
         this.open = true;
     }
 

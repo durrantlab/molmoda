@@ -74,16 +74,18 @@ export const messagesApi = {
     /**
      * Displays a Yes-No popup message.
      *
-     * @param  {string}    message      The message to display.
-     * @param  {string}    [title]      The title of the popup.
-     * @param  {string}    [yesBtnTxt]  The text to use for the yes button.
-     * @param  {string}    [noBtnTxt]   The text to use for the no button.
+     * @param  {string}  message          The message to display.
+     * @param  {string}  [title]          The title of the popup.
+     * @param  {string}  [yesBtnTxt]      The text to use for the yes button.
+     * @param  {string}  [noBtnTxt]       The text to use for the no button.
+     * @param  {boolean} [showCancelBtn]  Whether to show the cancel button.
      */
     popupYesNo: async function (
         message: string,
         title?: string,
         yesBtnTxt?: string,
         noBtnTxt?: string,
+        showCancelBtn?: boolean,
     ): Promise<any> {
         return await new Promise((resolve: any) => {
             pluginsApi.runPlugin("yesnomsg", {
@@ -93,7 +95,8 @@ export const messagesApi = {
                     resolve(val);
                 },
                 yesBtnTxt,
-                noBtnTxt
+                noBtnTxt,
+                showCancelBtn
             } as IYesNoMsg)
         });
     },

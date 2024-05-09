@@ -25,6 +25,11 @@ export function capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+export function capitalizeEachWork(s: string): string {
+    const wrds = s.split(" ").map(wrd => capitalize(wrd));
+    return wrds.join(" ");
+}
+
 /**
  * Given a string, keep removing everything but letters and numbers from end of
  * string. This is useful for removing terminal punctuation.
