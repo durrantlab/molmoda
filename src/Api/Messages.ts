@@ -2,6 +2,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { pushToStoreList } from "@/Store/StoreExternalAccess";
 import {
     ISimpleMsg,
+    IYesNoMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
@@ -9,6 +10,8 @@ import {
 import { startWaitSpinner as startWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
 import { stopWaitSpinner as stopWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
 import { stopAllWaitSpinners as stopAllWaitSpinnersSrc } from "@/UI/MessageAlerts/WaitSpinner";
+import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
+
 
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 
@@ -65,6 +68,34 @@ export const messagesApi = {
      */
     popupError: function (message: string, callBack?: any) {
         this.popupMessage("Error", message, PopupVariant.Danger, callBack);
+    },
+
+
+    /**
+     * Displays a Yes-No popup message.
+     *
+     * @param  {string}    message      The message to display.
+     * @param  {string}    [title]      The title of the popup.
+     * @param  {string}    [yesBtnTxt]  The text to use for the yes button.
+     * @param  {string}    [noBtnTxt]   The text to use for the no button.
+     */
+    popupYesNo: async function (
+        message: string,
+        title?: string,
+        yesBtnTxt?: string,
+        noBtnTxt?: string,
+    ): Promise<any> {
+        return await new Promise((resolve: any) => {
+            pluginsApi.runPlugin("yesnomsg", {
+                title,
+                message,
+                callBack: (val: YesNo) => {
+                    resolve(val);
+                },
+                yesBtnTxt,
+                noBtnTxt
+            } as IYesNoMsg)
+        });
     },
 
     /**

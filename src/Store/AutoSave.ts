@@ -8,6 +8,7 @@ import { stateToJsonStr } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Sav
 import { parseUsingMolModa } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/_ParseUsingMolModa";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { pluginsApi } from "@/Api/Plugins";
+import { messagesApi } from "@/Api/Messages";
 import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
@@ -54,19 +55,13 @@ async function loadSessionFromLocalStorage() {
     // Cookies are allowed. Check to see if existing autosave.
     const existingAutoSave = await localStorageGetItem("autoSave");
     if (existingAutoSave !== null) {
-        const resp = await new Promise((resolve) => {
-            pluginsApi.runPlugin("yesnomsg", {
-                title: "Restore Unsaved Changes?",
-                message:
-                    "You have unsaved changes from your last session. Would you like to restore them?",
-                callBack: (val: YesNo) => {
-                    resolve(val);
-                },
-                yesBtnTxt: "Restore Session",
-                noBtnTxt: "Discard Session",
-            });
-        });
-
+        const resp = await messagesApi.popupYesNo(
+            "You have unsaved changes from your last session. Would you like to restore them?",
+            "Restore Unsaved Changes?",
+            "Restore Session",
+            "Discard Session"
+        )
+        
         if (resp === YesNo.No) {
             await deleteAutoSave();
             return;
