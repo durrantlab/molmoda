@@ -3,12 +3,13 @@
         :infoPayload="infoPayload"
         v-model="open"
         cancelBtnTxt=""
-        :actionBtnTxt="yesBtnTxt"
-        :actionBtnTxt2="noBtnTxt"
-        @onPopupDone="yesFunc"
-        @onPopupDone2="noFunc"
+        :actionBtnTxt="noBtnTxt"
+        :actionBtnTxt2="yesBtnTxt"
+        @onPopupDone="noFunc"
+        @onPopupDone2="yesFunc"
         @onClosed="onClosed"
         @onUserArgChanged="onUserArgChanged"
+        :styleBtn1AsCancel="true"
     >
         <!-- :variant="variantToUse" -->
         {{ message }}
@@ -70,13 +71,13 @@ export default class YesNoPlugin extends PluginParentClass {
 
     yesFunc() {
         this.callBack(YesNo.Yes);
+
+        // Must trigger close manually on this one.
+        this.open = false;
     }
 
     noFunc() {
         this.callBack(YesNo.No);
-
-        // Must trigger close manually on this one.
-        this.open = false;
     }
 
     /**

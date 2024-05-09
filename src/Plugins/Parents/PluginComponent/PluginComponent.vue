@@ -20,6 +20,7 @@
         :id="'modal-' + infoPayload.pluginId"
         :modalWidth="modalWidth"
         :submitOnEnter="submitOnEnter"
+        :styleBtn1AsCancel="styleBtn1AsCancel"
     >
         <!-- <span v-if="openToUse"> -->
         <!-- :footerTxt="citationTxt" -->
@@ -115,6 +116,13 @@ export default class PluginComponent extends mixins(PopupMixin) {
      * (default).
      */
     @Prop({ default: true }) submitOnEnter!: boolean;
+
+    /**
+     * Whether to style action button 2 as the cancel button. It's still an
+     * action button, but it's sometimes helpful to make it the same color as
+     * cancel for consistency's sake.
+     */
+    @Prop({ default: false }) styleBtn1AsCancel!: boolean;
 
     /**
      * The user arguments (i.e., plugin parameters) to use.

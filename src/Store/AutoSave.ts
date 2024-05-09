@@ -18,10 +18,14 @@ export async function deleteAutoSave(): Promise<void> {
     await localStorageRemoveItem("autoSave");
 }
 
-export function restartAutoSaveTimer() {
+export function stopAutoSaveTimer() {
     if (timerId !== undefined) {
         clearTimeout(timerId);
     }
+}
+
+export function restartAutoSaveTimer() {
+    stopAutoSaveTimer();
 
     const timerTick = async () => {
         const tickInterval = await getSetting("autoSaveFrequencyMinutes");

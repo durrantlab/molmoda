@@ -227,8 +227,8 @@ export default class SettingsPlugin extends PluginParentClass {
         // //     molViewer ? molViewer : defaults.molViewer
         // // );
 
-        // const isSet = await isStatCollectionEnabled();
-        // this.setUserArg("allowCookies", isSet);
+        const isSet = await isStatCollectionEnabled();
+        this.setUserArg("allowCookies", isSet);
         this.setStatCollectPetition();
 
         await this.onUserArgChange();

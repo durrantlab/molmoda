@@ -40,7 +40,7 @@
                         v-if="actionBtnTxt"
                         type="button"
                         :disabled="!isActionBtnEnabled || isClosing"
-                        class="btn btn-primary action-btn"
+                        :class="'btn ' + btn1Class + ' action-btn'"
                         @click="actionBtn"
                     >
                         {{ actionBtnTxt }}
@@ -121,6 +121,7 @@ export default class Popup extends Vue {
     @Prop({ default: "default" }) modalWidth!: string;
     @Prop({ default: "" }) footerTxt!: string;
     @Prop({ default: true }) submitOnEnter!: boolean;
+    @Prop({ default: false }) styleBtn1AsCancel!: boolean;
 
     // If below is true, you'll still be able to interact with the page behind
     // the modal. I don't think this is currently used, but thought I'd leave it
@@ -155,6 +156,10 @@ export default class Popup extends Vue {
             popupClosed(this.getId);
         }
         return;
+    }
+
+    get btn1Class(): string {
+        return (this.styleBtn1AsCancel === true) ? "btn-secondary" : "btn-primary";
     }
 
     /**

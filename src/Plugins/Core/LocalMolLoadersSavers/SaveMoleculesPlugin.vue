@@ -54,6 +54,8 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { appName } from "@/Core/GlobalVars";
 import { slugify } from "@/Core/Utils";
+import { deleteAutoSave, stopAutoSaveTimer } from "@/Store/AutoSave";
+import { unregisterWarnSaveOnClose } from "@/Store/LoadAndSaveStore";
 
 /**
  * SaveMoleculesPlugin
@@ -362,7 +364,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(): Promise<void> {
+    async runJobInBrowser(): Promise<void> {
         let filename = this.getUserArg("filename");
         const useMolModaFormat = this.getUserArg("useMolModaFormat") as boolean;
         let compoundFormat = this.getUserArg("compoundFormat");
@@ -383,24 +385,24 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 filename = filename + ".molmoda";
             }
 
-            saveMolModa(filename)
-                .then(() => {
-                    if (this.appClosing) {
-                        api.messages.popupMessage(
-                            "Session Ended",
-                            "Your file has been saved. You may now close/reload this tab/window.",
-                            PopupVariant.Info,
-                            () => {
-                                // Reload the page
-                                window.location.reload();
-                            }
-                        );
+            await saveMolModa(filename);
+
+            if (this.appClosing) {
+                // Clear the autosave
+                stopAutoSaveTimer();
+                await deleteAutoSave();
+                unregisterWarnSaveOnClose();
+
+                api.messages.popupMessage(
+                    "Session Ended",
+                    "Your file has been saved. You may now close/reload this tab/window.",
+                    PopupVariant.Info,
+                    () => {
+                        // Reload the page
+                        window.location.reload();
                     }
-                    return;
-                })
-                .catch((err: any) => {
-                    throw err;
-                });
+                );
+            }
 
             return Promise.resolve();
         }
