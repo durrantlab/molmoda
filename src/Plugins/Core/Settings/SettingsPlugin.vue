@@ -43,6 +43,7 @@ import {
     removeStatCollectionCookie,
 } from "../StatCollection/StatUtils";
 import { appName } from "@/Core/GlobalVars";
+import { restartAutoSaveTimer } from "@/Store/AutoSave";
 
 /** SettingsPlugin */
 @Options({
@@ -98,6 +99,13 @@ export default class SettingsPlugin extends PluginParentClass {
             description:
                 "Number of compounds initially visible when creating/loading many new compounds.",
         } as IUserArgNumber,
+        {
+            id: "autoSaveFrequencyMinutes",
+            label: "Auto save frequency",
+            val: 5,
+            description:
+                "How often (in minutes) to automatically save a backup of your session for emergency recovery.",
+        } as IUserArgNumber,
 
         // Leaving below because don't want to entirely refactor it out, in case
         // I restore this feature later. But it is never visible (enabled:
@@ -147,6 +155,8 @@ export default class SettingsPlugin extends PluginParentClass {
     async onUserArgChange() {
         const currentStatEnabledVal = this.getUserArg("allowCookies");
         const savedStatEnabledVal = await isStatCollectionEnabled();
+
+        this.setUserArgEnabled("autoSaveFrequencyMinutes", currentStatEnabledVal);
 
         if (currentStatEnabledVal !== savedStatEnabledVal) {
             if (currentStatEnabledVal) {
@@ -217,9 +227,11 @@ export default class SettingsPlugin extends PluginParentClass {
         // //     molViewer ? molViewer : defaults.molViewer
         // // );
 
-        const isSet = await isStatCollectionEnabled();
-        this.setUserArg("allowCookies", isSet);
+        // const isSet = await isStatCollectionEnabled();
+        // this.setUserArg("allowCookies", isSet);
         this.setStatCollectPetition();
+
+        await this.onUserArgChange();
     }
 
     /**
@@ -228,6 +240,7 @@ export default class SettingsPlugin extends PluginParentClass {
     onPopupDone() {
         // Putting in [] so all settings sent together, rather than one-by-one.
         this.submitJobs([this.userArgs]);
+        restartAutoSaveTimer() 
     }
 
     /**

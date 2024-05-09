@@ -18,7 +18,20 @@ export interface ISimpleMsg {
     variant?: PopupVariant;
     callBack?: Function;
     neverClose?: boolean;
-    open?: boolean;  // Whether to open or close
+    open?: boolean; // Whether to open or close
+}
+
+export enum YesNo {
+    Yes,
+    No,
+}
+
+export interface IYesNoMsg {
+    message: string;
+    callBack: (val: YesNo) => void;
+    title?: string;
+    yesBtnTxt?: string;
+    noBtnTxt?: string;
 }
 
 export interface ISimpleVideo extends ISimpleMsg {
@@ -26,7 +39,7 @@ export interface ISimpleVideo extends ISimpleMsg {
 }
 
 export interface IDelayedJobPopup {
-    open: boolean;  // Whether to open or close
+    open: boolean; // Whether to open or close
     // message?: string;
     jobType?: string;
     jobId?: string;

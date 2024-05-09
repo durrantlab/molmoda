@@ -50,6 +50,7 @@ system uses these to autopopulate with plugins. -->
     <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
+    <YesNoPlugin @onPluginSetup="onPluginSetup"></YesNoPlugin>
 
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
@@ -113,6 +114,7 @@ import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
+import YesNoPlugin from "./Core/YesNoPlugin.vue";
 
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
@@ -172,6 +174,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ToggleVisiblePlugin,
     UndoPlugin,
     ViewerWindowPlugin,
+    YesNoPlugin,
 
     EvalScreenPlugin,
     FPocketWebPlugin,

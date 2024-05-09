@@ -14,6 +14,7 @@ import {
 } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
+import { setupAutoSave } from "./Store/AutoSave";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
@@ -35,7 +36,6 @@ async function main() {
     // console.warn("Below now meaningless?");
     // api.sys.loadStatus.menuFinalized = true;
     const store = setupVueXStore();
-
     applySettings(await getSettings());
 
     createApp(App)

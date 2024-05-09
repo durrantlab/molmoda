@@ -34,6 +34,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
+import { deleteAutoSave } from "@/Store/AutoSave";
 
 /**
  * NewProjectPlugin
@@ -103,8 +104,9 @@ export default class NewProjectPlugin extends PluginParentClass {
      * 
      * @returns {Promise<void>}  Resolves when the job is done.
      */
-    runJobInBrowser(): Promise<void> {
+    async runJobInBrowser(): Promise<void> {
         setStoreIsDirty(false);
+        await deleteAutoSave();
         window.location.reload();
         return Promise.resolve();
     }

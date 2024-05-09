@@ -24,14 +24,7 @@ export function saveMolModa(filename: string): Promise<undefined> {
     });
 }
 
-/**
- * Saves the state to a file.
- *
- * @param  {string} filename The filename to save to.
- * @param  {any}    state    The state to save.
- * @returns {Promise<any>} A promise that resolves when the save is complete.
- */
-function saveState(filename: string, state: any): Promise<any> {
+export function stateToJsonStr(state: any): string {
     const newMolData = (state.molecules as TreeNodeList).serialize();
 
     const newState: { [key: string]: any } = {};
@@ -45,7 +38,7 @@ function saveState(filename: string, state: any): Promise<any> {
 
     // Custom replacer function to handle circular references
     const seen = new WeakSet();
-    const jsonStr = JSON.stringify(newState, (key, value) => {
+    return JSON.stringify(newState, (key, value) => {
         if (typeof value === "object" && value !== null) {
             if (seen.has(value)) {
                 // Circular reference found, discard key or you can replace it with something else
@@ -56,6 +49,17 @@ function saveState(filename: string, state: any): Promise<any> {
         }
         return value;
     });
+}
+
+/**
+ * Saves the state to a file.
+ *
+ * @param  {string} filename The filename to save to.
+ * @param  {any}    state    The state to save.
+ * @returns {Promise<any>} A promise that resolves when the save is complete.
+ */
+function saveState(filename: string, state: any): Promise<any> {
+    const jsonStr = stateToJsonStr(state);
 
     // Create JSON file (compressed).
     return api.fs.saveTxt(

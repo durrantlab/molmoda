@@ -1,0 +1,139 @@
+<template>
+    <PluginComponent
+        :infoPayload="infoPayload"
+        v-model="open"
+        cancelBtnTxt=""
+        :actionBtnTxt="yesBtnTxt"
+        :actionBtnTxt2="noBtnTxt"
+        @onPopupDone="yesFunc"
+        @onPopupDone2="noFunc"
+        @onClosed="onClosed"
+        @onUserArgChanged="onUserArgChanged"
+    >
+        <!-- :variant="variantToUse" -->
+        {{ message }}
+    </PluginComponent>
+</template>
+
+<script lang="ts">
+/* eslint-disable @typescript-eslint/ban-types */
+
+import { Options } from "vue-class-component";
+import Popup from "@/UI/Layout/Popups/Popup.vue";
+import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
+import {
+    ISimpleMsg,
+    IYesNoMsg,
+    // PopupVariant,
+    YesNo,
+} from "@/UI/Layout/Popups/InterfacesAndEnums";
+import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { ITest } from "@/Testing/TestCmd";
+import { pluginsApi } from "@/Api/Plugins";
+import MessageList from "@/UI/MessageAlerts/MessageList.vue";
+
+/**
+ * YesNoPlugin
+ */
+@Options({
+    components: {
+        Popup,
+        PluginComponent,
+        MessageList,
+    },
+})
+export default class YesNoPlugin extends PluginParentClass {
+    // @Prop({ required: true }) title!: string;
+    // @Prop({ required: true }) message!: string;
+
+    menuPath = null;
+    softwareCredits: ISoftwareCredit[] = [];
+    contributorCredits: IContributorCredit[] = [];
+    pluginId = "yesnomsg";
+    intro = "";
+
+    message = "";
+    yesBtnTxt = "";
+    noBtnTxt = "";
+    callBack = (val: YesNo) => {
+        return;
+    };
+
+    title = "";
+    showInQueue = false;
+
+    userArgDefaults: UserArg[] = [];
+    alwaysEnabled = true;
+    logJob = false;
+
+    yesFunc() {
+        this.callBack(YesNo.Yes);
+    }
+
+    noFunc() {
+        this.callBack(YesNo.No);
+
+        // Must trigger close manually on this one.
+        this.open = false;
+    }
+
+    /**
+     * Runs when the user first starts the plugin. For example, if the plugin is
+     * in a popup, this function would open the popup.
+     *
+     * @param {IYesNoMsg} [payload]  Information about the message to display.
+     * @returns {Promise<void>}       Promise that resolves when the plugin is
+     *                                finished starting.
+     */
+    async onPluginStart(payload: IYesNoMsg): Promise<void> {
+        this.title = payload.title ?? "Question";
+        this.message = payload.message;
+        this.yesBtnTxt = payload.yesBtnTxt ?? "Yes";
+        this.noBtnTxt = payload.noBtnTxt ?? "No";
+        this.callBack = payload.callBack;
+        this.open = true;
+    }
+
+    /**
+     * Runs when the user closes the simple message popup.
+     */
+    onClosed() {
+        this.submitJobs();
+    }
+
+    /**
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
+     */
+    runJobInBrowser(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /**
+     * Gets the test commands for the plugin. For advanced use.
+     *
+     * @gooddefault
+     * @document
+     * @returns {ITest[]}  The selenium test commands.
+     */
+    async getTests(): Promise<ITest[]> {
+        // Not going to test closing, etc. (Too much work.) But at least opens
+        // to see if an error occurs.
+
+        // pluginsApi.runPlugin(this.pluginId, {
+        //     title: "Test Title",
+        //     message: "Test message",
+        //     open: true, // open
+        // } as ISimpleMsg);
+
+        return [];
+    }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped lang="scss"></style>

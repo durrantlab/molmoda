@@ -22,6 +22,7 @@ export async function defaultSettings(): Promise<any> {
         molViewer: "3dmol",
         allowCookies: allowCookies,
         allowExternalWebAccess: false,
+        autoSaveFrequencyMinutes: 5
     };
 }
 
