@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { Options } from "vue-class-component";
-import { loadRemoteToFileInfo } from "./Utils";
+import { loadRemoteToFileInfo } from "./RemoteMolLoadersUtils";
 import {
     IContributorCredit,
     ISoftwareCredit,

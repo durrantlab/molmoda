@@ -2,7 +2,7 @@
 // be accessed directly.
 
 import { compileByMolecule } from "./CompileByMolecule";
-import { getConvertedTxts, getPrimaryExt, saveTxtFiles } from "./Utils";
+import { getConvertedTxts, getPrimaryExt, saveTxtFiles } from "./SaveMolModelsUtils";
 import {
     IMolsToConsider,
     ICompiledNodes,

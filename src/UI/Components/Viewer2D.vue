@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import Popup from "../Layout/Popups/Popup.vue";

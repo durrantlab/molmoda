@@ -1,7 +1,7 @@
 // A container for test commmands, with added functions for common tasks.
 
 import type { FileInfo } from "@/FileSystem/FileInfo";
-import { loadRemoteToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/Utils";
+import { loadRemoteToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import {
     ITestCommand,

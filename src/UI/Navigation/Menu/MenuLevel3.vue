@@ -40,7 +40,7 @@ import { Prop } from "vue-property-decorator";
 // import "bootstrap/js/dist/collapse";
 import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";
-import { slugify } from "@/Core/Utils";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 /**
  * MenuLevel3 component

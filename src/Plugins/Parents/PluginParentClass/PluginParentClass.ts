@@ -9,7 +9,6 @@ import {
     ISoftwareCredit,
 } from "../../PluginInterfaces";
 import * as api from "@/Api";
-import { removeTerminalPunctuation, timeDiffDescription } from "@/Core/Utils";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
 import { ITest, createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 import { HooksMixin } from "./Mixins/HooksMixin";
@@ -32,6 +31,8 @@ import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
+import { removeTerminalPunctuation } from "@/Core/Utils/StringUtils";
+import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;

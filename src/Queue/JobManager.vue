@@ -37,7 +37,6 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { formatTimestamp } from "@/Core/Utils";
 import Table from "@/UI/Components/Table/Table.vue";
 import {
     ICellValue,
@@ -48,6 +47,7 @@ import {
 import { Options, Vue } from "vue-class-component";
 import { cancelInQueueStore, getQueueStore } from "./QueueStore";
 import { IJobStatusInfo, JobStatus } from "./QueueTypes";
+import { formatTimestamp } from "@/Core/Utils/TimeUtils";
 
 const headers: [IHeader[], IHeader[]] = [
     [

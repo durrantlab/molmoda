@@ -1,4 +1,4 @@
-import { IFileParts } from "./Utils";
+import { IFileParts } from "./FileUtils";
 
 const regexAcceptableChars = "\\w\\-."
 

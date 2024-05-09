@@ -14,7 +14,7 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { loadRemoteToFileInfo } from "./Utils";
+import { loadRemoteToFileInfo } from "./RemoteMolLoadersUtils";
 import * as api from "@/Api";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";

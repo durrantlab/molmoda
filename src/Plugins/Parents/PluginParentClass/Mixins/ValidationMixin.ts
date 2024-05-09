@@ -1,4 +1,4 @@
-import { isSentence } from "@/Core/Utils";
+import { isSentence } from "@/Core/Utils/StringUtils";
 import { Vue } from "vue-class-component";
 
 /**

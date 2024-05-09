@@ -26,7 +26,7 @@ import {
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { filesToFileInfos } from "@/FileSystem/Utils";
+import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import { appName } from "@/Core/GlobalVars";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
 

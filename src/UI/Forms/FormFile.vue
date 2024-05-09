@@ -24,11 +24,11 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
-import { filesToFileInfos } from "@/FileSystem/Utils";
+import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**

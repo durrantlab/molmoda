@@ -30,10 +30,10 @@ import { Prop } from "vue-property-decorator";
 
 // import "bootstrap/js/dist/collapse";
 import { IMenuItem } from "./Menu";
-import { slugify } from "@/Core/Utils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 let collapseHamburger: any;
 let hamburgerMenu: HTMLElement;

@@ -1,5 +1,4 @@
 import * as api from "@/Api";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { fetcher } from "@/Core/Fetcher";
 import { FileInfo } from "@/FileSystem/FileInfo";
 

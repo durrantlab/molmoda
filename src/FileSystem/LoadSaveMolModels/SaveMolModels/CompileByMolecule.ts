@@ -2,7 +2,7 @@ import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getTerminalNodesToConsider } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolsToConsider, ICompiledNodes } from "./Types";
-import { separateCompoundNonCompoundTerminalNodes } from "./Utils";
+import { separateCompoundNonCompoundTerminalNodes } from "./SaveMolModelsUtils";
 
 /**
  * Runs the job when the user wants to save in a non-molmoda format, by

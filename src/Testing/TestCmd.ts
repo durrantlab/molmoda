@@ -1,9 +1,9 @@
-import { slugify } from "@/Core/Utils";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import * as PluginToTest from "./PluginToTest";
 import { TestCmdList } from "./TestCmdList";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { store } from "@/Store";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 enum TestCommand {
     Click = "click",

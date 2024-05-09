@@ -1,4 +1,3 @@
-import { slugify } from "@/Core/Utils";
 import { IAtom, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import * as api from "@/Api";
 import { getFormatInfoGivenType, IFormatInfo } from "../Types/MolFormats";
@@ -7,6 +6,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { makeEasyParser } from "../ParseMolModels/EasyParser";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.

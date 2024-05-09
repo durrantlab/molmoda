@@ -32,7 +32,7 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { filesToFileInfos } from "@/FileSystem/Utils";
+import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -44,7 +44,7 @@ import {
     WhichMolsGen3D,
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
-import { getFileType } from "@/FileSystem/Utils2";
+import { getFileType } from "@/FileSystem/FileUtils2";
 import {
     IFormatInfo,
     getFormatInfoGivenType,

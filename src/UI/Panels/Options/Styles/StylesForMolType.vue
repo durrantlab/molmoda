@@ -77,7 +77,6 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import Section from "@/UI/Layout/Section.vue";
-import { capitalize } from "@/Core/Utils";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
@@ -88,6 +87,7 @@ import ColorSelect from "./ColorSelect/ColorSelect.vue";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import * as Styles from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { capitalize } from "@/Core/Utils/StringUtils";
 
 export interface IStyleForMolType {
     style: IStyle;

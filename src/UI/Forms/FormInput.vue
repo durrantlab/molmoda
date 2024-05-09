@@ -40,7 +40,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";

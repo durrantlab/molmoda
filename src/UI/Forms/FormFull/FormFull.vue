@@ -190,7 +190,7 @@ import FormVector3D from "../FormVector3D.vue";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
 import FormTextArea from "../FormTextArea.vue";
-import { isSentence } from "@/Core/Utils";
+import { isSentence } from "@/Core/Utils/StringUtils";
 
 /**
  * FormFull
@@ -394,7 +394,7 @@ export default class FormFull extends Vue {
             }
 
             // Placeholder must be sentence case
-            if (isSentence(formElem.placeHolder) === false) {
+        if (isSentence(formElem.placeHolder) === false) {
                 throw new Error(
                     `FormFull: Placeholder must be sentence case: ${formElem.placeHolder}`
                 );

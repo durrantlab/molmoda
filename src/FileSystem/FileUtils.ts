@@ -1,6 +1,6 @@
 import { fsApi } from "@/Api/FS";
 import { FileInfo } from "./FileInfo";
-import { getFileType } from "./Utils2";
+import { getFileType } from "./FileUtils2";
 
 export interface IFileParts {
     basename: string;
@@ -46,9 +46,12 @@ export function filesToFileInfos(
     const fileInfoBatchesPromises: Promise<FileInfo[] | string>[] = [];
     for (const file of fileList) {
         const type = getFileType(file.name);
-        if (type === undefined) return Promise.resolve(undefined);
+        if (type === undefined) {
+            return Promise.resolve(undefined);
+        }
 
-        const treatAsZip = isZip || type == "MOLMODA" || type == "BIOTITE" || type == "ZIP";
+        const treatAsZip =
+            isZip || type == "MOLMODA" || type == "BIOTITE" || type == "ZIP";
 
         const fileInfoBatchPromise: Promise<FileInfo[] | string> = new Promise(
             (resolve, reject) => {
@@ -110,7 +113,11 @@ export function filesToFileInfos(
                 } else {
                     for (const fileInfo of fileInfoBatch) {
                         // Special exception for molmoda files...
-                        if (["biotite_file.json", "molmoda_file.json"].indexOf(fileInfo.name) !== -1) {
+                        if (
+                            ["biotite_file.json", "molmoda_file.json"].indexOf(
+                                fileInfo.name
+                            ) !== -1
+                        ) {
                             fileInfo.name = correctFilenameExt(
                                 fileInfo.name,
                                 "MOLMODA"
@@ -136,9 +143,6 @@ export function filesToFileInfos(
         }
     );
 }
-
-
-
 
 /**
  * Given a filename and format type, update the filename so the extension

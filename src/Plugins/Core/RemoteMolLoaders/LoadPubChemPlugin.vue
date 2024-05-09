@@ -40,22 +40,22 @@
 import { Options } from "vue-class-component";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
-import { slugify } from "@/Core/Utils";
 import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { loadRemoteToFileInfo } from "./Utils";
+import { loadRemoteToFileInfo } from "./RemoteMolLoadersUtils";
 import * as api from "@/Api";
 import { appName } from "@/Core/GlobalVars";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { correctFilenameExt } from "@/FileSystem/Utils";
+import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 /**
  * LoadPubChemPlugin

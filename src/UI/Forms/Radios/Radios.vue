@@ -18,7 +18,7 @@
 
 <script lang="ts">
 
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import Radio from "./Radio.vue";

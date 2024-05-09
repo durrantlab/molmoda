@@ -1,5 +1,5 @@
 import { ISoftwareCredit, Licenses } from "@/Plugins/PluginInterfaces";
-import { waitForCondition } from "./Utils";
+import { waitForCondition } from "./Utils/MiscUtils";
 
 interface IDynamicImport {
     credit: ISoftwareCredit;

@@ -1,7 +1,7 @@
 import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Utils";
+import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModelsUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";

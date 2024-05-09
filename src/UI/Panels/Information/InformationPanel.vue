@@ -34,7 +34,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { Options, Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
-import { getFirstSelected, getSmilesOfTreeNode } from "./Utils";
+import { getFirstSelected, getSmilesOfTreeNode } from "./InformationPanelUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 

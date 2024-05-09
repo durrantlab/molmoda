@@ -65,10 +65,10 @@ import {
 TableHeaderSort,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
-import { slugify } from "@/Core/Utils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import FormSelectRegion from "@/UI/Forms/FormSelectRegion/FormSelectRegion.vue";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 /**
  * DataPanel component

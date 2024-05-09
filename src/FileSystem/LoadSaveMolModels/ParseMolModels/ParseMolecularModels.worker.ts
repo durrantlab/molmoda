@@ -10,7 +10,7 @@ import {
     TreeNodeType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import {
     defaultProteinStyle,
     defaultNucleicStyle,

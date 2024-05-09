@@ -91,7 +91,7 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { PopupVariant } from "./InterfacesAndEnums";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";

@@ -20,7 +20,7 @@ import { saveData } from "@/Core/FS/FS";
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import { ChartRatios, ChartType, IChartDataPoint } from "./ChartInterfaces";
-import { slugify } from "@/Core/Utils";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 // Assuming you have a dynamicImports object similar to the chartJsLoader example
 

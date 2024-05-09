@@ -1,5 +1,5 @@
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { parseMolecularModelFromTexts } from "./Utils";
+import { parseMolecularModelFromTexts } from "./ParseMolModelsUtils";
 import type { IFormatInfo } from "../Types/MolFormats";
 import type { FileInfo } from "@/FileSystem/FileInfo";
 

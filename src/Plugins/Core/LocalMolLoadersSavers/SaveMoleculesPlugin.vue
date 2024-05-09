@@ -48,14 +48,14 @@ import {
     ICmpdNonCmpdFileInfos,
     IMolsToConsider,
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
-import { correctFilenameExt } from "@/FileSystem/Utils";
+import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { appName } from "@/Core/GlobalVars";
-import { slugify } from "@/Core/Utils";
 import { deleteAutoSave, stopAutoSaveTimer } from "@/Store/AutoSave";
 import { unregisterWarnSaveOnClose } from "@/Store/LoadAndSaveStore";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 /**
  * SaveMoleculesPlugin
@@ -77,7 +77,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     ];
     pluginId = "savemolecules";
 
-    intro = `Save molecules to the disk.`
+    intro = `Save molecules to the disk.`;
     details = `The ${appName} format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
 
     hotkey = "s";
@@ -173,7 +173,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     ];
 
     alwaysEnabled = true;
-    lastFilename = ""
+    lastFilename = "";
 
     /**
      * Determine which into text to use.
@@ -284,9 +284,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                     const userArgDefaultOptionVals = (
                         userArgDefault as IUserArgSelect
                     ).options.map((option) => (option as IUserArgOption).val);
-    
+
                     if (
-                        userArgDefaultOptionVals.indexOf(format.primaryExt) !== -1
+                        userArgDefaultOptionVals.indexOf(format.primaryExt) !==
+                        -1
                     ) {
                         this.setUserArg(userArgId, format.primaryExt);
                     }
@@ -307,8 +308,8 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
      */
     onUserArgChange() {
         this.reactToExtChange();
-        
-        const useMolModa = this.getUserArg("useMolModaFormat") as boolean
+
+        const useMolModa = this.getUserArg("useMolModaFormat") as boolean;
 
         // this.setUserArgEnabled("molMergingGroup", !useMolModa);
         this.setUserArgEnabled("whichMolsGroup", !useMolModa);
@@ -441,9 +442,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
                 ]) {
                     for (const fileInfo of fileInfos) {
                         if (fileInfo.treeNode) {
-                            let ext = fileInfo.getFileType()
+                            let ext = fileInfo.getFileType();
                             if (ext === undefined) {
-                                throw new Error("Should never happen, because converting from internal format!")
+                                throw new Error(
+                                    "Should never happen, because converting from internal format!"
+                                );
                             }
                             ext = ext.toLowerCase();
                             const filename = slugify(

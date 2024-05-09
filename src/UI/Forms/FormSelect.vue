@@ -24,11 +24,12 @@
 </template>
 
 <script lang="ts">
-import { randomID, slugify } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { IUserArgOption } from "./FormFull/FormFullInterfaces";
 import FormElementDescription from "./FormElementDescription.vue";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 /**
  * FormSelect component

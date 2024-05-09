@@ -5,7 +5,7 @@ import {
     molFormatInformation,
 } from "./LoadSaveMolModels/Types/MolFormats";
 import { IFileInfo } from "./Types";
-import { getFileType } from "./Utils2";
+import { getFileType } from "./FileUtils2";
 
 /**
  * Class FileInfo

@@ -5,7 +5,7 @@
         cancelBtnTxt=""
         :actionBtnTxt="noBtnTxt"
         :actionBtnTxt2="yesBtnTxt"
-        @onPopupDone="noFunc"
+        @onPopupDone="onPopupDone"
         @onPopupDone2="yesFunc"
         @onClosed="onClosed"
         @onUserArgChanged="onUserArgChanged"
@@ -76,7 +76,8 @@ export default class YesNoPlugin extends PluginParentClass {
         this.open = false;
     }
 
-    noFunc() {
+    // No func
+    onPopupDone() {
         this.callBack(YesNo.No);
     }
 

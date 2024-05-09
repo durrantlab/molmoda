@@ -21,7 +21,7 @@
 import { Options, Vue } from "vue-class-component";
 import Alert from "@/UI/Layout/Alert.vue";
 import { Prop, Watch } from "vue-property-decorator";
-import { isSentence } from "@/Core/Utils";
+import { isSentence } from "@/Core/Utils/StringUtils";
 
 /**
  * FormElementDescription component

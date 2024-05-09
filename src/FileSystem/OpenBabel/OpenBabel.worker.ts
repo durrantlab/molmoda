@@ -1,4 +1,4 @@
-import { randomID } from "@/Core/Utils";
+import { randomID } from "@/Core/Utils/MiscUtils";
 import { sendResponseToMainThread } from "@/Core/WebWorkers/WorkerHelper";
 import { FileInfo } from "../FileInfo";
 

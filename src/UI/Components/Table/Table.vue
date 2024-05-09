@@ -108,13 +108,13 @@
 
 <script lang="ts">
 import { saveData } from "@/Core/FS/FS";
-import { slugify } from "@/Core/Utils";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
 import Icon from "../Icon.vue";
 import { IDataRows } from "@/Core/FS/FSInterfaces";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 // Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
 interface ITableDataInternal {

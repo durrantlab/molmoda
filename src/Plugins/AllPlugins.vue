@@ -35,6 +35,7 @@ system uses these to autopopulate with plugins. -->
     <NewProjectPlugin @onPluginSetup="onPluginSetup"></NewProjectPlugin>
     <OpenMoleculesPlugin @onPluginSetup="onPluginSetup"></OpenMoleculesPlugin>
     <PastePlugin @onPluginSetup="onPluginSetup"></PastePlugin>
+    <QuitPlugin @onPluginSetup="onPluginSetup"></QuitPlugin>
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
     <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
@@ -99,6 +100,7 @@ import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
 import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
 import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
 import PastePlugin from "./Core/Clipboard/PastePlugin.vue";
+import QuitPlugin from "./Core/QuitPlugin.vue";
 import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
 import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
@@ -159,6 +161,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     NewProjectPlugin,
     OpenMoleculesPlugin,
     PastePlugin,
+    QuitPlugin,
     RedoPlugin,
     RenameMolPlugin,
     SaveMoleculesPlugin,
