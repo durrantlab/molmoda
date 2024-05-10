@@ -15,7 +15,7 @@
             >
                 {{ menuData.text?.replace("_", "") }}
                 <div v-if="showHotkey" style="float: right" class="text-muted">
-                    {{ hotkeyPrefix }}{{ menuData.hotkey?.toUpperCase() }}
+                    {{ hotkeyPrefix }}{{ hotkeyToShow(menuData) }}
                 </div>
             </a>
         </Tooltip>
@@ -86,6 +86,24 @@ export default class MenuActionLink extends Vue {
         return false;
     }
 
+    hotkeyToShow(menuData: IMenuItem): string {
+        if (!menuData.hotkey) {
+            return "";
+        }
+
+        console.log(menuData.hotkey);
+
+        if (menuData.hotkey === "up") {
+            return "↑";
+        }
+
+        if (menuData.hotkey === "down") {
+            return "↓";
+        }
+
+        return menuData.hotkey.toUpperCase()
+    }
+
     /**
      * Whether to show the hot key in the menu.
      *
@@ -98,6 +116,10 @@ export default class MenuActionLink extends Vue {
         }
         if (hotkey === "") {
             return false;
+        }
+
+        if (hotkey == "up" || hotkey == "down") {
+            return true;
         }
 
         // Conveniently, hotkey length covers case where hotkey is a long string

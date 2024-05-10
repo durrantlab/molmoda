@@ -14,7 +14,6 @@ import {
 } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
-import { setupAutoSave } from "./Store/AutoSave";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
@@ -30,6 +29,7 @@ async function main() {
     setupWarnSaveOnClose();
 
     defineMakerFuncs();
+    // setupUpDownTreeNav();
 
     // api.sys.loadStatus.pluginsLoaded = true;
 

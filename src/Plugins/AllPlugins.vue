@@ -16,6 +16,7 @@ system uses these to autopopulate with plugins. -->
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
     <DocumentationLinkPlugin @onPluginSetup="onPluginSetup"></DocumentationLinkPlugin>
+    <DownTreeNavPlugin @onPluginSetup="onPluginSetup"></DownTreeNavPlugin>
     <DrawMoleculePlugin @onPluginSetup="onPluginSetup"></DrawMoleculePlugin>
     <EditCompoundPlugin @onPluginSetup="onPluginSetup"></EditCompoundPlugin>
     <ErrorReportingPlugin @onPluginSetup="onPluginSetup"></ErrorReportingPlugin>
@@ -50,6 +51,7 @@ system uses these to autopopulate with plugins. -->
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
     <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
+    <UpTreeNavPlugin @onPluginSetup="onPluginSetup"></UpTreeNavPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
     <YesNoPlugin @onPluginSetup="onPluginSetup"></YesNoPlugin>
 
@@ -81,6 +83,7 @@ import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
 import DocumentationLinkPlugin from "./Core/DocumentationLinkPlugin.vue";
+import DownTreeNavPlugin from "./Core/UpDownTreeNav/DownTreeNavPlugin.vue";
 import DrawMoleculePlugin from "./Core/DrawMoleculePlugin.vue";
 import EditCompoundPlugin from "./Core/EditCompoundPlugin.vue";
 import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
@@ -115,6 +118,7 @@ import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
 import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
+import UpTreeNavPlugin from "./Core/UpDownTreeNav/UpTreeNavPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 import YesNoPlugin from "./Core/YesNoPlugin.vue";
 
@@ -142,6 +146,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     DataWindowPlugin,
     DeleteMolPlugin,
     DocumentationLinkPlugin,
+    DownTreeNavPlugin,
     DrawMoleculePlugin,
     EditCompoundPlugin,
     ErrorReportingPlugin,
@@ -176,6 +181,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     StylesWindowPlugin,
     ToggleVisiblePlugin,
     UndoPlugin,
+    UpTreeNavPlugin,
     ViewerWindowPlugin,
     YesNoPlugin,
 
