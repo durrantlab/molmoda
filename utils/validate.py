@@ -167,6 +167,9 @@ for ts_file in ts_files:
     if "localStorage." in content and "LocalStorage.ts" not in ts_file:
         add_error(ts_file, "Use the LocalStorage class instead of localStorage.setItem or localStorage.getItem.")
 
+    if "location.reload" in content and "CloseAppUtils.ts" not in ts_file:
+        add_error(ts_file, "Use closeDownApp() class instead of location.reload.")
+
     # if ".catch(" in content, there must be a "throw" within the next few
     # lines. Use regex.
     if ".catch(" in content:

@@ -351,7 +351,7 @@ export class TreeNode {
             // If there's no model, use first available chain.
             chain = availableChains.shift();
         } else {
-            const firstAtom = makeEasyParser(treeNode.model).parseAtom(0);
+            const firstAtom = makeEasyParser(treeNode.model).getAtom(0);
             if (!firstAtom) {
                 // If there are no atoms in the model, use first
                 // available chain.

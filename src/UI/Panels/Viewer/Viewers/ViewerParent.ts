@@ -198,9 +198,11 @@ export abstract class ViewerParent {
             let opacity = 1;
             if (treeNode && treeNode.region && treeNode.region.opacity) {
                 opacity = treeNode.region.opacity;
+                this.createRegionLabel(id, treeNode.title);
             }
 
             this.showRegion(id, opacity);
+
             this.renderAll();
         }
     }
@@ -221,6 +223,37 @@ export abstract class ViewerParent {
      * @returns {void}
      */
     abstract showRegion(id: string, opacity: number): void;
+
+    abstract createRegionLabel(id: string, text: string): void;
+    abstract destroyRegionLabel(id: string): void;
+
+    private _callbackRegistered = false;
+
+    /**
+     * Register a callback to be called when the view changes. Defined on the
+     * children.
+     *
+     * @param  {Function} callback  The callback to register.
+     * @returns {void}
+     */
+    abstract _registerViewChangeCallback(callback: () => void): void;
+
+    /**
+     * Register a callback to be called when the view changes.
+     *
+     * @param  {Function} callback  The callback to register.
+     * @returns {void}
+     */
+    public registerViewChangeCallback(callback: () => void) {
+        if (!this._callbackRegistered) {
+            this._callbackRegistered = true;
+            this._registerViewChangeCallback(callback);
+        }
+    }
+
+    abstract getView(): number[];
+
+    abstract setView(view: number[]): void;
 
     /**
      * Clear the current molecular styles.
@@ -814,11 +847,23 @@ export abstract class ViewerParent {
         // as best I can tell.
 
         // Always remove any old regions.
-        
+
         this.addRegion(regionStyle)
-        .then((region: GenericRegionType) => {
+            .then((region: GenericRegionType) => {
+                // Remove previous region if it exists
                 this._removeRegion(id);
+
+                // add new region
                 this.regionCache[id] = region;
+
+                // Also remove previous region label
+                this.destroyRegionLabel(id);
+
+                // Add new region
+                const treeNode = getMoleculesFromStore().filters.onlyId(id);
+                const title = treeNode?.title;
+                this.createRegionLabel(id, title ?? "Region");
+                
                 return;
             })
             .catch((err: Error) => {

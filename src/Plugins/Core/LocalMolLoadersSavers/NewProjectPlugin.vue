@@ -34,7 +34,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
-import { deleteAutoSave } from "@/Store/AutoSave";
+import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 
 /**
  * NewProjectPlugin
@@ -79,7 +79,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     async onBeforePopupOpen() {
         if (!storeIsDirty) {
             // Since store is not dirty, just reload page.
-            window.location.reload();
+            closeDownApp(undefined, false);
         }
     }
 
@@ -106,8 +106,7 @@ export default class NewProjectPlugin extends PluginParentClass {
      */
     async runJobInBrowser(): Promise<void> {
         setStoreIsDirty(false);
-        await deleteAutoSave();
-        window.location.reload();
+        closeDownApp(undefined, false);
         return Promise.resolve();
     }
 

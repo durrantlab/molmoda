@@ -8,7 +8,7 @@
     </tr>
   </thead> -->
       <tbody>
-        <tr v-for="log in logsToShow" :key="log.timestamp">
+        <tr v-for="log, idx in logsToShow" :key="log.timestamp + idx.toString()">
           <td style="width: 160px">
             <small>{{ log.timestamp }}</small>
           </td>

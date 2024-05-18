@@ -9,6 +9,7 @@ import { NameValPair } from "./StoreInterfaces";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
+import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 
 const _commonMutations = {
     /**
@@ -129,6 +130,8 @@ export function setupVueXStore(): Store<any> {
         state: {
             molecules: newTreeNodeList([]),
             log: [] as ILog[],
+            goldenLayout: undefined,
+            viewerVantagePoint: undefined,
             updateZoom: true,
             molViewer: "3dmol",
             undoStack: [newTreeNodeList([])],

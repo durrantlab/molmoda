@@ -29,6 +29,10 @@ export function restartAutoSaveTimer() {
 
     const timerTick = async () => {
         const tickInterval = await getSetting("autoSaveFrequencyMinutes");
+        if (tickInterval <= 0) {
+            // disabled
+            return;
+        }
         const tickIntervalMS = tickInterval * 60 * 1000;
     
         timerId = setTimeout(async () => {

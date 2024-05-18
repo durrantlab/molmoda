@@ -1,12 +1,21 @@
+import { visualizationApi } from "@/Api/Visualization";
+import { waitForCondition } from "@/Core/Utils/MiscUtils";
 import type { FileInfo } from "@/FileSystem/FileInfo";
 import { store } from "@/Store";
 import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
 import { treeNodeListDeserialize } from "@/TreeNodes/Deserializers";
 import type { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 import type { ILog } from "@/UI/Panels/Log/LogUtils";
+import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
 
-export const molmodaStateKeysToRetain = ["molecules", "log"];
+export const molmodaStateKeysToRetain = [
+    "molecules",
+    "log",
+    "goldenLayout",
+    "viewerVantagePoint",
+];
 
 /**
  * Uses molmoda to parse the a molecular-model file. For molmoda-native files.
@@ -16,30 +25,45 @@ export const molmodaStateKeysToRetain = ["molecules", "log"];
  *    parsed. The promise resolves to a TreeNodeList containing the frames. Can also
  *    resolve void.
  */
-export function parseUsingMolModa(
+export async function parseUsingMolModa(
     fileInfo: FileInfo
 ): Promise<void | TreeNodeList> {
-    return jsonStrToState(fileInfo.contents)
-        .then((stateFromJson) => {
-            // Update vueX store
-            for (const key of molmodaStateKeysToRetain) {
-                switch (key) {
-                    case "log":
-                        pushToStoreList(key, stateFromJson[key]);
-                        break;
-                    case "molecules":
-                        (stateFromJson[key] as TreeNodeList).addToMainTree(null);
-                        break;
-                }
-            }
+    const stateFromJson = await jsonStrToState(fileInfo.contents);
+    // Update vueX store
+    for (const key of molmodaStateKeysToRetain) {
+        let viewer: ViewerParent;
+        switch (key) {
+            case "log":
+                pushToStoreList(key, stateFromJson[key]);
+                break;
+            case "molecules":
+                (stateFromJson[key] as TreeNodeList).addToMainTree(null);
+                break;
+            case "goldenLayout":
+                setStoreVar("goldenLayout", stateFromJson[key]);
+                // goldenLayout.loadLayout(stateFromJson[key]);
+                console.warn("NOT IMPLEMENTED: RESTORE GOLDEN LAYOUT");
+                break;
+            case "viewerVantagePoint":
+                setStoreVar("viewerVantagePoint", stateFromJson[key]);
+                viewer = await visualizationApi.viewer;
 
-            fixLog();
+                // TODO: Below is hackish. Only works if 3dmoljs is the viewer.
+                // That is the only option for now, but it might change in the
+                // future.
+                await waitForCondition(() => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    return viewer._mol3dObj !== undefined;
+                });
+                viewer.setView(stateFromJson[key]);
+                break;
+        }
+    }
 
-            return undefined;
-        })
-        .catch((err: any) => {
-            throw err;
-        });
+    fixLog();
+
+    return undefined;
 }
 
 /**

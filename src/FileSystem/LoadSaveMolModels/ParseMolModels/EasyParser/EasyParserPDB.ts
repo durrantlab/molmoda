@@ -33,33 +33,26 @@ export class EasyParserPDB extends EasyParserParent {
     /**
      * Parse an atom.
      * 
-     * @param {number} idx The index of the atom.
+     * @param {string} atomStr The string to parse.
      * @returns {IAtom} The parsed atom.
      */
-    parseAtom(idx: number): IAtom {
-        const atom = this._atoms[idx];
-
-        // If it's not a string, it's already been parsed.
-        if (typeof atom !== "string") {
-            return atom as IAtom;
-        }
-
+    _parseAtomStr(atomStr: string): IAtom {
         // You must parse it.
-        const atomName = atom.slice(12, 16).trim();
-        const serial = parseInt(atom.slice(6, 11).trim());
-        const altLoc = atom.slice(16, 17);
-        const resn = atom.slice(17, 20).trim();
-        const chain = atom.slice(21, 22);
-        const resi = parseInt(atom.slice(22, 26).trim());
-        const x = parseFloat(atom.slice(30, 38).trim());
-        const y = parseFloat(atom.slice(38, 46).trim());
-        const z = parseFloat(atom.slice(46, 54).trim());
-        const b = parseFloat(atom.slice(60, 66).trim());
+        const atomName = atomStr.slice(12, 16).trim();
+        const serial = parseInt(atomStr.slice(6, 11).trim());
+        const altLoc = atomStr.slice(16, 17);
+        const resn = atomStr.slice(17, 20).trim();
+        const chain = atomStr.slice(21, 22);
+        const resi = parseInt(atomStr.slice(22, 26).trim());
+        const x = parseFloat(atomStr.slice(30, 38).trim());
+        const y = parseFloat(atomStr.slice(38, 46).trim());
+        const z = parseFloat(atomStr.slice(46, 54).trim());
+        const b = parseFloat(atomStr.slice(60, 66).trim());
 
-        let elem = atom.slice(76, 78).trim();
+        let elem = atomStr.slice(76, 78).trim();
         if (elem === "") {
             // Get first two letters of atom name
-            elem = atom.slice(12, 14).trim();
+            elem = atomStr.slice(12, 14).trim();
             // Make upper case
             elem = elem.toUpperCase();
             // If it's not in twoLetterElems, get first letter.

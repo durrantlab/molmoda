@@ -44,6 +44,7 @@ import "bootstrap/js/dist/collapse";
 import MenuLevel1 from "./MenuLevel1.vue";
 import { IMenuEntry, menuDataSorted } from "./Menu";
 import { setAllMenuData } from "@/Plugins/LoadedPlugins";
+import { setupElectronMenu } from "@/Core/Electron/ElectronMenu";
 
 /**
  * Menu component
@@ -67,8 +68,18 @@ export default class Menu extends Vue {
     // Make the menu data available outside this component.
     setAllMenuData(this.menuData);
 
+    // Set menu in electron if needed.
+    setupElectronMenu(this.menuData);
+
     return this.menuData;
   }
+
+  // mounted() {
+  //   setTimeout(() => {
+  //     // Need to set the electron menu after the menu is mounted.
+  //     setupElectronMenu(this.menuDataSorted);
+  //   }, 2000);
+  // }
 }
 </script>
 

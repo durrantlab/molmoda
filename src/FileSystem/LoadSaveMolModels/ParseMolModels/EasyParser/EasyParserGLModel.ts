@@ -27,10 +27,11 @@ export class EasyParserGLModel extends EasyParserParent {
     /**
      * Parse an atom.
      *
-     * @param {number} idx The index of the atom.
-     * @returns {IAtom} The parsed atom.
+     * @param {string} atomStr The string to parse.
+     * @returns {IAtom | undefined} The parsed atom, or undefined if not
+     *     parsable or function not used.
      */
-    parseAtom(idx: number): IAtom {
-        return this._atoms[idx] as IAtom;
+    _parseAtomStr(atomStr: string): IAtom | undefined {
+        return undefined;
     }
 }

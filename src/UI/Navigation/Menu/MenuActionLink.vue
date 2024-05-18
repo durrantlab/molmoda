@@ -91,8 +91,6 @@ export default class MenuActionLink extends Vue {
             return "";
         }
 
-        console.log(menuData.hotkey);
-
         if (menuData.hotkey === "up") {
             return "↑";
         }

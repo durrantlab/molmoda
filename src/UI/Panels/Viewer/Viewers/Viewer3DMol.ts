@@ -85,12 +85,10 @@ export class Viewer3DMol extends ViewerParent {
         const region = this.lookup(id);
         if (region) {
             this._mol3dObj.removeShape(region);
-        }
 
-        // Also remove label
-        // if (this._regionLabels[id]) {
-        //     this.removeLabel(this._regionLabels[id]);
-        // }
+            // Also remove label
+            this.destroyRegionLabel(id);
+        }
     }
 
     /**
@@ -128,11 +126,7 @@ export class Viewer3DMol extends ViewerParent {
         const region = this.lookup(id);
         if (region) {
             region.hidden = true;
-
-            if (this._regionLabels[id]) {
-                this.removeLabel(this._regionLabels[id]);
-                delete this._regionLabels[id];
-            }
+            this.destroyRegionLabel(id);
         }
     }
 
@@ -161,27 +155,38 @@ export class Viewer3DMol extends ViewerParent {
             region.hidden = false;
             region.opacity = opacity;
 
-            // const title = getTreeNodeTitle(id);
+            // Note that makeRegionLabel called separately from parent.
+        }
+    }
 
-            // TODO: Disabling region labels for now because of lack of
-            // time, but enable in next version.
-            // if (title) {
-            //     // Also add label
-            //     if (this._regionLabels[id]) {
-            //         this.removeLabel(id);
-            //         delete this._regionLabels[id];
-            //     }
+    createRegionLabel(id: string, text: string) {
+        const region = this.lookup(id);
+        if (region) {
+            console.log("CREATE: ", id, text);
 
-            //     this._regionLabels[id] = this.addLabel(
-            //         title,
-            //         region.x,
-            //         region.y,
-            //         region.z,
-            //         "center",
-            //         14,
-            //         // false
-            //     );
-            // }
+            // Delete old label
+            this.destroyRegionLabel(id);
+
+            // Make new one
+            this._regionLabels[id] = this.addLabel(
+                text,
+                region.x,
+                region.y,
+                region.z,
+                "center",
+                14
+                // false
+            );
+        }
+    }
+
+    destroyRegionLabel(id: string) {
+        // Delete old label
+        if (this._regionLabels[id]) {
+            // debugger;
+            console.log("DESTROY: ", id);
+            this.removeLabel(this._regionLabels[id]);
+            delete this._regionLabels[id];
         }
     }
 
@@ -503,7 +508,7 @@ export class Viewer3DMol extends ViewerParent {
                 // screenOffset: $3Dmol.Vector2(10, 10),
                 inFront: inFront,
                 alignment: alignment, // 'bottomLeft'
-                fontSize: fontSize
+                fontSize: fontSize,
             }
         );
     }
@@ -731,5 +736,17 @@ export class Viewer3DMol extends ViewerParent {
         //     );
         // }
         return this._mol3dObj.exportVRML();
+    }
+
+    _registerViewChangeCallback(callback: () => void) {
+        this._mol3dObj.setViewChangeCallback(callback);
+    }
+
+    getView(): number[] {
+        return this._mol3dObj.getView();
+    }
+
+    setView(view: number[]) {
+        this._mol3dObj.setView(view);
     }
 }

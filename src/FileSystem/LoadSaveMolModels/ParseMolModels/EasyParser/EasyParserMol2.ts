@@ -36,22 +36,15 @@ export class EasyParserMol2 extends EasyParserParent {
     /**
      * Parse an atom.
      * 
-     * @param {number} idx The index of the atom.
+     * @param {string} atomStr The string to parse.
      * @returns {IAtom} The parsed atom.
      */
-    parseAtom(idx: number): IAtom {
-        const atom = this._atoms[idx];
-
-        // If it's not a string, it's already been parsed.
-        if (typeof atom !== "string") {
-            return atom as IAtom;
-        }
-
+    _parseAtomStr(atomStr: string): IAtom {
         // Atom looks like this:
         // "     31  C4        39.2670   22.5690   13.2440 C.ar  501  ATP501      0.1692"
 
         // Split by spaces.
-        const [serialOrig, atomName, xOrig, yOrig, zOrig, elemOrig, resiOrig, resn, bOrig] = atom.split(/\s+/);
+        const [serialOrig, atomName, xOrig, yOrig, zOrig, elemOrig, resiOrig, resn, bOrig] = atomStr.split(/\s+/);
         const serial = parseInt(serialOrig);
         const x = parseFloat(xOrig);
         const y = parseFloat(yOrig);

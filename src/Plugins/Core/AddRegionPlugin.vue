@@ -175,7 +175,7 @@ export default class AddRegionPlugin extends PluginParentClass {
             let atoms: IAtom[] = [];
             let easyModel = makeEasyParser(node.model);
             for (let i = 0; i < easyModel.length; i = i + 10) {
-                atoms.push(easyModel.parseAtom(i));
+                atoms.push(easyModel.getAtom(i));
             }
 
             for (const atom of atoms) {

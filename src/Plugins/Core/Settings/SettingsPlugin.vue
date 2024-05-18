@@ -104,7 +104,7 @@ export default class SettingsPlugin extends PluginParentClass {
             label: "Auto save frequency",
             val: 5,
             description:
-                "How often (in minutes) to automatically save a backup of your session for emergency recovery.",
+                "How often (in minutes) to automatically save a backup of your session for emergency recovery. Set to 0 to disable.",
         } as IUserArgNumber,
 
         // Leaving below because don't want to entirely refactor it out, in case
@@ -201,7 +201,7 @@ export default class SettingsPlugin extends PluginParentClass {
 
         for (const settingName in defaults) {
             const val = savedSettings[settingName];
-            this.setUserArg(settingName, val ? val : defaults[settingName]);
+            this.setUserArg(settingName, val !== undefined ? val : defaults[settingName]);
         }
 
         // const maxProcs = savedSettings["maxProcs"];

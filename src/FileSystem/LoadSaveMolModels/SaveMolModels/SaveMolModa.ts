@@ -33,6 +33,8 @@ export function stateToJsonStr(state: any): string {
             continue;
         }
 
+        // If it's molecules specifically, use the new (serialized) version, not
+        // the existing version.
         newState[key] = key === "molecules" ? newMolData : state[key];
     }
 

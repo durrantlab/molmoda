@@ -98,7 +98,7 @@ function getFilename(treeNode: TreeNode, ext: string): string {
     let txtPrts = [getFileNameParts(treeNode.src as string).basename];
 
     const easyMol = makeEasyParser(treeNode.model);
-    const firstAtom: IAtom = easyMol.parseAtom(0);
+    const firstAtom: IAtom = easyMol.getAtom(0);
 
     if (treeNode.type === TreeNodeType.Compound) {
         const resn = firstAtom.resn ? firstAtom.resn.trim() : "";

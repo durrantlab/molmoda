@@ -2,6 +2,7 @@
     <div class="full-screen" style="display: flex; flex-direction: column">
         <TestData></TestData>
         <div
+            id="menuContainer"
             style="
                 z-index: 100;
                 flex-grow: 5;
@@ -50,6 +51,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 import { checkIfUrlOpen } from "@/FileSystem/UrlOpen";
 import { setupAutoSave } from "@/Store/AutoSave";
+import { setupElectron } from "@/Core/Electron/ElectronUtils";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -175,6 +177,7 @@ export default class App extends Vue {
 
         checkIfUrlOpen();
         setupAutoSave();
+        setupElectron();
     }
 }
 </script>

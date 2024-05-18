@@ -133,6 +133,15 @@ export default class ViewerPanel extends Vue {
 
             (await loadViewerLibPromise) as Promise<any>;
 
+            // You now have the viewer. Set the view-change callback.
+            api.visualization.viewerObj?.registerViewChangeCallback(() => {
+                const view = api.visualization.viewerObj?.getView();
+                this.$store.commit("setVar", {
+                    name: "viewerVantagePoint",
+                    val: view,
+                });
+            });
+
             // if (allMolecules.length === 0) {
             //     // No molecules present
             //     api.visualization.viewerObj?.clearCache();

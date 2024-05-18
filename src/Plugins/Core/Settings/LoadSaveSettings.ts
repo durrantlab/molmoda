@@ -54,6 +54,7 @@ export async function saveSettings(settings: UserArg[]) {
     }
 
     for (const key in defaults) {
+        // Add in defaults
         const val =
             settingsObj[key] === undefined ? defaults[key] : settingsObj[key];
         await localStorageSetItem(key, val);  // , 0.000173611);
