@@ -13,7 +13,10 @@ function _getBody(): HTMLBodyElement {
     return _body;
 }
 
-export function listWaitSpinnersForDebug(): any {
+/**
+ * Lists all wait spinners for debugging.
+ */
+export function listWaitSpinnersForDebug() {
     console.log(spinnerMotives);
 }
 

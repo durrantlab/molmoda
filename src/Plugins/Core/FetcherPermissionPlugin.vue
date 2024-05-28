@@ -34,7 +34,6 @@
 import { Options } from "vue-class-component";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-import { ISimpleMsg } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -43,7 +42,6 @@ import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { appName } from "@/Core/GlobalVars";
-import { TestCmdList } from "@/Testing/TestCmdList";
 // import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**

@@ -72,7 +72,9 @@ export default class YesNoPlugin extends PluginParentClass {
     alwaysEnabled = true;
     logJob = false;
 
-
+    /**
+     * Runs when the users presses the yes button.
+     */
     yesFunc() {
         this.callBack(YesNo.Yes);
 
@@ -80,11 +82,16 @@ export default class YesNoPlugin extends PluginParentClass {
         this.open = false;
     }
 
-    // No func
+    /**
+     * Runs when the users presses the no button.
+     */
     onPopupDone() {
         this.callBack(YesNo.No);
     }
 
+    /**
+     * Runs when the users presses the cancel button.
+     */
     onCancel() {
         this.callBack(YesNo.Cancel);
     }

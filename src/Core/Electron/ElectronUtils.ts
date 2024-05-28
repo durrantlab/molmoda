@@ -1,18 +1,27 @@
 // Utilities to make it easier to work with Electron
 
-import { IMenuEntry } from "@/UI/Navigation/Menu/Menu";
-
-export function isElectron() {
-    // return true;
+/**
+ * Check if the program is running in Electron.
+ *
+ * @returns {boolean}  True if the program is running in Electron, false
+ *     otherwise.
+ */
+export function isElectron(): boolean {
     return (window as any).electronAPI !== undefined;
 }
 
+/**
+ * Setup Electron.
+ */
 export function setupElectron() {
     if (!isElectron()) {
         return;
     }
 }
 
+/**
+ * Close the Electron window.
+ */
 export function closeElectron() {
     if (!isElectron()) {
         return;

@@ -22,8 +22,9 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 // @ts-ignore
 import isEqual from "lodash.isequal";
 import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import StylesForMolType, { IStyleForMolType } from "./StylesForMolType.vue";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import StylesForMolType from "./StylesForMolType.vue";
+import { IStyleForMolType } from "./Interfaces";
 
 interface IStyleCount {
     style: IStyle;

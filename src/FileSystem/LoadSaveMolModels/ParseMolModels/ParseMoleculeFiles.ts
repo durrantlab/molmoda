@@ -9,7 +9,7 @@ import { parseUsingMolModa } from "./_ParseUsingMolModa";
 import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { addDefaultLoadMolParams, ILoadMolParams } from "./Types";
-import { listWaitSpinnersForDebug, stopAllWaitSpinners } from "@/UI/MessageAlerts/WaitSpinner";
+import { stopAllWaitSpinners } from "@/UI/MessageAlerts/WaitSpinner";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that

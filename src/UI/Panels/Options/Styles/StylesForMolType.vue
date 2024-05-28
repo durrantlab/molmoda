@@ -91,11 +91,6 @@ import * as Styles from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { capitalize } from "@/Core/Utils/StringUtils";
 
-export interface IStyleForMolType {
-    style: IStyle;
-    molType: TreeNodeType;
-}
-
 /**
  * StylesForMolType component
  */

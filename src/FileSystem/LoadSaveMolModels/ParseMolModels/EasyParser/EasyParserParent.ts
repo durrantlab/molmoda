@@ -56,6 +56,12 @@ export abstract class EasyParserParent {
      */
     abstract _parseAtomStr(atomStr: string): IAtom | undefined;
 
+    /**
+     * Get the atom at the given index.
+     * 
+     * @param {number} idx  The index.
+     * @returns {IAtom} The atom.
+     */
     getAtom(idx: number): IAtom {
         const atom = this._atoms[idx];
 

@@ -96,7 +96,7 @@ import { PopupVariant } from "./InterfacesAndEnums";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
 import { popupClosed, popupOpened } from "./OpenPopupList";
-import { capitalizeEachWork } from "@/Core/Utils/StringUtils";
+import { capitalizeEachWord } from "@/Core/Utils/StringUtils";
 
 /**
  * Popup component
@@ -141,8 +141,13 @@ export default class Popup extends Vue {
     // property. Use with caution. Should always restore to true quickly.
     isClosing = false;
 
+    /**
+     * Gets the title to use on the modal.
+     *
+     * @returns {string} The title to use on the modal.
+     */
     get titleToUse(): string {
-        return capitalizeEachWork(this.title);
+        return capitalizeEachWord(this.title);
     }
 
     /**
@@ -163,6 +168,11 @@ export default class Popup extends Vue {
         return;
     }
 
+    /**
+     * Gets the class to use on the first button.
+     *
+     * @returns {string} The class to use on the first button.
+     */
     get btn1Class(): string {
         return this.styleBtn1AsCancel === true
             ? "btn-secondary"

@@ -120,10 +120,20 @@ export class TreeNode {
         return this;
     }
 
+    /**
+     * Get the selected state.
+     * 
+     * @returns {SelectedType}  The selected state.
+     */
     get selected(): SelectedType {
         return this._selected;
     }
 
+    /**
+     * Set the selected state.
+     * 
+     * @param {SelectedType} val  The selected state.
+     */
     set selected(val: SelectedType) {
         // Set to dirty to trigger rerender of molecule (with yellow outline to
         // indicate selected).

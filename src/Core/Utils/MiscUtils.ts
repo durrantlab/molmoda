@@ -36,11 +36,3 @@ export function waitForCondition(
         }, checkFrequency);
     });
 }
-
-export async function waitForTime(ms: number): Promise<undefined> {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(undefined);
-        }, ms);
-    });
-}

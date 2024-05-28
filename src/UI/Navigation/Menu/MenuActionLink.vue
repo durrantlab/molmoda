@@ -86,6 +86,12 @@ export default class MenuActionLink extends Vue {
         return false;
     }
 
+    /**
+     * Gets the hot key to show in the menu.
+     *
+     * @param {IMenuItem} menuData  The menu data.
+     * @returns {string}  The hot key to show.
+     */
     hotkeyToShow(menuData: IMenuItem): string {
         if (!menuData.hotkey) {
             return "";

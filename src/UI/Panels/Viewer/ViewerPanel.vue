@@ -82,6 +82,12 @@ export default class ViewerPanel extends Vue {
         this.containerClass = "";
     }
 
+    /**
+     * Load the viewer library.
+     *
+     * @returns {Promise<void>}  A promise that resolves when the viewer is
+     *     loaded.
+     */
     async loadViewer(): Promise<void> {
         // Putting it in setTimeout so some components of UI will react
         // immediately. Below can be time consuming in some cases.
@@ -207,6 +213,13 @@ export default class ViewerPanel extends Vue {
         api.visualization.viewerObj?.removeObjects(idsOfTerminalNodes);
     }
 
+    /**
+     * Change the style if the node is selected.
+     *
+     * @param {TreeNode} treeNode  The tree node to change the style of.
+     * @param {any}      style     The style to change.
+     * @returns {any}  The changed style.
+     */
     private _changeStyleIfSelected(treeNode: TreeNode, style: any): any {
         // Metals, ions, solvent, other are solid yellow. Others, carbon only
         // yellow.

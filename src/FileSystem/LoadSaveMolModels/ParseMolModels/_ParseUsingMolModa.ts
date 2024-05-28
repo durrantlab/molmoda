@@ -6,7 +6,6 @@ import { pushToStoreList, setStoreVar } from "@/Store/StoreExternalAccess";
 import { treeNodeListDeserialize } from "@/TreeNodes/Deserializers";
 import type { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 import type { ILog } from "@/UI/Panels/Log/LogUtils";
 import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
 

@@ -6,7 +6,6 @@ import {
     ISimpleMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { isTest } from "@/Testing/SetupTests";
 
 interface IErrorData {
     message: string;

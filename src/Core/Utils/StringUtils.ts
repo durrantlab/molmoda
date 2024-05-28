@@ -25,7 +25,14 @@ export function capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function capitalizeEachWork(s: string): string {
+
+/**
+ * Capitalizes the first letter of each word in a string.
+ * 
+ * @param  {string} s The string to capitalize.
+ * @returns {string} The capitalized string.
+ */
+export function capitalizeEachWord(s: string): string {
     const wrds = s.split(" ").map(wrd => capitalize(wrd));
     return wrds.join(" ");
 }

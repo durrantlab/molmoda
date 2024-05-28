@@ -7,23 +7,33 @@ import { store } from ".";
 import { stateToJsonStr } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModa";
 import { parseUsingMolModa } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/_ParseUsingMolModa";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 let timerId: any = undefined;
 
+/**
+ * Deletes the autosave.
+ * 
+ * @returns {Promise<void>} A promise that resolves when the autosave is deleted.
+ */
 export async function deleteAutoSave(): Promise<void> {
     await localStorageRemoveItem("autoSave");
 }
 
+/**
+ * Stops the autosave timer.
+ */
 export function stopAutoSaveTimer() {
     if (timerId !== undefined) {
         clearTimeout(timerId);
     }
 }
 
+/**
+ * Restarts the autosave timer.
+ */
 export function restartAutoSaveTimer() {
     stopAutoSaveTimer();
 
@@ -59,6 +69,9 @@ export function restartAutoSaveTimer() {
     timerTick();
 }
 
+/**
+ * Loads the session from local storage.
+ */
 async function loadSessionFromLocalStorage() {
     // Cookies are allowed. Check to see if existing autosave.
     const existingAutoSave = await localStorageGetItem("autoSave");
@@ -83,6 +96,9 @@ async function loadSessionFromLocalStorage() {
     }
 }
 
+/**
+ * Sets up the autosave.
+ */
 export async function setupAutoSave(): Promise<void> {
     // If cookies not allowed, features in unacailable.
     if (await localStorageGetItem("allowCookies", false)) {

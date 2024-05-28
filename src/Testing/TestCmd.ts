@@ -24,7 +24,7 @@ export interface ITestCommand {
 
 type IConvertedTest = { [key: string]: ITestCommand[] };
 
-export function addTestsToCmdList(cmds: any[]) {
+function _addTestsToCmdList(cmds: any[]) {
     const testsStr = store.state.test.cmds;
     const tests = testsStr === "" ? [] : JSON.parse(testsStr);
     tests.push(...cmds);
@@ -48,15 +48,13 @@ export abstract class _TestCmdParent {
      */
     abstract get cmd(): ITestCommand;
 
-
-
     /**
      * On rare occasions, you might want to add a test directly to the list,
      * outside of the TestCmdList system. Not recommended, but you can use this
      * if needed.
      */
     addToCmdList() {
-        addTestsToCmdList([this.cmd])
+        _addTestsToCmdList([this.cmd]);
         // const testsStr = store.state.test.cmds;
         // const tests = testsStr === "" ? [] : JSON.parse(testsStr);
         // tests.push(this.cmd);
@@ -453,7 +451,9 @@ function makeFakeMouse() {
 
     document.addEventListener("mousemove", function (e) {
         const cursor = document.getElementById("customCursor");
-        if (!cursor) return;
+        if (!cursor) {
+            return;
+        }
         // Update the position of the custom cursor
         cursor.style.left = e.pageX + "px";
         cursor.style.top = e.pageY + "px";
@@ -522,7 +522,7 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
     // If the plugin is not menu accessible, can't test it. Just pass it.
     // Example: moveregionsonclick
     if (plugin.menuPath === null) {
-        addTestsToCmdList([]);
+        _addTestsToCmdList([]);
         // plugin.$store.commit("setVar", {
         //     name: "cmds",
         //     val: JSON.stringify([]),
@@ -544,7 +544,7 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
         new _TestWait(0.5).cmd,
     ] as ITestCommand[];
 
-    addTestsToCmdList(cmds);
+    _addTestsToCmdList(cmds);
 
     // plugin.$store.commit("setVar", {
     //     name: "cmds",

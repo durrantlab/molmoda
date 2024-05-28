@@ -10,7 +10,6 @@
 import {
     calcMolProps,
     ICalcMolProps,
-    lipinskiTitle,
 } from "@/Plugins/Optional/MolProps/CalcMolProps";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { Options, Vue } from "vue-class-component";

@@ -15,9 +15,7 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import * as api from "@/Api";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {

@@ -1,4 +1,3 @@
-import { store } from "@/Store";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
 import { GoldenLayout } from "golden-layout";
 
