@@ -7,6 +7,7 @@ import {
     IArrow,
     ICylinder,
     IAtom,
+    SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     GenericModelType,
@@ -838,18 +839,27 @@ export abstract class ViewerParent {
     /**
      * Sets (updates) the style of an existing region.
      *
-     * @param {string} id  The id of the region.
-     * @param {IRegion | ISphere | IBox} regionStyle  The style to set.
+     * @param {TreeNode} treeNode  The tree node containing the region to
+     *                             update.
      */
-    updateRegionStyle(id: string, regionStyle: IRegion | ISphere | IBox) {
+    updateRegionStyle(treeNode: TreeNode) {
         // Rather than update the region, we remove it and re-add it. This is
         // because the 3DMoljs viewer does not have a way to update the position
         // as best I can tell.
 
+        const id = treeNode.id as string;
+        const regionStyle = JSON.parse(JSON.stringify(treeNode.region as IRegion));
+
+        if (treeNode.selected !== SelectedType.False) {
+            // yellow
+            regionStyle.color = "#ffff00";
+            regionStyle.opacity = 0.75;
+        }
+
         // Always remove any old regions.
 
         this.addRegion(regionStyle)
-            .then((region: GenericRegionType) => {
+            .then(async (region: GenericRegionType) => {
                 // Remove previous region if it exists
                 this._removeRegion(id);
 
@@ -860,10 +870,10 @@ export abstract class ViewerParent {
                 this.destroyRegionLabel(id);
 
                 // Add new region
-                const treeNode = getMoleculesFromStore().filters.onlyId(id);
+                // const treeNode = getMoleculesFromStore().filters.onlyId(id);
                 const title = treeNode?.title;
                 this.createRegionLabel(id, title ?? "Region");
-                
+
                 return;
             })
             .catch((err: Error) => {
