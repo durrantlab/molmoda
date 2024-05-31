@@ -28,6 +28,7 @@ import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** CloneMolPlugin */
 @Options({
@@ -50,6 +51,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     ];
     pluginId = "clonemol";
     intro = `Clone (copy) the selected molecule.`;
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         {
@@ -65,7 +67,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

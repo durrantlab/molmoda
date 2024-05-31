@@ -25,6 +25,7 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * DeleteMolPlugin
@@ -47,9 +48,10 @@ export default class DeleteMolPlugin extends PluginParentClass {
     pluginId = "deletemol";
     intro = "Delete the selected molecule(s)?";
     userArgDefaults: UserArg[] = [];
+    tags = [Tag.All];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    alwaysEnabled = true;
+    
     logJob = false;
     hotkey = ["backspace", "delete"];
 

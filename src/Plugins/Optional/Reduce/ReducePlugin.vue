@@ -36,6 +36,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ReduceQueue } from "./ReduceQueue";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * ReducePlugin
@@ -59,7 +60,7 @@ export default class ReducePlugin extends PluginParentClass {
         // },
     ];
     pluginId = "reduce";
-
+    tags = [Tag.All];
     intro = `Protonate/deprotonate proteins, in preparation for docking.`;
     details = `Uses the reduce program to guess at proper protonation states.`;
 

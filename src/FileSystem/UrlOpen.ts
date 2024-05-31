@@ -1,6 +1,7 @@
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
+import { getUrlParam } from "@/Core/UrlParams";
 
 /**
  * Open a remote file using its URL. TODO: Good to move this elsewhere, perhaps
@@ -41,8 +42,7 @@ export async function openRemoteFile(url: string) {
  */
 export async function checkIfUrlOpen() {
     // Check of src is in the url. If it is, get its value.
-    const urlParams = new URLSearchParams(window.location.search);
-    const url = urlParams.get("open");
+    const url = getUrlParam("open");
     await openRemoteFile(url as string);
 }
 
@@ -52,7 +52,7 @@ export async function checkIfUrlOpen() {
  * @param {string} url  The URL to set.
  */
 // export function setUrlWithOpen(url: string) {
-//     const urlParams = new URLSearchParams(window.location.search);
+//     const urlParams = new U_RLSearchParams(window.location.search);
 //     urlParams.set("open", url);
 //     window.history.replaceState({}, "", `${window.location.pathname}?${urlParams}`);
 // }

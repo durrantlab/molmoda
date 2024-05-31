@@ -51,6 +51,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { FPocketWebQueue } from "./FPocketWebQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * FPocketWebPlugin
@@ -64,6 +65,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 export default class FPocketWebPlugin extends PluginParentClass {
     menuPath = "Proteins/[7] Detect Pockets...";
     title = "Pocket Detection";
+    tags = [Tag.Docking];
     softwareCredits: ISoftwareCredit[] = [
         dynamicImports.fpocketweb.credit,
         {

@@ -46,12 +46,19 @@
                     <tr>
                         <td :colspan="tableData?.headers.length" class="px-2">
                             Download as
-                            <a @click.prevent="download('csv')" href="#">CSV</a
+                            <a
+                                @click.prevent="download('csv')"
+                                class="link-primary"
+                                >CSV</a
                             >,
-                            <a @click.prevent="download('xlsx')" href="#"
+                            <a
+                                @click.prevent="download('xlsx')"
+                                class="link-primary"
                                 >XLSX</a
                             >, or
-                            <a @click.prevent="download('json')" href="#"
+                            <a
+                                @click.prevent="download('json')"
+                                class="link-primary"
                                 >JSON</a
                             >
                         </td>
@@ -417,7 +424,9 @@ export default class Table extends Vue {
 
         // If you use this one, already in the right format, but hidden columns
         // appear.
-        const data = JSON.parse(JSON.stringify(this.tableData)) as ITableDataInternal;
+        const data = JSON.parse(
+            JSON.stringify(this.tableData)
+        ) as ITableDataInternal;
 
         // Remove column "id" if it exists. TODO: Would be good to remove all
         // hidden ones.
@@ -435,7 +444,7 @@ export default class Table extends Vue {
 
         const dataToSave = {
             headers: data.headers.map((h: IHeader) => h.text),
-            rows: data.rows as IDataRows
+            rows: data.rows as IDataRows,
         };
 
         saveData(dataToSave, filename, format);

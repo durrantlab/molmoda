@@ -21,6 +21,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
+import { Tag } from "../Tags/Tags";
 
 /** CollapseAllPlugin */
 @Options({
@@ -36,9 +37,10 @@ export default class CollapseAllPlugin extends PluginParentClass {
     pluginId = "collapseall";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Collapse all the nodes in the Navigator panel.";
+    tags = [Tag.All];
 
     // hotkey = "i";
 

@@ -43,6 +43,7 @@ import {
 import * as api from "@/Api";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { reportErrorToServer } from "./ErrorReporting";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * ErrorReportingPlugin
@@ -68,6 +69,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
 
     popupVariant = PopupVariant.Danger;
+    tags = [Tag.All];
     // errorTxt = "";
     // onApprove = () => {
     //     return;

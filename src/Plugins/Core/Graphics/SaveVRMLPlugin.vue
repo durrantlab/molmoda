@@ -28,6 +28,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * SaveVRMLPlugin
@@ -50,6 +51,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     pluginId = "savevrml";
 
     intro = `Save the current molecular scene as a VRML file (3D model).`;
+    tags = [Tag.Visualization];
 
     userArgDefaults: UserArg[] = [
         {
@@ -67,7 +69,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
         } as IUserArgText,
     ];
 
-    alwaysEnabled = true;
+    
 
     /**
      * Check if this plugin can currently be used.

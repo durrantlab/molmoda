@@ -15,6 +15,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * RedoPlugin
@@ -40,10 +41,11 @@ export default class RedoPlugin extends PluginParentClass {
     pluginId = "redo";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     hotkey = "y";
     intro = "Redo the last undo.";
+    tags = [Tag.All];
 
     /**
      * Check if this plugin can currently be used.

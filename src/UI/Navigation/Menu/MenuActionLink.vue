@@ -1,6 +1,6 @@
 <template>
     <li v-if="isTopLevel" class="nav-item">
-        <a class="nav-link" @click="runFunction(menuData)" href="#">
+        <a class="nav-link" @click="runFunction(menuData)">
             {{ menuData.text }}
         </a>
     </li>
@@ -10,7 +10,6 @@
                 :class="'dropdown-item pt-0' + (disabled ? ' disabled' : '')"
                 style="padding-bottom: 2px; pointer-events: all"
                 @click="runFunction(menuData)"
-                href="#"
                 :id="'menu-plugin-' + idSlug"
             >
                 {{ menuData.text?.replace("_", "") }}
@@ -53,7 +52,7 @@ export default class MenuActionLink extends Vue {
 
     /**
      * Gets the introduction text for the plugin.
-     * 
+     *
      * @param {string | undefined}  pluginId The plugin ID.
      * @returns {string} The introduction text for the plugin.
      */
@@ -66,7 +65,7 @@ export default class MenuActionLink extends Vue {
 
         // Get text, but not any HTML tags.
         txt = txt.replace(/<[^>]*>?/g, "");
-        
+
         return txt;
     }
 
@@ -105,7 +104,7 @@ export default class MenuActionLink extends Vue {
             return "↓";
         }
 
-        return menuData.hotkey.toUpperCase()
+        return menuData.hotkey.toUpperCase();
     }
 
     /**

@@ -18,7 +18,6 @@
                         'p-1 py-half dropdown-item' +
                         (option.enabled ? '' : ' disabled')
                     "
-                    href="#"
                     >{{ option.text }}</a
                 >
             </span>

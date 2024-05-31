@@ -22,6 +22,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
+import { Tag } from "../Tags/Tags";
 
 /** DocumentationLinkPlugin */
 @Options({
@@ -40,12 +41,12 @@ export default class DocumentationLinkPlugin extends PluginParentClass {
         },
     ];
     pluginId = "documentation";
-
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = `Read the ${appName} documentation.`;
     noPopup = true;
+    tags = [Tag.All];
 
     /**
      * Runs after the popup opens. Good for setting focus in text elements.

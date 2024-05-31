@@ -17,7 +17,7 @@
 
         <!-- <p>
             Would you like to
-            <a href="#" @click="saveProject">save the project first</a>?
+            <a href="_#" @click="saveProject">save the project first</a>?
         </p> -->
     </PluginComponent>
 </template>
@@ -35,6 +35,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * NewProjectPlugin
@@ -60,9 +61,10 @@ export default class NewProjectPlugin extends PluginParentClass {
     pluginId = "newproject";
 
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     hotkey = "n";
     intro = "Start a new project. Your current project will be lost.";
+    tags = [Tag.All];
 
     /**
      * Runs when the user presses the action button and the popup closes.

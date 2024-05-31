@@ -29,6 +29,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { pluginsApi } from "@/Api/Plugins";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
+import { Tag } from "../Tags/Tags";
 
 /**
  * SimpleMsgPlugin
@@ -54,6 +55,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     ];
     pluginId = "simplemsg";
     intro = "";
+    tags = [Tag.All];
 
     // Below set via onPluginStart.
     simpleMsgs: ISimpleMsg[] = [];
@@ -66,7 +68,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

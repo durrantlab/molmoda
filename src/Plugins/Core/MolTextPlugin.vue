@@ -35,6 +35,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { randomID } from "@/Core/Utils/MiscUtils";
+import { Tag } from "../Tags/Tags";
 
 /**
  * A function that returns the options and validate functions for the available
@@ -111,9 +112,9 @@ export default class MolTextPlugin extends PluginParentClass {
         },
     ];
     pluginId = "moltextplugin";
-
     intro = `Type or paste molecular text.`;
     title = "Molecular Text";
+    tags = [Tag.All];
 
     isActionBtnEnabled = false;
 

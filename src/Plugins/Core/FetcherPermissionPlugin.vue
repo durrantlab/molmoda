@@ -42,6 +42,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { appName } from "@/Core/GlobalVars";
+import { Tag } from "../Tags/Tags";
 // import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
@@ -61,6 +62,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "fetcherpermission";
     intro = "";
+    tags = [Tag.All];
 
     myAppName = appName;
     url = "";
@@ -81,7 +83,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

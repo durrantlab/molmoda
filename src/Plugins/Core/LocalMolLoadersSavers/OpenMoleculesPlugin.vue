@@ -49,6 +49,7 @@ import {
     IFormatInfo,
     getFormatInfoGivenType,
 } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * OpenMoleculesPlugin
@@ -67,6 +68,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     filesToLoad: FileInfo[] = [];
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         getDesaltUserArg(),
@@ -83,7 +85,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             "If your file lacks 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored. Try different methods only if your imported molecules have incorrect geometries."
         ),
     ];
-    alwaysEnabled = true;
+    
     accept = fileTypesAccepts;
     hotkey = "o";
     skipLongRunningJobMsg = true;

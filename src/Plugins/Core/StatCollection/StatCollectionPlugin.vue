@@ -84,6 +84,7 @@ import { isTest } from "@/Testing/SetupTests";
 import { appName } from "@/Core/GlobalVars";
 import * as api from "@/Api";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * StatCollectionPlugin
@@ -108,7 +109,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     intro = "";
     title = `Allow Cookies?`;
     open = false;
-
+    tags = [Tag.All];
     userArgDefaults: UserArg[] = [];
 
     /**

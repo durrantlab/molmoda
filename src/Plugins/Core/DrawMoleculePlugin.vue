@@ -61,6 +61,7 @@ import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { randomID } from "@/Core/Utils/MiscUtils";
+import { Tag } from "../Tags/Tags";
 
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
@@ -87,10 +88,10 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     ];
     pluginId = "drawmoleculeplugin";
     title = "Draw Molecule";
-
     intro = `Use a molecular editor to draw or edit a small-molecule compound.`;
     details =
         "You can also update the SMILES string directly by typing in a text field under the editor.";
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         {
@@ -127,7 +128,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      *
      * @param {any} payload  The payload (if editing existing molecule)
      */
-     async onBeforePopupOpen(payload: any) {
+    async onBeforePopupOpen(payload: any) {
         this.currentSmiles = "";
 
         if (payload) {

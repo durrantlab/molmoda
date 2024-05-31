@@ -67,6 +67,7 @@ import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { triggerErrorPopup } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 import { prepForErrorCustomMsg } from "./WebinaErrors";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
@@ -113,7 +114,7 @@ export default class WebinaPlugin extends PluginParentClass {
         // },
     ];
     pluginId = "webina";
-
+    tags = [Tag.Docking];
     intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding.`;
     details = `Uses a version of AutoDock Vina (Webina).`;
 
@@ -295,6 +296,12 @@ export default class WebinaPlugin extends PluginParentClass {
         } as IUserArgGroup,
     ];
 
+    /**
+     * Filters a candidate max processors value.
+     *
+     * @param {number} val  The value to filter.
+     * @returns {number}  The filtered value.
+     */
     maxProcFilterFunc(val: number) {
         val = Math.round(val);
         if (val < 1) {

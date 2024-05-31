@@ -50,12 +50,13 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
-import { appName, appCompileTime, appIntro, appDetails } from "@/Core/GlobalVars";
+import { appName, appCompileTime, appIntro, appDetails, logoPath } from "@/Core/GlobalVars";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "../Tags/Tags";
 
 /** AboutPlugin */
 @Options({
@@ -79,10 +80,11 @@ export default class AboutPlugin extends PluginParentClass {
   pluginId = "about";
   intro = appIntro;
   details = appDetails;
-
   userArgDefaults: UserArg[] = [];
-  alwaysEnabled = true;
+  
   logJob = false;
+  tags = [Tag.All];
+
   lazyLoadedImg = "";
 
   /**
@@ -139,7 +141,7 @@ export default class AboutPlugin extends PluginParentClass {
    * Load the image before the popup opens.
    */
   async onBeforePopupOpen() {
-    this.lazyLoadedImg = "./img/icons/android-chrome-192x192.png";
+    this.lazyLoadedImg = logoPath;
   }
 
   /**

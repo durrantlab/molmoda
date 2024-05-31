@@ -22,6 +22,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * ToggleVisiblePlugin
@@ -41,8 +42,9 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
 
     noPopup = true;
-    alwaysEnabled = true;
+    
     logJob = false;
+    tags = [Tag.All];
 
     /**
      * Every plugin runs some job. This is the function that does the job

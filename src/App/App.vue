@@ -249,4 +249,9 @@ body.waiting * {
 .lm_stack {
     overflow: hidden;
 }
+
+// Below necessary because should never use href equals "#"
+a {
+    cursor: pointer;
+}
 </style>

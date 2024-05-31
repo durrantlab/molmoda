@@ -33,6 +33,7 @@ import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { removeTerminalPunctuation } from "@/Core/Utils/StringUtils";
 import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -118,6 +119,13 @@ export abstract class PluginParentClass extends mixins(
      * @type {UserArg[]}
      */
     abstract userArgDefaults: UserArg[];
+
+    /**
+     * A list of tags for the plugin. These are used when running MolModa in
+     * different modes (e.g., visualization mode). Use Tag.All if the plugin
+     * should appear in all categories.
+     */
+    abstract tags: Tag[];
 
     /**
      * The payload to send to the plugin component via the infoPayload property.
@@ -211,6 +219,8 @@ export abstract class PluginParentClass extends mixins(
      * @document
      */
     public async onPluginStart(payload?: any): Promise<void> {
+        console.trace();
+        
         // Log plugin started
         logGAEvent(this.pluginId, "started");
 

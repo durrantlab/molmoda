@@ -21,6 +21,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getUpDownTreeNavMoleculesToActOn, toggleUpDownTreeNav } from "./UpDownTreeNavUtils";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** DownTreeNavPlugin */
 @Options({
@@ -36,11 +37,11 @@ export default class DownTreeNavPlugin extends PluginParentClass {
     pluginId = "downtreenav";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Toggle visibility and focus with the molecule below the selected one.";
-
     hotkey = "]";
+    tags = [Tag.All];
 
     /**
      * Every plugin runs some job. This is the function that does the job

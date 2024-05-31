@@ -33,6 +33,7 @@ import * as api from "@/Api";
 import { isTest } from "@/Testing/SetupTests";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** PastePlugin */
 @Options({
@@ -47,6 +48,8 @@ export default class PastePlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "pasteclipboard";
+    tags = [Tag.All];
+    
     // noPopup = true;
     userArgDefaults: UserArg[] = [
         {
@@ -67,7 +70,7 @@ export default class PastePlugin extends PluginParentClass {
         } as IUserArgText,
         getDesaltUserArg(),
     ];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Paste a molecule from the clipboard.";
     formatMsg = "";

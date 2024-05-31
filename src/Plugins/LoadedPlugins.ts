@@ -6,7 +6,6 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
 
 // the menu system.
 export const loadedPlugins: { [key: string]: PluginParentClass } = {};
-export const alwaysEnabledPlugins: string[] = [];
 export let allMenuData: IMenuEntry[] = [];
 
 /**
@@ -32,7 +31,4 @@ export function registerLoadedPlugin(plugin: PluginParentClass) {
     }
 
     loadedPlugins[plugin.pluginId] = plugin;
-    if (plugin.alwaysEnabled) {
-        alwaysEnabledPlugins.push(plugin.pluginId);
-    }
 }

@@ -17,6 +17,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Options } from "vue-class-component";
 import { switchToGoldenLayoutPanel } from "./Common";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * ViewerWindowPlugin
@@ -39,9 +40,10 @@ export default class ViewerWindowPlugin extends PluginParentClass {
     pluginId = "viewerwindow";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = `Switch to the Viewer panel.`;
+    tags = [Tag.All];
 
     /**
      * Every plugin runs some job. This is the function that does the job running.

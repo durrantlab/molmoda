@@ -1,5 +1,5 @@
 <template>
-    <a href="#" @click.prevent="goToMenuPath" v-html="titleToUse"></a>
+    <a class="link-primary" @click.prevent="goToMenuPath" v-html="titleToUse"></a>
 </template>
 
 <script lang="ts">

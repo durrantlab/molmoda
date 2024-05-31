@@ -22,6 +22,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "../Tags/Tags";
 
 /** SelectAllPlugin */
 @Options({
@@ -42,10 +43,10 @@ export default class SelectAllPlugin extends PluginParentClass {
     pluginId = "selectall";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Select all molecules in the tree.";
-
+    tags = [Tag.All];
     hotkey = "a";
 
     /**

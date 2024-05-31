@@ -29,6 +29,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import { appName } from "@/Core/GlobalVars";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * ExampleDataPlugin
@@ -46,6 +47,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     filesToLoad: FileInfo[] = [];
     pluginId = "openexampleproject";
+    tags = [Tag.All];
 
     exampleDescriptions: { [key: string]: string } = {
         "1INW_just_prot_lig.molmoda":
@@ -117,7 +119,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
             alertType: "info",
         } as IUserArgAlert,
     ];
-    alwaysEnabled = true;
+    
     intro = `Append an example project to the current workspace.`;
     details = `Useful for exploring and testing the ${appName} interface.`;
 

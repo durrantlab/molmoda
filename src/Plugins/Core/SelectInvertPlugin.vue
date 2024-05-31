@@ -22,6 +22,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "../Tags/Tags";
 
 /** SelectInvertPlugin */
 @Options({
@@ -37,10 +38,10 @@ export default class SelectInvertPlugin extends PluginParentClass {
     pluginId = "selectinverse";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Invert which molecules are selected in the tree.";
-
+    tags = [Tag.All];
     hotkey = "i";
 
     /**

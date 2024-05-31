@@ -44,6 +44,7 @@ import {
 } from "../StatCollection/StatUtils";
 import { appName } from "@/Core/GlobalVars";
 import { restartAutoSaveTimer } from "@/Store/AutoSave";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** SettingsPlugin */
 @Options({
@@ -63,6 +64,7 @@ export default class SettingsPlugin extends PluginParentClass {
     ];
     pluginId = "settings";
     intro = `Modify ${appName} general settings.`;
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         {
@@ -129,7 +131,7 @@ export default class SettingsPlugin extends PluginParentClass {
             ],
         } as IUserArgSelect,
     ];
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

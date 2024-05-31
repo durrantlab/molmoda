@@ -22,6 +22,7 @@ import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * RenameMolPlugin
@@ -43,6 +44,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     ];
     pluginId = "renamemol";
     intro = `Rename the molecule.`;
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         {
@@ -58,7 +60,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

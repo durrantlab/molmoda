@@ -36,6 +36,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { pluginsApi } from "@/Api/Plugins";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
+import { Tag } from "../Tags/Tags";
 
 /**
  * YesNoPlugin
@@ -56,7 +57,7 @@ export default class YesNoPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "yesnomsg";
     intro = "";
-
+    tags = [Tag.All];
     message = "";
     yesBtnTxt = "";
     noBtnTxt = "";
@@ -69,7 +70,7 @@ export default class YesNoPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

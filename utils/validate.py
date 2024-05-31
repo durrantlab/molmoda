@@ -170,6 +170,12 @@ for ts_file in ts_files:
     if "location.reload" in content and "CloseAppUtils.ts" not in ts_file:
         add_error(ts_file, "Use closeDownApp() class instead of location.reload.")
 
+    if "URLSearchParams(" in content and "UrlParams.ts" not in ts_file:
+        add_error(ts_file, "Use getUrlParam() instead of URLSearchParams.")
+    
+    if 'href="#"' in content or 'href= "#"' in content:
+        add_error(ts_file, 'No <a> should have `href="#"`. Remove it and use `class="link-primary"` if needed.')
+
     # if ".catch(" in content, there must be a "throw" within the next few
     # lines. Use regex.
     if ".catch(" in content:
