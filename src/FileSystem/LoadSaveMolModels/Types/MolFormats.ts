@@ -245,7 +245,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
             }
 
             // Split and consider only first part.
-            const smiles = lines.map((line) => line.trim().split(" ")[0]);
+            const smiles = lines.map((line) => line.trim().replace(/\t/g, " ").split(" ")[0]);
 
             for (let smile of smiles) {
                 if (smile.length === 0) {

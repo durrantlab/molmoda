@@ -122,6 +122,11 @@ export default class FormVector3D extends Vue {
 
         this.lastHandleInputTimeStamp = now;
         this.handleInputTimeout = setTimeout(() => {
+            if (["", "-"].indexOf(e.target.value) !== -1) {
+                // User has likely not yet finished typing a number.
+                return;
+            }
+
             // Get "idx" data from target
             const idx = parseInt(e.target.dataset.idx);
             const newVals = JSON.parse(JSON.stringify(this.modelValue));

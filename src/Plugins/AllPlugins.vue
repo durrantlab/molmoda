@@ -12,6 +12,7 @@ system uses these to autopopulate with plugins. -->
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <CollapseAllPlugin @onPluginSetup="onPluginSetup"></CollapseAllPlugin>
+    <CopyAsSmilesPlugin @onPluginSetup="onPluginSetup"></CopyAsSmilesPlugin>
     <CopyPlugin @onPluginSetup="onPluginSetup"></CopyPlugin>
     <DataWindowPlugin @onPluginSetup="onPluginSetup"></DataWindowPlugin>
     <DeleteMolPlugin @onPluginSetup="onPluginSetup"></DeleteMolPlugin>
@@ -79,6 +80,7 @@ import AddRegionPlugin from "./Core/AddRegionPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
+import CopyAsSmilesPlugin from "./Core/Clipboard/CopyAsSmilesPlugin.vue";
 import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
 import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
 import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
@@ -142,6 +144,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ClearSelectionPlugin,
     CloneMolPlugin,
     CollapseAllPlugin,
+    CopyAsSmilesPlugin,
     CopyPlugin,
     DataWindowPlugin,
     DeleteMolPlugin,

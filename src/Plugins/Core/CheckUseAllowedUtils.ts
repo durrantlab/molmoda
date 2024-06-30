@@ -25,6 +25,23 @@ export function checkAnyMolSelected(
     return null;
 }
 
+export function checkAnyCompoundSelected(
+    treeNodeList?: TreeNodeList
+): string | null {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
+    }
+
+    const compounds = treeNodeList.flattened.filters.keepType(TreeNodeType.Compound);
+    const selectedCompounds = compounds.filters.keepSelected(true);
+
+    if (selectedCompounds.length === 0) {
+        return "No compounds are currently selected. First select a compound by clicking on its name in the Navigator panel.";
+    }
+
+    return null;
+}
+
 /**
  * Checks whether the user has selected one and only one molecule.
  *

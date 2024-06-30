@@ -20,14 +20,21 @@ export enum WhichMolsGen3D {
     OnlyIfLacks3D,
 }
 
-enum Gen3DLevel {
+export enum Gen3DLevel {
     None = "none",
     Fastest = "fastest",
     Fast = "fast",
     Medium = "medium",
     Better = "better",
     Best = "best",
-    Default = "medium",
+
+    // Default used to be medium for speed, but I was surprised to learn that
+    // even ATP (basic molecule) had bad geometry unless best. SMILES I used for
+    // testing:
+    // O[C@@H]1[C@@H](CO[P@@](=O)(O[P@](=O)(OP(=O)(O)O)O)O)O[C@H]([C@@H]1O)n1cnc2c1ncnc2N
+
+    // Default = "medium",
+    Default = "best",
 }
 
 export interface IGen3DOptions {

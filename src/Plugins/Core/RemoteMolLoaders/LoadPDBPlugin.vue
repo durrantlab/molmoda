@@ -84,10 +84,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     pdbPrts[i] = prt.substring(0, 4);
                 });
 
-                // pdb = pdb.substring(0, 4);
-
                 pdb = pdbPrts.join(" ");
-                // pdb = pdb.trim();
 
                 while (pdb.includes("  ")) {
                     pdb = pdb.replace("  ", " ");
@@ -132,7 +129,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
         // TODO: With a little effort, you could refactor this so downloads all
         // pdbs in parallel. Currentl in serial.
 
-        let pdbIdList = pdbIds.split(" ");
+        let pdbIdList = pdbIds.trim().split(" ");
 
         // remove duplicates
         pdbIdList = pdbIdList.filter((v, i, a) => a.indexOf(v) === i);
