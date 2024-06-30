@@ -148,8 +148,7 @@ export default class ViewerPanel extends Vue {
             await this.loadViewer();
 
             // You now have the viewer. Set the view-change callback.
-            api.visualization.viewerObj?.registerViewChangeCallback(() => {
-                const view = api.visualization.viewerObj?.getView();
+            api.visualization.viewerObj?.registerViewChangeCallback((view: number[]) => {
                 this.$store.commit("setVar", {
                     name: "viewerVantagePoint",
                     val: view,
@@ -449,8 +448,8 @@ export default class ViewerPanel extends Vue {
                 continue;
             }
 
-            // If you get here, an error occurred. Visible, no styles, not a
-            // region. This should never happen.
+            // NOTE: If you get here, an error occurred. Visible, no styles, not
+            // a region. This should never happen.
             viewer.setMolecularStyle(
                 treeNode.id as string,
                 viewer.convertSelection({}),

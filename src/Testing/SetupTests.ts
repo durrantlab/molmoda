@@ -2,6 +2,7 @@ import { addVueXStoreModule } from "@/Store";
 import { getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
 import { setPluginToTest } from "./PluginToTest";
 import { getUrlParam } from "@/Core/UrlParams";
+import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export let isTest = false;
 
@@ -63,6 +64,7 @@ export function expandAndShowAllMolsInTree() {
         getMoleculesFromStore().flattened.forEach((mol) => {
             mol.treeExpanded = true;
             mol.visible = true;
+            mol.selected = SelectedType.False;
         });
     }, 500);
 }

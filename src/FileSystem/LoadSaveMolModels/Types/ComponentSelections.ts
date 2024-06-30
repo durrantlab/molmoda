@@ -94,6 +94,7 @@ export const metalSel = {
         "Rb",
         "Rh",
         "Sn",
+        "Sm",
         "Sr",
         "Tl",
         "Tm",
@@ -110,7 +111,7 @@ export const ionSel = {
     or: [
         { elem: ["K", "Na"]},  // , "Cl", "Br", "I", "F"] },
         // See http://prody.csb.pitt.edu/manual/reference/atomic/flags.html
-        { resn: ["CL", "BR", "I", "F", "IOD", "K", "NA", "CLA", "POT", "SOD", "SO4", "PO4", "NH4", "NH3", "ACT"] },
+        { resn: ["CL", "BR", "I", "F", "IOD", "K", "NA", "CLA", "POT", "SOD", "SO4", "PO4", "NH4", "NH3", "ACT", "OXL"] },
     ],
     bonds: 0,
 };

@@ -19,7 +19,10 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { getUpDownTreeNavMoleculesToActOn, toggleUpDownTreeNav } from "./UpDownTreeNavUtils";
+import {
+    getUpDownTreeNavMoleculesToActOn,
+    toggleUpDownTreeNav,
+} from "./UpDownTreeNavUtils";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { Tag } from "@/Plugins/Tags/Tags";
 
@@ -37,9 +40,10 @@ export default class DownTreeNavPlugin extends PluginParentClass {
     pluginId = "downtreenav";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
-    intro = "Toggle visibility and focus with the molecule below the selected one.";
+    intro =
+        "Toggle visibility and focus with the molecule below the selected one.";
     hotkey = "]";
     tags = [Tag.All];
 
@@ -60,7 +64,7 @@ export default class DownTreeNavPlugin extends PluginParentClass {
         }
 
         toggleUpDownTreeNav(molsToActOn.molAfter, molsToActOn.molToConsider);
-        
+
         return Promise.resolve();
     }
 
@@ -70,7 +74,7 @@ export default class DownTreeNavPlugin extends PluginParentClass {
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
-     checkPluginAllowed(): string | null {
+    checkPluginAllowed(): string | null {
         return checkAnyMolLoaded();
     }
 
@@ -82,9 +86,14 @@ export default class DownTreeNavPlugin extends PluginParentClass {
      * @returns {ITest}  The selenium test commands.
      */
     async getTests(): Promise<ITest> {
-        alert("FIX THIS");
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: new TestCmdList()
+                .loadExampleMolecule(true)
+                .selectMoleculeInTree("Compounds"),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                'class=.title selected.[^>]+?data-label=.Solvent.'
+            ),
         };
     }
 }

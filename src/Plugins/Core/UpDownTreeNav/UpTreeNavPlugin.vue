@@ -82,9 +82,14 @@ export default class UpTreeNavPlugin extends PluginParentClass {
      * @returns {ITest}  The selenium test commands.
      */
     async getTests(): Promise<ITest> {
-        alert("FIX THIS");
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: new TestCmdList()
+                .loadExampleMolecule(true)
+                .selectMoleculeInTree("Compounds"),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                'class=.title selected.[^>]+?data-label=.Protein.'
+            ),
         };
     }
 }

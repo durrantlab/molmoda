@@ -729,8 +729,20 @@ export class Viewer3DMol extends ViewerParent {
      * 
      * @param {Function} callback  The callback to run.
      */
-    _registerViewChangeCallback(callback: () => void) {
-        this._mol3dObj.setViewChangeCallback(callback);
+    _registerViewChangeCallback(callback: (view: number[]) => void) {
+        // NOTE: The below slows things down quite a bit, I think. Don't use it.
+        // this._mol3dObj.setViewChangeCallback(callback);
+
+       let lastViewSum = this.getView().reduce((a, b) => a + b, 0);
+       
+        setInterval(() => {
+            const newView = this.getView();
+            const newViewSum = newView.reduce((a, b) => a + b, 0);
+            if (newViewSum !== lastViewSum) {
+                lastViewSum = newViewSum;
+                callback(newView);
+            }
+        }, 1000);
     }
 
     /**

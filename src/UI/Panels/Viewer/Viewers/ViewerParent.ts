@@ -237,7 +237,7 @@ export abstract class ViewerParent {
      * @param  {Function} callback  The callback to register.
      * @returns {void}
      */
-    abstract _registerViewChangeCallback(callback: () => void): void;
+    abstract _registerViewChangeCallback(callback: (view: number[]) => void): void;
 
     /**
      * Register a callback to be called when the view changes.
@@ -245,8 +245,9 @@ export abstract class ViewerParent {
      * @param  {Function} callback  The callback to register.
      * @returns {void}
      */
-    public registerViewChangeCallback(callback: () => void) {
+    public registerViewChangeCallback(callback: (view: number[]) => void) {
         if (!this._callbackRegistered) {
+            // Make sure registered only once.
             this._callbackRegistered = true;
             this._registerViewChangeCallback(callback);
         }

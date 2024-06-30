@@ -219,8 +219,6 @@ export abstract class PluginParentClass extends mixins(
      * @document
      */
     public async onPluginStart(payload?: any): Promise<void> {
-        console.trace();
-        
         // Log plugin started
         logGAEvent(this.pluginId, "started");
 
