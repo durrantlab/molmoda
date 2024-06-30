@@ -33,7 +33,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
 })
 export default class LoadPDBPlugin extends PluginParentClass {
     menuPath = "File/[2] Import/[2] PDB ID...";
-    title = "Load PDB ID";
+    title = "Load PDB IDs";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -58,7 +58,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
     ];
     pluginId = "loadpdb";
     skipLongRunningJobMsg = true;
-    intro = `Load a molecule from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of proteins, nucleic acids, etc.`;
+    intro = `Load molecule(s) from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of proteins, nucleic acids, etc.`;
     hotkey = "d";
     tags = [Tag.All];
 
@@ -67,8 +67,8 @@ export default class LoadPDBPlugin extends PluginParentClass {
             id: "pdbId",
             label: "",
             val: "",
-            placeHolder: "PDB ID (e.g., 1XDN)...",
-            description: `The PDB ID of the molecular structure. Search the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a> if you're uncertain.`,
+            placeHolder: "PDB IDs (e.g., 1XDN 2HU4)...",
+            description: `The PDB IDs of one or more molecular structures, separated by spaces. Search the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a> if you're uncertain.`,
             filterFunc: (pdb: string): string => {
                 // commas, semicolons, colons should all be spaces
                 pdb = pdb.replace(/[,;:]/g, " ");
@@ -87,7 +87,12 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 // pdb = pdb.substring(0, 4);
 
                 pdb = pdbPrts.join(" ");
-                pdb = pdb.trim();
+                // pdb = pdb.trim();
+
+                while (pdb.includes("  ")) {
+                    pdb = pdb.replace("  ", " ");
+                }
+
                 return pdb;
             },
             validateFunc: (pdb: string): boolean => {
@@ -95,13 +100,14 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 const pdbPrts = pdb.trim().split(" ");
 
                 // Each one can only be 4 chars long
+                let resp = true;
                 pdbPrts.forEach((prt) => {
                     if (prt.length !== 4) {
-                        return false;
+                        resp = false;
                     }
                 });
 
-                return true;
+                return resp;
 
                 // return pdb.length === 4;
             },
