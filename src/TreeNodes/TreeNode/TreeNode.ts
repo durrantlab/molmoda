@@ -64,7 +64,7 @@ export class TreeNode {
     src?: string; // typically, the file name
     treeExpanded: boolean;
     _visible: boolean;
-    selected: SelectedType; // Not bool (string enum). "false" vs. false.
+    _selected: SelectedType; // Not bool (string enum). "false" vs. false.
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
     data?: { [key: string]: ITreeNodeData }; // key is title of chart, etc.
@@ -103,7 +103,7 @@ export class TreeNode {
         this.src = params.src;
         this.treeExpanded = params.treeExpanded;
         this._visible = params.visible;
-        this.selected = params.selected;
+        this._selected = params.selected;
         this.focused = params.focused;
         this.viewerDirty = params.viewerDirty;
         this.data = params.data;
@@ -118,6 +118,28 @@ export class TreeNode {
 
         // For chaining
         return this;
+    }
+
+    /**
+     * Get the selected state.
+     * 
+     * @returns {SelectedType}  The selected state.
+     */
+    get selected(): SelectedType {
+        return this._selected;
+    }
+
+    /**
+     * Set the selected state.
+     * 
+     * @param {SelectedType} val  The selected state.
+     */
+    set selected(val: SelectedType) {
+        // Set to dirty to trigger rerender of molecule (with yellow outline to
+        // indicate selected).
+        this.viewerDirty = true;
+
+        this._selected = val;
     }
 
     /**

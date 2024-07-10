@@ -21,6 +21,7 @@ import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * LoadPDBPlugin
@@ -32,7 +33,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 })
 export default class LoadPDBPlugin extends PluginParentClass {
     menuPath = "File/[2] Import/[2] PDB ID...";
-    title = "Load PDB ID";
+    title = "Load PDB IDs";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -57,31 +58,58 @@ export default class LoadPDBPlugin extends PluginParentClass {
     ];
     pluginId = "loadpdb";
     skipLongRunningJobMsg = true;
-
-    intro = `Load a molecule from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of proteins, nucleic acids, etc.`;
-
+    intro = `Load molecule(s) from the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a>, a database of proteins, nucleic acids, etc.`;
     hotkey = "d";
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         {
             id: "pdbId",
             label: "",
             val: "",
-            placeHolder: "PDB ID (e.g., 1XDN)...",
-            description: `The PDB ID of the molecular structure. Search the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a> if you're uncertain.`,
+            placeHolder: "PDB IDs (e.g., 1XDN 2HU4)...",
+            description: `The PDB IDs of one or more molecular structures, separated by spaces. Search the <a href="https://www.rcsb.org/" target="_blank">Protein Data Bank</a> if you're uncertain.`,
             filterFunc: (pdb: string): string => {
+                // commas, semicolons, colons should all be spaces
+                pdb = pdb.replace(/[,;:]/g, " ");
+
                 pdb = pdb.toUpperCase();
-                pdb = pdb.replace(/[^A-Z\d]/g, ""); // Only nums and lets
-                pdb = pdb.substring(0, 4);
+                pdb = pdb.replace(/[^A-Z \d]/g, ""); // Only nums and lets and space
+
+                // Split on space
+                const pdbPrts = pdb.split(" ");
+
+                // Each one can only be 4 chars long
+                pdbPrts.forEach((prt, i) => {
+                    pdbPrts[i] = prt.substring(0, 4);
+                });
+
+                pdb = pdbPrts.join(" ");
+
+                while (pdb.includes("  ")) {
+                    pdb = pdb.replace("  ", " ");
+                }
+
                 return pdb;
             },
             validateFunc: (pdb: string): boolean => {
-                return pdb.length === 4;
+                // split on space and make sure all are 4 chars long
+                const pdbPrts = pdb.trim().split(" ");
+
+                // Each one can only be 4 chars long
+                let resp = true;
+                pdbPrts.forEach((prt) => {
+                    if (prt.length !== 4) {
+                        resp = false;
+                    }
+                });
+
+                return resp;
+
+                // return pdb.length === 4;
             },
         } as IUserArgText,
     ];
-
-    alwaysEnabled = true;
 
     /**
      * Runs when the user presses the action button and the popup closes.
@@ -94,34 +122,47 @@ export default class LoadPDBPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
-     * @param {string} pdbId  The PDB ID to load.
+     * @param {string} pdbIds  The PDB IDs to load (separated by space).
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    async runJobInBrowser(pdbId: string): Promise<void> {
-        try {
-            const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
-            const fileInfo = await loadRemoteToFileInfo(url);
-            return this.addFileInfoToViewer({ fileInfo, tag: this.pluginId });
-        } catch (err) {
-            console.warn(err);
-        }
+    async runJobInBrowser(pdbIds: string): Promise<void> {
+        // TODO: With a little effort, you could refactor this so downloads all
+        // pdbs in parallel. Currentl in serial.
 
-        // If you get here, it failed. Try CIF.
-        try {
-            const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
-            const fileInfo2 = await loadRemoteToFileInfo(url);
-            return this.addFileInfoToViewer({
-                fileInfo: fileInfo2,
-                tag: this.pluginId,
-            });
-        } catch (err: any) {
-            // Failed a second time! Probably not a valid PDB.
+        let pdbIdList = pdbIds.trim().split(" ");
 
-            api.messages.popupError(
-                "Could not load PDB ID " +
-                    pdbId +
-                    ". Are you sure this ID is valid?"
-            );
+        // remove duplicates
+        pdbIdList = pdbIdList.filter((v, i, a) => a.indexOf(v) === i);
+
+        for (const pdbId of pdbIdList) {
+            try {
+                const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
+                const fileInfo = await loadRemoteToFileInfo(url);
+                await this.addFileInfoToViewer({
+                    fileInfo,
+                    tag: this.pluginId,
+                });
+            } catch (err) {
+                console.warn(err);
+
+                // If you get here, it failed. Try CIF.
+                try {
+                    const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
+                    const fileInfo2 = await loadRemoteToFileInfo(url);
+                    await this.addFileInfoToViewer({
+                        fileInfo: fileInfo2,
+                        tag: this.pluginId,
+                    });
+                } catch (err: any) {
+                    // Failed a second time! Probably not a valid PDB.
+
+                    api.messages.popupError(
+                        "Could not load PDB ID " +
+                            pdbId +
+                            ". Are you sure this ID is valid?"
+                    );
+                }
+            }
         }
     }
 
@@ -144,6 +185,18 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "#navigator",
                     "1XDN"
                 ),
+            },
+
+            // Make sure you can load two at a time
+            {
+                pluginOpen: new TestCmdList().setUserArg(
+                    "pdbId",
+                    "1XDN 2HU4",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", "1XDN")
+                    .waitUntilRegex("#navigator", "2HU4"),
             },
 
             // Below loads cif verson

@@ -33,6 +33,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
 import * as api from "@/Api";
+import { Tag } from "../Tags/Tags";
 
 /** AboutPlugin */
 @Options({
@@ -53,9 +54,9 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     ];
     pluginId = "moveregionsonclick";
     intro = `Move all selected regions to this atom's position:`;
-
+    tags = [Tag.All];
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
 
     newCenter: [number, number, number] = [0, 0, 0];

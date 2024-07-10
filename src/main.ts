@@ -6,7 +6,6 @@ import { setupVueXStore } from "./Store";
 import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { setupTests } from "./Testing/SetupTests";
-import { setOnePluginMode } from "./Core/OnePluginMode";
 import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import {
     applySettings,
@@ -14,6 +13,7 @@ import {
 } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
+import { setupTags } from "./Plugins/Tags/Tags";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
@@ -23,10 +23,10 @@ import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReportin
  */
 async function main() {
     errorReportingSetup();
-    setOnePluginMode();
     loadFontAwesomeFonts();
     setupTests();
     setupWarnSaveOnClose();
+    setupTags();
 
     defineMakerFuncs();
     // setupUpDownTreeNav();

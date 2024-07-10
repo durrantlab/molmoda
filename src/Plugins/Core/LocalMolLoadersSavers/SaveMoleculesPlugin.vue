@@ -15,9 +15,7 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import * as api from "@/Api";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -55,6 +53,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { appName } from "@/Core/GlobalVars";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * SaveMoleculesPlugin
@@ -75,11 +74,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         // },
     ];
     pluginId = "savemolecules";
-
     intro = `Save molecules to the disk.`;
     details = `The ${appName} format (recommended) stores all molecules in one file for easy reloading. Other formats (e.g., PDB) enable compatibility with external programs.`;
-
     hotkey = "s";
+    tags = [Tag.All];
 
     // If true, this plugin is being shown as part of the (terminal) app-closing
     // process.
@@ -171,7 +169,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         } as IUserArgSelect,
     ];
 
-    alwaysEnabled = true;
+    
     lastFilename = "";
 
     /**

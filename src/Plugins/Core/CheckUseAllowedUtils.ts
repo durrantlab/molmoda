@@ -17,9 +17,26 @@ export function checkAnyMolSelected(
     treeNodeList?: TreeNodeList,
     noun = "molecule"
 ): string | null {
-    const num = numSelected(treeNodeList);
+    const num = _numSelected(treeNodeList);
     if (num === 0) {
         return `No ${noun}s are currently selected. First select a ${noun} by clicking on its name in the Navigator panel.`;
+    }
+
+    return null;
+}
+
+export function checkAnyCompoundSelected(
+    treeNodeList?: TreeNodeList
+): string | null {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
+    }
+
+    const compounds = treeNodeList.flattened.filters.keepType(TreeNodeType.Compound);
+    const selectedCompounds = compounds.filters.keepSelected(true);
+
+    if (selectedCompounds.length === 0) {
+        return "No compounds are currently selected. First select a compound by clicking on its name in the Navigator panel.";
     }
 
     return null;
@@ -37,7 +54,7 @@ export function checkAnyMolSelected(
 export function checkOneMolSelected(
     treeNodeList?: TreeNodeList
 ): string | null {
-    const num = numSelected(treeNodeList);
+    const num = _numSelected(treeNodeList);
     if (num !== 1) {
         return "First select one (and only one) molecule by clicking on its name in the Navigator panel.";
     }
@@ -57,7 +74,7 @@ export function checkOneMolSelected(
 export function checkMultipleMolsSelected(
     treeNodeList?: TreeNodeList
 ): string | null {
-    const num = numSelected(treeNodeList);
+    const num = _numSelected(treeNodeList);
     if (num < 2) {
         return `First select at least two molecules by clicking on their names in the Navigator panel. ${selectInstructionsLong}`;
         // Click while holding down the Control, Command (Mac), and/or Shift keys to select multiple molecules.";
@@ -74,7 +91,7 @@ export function checkMultipleMolsSelected(
  *                                            all molecules if not specified.
  * @returns {number}  The number of molecules selected.
  */
-export function numSelected(treeNodeList?: TreeNodeList): number {
+function _numSelected(treeNodeList?: TreeNodeList): number {
     if (treeNodeList === undefined) {
         treeNodeList = getMoleculesFromStore();
     }
@@ -117,7 +134,7 @@ export function checkAnyMolLoaded(treeNodeList?: TreeNodeList): string | null {
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *    null otherwise.
  */
-export function checkTypeLoaded(type: TreeNodeType, treeNodeList?: TreeNodeList): string | null {
+function _checkTypeLoaded(type: TreeNodeType, treeNodeList?: TreeNodeList): string | null {
     if (treeNodeList === undefined) {
         treeNodeList = getMoleculesFromStore();
     }
@@ -141,7 +158,7 @@ export function checkTypeLoaded(type: TreeNodeType, treeNodeList?: TreeNodeList)
  *   null otherwise.
  */
 export function checkProteinLoaded(treeNodeList?: TreeNodeList): string | null {
-    return checkTypeLoaded(TreeNodeType.Protein, treeNodeList);
+    return _checkTypeLoaded(TreeNodeType.Protein, treeNodeList);
 }
 
 
@@ -155,5 +172,5 @@ export function checkProteinLoaded(treeNodeList?: TreeNodeList): string | null {
  *     null otherwise.
  */
 export function checkCompoundLoaded(treeNodeList?: TreeNodeList): string | null {
-    return checkTypeLoaded(TreeNodeType.Compound, treeNodeList);
+    return _checkTypeLoaded(TreeNodeType.Compound, treeNodeList);
 }

@@ -183,7 +183,7 @@ export async function localStorageRemoveItem(key: string): Promise<void> {
  *
  * @returns {Promise<void>}  A promise that resolves when local storage is cleared.
  */
-export async function clearLocalStorage(): Promise<void> {
+async function clearLocalStorage(): Promise<void> {
     const db = await createDatabaseIfNeeded();
     await db.data.clear();
 }

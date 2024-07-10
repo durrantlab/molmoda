@@ -22,6 +22,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** ClearSelectionPlugin */
 @Options({
@@ -42,9 +43,10 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     pluginId = "clearselection";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Clear the selection of all molecules.";
+    tags = [Tag.All];
 
     /**
      * Check if this plugin can currently be used.

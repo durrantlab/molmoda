@@ -29,6 +29,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * MergeMolsPlugin
@@ -64,8 +65,9 @@ export default class MergeMolsPlugin extends PluginParentClass {
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    alwaysEnabled = true;
+    
     logJob = false;
+    tags = [Tag.All];
 
     /**
      * Runs before the popup opens. Will almost always need this, so requiring

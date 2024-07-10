@@ -4,6 +4,12 @@ import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // Get start molecule
+
+/**
+ * Get the molecules to act on for up and down tree navigation.
+ *
+ * @returns {any} The molecules to act on (siblings).
+ */
 export function getUpDownTreeNavMoleculesToActOn(): {
     molBefore: TreeNode | null;
     molToConsider: TreeNode
@@ -58,6 +64,12 @@ export function getUpDownTreeNavMoleculesToActOn(): {
     return { molBefore, molToConsider, molAfter };
 }
 
+/**
+ * Toggle the visibility of two tree nodes.
+ *
+ * @param {TreeNode} newTreeNode The new tree node.
+ * @param {TreeNode} oldTreeNode The old tree node.
+ */
 export function toggleUpDownTreeNav(newTreeNode: TreeNode, oldTreeNode: TreeNode) {
     const treeNode1Visibility = newTreeNode.visible;
     const treeNode2Visibility = oldTreeNode.visible;

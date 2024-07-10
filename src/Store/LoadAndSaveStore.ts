@@ -12,6 +12,11 @@ export function setStoreIsDirty(val: boolean) {
     storeIsDirty = val;
 }
 
+/**
+ * Handles the beforeunload event.
+ * 
+ * @param {Event} e The event.
+ */
 function handleBeforeUnload(e: Event) {
     if (storeIsDirty) {
         e.preventDefault();
@@ -38,6 +43,9 @@ export function setupWarnSaveOnClose() {
     }
 }
 
+/**
+ * Unregisters the warn save on close.
+ */
 export function unregisterWarnSaveOnClose() {
     window.removeEventListener("beforeunload", handleBeforeUnload, true);
 }

@@ -50,6 +50,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { Watch } from "vue-property-decorator";
 import * as api from "@/Api";
+import { Tag } from "../Tags/Tags";
 
 /**
  * SimpleVideoPlugin
@@ -69,6 +70,7 @@ export default class SimpleVideoPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "simplevideo";
     intro = "";
+    tags = [Tag.All];
 
     // Below set via onPluginStart.
     title = "";
@@ -80,7 +82,7 @@ export default class SimpleVideoPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
 
     /**

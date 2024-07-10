@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-md navbar-light bg-light">
     <div class="container-fluid">
-      <!-- <a class="navbar-brand" href="#">Navbar</a> -->
+      <!-- <a class="navbar-brand" href="_#">Navbar</a> -->
       <!-- below is hamburger icon for small screens -->
       <button
         id="hamburger-button"

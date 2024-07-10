@@ -3,7 +3,7 @@
 import { dynamicImports } from "./DynamicImports";
 import * as pluginsApi from "@/Api/Plugins";
 import { delayForPopupOpenClose } from "./GlobalVars";
-import { localStorageGetItem, localStorageSetItem } from "./LocalStorage";
+import { localStorageSetItem } from "./LocalStorage";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Testing/SetupTests";
 
@@ -14,7 +14,7 @@ export enum ResponseType {
     ARRAY_BUFFER = "arraybuffer",
 }
 
-export interface IFetcherOptions {
+interface IFetcherOptions {
     responseType: ResponseType;
 }
 

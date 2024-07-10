@@ -58,6 +58,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import { citationsTxt } from "../Citations";
 import { appName } from "@/Core/GlobalVars";
+import { Tag, matchesTag } from "../Tags/Tags";
 
 /** HelpPlugin */
 @Options({
@@ -82,10 +83,10 @@ export default class HelpPlugin extends PluginParentClass {
     pluginId = "help";
     intro = "List information about each of the loaded plugins.";
     filterStr="";  // Not used, but needed for FilterInput component.
-
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
+    tags = [Tag.All];
 
     filteredPlugins: PluginParentClass[] | null = null;
 
@@ -100,6 +101,10 @@ export default class HelpPlugin extends PluginParentClass {
         return plugin.title + " " + plugin.intro;
     }
 
+    filterByTags(plugins: PluginParentClass[]): PluginParentClass[] {
+        return plugins.filter(p => matchesTag(p.tags));
+    }
+
     /**
      * Gets the plugins to display. If the user has entered text in the
      * filter box, then this will be the filtered list. Otherwise, it will
@@ -109,10 +114,10 @@ export default class HelpPlugin extends PluginParentClass {
      */
     get loadedPluginsToUse(): PluginParentClass[] {
         if (this.filteredPlugins === null) {
-            return this.loadedPlugins;
+            return this.filterByTags(this.loadedPlugins);
         }
 
-        return this.filteredPlugins;
+        return this.filterByTags(this.filteredPlugins);
     }
 
     /**

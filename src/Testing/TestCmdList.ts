@@ -16,6 +16,7 @@ import {
 import * as api from "@/Api";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
 import { openRemoteFile } from "@/FileSystem/UrlOpen";
+import { getUrlParam } from "@/Core/UrlParams";
 
 const examplesLoaded: string[] = [];
 
@@ -131,8 +132,7 @@ export class TestCmdList {
         }
 
         if (testIdx !== undefined) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const testIdxFrmURL = parseInt(urlParams.get("index") as string);
+            const testIdxFrmURL = parseInt(getUrlParam("index") as string);
             if (testIdxFrmURL !== testIdx) {
                 return this;
                 // Not the right test.

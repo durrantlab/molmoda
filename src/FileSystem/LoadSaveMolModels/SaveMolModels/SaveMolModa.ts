@@ -24,6 +24,12 @@ export function saveMolModa(filename: string): Promise<undefined> {
     });
 }
 
+/**
+ * Converts the state to a JSON string.
+ * 
+ * @param {any} state  The state to convert.
+ * @returns {string}  The JSON string.
+ */
 export function stateToJsonStr(state: any): string {
     const newMolData = (state.molecules as TreeNodeList).serialize();
 

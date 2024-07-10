@@ -56,6 +56,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { slugify } from "@/Core/Utils/StringUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * LoadPubChemPlugin
@@ -97,11 +98,10 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     molName = "";
     molNameRespDescription = "";
     skipLongRunningJobMsg = true;
-
     intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a> of small molecules.`;
-
     userArgDefaults: UserArg[] = [getDesaltUserArg()];
-    alwaysEnabled = true;
+    
+    tags = [Tag.All];
 
     /**
      * Filters text to match desired format.

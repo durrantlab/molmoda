@@ -135,6 +135,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "../Tags/Tags";
 
 interface IActivesOthers {
     labelScores: [number, number][];
@@ -156,7 +157,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "evalscreen";
-
+    tags = [Tag.Docking];
     intro = `Calculate receiver operating characteristic and enrichment factor curves.`;
     details = `Analyzes the docking scores of both known-active and other (inactive or decoy) compounds to assess how well docking prioritizes the known actives.`;
     title = "Evaluate Docking Performance";

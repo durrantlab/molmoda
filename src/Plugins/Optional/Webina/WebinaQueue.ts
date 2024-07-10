@@ -2,7 +2,6 @@ import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ITest } from "@/Testing/TestCmd";
-import { setTempErrorMsg } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 import { messagesApi } from "@/Api/Messages";
 import { prepForErrorCustomMsg } from "./WebinaErrors";
 

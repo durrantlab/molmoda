@@ -112,7 +112,8 @@ export default class ColorSelect extends Vue {
         // Copy the representations from the component.
         let style: IStyle = { ...this.modelValue };
 
-        // Make sure the colorStyles color is set.
+        // Make sure the colorStyles color is set. If not, set it to the default
+        // color.
         let color = (
             val.filter((v: any) => {
                 return v.id === "color";

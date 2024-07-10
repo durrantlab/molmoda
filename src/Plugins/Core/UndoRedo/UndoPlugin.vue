@@ -17,6 +17,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * UndoPlugin
@@ -42,10 +43,11 @@ export default class UndoPlugin extends PluginParentClass {
     pluginId = "undo";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     hotkey = "z";
     intro = "Undo the last action.";
+    tags = [Tag.All];
 
     /**
      * Check if this plugin can currently be used.

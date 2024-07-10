@@ -22,6 +22,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { ITest } from "@/Testing/TestCmd";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * LoadAlphaFoldPlugin
@@ -67,8 +68,8 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     ];
     pluginId = "loadalphafold";
     skipLongRunningJobMsg = true;
-
     intro = `Load a protein from the <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a> of predicted protein structures.`;
+    tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
         {
@@ -94,7 +95,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         } as IUserArgText,
     ];
 
-    alwaysEnabled = true;
+    
 
     /**
      * Runs when the user presses the action button and the popup closes.

@@ -65,6 +65,10 @@ export abstract class QueueParent {
      * @param {any[]}            inputs                      An flat array of
      *                                                       inputs to be
      *                                                       processed.
+     * @param {number}           maxProcs                    The maximum number
+     *                                                       of processors that
+     *                                                       can be used by the
+     *                                                       queue.
      * @param {IQueueCallbacks}  [callbacks=undefined]       The callbacks to be
      *                                                       used by the queue,
      *                                                       if any.

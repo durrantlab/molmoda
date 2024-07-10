@@ -37,6 +37,7 @@ import {
 import { Options } from "vue-class-component";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { Tag } from "../Tags/Tags";
 
 /**
  * AddRegionPlugin
@@ -58,8 +59,8 @@ export default class AddRegionPlugin extends PluginParentClass {
         // },
     ];
     pluginId = "addregion";
-
     intro = `Add a new box or spherical region to the workspace.`;
+    tags = [Tag.Docking];
 
     userArgDefaults: UserArg[] = [
         {

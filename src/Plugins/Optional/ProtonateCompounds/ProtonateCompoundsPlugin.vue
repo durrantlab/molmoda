@@ -47,6 +47,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * ProtonateCompoundsPlugin
@@ -67,7 +68,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         },
     ];
     pluginId = "protonatecomps";
-
+    tags = [Tag.All];
     intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking.`;
     details = `Uses the Open Babel library to guess at proper protonation states.`;
 

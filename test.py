@@ -16,6 +16,7 @@ import html
 from simple_term_menu import TerminalMenu
 import shutil
 import subprocess
+import html
 
 # import traceback
 import threading
@@ -156,12 +157,14 @@ class el:
 
         # Define a lambda function to check if the element's innerHTML matches the regex
         try:
+            regex = html.unescape(regex)
             wait = WebDriverWait(
                 self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
             )
             
             def check(driver):
                 inner_html = self.el.get_attribute("innerHTML")
+
 
                 # print(f"Checking innerHTML: {inner_html}")  # Print the innerHTML for debugging                
                 # with open("tmp.txt", "w") as f:
@@ -179,6 +182,7 @@ class el:
 
     def wait_until_does_not_contain_regex(self, regex):
         try:
+            regex = html.unescape(regex)
             WebDriverWait(
                 self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
             ).until_not(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
@@ -227,6 +231,7 @@ def make_chrome_driver(options):
 
 
 def make_driver(browser):
+    driver = None
     if browser == "firefox":
         options = webdriver.FirefoxOptions()
 
@@ -262,7 +267,11 @@ def make_driver(browser):
         driver = make_chrome_driver(options)
     return driver
 
-def do_logs_have_errors(driver):
+def do_logs_have_errors(driver, browser):
+    if "firefox" in browser.lower():
+        # Firefox driver has no get_log method
+        return False
+
     logs = driver.get_log('browser')
 
     # Get all the logs that are SEVERE, WARNING, or ERROR
@@ -354,6 +363,7 @@ def run_test(plugin_id):
         for cmd_idx, cmd in enumerate(cmds):
             # print(cmd)
             # resp += f"   {json.dumps(cmd)}\n"
+
             if cmd["cmd"] == "click":
                 el(cmd["selector"], driver).click(
                     cmd["data"] if "data" in cmd else False
@@ -378,7 +388,7 @@ def run_test(plugin_id):
             screenshot_path = f"./screenshots/{test_lbl}/{test_lbl}_{cmd_idx}.png"            
             driver.save_screenshot(screenshot_path)
 
-            js_errs = do_logs_have_errors(driver)
+            js_errs = do_logs_have_errors(driver, browser)
             if js_errs != False:
                 raise Exception(f"JavaScript error: {js_errs}")
 
@@ -401,7 +411,7 @@ def run_test(plugin_id):
             "error": str(e),
         }
 
-    js_errs = do_logs_have_errors(driver)
+    js_errs = do_logs_have_errors(driver, browser)
     if js_errs != False:
         raise Exception(f"JavaScript error: {js_errs}")
 

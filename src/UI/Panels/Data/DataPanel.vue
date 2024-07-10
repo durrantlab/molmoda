@@ -29,7 +29,7 @@
                 v-for="(tableData, idx) in allTableData"
                 v-bind:key="tableData[0]"
             >
-                <a href="#" @click.prevent="tocLinkScroll(tableData[0])">
+                <a class="link-primary" @click.prevent="tocLinkScroll(tableData[0])">
                     {{ tableData[0] }} </a
                 ><span v-if="idx !== allTableData.length - 1">, </span>
             </span>

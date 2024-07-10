@@ -33,7 +33,7 @@
                                         class="d-none d-sm-block"
                                     >
                                         <img
-                                            src="img/icons/android-chrome-192x192.png"
+                                            :src="logoPath"
                                             class="rounded mx-auto d-block"
                                             alt="Logo"
                                             style="width: 128px; height: 128px"
@@ -141,7 +141,7 @@ import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
-import { appName, appVersion, appDescription } from "@/Core/GlobalVars";
+import { appName, appVersion, appDescription, logoPath } from "@/Core/GlobalVars";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
@@ -171,6 +171,10 @@ export default class GoldLayout extends Vue {
      */
     get appInfo(): string {
         return appName + " " + appVersion;
+    }
+
+    get logoPath(): string {
+        return logoPath;
     }
 
     /**

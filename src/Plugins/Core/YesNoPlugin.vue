@@ -36,6 +36,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { pluginsApi } from "@/Api/Plugins";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
+import { Tag } from "../Tags/Tags";
 
 /**
  * YesNoPlugin
@@ -56,7 +57,7 @@ export default class YesNoPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "yesnomsg";
     intro = "";
-
+    tags = [Tag.All];
     message = "";
     yesBtnTxt = "";
     noBtnTxt = "";
@@ -69,10 +70,12 @@ export default class YesNoPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
 
-
+    /**
+     * Runs when the users presses the yes button.
+     */
     yesFunc() {
         this.callBack(YesNo.Yes);
 
@@ -80,11 +83,16 @@ export default class YesNoPlugin extends PluginParentClass {
         this.open = false;
     }
 
-    // No func
+    /**
+     * Runs when the users presses the no button.
+     */
     onPopupDone() {
         this.callBack(YesNo.No);
     }
 
+    /**
+     * Runs when the users presses the cancel button.
+     */
     onCancel() {
         this.callBack(YesNo.Cancel);
     }

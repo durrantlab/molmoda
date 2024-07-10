@@ -11,7 +11,6 @@
     <a
       class="nav-link top-level-menu-item"
       data-bs-auto-close="outside"
-      href="#"
       :id="'menu1-' + idSlug"
       role="button"
       data-bs-toggle="dropdown"

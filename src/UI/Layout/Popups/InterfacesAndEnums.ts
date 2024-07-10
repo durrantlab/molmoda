@@ -39,16 +39,3 @@ export interface IYesNoMsg {
 export interface ISimpleVideo extends ISimpleMsg {
     youtubeID: string;
 }
-
-export interface IDelayedJobPopup {
-    open: boolean; // Whether to open or close
-    // message?: string;
-    jobType?: string;
-    jobId?: string;
-    runDelayedJob?: () => {};
-    cancelDelayedJob?: () => {};
-    cancelAllDelayedJobsOfType?: () => {};
-    cancelAllJobs?: () => {};
-    waitTimePassed?: number;
-    totalWaitTime?: number;
-}

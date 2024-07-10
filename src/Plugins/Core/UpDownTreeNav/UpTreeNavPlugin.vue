@@ -21,6 +21,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getUpDownTreeNavMoleculesToActOn, toggleUpDownTreeNav } from "./UpDownTreeNavUtils";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** UpTreeNavPlugin */
 @Options({
@@ -36,11 +37,11 @@ export default class UpTreeNavPlugin extends PluginParentClass {
     pluginId = "uptreenav";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Toggle visibility and focus with the molecule above the selected one.";
-
     hotkey = "[";
+    tags = [Tag.All];
 
     /**
      * Every plugin runs some job. This is the function that does the job
@@ -81,9 +82,14 @@ export default class UpTreeNavPlugin extends PluginParentClass {
      * @returns {ITest}  The selenium test commands.
      */
     async getTests(): Promise<ITest> {
-        alert("FIX THIS");
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: new TestCmdList()
+                .loadExampleMolecule(true)
+                .selectMoleculeInTree("Compounds"),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                'class=.title selected.[^>]+?data-label=.Protein.'
+            ),
         };
     }
 }

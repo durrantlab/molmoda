@@ -18,6 +18,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { Tag } from "../Tags/Tags";
 
 /**
  * EditCompoundPlugin
@@ -38,10 +39,11 @@ export default class EditCompoundPlugin extends PluginParentClass {
     pluginId = "editcompound";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     // hotkey = "z";
     intro = "Edit a compound.";
+    tags = [Tag.All];
 
     selected: TreeNode | undefined = undefined;
 

@@ -23,6 +23,7 @@ import { appName } from "@/Core/GlobalVars";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import * as api from "@/Api";
 import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { Tag } from "../Tags/Tags";
 
 /** QuitPlugin */
 @Options({
@@ -38,9 +39,10 @@ export default class QuitPlugin extends PluginParentClass {
     pluginId = "quitplugin";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Quits " + appName + ".";
+    tags = [Tag.All];
     skipLongRunningJobMsg = true;
 
     // hotkey = "i";

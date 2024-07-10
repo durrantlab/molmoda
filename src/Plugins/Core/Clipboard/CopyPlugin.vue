@@ -36,6 +36,7 @@ import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /** CopyPlugin */
 @Options({
@@ -51,6 +52,7 @@ export default class CopyPlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "copyclipboard";
+    tags = [Tag.All];
 
     // noPopup = true;
     userArgDefaults: UserArg[] = [
@@ -67,7 +69,7 @@ export default class CopyPlugin extends PluginParentClass {
         //     alertType: "warning",
         // } as IUserArgAlert,
     ];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Copy the selected molecules to the clipboard.";
     formatMsg = "";

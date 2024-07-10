@@ -19,31 +19,6 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertIAtoms";
-import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
-
-const _treeNodeTitleCache: { [key: string]: string } = {};
-
-/**
- * Gets the title of a tree node.
- *
- * @param {string} id The id of the tree node (cached if possible).
- * @returns {string | null} The title of the tree node. null if not found.
- */
-function getTreeNodeTitle(id: string): string | null {
-    if (_treeNodeTitleCache[id]) {
-        return _treeNodeTitleCache[id];
-    }
-
-    // Get the title from the tree node
-    const treeNode = getMoleculesFromStore().filters.onlyId(id);
-
-    if (treeNode) {
-        _treeNodeTitleCache[id] = treeNode.title;
-        return treeNode.title;
-    }
-
-    return null;
-}
 
 /**
  * Viewer3DMol
@@ -159,6 +134,12 @@ export class Viewer3DMol extends ViewerParent {
         }
     }
 
+    /**
+     * Create a label for a region.
+     * 
+     * @param {string} id    The id of the region.
+     * @param {string} text  The text of the label.
+     */
     createRegionLabel(id: string, text: string) {
         const region = this.lookup(id);
         if (region) {
@@ -180,6 +161,11 @@ export class Viewer3DMol extends ViewerParent {
         }
     }
 
+    /**
+     * Destroy a region label.
+     * 
+     * @param {string} id  The id of the region.
+     */
     destroyRegionLabel(id: string) {
         // Delete old label
         if (this._regionLabels[id]) {
@@ -738,14 +724,41 @@ export class Viewer3DMol extends ViewerParent {
         return this._mol3dObj.exportVRML();
     }
 
-    _registerViewChangeCallback(callback: () => void) {
-        this._mol3dObj.setViewChangeCallback(callback);
+    /**
+     * Sets up a callback that runs every time the view changes.
+     * 
+     * @param {Function} callback  The callback to run.
+     */
+    _registerViewChangeCallback(callback: (view: number[]) => void) {
+        // NOTE: The below slows things down quite a bit, I think. Don't use it.
+        // this._mol3dObj.setViewChangeCallback(callback);
+
+       let lastViewSum = this.getView().reduce((a, b) => a + b, 0);
+       
+        setInterval(() => {
+            const newView = this.getView();
+            const newViewSum = newView.reduce((a, b) => a + b, 0);
+            if (newViewSum !== lastViewSum) {
+                lastViewSum = newViewSum;
+                callback(newView);
+            }
+        }, 1000);
     }
 
+    /**
+     * Gets the current view.
+     * 
+     * @returns {number[]}  The view.
+     */
     getView(): number[] {
         return this._mol3dObj.getView();
     }
 
+    /**
+     * Sets the view.
+     * 
+     * @param {number[]} view  The view to set.
+     */
     setView(view: number[]) {
         this._mol3dObj.setView(view);
     }

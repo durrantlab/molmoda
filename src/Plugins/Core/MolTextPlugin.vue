@@ -33,9 +33,10 @@ import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFo
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
-import { dynamicImports } from "@/Core/DynamicImports";
 import { fetcher } from "@/Core/Fetcher";
 import { randomID } from "@/Core/Utils/MiscUtils";
+import { Tag } from "../Tags/Tags";
+import { Gen3DLevel, WhichMolsGen3D } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * A function that returns the options and validate functions for the available
@@ -112,9 +113,9 @@ export default class MolTextPlugin extends PluginParentClass {
         },
     ];
     pluginId = "moltextplugin";
-
     intro = `Type or paste molecular text.`;
     title = "Molecular Text";
+    tags = [Tag.All];
 
     isActionBtnEnabled = false;
 
@@ -182,7 +183,7 @@ export default class MolTextPlugin extends PluginParentClass {
         const treeNodePromise = TreeNode.loadFromFileInfo({
             fileInfo,
             tag: this.pluginId,
-            desalt: this.getUserArg("desalt"),
+            desalt: this.getUserArg("desalt")
         });
 
         if (treeNodePromise === undefined) {

@@ -21,6 +21,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
+import { Tag } from "../Tags/Tags";
 
 /** ExpandAllPlugin */
 @Options({
@@ -36,9 +37,10 @@ export default class ExpandAllPlugin extends PluginParentClass {
     pluginId = "expandall";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    alwaysEnabled = true;
+    
     logJob = false;
     intro = "Expand all the nodes in the Navigator panel.";
+    tags = [Tag.All];
 
     // hotkey = "i";
 

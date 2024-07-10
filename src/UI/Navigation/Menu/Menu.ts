@@ -1,5 +1,5 @@
-import { onePlugin } from "@/Core/OnePluginMode";
-import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import { matchesTag } from "@/Plugins/Tags/Tags";
 import { Vue } from "vue-class-component";
 
 export type IMenuEntry = IMenuItem | IMenuSubmenu;
@@ -196,15 +196,22 @@ export function addMenuItem(
         return existingMenuItems;
     }
 
-    // Plugin is excluded per the plugin user parameter
-    if (
-        onePlugin !== undefined &&
-        pluginId !== undefined &&
-        onePlugin !== pluginId &&
-        LoadedPlugins.alwaysEnabledPlugins.indexOf(pluginId) === -1
-    ) {
-        return existingMenuItems;
+    // If tags don't match, don't add the menu item.
+    if (pluginId !== undefined) {
+        const plugin = loadedPlugins[pluginId as string]
+        const {tags} = plugin;
+        if (!matchesTag(tags)) {
+            return existingMenuItems;
+        }
     }
+
+    // Plugin is excluded per the plugin user parameter
+    // if (
+    //     pluginId !== undefined &&
+    //     LoadedPlugins.alwaysEnabledPlugins.indexOf(pluginId) === -1
+    // ) {
+    //     return existingMenuItems;
+    // }
 
     const menuPathInfo = processMenuPath(newMenuItem.path);
     const actionItem = menuPathInfo?.pop();

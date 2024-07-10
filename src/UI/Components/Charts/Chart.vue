@@ -6,10 +6,10 @@
         </div>
 
         <small>
-            Download as <a @click.prevent="download('png')" href="#">PNG</a>,
-            <a @click.prevent="download('csv')" href="#">CSV</a>,
-            <a @click.prevent="download('xlsx')" href="#">XLSX</a>, or
-            <a @click.prevent="download('json')" href="#">JSON</a>
+            Download as <a @click.prevent="download('png')" class="link-primary">PNG</a>,
+            <a @click.prevent="download('csv')" class="link-primary">CSV</a>,
+            <a @click.prevent="download('xlsx')" class="link-primary">XLSX</a>, or
+            <a @click.prevent="download('json')" class="link-primary">JSON</a>
         </small>
     </span>
 </template>

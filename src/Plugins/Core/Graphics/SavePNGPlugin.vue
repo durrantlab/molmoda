@@ -26,6 +26,7 @@ import {
 } from "@/FileSystem/FilenameManipulation";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { Tag } from "@/Plugins/Tags/Tags";
 
 /**
  * SavePNGPlugin
@@ -48,6 +49,7 @@ export default class SavePNGPlugin extends PluginParentClass {
     pluginId = "savepng";
 
     intro = `Save the current view as a PNG file.`;
+    tags = [Tag.Visualization];
 
     userArgDefaults: UserArg[] = [
         {
@@ -65,7 +67,7 @@ export default class SavePNGPlugin extends PluginParentClass {
         } as IUserArgText,
     ];
 
-    alwaysEnabled = true;
+    
 
     /**
      * Check if this plugin can currently be used.

@@ -114,6 +114,7 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
         }
     }
 
-    // Update all molecules
+    // Update all molecules. Note that this triggers reactivity
+    // onTreeviewChanged() in ViewerPanel.vue.
     setStoreVar("molecules", molecules);
 }

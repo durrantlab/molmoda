@@ -15,8 +15,8 @@
             />
         </template>
 
-        <!-- The atoms styling section for this moltype, with optional colorselect
-    -->
+        <!-- The atoms styling section for this moltype, with optional
+        colorselect. All molecule types have atoms representations. -->
         <FormSelect
             :id="'atoms-' + molType"
             v-model="atomsOption"
@@ -33,41 +33,43 @@
             :allowSecondaryStructure="molType === 'protein'"
         />
 
-        <!-- The protein (backbone) styling section for this moltype, with optional
-    colorselect -->
-        <FormSelect
-            v-if="molType === 'protein'"
-            :id="'protein-' + molType"
-            v-model="backboneOption"
-            :options="proteinStyleOptions"
-            @onChange="updateMolecules(backboneOption)"
-        ></FormSelect>
-        <ColorSelect
-            v-if="backboneOption !== 'backbone-hidden'"
-            v-model="styleToUse"
-            :repName="backboneOption"
-            @onChange="updateMolecules(backboneOption)"
-            :allowColorByElement="false"
-            :allowColorCarbons="false"
-        />
+        <!-- The protein (backbone) styling section for this moltype, with
+        optional colorselect. Only if moltype is protein. -->
+        <span v-if="molType === 'protein'">
+            <FormSelect
+                :id="'protein-' + molType"
+                v-model="backboneOption"
+                :options="proteinStyleOptions"
+                @onChange="updateMolecules(backboneOption)"
+            ></FormSelect>
+            <ColorSelect
+                v-if="backboneOption !== 'backbone-hidden'"
+                v-model="styleToUse"
+                :repName="backboneOption"
+                @onChange="updateMolecules(backboneOption)"
+                :allowColorByElement="false"
+                :allowColorCarbons="false"
+            />
+        </span>
 
-        <!-- The surface styling section for this moltype, with optional colorselect
-    -->
-        <FormSelect
-            v-if="molType !== 'metal'"
-            :id="'surface-' + molType"
-            v-model="surfaceOption"
-            :options="metalStyleOptions"
-            @onChange="updateMolecules(surfaceOption)"
-        ></FormSelect>
-        <ColorSelect
-            v-if="surfaceOption !== 'surface-hidden'"
-            v-model="styleToUse"
-            :repName="surfaceOption"
-            @onChange="updateMolecules(surfaceOption)"
-            :allowSpectrum="false"
-            :allowSecondaryStructure="molType === 'protein'"
-        />
+        <!-- The surface styling section for this moltype, with optional
+        colorselect. Only possible if not metal. -->
+        <span v-if="molType !== 'metal'">
+            <FormSelect
+                :id="'surface-' + molType"
+                v-model="surfaceOption"
+                :options="metalStyleOptions"
+                @onChange="updateMolecules(surfaceOption)"
+            ></FormSelect>
+            <ColorSelect
+                v-if="surfaceOption !== 'surface-hidden'"
+                v-model="styleToUse"
+                :repName="surfaceOption"
+                @onChange="updateMolecules(surfaceOption)"
+                :allowSpectrum="false"
+                :allowSecondaryStructure="molType === 'protein'"
+            />
+        </span>
     </Section>
 </template>
 
@@ -88,11 +90,6 @@ import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import * as Styles from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { capitalize } from "@/Core/Utils/StringUtils";
-
-export interface IStyleForMolType {
-    style: IStyle;
-    molType: TreeNodeType;
-}
 
 /**
  * StylesForMolType component
@@ -190,12 +187,33 @@ export default class StylesForMolType extends Vue {
      *                          "atoms-hidden".
      */
     updateMolecules(repName: string) {
-        // TODO: Seems like this should happen in Styles.vue
-        let style = this.styleToUse ? { ...this.styleToUse } : {};
+        // Copy the styles. As any to avoid typescript errors. TODO: Seems like
+        // this should happen in Styles.vue
+        let style = (this.styleToUse ? { ...this.styleToUse } : {}) as any;
 
-        // Deal items with hidden visualizations. Delete entries that are
-        // incompatible with hidden.
+        // If it's not already set and not a hidden representation, set the style
+        if (
+            style[repName] === undefined &&
+            ["atoms-hidden", "backbone-hidden", "surface-hidden"].indexOf(
+                repName
+            ) === -1
+        ) {
+            // This required to deal with restoring a viz after everything set to
+            // hidden.
+            // let styleUpdated = this.style === undefined ? {} : { ...this.style };
+
+            // style[repName] should be like {color: 'spectrum'}.
+            style[repName] = (Styles.currentStyles[this.molType] as any)[0][
+                repName
+            ];
+
+            // Happens when turning surface on for first time.
+            if (style[repName] === undefined) style[repName] = {};
+        }
+
         switch (repName) {
+            // Deal items with hidden visualizations. Delete entries that are
+            // incompatible with hidden.
             case "atoms-hidden":
                 if (style.line) delete style.line;
                 if (style.stick) delete style.stick;
@@ -207,37 +225,9 @@ export default class StylesForMolType extends Vue {
             case "surface-hidden":
                 if (style.surface) delete style.surface;
                 break;
-            default:
-                // Not hidden, so use specified value.
 
-                // This required to deal with restoring a viz after everything set to
-                // hidden.
-                // let styleUpdated = this.style === undefined ? {} : { ...this.style };
-
-                // @ts-ignore
-                let val = style[repName];
-                if (val === undefined) {
-                    // val should be like {color: 'spectrum'}.
-                    val = (Styles.currentStyles[this.molType] as any)[0][repName];
-
-                    // Happens when turning surface on for first time.
-                    if (val === undefined) val = {};
-                }
-
-                // If it's a protein and the representation is stick, set the
-                // radius to 0.2. The goal here is to make the protein stick be
-                // thinner than any ligand stick.
-
-                if (repName === "stick") {
-                    val["radius"] = (this.molType === "protein") ? 0.1 : 0.4;
-                }
-
-                (style as any)[repName] = val;
-        }
-
-        // In case of atoms, representations are mutually exclusive. So delete
-        // other representations that might conflict with this one.
-        switch (repName) {
+            // In case of atoms, representations are mutually exclusive. So delete
+            // other representations that might conflict with this one.
             case "line":
                 if (style.stick) delete style.stick;
                 if (style.sphere) delete style.sphere;
@@ -245,13 +235,19 @@ export default class StylesForMolType extends Vue {
             case "stick":
                 if (style.line) delete style.line;
                 if (style.sphere) delete style.sphere;
+
+                // If it's a protein and the representation is stick, set the
+                // radius to 0.2. The goal here is to make the protein stick be
+                // thinner than any ligand stick.
+                style[repName]["radius"] =
+                    this.molType === "protein" ? 0.1 : 0.4;
+
                 break;
             case "sphere":
                 if (style.line) delete style.line;
                 if (style.stick) delete style.stick;
                 break;
         }
-
         Styles.currentStyles[this.molType] = [style];
 
         Styles.updateStylesInViewer(this.molType);

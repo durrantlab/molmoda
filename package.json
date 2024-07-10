@@ -18,6 +18,8 @@
     "@fortawesome/vue-fontawesome": "^3.0.0",
     "@popperjs/core": "^2.11.5",
     "@rdkit/rdkit": "^2022.3.5-1.2.1",
+    "@tensorflow/tfjs": "^4.20.0",
+    "@tensorflow/tfjs-converter": "^4.20.0",
     "@types/bootstrap": "^5.1.12",
     "@types/node": "^18.15.13",
     "3dmol": "^1.8.0",

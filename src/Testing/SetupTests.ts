@@ -1,6 +1,8 @@
 import { addVueXStoreModule } from "@/Store";
 import { getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
 import { setPluginToTest } from "./PluginToTest";
+import { getUrlParam } from "@/Core/UrlParams";
+import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export let isTest = false;
 
@@ -9,8 +11,8 @@ export let isTest = false;
  */
 export function setupTests() {
     // Get test from url
-    const urlParams = new URLSearchParams(window.location.search);
-    const name = urlParams.get("test");
+    const name = getUrlParam("test");
+
     if (name === null) {
         // You're not running a test
         return;
@@ -18,7 +20,7 @@ export function setupTests() {
 
     isTest = true;
 
-    const idx = urlParams.get("index");
+    const idx = getUrlParam("index");
 
     setPluginToTest(name, idx === null ? undefined : parseInt(idx, 10));
 
@@ -62,6 +64,7 @@ export function expandAndShowAllMolsInTree() {
         getMoleculesFromStore().flattened.forEach((mol) => {
             mol.treeExpanded = true;
             mol.visible = true;
+            mol.selected = SelectedType.False;
         });
     }, 500);
 }

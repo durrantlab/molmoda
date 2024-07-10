@@ -21,6 +21,10 @@ import {
     setLoadViewerLibPromise,
 } from "./Viewers/ViewerParent";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import {
+    SelectedType,
+    TreeNodeType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
  * ViewerPanel component
@@ -79,6 +83,57 @@ export default class ViewerPanel extends Vue {
     }
 
     /**
+     * Load the viewer library.
+     *
+     * @returns {Promise<void>}  A promise that resolves when the viewer is
+     *     loaded.
+     */
+    async loadViewer(): Promise<void> {
+        // Putting it in setTimeout so some components of UI will react
+        // immediately. Below can be time consuming in some cases.
+        if (loadViewerLibPromise === undefined) {
+            // Note: These need to be promises (not async/await) because the
+            // promise must be passed to setLoadViewerLibPromise().
+            if (api.visualization.viewerObj !== undefined) {
+                // Molecular library already loaded.
+                setLoadViewerLibPromise(
+                    Promise.resolve(api.visualization.viewerObj)
+                );
+            } else {
+                // Need to load the molecular library.
+                if (this.$store.state.molViewer === "3dmol") {
+                    api.visualization.viewerObj = new Viewer3DMol();
+                    // } else if (this.$store.state.molViewer === "ngl") {
+                    // api.visualization.viewer = new ViewerNGL();
+                } else {
+                    throw new Error("Unknown viewer");
+                }
+
+                const promise = api.visualization.viewerObj
+                    ?.loadAndSetupViewerLibrary(
+                        "mol-viewer",
+                        (classes: string) => {
+                            this.containerClass = classes;
+                        }
+                    )
+                    .then((viewer: any) => {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        window["viewer"] = viewer;
+
+                        api.visualization.viewerObj = viewer;
+                        this.$emit("onViewerLoaded");
+                        return viewer;
+                    });
+
+                setLoadViewerLibPromise(promise);
+            }
+        }
+
+        (await loadViewerLibPromise) as Promise<any>;
+    }
+
+    /**
      * Checks if the treeview has changed. This is the glue that connects the
      * tree view navigator to the viewer.
      *
@@ -90,52 +145,10 @@ export default class ViewerPanel extends Vue {
     @Watch("treeview", { immediate: false, deep: true })
     async onTreeviewChanged(allMolecules: TreeNodeList) {
         setTimeout(async () => {
-            // Putting it in setTimeout so some components of UI will react
-            // immediately. Below can be time consuming in some cases.
-            if (loadViewerLibPromise === undefined) {
-                // Note: These need to be promises (not async/await) because the
-                // promise must be passed to setLoadViewerLibPromise().
-                if (api.visualization.viewerObj !== undefined) {
-                    // Molecular library already loaded.
-                    setLoadViewerLibPromise(
-                        Promise.resolve(api.visualization.viewerObj)
-                    );
-                } else {
-                    // Need to load the molecular library.
-                    if (this.$store.state.molViewer === "3dmol") {
-                        api.visualization.viewerObj = new Viewer3DMol();
-                        // } else if (this.$store.state.molViewer === "ngl") {
-                        // api.visualization.viewer = new ViewerNGL();
-                    } else {
-                        throw new Error("Unknown viewer");
-                    }
-
-                    const promise = api.visualization.viewerObj
-                        ?.loadAndSetupViewerLibrary(
-                            "mol-viewer",
-                            (classes: string) => {
-                                this.containerClass = classes;
-                            }
-                        )
-                        .then((viewer: any) => {
-                            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                            // @ts-ignore
-                            window["viewer"] = viewer;
-
-                            api.visualization.viewerObj = viewer;
-                            this.$emit("onViewerLoaded");
-                            return viewer;
-                        });
-
-                    setLoadViewerLibPromise(promise);
-                }
-            }
-
-            (await loadViewerLibPromise) as Promise<any>;
+            await this.loadViewer();
 
             // You now have the viewer. Set the view-change callback.
-            api.visualization.viewerObj?.registerViewChangeCallback(() => {
-                const view = api.visualization.viewerObj?.getView();
+            api.visualization.viewerObj?.registerViewChangeCallback((view: number[]) => {
                 this.$store.commit("setVar", {
                     name: "viewerVantagePoint",
                     val: view,
@@ -148,8 +161,8 @@ export default class ViewerPanel extends Vue {
             //     return;
             // }
 
-            // Update and zoom
-            const updatedStyles = this._updateStyles();
+            // Update styles and zoom
+            const updatedStyles = this._updateStyleChanges();
 
             if (allMolecules.length === 0) {
                 // No molecules present. Perhaps not necessary, but let's clear
@@ -167,20 +180,20 @@ export default class ViewerPanel extends Vue {
      * @returns {Promise<any>}  A promise that resolves when the styles and
      *    zoom have been updated.
      */
-    private async _updateStyles(): Promise<any> {
-        const spinnerId = api.messages.startWaitSpinner();
-        try {
-            // const visibleTerminalNodeModelsIds =
+    // private async _updateStyles(): Promise<any> {
+    //     const spinnerId = api.messages.startWaitSpinner();
+    //     try {
+    //         // const visibleTerminalNodeModelsIds =
 
-            await this._updateStyleChanges();
-            // this._zoomPerFocus(visibleTerminalNodeModelsIds);
-            // api.visualization.viewer?.zoomOnFocused(visibleTerminalNodeModelsIds);
-            api.messages.stopWaitSpinner(spinnerId);
-        } catch (err) {
-            api.messages.stopWaitSpinner(spinnerId);
-            throw err;
-        }
-    }
+    //         await this._updateStyleChanges();
+    //         // this._zoomPerFocus(visibleTerminalNodeModelsIds);
+    //         // api.visualization.viewer?.zoomOnFocused(visibleTerminalNodeModelsIds);
+    //         api.messages.stopWaitSpinner(spinnerId);
+    //     } catch (err) {
+    //         api.messages.stopWaitSpinner(spinnerId);
+    //         throw err;
+    //     }
+    // }
 
     /**
      * Remove models no longer present in the vuex store molecules variables.
@@ -197,6 +210,64 @@ export default class ViewerPanel extends Vue {
         ) as string[];
 
         api.visualization.viewerObj?.removeObjects(idsOfTerminalNodes);
+    }
+
+    /**
+     * Change the style if the node is selected.
+     *
+     * @param {TreeNode} treeNode  The tree node to change the style of.
+     * @param {any}      style     The style to change.
+     * @returns {any}  The changed style.
+     */
+    private _changeStyleIfSelected(treeNode: TreeNode, style: any): any {
+        // Metals, ions, solvent, other are solid yellow. Others, carbon only
+        // yellow.
+        let justColorCarbons =
+            [
+                TreeNodeType.Metal,
+                TreeNodeType.Ions,
+                TreeNodeType.Solvent,
+                TreeNodeType.Other,
+                undefined,
+            ].indexOf(treeNode.type) === -1;
+
+        // If it's surface, let's to make it always solid yellow (even if
+        // protein or liand).
+        if (style["surface"]) {
+            justColorCarbons = false;
+        }
+
+        // If this treenode is selected, make sure it's highlighted.
+        if (
+            treeNode.selected === SelectedType.False ||
+            treeNode.selected === undefined
+        ) {
+            return style;
+        }
+
+        if (justColorCarbons) {
+            // Just color the carbons yellow
+            for (let key in style) {
+                if (style[key]["color"]) {
+                    delete style[key]["color"];
+                }
+
+                style[key]["colorscheme"] = "yellowCarbon";
+            }
+        } else {
+            // Color everything yellow.
+            for (let key in style) {
+                if (style[key]["colorscheme"]) {
+                    delete style[key]["colorscheme"];
+                }
+
+                style[key]["color"] = "yellow";
+            }
+        }
+
+        // stylesToUse.push({ sphere: { radius: 1.75, color: "yellow", opacity: 0.5 } });
+
+        return style;
     }
 
     /**
@@ -225,9 +296,15 @@ export default class ViewerPanel extends Vue {
 
             // Add new styles
             let spheresUsed = false;
-            for (const style of treeNode.styles) {
+            for (let style of treeNode.styles) {
+                // Deep copy style
+                style = JSON.parse(JSON.stringify(style));
+
+                style = this._changeStyleIfSelected(treeNode, style);
+
                 if (!style["surface"]) {
                     // It's a style, not a surface.
+
                     const convertedStyle =
                         api.visualization.viewerObj?.convertStyle(
                             style,
@@ -240,9 +317,11 @@ export default class ViewerPanel extends Vue {
                         convertedStyle,
                         true
                     );
+
                     if (style.sphere) {
                         spheresUsed = true;
                     }
+
                     continue;
                 }
 
@@ -260,14 +339,22 @@ export default class ViewerPanel extends Vue {
             // Regardless of specified style, anything not bound to other molecule
             // should be visible.
             if (treeNode.styles.length > 0 && !spheresUsed) {
+                let style = JSON.parse(JSON.stringify(unbondedAtomsStyle));
+
                 // If there's any style, no style is spheres, make sure unbonded
                 // atoms are visible.
                 // debugger;
+                const selectedStyle = this._changeStyleIfSelected(
+                    treeNode,
+                    style
+                );
+
                 const convertedStyle =
                     api.visualization.viewerObj?.convertStyle(
-                        unbondedAtomsStyle,
+                        selectedStyle,
                         treeNode
                     );
+
                 const convertedSel =
                     api.visualization.viewerObj?.convertSelection({
                         bonds: 0,
@@ -292,9 +379,10 @@ export default class ViewerPanel extends Vue {
      *     molecules that are visible.
      */
     private async _updateStyleChanges(): Promise<string[]> {
-        let visibleTerminalNodeModelsIds: string[] = [];
-        const terminalNodes = this.treeview.filters.onlyTerminal;
+        const spinnerId = api.messages.startWaitSpinner();
 
+        // Remove any only molecules no longer in vuex store.
+        const terminalNodes = this.treeview.filters.onlyTerminal;
         this._removeOldModels(terminalNodes);
 
         // Add all the models and put them in the cache. This also hides the
@@ -302,108 +390,79 @@ export default class ViewerPanel extends Vue {
         const viewer = await api.visualization.viewer;
         const addMolPromises = viewer.addTreeNodeList(terminalNodes) || [];
 
-        // All models now loaded. Style them appropriately.
-        return Promise.all(addMolPromises)
-            .then((treeNodes: TreeNode[]) => {
-                const surfacePromises: Promise<any>[] = [];
-                // Keep track of visible molecules so you can zoom on them
-                // later.
-                visibleTerminalNodeModelsIds = treeNodes
-                    .filter((treeNode: TreeNode) => treeNode.visible)
-                    .map((treeNode: TreeNode) => treeNode.id as string);
+        const treeNodes: TreeNode[] = await Promise.all(addMolPromises);
 
-                // Get only the dirty nodes. If the node isn't dirty, there's no
-                // need to apply a new style.
-                const dirtyNodes = treeNodes.filter(
-                    (treeNode: TreeNode) => treeNode.viewerDirty
-                );
+        const surfacePromises: Promise<any>[] = [];
+        // Keep track of visible molecules so you can zoom on them
+        // later.
+        let visibleTerminalNodeModelsIds = treeNodes
+            .filter((treeNode: TreeNode) => treeNode.visible)
+            .map((treeNode: TreeNode) => treeNode.id as string);
 
-                // You're about to update the style, so mark it as not dirty.
-                dirtyNodes.forEach((treeNode: TreeNode) => {
-                    treeNode.viewerDirty = false;
-                });
+        // Get only the dirty nodes. If the node isn't dirty, there's no
+        // need to apply a new style.
+        const dirtyNodes = treeNodes.filter(
+            (treeNode: TreeNode) => treeNode.viewerDirty
+        );
 
-                const visibleDirtyNodes = dirtyNodes.filter(
-                    (treeNode: TreeNode) => treeNode.visible
-                );
-                const invisibleDirtyNodes = dirtyNodes.filter(
-                    (treeNode: TreeNode) => !treeNode.visible
-                );
+        // You're about to update the style, so mark it as not dirty.
+        dirtyNodes.forEach((treeNode: TreeNode) => {
+            treeNode.viewerDirty = false;
+        });
 
-                // Make sure invisible ones are really invisible.
-                for (let treeNode of invisibleDirtyNodes) {
-                    // Since not supposed to be visible, we won't keep
-                    // it in the list. But make sure it's hidden here.
+        const visibleDirtyNodes = dirtyNodes.filter(
+            (treeNode: TreeNode) => treeNode.visible
+        );
+        const invisibleDirtyNodes = dirtyNodes.filter(
+            (treeNode: TreeNode) => !treeNode.visible
+        );
 
-                    // hide it.
-                    // console.log("Hiding:" + treeNode.id);
-                    viewer.hideObject(treeNode.id as string);
+        // Make sure invisible ones are really invisible.
+        for (let treeNode of invisibleDirtyNodes) {
+            // Since not supposed to be visible, we won't keep
+            // it in the list. But make sure it's hidden here.
 
-                    // Clear any surfaces associated with this molecule.
-                    viewer.clearSurfacesOfMol(treeNode.id as string);
-                }
+            // hide it.
+            // console.log("Hiding:" + treeNode.id);
+            viewer.hideObject(treeNode.id as string);
 
-                // for (let treeNode of visibleDirtyNodes) {
-                //     const isVisible = treeNode.visible;
+            // Clear any surfaces associated with this molecule.
+            viewer.clearSurfacesOfMol(treeNode.id as string);
+        }
 
-                //     if (!isVisible) {
-                //         // Since not supposed to be visible, we won't keep
-                //         // it in the list. But make sure it's hidden here.
+        for (const treeNode of visibleDirtyNodes) {
+            // There are styles to apply. Apply them.
+            if (this._clearAndSetStyle(treeNode, surfacePromises)) {
+                // Make sure actually visible. This also makes
+                // clickable, etc.
+                viewer.showObject(treeNode.id as string);
+                continue;
+            }
 
-                //         // hide it.
-                //         // console.log("Hiding:" + treeNode.id);
-                //         viewer.hideObject(treeNode.id as string);
+            // Make sure actually visible
+            viewer.showObject(treeNode.id as string);
 
-                //         // Clear any surfaces associated with this molecule.
-                //         viewer.clearSurfacesOfMol(treeNode.id as string);
-                //     } else {
-                //         // Make sure actually visible
-                //         viewer.showObject(treeNode.id as string);
-                //         // console.log("Showing:" + treeNode.id);
-                //     }
+            // Visible, but no style specified. Is it a region?
+            if (treeNode.region) {
+                viewer.updateRegionStyle(treeNode);
+                continue;
+            }
 
-                //     return isVisible;
-                // }
+            // NOTE: If you get here, an error occurred. Visible, no styles, not
+            // a region. This should never happen.
+            viewer.setMolecularStyle(
+                treeNode.id as string,
+                viewer.convertSelection({}),
+                viewer.convertStyle({ line: {} }, treeNode)
+            );
+            console.warn("error?");
+        }
 
-                for (const treeNode of visibleDirtyNodes) {
-                    // There are styles to apply. Apply them.
-                    if (this._clearAndSetStyle(treeNode, surfacePromises)) {
-                        // Make sure actually visible. This also makes
-                        // clickable, etc.
-                        viewer.showObject(treeNode.id as string);
-                        continue;
-                    }
+        await Promise.all(surfacePromises);
 
-                    // Make sure actually visible
-                    viewer.showObject(treeNode.id as string);
+        api.messages.stopWaitSpinner(spinnerId);
 
-                    // Visible, but no style specified. Is it a region?
-                    if (treeNode.region) {
-                        viewer.updateRegionStyle(
-                            treeNode.id as string,
-                            treeNode.region
-                        );
-                        continue;
-                    }
-
-                    // Visible, no styles, not a region. This should never
-                    // happen.
-                    viewer.setMolecularStyle(
-                        treeNode.id as string,
-                        viewer.convertSelection({}),
-                        viewer.convertStyle({ line: {} }, treeNode)
-                    );
-                    console.warn("error?");
-                }
-                return Promise.all(surfacePromises);
-            })
-            .then(() => {
-                return visibleTerminalNodeModelsIds;
-            })
-            .catch((err) => {
-                throw err;
-                // return visibleTerminalNodeModelsIds;
-            });
+        return visibleTerminalNodeModelsIds;
     }
 
     // /**
