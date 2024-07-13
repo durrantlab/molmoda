@@ -9,23 +9,6 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 
-// export interface IAtom {
-//     // serial: number;
-//     // atom: string;
-//     // elem: string;
-//     // altLoc: string;
-//     resn: string;
-//     chain: string;
-//     resi: number;
-//     bondOrder: number[]; // I don't think it's ever used.
-//     bonds: number[]; // I don't think it's ever used.
-//     x: number;
-//     y: number;
-//     z: number;
-//     elem: string;
-//     // b: number;
-// }
-
 /**
  * A parent class for easy parsers.
  */
@@ -172,6 +155,18 @@ export abstract class EasyParserParent {
         // sort by index
         matchingAtoms.sort(([idx1, atom1], [idx2, atom2]) => idx1 - idx2);
         return matchingAtoms.map(([idx, atom]) => atom);
+    }
+
+    /**
+     * Append atoms to the molecule.
+     *
+     * @param {IAtom[]} atoms  The atoms to append.
+     */
+    appendAtoms(atoms: IAtom | IAtom[]): void {
+        if (!Array.isArray(atoms)) {
+            atoms = [atoms];
+        }
+        this._atoms = this._atoms.concat(atoms);
     }
 
     /**

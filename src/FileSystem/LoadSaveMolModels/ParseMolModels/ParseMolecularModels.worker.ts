@@ -27,6 +27,7 @@ import {
     nucleicSel,
     proteinSel,
     solventSel,
+    standardProteinResidues,
 } from "../Types/ComponentSelections";
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
@@ -102,8 +103,6 @@ function organizeSelByChain(
         }
         return atom;
     });
-
-    // ****
 
     const treeNode = _getDefaultTreeNode(molName);
     let lastChainID = "";
@@ -467,6 +466,32 @@ function dividePDBAtomsIntoDistinctComponents(
             "Protein"
         );
 
+        // Occasionally, an amino acids is acting as a ligand. In this case,
+        // don't include it as part of the protein. A good example is 1M15.
+        console.error("This doesn't work. Check with 1M15.");
+        proteinAtomsByChain.nodes?.forEach((chain: TreeNode) => {
+            if (!chain.model) {
+                return;
+            }
+
+            const newProtModel = [] as IAtom[];
+
+            for (const atom of chain.model as IAtom[]) {
+                if (
+                    atom.hetflag &&
+                    standardProteinResidues.indexOf(atom.resn) !== -1
+                ) {
+                    // Add it back, because it's a standard protein residue, but
+                    // marked as HETATM.
+                    molWithAtomsToDivide.appendAtoms(atom);
+                } else {
+                    newProtModel.push(atom);
+                }
+            }
+
+            chain.model = newProtModel;
+        });
+
         let nucleicAtomsByChain = organizeSelByChain(
             nucleicSel,
             molWithAtomsToDivide,
@@ -502,11 +527,14 @@ function dividePDBAtomsIntoDistinctComponents(
             molWithAtomsToDivide,
             "Lipid"
         );
+
         let compoundsByChain = organizeSelByChain(
             {},
             molWithAtomsToDivide,
             "Compound"
-        ); // Everything else is ligands
+        );
+
+        // Everything else is ligands
 
         // Further divide by residue (since each ligand is on its own residue,
         // not bound to any other).
@@ -585,7 +613,7 @@ function dividePDBAtomsIntoDistinctComponents(
 /**
  * Given molecular data from the main thread, convert it into a TreeNode object
  * divided by component (protien, compound, solvent, etc.). For mol2 files.
- * 
+ *
  * @param  {IMolData} data The molecular data.
  * @returns {Promise<TreeNode>} The divided molecule.
  */
@@ -779,22 +807,20 @@ waitForDataFromMainThread()
             }
         );
 
-        organizedAtomsFramesFixed.terminals.forEach(
-            (node: TreeNode) => {
-                // If node.model is a list, it's a list of atoms that need to be
-                // converted to pdb.
-                if (Array.isArray(node.model)) {
-                    // Convert to pdb
-                    node.model = convertIAtomsToIFileInfoPDB(node.model);
-                } else {
-                    // It's mol2, already in text format.
-                    node.model = {
-                        name: "tmp.mol2",
-                        contents: (node.model as IFileInfo).contents,
-                    } as IFileInfo;
-                }
+        organizedAtomsFramesFixed.terminals.forEach((node: TreeNode) => {
+            // If node.model is a list, it's a list of atoms that need to be
+            // converted to pdb.
+            if (Array.isArray(node.model)) {
+                // Convert to pdb
+                node.model = convertIAtomsToIFileInfoPDB(node.model);
+            } else {
+                // It's mol2, already in text format.
+                node.model = {
+                    name: "tmp.mol2",
+                    contents: (node.model as IFileInfo).contents,
+                } as IFileInfo;
             }
-        );
+        });
 
         // const JSZip = await dynamicImports.jsZip.module;
         // const zip = new JSZip();
@@ -812,7 +838,6 @@ waitForDataFromMainThread()
         //             ) {
         //                 // Use or store your compressedString somewhere
         //                 console.log(compressedString);
-        //                 debugger
         //                 return;
         //             });
         //         }

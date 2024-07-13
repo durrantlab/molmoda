@@ -169,7 +169,6 @@ export class Viewer3DMol extends ViewerParent {
     destroyRegionLabel(id: string) {
         // Delete old label
         if (this._regionLabels[id]) {
-            // debugger;
             console.log("DESTROY: ", id);
             this.removeLabel(this._regionLabels[id]);
             delete this._regionLabels[id];

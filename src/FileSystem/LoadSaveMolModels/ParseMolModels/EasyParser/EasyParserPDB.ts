@@ -48,6 +48,7 @@ export class EasyParserPDB extends EasyParserParent {
         const y = parseFloat(atomStr.slice(38, 46).trim());
         const z = parseFloat(atomStr.slice(46, 54).trim());
         const b = parseFloat(atomStr.slice(60, 66).trim());
+        const hetflag = atomStr.slice(0, 6).trim() === "HETATM";
 
         let elem = atomStr.slice(76, 78).trim();
         if (elem === "") {
@@ -79,6 +80,7 @@ export class EasyParserPDB extends EasyParserParent {
             altLoc,
             b,
             atom: atomName,
+            hetflag,
         };
     }
 }

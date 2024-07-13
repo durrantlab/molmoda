@@ -766,7 +766,6 @@ export default class WebinaPlugin extends PluginParentClass {
             // docked (not all at once at the end).
             onJobDone: onJobDoneFunc,
             onQueueDone: (outputs: any[]) => {
-                // debugger;
                 // Remove errors
                 outputs = outputs.filter(
                     (output) => output.output !== "{{ERROR}}"

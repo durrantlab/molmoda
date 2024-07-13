@@ -17,6 +17,7 @@ export interface IAtom {
     bonds?: number[];
     index?: number;
     bondOrder: number[];
+    hetflag?: boolean;
 }
 
 export enum TreeNodeType {

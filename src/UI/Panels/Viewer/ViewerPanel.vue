@@ -343,7 +343,6 @@ export default class ViewerPanel extends Vue {
 
                 // If there's any style, no style is spheres, make sure unbonded
                 // atoms are visible.
-                // debugger;
                 const selectedStyle = this._changeStyleIfSelected(
                     treeNode,
                     style

@@ -27,8 +27,6 @@ export function loadRemoteToFileInfo(
             return;
         }
 
-        // debugger;
-
         try {
             fetcher(url)
                 .then((txt) => {

@@ -18,7 +18,6 @@ export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
     // const savedLayout = store.state.goldenLayout;
     // if (savedLayout !== null) {
     //     goldenLayout.loadLayout(savedLayout);
-    //     debugger
     // }
 
     goldenLayout.on( 'stateChanged', function(){

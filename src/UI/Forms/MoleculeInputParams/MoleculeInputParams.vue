@@ -231,7 +231,6 @@ export default class MoleculeInputParams extends Vue {
         }
 
         // msg += numProtsAlreadyWithTag + " " + numCompsAlreadyWithTag;
-        // debugger;
 
         return msg;
     }

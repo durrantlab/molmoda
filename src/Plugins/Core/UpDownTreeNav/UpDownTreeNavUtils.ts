@@ -103,8 +103,6 @@ export function toggleUpDownTreeNav(newTreeNode: TreeNode, oldTreeNode: TreeNode
 //     // Get the first one that is selected.
 //     const selected = molecules.filters.keepSelected();
 
-//     debugger
-
 //     if (key === "ArrowUp") {
 //         // Handle the up arrow key press
 //         console.log("Up arrow key pressed");

@@ -74,7 +74,6 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
     const molecules = getMoleculesFromStore();
 
     // iterate through terminal nodes
-    // debugger
     const terminalNodes = molecules.filters.onlyTerminal;
     for (let idx = 0; idx < terminalNodes.length; idx++) {
         const terminalNode = terminalNodes.get(idx);
