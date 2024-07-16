@@ -468,7 +468,6 @@ function dividePDBAtomsIntoDistinctComponents(
 
         // Occasionally, an amino acids is acting as a ligand. In this case,
         // don't include it as part of the protein. A good example is 1M15.
-        console.error("This doesn't work. Check with 1M15.");
         proteinAtomsByChain.nodes?.forEach((chain: TreeNode) => {
             if (!chain.model) {
                 return;
@@ -489,8 +488,27 @@ function dividePDBAtomsIntoDistinctComponents(
                 }
             }
 
-            chain.model = newProtModel;
+            if (newProtModel.length > 0) {
+                // There are still some amino acids that are not HETATM. These
+                // are protein, so keep them.
+                chain.model = newProtModel;
+            } else {
+                // There are no amino acids that are not HETATM. Mark them for
+                // removal.
+                chain.model = undefined;
+            }
         });
+        // Remove empty chains
+        if (proteinAtomsByChain.nodes) {
+            proteinAtomsByChain.nodes = proteinAtomsByChain.nodes.filter(
+                (n: TreeNode) => {
+                    if (n.model) {
+                        return (n.model as IAtom[]).length > 0;
+                    }
+                    return false;
+                }
+            );
+        }
 
         let nucleicAtomsByChain = organizeSelByChain(
             nucleicSel,

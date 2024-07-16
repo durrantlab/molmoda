@@ -148,6 +148,7 @@ export default class ViewerPanel extends Vue {
             await this.loadViewer();
 
             // You now have the viewer. Set the view-change callback.
+            // TODO: Is this registered multiple times?
             api.visualization.viewerObj?.registerViewChangeCallback((view: number[]) => {
                 this.$store.commit("setVar", {
                     name: "viewerVantagePoint",
