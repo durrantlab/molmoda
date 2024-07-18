@@ -56,6 +56,7 @@ import {
     ITreeNodeData,
     TableHeaderSort,
     TreeNodeDataType,
+    TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
@@ -518,6 +519,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     terminalTreeNode.data[scoreLabel].treeNodeId =
                         terminalTreeNode.id;
                     terminalTreeNode.title = title;
+                    terminalTreeNode.type = TreeNodeType.Compound;
                 } else {
                     // This should never happen, but here for typescript.
                     terminalTreeNode = treeNode;

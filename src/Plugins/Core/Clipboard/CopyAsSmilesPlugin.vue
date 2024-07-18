@@ -172,7 +172,7 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule()
-                .selectMoleculeInTree("Protein"),
+                .selectMoleculeInTree("Compounds"),
             afterPluginCloses: new TestCmdList(),
         };
     }
