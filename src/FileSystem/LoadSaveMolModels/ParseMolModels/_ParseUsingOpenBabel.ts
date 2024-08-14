@@ -7,11 +7,13 @@ import { IGen3DOptions, convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel
 /**
  * Uses OpenBabel to parse the a molecular-model file.
  *
- * @param  {FileInfo}      fileInfo           The file to parse.
- * @param  {IFormatInfo}   formatInfo         The format of the file.
- * @param  {boolean}       [desalt=false]     Whether to desalt the molecules.
- * @param  {IGen3DOptions} [gen3D=undefined]  Whether and how to generate 3D
- *                                            coordinates.
+ * @param  {FileInfo}      fileInfo              The file to parse.
+ * @param  {IFormatInfo}   formatInfo            The format of the file.
+ * @param  {boolean}       [desalt=false]        Whether to desalt the
+ *                                               molecules.
+ * @param  {IGen3DOptions} [gen3D=undefined]     Whether and how to generate 3D
+ *                                               coordinates.
+ * @param  {boolean}       [surpressMsgs=false]  Whether to surpress messages.
  * @returns {Promise<TreeNodeList>}  A promise that resolves when the file is
  *    parsed. The promise resolves to an array of TreeNode objects, one for each
  *    frame. Can also resolve void.
@@ -20,12 +22,13 @@ export function parseUsingOpenBabel(
     fileInfo: FileInfo,
     formatInfo: IFormatInfo,
     desalt = false,
-    gen3D?: IGen3DOptions
+    gen3D?: IGen3DOptions,
+    surpressMsgs?: boolean
 ): Promise<TreeNodeList> {
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
 
     // Convert it to MOL2 format and load that using 3dmoljs.
-    return convertFileInfosOpenBabel([fileInfo], targetFormat, gen3D, undefined, desalt)
+    return convertFileInfosOpenBabel([fileInfo], targetFormat, gen3D, undefined, desalt, surpressMsgs)
         .then((contents: string[]) => {
             const hasMultipleFrames = contents.length > 1;
             const fileInfos = contents.map((c, i) => {

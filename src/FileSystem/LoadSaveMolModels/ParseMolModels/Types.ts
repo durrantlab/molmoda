@@ -8,6 +8,7 @@ export interface ILoadMolParams {
     desalt?: boolean;
     gen3D?: IGen3DOptions;
     defaultTitle?: string;
+    surpressMsgs?: boolean;
 }
 
 /**

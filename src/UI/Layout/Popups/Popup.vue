@@ -375,6 +375,15 @@ export default class Popup extends Vue {
     makeDraggable() {
         const dialog = this.$refs.dialog as HTMLElement;
         const header = this.$refs.header as HTMLElement;
+
+        if (!header) {
+            return;
+        }
+
+        if (!dialog) {
+            return;
+        }
+
         let isDragging = false;
         let startX = 0;
         let startY = 0;

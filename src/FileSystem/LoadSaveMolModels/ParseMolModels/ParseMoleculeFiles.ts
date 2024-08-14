@@ -97,7 +97,8 @@ export function _parseMoleculeFile(
                 params.fileInfo,
                 formatInfo,
                 params.desalt,
-                params.gen3D
+                params.gen3D,
+                params.surpressMsgs
             );
             break;
         }

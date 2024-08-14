@@ -244,7 +244,8 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 console.log("ERR", err);
                 console.log(args);
                 console.log(inputFiles[0].contents);
-                debugger;
+                stdOutOrErr += err;
+                stdErr += err;
             }
 
             const filesAfterRun = mod.files.readDir(tmpDir);

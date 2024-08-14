@@ -69,6 +69,7 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { triggerErrorPopup } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 import { prepForErrorCustomMsg } from "./WebinaErrors";
 import { Tag } from "@/Plugins/Tags/Tags";
+import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
@@ -503,7 +504,7 @@ export default class WebinaPlugin extends PluginParentClass {
             contents: pdbqtOut,
         });
 
-        return TreeNode.loadFromFileInfo({ fileInfo, tag: this.pluginId })
+        return TreeNode.loadFromFileInfo({ fileInfo, tag: this.pluginId, surpressMsgs: false } as ILoadMolParams)
             .then((treeNode: TreeNode | void) => {
                 if (!treeNode) {
                     throw new Error("Could not load file into tree node.");
@@ -554,7 +555,7 @@ export default class WebinaPlugin extends PluginParentClass {
             !filePairs[0].cmpd
         ) {
             api.messages.popupError(
-                "Could not perform docking! You must select at least one compound and one protein."
+                "Could not perform docking! Did you select at least one compound and one protein?"
             );
             return;
         }
