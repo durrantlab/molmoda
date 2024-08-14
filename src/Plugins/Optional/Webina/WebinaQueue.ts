@@ -38,6 +38,7 @@ export class WebinaQueue extends QueueParent {
             this._onProgress(this._jobCounter / this._numTotalJobs);
         }
 
+
         return WEBINA_MODULE({
             noInitialRun: true,
 
@@ -52,7 +53,7 @@ export class WebinaQueue extends QueueParent {
              * A function that runs when a Webina output file is complete. It
              * reads the output file and updates the job info.
              */
-            processCompleteOutFiles: function () {
+            processCompleteOutFiles: function() {
                 // Get all the *.out files
                 const outFiles = this.FS.readdir("/").filter(
                     (filename: string) => filename.endsWith(".out")
@@ -121,7 +122,7 @@ export class WebinaQueue extends QueueParent {
              * @param {Function} onJobDone    The callback function to call when
              *                                the job is done.
              */
-            setupRun: function (
+            setupRun: function(
                 jobInfos: IJobInfo[],
                 onQueueDone: () => void,
                 onJobDone: (webinaOut: any, jobIndex: number) => void

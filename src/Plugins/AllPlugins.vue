@@ -4,7 +4,11 @@
 system uses these to autopopulate with plugins. -->
 <template>
   <div>
-    <AboutPlugin @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
+    <AboutPlugin
+      @onPluginSetup="onPluginSetup"
+      :softwareCreditsToShow="softwareCredits"
+      :contributorCreditsToShow="contributorCredits"
+    />
     <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
 
     <!-- TEMPLATE1 START -->
@@ -60,6 +64,7 @@ system uses these to autopopulate with plugins. -->
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
+    <SminaPlugin @onPluginSetup="onPluginSetup"></SminaPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
   </div>
@@ -69,7 +74,11 @@ system uses these to autopopulate with plugins. -->
 import { Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { Options } from "vue-class-component";
-import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
+import {
+  IContributorCredit,
+  IPluginSetupInfo,
+  ISoftwareCredit,
+} from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 
 import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
@@ -128,6 +137,7 @@ import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
+import SminaPlugin from "./Optional/Smina/SminaPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
 
@@ -192,6 +202,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     FPocketWebPlugin,
     ProtonateCompoundsPlugin,
     ReducePlugin,
+    SminaPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
 
@@ -204,7 +215,7 @@ export default class AllPlugins extends Vue {
 
   /**
    * Runs when the plugin is setup.
-   * 
+   *
    * @param {IPluginSetupInfo} pluginSetupInfo  The plugin-setup parameters.
    */
   onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
@@ -214,5 +225,4 @@ export default class AllPlugins extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>

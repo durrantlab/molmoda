@@ -87,7 +87,8 @@ export const dynamicImports = {
             license: Licenses.MIT,
             citations: [
                 {
-                    title: "Kekule.js: An Open Source JavaScript Chemoinformatics Toolkit",
+                    title:
+                        "Kekule.js: An Open Source JavaScript Chemoinformatics Toolkit",
                     authors: ["Jiang, Chen", "Jin, Xi"],
                     journal: "J. Chem. Inf. Model.",
                     year: 2016,
@@ -244,7 +245,8 @@ export const dynamicImports = {
             license: Licenses.CUSTOM,
             citations: [
                 {
-                    title: "Asparagine and glutamine: using hydrogen atom contacts in the choice of side-chain amide orientation",
+                    title:
+                        "Asparagine and glutamine: using hydrogen atom contacts in the choice of side-chain amide orientation",
                     authors: ["Word, J. Michael", "Lovell, Simon C."],
                     journal: "J. Mol. Biol.",
                     year: 1999,
@@ -273,7 +275,8 @@ export const dynamicImports = {
             license: Licenses.APACHE2,
             citations: [
                 {
-                    title: "Webina: an open-source library and web app that runs AutoDock Vina entirely in the web browser",
+                    title:
+                        "Webina: an open-source library and web app that runs AutoDock Vina entirely in the web browser",
                     authors: ["Kochnev, Yuri", "Hellemann, Erich"],
                     journal: "Bioinformatics",
                     year: 2020,
@@ -296,6 +299,43 @@ export const dynamicImports = {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 "../../public/js/webina/vina.js"
+            ).then((mod) => {
+                return mod.default;
+            });
+        },
+    } as IDynamicImport,
+
+    smina: {
+        credit: {
+            name: "Smina",
+            url: "https://sourceforge.net/projects/smina/",
+            license: Licenses.GPL2,
+            citations: [
+                {
+                    title:
+                        "A fork of AutoDock Vina that is customized to better support scoring function development and high-performance energy minimization. smina is maintained by David Koes at the University of Pittsburgh and is not directly affiliated with the AutoDock project.",
+                    authors: ["Koes, David", "Baumgartner, Matthew"],
+                    journal: "Chemical Information and Modeling",
+                    year: 2013,
+                    volume: 53,
+                    issue: 8,
+                    pages: "1893-1904",
+                },
+            ],
+        },
+
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "smina" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "../../public/js/smina/smina.js"
             ).then((mod) => {
                 return mod.default;
             });
@@ -420,7 +460,8 @@ export const dynamicImports = {
             license: Licenses.MIT,
             citations: [
                 {
-                    title: "SmilesDrawer: Parsing and Drawing SMILES-Encoded Molecular Structures Using Client-Side JavaScript",
+                    title:
+                        "SmilesDrawer: Parsing and Drawing SMILES-Encoded Molecular Structures Using Client-Side JavaScript",
                     authors: ["Probst, Daniel", "Reymond, Jean-Louis"],
                     journal: "J. Chem. Inf. Model.",
                     year: 2018,
