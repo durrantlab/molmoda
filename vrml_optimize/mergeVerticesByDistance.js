@@ -1,57 +1,77 @@
-const { distance, sameColor, truncateValues } = require('./math');
+const { distanceWithinCutoffSquared, sameColor, truncateValues } = require('./math');
 
-// Function to merge vertices and their colors within the given distance cutoff if colors match
 function mergeVertices(vertices, colors, cutoff) {
-    let mergedVertices = vertices.map(truncateValues);
-    let mergedColors = colors.map(truncateValues);
-    let mapping = new Map(vertices.map((_, i) => [i, i]));
-    let mergeOccurred;
+    const mergedVertices = vertices.map(truncateValues);
+    const mergedColors = colors.map(truncateValues);
+    const mapping = new Map();
+    const cutoffSquared = cutoff ** 2;
 
-    do {
-        mergeOccurred = false;
-        let newMergedVertices = [];
-        let newMergedColors = [];
-        let newMapping = new Map();
+    // Create a spatial hash grid
+    const gridSize = cutoff;
+    const grid = new Map();
 
-        for (let i = 0; i < mergedVertices.length; i++) {
-            let found = false;
+    function getGridKey(vertex) {
+        const x = Math.floor(vertex[0] / gridSize);
+        const y = Math.floor(vertex[1] / gridSize);
+        const z = Math.floor(vertex[2] / gridSize);
+        return `${x},${y},${z}`;
+    }
 
-            for (let j = 0; j < newMergedVertices.length; j++) {
-                if (distance(mergedVertices[i], newMergedVertices[j]) < cutoff && 
-                    sameColor(mergedColors[i], newMergedColors[j])) {
-                    // Update mapping for all vertices that mapped to i
-                    for (let [origIndex, mergedIndex] of mapping.entries()) {
-                        if (mergedIndex === i) {
-                            newMapping.set(origIndex, j);
-                        }
-                    }
-                    found = true;
-                    mergeOccurred = true;
+    function addToGrid(index, vertex) {
+        const key = getGridKey(vertex);
+        if (!grid.has(key)) {
+            grid.set(key, []);
+        }
+        grid.get(key).push(index);
+    }
+
+    // Process vertices
+    for (let i = 0; i < mergedVertices.length; i++) {
+        const vertex = mergedVertices[i];
+        const color = mergedColors[i];
+        const key = getGridKey(vertex);
+
+        let merged = false;
+        const neighborCells = [
+            key,
+            `${key.split(',')[0]},${key.split(',')[1]},${parseInt(key.split(',')[2]) + 1}`,
+            `${key.split(',')[0]},${parseInt(key.split(',')[1]) + 1},${key.split(',')[2]}`,
+            `${parseInt(key.split(',')[0]) + 1},${key.split(',')[1]},${key.split(',')[2]}`,
+        ];
+
+        for (const cellKey of neighborCells) {
+            const cellVertices = grid.get(cellKey) || [];
+            for (const j of cellVertices) {
+                if (distanceWithinCutoffSquared(vertex, mergedVertices[j], cutoffSquared) &&
+                    sameColor(color, mergedColors[j])) {
+                    mapping.set(i, j);
+                    merged = true;
                     break;
                 }
             }
-
-            if (!found) {
-                for (let [origIndex, mergedIndex] of mapping.entries()) {
-                    if (mergedIndex === i) {
-                        newMapping.set(origIndex, newMergedVertices.length);
-                    }
-                }
-                newMergedVertices.push(mergedVertices[i]);
-                newMergedColors.push(mergedColors[i]);
-            }
+            if (merged) break;
         }
 
-        mergedVertices = newMergedVertices;
-        mergedColors = newMergedColors;
-        mapping = newMapping;
+        if (!merged) {
+            mapping.set(i, i);
+            addToGrid(i, vertex);
+        }
+    }
 
-    } while (mergeOccurred);
+    // Create final merged vertices and colors
+    const uniqueIndices = new Set(mapping.values());
+    const finalVertices = Array.from(uniqueIndices).map(i => mergedVertices[i]);
+    const finalColors = Array.from(uniqueIndices).map(i => mergedColors[i]);
 
-    return { mergedVertices, mergedColors, mapping };
+    // Update mapping to use new indices
+    const newIndexMap = new Map(Array.from(uniqueIndices).map((oldIndex, newIndex) => [oldIndex, newIndex]));
+    for (const [key, value] of mapping) {
+        mapping.set(key, newIndexMap.get(value));
+    }
+
+    return { mergedVertices: finalVertices, mergedColors: finalColors, mapping };
 }
 
-// Function to update the face indices based on the merged vertices
 function updateIndices(indices, mapping) {
     return indices.map(index => (index === -1 ? -1 : mapping.get(index)));
 }

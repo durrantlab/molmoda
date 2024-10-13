@@ -7,7 +7,7 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
   
     // Find bounding box
     const bbox = findBoundingBox(vertices);
-    console.log('Bounding box:', bbox);
+    // console.log('Bounding box:', bbox);
     if (!isValidBoundingBox(bbox)) {
       console.error('Invalid bounding box. Cannot proceed with simplification.');
       return { vertices, indices, colors };
@@ -18,15 +18,15 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
     // Calculate initial grid size
     let initialGridSize = Math.ceil(Math.cbrt(vertices.length / targetVertexCount) * 10); // Multiply by 10 for finer grid
     let gridSize = initialGridSize;
-    console.log('Initial grid size:', gridSize);
+    // console.log('Initial grid size:', gridSize);
     let newVertices, newIndices, newColors;
     let iteration = 0;
     do {
       iteration++;
-      console.log(`\nIteration ${iteration}, Grid size: ${gridSize}`);
+    //   console.log(`\nIteration ${iteration}, Grid size: ${gridSize}`);
       // Create grid and assign vertices to cells
       const grid = createGrid(vertices, colors, bbox, gridSize);
-      console.log('Number of non-empty cells:', Object.keys(grid).length);
+    //   console.log('Number of non-empty cells:', Object.keys(grid).length);
       // Compute representative vertices for each cell
       const result = computeRepresentativeVertices(grid);
       newVertices = result.newVertices;
@@ -35,7 +35,7 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
       const vertexMapping = createVertexMapping(grid);
       // Update face indices
       newIndices = updateIndices(indices, vertexMapping);
-      console.log(`Current vertices: ${newVertices.length}, Target: ${targetVertexCount}`);
+    //   console.log(`Current vertices: ${newVertices.length}, Target: ${targetVertexCount}`);
       // Adjust grid size if necessary
       if (newVertices.length > targetVertexCount) {
         // Too many vertices, need to cluster more by decreasing gridSize
@@ -47,8 +47,8 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
       } else {
         break;
       }
-    } while (iteration < 20); // Set a maximum number of iterations to prevent infinite loops
-    console.log(`Simplification complete. New vertex count: ${newVertices.length}`);
+    } while (iteration < 200); // Set a maximum number of iterations to prevent infinite loops
+    // console.log(`Simplification complete. New vertex count: ${newVertices.length}`);
     return { vertices: newVertices, indices: newIndices, colors: newColors };
   }
   
@@ -91,7 +91,7 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
       (bbox.max[1] - bbox.min[1]) / gridSize,
       (bbox.max[2] - bbox.min[2]) / gridSize
     ];
-    console.log('Cell size:', cellSize);
+    // console.log('Cell size:', cellSize);
     if (!cellSize.every(isFinite)) {
       console.error('Invalid cell size:', cellSize);
       return grid;
