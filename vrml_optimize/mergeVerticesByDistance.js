@@ -1,30 +1,52 @@
-// mergeVerticesByDistance.js
 const { distance, sameColor, truncateValues } = require('./math');
 
 // Function to merge vertices and their colors within the given distance cutoff if colors match
 function mergeVertices(vertices, colors, cutoff) {
-    let mergedVertices = [];
-    let mergedColors = [];
-    let mapping = new Map();
+    let mergedVertices = vertices.map(truncateValues);
+    let mergedColors = colors.map(truncateValues);
+    let mapping = new Map(vertices.map((_, i) => [i, i]));
+    let mergeOccurred;
 
-    for (let i = 0; i < vertices.length; i++) {
-        let found = false;
+    do {
+        mergeOccurred = false;
+        let newMergedVertices = [];
+        let newMergedColors = [];
+        let newMapping = new Map();
 
-        for (let j = 0; j < mergedVertices.length; j++) {
-            // Only merge if the vertices are within the cutoff and have the same color
-            if (distance(vertices[i], mergedVertices[j]) < cutoff && sameColor(colors[i], mergedColors[j])) {
-                mapping.set(i, j); // Map the original index to the merged vertex index
-                found = true;
-                break;
+        for (let i = 0; i < mergedVertices.length; i++) {
+            let found = false;
+
+            for (let j = 0; j < newMergedVertices.length; j++) {
+                if (distance(mergedVertices[i], newMergedVertices[j]) < cutoff && 
+                    sameColor(mergedColors[i], newMergedColors[j])) {
+                    // Update mapping for all vertices that mapped to i
+                    for (let [origIndex, mergedIndex] of mapping.entries()) {
+                        if (mergedIndex === i) {
+                            newMapping.set(origIndex, j);
+                        }
+                    }
+                    found = true;
+                    mergeOccurred = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                for (let [origIndex, mergedIndex] of mapping.entries()) {
+                    if (mergedIndex === i) {
+                        newMapping.set(origIndex, newMergedVertices.length);
+                    }
+                }
+                newMergedVertices.push(mergedVertices[i]);
+                newMergedColors.push(mergedColors[i]);
             }
         }
 
-        if (!found) {
-            mapping.set(i, mergedVertices.length); // No merge, add as new vertex
-            mergedVertices.push(truncateValues(vertices[i])); // Truncate to 3 decimal places
-            mergedColors.push(truncateValues(colors[i])); // Truncate colors to 3 decimal places
-        }
-    }
+        mergedVertices = newMergedVertices;
+        mergedColors = newMergedColors;
+        mapping = newMapping;
+
+    } while (mergeOccurred);
 
     return { mergedVertices, mergedColors, mapping };
 }

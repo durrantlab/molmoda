@@ -12,6 +12,8 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
       console.error('Invalid bounding box. Cannot proceed with simplification.');
       return { vertices, indices, colors };
     }
+
+    const GRID_FACTOR_CHANGE = 1.05
   
     // Calculate initial grid size
     let initialGridSize = Math.ceil(Math.cbrt(vertices.length / targetVertexCount) * 10); // Multiply by 10 for finer grid
@@ -37,11 +39,11 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
       // Adjust grid size if necessary
       if (newVertices.length > targetVertexCount) {
         // Too many vertices, need to cluster more by decreasing gridSize
-        gridSize = Math.floor(gridSize / 1.5);
+        gridSize = Math.floor(gridSize / GRID_FACTOR_CHANGE);
         if (gridSize < 1) gridSize = 1;
       } else if (newVertices.length < targetVertexCount * 0.9) {
         // Too few vertices, need to cluster less by increasing gridSize
-        gridSize = Math.ceil(gridSize * 1.5);
+        gridSize = Math.ceil(gridSize * GRID_FACTOR_CHANGE);
       } else {
         break;
       }
