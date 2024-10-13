@@ -22,6 +22,7 @@ import {
 } from "./Viewers/ViewerParent";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
+    IStyle,
     SelectedType,
     TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -149,12 +150,14 @@ export default class ViewerPanel extends Vue {
 
             // You now have the viewer. Set the view-change callback.
             // TODO: Is this registered multiple times?
-            api.visualization.viewerObj?.registerViewChangeCallback((view: number[]) => {
-                this.$store.commit("setVar", {
-                    name: "viewerVantagePoint",
-                    val: view,
-                });
-            });
+            api.visualization.viewerObj?.registerViewChangeCallback(
+                (view: number[]) => {
+                    this.$store.commit("setVar", {
+                        name: "viewerVantagePoint",
+                        val: view,
+                    });
+                }
+            );
 
             // if (allMolecules.length === 0) {
             //     // No molecules present
@@ -282,94 +285,173 @@ export default class ViewerPanel extends Vue {
         treeNode: TreeNode,
         surfacePromises: Promise<any>[]
     ): boolean {
-        if (treeNode.styles) {
-            // Styles to apply, so make sure it's visible.
+        if (treeNode.styles === undefined) {
+            return false;
+        }
 
-            // Clear current styles
-            api.visualization.viewerObj?.clearMoleculeStyles(
-                treeNode.id as string
+        // Styles to apply, so make sure it's visible.
+
+        let surfaceStyles: IStyle[] = [];  // Should only be one, but keep list for consistency.
+        let nonSurfaceStyles: IStyle[] = [];
+
+        // Separate surface style from other styles
+        for (let style of treeNode.styles) {
+            if (style.surface) {
+                surfaceStyles.push(style);
+            } else {
+                nonSurfaceStyles.push(style);
+            }
+        }
+
+        this._setNonSurfaceStyle(nonSurfaceStyles, treeNode);
+        this._setSurfaceStyle(treeNode, surfaceStyles, surfacePromises);
+
+        return true;
+    }
+
+    private _setNonSurfaceStyle(
+        nonSurfaceStyles: IStyle[],
+        treeNode: TreeNode
+    ) {
+        if (nonSurfaceStyles.length === 0) {
+            return;
+        }
+
+        // Always clear any surfaces associated with this molecule (because no
+        // longer valid).
+        api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
+
+        // Remove surfaces from the cache, too.
+        delete this.previousSurfaceStylesCache[treeNode.id as string];
+
+        // Clear current styles, because about to reset them.
+        api.visualization.viewerObj?.clearMoleculeStyles(treeNode.id as string);
+
+        // Add new nonsurface styles
+        let spheresUsed = false;
+        for (let style of nonSurfaceStyles) {
+            // Deep copy style
+            style = JSON.parse(JSON.stringify(style));
+
+            style = this._changeStyleIfSelected(treeNode, style);
+
+            const convertedStyle = api.visualization.viewerObj?.convertStyle(
+                style,
+                treeNode
             );
 
-            // Clear any surfaces associated with this molecule.
-            api.visualization.viewerObj?.clearSurfacesOfMol(
-                treeNode.id as string
+            api.visualization.viewerObj?.setMolecularStyle(
+                treeNode.id as string,
+                api.visualization.viewerObj?.convertSelection({}),
+                convertedStyle,
+                true
             );
 
-            // Add new styles
-            let spheresUsed = false;
-            for (let style of treeNode.styles) {
-                // Deep copy style
-                style = JSON.parse(JSON.stringify(style));
+            if (style.sphere) {
+                spheresUsed = true;
+            }
+        }
 
-                style = this._changeStyleIfSelected(treeNode, style);
+        // Regardless of specified style, anything not bound to other molecule
+        // should be visible.
+        if (treeNode.styles && treeNode.styles.length > 0 && !spheresUsed) {
+            let style = JSON.parse(JSON.stringify(unbondedAtomsStyle));
 
-                if (!style["surface"]) {
-                    // It's a style, not a surface.
+            // If there's any style, no style is spheres, make sure unbonded
+            // atoms are visible.
+            const selectedStyle = this._changeStyleIfSelected(treeNode, style);
 
-                    const convertedStyle =
-                        api.visualization.viewerObj?.convertStyle(
-                            style,
-                            treeNode
-                        );
+            const convertedStyle = api.visualization.viewerObj?.convertStyle(
+                selectedStyle,
+                treeNode
+            );
 
-                    api.visualization.viewerObj?.setMolecularStyle(
-                        treeNode.id as string,
-                        api.visualization.viewerObj?.convertSelection({}),
-                        convertedStyle,
-                        true
-                    );
+            const convertedSel = api.visualization.viewerObj?.convertSelection({
+                bonds: 0,
+            });
 
-                    if (style.sphere) {
-                        spheresUsed = true;
-                    }
+            api.visualization.viewerObj?.setMolecularStyle(
+                treeNode.id as string,
+                convertedSel,
+                convertedStyle,
+                true
+            );
+        }
+    }
 
-                    continue;
-                }
+    private previousSurfaceStylesCache: { [key: string]: IStyle } = {};
 
-                // It's a surface. Mark it for adding later.
-                const convertedStyle =
-                    api.visualization.viewerObj?.convertStyle(style, treeNode);
+    private async _setSurfaceStyle(
+        treeNode: TreeNode,
+        surfaceStyles: IStyle[],
+        surfacePromises: Promise<any>[]
+    ): Promise<void> {
+        if (surfaceStyles.length === 0) {
+            return;
+        }
+
+        // Clear current (nonsurface) styles. Because if there's a surface, why
+        // show anything beneath it?
+        api.visualization.viewerObj?.clearMoleculeStyles(treeNode.id as string);
+
+        const previousSurfaceStyle = this.previousSurfaceStylesCache[
+            treeNode.id as string
+        ];
+
+        // Clear any surfaces associated with this molecule.
+        // api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
+
+        // Add new surface styles
+        for (let style of surfaceStyles) {
+            // Deep copy style
+            style = JSON.parse(JSON.stringify(style));
+
+            style = this._changeStyleIfSelected(treeNode, style);
+
+            // console.log("Previous surface style:", previousSurfaceStyle);
+            // console.log("Current surface style:", style);
+
+            // It's a surface. Mark it for adding later.
+            const convertedStyle = api.visualization.viewerObj?.convertStyle(
+                style,
+                treeNode
+            );
+
+            if (previousSurfaceStyle === undefined) {
+                // No previous surface, so need to create a new one.
                 surfacePromises.push(
                     api.visualization.viewerObj?.addSurface(
                         treeNode.id as string,
                         convertedStyle
                     ) as Promise<any>
                 );
-            }
+            } else {
+                // Existing surface. You can't just update its color, because
+                // 3dmoljs doesn't associated original atom info with the
+                // surface vertices. Need to recreate the entire surface.
 
-            // Regardless of specified style, anything not bound to other molecule
-            // should be visible.
-            if (treeNode.styles.length > 0 && !spheresUsed) {
-                let style = JSON.parse(JSON.stringify(unbondedAtomsStyle));
+                // Delete existing surface.
+                api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
 
-                // If there's any style, no style is spheres, make sure unbonded
-                // atoms are visible.
-                const selectedStyle = this._changeStyleIfSelected(
-                    treeNode,
-                    style
+                // Add new surface.
+                surfacePromises.push(
+                    api.visualization.viewerObj?.addSurface(
+                        treeNode.id as string,
+                        convertedStyle
+                    ) as Promise<any>
                 );
 
-                const convertedStyle =
-                    api.visualization.viewerObj?.convertStyle(
-                        selectedStyle,
-                        treeNode
-                    );
-
-                const convertedSel =
-                    api.visualization.viewerObj?.convertSelection({
-                        bonds: 0,
-                    });
-
-                api.visualization.viewerObj?.setMolecularStyle(
-                    treeNode.id as string,
-                    convertedSel,
-                    convertedStyle,
-                    true
-                );
+                // api.visualization.viewerObj?.updateSurfaceStyle(
+                //     treeNode.id as string,
+                //     convertedStyle
+                // );
             }
+
+
+            // NOTE: Should only be one element in surfaceStyles. So cache can
+            // just be single style.
+            this.previousSurfaceStylesCache[treeNode.id as string] = JSON.parse(JSON.stringify((style)));
         }
-
-        return treeNode.styles !== undefined;
     }
 
     /**

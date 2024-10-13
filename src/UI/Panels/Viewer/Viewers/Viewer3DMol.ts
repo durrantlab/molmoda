@@ -234,6 +234,17 @@ export class Viewer3DMol extends ViewerParent {
         );
     }
 
+    // updateSurfaceStyle(id: string, style: GenericStyleType): void {
+    //     // debugger;
+    //     const surfaceIdx = this.surfaces[id];
+    //     if (surfaceIdx) {
+    //         const tmp = this._mol3dObj.setSurfaceMaterialStyle(surfaceIdx, JSON.parse(JSON.stringify(style.surface)));
+    //         // debugger;
+    //         this.renderAll();
+    //     }
+    // }
+
+
     /**
      * Adds a model to the viewer. Returns same model, but now it's been added
      * to viewer.

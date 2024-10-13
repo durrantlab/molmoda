@@ -296,6 +296,8 @@ export abstract class ViewerParent {
         style: GenericStyleType
     ): Promise<GenericSurfaceType>;
 
+    // abstract updateSurfaceStyle(id: string, style: GenericStyleType): void;
+
     /**
      * Adds a surface.
      *
