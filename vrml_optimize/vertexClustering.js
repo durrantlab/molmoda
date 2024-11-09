@@ -127,33 +127,33 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
   function computeRepresentativeVertices(grid) {
     const newVertices = [];
     const newColors = [];
-    let newIndex = 0;
-    for (const cellKey in grid) {
-      const cell = grid[cellKey];
-      const avgVertex = [0, 0, 0];
-      const avgColor = [0, 0, 0];
-      for (const vertex of cell) {
-        avgVertex[0] += vertex.position[0];
-        avgVertex[1] += vertex.position[1];
-        avgVertex[2] += vertex.position[2];
-        avgColor[0] += vertex.color[0];
-        avgColor[1] += vertex.color[1];
-        avgColor[2] += vertex.color[2];
+    const cellKeys = Object.keys(grid);
+    const cellCount = cellKeys.length;
+  
+    for (let i = 0; i < cellCount; i++) {
+      const cell = grid[cellKeys[i]];
+      const vertexCount = cell.length;
+      let sumX = 0, sumY = 0, sumZ = 0;
+      let sumR = 0, sumG = 0, sumB = 0;
+  
+      for (let j = 0; j < vertexCount; j++) {
+        const vertex = cell[j];
+        sumX += vertex.position[0];
+        sumY += vertex.position[1];
+        sumZ += vertex.position[2];
+        sumR += vertex.color[0];
+        sumG += vertex.color[1];
+        sumB += vertex.color[2];
       }
-      avgVertex[0] /= cell.length;
-      avgVertex[1] /= cell.length;
-      avgVertex[2] /= cell.length;
-      avgColor[0] /= cell.length;
-      avgColor[1] /= cell.length;
-      avgColor[2] /= cell.length;
-      newVertices.push(avgVertex);
-      newColors.push(avgColor);
-      // Assign new index to each vertex in the cell
-      cell.newIndex = newIndex++;
+  
+      newVertices.push([sumX / vertexCount, sumY / vertexCount, sumZ / vertexCount]);
+      newColors.push([sumR / vertexCount, sumG / vertexCount, sumB / vertexCount]);
+      cell.newIndex = i;
     }
+  
     return { newVertices, newColors };
   }
-  
+
   function createVertexMapping(grid) {
     const mapping = {};
     for (const cellKey in grid) {

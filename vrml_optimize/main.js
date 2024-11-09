@@ -2,7 +2,8 @@ const fs = require('fs');
 const { parseVRML, replaceVerticesAndIndicesInVRML } = require('./parseVRML');
 const { mergeVertices, updateIndices } = require('./mergeVerticesByDistance');
 const { truncateValues } = require('./math');
-const { simplifyMesh } = require('./vertexClustering');
+// const { simplifyMesh } = require('./vertexClustering');
+const { simplifyMesh } = require('./qem');
 
 // Helper function to count faces
 function countFaces(indices) {

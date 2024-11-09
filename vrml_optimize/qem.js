@@ -1,280 +1,261 @@
 // qem.js
-// Revised Quadric Error Metric (QEM) mesh simplification with topology preservation
+// Implementation of Quadric Error Metrics (QEM) mesh simplification algorithm
 
-const { subtractVectors, crossProduct, vectorLength, scaleVector, addVectors } = require('./math');
-
-function simplifyMesh(vertices, indices, targetVertexCount) {
-    console.log(`Starting simplification. Target vertex count: ${targetVertexCount}`);
-    let quadrics = initializeQuadrics(vertices, indices);
-    let edges = buildEdgeList(vertices, indices);
-    
-    computeEdgeCosts(edges, quadrics, vertices);
-    const edgeQueue = createPriorityQueue(edges);
-
-    while (vertices.length > targetVertexCount && edgeQueue.size() > 0) {
-        const edge = edgeQueue.pop();
-        if (isEdgeValid(edge, vertices, indices) && !willCreateHole(edge, indices)) {
-            const { newVertices, newIndices, newQuadrics } = collapseEdge(edge, vertices, indices, quadrics);
-            vertices = newVertices;
-            indices = newIndices;
-            quadrics = newQuadrics;
-
-            edges = buildEdgeList(vertices, indices);
-            computeEdgeCosts(edges, quadrics, vertices);
-            edgeQueue.update(edges);
-        }
+// Helper class to represent vertex quadrics (4x4 matrix)
+class Quadric {
+    constructor() {
+        // Initialize 4x4 matrix with zeros
+        this.matrix = Array(16).fill(0);
     }
 
-    console.log(`Simplification complete. Final vertex count: ${vertices.length}`);
-    return { vertices, indices };
+    // Add another quadric to this one
+    add(other) {
+        for (let i = 0; i < 16; i++) {
+            this.matrix[i] += other.matrix[i];
+        }
+        return this;
+    }
+
+    // Compute quadric from plane equation (a, b, c, d)
+    static fromPlane(a, b, c, d) {
+        const q = new Quadric();
+        // Q = pp^T where p = [a b c d]
+        q.matrix[0] = a * a;  q.matrix[1] = a * b;  q.matrix[2] = a * c;   q.matrix[3] = a * d;
+        q.matrix[4] = b * a;  q.matrix[5] = b * b;  q.matrix[6] = b * c;   q.matrix[7] = b * d;
+        q.matrix[8] = c * a;  q.matrix[9] = c * b;  q.matrix[10] = c * c;  q.matrix[11] = c * d;
+        q.matrix[12] = d * a; q.matrix[13] = d * b; q.matrix[14] = d * c;  q.matrix[15] = d * d;
+        return q;
+    }
+
+    // Evaluate quadric at a point
+    evaluate(point) {
+        const [x, y, z] = point;
+        const m = this.matrix;
+        return x * (m[0] * x + m[1] * y + m[2] * z + m[3]) +
+               y * (m[4] * x + m[5] * y + m[6] * z + m[7]) +
+               z * (m[8] * x + m[9] * y + m[10] * z + m[11]) +
+               (m[12] * x + m[13] * y + m[14] * z + m[15]);
+    }
+
+    // Find optimal point that minimizes this quadric
+    findOptimalPoint(initialGuess) {
+        const m = this.matrix;
+        // Solve 3x3 linear system
+        const a = [[m[0], m[1], m[2]],
+                  [m[4], m[5], m[6]],
+                  [m[8], m[9], m[10]]];
+        const b = [-m[3], -m[7], -m[11]];
+
+        try {
+            const result = solveLinearSystem(a, b);
+            return result || initialGuess;
+        } catch (e) {
+            return initialGuess;
+        }
+    }
 }
 
-function initializeQuadrics(vertices, indices) {
-    const quadrics = vertices.map(() => createZeroQuadric());
+// Helper class for edge collapses
+class Edge {
+    constructor(v1, v2, error) {
+        this.v1 = v1;
+        this.v2 = v2;
+        this.error = error;
+    }
+}
+
+// Helper function to solve 3x3 linear system using Cramer's rule
+function solveLinearSystem(A, b) {
+    const det = determinant3x3(A);
+    if (Math.abs(det) < 1e-10) return null;
+
+    const x = determinant3x3([
+        [b[0], A[0][1], A[0][2]],
+        [b[1], A[1][1], A[1][2]],
+        [b[2], A[2][1], A[2][2]]
+    ]) / det;
+
+    const y = determinant3x3([
+        [A[0][0], b[0], A[0][2]],
+        [A[1][0], b[1], A[1][2]],
+        [A[2][0], b[2], A[2][2]]
+    ]) / det;
+
+    const z = determinant3x3([
+        [A[0][0], A[0][1], b[0]],
+        [A[1][0], A[1][1], b[1]],
+        [A[2][0], A[2][1], b[2]]
+    ]) / det;
+
+    return [x, y, z];
+}
+
+function determinant3x3(matrix) {
+    return matrix[0][0] * (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
+           matrix[0][1] * (matrix[1][0] * matrix[2][2] - matrix[1][2] * matrix[2][0]) +
+           matrix[0][2] * (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]);
+}
+
+// Compute face normal and plane equation
+function computePlaneEquation(v1, v2, v3) {
+    // Calculate normal using cross product
+    const ux = v2[0] - v1[0], uy = v2[1] - v1[1], uz = v2[2] - v1[2];
+    const vx = v3[0] - v1[0], vy = v3[1] - v1[1], vz = v3[2] - v1[2];
     
+    const nx = uy * vz - uz * vy;
+    const ny = uz * vx - ux * vz;
+    const nz = ux * vy - uy * vx;
+    
+    // Normalize
+    const length = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (length < 1e-10) return null;
+    
+    const a = nx / length;
+    const b = ny / length;
+    const c = nz / length;
+    const d = -(a * v1[0] + b * v1[1] + c * v1[2]);
+    
+    return [a, b, c, d];
+}
+
+// Main simplification function
+function simplifyMesh(vertices, indices, colors, targetVertexCount) {
+    console.log(`Starting QEM simplification. Target vertex count: ${targetVertexCount}`);
+
+    // Initialize vertex quadrics
+    const vertexQuadrics = vertices.map(() => new Quadric());
+    
+    // Compute initial quadrics from faces
     for (let i = 0; i < indices.length; i += 4) {
         if (indices[i] === -1) continue;
+        
         const v1 = vertices[indices[i]];
-        const v2 = vertices[indices[i+1]];
-        const v3 = vertices[indices[i+2]];
+        const v2 = vertices[indices[i + 1]];
+        const v3 = vertices[indices[i + 2]];
         
-        if (!v1 || !v2 || !v3) {
-            console.error(`Invalid vertices at index ${i}: ${v1}, ${v2}, ${v3}`);
-            continue;
-        }
-
-        const edge1 = subtractVectors(v2, v1);
-        const edge2 = subtractVectors(v3, v1);
-        let normal = crossProduct(edge1, edge2);
-        const length = vectorLength(normal);
+        const plane = computePlaneEquation(v1, v2, v3);
+        if (!plane) continue;
         
-        if (length !== 0) {
-            normal = scaleVector(normal, 1 / length);
-            const planeConstant = -1 * (normal[0] * v1[0] + normal[1] * v1[1] + normal[2] * v1[2]);
-            
-            const q = computeQuadricFromPlane([...normal, planeConstant]);
-            quadrics[indices[i]] = addQuadrics(quadrics[indices[i]], q);
-            quadrics[indices[i+1]] = addQuadrics(quadrics[indices[i+1]], q);
-            quadrics[indices[i+2]] = addQuadrics(quadrics[indices[i+2]], q);
-        }
+        const faceQuadric = Quadric.fromPlane(...plane);
+        
+        // Add face quadric to vertex quadrics
+        vertexQuadrics[indices[i]].add(faceQuadric);
+        vertexQuadrics[indices[i + 1]].add(faceQuadric);
+        vertexQuadrics[indices[i + 2]].add(faceQuadric);
     }
+
+    // Build list of all edges and their costs
+    const edges = [];
+    const seen = new Set();
     
-    return quadrics;
-}
-
-function createZeroQuadric() {
-    return {
-        a2: 0, ab: 0, ac: 0, ad: 0,
-        b2: 0, bc: 0, bd: 0,
-        c2: 0, cd: 0,
-        d2: 0,
-    };
-}
-
-function computeQuadricFromPlane(plane) {
-    const [a, b, c, d] = plane;
-    return {
-        a2: a * a, ab: a * b, ac: a * c, ad: a * d,
-        b2: b * b, bc: b * c, bd: b * d,
-        c2: c * c, cd: c * d,
-        d2: d * d,
-    };
-}
-
-function buildEdgeList(vertices, indices) {
-    const edges = new Map();
     for (let i = 0; i < indices.length; i += 4) {
         if (indices[i] === -1) continue;
-        const faceIndices = [indices[i], indices[i + 1], indices[i + 2]];
+        
         for (let j = 0; j < 3; j++) {
-            const v1 = faceIndices[j];
-            const v2 = faceIndices[(j + 1) % 3];
-            if (v1 === undefined || v2 === undefined) {
-                console.error(`Invalid vertex indices at ${i}: ${v1}, ${v2}`);
-                continue;
-            }
-            const edgeKey = `${Math.min(v1, v2)}_${Math.max(v1, v2)}`;
-            if (!edges.has(edgeKey)) {
-                edges.set(edgeKey, { v1: Math.min(v1, v2), v2: Math.max(v1, v2), faces: [] });
-            }
-            edges.get(edgeKey).faces.push(Math.floor(i / 4));
-        }
-    }
-    return Array.from(edges.values());
-}
+            const v1 = indices[i + j];
+            const v2 = indices[i + ((j + 1) % 3)];
+            
+            const edgeKey = `${Math.min(v1, v2)},${Math.max(v1, v2)}`;
+            if (seen.has(edgeKey)) continue;
+            seen.add(edgeKey);
 
-function computeEdgeCosts(edges, quadrics, vertices) {
-    for (let edge of edges) {
-        if (!quadrics[edge.v1] || !quadrics[edge.v2]) {
-            console.error(`Missing quadric for vertex ${edge.v1} or ${edge.v2}`);
-            continue;
-        }
-        const q = addQuadrics(quadrics[edge.v1], quadrics[edge.v2]);
-        const vOptimal = computeOptimalVertexPosition(q);
-        edge.cost = computeError(q, vOptimal);
-        edge.vOptimal = vOptimal;
-    }
-}
+            // Skip edges between vertices with different colors
+            if (!colorsMatch(colors[v1], colors[v2])) continue;
 
-function computeOptimalVertexPosition(q) {
-    const A = [
-        [q.a2, q.ab, q.ac, q.ad],
-        [q.ab, q.b2, q.bc, q.bd],
-        [q.ac, q.bc, q.c2, q.cd],
-        [0, 0, 0, 1]
-    ];
-    const b = [0, 0, 0, 1];
-    
-    // Solve Ax = b using Gaussian elimination with partial pivoting
-    for (let i = 0; i < 4; i++) {
-        let maxEl = Math.abs(A[i][i]);
-        let maxRow = i;
-        for (let k = i + 1; k < 4; k++) {
-            if (Math.abs(A[k][i]) > maxEl) {
-                maxEl = Math.abs(A[k][i]);
-                maxRow = k;
-            }
-        }
-
-        [A[i], A[maxRow]] = [A[maxRow], A[i]];
-        [b[i], b[maxRow]] = [b[maxRow], b[i]];
-
-        for (let k = i + 1; k < 4; k++) {
-            const c = -A[k][i] / A[i][i];
-            for (let j = i; j < 4; j++) {
-                if (i === j) {
-                    A[k][j] = 0;
-                } else {
-                    A[k][j] += c * A[i][j];
-                }
-            }
-            b[k] += c * b[i];
+            const combinedQuadric = new Quadric();
+            combinedQuadric.add(vertexQuadrics[v1]);
+            combinedQuadric.add(vertexQuadrics[v2]);
+            
+            // Find optimal position for edge collapse
+            const optimalPos = combinedQuadric.findOptimalPoint(
+                [(vertices[v1][0] + vertices[v2][0]) / 2,
+                 (vertices[v1][1] + vertices[v2][1]) / 2,
+                 (vertices[v1][2] + vertices[v2][2]) / 2]
+            );
+            
+            const error = combinedQuadric.evaluate(optimalPos);
+            edges.push(new Edge(v1, v2, error));
         }
     }
 
-    const x = new Array(4);
-    for (let i = 3; i >= 0; i--) {
-        x[i] = b[i] / A[i][i];
-        for (let k = i - 1; k >= 0; k--) {
-            b[k] -= A[k][i] * x[i];
+    // Sort edges by error
+    edges.sort((a, b) => a.error - b.error);
+
+    // Initialize tracking arrays
+    const alive = new Array(vertices.length).fill(true);
+    const mapping = new Array(vertices.length).fill(-1);
+    const newVertices = [];
+    const newColors = [];
+    let currentVertex = 0;
+
+    // Process edges until target count reached
+    for (const edge of edges) {
+        if (newVertices.length >= targetVertexCount) break;
+        if (!alive[edge.v1] || !alive[edge.v2]) continue;
+
+        // Compute optimal position
+        const combinedQuadric = new Quadric();
+        combinedQuadric.add(vertexQuadrics[edge.v1]);
+        combinedQuadric.add(vertexQuadrics[edge.v2]);
+        
+        const optimalPos = combinedQuadric.findOptimalPoint(
+            [(vertices[edge.v1][0] + vertices[edge.v2][0]) / 2,
+             (vertices[edge.v1][1] + vertices[edge.v2][1]) / 2,
+             (vertices[edge.v1][2] + vertices[edge.v2][2]) / 2]
+        );
+
+        // Add new vertex and update mappings
+        newVertices.push(optimalPos);
+        newColors.push(colors[edge.v1]); // Use color from first vertex
+        mapping[edge.v1] = currentVertex;
+        mapping[edge.v2] = currentVertex;
+        alive[edge.v1] = false;
+        alive[edge.v2] = false;
+        currentVertex++;
+    }
+
+    // Add remaining vertices
+    for (let i = 0; i < vertices.length; i++) {
+        if (alive[i]) {
+            newVertices.push(vertices[i]);
+            newColors.push(colors[i]);
+            mapping[i] = currentVertex++;
         }
     }
 
-    return x.slice(0, 3);
-}
-
-function computeError(q, v) {
-    const [x, y, z] = v;
-    return q.a2*x*x + 2*q.ab*x*y + 2*q.ac*x*z + 2*q.ad*x +
-           q.b2*y*y + 2*q.bc*y*z + 2*q.bd*y +
-           q.c2*z*z + 2*q.cd*z +
-           q.d2;
-}
-
-function createPriorityQueue(edges) {
-    return {
-        edges: [...edges].sort((a, b) => a.cost - b.cost),
-        pop: function() { return this.edges.shift(); },
-        size: function() { return this.edges.length; },
-        update: function(newEdges) {
-            this.edges = newEdges.sort((a, b) => a.cost - b.cost);
-        },
-    };
-}
-
-function isEdgeValid(edge, vertices, indices) {
-    return indices.some(idx => idx === edge.v1 || idx === edge.v2);
-}
-
-function willCreateHole(edge, indices) {
-    const { v1, v2 } = edge;
-    const sharedFaces = indices.reduce((acc, curr, idx) => {
-        if (idx % 4 === 3) return acc; // Skip -1 indices
-        if ((curr === v1 || curr === v2) && 
-            (indices[idx + 1] === v1 || indices[idx + 1] === v2) && 
-            (indices[idx + 2] === v1 || indices[idx + 2] === v2)) {
-            acc.push(Math.floor(idx / 4));
-        }
-        return acc;
-    }, []);
-
-    if (sharedFaces.length <= 2) return false; // Edge collapse won't create a hole
-
-    // Check if the shared faces form a loop
-    const adjacencyList = {};
-    for (let face of sharedFaces) {
-        adjacencyList[face] = [];
-    }
+    // Update face indices
+    const newIndices = [];
+    const seenFaces = new Set();
 
     for (let i = 0; i < indices.length; i += 4) {
-        if (sharedFaces.includes(Math.floor(i / 4))) {
-            const faceVertices = [indices[i], indices[i + 1], indices[i + 2]];
-            for (let j = 0; j < 3; j++) {
-                const v1 = faceVertices[j];
-                const v2 = faceVertices[(j + 1) % 3];
-                if (v1 !== edge.v1 && v1 !== edge.v2 && v2 !== edge.v1 && v2 !== edge.v2) {
-                    const neighborFace = sharedFaces.find(f => 
-                        f !== Math.floor(i / 4) && 
-                        indices.slice(f * 4, f * 4 + 3).includes(v1) && 
-                        indices.slice(f * 4, f * 4 + 3).includes(v2)
-                    );
-                    if (neighborFace !== undefined) {
-                        adjacencyList[Math.floor(i / 4)].push(neighborFace);
-                    }
-                }
-            }
-        }
+        if (indices[i] === -1) continue;
+        
+        const v1 = mapping[indices[i]];
+        const v2 = mapping[indices[i + 1]];
+        const v3 = mapping[indices[i + 2]];
+        
+        // Skip degenerate faces
+        if (v1 === v2 || v2 === v3 || v3 === v1) continue;
+        
+        // Skip duplicate faces
+        const faceKey = [v1, v2, v3].sort().join(',');
+        if (seenFaces.has(faceKey)) continue;
+        seenFaces.add(faceKey);
+        
+        newIndices.push(v1, v2, v3, -1);
     }
 
-    // Check if the adjacency list forms a single loop
-    const visited = new Set();
-    const stack = [sharedFaces[0]];
-    while (stack.length > 0) {
-        const face = stack.pop();
-        if (!visited.has(face)) {
-            visited.add(face);
-            stack.push(...adjacencyList[face]);
-        }
-    }
-
-    return visited.size !== sharedFaces.length;
+    console.log(`QEM simplification complete. New vertex count: ${newVertices.length}`);
+    return { vertices: newVertices, indices: newIndices, colors: newColors };
 }
 
-function collapseEdge(edge, vertices, indices, quadrics) {
-    const v1 = edge.v1;
-    const v2 = edge.v2;
-
-    vertices[v1] = edge.vOptimal;
-    quadrics[v1] = addQuadrics(quadrics[v1], quadrics[v2]);
-
-    vertices.splice(v2, 1);
-    quadrics.splice(v2, 1);
-
-    let newIndices = [];
-    for (let i = 0; i < indices.length; i += 4) {
-        let face = [indices[i], indices[i+1], indices[i+2]];
-        face = face.map(idx => idx === v2 ? v1 : (idx > v2 ? idx - 1 : idx));
-        if (new Set(face).size === 3) {
-            newIndices.push(...face, -1);
-        }
-    }
-
-    return { newVertices: vertices, newIndices, newQuadrics: quadrics };
-}
-
-function addQuadrics(q1, q2) {
-    if (!q1 || !q2) {
-        console.error('Undefined quadric in addQuadrics');
-        return createZeroQuadric();
-    }
-    return {
-        a2: q1.a2 + q2.a2, ab: q1.ab + q2.ab, ac: q1.ac + q2.ac, ad: q1.ad + q2.ad,
-        b2: q1.b2 + q2.b2, bc: q1.bc + q2.bc, bd: q1.bd + q2.bd,
-        c2: q1.c2 + q2.c2, cd: q1.cd + q2.cd,
-        d2: q1.d2 + q2.d2,
-    };
+// Helper function to check if colors match within a small epsilon
+function colorsMatch(c1, c2, epsilon = 0.001) {
+    return Math.abs(c1[0] - c2[0]) < epsilon &&
+           Math.abs(c1[1] - c2[1]) < epsilon &&
+           Math.abs(c1[2] - c2[2]) < epsilon;
 }
 
 module.exports = {
-    simplifyMesh,
+    simplifyMesh
 };
