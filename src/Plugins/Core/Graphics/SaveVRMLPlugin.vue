@@ -1,19 +1,19 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Save"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-    ></PluginComponent>
+  <PluginComponent
+    v-model="open"
+    :infoPayload="infoPayload"
+    actionBtnTxt="Save"
+    @onPopupDone="onPopupDone"
+    @onUserArgChanged="onUserArgChanged"
+  ></PluginComponent>
 </template>
 
 <script lang="ts">
 import { Options } from "vue-class-component";
 import * as api from "@/Api";
 import {
-    IContributorCredit,
-    ISoftwareCredit,
+  IContributorCredit,
+  ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -21,120 +21,152 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import {
-    fileNameFilter,
-    matchesFilename,
+  fileNameFilter,
+  matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Tags/Tags";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { slugify } from "@/Core/Utils/StringUtils";
+import { saveTxtFiles } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModelsUtils";
 
 /**
  * SaveVRMLPlugin
  */
 @Options({
-    components: {
-        PluginComponent,
-    },
+  components: {
+    PluginComponent,
+  },
 })
 export default class SaveVRMLPlugin extends PluginParentClass {
-    menuPath = "File/Graphics/VRML...";
-    title = "Save a VRML Model";
-    softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
-    contributorCredits: IContributorCredit[] = [
-        // {
-        //   name: "Jacob D. Durrant",
-        //   url: "http://durrantlab.com/",
-        // },
-    ];
-    pluginId = "savevrml";
+  menuPath = "File/Graphics/VRML...";
+  title = "Save a VRML Model";
+  softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
+  contributorCredits: IContributorCredit[] = [
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
+  ];
+  pluginId = "savevrml";
 
-    intro = `Save the current molecular scene as a VRML file (3D model).`;
-    tags = [Tag.Visualization];
+  intro = `Save the current molecular scene as a VRML file (3D model).`;
+  tags = [Tag.Visualization];
 
-    userArgDefaults: UserArg[] = [
-        {
-            id: "filename",
-            label: "",
-            val: "",
-            placeHolder: "Filename (e.g., my_model.vrml)...",
-            description: `The name of the VRML file to save. The extension ".vrml" will be automatically appended.`,
-            filterFunc: (filename: string): string => {
-                return fileNameFilter(filename);
-            },
-            validateFunc: (filename: string): boolean => {
-                return matchesFilename(filename);
-            },
-        } as IUserArgText,
-    ];
+  userArgDefaults: UserArg[] = [
+    {
+      id: "filename",
+      label: "",
+      val: "",
+      placeHolder: "Filename (e.g., my_model.vrml)...",
+      description: `The name of the VRML file to save. The extension ".vrml" will be automatically appended.`,
+      filterFunc: (filename: string): string => {
+        return fileNameFilter(filename);
+      },
+      validateFunc: (filename: string): boolean => {
+        return matchesFilename(filename);
+      },
+    } as IUserArgText,
+  ];
 
-    
+  /**
+   * Check if this plugin can currently be used.
+   *
+   * @returns {string | null}  If it returns a string, show that as an error
+   *     message. If null, proceed to run the plugin.
+   */
+  checkPluginAllowed(): string | null {
+    return checkAnyMolLoaded();
+  }
 
-    /**
-     * Check if this plugin can currently be used.
-     *
-     * @returns {string | null}  If it returns a string, show that as an error
-     *     message. If null, proceed to run the plugin.
-     */
-    checkPluginAllowed(): string | null {
-        return checkAnyMolLoaded();
+  /**
+   * Runs when the user presses the action button and the popup closes.
+   */
+  onPopupDone() {
+    this.submitJobs([{ filename: this.getUserArg("filename") }]);
+  }
+
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   *
+   * @param {any} parameters  Information about the VRML file to save.
+   */
+  async runJobInBrowser(parameters: any): Promise<any> {
+    let filename = parameters.filename;
+    const viewer = await api.visualization.viewer;
+
+    const vrmlData = viewer.exportVRMLPerModel();
+    viewer.renderAll();
+
+    const stylData: { [id: string]: any } = {};
+    const mols = getMoleculesFromStore();
+    const files: FileInfo[] = [];
+    for (const id in vrmlData) {
+      const mol = mols.filters.onlyId(id);
+      if (!mol) {
+        continue;
+      }
+
+      stylData[id] = mol.styles; // Eventually, will use this to modify vrmlData[id] (simplify mesh)
+
+      const filename = slugify(mol.descriptions.pathName("_", 0));
+
+      if (vrmlData[id] !== "") {
+        const fileInfo = new FileInfo({
+          name: filename + ".vrml",
+          contents: vrmlData[id],
+        });
+
+        files.push(fileInfo);
+      }
     }
 
-    /**
-     * Runs when the user presses the action button and the popup closes.
-     */
-    onPopupDone() {
-        this.submitJobs([{ filename: this.getUserArg("filename") }]);
-    }
+    filename = correctFilenameExt(filename, "zip");
 
-    /**
-     * Every plugin runs some job. This is the function that does the job running.
-     *
-     * @param {any} parameters  Information about the VRML file to save.
-     */
-    async runJobInBrowser(parameters: any): Promise<any> {
-        let filename = parameters.filename;
-        const viewer = await api.visualization.viewer;
-        let vrmlTxt = viewer.exportVRML();
-        viewer.renderAll();
+    saveTxtFiles(files, filename);
 
-        // If fileame doesn't end in vrml (case insensitive), end it.
-        filename = correctFilenameExt(filename, "vrml");
+    // let vrmlTxt = viewer.exportVRML();
+    // viewer.renderAll();
 
-        if (vrmlTxt !== "") {
-            api.fs.saveTxt(
-                new FileInfo({
-                    name: filename,
-                    contents: vrmlTxt,
-                })
-            );
-        }
+    // // If fileame doesn't end in vrml (case insensitive), end it.
+    // filename = correctFilenameExt(filename, "vrml");
 
-        return;
-    }
+    // if (vrmlTxt !== "") {
+    //   api.fs.saveTxt(
+    //     new FileInfo({
+    //       name: filename,
+    //       contents: vrmlTxt,
+    //     })
+    //   );
+    // }
 
-    /**
-     * Gets the test commands for the plugin. For advanced use.
-     *
-     * @gooddefault
-     * @document
-     * @returns {ITest}  The selenium test commands.
-     */
-    async getTests(): Promise<ITest> {
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-            pluginOpen: new TestCmdList().setUserArg(
-                "filename",
-                "test",
-                this.pluginId
-            ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#log",
-                "Job savevrml.*? ended"
-            ),
-        };
-    }
+    return;
+  }
+
+  /**
+   * Gets the test commands for the plugin. For advanced use.
+   *
+   * @gooddefault
+   * @document
+   * @returns {ITest}  The selenium test commands.
+   */
+  async getTests(): Promise<ITest> {
+    return {
+      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+      pluginOpen: new TestCmdList().setUserArg(
+        "filename",
+        "test",
+        this.pluginId
+      ),
+      afterPluginCloses: new TestCmdList().waitUntilRegex(
+        "#log",
+        "Job savevrml.*? ended"
+      ),
+    };
+  }
 }
 </script>
 

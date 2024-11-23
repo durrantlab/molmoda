@@ -172,6 +172,14 @@ function simplifyMesh(vertices, indices, colors, targetVertexCount) {
                  (vertices[v1][1] + vertices[v2][1]) / 2,
                  (vertices[v1][2] + vertices[v2][2]) / 2]
             );
+
+            const edgeLength = Math.sqrt(
+                (vertices[v1][0] - vertices[v2][0]) ** 2 +
+                (vertices[v1][1] - vertices[v2][1]) ** 2 +
+                (vertices[v1][2] - vertices[v2][2]) ** 2
+            );
+
+            console.log(edgeLength);
             
             const error = combinedQuadric.evaluate(optimalPos);
             edges.push(new Edge(v1, v2, error));

@@ -735,6 +735,13 @@ export abstract class ViewerParent {
     abstract exportVRML(): string;
 
     /**
+     * Gets an object that maps the model ids to VRML.
+     *
+     * @returns {any}  The object that maps the model ids to VRML.
+     */
+    abstract exportVRMLPerModel(): { [id: string]: string };
+
+    /**
      * A helper function that looks up a model or region in cache (in the
      * viewer-appropriate format) given a molecule container.
      *

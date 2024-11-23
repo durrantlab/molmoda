@@ -734,6 +734,18 @@ export class Viewer3DMol extends ViewerParent {
         return this._mol3dObj.exportVRML();
     }
 
+    exportVRMLPerModel(): {[id: string]: string} {
+        const vrmls: {[id: string]: string} = {};
+        // Get all the models
+        for (const id in this.molCache) {
+            const model = this.lookup(id);
+            if (model) {
+                vrmls[id] = model.exportVRML();
+            }
+        }
+        return vrmls;
+    }
+
     /**
      * Sets up a callback that runs every time the view changes.
      * 
