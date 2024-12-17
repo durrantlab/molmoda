@@ -52,6 +52,7 @@ import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 import { checkIfUrlOpen } from "@/FileSystem/UrlOpen";
 import { setupAutoSave } from "@/Store/AutoSave";
 import { setupElectron } from "@/Core/Electron/ElectronUtils";
+import { mainPubChemTest } from "@/pubchem_test";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -178,6 +179,8 @@ export default class App extends Vue {
         checkIfUrlOpen();
         setupAutoSave();
         setupElectron();
+
+        // mainPubChemTest();
     }
 }
 </script>
@@ -255,3 +258,7 @@ a {
     cursor: pointer;
 }
 </style>
+
+function mainPubChemTest() {
+  throw new Error("Function not implemented.");
+}

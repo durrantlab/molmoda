@@ -734,15 +734,28 @@ export class Viewer3DMol extends ViewerParent {
         return this._mol3dObj.exportVRML();
     }
 
-    exportVRMLPerModel(): {[id: string]: string} {
-        const vrmls: {[id: string]: string} = {};
+    exportVRMLPerModel(): [string, string][] {
+        // const vrmls: {[id: string]: string} = {};
+        const vrmls: [string, string][] = [];
         // Get all the models
         for (const id in this.molCache) {
             const model = this.lookup(id);
             if (model) {
-                vrmls[id] = model.exportVRML();
+                vrmls.push([id, model.exportVRML()]);
             }
         }
+
+        // Do the same for surfaces
+        for (const id in this.surfaces) {
+            const surfaceIds = this.surfaces[id];
+            for (const surfaceId of surfaceIds) {
+                const surfaces = this._mol3dObj.getSurface(surfaceId);
+                for (const surface of surfaces) {
+                    vrmls.push([id, surface.lastGL.vrml()]);
+                }
+            }
+        }
+
         return vrmls;
     }
 

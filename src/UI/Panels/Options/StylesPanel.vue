@@ -51,7 +51,6 @@ import { Options, Vue } from "vue-class-component";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
-import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import Section from "@/UI/Layout/Section.vue";
 import StylesAllMolTypes from "./Styles/StylesAllMolTypes.vue";
 import {
@@ -80,7 +79,6 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
         FormWrapper,
         FormInput,
         FormSelect,
-        FormCheckBox,
         Section,
         StylesAllMolTypes,
         FormFull,

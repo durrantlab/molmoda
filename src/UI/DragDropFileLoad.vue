@@ -16,7 +16,7 @@ import { Options, Vue } from "vue-class-component";
 import * as api from "@/Api";
 
 /**
- * FormCheckBox component
+ * DragDropFileLoad component
  */
 @Options({
   components: {},

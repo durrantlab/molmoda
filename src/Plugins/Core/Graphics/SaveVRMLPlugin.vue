@@ -18,7 +18,11 @@ import {
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import {
+  UserArg,
+  IUserArgText,
+  IUserArgCheckbox,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import {
   fileNameFilter,
@@ -32,6 +36,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { saveTxtFiles } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModelsUtils";
+import { runWorker } from "@/Core/WebWorkers/RunWorker";
 
 /**
  * SaveVRMLPlugin
@@ -70,6 +75,12 @@ export default class SaveVRMLPlugin extends PluginParentClass {
         return matchesFilename(filename);
       },
     } as IUserArgText,
+    {
+      id: "simplifyMesh",
+      label: "Simplify the mesh",
+      description: `Reduce vertex count to shrink size, with some impact on mesh quality.`,
+      val: true,
+    } as IUserArgCheckbox,
   ];
 
   /**
@@ -89,6 +100,73 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     this.submitJobs([{ filename: this.getUserArg("filename") }]);
   }
 
+  private async _simplifyMesh(vrmlData: [string, string][], mols: any) {
+    const simplifiedVrmlPromises = [];
+
+    const newVrmlData: [string, string][] = [];
+
+    for (const payload of vrmlData) {
+      const [id, vrml] = payload;
+
+      const mol = mols.filters.onlyId(id);
+      if (!mol) {
+        continue;
+      }
+
+      if (this.getUserArg("simplifyMesh") === true) {
+        const worker = new Worker(
+          new URL(
+            "../../../Meshes/SimplifyVRML/SimplifyVRML.worker.ts",
+            import.meta.url
+          )
+        );
+
+        let reductionFraction = 0.5;
+        let mergeCutoff = 0.15;
+        const stylesJSONStr = JSON.stringify(mol.styles);
+        if (stylesJSONStr.includes('"stick"')) {
+          // This is a good one. Still some duplicate vertices, but not too bad.
+          reductionFraction = 0.001;
+          mergeCutoff = 0.15;
+        } else if (stylesJSONStr.includes('"sphere"')) {
+          // This one good
+          reductionFraction = 1;
+          mergeCutoff = 0.15;
+        } else if (stylesJSONStr.includes('"surface"')) {
+          // This one is good
+          reductionFraction = 1;
+
+          // You could put this to 0.75 or 1, but with small artifacts. Mesh with
+          // this if you need even fewer verts.
+          mergeCutoff = 0.5;
+        } else if (stylesJSONStr.includes('"cartoon"')) {
+          // This one is good
+          reductionFraction = 0.4;
+          mergeCutoff = 0.15;
+        }
+
+        // console.log("MOO", JSON.stringify(mol.styles));
+
+        // stylData[id] = mol.styles; // Eventually, will use this to modify vrmlData[id] (simplify mesh)
+        simplifiedVrmlPromises.push(
+          runWorker(worker, {
+            vrmlContent: vrml,
+            mergeCutoff,
+            reductionFraction,
+            id,
+          })
+        );
+      }
+
+      const resps = await Promise.all(simplifiedVrmlPromises);
+      resps.forEach((resp) => {
+        newVrmlData.push([resp.id, resp.optimizedVRML]);
+        // vrmlData[resp.id] = resp.optimizedVRML;
+      });
+    }
+    return newVrmlData;
+  }
+
   /**
    * Every plugin runs some job. This is the function that does the job running.
    *
@@ -101,23 +179,31 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     const vrmlData = viewer.exportVRMLPerModel();
     viewer.renderAll();
 
-    const stylData: { [id: string]: any } = {};
     const mols = getMoleculesFromStore();
+
+    let newVrmlData: [string, string][] = [];
+    if (this.getUserArg("simplifyMesh") === true) {
+      // Simplify meshes
+      newVrmlData = await this._simplifyMesh(vrmlData, mols);
+    } else {
+      newVrmlData = vrmlData;
+    }
+
     const files: FileInfo[] = [];
-    for (const id in vrmlData) {
+    for (const payload of newVrmlData) {
+      const [id, vrml] = payload;
+
       const mol = mols.filters.onlyId(id);
       if (!mol) {
         continue;
       }
 
-      stylData[id] = mol.styles; // Eventually, will use this to modify vrmlData[id] (simplify mesh)
-
       const filename = slugify(mol.descriptions.pathName("_", 0));
 
-      if (vrmlData[id] !== "") {
+      if (vrml !== "") {
         const fileInfo = new FileInfo({
           name: filename + ".vrml",
-          contents: vrmlData[id],
+          contents: vrml,
         });
 
         files.push(fileInfo);
@@ -127,21 +213,6 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     filename = correctFilenameExt(filename, "zip");
 
     saveTxtFiles(files, filename);
-
-    // let vrmlTxt = viewer.exportVRML();
-    // viewer.renderAll();
-
-    // // If fileame doesn't end in vrml (case insensitive), end it.
-    // filename = correctFilenameExt(filename, "vrml");
-
-    // if (vrmlTxt !== "") {
-    //   api.fs.saveTxt(
-    //     new FileInfo({
-    //       name: filename,
-    //       contents: vrmlTxt,
-    //     })
-    //   );
-    // }
 
     return;
   }

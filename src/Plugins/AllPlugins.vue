@@ -59,6 +59,7 @@ system uses these to autopopulate with plugins. -->
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
+    <PubChemPropsPlugin @onPluginSetup="onPluginSetup"></PubChemPropsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
@@ -127,6 +128,7 @@ import YesNoPlugin from "./Core/YesNoPlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
+import PubChemPropsPlugin from "./Optional/PubChemPropsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
@@ -191,6 +193,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     EvalScreenPlugin,
     FPocketWebPlugin,
     ProtonateCompoundsPlugin,
+    PubChemPropsPlugin,
     ReducePlugin,
     WebinaPlugin,
     // TEMPLATE3 END

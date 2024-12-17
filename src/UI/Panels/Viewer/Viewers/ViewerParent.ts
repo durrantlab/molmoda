@@ -737,9 +737,9 @@ export abstract class ViewerParent {
     /**
      * Gets an object that maps the model ids to VRML.
      *
-     * @returns {any}  The object that maps the model ids to VRML.
+     * @returns {any}  A list with the model ids and VRML.
      */
-    abstract exportVRMLPerModel(): { [id: string]: string };
+    abstract exportVRMLPerModel(): [string, string][];
 
     /**
      * A helper function that looks up a model or region in cache (in the

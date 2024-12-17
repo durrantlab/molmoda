@@ -17,7 +17,6 @@ import {
 } from "@/Plugins/PluginInterfaces";
 
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import FormCheckBox from "@/UI/Forms/FormCheckBox.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
@@ -34,7 +33,6 @@ import { Tag } from "@/Plugins/Tags/Tags";
 @Options({
     components: {
         FormInput,
-        FormCheckBox,
         FormWrapper,
         PluginComponent,
     },
