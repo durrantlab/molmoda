@@ -52,7 +52,6 @@ import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 import { checkIfUrlOpen } from "@/FileSystem/UrlOpen";
 import { setupAutoSave } from "@/Store/AutoSave";
 import { setupElectron } from "@/Core/Electron/ElectronUtils";
-import { mainPubChemTest } from "@/pubchem_test";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -259,6 +258,3 @@ a {
 }
 </style>
 
-function mainPubChemTest() {
-  throw new Error("Function not implemented.");
-}

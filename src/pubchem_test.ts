@@ -436,38 +436,38 @@ async function fetchSuperstructureCompounds(smiles: string, maxRecords = 100): P
  *
  * @returns {Promise<void>} A promise that resolves when the data has been fetched and displayed.
  */
-export async function mainPubChemTest(): Promise<void> {
-    const smiles = (prompt("Enter the SMILES of your choice:")?.trim() || "");
-    let threshold = (prompt("Enter the Tanimoto coefficient threshold (default is 95):")?.trim() || "95");
-    if (!/^\d+$/.test(threshold)) {
-        threshold = "95";
-    }
+// export async function mainPubChemTest(): Promise<void> {
+//     const smiles = (prompt("Enter the SMILES of your choice:")?.trim() || "");
+//     let threshold = (prompt("Enter the Tanimoto coefficient threshold (default is 95):")?.trim() || "95");
+//     if (!/^\d+$/.test(threshold)) {
+//         threshold = "95";
+//     }
 
-    const cid = await fetchCid(smiles);
-    if (cid.startsWith("Error")) {
-        console.log(cid);
-        return;
-    }
+//     const cid = await fetchCid(smiles);
+//     if (cid.startsWith("Error")) {
+//         console.log(cid);
+//         return;
+//     }
 
-    const description = await fetchMoleculeDetails(cid);
-    const properties = await fetchCompoundsProperties(cid);
-    const synonyms = await fetchSynonyms(cid);
-    // const safetyInfo = await fetchHazardInformation(cid);
-    const bioassayData = await fetchActiveAssays(cid);
-    const similarCompounds = await fetchSimilarCompounds(smiles, parseInt(threshold, 10));
-    const substructureCompounds = await fetchSubstructureCompounds(smiles);
-    const superstructureCompounds = await fetchSuperstructureCompounds(smiles);
+//     const description = await fetchMoleculeDetails(cid);
+//     const properties = await fetchCompoundsProperties(cid);
+//     const synonyms = await fetchSynonyms(cid);
+//     // const safetyInfo = await fetchHazardInformation(cid);
+//     const bioassayData = await fetchActiveAssays(cid);
+//     const similarCompounds = await fetchSimilarCompounds(smiles, parseInt(threshold, 10));
+//     const substructureCompounds = await fetchSubstructureCompounds(smiles);
+//     const superstructureCompounds = await fetchSuperstructureCompounds(smiles);
 
-    const combinedData = {
-        "Description": description,
-        "Properties": properties,
-        "Synonyms": synonyms,
-        // "Safety Information": safetyInfo,
-        "Bioassay Data": bioassayData,
-        "Similar Compounds": similarCompounds,
-        "Substructure Compounds": substructureCompounds,
-        "Superstructure Compounds": superstructureCompounds
-    };
+//     const combinedData = {
+//         "Description": description,
+//         "Properties": properties,
+//         "Synonyms": synonyms,
+//         // "Safety Information": safetyInfo,
+//         "Bioassay Data": bioassayData,
+//         "Similar Compounds": similarCompounds,
+//         "Substructure Compounds": substructureCompounds,
+//         "Superstructure Compounds": superstructureCompounds
+//     };
 
-    saveFile(combinedData);
-}
+//     saveFile(combinedData);
+// }
