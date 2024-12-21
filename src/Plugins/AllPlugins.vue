@@ -47,6 +47,7 @@ system uses these to autopopulate with plugins. -->
     <SelectInvertPlugin @onPluginSetup="onPluginSetup"></SelectInvertPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
+    <SimpleTableDataPlugin @onPluginSetup="onPluginSetup"></SimpleTableDataPlugin>
     <SimpleVideoPlugin @onPluginSetup="onPluginSetup"></SimpleVideoPlugin>
     <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
@@ -59,6 +60,8 @@ system uses these to autopopulate with plugins. -->
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
+    <PubChemBioassaysPlugin @onPluginSetup="onPluginSetup"></PubChemBioassaysPlugin>
+    <PubChemNamesPlugin @onPluginSetup="onPluginSetup"></PubChemNamesPlugin>
     <PubChemPropsPlugin @onPluginSetup="onPluginSetup"></PubChemPropsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
@@ -116,6 +119,7 @@ import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SelectInvertPlugin from "./Core/SelectInvertPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
+import SimpleTableDataPlugin from "./Core/SimpleTableDataPlugin.vue";
 import SimpleVideoPlugin from "./Core/SimpleVideoPlugin.vue";
 import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
@@ -128,6 +132,8 @@ import YesNoPlugin from "./Core/YesNoPlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
+import PubChemBioassaysPlugin from "./Optional/PubChemBioassaysPlugin.vue";
+import PubChemNamesPlugin from "./Optional/PubChemNamesPlugin.vue";
 import PubChemPropsPlugin from "./Optional/PubChemPropsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
@@ -181,6 +187,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SelectInvertPlugin,
     SettingsPlugin,
     SimpleMsgPlugin,
+    SimpleTableDataPlugin,
     SimpleVideoPlugin,
     StatCollectionPlugin,
     StylesWindowPlugin,
@@ -193,6 +200,8 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     EvalScreenPlugin,
     FPocketWebPlugin,
     ProtonateCompoundsPlugin,
+    PubChemBioassaysPlugin,
+    PubChemNamesPlugin,
     PubChemPropsPlugin,
     ReducePlugin,
     WebinaPlugin,

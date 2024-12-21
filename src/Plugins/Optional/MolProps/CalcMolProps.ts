@@ -8,9 +8,9 @@ export interface ICalcMolProps {
     other: [string, number, string][];
 }
 
-export const lipinskiTitle = "Lipinski Chemical Properties";
-export const countsTitle = "Counts Chemical Properties";
-export const otherTitle = "Other Chemical Properties";
+export const lipinskiTitle = "Lipinski";
+export const countsTitle = "Counts";
+export const otherTitle = "Misc";
 
 /**
  * Calculates the molecular properties for the given molecules.

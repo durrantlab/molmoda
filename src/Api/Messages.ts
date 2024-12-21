@@ -2,6 +2,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { pushToStoreList } from "@/Store/StoreExternalAccess";
 import {
     ISimpleMsg,
+    ITableDataMsg,
     IYesNoMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
@@ -14,6 +15,7 @@ import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
+import { ITableData } from "@/UI/Components/Table/Types";
 
 export const messagesApi = {
     /**
@@ -99,6 +101,34 @@ export const messagesApi = {
                 showCancelBtn
             } as IYesNoMsg)
         });
+    },
+
+    /**
+     * Displays a popup message.
+     *
+     * @param  {string}       title          The title of the popup.
+     * @param  {string}       message        The message to display.
+     * @param  {ITableData}   tableData      The table data to display.
+     * @param  {string}       caption        The caption of the table.
+     * @param  {number}       [precision=3]  The number of decimal places to
+     *                                       display.
+     */
+    popupTableData: function (
+        title: string,
+        message: string,
+        tableData: ITableData,
+        caption: string,
+        precision = 3,
+    ) {
+        // If popup already open, do not open another one.
+        pluginsApi.runPlugin("tabledatapopup", {
+            title,
+            message,
+            tableData,
+            caption, 
+            precision,
+            open: true, // open
+        } as ITableDataMsg);
     },
 
     /**

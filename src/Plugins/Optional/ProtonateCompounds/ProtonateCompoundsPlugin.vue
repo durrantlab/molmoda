@@ -59,7 +59,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
     },
 })
 export default class ProtonateCompoundsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Protonation...";
+    menuPath = "Compounds/[2] Protonation...";
     title = "Protonate/Deprotonate Compounds";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [

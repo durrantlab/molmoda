@@ -4,14 +4,18 @@
       v-model="open"
       :infoPayload="infoPayload"
       @onPopupDone="onPopupDone"
-      actionBtnTxt="Get Properties"
+      actionBtnTxt="Get Names"
       @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
   </span>
 </template>
-
-<script lang="ts">
-import { fetchCompoundsProperties, fetchCid } from "../../pubchem_test";
+  
+  <script lang="ts">
+import {
+  fetchSynonyms,
+  fetchCid,
+  fetchCompoundsProperties,
+} from "../../pubchem_test";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
@@ -33,9 +37,9 @@ import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
     Alert,
   },
 })
-export default class PubChemPropsPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/[6] PubChem Properties...";
-  title = "PubChem Properties";
+export default class PubChemNamesPlugin extends GetPropPluginParent {
+  menuPath = "Compounds/[5] Names...";
+  title = "Compound Names";
   softwareCredits: ISoftwareCredit[] = [
     {
       name: "PubChem",
@@ -55,17 +59,19 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     },
   ];
 
-  contributorCredits: IContributorCredit[] = [
-    {
-      name: "Nonso Duaka",
-    },
-  ];
-  pluginId = "pubchemprops";
+  contributorCredits: IContributorCredit[] = [];
+  pluginId = "pubchemnames";
   tags = [Tag.All];
-  intro = "Get the chemical properties of selected compounds from PubChem.";
+  intro = "Get the names/synonyms of selected compounds from PubChem.";
   details =
-    "Contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
-  dataSetTitle = "Properties";
+    "Contacts the online PubChem database to retrieve up to five names for each compound.";
+  dataSetTitle = "Names";
+
+  // Component state
+  resultsData: { [key: string]: any } = {};
+  isProcessing = false;
+  processedCount = 0;
+  totalToProcess = 0;
 
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
@@ -83,25 +89,52 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     if (cid.startsWith("Error")) {
       throw new Error(cid);
     }
+
+    // Get IUPAC name and synonyms
     const properties = await fetchCompoundsProperties(cid);
+    const iupacName = properties["IUPAC Name"].toLowerCase();
 
-    properties[
-      "CID"
-    ] = `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Chemical-and-Physical-Properties" target="_blank">${cid}</a>`;
+    const synonymsData = await fetchSynonyms(cid);
+    let synonyms = Array.isArray(synonymsData.Synonyms)
+      ? synonymsData.Synonyms.map((s: string) => s.toLowerCase())
+      : [];
 
-    return properties;
+    // Create unique set of names starting with IUPAC
+    const uniqueNames = new Set<string>([iupacName]);
+
+    // Add remaining synonyms until we have 5 unique names
+    for (const synonym of synonyms) {
+      if (uniqueNames.size >= 5) break;
+      uniqueNames.add(synonym);
+    }
+
+    const finalNames = Array.from(uniqueNames);
+    while (finalNames.length < 5) {
+      finalNames.push("N/A");
+    }
+
+    // Format for display
+    return {
+      //   Compound: molFileInfo.treeNode.title,
+      "Name 1": finalNames[0] || "N/A",
+      "Name 2": finalNames[1] || "N/A",
+      "Name 3": finalNames[2] || "N/A",
+      "Name 4": finalNames[3] || "N/A",
+      "Name 5": finalNames[4] || "N/A",
+      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Depositor-Supplied-Synonyms" target="_blank">${cid}</a>`,
+    };
   }
 
   async getTests(): Promise<ITest> {
     return {
       beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-      afterPluginCloses: new TestCmdList().waitUntilRegex("#data", "PubChem"),
+      afterPluginCloses: new TestCmdList().waitUntilRegex("#data", "Names"),
     };
   }
 }
 </script>
-
-<style scoped lang="scss">
+  
+  <style scoped lang="scss">
 .progress {
   height: 1.5rem;
 }

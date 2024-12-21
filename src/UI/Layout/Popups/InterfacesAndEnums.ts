@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
+import { ITableData } from "@/UI/Components/Table/Types";
+
 export enum PopupVariant {
     Primary = "primary",
     Secondary = "secondary",
@@ -18,6 +20,15 @@ export interface ISimpleMsg {
     variant?: PopupVariant;
     callBack?: Function;
     neverClose?: boolean;
+    open?: boolean; // Whether to open or close
+}
+
+export interface ITableDataMsg {
+    title: string;
+    message: string;
+    tableData: ITableData;
+    caption: string;
+    precision?: number;
     open?: boolean; // Whether to open or close
 }
 

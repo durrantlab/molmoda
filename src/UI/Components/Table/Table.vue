@@ -83,7 +83,7 @@
                                     )
                                 "
                             >
-                                {{ getCell(row[header.text]).val }}
+                                <span v-html="getCell(row[header.text]).val"></span>
                                 <div
                                     v-if="
                                         showIcon(getCell(row[header.text]), row)
@@ -167,6 +167,11 @@ export default class Table extends Vue {
             const newRow: { [key: string]: ICellValue } = {};
             for (const header of this.tableData.headers) {
                 let rowVal = row[header.text] as CellValue;
+
+                if (rowVal === undefined) {
+                    // If the value is undefined, just use an empty string.
+                    rowVal = { val: "" };
+                }
 
                 // Convert the val to ICellValue.
                 if (typeof rowVal === "string" || typeof rowVal === "number") {
@@ -254,7 +259,11 @@ export default class Table extends Vue {
      * @returns {string | number} The tool tip text.
      */
     getCellToolTipText(cellValue: ICellValue): string | number {
-        return cellValue.val;
+        // Strip html
+        const div = document.createElement("div");
+        div.innerHTML = cellValue.val as string;
+
+        return div.textContent || div.innerText || cellValue.val;
     }
 
     /**
@@ -442,9 +451,26 @@ export default class Table extends Vue {
             }
         }
 
+        // Remove "val" from ICellValue.
+        const newRows = data.rows.map((r: { [key: string]: ICellValue }) => {
+            const row: { [key: string]: any } = {};
+            for (const header of data.headers) {
+                const val = (r[header.text] as ICellValue).val
+                if (val !== undefined) {
+                    // Strip html from val
+                    const div = document.createElement("div");
+                    div.innerHTML = val as string;
+                    const valStripped = div.textContent || div.innerText || val;
+
+                    row[header.text] = valStripped;
+                }
+            }
+            return row;
+        });
+
         const dataToSave = {
             headers: data.headers.map((h: IHeader) => h.text),
-            rows: data.rows as IDataRows,
+            rows: newRows as IDataRows,
         };
 
         saveData(dataToSave, filename, format);

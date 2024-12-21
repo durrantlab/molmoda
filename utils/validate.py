@@ -87,6 +87,7 @@ def validate_plugin(ts_file):
                 'The PluginComponent must define an onPopupDone event like this: @onPopupDone="onPopupDone"',
                 [
                     "SimpleMsgPlugin.vue",
+                    "SimpleTableDataPlugin.vue",
                     "RedoPlugin.vue",
                     "UndoPlugin.vue",
                     "ClearSelectionPlugin.vue",
