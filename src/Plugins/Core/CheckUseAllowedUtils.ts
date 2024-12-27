@@ -25,6 +25,15 @@ export function checkAnyMolSelected(
     return null;
 }
 
+/**
+ * Checks whether the user has selected any compound.
+ *
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *                                        Ultimately defaults to all molecules
+ *                                        if not specified.
+ * @returns {string | null}  An error if the user hasn't selected any proteins,
+ *     null otherwise.
+ */
 export function checkAnyCompoundSelected(
     treeNodeList?: TreeNodeList
 ): string | null {

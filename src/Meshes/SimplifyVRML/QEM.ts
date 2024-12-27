@@ -1,25 +1,43 @@
 // qem.js
 // Implementation of Quadric Error Metrics (QEM) mesh simplification algorithm
 
-// Helper class to represent vertex quadrics (4x4 matrix)
+/**
+ * Helper class to represent vertex quadrics (4x4 matrix)
+ */
 class Quadric {
     matrix: number[];
 
+    /**
+     * Create a new quadric error metric.
+     */
     constructor() {
         // Initialize 4x4 matrix with zeros
         this.matrix = Array(16).fill(0);
     }
 
-    // Add another quadric to this one
-    add(other: Quadric) {
+    /**
+     * Add another quadric to this one.
+     * 
+     * @param {Quadric} other  The other quadric to add.
+     * @returns {Quadric}  The sum of the two quadrics.
+     */
+    add(other: Quadric): Quadric {
         for (let i = 0; i < 16; i++) {
             this.matrix[i] += other.matrix[i];
         }
         return this;
     }
 
-    // Compute quadric from plane equation (a, b, c, d)
-    static fromPlane(a: number, b: number, c: number, d: number) {
+    /**
+     * Compute quadric from plane equation (a, b, c, d).
+     *
+     * @param {number} a  The first coefficient of the plane equation.
+     * @param {number} b  The second coefficient of the plane equation.
+     * @param {number} c  The third coefficient of the plane equation.
+     * @param {number} d  The fourth coefficient of the plane equation.
+     * @returns {Quadric}  The quadric that represents the plane equation.
+     */
+    static fromPlane(a: number, b: number, c: number, d: number): Quadric {
         const q = new Quadric();
         // Q = pp^T where p = [a b c d]
         q.matrix[0] = a * a;
@@ -41,8 +59,13 @@ class Quadric {
         return q;
     }
 
-    // Evaluate quadric at a point
-    evaluate(point: [number, number, number]) {
+    /**
+     * Evaluate the quadric at a point.
+     * 
+     * @param {number[]} point  The point to evaluate the quadric at.
+     * @returns {number}  The value of the quadric at the point.
+     */
+    evaluate(point: [number, number, number]): number {
         const [x, y, z] = point;
         const m = this.matrix;
         return (
@@ -53,7 +76,12 @@ class Quadric {
         );
     }
 
-    // Find optimal point that minimizes this quadric
+    /** 
+     * Find optimal point that minimizes this quadric
+     *
+     * @param {number[]} initialGuess  The initial guess for the optimal point.
+     * @returns {number[]}  The optimal point.
+     */
     findOptimalPoint(
         initialGuess: [number, number, number]
     ): [number, number, number] {
@@ -75,12 +103,21 @@ class Quadric {
     }
 }
 
-// Helper class for edge collapses
+/** 
+ * Helper class for edge collapses
+ */
 class Edge {
     v1: number;
     v2: number;
     error: number;
 
+    /**
+     * Create a new edge collapse.
+     * 
+     * @param {number} v1     The first vertex index.
+     * @param {number} v2     The second vertex index.
+     * @param {number} error  The error of the edge collapse.
+     */
     constructor(v1: number, v2: number, error: number) {
         this.v1 = v1;
         this.v2 = v2;
@@ -88,13 +125,21 @@ class Edge {
     }
 }
 
-// Helper function to solve 3x3 linear system using Cramer's rule
+/**
+ * Helper function to solve 3x3 linear system using Cramer's rule.
+ * 
+ * @param {number[][]} A  The 3x3 matrix.
+ * @param {number[]}   b  The right-hand side vector.
+ * @returns {number[]}  The solution to the linear system.
+ */
 function solveLinearSystem(
     A: number[][],
     b: number[]
 ): [number, number, number] | null {
     const det = determinant3x3(A);
-    if (Math.abs(det) < 1e-10) return null;
+    if (Math.abs(det) < 1e-10) {
+      return null;
+    }
 
     const x =
         determinant3x3([
@@ -120,7 +165,13 @@ function solveLinearSystem(
     return [x, y, z];
 }
 
-function determinant3x3(matrix: number[][]) {
+/**
+ * Helper function to compute the determinant of a 3x3 matrix.
+ * 
+ * @param {number[][]} matrix  The 3x3 matrix.
+ * @returns {number}  The determinant of the matrix.
+ */
+function determinant3x3(matrix: number[][]): number {
     return (
         matrix[0][0] *
             (matrix[1][1] * matrix[2][2] - matrix[1][2] * matrix[2][1]) -
@@ -131,7 +182,14 @@ function determinant3x3(matrix: number[][]) {
     );
 }
 
-// Compute face normal and plane equation
+/**
+ * Compute face normal and plane equation
+ *
+ * @param {number[]} v1  The first vertex.
+ * @param {number[]} v2  The second vertex.
+ * @param {number[]} v3  The third vertex.
+ * @returns {number[] | null}  The plane equation coefficients.
+ */
 function computePlaneEquation(
     v1: [number, number, number],
     v2: [number, number, number],
@@ -151,7 +209,9 @@ function computePlaneEquation(
 
     // Normalize
     const length = Math.sqrt(nx * nx + ny * ny + nz * nz);
-    if (length < 1e-10) return null;
+    if (length < 1e-10) {
+      return null;
+    }
 
     const a = nx / length;
     const b = ny / length;
@@ -162,12 +222,25 @@ function computePlaneEquation(
 }
 
 // Main simplification function
+/**
+ * Simplify a mesh using Quadric Error Metrics (QEM).
+ * 
+ * @param {number[][]} vertices  The original vertices.
+ * @param {number[]}   indices   The original face indices.
+ * @param {number[][]} colors    The original vertex colors.
+ * @param {number}     targetVertexCount  The target vertex count.
+ * @returns {object}  The simplified mesh data.
+ */
 export function simplifyMesh(
     vertices: [number, number, number][],
     indices: number[],
     colors: [number, number, number][],
     targetVertexCount: number
-) {
+): {
+    vertices: [number, number, number][];
+    indices: number[];
+    colors: [number, number, number][];
+} {
     console.log(
         `Starting QEM simplification. Target vertex count: ${targetVertexCount}`
     );
@@ -177,14 +250,18 @@ export function simplifyMesh(
 
     // Compute initial quadrics from faces
     for (let i = 0; i < indices.length; i += 4) {
-        if (indices[i] === -1) continue;
+        if (indices[i] === -1) {
+          continue;
+        }
 
         const v1 = vertices[indices[i]];
         const v2 = vertices[indices[i + 1]];
         const v3 = vertices[indices[i + 2]];
 
         const plane = computePlaneEquation(v1, v2, v3);
-        if (!plane) continue;
+        if (!plane) {
+          continue;
+        }
 
         const faceQuadric = Quadric.fromPlane(...plane);
 
@@ -199,18 +276,24 @@ export function simplifyMesh(
     const seen = new Set();
 
     for (let i = 0; i < indices.length; i += 4) {
-        if (indices[i] === -1) continue;
+        if (indices[i] === -1) {
+          continue;
+        }
 
         for (let j = 0; j < 3; j++) {
             const v1 = indices[i + j];
             const v2 = indices[i + ((j + 1) % 3)];
 
             const edgeKey = `${Math.min(v1, v2)},${Math.max(v1, v2)}`;
-            if (seen.has(edgeKey)) continue;
+            if (seen.has(edgeKey)) {
+              continue;
+            }
             seen.add(edgeKey);
 
             // Skip edges between vertices with different colors
-            if (!colorsMatch(colors[v1], colors[v2])) continue;
+            if (!colorsMatch(colors[v1], colors[v2])) {
+              continue;
+            }
 
             const combinedQuadric = new Quadric();
             combinedQuadric.add(vertexQuadrics[v1]);
@@ -248,8 +331,12 @@ export function simplifyMesh(
 
     // Process edges until target count reached
     for (const edge of edges) {
-        if (newVertices.length >= targetVertexCount) break;
-        if (!alive[edge.v1] || !alive[edge.v2]) continue;
+        if (newVertices.length >= targetVertexCount) {
+          break;
+        }
+        if (!alive[edge.v1] || !alive[edge.v2]) {
+          continue;
+        }
 
         // Compute optimal position
         const combinedQuadric = new Quadric();
@@ -286,18 +373,24 @@ export function simplifyMesh(
     const seenFaces = new Set();
 
     for (let i = 0; i < indices.length; i += 4) {
-        if (indices[i] === -1) continue;
+        if (indices[i] === -1) {
+          continue;
+        }
 
         const v1 = mapping[indices[i]];
         const v2 = mapping[indices[i + 1]];
         const v3 = mapping[indices[i + 2]];
 
         // Skip degenerate faces
-        if (v1 === v2 || v2 === v3 || v3 === v1) continue;
+        if (v1 === v2 || v2 === v3 || v3 === v1) {
+          continue;
+        }
 
         // Skip duplicate faces
         const faceKey = [v1, v2, v3].sort().join(",");
-        if (seenFaces.has(faceKey)) continue;
+        if (seenFaces.has(faceKey)) {
+          continue;
+        }
         seenFaces.add(faceKey);
 
         newIndices.push(v1, v2, v3, -1);
@@ -310,11 +403,19 @@ export function simplifyMesh(
 }
 
 // Helper function to check if colors match within a small epsilon
+/**
+ * Determine if two colors are the same.
+ *
+ * @param {number[]} c1       The first color.
+ * @param {number[]} c2       The second color.
+ * @param {number}   epsilon  The maximum difference between the colors.
+ * @returns {boolean}  Whether the two colors are the same.
+ */
 function colorsMatch(
     c1: [number, number, number],
     c2: [number, number, number],
     epsilon = 0.001
-) {
+): boolean {
     return (
         Math.abs(c1[0] - c2[0]) < epsilon &&
         Math.abs(c1[1] - c2[1]) < epsilon &&

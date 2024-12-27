@@ -8,6 +8,9 @@ export enum Tag {
 
 const appTags: Tag[] = [];
 
+/**
+ * Setup the tags for the app.
+ */
 export function setupTags() {
     // Get "tags" from the url parameter
     const tags = getUrlParam("tags");
@@ -30,6 +33,12 @@ export function setupTags() {
     console.log(appTags);
 }
 
+/**
+ * Check if the plugin matches the tags.
+ * 
+ * @param {Tag[]} pluginTags  The tags of the plugin.
+ * @returns {boolean}  True if the plugin matches the tags, false otherwise.
+ */
 export function matchesTag(pluginTags: Tag[]): boolean {
     // If Tag.All is in pluginTags, always return true.
     if (pluginTags.includes(Tag.All)) {

@@ -3,9 +3,10 @@
     <h5>Data: Visible/Selected Molecules</h5>
 
     <p v-if="allTableData.length === 0" style="font-size: 14px">
-      No molecules (visible or selected) currently have any data to display
+      No molecules (visible or selected) have data to display.
     </p>
-    <div class="mb-3">
+    <div v-else class="mb-3">
+        <p style="font-size: 14px" class="mb-2">Use these toggle buttons to indicate the data to display in the table below:</p>
       <div class="d-flex flex-wrap gap-2">
         <!-- Add unique ID to connect input and label -->
         <div v-for="tableData in allTableData" :key="tableData[0]">
@@ -31,7 +32,7 @@
       v-if="mergedTableData !== null"
       id="merged-data"
       :tableData="mergedTableData"
-      caption="test caption"
+      caption="All Molecular Data"
       :noFixedTable="true"
       @rowClicked="rowClicked"
       :clickableRows="true"
@@ -82,6 +83,11 @@ export default class DataPanel extends Vue {
   private knownSources: Set<string> = new Set();
   private initialized = false;
 
+  /**
+   * Get the selected data sources.
+   * 
+   * @returns {string[]}  The selected sources.
+   */
   get selectedSources(): string[] {
     const allSources = this.allTableData.map(([source]) => source);
 
@@ -138,6 +144,11 @@ export default class DataPanel extends Vue {
     return true;
   }
 
+  /**
+   * Get the merged table data.
+   *
+   * @returns {ITableData | null}  The merged table data. Null if no data.
+   */
   get mergedTableData(): ITableData | null {
     if (this.allTableData.length === 0 || this.selectedSources.length === 0)
       return null;

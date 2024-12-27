@@ -61,7 +61,11 @@ def validate_plugin(ts_file):
         (
             "extends PluginParentClass",
             "All plugins must extend PluginParentClass",
-            None,
+            [
+                "PubChemBioassaysPlugin.vue",
+                "PubChemNamesPlugin.vue",
+                "PubChemPropsPlugin.vue"
+            ],
         ),
         (
             "<PluginComponent",
@@ -75,7 +79,7 @@ def validate_plugin(ts_file):
         ),
         (
             'getTests(',
-            'All plugins must define a getTests function. If a test is not needed, return an empty array.',
+            'All plugins must define a getTests function. If a test is not needed, return an empty array. You can use `FailingTest` as a placeholder if you do not want to make the test now.',
             None
         )
     ]

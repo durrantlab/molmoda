@@ -36,7 +36,6 @@ import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "../Tags/Tags";
-import { Gen3DLevel, WhichMolsGen3D } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * A function that returns the options and validate functions for the available

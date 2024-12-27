@@ -101,6 +101,13 @@ export default class HelpPlugin extends PluginParentClass {
         return plugin.title + " " + plugin.intro;
     }
 
+    /**
+     * Filters the plugins based on the user's input (filter text).
+     *
+     * @param {PluginParentClass[]}  plugins  The list of filtered plugins
+     *                                        emitted by the component.
+     * @returns {PluginParentClass[]} The list of plugins to display (filtered).
+     */
     filterByTags(plugins: PluginParentClass[]): PluginParentClass[] {
         return plugins.filter(p => matchesTag(p.tags));
     }

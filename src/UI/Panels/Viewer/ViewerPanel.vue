@@ -309,6 +309,12 @@ export default class ViewerPanel extends Vue {
         return true;
     }
 
+    /**
+     * Set the non-surface style.
+     *
+     * @param {IStyle[]} nonSurfaceStyles  The non-surface styles.
+     * @param {TreeNode} treeNode          The tree node to set the style of.
+     */
     private _setNonSurfaceStyle(
         nonSurfaceStyles: IStyle[],
         treeNode: TreeNode
@@ -381,6 +387,16 @@ export default class ViewerPanel extends Vue {
 
     private previousSurfaceStylesCache: { [key: string]: IStyle } = {};
 
+    /**
+     * Set the surface style.
+     *
+     * @param {TreeNode}       treeNode         The tree node to set the style
+     *                                          of.
+     * @param {IStyle[]}       surfaceStyles    The surface styles.
+     * @param {Promise<any>[]} surfacePromises  The promises for the surfaces.
+     * @returns {Promise<void>}  A promise that resolves when the surface style
+     *     has been set.
+     */
     private async _setSurfaceStyle(
         treeNode: TreeNode,
         surfaceStyles: IStyle[],

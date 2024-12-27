@@ -9,11 +9,26 @@ import { parseVRML, replaceVerticesAndIndicesInVRML } from "./ParseVRML";
 import { simplifyMesh } from "./QEM";
 
 // Helper function to count faces
-function countFaces(indices: number[]) {
+/**
+ * Count the number of faces in a mesh.
+ * 
+ * @param {number[]} indices  The indices of the mesh.
+ * @returns {number}  The number of faces in the mesh.
+ */
+function countFaces(indices: number[]): number {
     return indices.filter((index) => index === -1 && index !== undefined)
         .length;
 }
 
+/**
+ * Process a VRML file by merging vertices, simplifying the mesh, and replacing
+ * the vertices and indices in the VRML content.
+ *
+ * @param {string}  content           The content of the VRML file.
+ * @param {number}  mergeCutoff       The distance cutoff for merging vertices.
+ * @param {number}  reductionFraction The fraction of vertices to reduce to.
+ * @returns {Promise<string>}  The processed VRML content.
+ */
 export async function processVRML(
     content: string,
     mergeCutoff: number,

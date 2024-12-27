@@ -734,6 +734,11 @@ export class Viewer3DMol extends ViewerParent {
         return this._mol3dObj.exportVRML();
     }
 
+    /**
+     * Exports the VRML for each model in the viewer.
+     * 
+     * @returns {string[][]}  The VRML for each model.
+     */
     exportVRMLPerModel(): [string, string][] {
         // const vrmls: {[id: string]: string} = {};
         const vrmls: [string, string][] = [];

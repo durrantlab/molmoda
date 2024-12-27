@@ -1,3 +1,12 @@
+/**
+ * Get a URL parameter by name.
+ *
+ * @param {string}      param                The name of the parameter to get.
+ * @param {string|null} [defaultValue=null]  The default value to return if the
+ *                                           parameter is not found.
+ * @returns {string|null}  The value of the parameter, or the default value if
+ *     the parameter is not found.
+ */
 export function getUrlParam(
     param: string,
     defaultValue: string | null = null

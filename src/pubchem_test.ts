@@ -8,14 +8,22 @@ class ApiQueue {
     private isProcessing = false;
     private delayMs: number;
 
+    /**
+     * Create a new ApiQueue instance
+     *
+     * @param {number} [delayMs=0] The delay between each API call in
+     *                             milliseconds.
+     */
     constructor(delayMs = 0) {
         this.delayMs = delayMs;
     }
 
     /**
-     * Add a function to the queue
-     * @param fn The async function to be queued
-     * @returns Promise that resolves with the function's result
+     * Add a function to the queue.
+     *
+     * @param {Function} fn The function to add to the queue.
+     * @returns {Promise} A promise that resolves when the function is
+     *     processed.
      */
     public enqueue<T>(fn: () => Promise<T>): Promise<T> {
         return new Promise((resolve, reject) => {
@@ -60,14 +68,16 @@ class ApiQueue {
     }
 
     /**
-     * Get the current queue length
+     * Get the current queue length.
+     * 
+     * @returns {number} The length of the queue.
      */
     public get length(): number {
         return this.queue.length;
     }
 
     /**
-     * Clear the queue
+     * Clear the queue.
      */
     public clear(): void {
         this.queue = [];
@@ -77,7 +87,14 @@ class ApiQueue {
 // Create a singleton instance for PubChem API calls
 const pubChemQueue = new ApiQueue(0);  // 0ms delay between calls
 
-// Modified fetcher function that uses the queue
+/** 
+ * Modified fetcher function that uses the queue.
+ * 
+ * @param {string} url The URL to fetch.
+ * @param {object} options The fetch options.
+ * @param {ResponseType} options.responseType The response type.
+ * @returns {Promise<any>} A promise that resolves to the fetched data.
+ */
 async function queuedFetcher(url: string, options: { responseType: ResponseType }): Promise<any> {
     return pubChemQueue.enqueue(() => fetcher(url, options));
 }
@@ -328,18 +345,6 @@ export async function fetchActiveAssays(cid: string): Promise<any> {
 }
 
 /**
- * A helper function that "saves" file data by logging it. In a browser environment
- * we cannot write directly to the file system. Adjust as needed.
- *
- * @param {any} result The data to save.
- * @param {string} [filename="compound_data.json"] The filename to associate with the saved data.
- * @returns {void}
- */
-function saveFile(result: any, filename = "compound_data.json"): void {
-    console.log(`Data that would be saved to ${filename}:`, result);
-}
-
-/**
  * A helper function that fetches compounds similar to the provided SMILES string.
  *
  * @param {string} smiles The SMILES string.
@@ -347,7 +352,7 @@ function saveFile(result: any, filename = "compound_data.json"): void {
  * @param {number} [maxRecords=100] The max number of records to return.
  * @returns {Promise<any>} A promise that resolves to an object containing similar compounds or an error message.
  */
-async function fetchSimilarCompounds(smiles: string, threshold = 95, maxRecords = 100): Promise<any> {
+export async function fetchSimilarCompounds(smiles: string, threshold = 95, maxRecords = 100): Promise<any> {
     const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/smiles/${encodeURIComponent(smiles)}/cids/JSON?Threshold=${threshold}&MaxRecords=${maxRecords}`;
     try {
         const data = await queuedFetcher(url, { responseType: ResponseType.JSON });
@@ -394,7 +399,7 @@ async function fetchSimilarCompounds(smiles: string, threshold = 95, maxRecords 
  * @param {number} [maxRecords=100] The max number of records to return.
  * @returns {Promise<any>} A promise that resolves to an object containing substructure compounds or an error message.
  */
-async function fetchSubstructureCompounds(smiles: string, maxRecords = 100): Promise<any> {
+export async function fetchSubstructureCompounds(smiles: string, maxRecords = 100): Promise<any> {
     const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsubstructure/smiles/${encodeURIComponent(smiles)}/cids/JSON?MatchIsotopes=true&MaxRecords=${maxRecords}`;
     try {
         const data = await queuedFetcher(url, { responseType: ResponseType.JSON });
@@ -416,7 +421,7 @@ async function fetchSubstructureCompounds(smiles: string, maxRecords = 100): Pro
  * @param {number} [maxRecords=100] The max number of records to return.
  * @returns {Promise<any>} A promise that resolves to an object containing superstructure compounds or an error message.
  */
-async function fetchSuperstructureCompounds(smiles: string, maxRecords = 100): Promise<any> {
+export async function fetchSuperstructureCompounds(smiles: string, maxRecords = 100): Promise<any> {
     const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsuperstructure/smiles/${encodeURIComponent(smiles)}/cids/JSON?MatchIsotopes=true&MaxRecords=${maxRecords}`;
     try {
         const data = await queuedFetcher(url, { responseType: ResponseType.JSON });

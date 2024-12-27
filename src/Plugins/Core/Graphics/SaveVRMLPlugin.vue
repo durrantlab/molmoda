@@ -100,6 +100,13 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     this.submitJobs([{ filename: this.getUserArg("filename") }]);
   }
 
+  /**
+   * Simplify the mesh.
+   *
+   * @param {string[][]} vrmlData  The VRML data to simplify.
+   * @param {any}        mols      The molecules to simplify.
+   * @returns {Promise<string[][]>}  The simplified VRML data.
+   */
   private async _simplifyMesh(vrmlData: [string, string][], mols: any) {
     const simplifiedVrmlPromises = [];
 

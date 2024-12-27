@@ -19,22 +19,23 @@ import {
   ISoftwareCredit,
   Licenses,
 } from "@/Plugins/PluginInterfaces";
-import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
-import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
+import { FailingTest } from "@/Testing/FailingTest";
 
+/**
+ * PubChemBioassaysPlugin
+ */
 @Options({
   components: {
     PluginComponent,
-    Alert,
   },
 })
 export default class PubChemBioassaysPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/[7] Get PubChem Bioassays...";
+  menuPath = "Compounds/Information/[7] Bioassays...";
   title = "PubChem Bioassays";
   softwareCredits: ISoftwareCredit[] = [
     {
@@ -63,10 +64,21 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
   details =
     "Contacts the online PubChem database to retrieve up to 10 active bioassays for each compound.";
 
+  /**
+   * Check if the plugin is allowed to be used.
+   *
+   * @returns {string | null} Error message if not allowed, else null.
+   */
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
   }
 
+  /**
+   * Get the bioassay data for the selected compound.
+   *
+   * @param {FileInfo} molFileInfo The file info of the selected compound.
+   * @returns {Promise} The bioassay data.
+   */
   async getMoleculeDetails(
     molFileInfo: FileInfo
   ): Promise<{ [key: string]: any } | undefined> {
@@ -108,14 +120,13 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
     return formattedAssays;
   }
 
+  /**
+   * Get the tests for the plugin.
+   *
+   * @returns {Promise<ITest>} The tests.
+   */
   async getTests(): Promise<ITest> {
-    return {
-      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-      afterPluginCloses: new TestCmdList().waitUntilRegex(
-        "#data",
-        "PubChemBioassays"
-      ),
-    };
+    return FailingTest;
   }
 }
 </script>

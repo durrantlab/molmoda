@@ -173,6 +173,11 @@ export default class GoldLayout extends Vue {
         return appName + " " + appVersion;
     }
 
+    /**
+     * Gets the logo path.
+     *
+     * @returns {string}  The logo path.
+     */
     get logoPath(): string {
         return logoPath;
     }

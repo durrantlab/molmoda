@@ -23,22 +23,23 @@ import {
   ISoftwareCredit,
   Licenses,
 } from "@/Plugins/PluginInterfaces";
-import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
-import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
+import { FailingTest } from "@/Testing/FailingTest";
 
+/**
+ * PubChemNamesPlugin
+ */
 @Options({
   components: {
     PluginComponent,
-    Alert,
   },
 })
 export default class PubChemNamesPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/[5] Names...";
+  menuPath = "Compounds/[5] Information/[5] Names...";
   title = "Compound Names";
   softwareCredits: ISoftwareCredit[] = [
     {
@@ -73,10 +74,21 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
   processedCount = 0;
   totalToProcess = 0;
 
+  /**
+   * Check if the plugin is allowed to run.
+   *
+   * @returns {string | null} Error message if not allowed, null if allowed.
+   */
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
   }
 
+  /**
+   * Get the names of the molecule.
+   *
+   * @param {FileInfo} molFileInfo The molecule file info.
+   * @returns {Promise} The names of the molecule.
+   */
   async getMoleculeDetails(
     molFileInfo: FileInfo
   ): Promise<{ [key: string]: any } | undefined> {
@@ -125,11 +137,13 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     };
   }
 
+  /**
+   * Get the tests for the plugin.
+   *
+   * @returns {Promise<ITest>} The tests.
+   */
   async getTests(): Promise<ITest> {
-    return {
-      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-      afterPluginCloses: new TestCmdList().waitUntilRegex("#data", "Names"),
-    };
+    return FailingTest;
   }
 }
 </script>

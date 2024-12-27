@@ -1,10 +1,23 @@
 import { distanceWithinCutoffSquared, sameColor, truncateValues } from "./Math";
 
+/**
+ * Merge vertices that are within a certain distance of each other.
+ *
+ * @param {number[][]} vertices  The vertices to merge.
+ * @param {number[][]} colors    The colors to merge.
+ * @param {number}     cutoff    The maximum distance between vertices to merge.
+ * @returns {object}  An object containing the merged vertices, merged colors, and
+ *    a mapping from the original indices to the new indices.
+ */
 export function mergeVertices(
     vertices: [number, number, number][],
     colors: [number, number, number][],
     cutoff: number
-) {
+): {
+    mergedVertices: [number, number, number][];
+    mergedColors: [number, number, number][];
+    mapping: Map<number, number>;
+} {
     const mergedVertices = vertices.map(truncateValues);
     const mergedColors = colors.map(truncateValues);
     const mapping = new Map();
@@ -14,14 +27,26 @@ export function mergeVertices(
     const gridSize = cutoff;
     const grid = new Map();
 
-    function getGridKey(vertex: [number, number, number]) {
+    /**
+     * Get the grid key for a vertex.
+     * 
+     * @param {number[]} vertex  The vertex.
+     * @returns {string}  The grid key.
+     */
+    const getGridKey = function(vertex: [number, number, number]): string {
         const x = Math.floor(vertex[0] / gridSize);
         const y = Math.floor(vertex[1] / gridSize);
         const z = Math.floor(vertex[2] / gridSize);
         return `${x},${y},${z}`;
     }
 
-    function addToGrid(index: number, vertex: [number, number, number]) {
+    /**
+     * Add a vertex to the grid.
+     * 
+     * @param {number}   index   The index of the vertex.
+     * @param {number[]} vertex  The vertex.
+     */ 
+    const addToGrid = function(index: number, vertex: [number, number, number]) {
         const key = getGridKey(vertex);
         if (!grid.has(key)) {
             grid.set(key, []);
@@ -65,7 +90,9 @@ export function mergeVertices(
                     break;
                 }
             }
-            if (merged) break;
+            if (merged) {
+              break;
+            }
         }
 
         if (!merged) {
@@ -99,6 +126,14 @@ export function mergeVertices(
     };
 }
 
+/**
+ * Update indices based on a mapping.
+ *
+ * @param {number[]}            indices  The indices to update.
+ * @param {Map<number, number>} mapping  The mapping from old indices to new
+ *                                       indices.
+ * @returns {number[]}  The updated indices.
+ */
 export function updateIndices(
     indices: number[],
     mapping: Map<number, number>

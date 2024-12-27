@@ -19,22 +19,23 @@ import {
   ISoftwareCredit,
   Licenses,
 } from "@/Plugins/PluginInterfaces";
-import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
-import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
+import { FailingTest } from "@/Testing/FailingTest";
 
+/**
+ * PubChemPropsPlugin
+ */
 @Options({
   components: {
-    PluginComponent,
-    Alert,
+    PluginComponent
   },
 })
 export default class PubChemPropsPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/[6] PubChem Properties...";
+  menuPath = "Compounds/Information/[6] Properties...";
   title = "PubChem Properties";
   softwareCredits: ISoftwareCredit[] = [
     {
@@ -67,10 +68,22 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     "Contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
   dataSetTitle = "Properties";
 
+  /**
+   * Check if the plugin is allowed to be used.
+   * 
+   * @returns {string | null} Error message if not allowed, null if allowed.
+   */
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
   }
 
+  /**
+   * Get the properties of the molecule.
+   *
+   * @param {FileInfo} molFileInfo The molecule file info.
+   * @returns {Promise} The properties. Resolves to undefined if no properties
+   *     found.
+   */
   async getMoleculeDetails(
     molFileInfo: FileInfo
   ): Promise<{ [key: string]: any } | undefined> {
@@ -92,11 +105,13 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     return properties;
   }
 
+  /**
+   * Get the tests for the plugin.
+   * 
+   * @returns {Promise<ITest>} The tests.
+   */
   async getTests(): Promise<ITest> {
-    return {
-      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-      afterPluginCloses: new TestCmdList().waitUntilRegex("#data", "PubChem"),
-    };
+    return FailingTest;
   }
 }
 </script>

@@ -24,6 +24,11 @@ export interface ITestCommand {
 
 type IConvertedTest = { [key: string]: ITestCommand[] };
 
+/**
+ * Adds the specified commands to the list of commands to run.
+ * 
+ * @param  {any[]} cmds  The commands to add.
+ */
 function _addTestsToCmdList(cmds: any[]) {
     const testsStr = store.state.test.cmds;
     const tests = testsStr === "" ? [] : JSON.parse(testsStr);

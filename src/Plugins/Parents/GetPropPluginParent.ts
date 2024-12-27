@@ -2,18 +2,26 @@ import { IHeader, ITableData } from "@/UI/Components/Table/Types";
 import { PluginParentClass } from "./PluginParentClass/PluginParentClass"; 
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
-import { TestCmdList } from "@/Testing/TestCmdList";
-import { ITest } from "@/Testing/TestCmd";
 import { ITreeNodeData, TableHeaderSort, TreeNodeDataType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { IUserArgAlert, IUserArgMoleculeInputParams, UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 
-// Concrete queue class
+/**
+ * A class to handle the queue of jobs for getting properties.
+ */
 class PropertyQueue extends QueueParent {
     private parent: GetPropPluginParent;
 
+    /**
+     * Creates a new PropertyQueue.
+     *
+     * @param {GetPropPluginParent} parent     The parent plugin.
+     * @param {string}              jobTypeId  The job type ID.
+     * @param {any[]}               inputs     The inputs for the jobs.
+     * @param {any}                 callbacks  The callbacks for the jobs.
+     */
     constructor(
         parent: GetPropPluginParent,
         jobTypeId: string,
@@ -28,6 +36,13 @@ class PropertyQueue extends QueueParent {
         this.parent = parent;
     }
 
+    /**
+     * Runs a batch of jobs.
+     *
+     * @param {IJobInfo[]} inputBatch  The batch of jobs to run.
+     * @param {number}     procs       The number of processes to use.
+     * @returns {Promise<IJobInfo[]>} The results of the jobs.
+     */
     public async runJobBatch(
         inputBatch: IJobInfo[],
         procs: number
@@ -39,7 +54,7 @@ class PropertyQueue extends QueueParent {
             
             // Below is just to keep track of number completed. Results are
             // added to the tree nodes as completed.
-            results.push(jobInfo);  
+            results.push(jobInfo);
         }
 
         // Wait 250 miliseconds
@@ -49,6 +64,9 @@ class PropertyQueue extends QueueParent {
     }
 }
 
+/**
+ * A class to handle the parent plugin for getting properties.
+ */
 export abstract class GetPropPluginParent extends PluginParentClass {
     resultsData: { [key: string]: any } = {};
     abstract dataSetTitle: string;
@@ -70,11 +88,22 @@ export abstract class GetPropPluginParent extends PluginParentClass {
         } as IUserArgAlert,
     ];
 
+    /**
+     * Gets the results array. This is aimply the values of the results data.
+     *
+     * @returns {any[]}  The results array.
+     */
     get resultsArray(): any[] {
         return Object.values(this.resultsData);
     }
 
-    public onPopupDone(): void | Promise<void> {
+    /**
+     * Called when the popup is done.
+     *
+     * @returns {Promise<void>|undefined}  A promise that resolves when the
+     *     popup is done.
+     */
+    public onPopupDone(): Promise<void> | undefined {
         const molecules = this.getUserArg("makemolinputparams") as FileInfo[];
 
         if (molecules.length === 0) {
@@ -106,12 +135,18 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
         // Run jobs
         queue.done.catch((err) => {
-            messagesApi.popupError(err.message);
+            messagesApi.popupError(err.message);  // TODO: Does throwing the error do the same thing? Redudant?
+            throw err;
         });
     }
 
     abstract getMoleculeDetails(molFileInfo: FileInfo): Promise<{ [key: string]: any } | undefined>;
 
+    /**
+     * Gets the formatted table data.
+     * 
+     * @returns {ITableData}  The formatted table data.
+     */
     get formattedTableData(): ITableData {
         if (this.resultsArray.length === 0) {
             return { headers: [], rows: [] };
@@ -149,18 +184,25 @@ export abstract class GetPropPluginParent extends PluginParentClass {
         };
     }
 
+    /**
+     * Runs a job in the browser.
+     *
+     * @param {FileInfo} mol  The molecule to run the job on.
+     * @returns {Promise<void>}  A promise that resolves when the job is done.
+     */
     async runJobInBrowser(mol: FileInfo): Promise<void> {
         let props: { [key: string]: any } | undefined;
         try {
             props = await this.getMoleculeDetails(mol);
         } catch (error: any) {
             if (mol.treeNode) {
+                const pathName = mol.treeNode.descriptions.pathName(">", 50);
                 console.error(
-                    `Error getting properties for ${mol.treeNode.title}:`,
+                    `Error getting properties for ${pathName}:`,
                     error
                 );
-                this.resultsData[mol.treeNode.title] = {
-                    Compound: mol.treeNode.title,
+                this.resultsData[pathName] = {
+                    Compound: pathName,
                     error: error.message,
                 };
             }
@@ -177,20 +219,12 @@ export abstract class GetPropPluginParent extends PluginParentClass {
                 headerSort: TableHeaderSort.None,
             } as ITreeNodeData;
 
-            this.resultsData[mol.treeNode.title] = {
-                name: mol.treeNode.title,
+            const pathName = mol.treeNode.descriptions.pathName(">", 50);
+
+            this.resultsData[pathName] = {
+                name: pathName,
                 ...props,
             };
         }
-    }
-
-    async getTests(): Promise<ITest> {
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#data",
-                "PubChem"
-            ),
-        };
     }
 }
