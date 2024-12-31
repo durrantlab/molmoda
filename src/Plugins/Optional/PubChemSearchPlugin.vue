@@ -49,6 +49,8 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { messagesApi } from "@/Api/Messages";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 enum SearchMode {
   Similar = "similar",
@@ -140,24 +142,43 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     {
       id: "maxresults",
       type: UserArgType.Number,
-      label: "Maximum results per query",
-      description: "Maximum number of compounds to retrieve per query (1-100).",
+      label: "Maximum results",
+      description: "Maximum number of compounds to retrieve (1-1000).",
       val: 10,
       enabled: true,
-      validateFunc: (val: number) => val > 0 && val <= 100,
+      validateFunc: (val: number) => val > 0 && val <= 1000,
       warningFunc: (val: number) => {
+        // debugger;
         if (val > 50) return "Large result sets may take longer to process.";
         return "";
       },
+      // currnetly total per compound. But should be total total (divided among compounds)
     } as IUserArgNumber,
   ];
+
+  // Should it use a queue somehow?
 
   /**
    * Updates form field visibility based on search mode selection.
    */
-  onUserArgChange(): void {
+  async onUserArgChange(): Promise<void> {
     const searchMode = this.getUserArg("searchmode");
     this.setUserArgEnabled("similarity", searchMode === SearchMode.Similar);
+
+    // // Add validation for maxresults vs number of input molecules
+    // debugger
+    // const molecules: FileInfo[] = await this.getUserArg("makemolinputparams").getProtAndCompoundPairs();
+    // const maxResults = this.getUserArg("maxresults");
+
+    // if (molecules.length > 0 && maxResults < molecules.length) {
+    //   this.setUserArg(
+    //     "maxResultsWarning",
+    //     `With ${maxResults} results per molecule and ${molecules.length} query molecules, you may not retrieve results for all queries. Consider increasing max results to at least ${molecules.length} to ensure each query molecule is used.`
+    //   );
+    //   this.setUserArgEnabled("maxResultsWarning", true);
+    // } else {
+    //   this.setUserArgEnabled("maxResultsWarning", false);
+    // }
   }
 
   /**
@@ -171,11 +192,24 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     const maxResults = this.getUserArg("maxresults");
     const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
-    const allTreeNodes: TreeNode[] = [];
-    const cidsAlreadyAdded: Set<number> = new Set();
+    // maxResults is total, not per compound. So divide it to get per-compound
+    // values. Try to divide as evently as possible, but make sure totals sum to
+    // maxResults.
+    const maxResultVals = Array(compounds.length)
+      .fill(0)
+      .map((_, idx) => {
+        // Example: 10 results among 3 compounds = [4, 3, 3]
+        // First N compounds get ceiling(total/num), rest get floor
+        const perCompound = maxResults / compounds.length;
+        const numExtra = maxResults % compounds.length;
+        return idx < numExtra
+          ? Math.ceil(perCompound)
+          : Math.floor(perCompound);
+      });
 
-    for (const compound of compounds) {
-      const selectedMols = new Array<FileInfo>();
+    // Step 1: Collect all SMILES from PubChem API in parallel
+    const fetchPromises = compounds.map(async (compound, idx) => {
+      const maxResultPerCompound = maxResultVals[idx];
       const smiles = compound.contents.split(" ")[0].split("\t")[0];
       let results;
       let resultCompounds = [];
@@ -184,25 +218,33 @@ export default class PubChemSearchPlugin extends PluginParentClass {
       switch (searchMode) {
         case SearchMode.Similar: {
           const similarity = this.getUserArg("similarity");
-          results = await fetchSimilarCompounds(smiles, similarity, maxResults);
+          results = await fetchSimilarCompounds(
+            smiles,
+            similarity,
+            maxResultPerCompound
+          );
           if (results["Similar Compounds"]) {
             resultCompounds = results["Similar Compounds"];
             prep = "similar_to";
           }
           break;
         }
-
         case SearchMode.Substructure: {
-          results = await fetchSubstructureCompounds(smiles, maxResults);
+          results = await fetchSubstructureCompounds(
+            smiles,
+            maxResultPerCompound
+          );
           if (results["Substructure Compounds"]) {
             resultCompounds = results["Substructure Compounds"];
             prep = "contains";
           }
           break;
         }
-
         case SearchMode.Superstructure: {
-          results = await fetchSuperstructureCompounds(smiles, maxResults);
+          results = await fetchSuperstructureCompounds(
+            smiles,
+            maxResultPerCompound
+          );
           if (results["Superstructure Compounds"]) {
             resultCompounds = results["Superstructure Compounds"];
             prep = "contained_in";
@@ -211,96 +253,132 @@ export default class PubChemSearchPlugin extends PluginParentClass {
         }
       }
 
-      for (const resultCompound of resultCompounds) {
-        // Don't repeat CIDs (uniq additions)
-        if (cidsAlreadyAdded.has(resultCompound.CID)) {
-          continue
-        }
+      return {
+        queryCompoundName: compound.name,
+        results: resultCompounds,
+        prep,
+      };
+    });
 
-        selectedMols.push(
-          new FileInfo({
-            name: `CID${resultCompound.CID}_${prep}_${compound.name.replace(
-              /\.[^/.]+$/,
-              ""
-            )}.smi`,
-            contents: resultCompound.SMILES
-          })
-        );
+    // Wait for all API calls to complete
+    const apiResults = await Promise.all(fetchPromises);
 
-        cidsAlreadyAdded.add(resultCompound.CID);
+    // Step 2: Create FileInfo objects for all unique compounds
+    const cidsAlreadyAdded = new Set<number>();
+    const allFileInfos: FileInfo[] = [];
+
+    let duplicatesNotAdded = 0;
+    let insufficientResultsReturned = 0;
+
+    for (const idx in apiResults) {
+      const result = apiResults[idx];
+      const numResults = result.results.length;
+      const expectedNumResults = maxResultVals[idx];
+      if (numResults !== expectedNumResults) {
+        insufficientResultsReturned += expectedNumResults - numResults;
       }
 
-      debugger
-
-      // First convert all SMILES to 3D structures in a single batch operation
-      const gen3D = {
-        whichMols: WhichMolsGen3D.OnlyIfLacks3D, // This is equivalent to the 2 you had before
-        level: Gen3DLevel.Better,
-      };
-
-      // Do the batch conversion first
-      const convertedMols = await convertFileInfosOpenBabel(
-        selectedMols,
-        "mol2", // Using mol2 since it preserves bond orders better than PDB
-        gen3D,
-        undefined, // adds hydrogens (pH parameter)
-        true, // desalt
-        false // surpressMsgs
-      );
-
-      // Convert the results to FileInfos
-      const convertedFileInfos = convertedMols.map((contents, idx) => {
-        return new FileInfo({
-          name: selectedMols[idx].name.replace(/\.[^/.]+$/, ".mol2"),
-          contents: contents,
-        });
-      });
-
-      // Now convert FileInfos to TreeNodes
-      const treeNodePromises = convertedFileInfos.map((mol) => {
-        return TreeNode.loadFromFileInfo({
-          fileInfo: mol,
-          tag: this.pluginId,
-          // We don't need gen3D here anymore since the molecules are already 3D
-        });
-      });
-
-      let treeNodes = (await Promise.all(
-        treeNodePromises
-      )) as (void | TreeNode)[];
-      const initialCompoundsVisible = await getSetting(
-        "initialCompoundsVisible"
-      );
-
-      // Filter out failed loads and process the nodes
-      treeNodes = treeNodes
-        .filter((n): n is TreeNode => n !== undefined)
-        .map((n, i) => {
-          if (n.nodes) {
-            n = n.nodes.terminals.get(0);
-          }
-          n.visible = i < initialCompoundsVisible;
-          n.selected = SelectedType.False;
-          n.focused = false;
-          n.viewerDirty = true;
-          n.type = TreeNodeType.Compound;
-          return n;
-        });
-
-      allTreeNodes.push(...(treeNodes as TreeNode[]));
+      for (const compound of result.results) {
+        if (cidsAlreadyAdded.has(compound.CID)) {
+          duplicatesNotAdded++;
+          continue;
+        }
+        allFileInfos.push(
+          new FileInfo({
+            name: `CID${compound.CID}_${
+              result.prep
+            }_${result.queryCompoundName.replace(/\.[^/.]+$/, "")}.smi`,
+            contents: compound.SMILES,
+          })
+        );
+        cidsAlreadyAdded.add(compound.CID);
+      }
     }
 
-    // Create a root node to contain all results from this query compound
-    const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(allTreeNodes);
-    const searchModeText =
-      searchMode === SearchMode.Similar
-        ? "similarity"
-        : searchMode === SearchMode.Substructure
-        ? "substructure"
-        : "superstructure";
-    // rootNode.title = `${compound.treeNode?.title}:${searchModeText}_search`;
-    rootNode.title = `${searchModeText}_search`;
+    if (duplicatesNotAdded > 0) {
+      messagesApi.popupMessage(
+        "Warning",
+        `<p>PubChem provided ${duplicatesNotAdded} duplicate compound${
+          duplicatesNotAdded === 1 ? "" : "s"
+        }. The duplicates will not be loaded.</p>`,
+        PopupVariant.Warning
+      );
+    }
 
+    if (insufficientResultsReturned > 0) {
+      messagesApi.popupMessage(
+        "Warning",
+        `<p>PubChem provided ${insufficientResultsReturned} fewer compound${
+          insufficientResultsReturned === 1 ? "" : "s"
+        } than requested.</p>`,
+        PopupVariant.Warning
+      );
+    }
+
+    // Step 3: Batch convert all structures to 3D
+    const gen3D = {
+      whichMols: WhichMolsGen3D.OnlyIfLacks3D,
+      level: Gen3DLevel.Better,
+    };
+
+    const convertedMols = await convertFileInfosOpenBabel(
+      allFileInfos,
+      "mol2",
+      gen3D,
+      undefined,
+      true, // desalt
+      false // suppressMsgs
+    );
+
+    // Step 4: Create FileInfos from converted structures
+    const convertedFileInfos = convertedMols.map((contents, idx) => {
+      return new FileInfo({
+        name: allFileInfos[idx].name.replace(/\.[^/.]+$/, ".mol2"),
+        contents: contents,
+      });
+    });
+
+    // Step 5: Convert to TreeNodes
+    const treeNodePromises = convertedFileInfos.map((mol) => {
+      return TreeNode.loadFromFileInfo({
+        fileInfo: mol,
+        tag: this.pluginId,
+      });
+    });
+
+    let treeNodes = (await Promise.all(
+      treeNodePromises
+    )) as (void | TreeNode)[];
+    const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
+
+    // Filter and process nodes
+    treeNodes = treeNodes
+      .filter((n): n is TreeNode => n !== undefined)
+      .map((n, i) => {
+        if (n.nodes) {
+          n = n.nodes.terminals.get(0);
+        }
+        n.visible = i < initialCompoundsVisible;
+        n.selected = SelectedType.False;
+        n.focused = false;
+        n.viewerDirty = true;
+        n.type = TreeNodeType.Compound;
+        return n;
+      });
+
+    // Create and add root node
+    const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(
+      treeNodes as TreeNode[]
+    );
+    const searchModeText = (
+      {
+        [SearchMode.Similar]: "similarity",
+        [SearchMode.Substructure]: "substructure",
+        [SearchMode.Superstructure]: "superstructure",
+      } as any
+    )[searchMode];
+
+    rootNode.title = `${searchModeText}_search`;
     rootNode.addToMainTree(this.pluginId);
   }
 

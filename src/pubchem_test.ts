@@ -371,6 +371,7 @@ export async function fetchSimilarCompounds(smiles: string, threshold = 95, maxR
             try {
                 const propData = await queuedFetcher(propUrl, { responseType: ResponseType.JSON });
                 const propertiesList = propData?.PropertyTable?.Properties ?? [];
+                debugger
                 for (const prop of propertiesList) {
                     compoundData.push({
                         CID: prop.CID,
