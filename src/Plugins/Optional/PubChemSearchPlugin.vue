@@ -34,7 +34,11 @@ import {
   fetchSubstructureCompounds,
   fetchSuperstructureCompounds,
 } from "../../pubchem_test";
-import { convertFileInfosOpenBabel, Gen3DLevel, WhichMolsGen3D } from "@/FileSystem/OpenBabel/OpenBabel";
+import {
+  convertFileInfosOpenBabel,
+  Gen3DLevel,
+  WhichMolsGen3D,
+} from "@/FileSystem/OpenBabel/OpenBabel";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
 import { Tag } from "@/Plugins/Tags/Tags";
@@ -167,24 +171,23 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     const maxResults = this.getUserArg("maxresults");
     const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
+    const allTreeNodes: TreeNode[] = [];
+    const cidsAlreadyAdded: Set<number> = new Set();
+
     for (const compound of compounds) {
       const selectedMols = new Array<FileInfo>();
       const smiles = compound.contents.split(" ")[0].split("\t")[0];
       let results;
+      let resultCompounds = [];
+      let prep = "";
 
       switch (searchMode) {
         case SearchMode.Similar: {
           const similarity = this.getUserArg("similarity");
           results = await fetchSimilarCompounds(smiles, similarity, maxResults);
           if (results["Similar Compounds"]) {
-            for (const resultCompound of results["Similar Compounds"]) {
-              selectedMols.push(
-                new FileInfo({
-                  name: `${compound.name}_similar_${resultCompound.CID}.smi`,
-                  contents: resultCompound.SMILES,
-                })
-              );
-            }
+            resultCompounds = results["Similar Compounds"];
+            prep = "similar_to";
           }
           break;
         }
@@ -192,14 +195,8 @@ export default class PubChemSearchPlugin extends PluginParentClass {
         case SearchMode.Substructure: {
           results = await fetchSubstructureCompounds(smiles, maxResults);
           if (results["Substructure Compounds"]) {
-            for (const resultCompound of results["Substructure Compounds"]) {
-              selectedMols.push(
-                new FileInfo({
-                  name: `${compound.name}_contains_${resultCompound}.smi`,
-                  contents: resultCompound,
-                })
-              );
-            }
+            resultCompounds = results["Substructure Compounds"];
+            prep = "contains";
           }
           break;
         }
@@ -207,18 +204,33 @@ export default class PubChemSearchPlugin extends PluginParentClass {
         case SearchMode.Superstructure: {
           results = await fetchSuperstructureCompounds(smiles, maxResults);
           if (results["Superstructure Compounds"]) {
-            for (const resultCompound of results["Superstructure Compounds"]) {
-              selectedMols.push(
-                new FileInfo({
-                  name: `${compound.name}_contained_in_${resultCompound}.smi`,
-                  contents: resultCompound,
-                })
-              );
-            }
+            resultCompounds = results["Superstructure Compounds"];
+            prep = "contained_in";
           }
           break;
         }
       }
+
+      for (const resultCompound of resultCompounds) {
+        // Don't repeat CIDs (uniq additions)
+        if (cidsAlreadyAdded.has(resultCompound.CID)) {
+          continue
+        }
+
+        selectedMols.push(
+          new FileInfo({
+            name: `CID${resultCompound.CID}_${prep}_${compound.name.replace(
+              /\.[^/.]+$/,
+              ""
+            )}.smi`,
+            contents: resultCompound.SMILES
+          })
+        );
+
+        cidsAlreadyAdded.add(resultCompound.CID);
+      }
+
+      debugger
 
       // First convert all SMILES to 3D structures in a single batch operation
       const gen3D = {
@@ -231,8 +243,8 @@ export default class PubChemSearchPlugin extends PluginParentClass {
         selectedMols,
         "mol2", // Using mol2 since it preserves bond orders better than PDB
         gen3D,
-        null, // pH
-        false, // desalt
+        undefined, // adds hydrogens (pH parameter)
+        true, // desalt
         false // surpressMsgs
       );
 
@@ -275,20 +287,21 @@ export default class PubChemSearchPlugin extends PluginParentClass {
           return n;
         });
 
-      // Create a root node to contain all results from this query compound
-      const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(
-        treeNodes as TreeNode[]
-      );
-      const searchModeText =
-        searchMode === SearchMode.Similar
-          ? "similar_to"
-          : searchMode === SearchMode.Substructure
-          ? "contains"
-          : "contained_in";
-      rootNode.title = `${compound.treeNode?.title}:${searchModeText}_search`;
-
-      rootNode.addToMainTree(this.pluginId);
+      allTreeNodes.push(...(treeNodes as TreeNode[]));
     }
+
+    // Create a root node to contain all results from this query compound
+    const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(allTreeNodes);
+    const searchModeText =
+      searchMode === SearchMode.Similar
+        ? "similarity"
+        : searchMode === SearchMode.Substructure
+        ? "substructure"
+        : "superstructure";
+    // rootNode.title = `${compound.treeNode?.title}:${searchModeText}_search`;
+    rootNode.title = `${searchModeText}_search`;
+
+    rootNode.addToMainTree(this.pluginId);
   }
 
   /**
