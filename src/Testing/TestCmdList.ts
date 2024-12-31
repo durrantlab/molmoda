@@ -1,6 +1,6 @@
 // A container for test commmands, with added functions for common tasks.
 
-import type { FileInfo } from "@/FileSystem/FileInfo";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { loadRemoteToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import {
@@ -151,7 +151,7 @@ export class TestCmdList {
                 .then((fileInfo: FileInfo) => {
                     return getMoleculesFromStore().loadFromFileInfo({
                         fileInfo,
-                        tag: null
+                        tag: null,
                     });
                 })
                 .then(() => {
@@ -171,6 +171,69 @@ export class TestCmdList {
         this.waitUntilRegex("#styles", "Protein");
         if (expandInMoleculeTree) {
             // this.expandMoleculesTree("4WP4");
+        }
+        return this;
+    }
+
+    /**
+     * Adds a test to load a molecule from a SMILES string for testing.
+     *
+     * @param {string}  smilesString          The SMILES string of the molecule to load
+     * @param {boolean} [expandInMoleculeTree=false]  Whether to expand the molecule tree
+     *                                               to show the molecule
+     * @param {number}  [testIdx]            The index of the test. Will not load
+     *                                      molecule if doesn't match. Note that
+     *                                      testIdx is 0-indexed.
+     * @param {string}  [name="molecule.smi"]  The name of the file to load.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public loadSMILESMolecule(
+        smilesString: string,
+        expandInMoleculeTree = false,
+        testIdx?: number,
+        name = "molecule"
+    ): TestCmdList {
+        if (examplesLoaded.indexOf(smilesString) !== -1) {
+            // Already loaded
+            return this;
+        }
+
+        if (testIdx !== undefined) {
+            const testIdxFrmURL = parseInt(getUrlParam("index") as string);
+            if (testIdxFrmURL !== testIdx) {
+                return this;
+                // Not the right test.
+            }
+        }
+
+        examplesLoaded.push(smilesString);
+
+        const fileInfo = new FileInfo({
+            name: `${name}.smi`,
+            contents: smilesString,
+        });
+
+        getMoleculesFromStore()
+            .loadFromFileInfo({
+                fileInfo,
+                tag: null,
+            })
+            .then(() => {
+                expandAndShowAllMolsInTree();
+                return api.visualization.viewer;
+            })
+            .then((v) => {
+                v.zoomOnFocused();
+                return;
+            })
+            .catch((err: string) => {
+                throw err;
+            });
+
+        this.waitUntilRegex("#styles", "Compound");
+        if (expandInMoleculeTree) {
+            // Similar to original function, left commented out
+            // this.expandMoleculesTree("molecule");
         }
         return this;
     }

@@ -28,7 +28,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
-import { FailingTest } from "@/Testing/FailingTest";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * PubChemNamesPlugin
@@ -98,12 +98,26 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
 
     const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
     const cid = await fetchCid(smiles);
-    if (cid.startsWith("Error")) {
-      throw new Error(cid);
+    debugger
+    if (cid === "0") {
+      return {
+        CID: "PubChem compound not found!",
+      };
     }
 
     // Get IUPAC name and synonyms
     const properties = await fetchCompoundsProperties(cid);
+    if (properties.error) {
+      return {
+        CID: `PubChem compound not found!`,
+        // "Name 1": "N/A",
+        // "Name 2": "N/A",
+        // "Name 3": "N/A",
+        // "Name 4": "N/A",
+        // "Name 5": "N/A",
+      };
+    }
+
     const iupacName = properties["IUPAC Name"].toLowerCase();
 
     const synonymsData = await fetchSynonyms(cid);
@@ -128,12 +142,12 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     // Format for display
     return {
       //   Compound: molFileInfo.treeNode.title,
+      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Depositor-Supplied-Synonyms" target="_blank">${cid}</a>`,
       "Name 1": finalNames[0] || "N/A",
       "Name 2": finalNames[1] || "N/A",
       "Name 3": finalNames[2] || "N/A",
       "Name 4": finalNames[3] || "N/A",
       "Name 5": finalNames[4] || "N/A",
-      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Depositor-Supplied-Synonyms" target="_blank">${cid}</a>`,
     };
   }
 
@@ -143,7 +157,24 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {
-    return FailingTest;
+    return {
+      beforePluginOpens: new TestCmdList()
+        .loadSMILESMolecule(
+          // Below is not in pubchem as of 12/28/2024
+          "FCCCC#CC1=CC(=CC(=C1)C#CC2=CC(=C(C=C2C#CC(C)(C)C)C3OCCO3)C#CC(C)(C)C)C#CCCC",
+          true,
+          undefined
+        )
+        .loadSMILESMolecule(
+          "CC(=O)OC1=CC=CC=C1C(=O)O",
+          true,
+          undefined,
+          "molecule2"
+        ),
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#modal-tabledatapopup", "aspirin")
+        .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
+    };
   }
 }
 </script>

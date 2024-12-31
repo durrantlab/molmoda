@@ -256,10 +256,14 @@ export default class DataPanel extends Vue {
     if (allMols.triggerId === "-1") return [];
 
     // First get all the visible or selected nodes.
-    const nodes = allMols.flattened.filter(
-      // mol_filter_ok
-      (x: TreeNode) => x.visible || x.selected !== SelectedType.False
-    );
+    // const nodes = allMols.flattened.filter(
+    //   // mol_filter_ok
+    //   (x: TreeNode) => x.visible || x.selected !== SelectedType.False
+    // );
+
+    // NOTE: I changed my mind. Data for all ligands should be shown, not just
+    // visible or selected ones.
+    const nodes = allMols.flattened;
 
     const dataByTableTitle: { [key: string]: ITreeNodeData[] } = {};
     for (let idx = 0; idx < nodes.length; idx++) {

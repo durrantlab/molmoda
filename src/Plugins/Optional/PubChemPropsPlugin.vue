@@ -25,13 +25,14 @@ import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
 import { FailingTest } from "@/Testing/FailingTest";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * PubChemPropsPlugin
  */
 @Options({
   components: {
-    PluginComponent
+    PluginComponent,
   },
 })
 export default class PubChemPropsPlugin extends GetPropPluginParent {
@@ -70,7 +71,7 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Check if the plugin is allowed to be used.
-   * 
+   *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
   checkPluginAllowed(): string | null {
@@ -93,25 +94,50 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
     const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
     const cid = await fetchCid(smiles);
-    if (cid.startsWith("Error")) {
-      throw new Error(cid);
+    if (cid === "0") {
+      return {
+        CID: "PubChem compound not found!",
+      };
     }
-    const properties = await fetchCompoundsProperties(cid);
+    let properties = await fetchCompoundsProperties(cid);
+    if (properties.error) {
+      return {
+        CID: "PubChem compound not found!",
+      };
+    }
 
-    properties[
-      "CID"
-    ] = `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Chemical-and-Physical-Properties" target="_blank">${cid}</a>`;
+    properties = {
+      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Chemical-and-Physical-Properties" target="_blank">${cid}</a>`,
+      ...properties,
+    };
 
     return properties;
   }
 
   /**
    * Get the tests for the plugin.
-   * 
+   *
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {
-    return FailingTest;
+    return {
+      beforePluginOpens: new TestCmdList()
+        .loadSMILESMolecule(
+          // Below is not in pubchem as of 12/28/2024
+          "FCCCC#CC1=CC(=CC(=C1)C#CC2=CC(=C(C=C2C#CC(C)(C)C)C3OCCO3)C#CC(C)(C)C)C#CCCC",
+          true,
+          undefined
+        )
+        .loadSMILESMolecule(
+          "CC(=O)OC1=CC=CC=C1C(=O)O",
+          true,
+          undefined,
+          "molecule2"
+        ),
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#modal-tabledatapopup", "C9H8O4")
+        .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
+    };
   }
 }
 </script>

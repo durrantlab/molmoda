@@ -25,6 +25,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
 import { FailingTest } from "@/Testing/FailingTest";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * PubChemBioassaysPlugin
@@ -88,13 +89,17 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
     const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
     const cid = await fetchCid(smiles);
-    if (cid.startsWith("Error")) {
-      throw new Error(cid);
+    if (cid === "0") {
+      return {
+        CID: "PubChem compound not found!",
+      };
     }
 
     const bioassayData = await fetchActiveAssays(cid);
     if (bioassayData.error) {
-      throw new Error(bioassayData.error);
+      return {
+        CID: "PubChem compound not found!",
+      };
     }
 
     const activeAssays = bioassayData.ActiveAssays.slice(0, 10); // Get top 10 bioassays
@@ -112,7 +117,9 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
       return assayDesc;
     });
 
-    const formattedAssays: { [key: string]: any } = {};
+    const formattedAssays: { [key: string]: any } = {
+      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>`,
+    };
     for (let i = 0; i < assayDescriptions.length; i++) {
       formattedAssays[`Assay ${i + 1}`] = assayDescriptions[i];
     }
@@ -126,7 +133,24 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {
-    return FailingTest;
+    return {
+      beforePluginOpens: new TestCmdList()
+        .loadSMILESMolecule(
+          // Below is not in pubchem as of 12/28/2024
+          "FCCCC#CC1=CC(=CC(=C1)C#CC2=CC(=C(C=C2C#CC(C)(C)C)C3OCCO3)C#CC(C)(C)C)C#CCCC",
+          true,
+          undefined
+        )
+        .loadSMILESMolecule(
+          "CC(=O)OC1=CC=CC=C1C(=O)O",
+          true,
+          undefined,
+          "molecule2"
+        ),
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#modal-tabledatapopup", "DSSTox")
+        .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
+    };
   }
 }
 </script>
