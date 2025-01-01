@@ -27,6 +27,28 @@ export function compileMolModels(
     molsToConsider: IMolsToConsider,
     keepCompoundsSeparate: boolean
 ): ICompiledNodes {
+    // If we don't want to keep compounds separate, combine all nodes into a single group
+    if (!keepCompoundsSeparate) {
+        const allNodes = compileByMolecule(molsToConsider, true);
+        // Combine all nodes into a single group
+        const combinedNodes = new TreeNodeList();
+        allNodes.nodeGroups.forEach(group => {
+            group.forEach(node => {
+                combinedNodes.push(node);
+            });
+        });
+        if (allNodes.compoundsNodes) {
+            allNodes.compoundsNodes.forEach(node => {
+                combinedNodes.push(node);
+            });
+        }
+        return {
+            nodeGroups: [combinedNodes],
+            compoundsNodes: undefined
+        };
+    }
+    
+    // Otherwise, use the existing compilation logic
     return compileByMolecule(molsToConsider, keepCompoundsSeparate);
 }
 
