@@ -11,7 +11,7 @@
 </template>
   
 <script lang="ts">
-import { fetchActiveAssays, fetchCid } from "../../../pubchem_test";
+import { fetchActiveAssays, fetchCid } from "./PubChemAPI";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {

@@ -15,7 +15,7 @@ import {
   fetchSynonyms,
   fetchCid,
   fetchCompoundsProperties,
-} from "../../../pubchem_test";
+} from "./PubChemAPI";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {

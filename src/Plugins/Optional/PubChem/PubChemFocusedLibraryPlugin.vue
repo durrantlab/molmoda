@@ -33,7 +33,7 @@ import {
   fetchSimilarCompounds,
   fetchSubstructureCompounds,
   fetchSuperstructureCompounds,
-} from "../../../pubchem_test";
+} from "./PubChemAPI";
 import {
   convertFileInfosOpenBabel,
   Gen3DLevel,

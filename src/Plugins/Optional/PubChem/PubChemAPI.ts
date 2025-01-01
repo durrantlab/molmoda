@@ -1,9 +1,9 @@
-import { dynamicImports } from "./Core/DynamicImports";
-import { RateLimitedFetcherQueue, ResponseType } from "./Core/Fetcher";
+import { dynamicImports } from "../../../Core/DynamicImports";
+import { RateLimitedFetcherQueue, ResponseType } from "../../../Core/Fetcher";
 import {
     easyCountHeavyAtomsSmiles,
     easyDesaltSMILES,
-} from "./FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
+} from "../../../FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 
 // Prevent calls to PubChem that are too frequent. They prefer 5 calls per
 // second. Let's use 4 to be on the safe side.

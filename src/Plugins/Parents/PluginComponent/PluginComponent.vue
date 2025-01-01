@@ -33,7 +33,6 @@
             "
         ></p>
         <span v-if="citationsTxt !== ''" v-html="citationsTxt"></span>
-        Moose
         <slot></slot>
         <FormFull
             ref="formfull"
