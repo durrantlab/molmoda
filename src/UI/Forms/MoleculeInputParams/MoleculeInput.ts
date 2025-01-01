@@ -32,7 +32,7 @@ export interface IProtCmpdTreeNodePair {
 export class MoleculeInput {
     molsToConsider = {
         visible: true,
-        selected: true,
+        selected: false,
         hiddenAndUnselected: false,
     } as IMolsToConsider;
     considerProteins = true;

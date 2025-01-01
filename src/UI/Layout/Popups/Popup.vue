@@ -6,6 +6,7 @@
         @keypress="onKeypress"
         data-bs-backdrop="static"
         ref="dialog"
+        aria-hidden="false"
     >
         <div :class="'modal-dialog ' + modalWidthToUse" v-if="modelValue">
             <div class="modal-content">
