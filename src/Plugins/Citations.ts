@@ -1,4 +1,4 @@
-import { IInfoPayload } from "./PluginInterfaces";
+import { IContributorCredit, IInfoPayload, ISoftwareCredit } from "./PluginInterfaces";
 
 export interface ICitation {
     title: string;
@@ -69,7 +69,31 @@ function formatCitation(citation: ICitation): string {
 
     // return `${AuthorStr}. ${citation.title} <i>${citation.journal}</i> ${citation.year};${volumeString};${citation.pages}.`;
     // return `${AuthorStr}. <i>${citation.journal}</i> ${citation.year};${volumeString};${citation.pages}.`;
-    return `<a href="${url}" target="_blank"><i>${citation.journal}</i> ${citation.year};${volumeString};${citation.pages}.</a>`;
+    return `<a href="${url}" target="_blank"><i>${citation.journal}</i> ${citation.year};${volumeString};${citation.pages}</a>`;
+}
+
+function formatCredit(credit: ISoftwareCredit | IContributorCredit): string[] {
+    if (credit.citations && credit.citations.length > 0) {
+        // It's ISoftwareCredit
+        const softwareCredits: string[] = [];
+        for (const citation of credit.citations) {
+            softwareCredits.push(formatCitation(citation))
+        }
+
+        return softwareCredits;
+    }
+
+    // It's a contributor credit. Has name, and possibly url.
+    if (credit.name) {
+        if (credit.url) {
+            return [`<a href="${credit.url}" target="_blank">${credit.name}</a>`]
+        } else {
+            return [credit.name];
+        }
+    }
+
+    console.warn("SHOULD NEVER GET HERE!")
+    return [];
 }
 
 /**
@@ -86,32 +110,35 @@ export function citationsTxt(
     infoPayload: IInfoPayload,
     extraFormatting = true
 ): string {
-    const citations = [
+    const credits = [
         ...infoPayload.contributorCredits,
         ...infoPayload.softwareCredits,
     ]
-        .filter((c) => c.citations !== undefined)
-        .map((c) => c.citations)
-        .reduce(
-            (acc, val) => (acc as ICitation[]).concat(val as ICitation[]),
-            []
-        ) as ICitation[];
-
-    if (citations.length === 0) {
+        // .filter((c) => c.citations !== undefined)
+        // .map((c) => c.citations)
+        // .reduce(
+        //     (acc, val) => (acc as ICitation[]).concat(val as ICitation[]),
+        //     []
+        // ) as ICitation[];
+    
+    if (credits.length === 0) {
         return "";
     }
 
-    let citationStr = extraFormatting ? "<p class='mb-4'><small><b>" : "";
-    citationStr += (citations.length === 1 ? "Citation" : "Citations") + ":";
-    citationStr += extraFormatting ? "</b> " : " ";
-
-    for (const citation of citations) {
-        citationStr += `${formatCitation(citation)} `;
+    const allCredits: string[] = [];
+    for (const citation of credits) {
+        allCredits.push(...formatCredit(citation));
     }
+    
+    let creditStr = extraFormatting ? "<p class='mb-4'><small><b>" : "";
+    creditStr += (credits.length === 1 ? "Credit" : "Credits") + ":";
+    creditStr += extraFormatting ? "</b> " : " ";
+
+    creditStr += allCredits.join("; ") + ".";
 
     if (extraFormatting) {
-        citationStr += "</small></p>";
+        creditStr += "</small></p>";
     }
 
-    return citationStr;
+    return creditStr;
 }

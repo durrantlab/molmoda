@@ -4,18 +4,14 @@
       v-model="open"
       :infoPayload="infoPayload"
       @onPopupDone="onPopupDone"
-      actionBtnTxt="Get Names"
+      actionBtnTxt="Get Properties"
       @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
   </span>
 </template>
-  
-  <script lang="ts">
-import {
-  fetchSynonyms,
-  fetchCid,
-  fetchCompoundsProperties,
-} from "../../pubchem_test";
+
+<script lang="ts">
+import { fetchCompoundsProperties, fetchCid } from "../../../pubchem_test";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
@@ -27,20 +23,20 @@ import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
 import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
+import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
- * PubChemNamesPlugin
+ * PubChemPropsPlugin
  */
 @Options({
   components: {
     PluginComponent,
   },
 })
-export default class PubChemNamesPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/[5] Information/[5] Names...";
-  title = "Compound Names";
+export default class PubChemPropsPlugin extends GetPropPluginParent {
+  menuPath = "Compounds/Information/[6] Properties...";
+  title = "PubChem Properties";
   softwareCredits: ISoftwareCredit[] = [
     {
       name: "PubChem",
@@ -60,22 +56,21 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     },
   ];
 
-  contributorCredits: IContributorCredit[] = [];
-  pluginId = "pubchemnames";
+  contributorCredits: IContributorCredit[] = [
+    {
+      name: "Nonso Duaka",
+      url: "https://www.linkedin.com/in/nonso-duaka-958b91316/",
+    },
+  ];
+  pluginId = "pubchemprops";
   tags = [Tag.All];
-  intro = "Get the names/synonyms of selected compounds from PubChem.";
+  intro = "Get the chemical properties of selected compounds from PubChem.";
   details =
-    "Contacts the online PubChem database to retrieve up to five names for each compound.";
-  dataSetTitle = "Names";
-
-  // Component state
-  resultsData: { [key: string]: any } = {};
-  isProcessing = false;
-  processedCount = 0;
-  totalToProcess = 0;
+    "Contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
+  dataSetTitle = "Properties";
 
   /**
-   * Check if the plugin is allowed to run.
+   * Check if the plugin is allowed to be used.
    *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
@@ -84,10 +79,11 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
   }
 
   /**
-   * Get the names of the molecule.
+   * Get the properties of the molecule.
    *
    * @param {FileInfo} molFileInfo The molecule file info.
-   * @returns {Promise} The names of the molecule.
+   * @returns {Promise} The properties. Resolves to undefined if no properties
+   *     found.
    */
   async getMoleculeDetails(
     molFileInfo: FileInfo
@@ -98,57 +94,24 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
 
     const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
     const cid = await fetchCid(smiles);
-    debugger
     if (cid === "0") {
       return {
         CID: "PubChem compound not found!",
       };
     }
-
-    // Get IUPAC name and synonyms
-    const properties = await fetchCompoundsProperties(cid);
+    let properties = await fetchCompoundsProperties(cid);
     if (properties.error) {
       return {
-        CID: `PubChem compound not found!`,
-        // "Name 1": "N/A",
-        // "Name 2": "N/A",
-        // "Name 3": "N/A",
-        // "Name 4": "N/A",
-        // "Name 5": "N/A",
+        CID: "PubChem compound not found!",
       };
     }
 
-    const iupacName = properties["IUPAC Name"].toLowerCase();
-
-    const synonymsData = await fetchSynonyms(cid);
-    let synonyms = Array.isArray(synonymsData.Synonyms)
-      ? synonymsData.Synonyms.map((s: string) => s.toLowerCase())
-      : [];
-
-    // Create unique set of names starting with IUPAC
-    const uniqueNames = new Set<string>([iupacName]);
-
-    // Add remaining synonyms until we have 5 unique names
-    for (const synonym of synonyms) {
-      if (uniqueNames.size >= 5) break;
-      uniqueNames.add(synonym);
-    }
-
-    const finalNames = Array.from(uniqueNames);
-    while (finalNames.length < 5) {
-      finalNames.push("N/A");
-    }
-
-    // Format for display
-    return {
-      //   Compound: molFileInfo.treeNode.title,
-      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Depositor-Supplied-Synonyms" target="_blank">${cid}</a>`,
-      "Name 1": finalNames[0] || "N/A",
-      "Name 2": finalNames[1] || "N/A",
-      "Name 3": finalNames[2] || "N/A",
-      "Name 4": finalNames[3] || "N/A",
-      "Name 5": finalNames[4] || "N/A",
+    properties = {
+      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Chemical-and-Physical-Properties" target="_blank">${cid}</a>`,
+      ...properties,
     };
+
+    return properties;
   }
 
   /**
@@ -172,14 +135,14 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
           "molecule2"
         ),
       afterPluginCloses: new TestCmdList()
-        .waitUntilRegex("#modal-tabledatapopup", "aspirin")
+        .waitUntilRegex("#modal-tabledatapopup", "C9H8O4")
         .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
     };
   }
 }
 </script>
-  
-  <style scoped lang="scss">
+
+<style scoped lang="scss">
 .progress {
   height: 1.5rem;
 }

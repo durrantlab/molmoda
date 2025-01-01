@@ -24,6 +24,7 @@ import {
     doneInQueueStore,
     makeUniqJobId,
     startInQueueStore,
+    updateProgressInQueueStore,
 } from "@/Queue/QueueStore";
 import { copyUserArgs } from "../UserInputUtils";
 import { logGAEvent } from "@/Core/GoogleAnalytics";
@@ -206,6 +207,11 @@ export abstract class PluginParentClass extends mixins(
     skipLongRunningJobMsg = false;
 
     /**
+     * Stores the jobId used to register the job in the queue system.
+     */
+    private jobId = "";
+
+    /**
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
@@ -337,9 +343,9 @@ export abstract class PluginParentClass extends mixins(
 
         // Add to job queue table. Also 1 processor, because running on main
         // thread.
-        const jobId = makeUniqJobId(this.pluginId);
+        this.jobId = makeUniqJobId(this.pluginId);
         if (this.showInQueue) {
-            startInQueueStore(jobId, 1, () => {
+            startInQueueStore(this.jobId, 1, () => {
                 return;
             });
         }
@@ -351,7 +357,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Remove from job queue table.
         if (this.showInQueue) {
-            doneInQueueStore(jobId);
+            doneInQueueStore(this.jobId);
         }
 
         // Log plugin finished
@@ -493,6 +499,13 @@ export abstract class PluginParentClass extends mixins(
         // return jobResultFiles;
     }
 
+    protected updateProgressInQueueStore(progress: number) {
+        if (progress > 1) {
+            progress /= 100;
+        }
+        updateProgressInQueueStore(this.jobId, progress);
+    }
+
     /**
      * Called when the plugin is mounted. No plugin should define its own
      * `mounted()` function. Use `onMounted` instead.
@@ -516,6 +529,7 @@ export abstract class PluginParentClass extends mixins(
         if (msg !== null) {
             api.messages.popupError(msg);
         } else {
+            // This calls onPluginStart
             api.plugins.runPlugin(this.pluginId);
         }
     }

@@ -477,6 +477,29 @@ export const dynamicImports = {
             // NOTE: Couldn't find citation. I don't think there is an official
             // citation as of Aug 31, 2023.
         },
+        get module(): Promise<any> {
+            return addToHeader(
+                "rdkitjs",
+                "js/rdkitjs/RDKit_minimal.js",
+                () => (window as any).initRDKitModule
+            )
+                .then(() => {
+                    return (window as any).initRDKitModule();
+                })
+                .then((instance: any) => {
+                    return instance;
+                });
+
+            // return import(
+            //     /* webpackChunkName: "axios" */
+            //     /* webpackMode: "lazy" */
+            //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //     // @ts-ignore
+            //     "js/rdkitjs/RDKit_minimal.js"
+            // ).then((mod: any) => {
+            //     return mod.default;
+            // });
+        },
     },
     sheetsjs: {
         credit: {

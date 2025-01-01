@@ -61,9 +61,9 @@ system uses these to autopopulate with plugins. -->
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <PubChemBioassaysPlugin @onPluginSetup="onPluginSetup"></PubChemBioassaysPlugin>
+    <PubChemFocusedLibraryPlugin @onPluginSetup="onPluginSetup"></PubChemFocusedLibraryPlugin>
     <PubChemNamesPlugin @onPluginSetup="onPluginSetup"></PubChemNamesPlugin>
     <PubChemPropsPlugin @onPluginSetup="onPluginSetup"></PubChemPropsPlugin>
-    <PubChemSearchPlugin @onPluginSetup="onPluginSetup"></PubChemSearchPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
@@ -133,10 +133,10 @@ import YesNoPlugin from "./Core/YesNoPlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
-import PubChemBioassaysPlugin from "./Optional/PubChemBioassaysPlugin.vue";
-import PubChemNamesPlugin from "./Optional/PubChemNamesPlugin.vue";
-import PubChemPropsPlugin from "./Optional/PubChemPropsPlugin.vue";
-import PubChemSearchPlugin from "./Optional/PubChemSearchPlugin.vue";
+import PubChemBioassaysPlugin from "./Optional/PubChem/PubChemBioassaysPlugin.vue";
+import PubChemFocusedLibraryPlugin from "./Optional/PubChem/PubChemFocusedLibraryPlugin.vue";
+import PubChemNamesPlugin from "./Optional/PubChem/PubChemNamesPlugin.vue";
+import PubChemPropsPlugin from "./Optional/PubChem/PubChemPropsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
@@ -203,9 +203,9 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     FPocketWebPlugin,
     ProtonateCompoundsPlugin,
     PubChemBioassaysPlugin,
+    PubChemFocusedLibraryPlugin,
     PubChemNamesPlugin,
     PubChemPropsPlugin,
-    PubChemSearchPlugin,
     ReducePlugin,
     WebinaPlugin,
     // TEMPLATE3 END

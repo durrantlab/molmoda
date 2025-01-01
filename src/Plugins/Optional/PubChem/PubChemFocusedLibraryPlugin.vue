@@ -24,16 +24,16 @@ import {
   UserArg,
   UserArgType,
   IUserArgSelect,
-  IUserArgNumber,
   IUserArgMoleculeInputParams,
   IUserArgRange,
+  IUserArgAlert,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import {
   fetchSimilarCompounds,
   fetchSubstructureCompounds,
   fetchSuperstructureCompounds,
-} from "../../pubchem_test";
+} from "../../../pubchem_test";
 import {
   convertFileInfosOpenBabel,
   Gen3DLevel,
@@ -51,6 +51,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { checkCompoundLoaded } from "../../Core/CheckUseAllowedUtils";
 
 enum SearchMode {
   Similar = "similar",
@@ -63,8 +64,8 @@ enum SearchMode {
     PluginComponent,
   },
 })
-export default class PubChemSearchPlugin extends PluginParentClass {
-  menuPath = "Compounds/Search/[2] Structure Search...";
+export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
+  menuPath = "Compounds/[8] Create Library/[2] Focused Library...";
   title = "PubChem Structure Search";
   softwareCredits: ISoftwareCredit[] = [
     {
@@ -84,12 +85,17 @@ export default class PubChemSearchPlugin extends PluginParentClass {
       ],
     },
   ];
-  contributorCredits: IContributorCredit[] = [];
-  pluginId = "pubchemstructuresearch";
+  contributorCredits: IContributorCredit[] = [
+    {
+      name: "Nonso Duaka",
+      url: "https://www.linkedin.com/in/nonso-duaka-958b91316/",
+    },
+  ];
+  pluginId = "pubchemfocusedlibrary";
   tags = [Tag.All];
-  intro = "Search the PubChem database using selected structures.";
+  intro = "Build a focused compound library by searching the PubChem database.";
   details =
-    "Uses selected compounds as query structures to find similar compounds or perform substructure/superstructure searches in PubChem.";
+    "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your workspace.";
 
   userArgDefaults: UserArg[] = [
     {
@@ -103,18 +109,21 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     {
       id: "searchmode",
       type: UserArgType.Select,
-      label: "Search mode",
+      label: "PubChem compounds to retrieve",
       val: SearchMode.Similar,
       enabled: true,
-      description: "Choose how to search based on your structure.",
+      description: "Choose what kinds of molecules to retrieve from PubChem.",
       options: [
-        { description: "Similar Structures", val: SearchMode.Similar },
         {
-          description: "Substructures (Find Larger Compounds)",
+          description: "Similar Compounds",
+          val: SearchMode.Similar,
+        },
+        {
+          description: "Larger Compounds (Superstructures)",
           val: SearchMode.Substructure,
         },
         {
-          description: "Superstructures (Find Smaller Compounds)",
+          description: "Smaller Compounds (Substructures)",
           val: SearchMode.Superstructure,
         },
       ],
@@ -122,7 +131,7 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     {
       id: "similarity",
       // type: UserArgType.Number,
-      label: "Tanimoto similarity threshold",
+      label: "Similarity threshold",
       description:
         "Value between 0 and 100. A higher threshold finds more similar compounds (95 is very similar, 80 is moderately similar).",
       val: 95,
@@ -141,22 +150,36 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     } as IUserArgRange,
     {
       id: "maxresults",
-      type: UserArgType.Number,
+      // type: UserArgType.Number,
       label: "Maximum results",
-      description: "Maximum number of compounds to retrieve (1-1000).",
-      val: 10,
+      description: "Maximum number of compounds to retrieve from PubChem.",
+      val: 100,
+      min: 1,
+      max: 1000,
+      step: 1,
       enabled: true,
-      validateFunc: (val: number) => val > 0 && val <= 1000,
+      // validateFunc: (val: number) => val > 0 && val <= 1000,
       warningFunc: (val: number) => {
-        // debugger;
-        if (val > 50) return "Large result sets may take longer to process.";
+        if (val > 100) return "Large result sets may take longer to process.";
         return "";
       },
-      // currnetly total per compound. But should be total total (divided among compounds)
-    } as IUserArgNumber,
+    } as IUserArgRange,
+    {
+      id: "warning",
+      type: UserArgType.Alert,
+      val: "This process may take some time for multiple molecules. Check the Jobs panel to monitor progress.",
+      alertType: "warning",
+    } as IUserArgAlert,
   ];
 
-  // Should it use a queue somehow?
+  /**
+   * Check if the plugin is allowed to be used.
+   *
+   * @returns {string | null} Error message if not allowed, null if allowed.
+   */
+  checkPluginAllowed(): string | null {
+    return checkCompoundLoaded();
+  }
 
   /**
    * Updates form field visibility based on search mode selection.
@@ -164,21 +187,6 @@ export default class PubChemSearchPlugin extends PluginParentClass {
   async onUserArgChange(): Promise<void> {
     const searchMode = this.getUserArg("searchmode");
     this.setUserArgEnabled("similarity", searchMode === SearchMode.Similar);
-
-    // // Add validation for maxresults vs number of input molecules
-    // debugger
-    // const molecules: FileInfo[] = await this.getUserArg("makemolinputparams").getProtAndCompoundPairs();
-    // const maxResults = this.getUserArg("maxresults");
-
-    // if (molecules.length > 0 && maxResults < molecules.length) {
-    //   this.setUserArg(
-    //     "maxResultsWarning",
-    //     `With ${maxResults} results per molecule and ${molecules.length} query molecules, you may not retrieve results for all queries. Consider increasing max results to at least ${molecules.length} to ensure each query molecule is used.`
-    //   );
-    //   this.setUserArgEnabled("maxResultsWarning", true);
-    // } else {
-    //   this.setUserArgEnabled("maxResultsWarning", false);
-    // }
   }
 
   /**
@@ -191,6 +199,26 @@ export default class PubChemSearchPlugin extends PluginParentClass {
     const searchMode = this.getUserArg("searchmode");
     const maxResults = this.getUserArg("maxresults");
     const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
+
+    // Change the names on the compounds to be a bit more pallatable
+    compounds.forEach((c) => {
+      c.name = c.treeNode ? c.treeNode.title : c.name;
+    });
+
+    const numCompounds = compounds.length;
+
+    // Check if too few compounds requested.
+    if (numCompounds > maxResults) {
+      messagesApi.popupMessage(
+        "Warning",
+        `<p>You requested only ${maxResults} PubChem compound${
+          maxResults === 1 ? "" : "s"
+        } but chose ${numCompounds} query compound${
+          maxResults === 1 ? "" : "s"
+        } from your workspace. Some query compounds will not be used in the search.</p>`,
+        PopupVariant.Warning
+      );
+    }
 
     // maxResults is total, not per compound. So divide it to get per-compound
     // values. Try to divide as evently as possible, but make sure totals sum to
@@ -206,6 +234,9 @@ export default class PubChemSearchPlugin extends PluginParentClass {
           ? Math.ceil(perCompound)
           : Math.floor(perCompound);
       });
+
+    let progressCounts = 0;
+    let progressTotal = compounds.length;
 
     // Step 1: Collect all SMILES from PubChem API in parallel
     const fetchPromises = compounds.map(async (compound, idx) => {
@@ -253,6 +284,11 @@ export default class PubChemSearchPlugin extends PluginParentClass {
         }
       }
 
+      // Can only bring percentage up to 25%. Other 75% reserved for converting
+      // to 3D.
+      progressCounts++;
+      this.updateProgressInQueueStore((0.25 * progressCounts) / progressTotal);
+
       return {
         queryCompoundName: compound.name,
         results: resultCompounds,
@@ -283,11 +319,14 @@ export default class PubChemSearchPlugin extends PluginParentClass {
           duplicatesNotAdded++;
           continue;
         }
+
+        const filenameId = `CID${compound.CID}_${
+          result.prep
+        }_${result.queryCompoundName.replace(/\.[^/.]+$/, "")}`;
+
         allFileInfos.push(
           new FileInfo({
-            name: `CID${compound.CID}_${
-              result.prep
-            }_${result.queryCompoundName.replace(/\.[^/.]+$/, "")}.smi`,
+            name: `${filenameId}.smi`,
             contents: compound.SMILES,
           })
         );
@@ -321,12 +360,14 @@ export default class PubChemSearchPlugin extends PluginParentClass {
       level: Gen3DLevel.Better,
     };
 
+    // Converting to mol2 batch so you can add easily to tree later (which would
+    // not be batched).
     const convertedMols = await convertFileInfosOpenBabel(
       allFileInfos,
       "mol2",
       gen3D,
       undefined,
-      true, // desalt
+      false, // desalting already occured (when retrieved from pubchem, albeit using quick desalt).
       false // suppressMsgs
     );
 
@@ -338,12 +379,25 @@ export default class PubChemSearchPlugin extends PluginParentClass {
       });
     });
 
+    progressCounts = 0;
+    progressTotal = allFileInfos.length;
+
     // Step 5: Convert to TreeNodes
-    const treeNodePromises = convertedFileInfos.map((mol) => {
-      return TreeNode.loadFromFileInfo({
+    const treeNodePromises = convertedFileInfos.map(async (mol) => {
+      const treeNode = await TreeNode.loadFromFileInfo({
         fileInfo: mol,
         tag: this.pluginId,
+        desalt: false,
+        gen3D: {
+          whichMols: WhichMolsGen3D.None, // Already generated
+        },
+        // surpressMsgs: true,
       });
+      progressCounts++;
+      this.updateProgressInQueueStore(
+        0.25 + (0.75 * progressCounts) / progressTotal
+      );
+      return treeNode;
     });
 
     let treeNodes = (await Promise.all(
@@ -385,31 +439,58 @@ export default class PubChemSearchPlugin extends PluginParentClass {
   /**
    * Get the tests for the plugin.
    *
-   * @returns {Promise<ITest>} The test commands.
+   * @returns {Promise<ITest[]>} The test commands.
    */
-  async getTests(): Promise<ITest> {
-    return {
-      beforePluginOpens: new TestCmdList()
-        .loadSMILESMolecule(
+  async getTests(): Promise<ITest[]> {
+    return [
+      {
+        beforePluginOpens: new TestCmdList().loadSMILESMolecule(
           "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
           true,
           undefined,
           "aspirin"
-        )
-        .loadSMILESMolecule(
-          "CC1=CC=C(C=C1)NC(=O)CN2CCN(CC2)CC(=O)N3CCC(CC3)N4C=NC=N4", // imatinib
+        ),
+        pluginOpen: new TestCmdList()
+          .setUserArg("similarity", 90, this.pluginId)
+          .setUserArg("maxresults", 100, this.pluginId),
+        afterPluginCloses: new TestCmdList().waitUntilRegex(
+          "#navigator",
+          "similar_"
+        ),
+      },
+
+      {
+        beforePluginOpens: new TestCmdList().loadSMILESMolecule(
+          "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
           true,
           undefined,
-          "imatinib"
+          "aspirin"
         ),
-      pluginOpen: new TestCmdList()
-        .setUserArg("maxresults", 5, this.pluginId)
-        .setUserArg("similarity", 90, this.pluginId),
-      afterPluginCloses: new TestCmdList().waitUntilRegex(
-        "#navigator",
-        "similar_"
-      ),
-    };
+        pluginOpen: new TestCmdList()
+          .setUserArg("searchmode", "substructure", this.pluginId) // TODO: Wrong one selected!
+          .setUserArg("maxresults", 100, this.pluginId),
+        afterPluginCloses: new TestCmdList().waitUntilRegex(
+          "#navigator",
+          "contains_"
+        ),
+      },
+
+      {
+        beforePluginOpens: new TestCmdList().loadSMILESMolecule(
+          "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
+          true,
+          undefined,
+          "aspirin"
+        ),
+        pluginOpen: new TestCmdList()
+          .setUserArg("searchmode", "superstructure", this.pluginId)
+          .setUserArg("maxresults", 100, this.pluginId),
+        afterPluginCloses: new TestCmdList().waitUntilRegex(
+          "#navigator",
+          "contained_in_"
+        ),
+      },
+    ];
   }
 }
 </script>

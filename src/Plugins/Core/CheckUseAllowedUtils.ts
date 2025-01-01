@@ -148,9 +148,9 @@ function _checkTypeLoaded(type: TreeNodeType, treeNodeList?: TreeNodeList): stri
         treeNodeList = getMoleculesFromStore();
     }
 
-    const proteins = treeNodeList.flattened.filters.keepType(type);
+    const entries = treeNodeList.flattened.filters.keepType(type);
 
-    if (proteins.length === 0) {
+    if (entries.length === 0) {
         return `No ${type} is currently loaded. Try adding a ${type} first.`;
     }
 

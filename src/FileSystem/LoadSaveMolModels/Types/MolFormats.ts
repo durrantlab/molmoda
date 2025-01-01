@@ -144,7 +144,11 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["mol2", "ml2", "sy2"],
         description: "Sybyl Mol2",
         hasBondOrders: true,
-        loader: MolLoader.OpenBabel,  // MolLoader.Mol3D,  // NOTE: Decided to use openbabel for desalting.
+        
+        // NOTE: Decided to use openbabel for desalting. But _parseMoleculeFile
+        // overrides this is desalting is false.
+        loader: MolLoader.OpenBabel,  // MolLoader.Mol3D,
+
         frameSeparators: [
             {
                 text: "\n@<TRIPOS>MOLECULE\n",

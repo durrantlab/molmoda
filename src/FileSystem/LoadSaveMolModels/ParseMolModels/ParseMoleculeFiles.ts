@@ -87,7 +87,16 @@ export function _parseMoleculeFile(
     // promise instead of returning immediately.
     let promise: Promise<TreeNodeList>;
 
-    switch (formatInfo.loader) {
+    let {loader} = formatInfo;
+
+    // Here we must deal with a difficult situation. If would be MUCH faster to
+    // load MOL2 files using Mol3D, not OpenBabel. But MOL2 uses OpenBabel by
+    // default for desalting. If desalting isn't needed, let's switch back to Mol3D.
+    if (formatInfo.primaryExt === "mol2" && !params.desalt) {
+        loader = MolLoader.Mol3D;
+    }
+
+    switch (loader) {
         case MolLoader.Mol3D: {
             promise = parseUsing3DMolJs(params.fileInfo, formatInfo);
             break;

@@ -4,14 +4,14 @@
       v-model="open"
       :infoPayload="infoPayload"
       @onPopupDone="onPopupDone"
-      actionBtnTxt="Get Properties"
+      actionBtnTxt="Get Bioassays"
       @onUserArgChanged="onUserArgChanged"
     ></PluginComponent>
   </span>
 </template>
-
+  
 <script lang="ts">
-import { fetchCompoundsProperties, fetchCid } from "../../pubchem_test";
+import { fetchActiveAssays, fetchCid } from "../../../pubchem_test";
 import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
@@ -23,21 +23,21 @@ import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
 import { Tag } from "@/Plugins/Tags/Tags";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { GetPropPluginParent } from "../Parents/GetPropPluginParent";
+import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { FailingTest } from "@/Testing/FailingTest";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
- * PubChemPropsPlugin
+ * PubChemBioassaysPlugin
  */
 @Options({
   components: {
     PluginComponent,
   },
 })
-export default class PubChemPropsPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/Information/[6] Properties...";
-  title = "PubChem Properties";
+export default class PubChemBioassaysPlugin extends GetPropPluginParent {
+  menuPath = "Compounds/Information/[7] Bioassays...";
+  title = "PubChem Bioassays";
   softwareCredits: ISoftwareCredit[] = [
     {
       name: "PubChem",
@@ -57,33 +57,33 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     },
   ];
 
+  dataSetTitle = "PubChemBioassays";
   contributorCredits: IContributorCredit[] = [
     {
       name: "Nonso Duaka",
+      url: "https://www.linkedin.com/in/nonso-duaka-958b91316/",
     },
   ];
-  pluginId = "pubchemprops";
+  pluginId = "pubchembioassays";
   tags = [Tag.All];
-  intro = "Get the chemical properties of selected compounds from PubChem.";
+  intro = "Get the bioassay data of selected compounds from PubChem.";
   details =
-    "Contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
-  dataSetTitle = "Properties";
+    "Contacts the online PubChem database to retrieve up to 10 active bioassays for each compound.";
 
   /**
    * Check if the plugin is allowed to be used.
    *
-   * @returns {string | null} Error message if not allowed, null if allowed.
+   * @returns {string | null} Error message if not allowed, else null.
    */
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
   }
 
   /**
-   * Get the properties of the molecule.
+   * Get the bioassay data for the selected compound.
    *
-   * @param {FileInfo} molFileInfo The molecule file info.
-   * @returns {Promise} The properties. Resolves to undefined if no properties
-   *     found.
+   * @param {FileInfo} molFileInfo The file info of the selected compound.
+   * @returns {Promise} The bioassay data.
    */
   async getMoleculeDetails(
     molFileInfo: FileInfo
@@ -99,19 +99,37 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
         CID: "PubChem compound not found!",
       };
     }
-    let properties = await fetchCompoundsProperties(cid);
-    if (properties.error) {
+
+    const bioassayData = await fetchActiveAssays(cid);
+    if (bioassayData.error) {
       return {
         CID: "PubChem compound not found!",
       };
     }
 
-    properties = {
-      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Chemical-and-Physical-Properties" target="_blank">${cid}</a>`,
-      ...properties,
-    };
+    const activeAssays = bioassayData.ActiveAssays.slice(0, 10); // Get top 10 bioassays
+    const assayDescriptions = activeAssays.map((assay: any) => {
+      // Add a string formatted like "DSSTox (FDAMDD) FDA Maximum
+      // (Recommended) Daily Dose Database, AID 1234. Target:
+      // Neuraminidase" But Target might not be given, so only add if
+      // it is not "".
 
-    return properties;
+      let assayDesc = `${assay["Assay Name"]}. AID: <a href="https://pubchem.ncbi.nlm.nih.gov/bioassay/${assay["AID"]}#section=Data-Table" target="_blank">${assay["AID"]}</a>.`;
+      if (assay["Assay Type"]) {
+        assayDesc += ` Assay type: ${assay["Assay Type"].toLowerCase()}.`;
+      }
+
+      return assayDesc;
+    });
+
+    const formattedAssays: { [key: string]: any } = {
+      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>`,
+    };
+    for (let i = 0; i < assayDescriptions.length; i++) {
+      formattedAssays[`Assay ${i + 1}`] = assayDescriptions[i];
+    }
+
+    return formattedAssays;
   }
 
   /**
@@ -135,13 +153,13 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
           "molecule2"
         ),
       afterPluginCloses: new TestCmdList()
-        .waitUntilRegex("#modal-tabledatapopup", "C9H8O4")
+        .waitUntilRegex("#modal-tabledatapopup", "DSSTox")
         .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
     };
   }
 }
 </script>
-
+  
 <style scoped lang="scss">
 .progress {
   height: 1.5rem;
