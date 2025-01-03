@@ -16,6 +16,8 @@ export enum ResponseType {
 
 interface IFetcherOptions {
     responseType: ResponseType;
+    formPostData?: any;
+    cacheBust?: boolean;
 }
 
 /**
@@ -88,13 +90,24 @@ export async function fetcher(
         throw new Error("Permission denied; cannot fetch the URL.");
     }
 
+    // If cacheBust is true, add a cache-busting query parameter to the URL.
+    if (options.cacheBust) {
+        const cacheBustParam = `cacheBust=${Date.now()}`;
+        url = url.includes("?") ? `${url}&${cacheBustParam}` : `${url}?${cacheBustParam}`;
+    }
+
     // Load axios
     const axios = await dynamicImports.axios.module;
 
-    // Fetch the file from the remote URL using axios
-    const response = await axios.get(url, options);
-
-    return response.data;
+    if (!options.formPostData) {
+        // Fetch the file from the remote URL using axios, simple GET.
+        const response = await axios.get(url, options);
+        return response.data;
+    } else {
+        // Fetch the file from the remote URL using axios, POST.
+        const response = await axios.post(url, options.formPostData, options);
+        return response.data;
+    }
 }
 
 type QueueItem = {

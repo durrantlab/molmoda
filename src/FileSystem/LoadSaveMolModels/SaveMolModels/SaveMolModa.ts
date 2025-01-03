@@ -1,9 +1,9 @@
 import { store } from "@/Store";
-import { setStoreIsDirty } from "@/Store/LoadAndSaveStore";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { molmodaStateKeysToRetain } from "../ParseMolModels/_ParseUsingMolModa";
+import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
 
 /**
  * Runs the job when the user wants to save in the .molmoda format.

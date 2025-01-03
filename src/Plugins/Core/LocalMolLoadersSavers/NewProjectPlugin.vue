@@ -26,7 +26,6 @@
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
-import { setStoreIsDirty, storeIsDirty } from "@/Store/LoadAndSaveStore";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -36,6 +35,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import { Tag } from "@/Plugins/Tags/Tags";
+import { storeIsDirty, setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore"
 
 /**
  * NewProjectPlugin

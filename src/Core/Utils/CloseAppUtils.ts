@@ -1,6 +1,6 @@
 import * as api from "@/Api";
 import { deleteAutoSave, stopAutoSaveTimer } from "@/Store/AutoSave";
-import { unregisterWarnSaveOnClose } from "@/Store/LoadAndSaveStore";
+import { unregisterWarnSaveOnClose } from "@/Core/SaveOnClose/BeforeUnload";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { closeElectron } from "../Electron/ElectronUtils";
 

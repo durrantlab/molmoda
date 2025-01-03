@@ -467,7 +467,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
           "aspirin"
         ),
         pluginOpen: new TestCmdList()
-          .setUserArg("searchmode", "substructure", this.pluginId) // TODO: Wrong one selected!
+          .setUserArg("searchmode", "Larger Compounds (Superstructures)", this.pluginId)
           .setUserArg("maxresults", 100, this.pluginId),
         afterPluginCloses: new TestCmdList().waitUntilRegex(
           "#navigator",
@@ -483,7 +483,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
           "aspirin"
         ),
         pluginOpen: new TestCmdList()
-          .setUserArg("searchmode", "superstructure", this.pluginId)
+          .setUserArg("searchmode", "Smaller Compounds (Substructures)", this.pluginId)
           .setUserArg("maxresults", 100, this.pluginId),
         afterPluginCloses: new TestCmdList().waitUntilRegex(
           "#navigator",

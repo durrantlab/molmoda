@@ -50,3 +50,7 @@ export interface IYesNoMsg {
 export interface ISimpleVideo extends ISimpleMsg {
     youtubeID: string;
 }
+
+export interface ISimpleSvg extends ISimpleMsg {
+    svgContents: string;
+}

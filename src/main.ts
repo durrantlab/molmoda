@@ -6,7 +6,6 @@ import { setupVueXStore } from "./Store";
 import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { setupTests } from "./Testing/SetupTests";
-import { setupWarnSaveOnClose } from "./Store/LoadAndSaveStore";
 import {
     applySettings,
     getSettings,
@@ -14,6 +13,7 @@ import {
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
 import { setupTags } from "./Plugins/Tags/Tags";
+import { setupSaveOnClose } from "./Core/SaveOnClose";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
@@ -25,7 +25,7 @@ async function main() {
     errorReportingSetup();
     loadFontAwesomeFonts();
     setupTests();
-    setupWarnSaveOnClose();
+    setupSaveOnClose();
     setupTags();
 
     defineMakerFuncs();
@@ -42,7 +42,6 @@ async function main() {
         .component("font-awesome-icon", FontAwesomeIcon)
         .use(store)
         .mount("#app");
-
 
     // getObabelFormats();
 
@@ -84,6 +83,8 @@ async function main() {
     //         compileErrorsArray.join("</li><li>") +
     //         "</li></ul>"
     // );
+
+    // const img = await generatePoseView("", "");
 }
 
 main();

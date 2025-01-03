@@ -2,13 +2,16 @@
 
 import { createStore, Store } from "vuex";
 import { allHooks } from "@/Api/Hooks";
-import { setStoreIsDirty } from "./LoadAndSaveStore";
 import { ILog } from "@/UI/Panels/Log/LogUtils";
-import { setupExternalStoreAccess } from "./StoreExternalAccess";
+import {
+    getMoleculesFromStore,
+    setupExternalStoreAccess,
+} from "./StoreExternalAccess";
 import { NameValPair } from "./StoreInterfaces";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
+import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
 
 const _commonMutations = {
     /**
@@ -188,6 +191,9 @@ export function setupVueXStore(): Store<any> {
             return state;
         },
         (/* _state: any */) => {
+            if (getMoleculesFromStore().length == 0) {
+                return;
+            }
             setStoreIsDirty(true);
         },
         { deep: true }
@@ -201,4 +207,3 @@ export function setupVueXStore(): Store<any> {
 
     return store;
 }
-

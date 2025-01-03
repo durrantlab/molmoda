@@ -199,10 +199,13 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
    *
-   * @param {any} payload  The payload passed to the plugin.
+   * @param {boolean} payload  The payload passed to the plugin.
    */
-  async onBeforePopupOpen(payload: any) {
-    this.appClosing = payload !== undefined;
+  async onBeforePopupOpen(payload?: boolean) {
+    if (payload === undefined) {
+        payload = false;
+    }
+    this.appClosing = payload;
 
     // Reset some form values
     this.setUserArg("useMolModaFormat", true);

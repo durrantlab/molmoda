@@ -489,16 +489,6 @@ export const dynamicImports = {
                 .then((instance: any) => {
                     return instance;
                 });
-
-            // return import(
-            //     /* webpackChunkName: "axios" */
-            //     /* webpackMode: "lazy" */
-            //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            //     // @ts-ignore
-            //     "js/rdkitjs/RDKit_minimal.js"
-            // ).then((mod: any) => {
-            //     return mod.default;
-            // });
         },
     },
     sheetsjs: {
@@ -650,4 +640,28 @@ export const dynamicImports = {
             });
         },
     },
+
+    exitIntent: {
+        credit: {
+            name: "exit-intent",
+            url: "https://github.com/danhayden/exit-intent",
+            license: Licenses.MIT
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "exit-intent" */
+                /* webpackMode: "lazy" */
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                "exit-intent"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    }
 };
