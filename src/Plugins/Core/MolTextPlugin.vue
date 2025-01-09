@@ -6,6 +6,7 @@
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
         :submitOnEnter="false"
+        @onMolCountsChanged="onMolCountsChanged"
     >
     </PluginComponent>
 </template>

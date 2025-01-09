@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="true"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
     </PluginComponent>
 </template>

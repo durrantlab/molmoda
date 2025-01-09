@@ -9,6 +9,7 @@
         @onUserArgChanged="onUserArgChanged"
         @onPopupDone="onPopupDone"
         modalWidth="xl"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <!-- width="560"
         height="315" -->

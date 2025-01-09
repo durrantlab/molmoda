@@ -6,6 +6,7 @@
         @onPopupDone="onPopupDone"
         modalWidth="xl"
         :isActionBtnEnabled="isActionBtnEnabled"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <template #afterForm>
             <div

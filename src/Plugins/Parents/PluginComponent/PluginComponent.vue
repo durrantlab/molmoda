@@ -39,6 +39,7 @@
             :id="infoPayload.pluginId"
             v-model="userArgsFixed"
             @onChange="onChange"
+            @onMolCountsChanged="onMolCountsChanged"
             :hideIfDisabled="hideIfDisabled"
         ></FormFull>
         <slot name="afterForm"></slot>
@@ -63,6 +64,7 @@ import {
 import { IInfoPayload } from "@/Plugins/PluginInterfaces";
 import { citationsTxt } from "@/Plugins/Citations";
 import { logGAEvent } from "@/Core/GoogleAnalytics";
+import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
 /**
  * PopupOptionalPlugin component
@@ -178,6 +180,11 @@ export default class PluginComponent extends mixins(PopupMixin) {
         }
 
         return true;
+    }
+
+    onMolCountsChanged(val: IProtCmpdCounts) {
+        // Runs when the molecule counts change.
+        this.$emit("onMolCountsChanged", val);
     }
 
     /**

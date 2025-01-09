@@ -5,6 +5,7 @@
         @onPopupDone="onPopupDone"
         actionBtnTxt="Protonate"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <!-- <template #afterForm>
             <Alert type="info"

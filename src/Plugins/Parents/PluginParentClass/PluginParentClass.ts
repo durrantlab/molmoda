@@ -35,6 +35,7 @@ import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ty
 import { removeTerminalPunctuation } from "@/Core/Utils/StringUtils";
 import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
 import { Tag } from "@/Plugins/Tags/Tags";
+import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
@@ -128,6 +129,12 @@ export abstract class PluginParentClass extends mixins(
      */
     abstract tags: Tag[];
 
+    public onMolCountsChanged(val: IProtCmpdCounts) {
+        // Override this function to react when the number of proteins and
+        // compounds change.
+        // alert(JSON.stringify(val));
+    }
+
     /**
      * The payload to send to the plugin component via the infoPayload property.
      *
@@ -210,6 +217,14 @@ export abstract class PluginParentClass extends mixins(
      * Stores the jobId used to register the job in the queue system.
      */
     private jobId = "";
+
+    
+    private setJobIdIfNeeded() {
+        // Only set jobId if it's not already set.
+        if (this.jobId === "") {
+            this.jobId = makeUniqJobId(this.pluginId);
+        }
+    }
 
     /**
      * Runs when the user first starts the plugin. Called when the user clicks
@@ -343,7 +358,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Add to job queue table. Also 1 processor, because running on main
         // thread.
-        this.jobId = makeUniqJobId(this.pluginId);
+        this.setJobIdIfNeeded();
         if (this.showInQueue) {
             startInQueueStore(this.jobId, 1, () => {
                 return;
@@ -500,6 +515,7 @@ export abstract class PluginParentClass extends mixins(
     }
 
     protected updateProgressInQueueStore(progress: number) {
+        this.setJobIdIfNeeded();
         if (progress > 1) {
             progress /= 100;
         }

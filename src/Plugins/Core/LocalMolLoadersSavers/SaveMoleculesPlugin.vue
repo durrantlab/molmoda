@@ -8,6 +8,7 @@
     :prohibitCancel="appClosing"
     :hideIfDisabled="true"
     @onUserArgChanged="onUserArgChanged"
+    @onMolCountsChanged="onMolCountsChanged"
   >
   </PluginComponent>
 </template>

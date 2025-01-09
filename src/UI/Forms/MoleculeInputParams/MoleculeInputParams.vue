@@ -1,12 +1,12 @@
 <template>
   <span>
-    <FormWrapper cls="border-0" :label="`${molNameToUse.slice(0,1).toUpperCase()}${molNameToUse.slice(1)} to consider`">
+    <FormWrapper cls="border-0" :label="textToUse">
       <FormSelect
         v-model="selectionMode"
         :options="selectionOptions"
         :id="'molecule-selection'"
-        />
-        <!-- :description="`Choose which ${molNameToUse} to consider`" -->
+      />
+      <!-- :description="`Choose which ${molNameToUse} to consider`" -->
       <FormCheckBox
         v-if="
           val.considerProteins &&
@@ -21,7 +21,7 @@
   </span>
 </template>
    
-   <script lang="ts">
+<script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
@@ -30,7 +30,7 @@ import Alert from "@/UI/Layout/Alert.vue";
 import FormSelect from "../FormSelect.vue";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import FormCheckBox from "../FormCheckBox.vue";
-import { MoleculeInput } from "./MoleculeInput";
+import { IProtCmpdCounts, MoleculeInput } from "./MoleculeInput";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 function numAndNoun(num: number, noun: string): string {
@@ -54,9 +54,18 @@ function numAndNoun(num: number, noun: string): string {
 export default class MoleculeInputParams extends Vue {
   @Prop({ default: new MoleculeInput() }) modelValue!: MoleculeInput;
   @Prop({ required: true }) tag!: string;
+  @Prop({ default: "" }) text!: string;
 
   val: MoleculeInput = new MoleculeInput();
   selectionMode = "visible";
+
+  get textToUse(): string {
+    return this.text !== "" || this.text === undefined
+      ? this.text
+      : `${this.molNameToUse
+          .slice(0, 1)
+          .toUpperCase()}${this.molNameToUse.slice(1)} to consider`;
+  }
 
   /**
    * Provides the options for the molecule selection dropdown.
@@ -141,6 +150,11 @@ export default class MoleculeInputParams extends Vue {
     const nodeGroupsCount = nodeGroups.length;
     const compoundsNodes = mergedByMols.compoundsNodes ?? [];
     const compoundsNodesCount = compoundsNodes.length;
+
+    this.$emit("onMolCountsChanged", {
+      compounds: compoundsNodesCount,
+      proteins: nodeGroupsCount,
+    } as IProtCmpdCounts);
 
     let prts: string[] = [];
     if (this.val.considerProteins) {

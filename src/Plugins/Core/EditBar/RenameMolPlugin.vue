@@ -5,6 +5,7 @@
         actionBtnTxt="Rename"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
 </template>
 

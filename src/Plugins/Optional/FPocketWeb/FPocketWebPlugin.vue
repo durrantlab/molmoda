@@ -5,6 +5,7 @@
         @onPopupDone="onPopupDone"
         actionBtnTxt="Detect"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
     </PluginComponent>
 </template>

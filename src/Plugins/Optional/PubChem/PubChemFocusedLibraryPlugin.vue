@@ -7,6 +7,7 @@
       actionBtnTxt="Search"
       @onUserArgChanged="onUserArgChanged"
       :hideIfDisabled="true"
+      @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
   </span>
 </template>
@@ -93,7 +94,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
   ];
   pluginId = "pubchemfocusedlibrary";
   tags = [Tag.All];
-  intro = "Build a focused compound library by searching the PubChem database.";
+  intro = "Build a focused compound library of chemically similar analogs by searching the PubChem database.";
   details =
     "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your workspace.";
 

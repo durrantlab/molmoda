@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="filesToLoad.length > 0"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <FormFile
             ref="formFile"

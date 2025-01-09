@@ -8,6 +8,7 @@
         :hideIfDisabled="true"
         actionBtnTxt2="Load Defaults"
         @onPopupDone2="setDefaults"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <!-- cancelBtnTxt="Done" -->
     </PluginComponent>

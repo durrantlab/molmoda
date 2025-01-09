@@ -5,6 +5,7 @@
         actionBtnTxt="Save"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
 </template>
 

@@ -12,6 +12,7 @@
         :styleBtn1AsCancel="!showCancelBtn"
         :prohibitCancel="!showCancelBtn"
         @onCancel="onCancel"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <!-- :variant="variantToUse" -->
         {{ message }}

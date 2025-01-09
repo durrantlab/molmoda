@@ -6,6 +6,7 @@
         actionBtnTxt=""
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <FilterInput
             :list="loadedPlugins"

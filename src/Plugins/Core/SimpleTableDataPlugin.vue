@@ -8,6 +8,7 @@
     variant="info"
     @onUserArgChanged="onUserArgChanged"
     modalWidth="xl"
+    @onMolCountsChanged="onMolCountsChanged"
   >
     <p v-if="message !== ''">{{ message }}</p>
     <Table

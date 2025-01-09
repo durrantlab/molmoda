@@ -6,6 +6,7 @@
         actionBtnTxt="Dock"
         @onUserArgChanged="onUserArgChanged"
         :hideIfDisabled="true"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <Alert type="warning">
             This plugin assumes your compound(s) and protein(s) have already
@@ -84,7 +85,7 @@ let msgOnJobsFinishedtoUse: string | undefined;
     },
 })
 export default class WebinaPlugin extends PluginParentClass {
-    menuPath = "[6] Docking/Compound Docking...";
+    menuPath = "[6] Binding/Docking/[2] Perform Docking...";
     title = "Compound Docking";
     softwareCredits: ISoftwareCredit[] = [
         {

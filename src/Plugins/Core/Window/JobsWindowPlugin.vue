@@ -3,6 +3,7 @@
         v-model="open"
         :infoPayload="infoPayload"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
 </template>
 

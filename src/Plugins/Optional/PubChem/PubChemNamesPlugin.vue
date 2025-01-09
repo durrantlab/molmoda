@@ -6,6 +6,7 @@
       @onPopupDone="onPopupDone"
       actionBtnTxt="Get Names"
       @onUserArgChanged="onUserArgChanged"
+      @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
   </span>
 </template>

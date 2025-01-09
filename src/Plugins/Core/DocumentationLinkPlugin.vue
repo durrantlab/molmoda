@@ -4,6 +4,7 @@
         :infoPayload="infoPayload"
         actionBtnTxt=""
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
     </PluginComponent>
 </template>

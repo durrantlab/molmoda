@@ -84,6 +84,22 @@ def validate_plugin(ts_file):
         )
     ]
 
+    # NOTE: Below is not strictly required for all plugins. Only those that have
+    # a MoleculeInputParams form item. But let's just enforce it throughout.
+    required_substrs.append(
+        (
+            '@onMolCountsChanged="onMolCountsChanged"',
+            'The PluginComponent must define an onMolCountsChanged event like this: @onMolCountsChanged="onMolCountsChanged"',
+            [
+                # "SimpleMsgPlugin.vue",
+                # "SimpleTableDataPlugin.vue",
+                # "RedoPlugin.vue",
+                # "UndoPlugin.vue",
+                # "ClearSelectionPlugin.vue",
+            ],
+        ),
+    )
+
     if "noPopup = true" not in content:
         required_substrs.append(
             (

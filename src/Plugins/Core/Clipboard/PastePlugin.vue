@@ -4,6 +4,7 @@
         :infoPayload="infoPayload"
         @onUserArgChanged="onUserArgChanged"
         actionBtnTxt="Paste"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <template #afterForm>
             <Alert class="mt-3" type="info">{{ formatMsg }}</Alert>

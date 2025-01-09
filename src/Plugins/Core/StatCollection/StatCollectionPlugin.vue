@@ -7,6 +7,7 @@
         @onUserArgChanged="onUserArgChanged"
         actionBtnTxt="Allow"
         cancelBtnTxt="Decline"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <div>
             <p>

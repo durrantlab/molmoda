@@ -6,6 +6,7 @@
       @onPopupDone="onPopupDone"
       actionBtnTxt="Get Bioassays"
       @onUserArgChanged="onUserArgChanged"
+      @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
   </span>
 </template>

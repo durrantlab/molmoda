@@ -6,6 +6,7 @@
     actionBtnTxt=""
     @onPopupDone="onPopupDone"
     @onUserArgChanged="onUserArgChanged"
+    @onMolCountsChanged="onMolCountsChanged"
   >
   <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block; width:192px; height: 192px;" />
     <p>

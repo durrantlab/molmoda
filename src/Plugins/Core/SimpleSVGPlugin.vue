@@ -9,6 +9,7 @@
     @onUserArgChanged="onUserArgChanged"
     @onPopupDone="onPopupDone"
     modalWidth="xl"
+    @onMolCountsChanged="onMolCountsChanged"
   >
     <div class="svg-container d-flex flex-column">
       <div

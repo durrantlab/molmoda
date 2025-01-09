@@ -20,11 +20,16 @@ export interface IMoleculeInputParams {
     // flat list of molecules). If set to null, batches according to nprocs.
     batchSize?: number | null | undefined;
 }
-
 export interface IProtCmpdTreeNodePair {
     prot: FileInfo;
     cmpd: FileInfo;
 }
+
+export interface IProtCmpdCounts {
+    compounds: number;
+    proteins: number;
+}
+
 
 /**
  * MoleculeInput class.

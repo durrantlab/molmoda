@@ -108,7 +108,7 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
         if (molecules.length === 0) {
             messagesApi.popupError("No molecules match the current selection criteria.");
-            return;
+            return undefined;
         }
 
         // Reset results data

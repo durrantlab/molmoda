@@ -12,6 +12,7 @@
         variant="warning"
         @onUserArgChanged="onUserArgChanged"
         @onPopupDone="onPopupDone"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <p>{{ myAppName }} would like to access a third-party web resource:</p>
         <p>{{ url }}</p>

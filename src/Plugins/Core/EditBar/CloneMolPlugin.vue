@@ -6,6 +6,7 @@
         @onPopupDone="onPopupDone"
         :hideIfDisabled="true"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     ></PluginComponent>
 </template>
 

@@ -6,6 +6,7 @@
         actionBtnTxt="Move"
         @onPopupDone="onPopupDone"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <ul>
             <li v-for="title of selectedRegionsTitles" :key="title">

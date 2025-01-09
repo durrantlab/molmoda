@@ -6,6 +6,7 @@
         actionBtnTxt="Add Region"
         :hideIfDisabled="true"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
     </PluginComponent>
 </template>

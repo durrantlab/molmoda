@@ -4,6 +4,7 @@
         :infoPayload="infoPayload"
         @onUserArgChanged="onUserArgChanged"
         actionBtnTxt="Copy as SMILES"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <Alert type="warning">
             To save your molecules in other formats, consider

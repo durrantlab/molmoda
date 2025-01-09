@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="true"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <!-- actionBtnTxt2="Save Project First" -->
         <!-- @onPopupDone2="saveProject" -->

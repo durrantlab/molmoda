@@ -7,6 +7,7 @@
         @onClosed="onClosed"
         :variant="variantToUse"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <!-- modalWidth="default" -->
     <MessageList :messages="simpleMsgs"></MessageList>

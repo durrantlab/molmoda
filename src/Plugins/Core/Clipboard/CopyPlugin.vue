@@ -4,6 +4,7 @@
         :infoPayload="infoPayload"
         @onUserArgChanged="onUserArgChanged"
         actionBtnTxt="Copy"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <Alert type="info">{{ formatMsg }}</Alert>
         <Alert type="warning">

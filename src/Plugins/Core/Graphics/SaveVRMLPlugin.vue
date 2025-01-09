@@ -5,6 +5,7 @@
     actionBtnTxt="Save"
     @onPopupDone="onPopupDone"
     @onUserArgChanged="onUserArgChanged"
+    @onMolCountsChanged="onMolCountsChanged"
   ></PluginComponent>
 </template>
 
@@ -47,8 +48,8 @@ import { runWorker } from "@/Core/WebWorkers/RunWorker";
   },
 })
 export default class SaveVRMLPlugin extends PluginParentClass {
-  menuPath = "File/Graphics/VRML...";
-  title = "Save a VRML Model";
+  menuPath = "File/Graphics/3D Model...";
+  title = "Save a VRML2 Model";
   softwareCredits: ISoftwareCredit[] = [dynamicImports.mol3d.credit];
   contributorCredits: IContributorCredit[] = [
     // {
@@ -58,7 +59,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   ];
   pluginId = "savevrml";
 
-  intro = `Save the current molecular scene as a VRML file (3D model).`;
+  intro = `Save the current molecular scene as a VRML2 file (3D model).`;
   tags = [Tag.Visualization];
 
   userArgDefaults: UserArg[] = [
@@ -66,8 +67,8 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       id: "filename",
       label: "",
       val: "",
-      placeHolder: "Filename (e.g., my_model.vrml)...",
-      description: `The name of the VRML file to save. The extension ".vrml" will be automatically appended.`,
+      placeHolder: "Filename (e.g., my_model.wrl)...",
+      description: `The name of the VRML2 file to save. The extension ".wrl" will be automatically appended.`,
       filterFunc: (filename: string): string => {
         return fileNameFilter(filename);
       },
@@ -209,7 +210,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
       if (vrml !== "") {
         const fileInfo = new FileInfo({
-          name: filename + ".vrml",
+          name: filename + ".wrl",
           contents: vrml,
         });
 

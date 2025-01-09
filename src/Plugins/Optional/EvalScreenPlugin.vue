@@ -8,6 +8,7 @@
         :submitOnEnter="false"
         cancelBtnTxt="Done"
         actionBtnTxt=""
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <template #afterForm>
             <div class="mt-3">
@@ -153,7 +154,7 @@ interface IActivesOthers {
     },
 })
 export default class EvalScreenPlugin extends PluginParentClass {
-    menuPath = "Docking/Evaluate Performance...";
+    menuPath = "Binding/Docking/Evaluate Performance...";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "evalscreen";

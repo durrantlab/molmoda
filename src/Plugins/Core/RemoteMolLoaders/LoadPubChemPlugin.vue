@@ -7,6 +7,7 @@
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="isBtnEnabled()"
         @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <FormWrapper>
             <FormInput

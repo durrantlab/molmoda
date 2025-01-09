@@ -7,6 +7,7 @@
         :actionBtnTxt="actionBtnTxtToUse"
         :cancelBtnTxt="cancelBtnTxtToUse"
         :variant="popupVariant"
+        @onMolCountsChanged="onMolCountsChanged"
     >
         <MessageList :messages="errorMsgs" />
         <!-- <div> -->
