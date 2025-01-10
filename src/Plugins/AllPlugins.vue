@@ -8,7 +8,7 @@ system uses these to autopopulate with plugins. -->
     <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
 
     <!-- TEMPLATE1 START -->
-    <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
+    <ActivityFocusPlugin @onPluginSetup="onPluginSetup"></ActivityFocusPlugin>
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <CollapseAllPlugin @onPluginSetup="onPluginSetup"></CollapseAllPlugin>
@@ -41,8 +41,6 @@ system uses these to autopopulate with plugins. -->
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
     <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
-    <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
-    <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
     <SelectInvertPlugin @onPluginSetup="onPluginSetup"></SelectInvertPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
@@ -58,6 +56,7 @@ system uses these to autopopulate with plugins. -->
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
     <YesNoPlugin @onPluginSetup="onPluginSetup"></YesNoPlugin>
 
+    <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <PoseViewPlugin @onPluginSetup="onPluginSetup"></PoseViewPlugin>
@@ -67,6 +66,8 @@ system uses these to autopopulate with plugins. -->
     <PubChemNamesPlugin @onPluginSetup="onPluginSetup"></PubChemNamesPlugin>
     <PubChemPropsPlugin @onPluginSetup="onPluginSetup"></PubChemPropsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
+    <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
+    <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
   </div>
@@ -83,7 +84,7 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 
 // TEMPLATE2 START
-import AddRegionPlugin from "./Core/AddRegionPlugin.vue";
+import ActivityFocusPlugin from "./Core/ActivityFocusPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
@@ -116,8 +117,6 @@ import QuitPlugin from "./Core/QuitPlugin.vue";
 import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
 import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
-import SavePNGPlugin from "./Core/Graphics/SavePNGPlugin.vue";
-import SaveVRMLPlugin from "./Core/Graphics/SaveVRMLPlugin.vue";
 import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SelectInvertPlugin from "./Core/SelectInvertPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
@@ -133,6 +132,7 @@ import UpTreeNavPlugin from "./Core/UpDownTreeNav/UpTreeNavPlugin.vue";
 import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 import YesNoPlugin from "./Core/YesNoPlugin.vue";
 
+import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import PoseViewPlugin from "./Optional/PoseViewPlugin.vue";
@@ -142,6 +142,8 @@ import PubChemFocusedLibraryPlugin from "./Optional/PubChem/PubChemFocusedLibrar
 import PubChemNamesPlugin from "./Optional/PubChem/PubChemNamesPlugin.vue";
 import PubChemPropsPlugin from "./Optional/PubChem/PubChemPropsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
+import SavePNGPlugin from "./Optional/Graphics/SavePNGPlugin.vue";
+import SaveVRMLPlugin from "./Optional/Graphics/SaveVRMLPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
 
@@ -154,7 +156,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     HelpPlugin,
 
     // TEMPLATE3 START
-    AddRegionPlugin,
+    ActivityFocusPlugin,
     ClearSelectionPlugin,
     CloneMolPlugin,
     CollapseAllPlugin,
@@ -187,8 +189,6 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     RedoPlugin,
     RenameMolPlugin,
     SaveMoleculesPlugin,
-    SavePNGPlugin,
-    SaveVRMLPlugin,
     SelectAllPlugin,
     SelectInvertPlugin,
     SettingsPlugin,
@@ -204,6 +204,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ViewerWindowPlugin,
     YesNoPlugin,
 
+    AddRegionPlugin,
     EvalScreenPlugin,
     FPocketWebPlugin,
     PoseViewPlugin,
@@ -213,6 +214,8 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     PubChemNamesPlugin,
     PubChemPropsPlugin,
     ReducePlugin,
+    SavePNGPlugin,
+    SaveVRMLPlugin,
     WebinaPlugin,
     // TEMPLATE3 END
 

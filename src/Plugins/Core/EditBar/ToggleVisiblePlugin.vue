@@ -22,7 +22,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { checkAnyMolSelected } from "../../CheckUseAllowedUtils";
 import { Tag } from "@/Plugins/Tags/Tags";
 
 /**

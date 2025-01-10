@@ -32,7 +32,7 @@ import { Tag } from "../Tags/Tags";
     },
 })
 export default class DocumentationLinkPlugin extends PluginParentClass {
-    menuPath = [`[1] ${appName}`, "[3] Documentation..."];
+    menuPath = ["[9] Help", "[3] Documentation..."];
     title = "Documentation";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -25,6 +25,7 @@ import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import * as api from "@/Api";
 import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { Tag } from "../Tags/Tags";
+import { detectPlatform, HostOs } from "@/HostOs";
 
 /** QuitPlugin */
 @Options({
@@ -33,7 +34,7 @@ import { Tag } from "../Tags/Tags";
     },
 })
 export default class QuitPlugin extends PluginParentClass {
-    menuPath = ["File", "Project", "[9] Quit"];
+    menuPath = detectPlatform() === HostOs.Mac ? [appName, "[9] Quit"] : ["File", "[9] Exit"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

@@ -72,8 +72,8 @@ import { Tag, matchesTag } from "../Tags/Tags";
 export default class HelpPlugin extends PluginParentClass {
     @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
 
-    menuPath = [`${appName}`, "[5] Help..."];
-    title = "Help";
+    menuPath = ["Help", "[5] Plugin Info..."];
+    title = "Plugin Info";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {

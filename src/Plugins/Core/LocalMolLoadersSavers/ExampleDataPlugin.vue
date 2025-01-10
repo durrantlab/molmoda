@@ -3,7 +3,7 @@
         :infoPayload="infoPayload"
         v-model="open"
         cancelBtnTxt="Cancel"
-        actionBtnTxt="Append Example Project"
+        actionBtnTxt="Append Example Data"
         @onPopupDone="onPopupDone"
         :isActionBtnEnabled="true"
         @onUserArgChanged="onUserArgChanged"
@@ -42,8 +42,8 @@ import { Tag } from "@/Plugins/Tags/Tags";
     },
 })
 export default class ExampleDataPlugin extends PluginParentClass {
-    menuPath = "File/[1] Project/[6] Example...";
-    title = "Append Example Project";
+    menuPath = "Help/[6] Example Data...";
+    title = "Append Example Data";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     filesToLoad: FileInfo[] = [];
@@ -71,7 +71,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
         {
             id: "which_example_data",
             type: UserArgType.Select,
-            label: "Example data to load",
+            label: "Example data to append",
             options: [
                 {
                     description: "1INW protein/ligand complex",
@@ -121,7 +121,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
         } as IUserArgAlert,
     ];
     
-    intro = `Append an example project to the current workspace.`;
+    intro = `Append example data to the current workspace.`;
     details = `Useful for exploring and testing the ${appName} interface.`;
 
     /**

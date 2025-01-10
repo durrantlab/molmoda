@@ -29,7 +29,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
     },
 })
 export default class NavigatorWindowPlugin extends PluginParentClass {
-    menuPath = ["[9] Window", "Molecules", "[1] Navigator"];
+    menuPath = ["[8] Window", "Molecules", "[1] Navigator"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

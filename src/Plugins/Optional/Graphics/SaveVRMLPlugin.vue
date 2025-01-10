@@ -16,7 +16,6 @@ import {
   IContributorCredit,
   ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
@@ -38,6 +37,7 @@ import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { saveTxtFiles } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModelsUtils";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
+import { checkAnyMolLoaded } from "@/Plugins/CheckUseAllowedUtils";
 
 /**
  * SaveVRMLPlugin
@@ -153,9 +153,6 @@ export default class SaveVRMLPlugin extends PluginParentClass {
           mergeCutoff = 0.15;
         }
 
-        // console.log("MOO", JSON.stringify(mol.styles));
-
-        // stylData[id] = mol.styles; // Eventually, will use this to modify vrmlData[id] (simplify mesh)
         simplifiedVrmlPromises.push(
           runWorker(worker, {
             vrmlContent: vrml,

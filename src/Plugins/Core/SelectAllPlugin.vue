@@ -21,7 +21,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { checkAnyMolLoaded } from "./CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "../Tags/Tags";
 

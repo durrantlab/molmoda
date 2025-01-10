@@ -25,7 +25,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { checkOneMolSelected } from "../CheckUseAllowedUtils";
+import { checkOneMolSelected } from "../../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Tags/Tags";

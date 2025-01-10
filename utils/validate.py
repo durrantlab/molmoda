@@ -132,7 +132,7 @@ def validate_plugin(ts_file):
                 is_exception = any(exception in ts_file for exception in exceptions)
             if not is_exception:
                 add_error(ts_file, msg)
-    
+
     prohibited_substrings = [
         (
             "onUserArgChanged(",
@@ -164,6 +164,21 @@ def validate_plugin(ts_file):
             ts_file,
             "Plugins should not define a mounted() function. Use onMounted() instead.",
         )
+
+    # All core plugins must define tag "Tag.All".
+    if "/Core/" in ts_file and "Tag.All" not in content:
+        add_error(
+            ts_file,
+            'Core plugins must use the tag "Tag.All".',
+        )
+    
+    # No optional plugin should have tag "Tag.All".
+    if "/Optional/" in ts_file and "Tag.All" in content:
+        add_error(
+            ts_file,
+            'Optional plugins must not use the tag "Tag.All".',
+        )
+
 
 
 # Get a list of all the ts files in the ../src/ directory

@@ -29,7 +29,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
     },
 })
 export default class JobsWindowPlugin extends PluginParentClass {
-    menuPath = ["[9] Window", "Records", "Jobs"];
+    menuPath = ["[8] Window", "Records", "Jobs"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -22,7 +22,7 @@ import { mergeTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { checkMultipleMolsSelected } from "../CheckUseAllowedUtils";
+import { checkMultipleMolsSelected } from "../../CheckUseAllowedUtils";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";

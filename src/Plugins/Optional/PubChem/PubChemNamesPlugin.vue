@@ -17,7 +17,7 @@ import {
   fetchCid,
   fetchCompoundsProperties,
 } from "./PubChemAPI";
-import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   IContributorCredit,
@@ -68,7 +68,7 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     },
   ];
   pluginId = "pubchemnames";
-  tags = [Tag.All];
+  tags = [Tag.Cheminformatics];
   intro = "Get the names/synonyms of selected compounds from PubChem.";
   details =
     "Contacts the online PubChem database to retrieve up to five names for each compound.";

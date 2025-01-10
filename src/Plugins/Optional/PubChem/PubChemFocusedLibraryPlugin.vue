@@ -52,7 +52,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { checkCompoundLoaded } from "../../Core/CheckUseAllowedUtils";
+import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
 
 enum SearchMode {
   Similar = "similar",
@@ -93,7 +93,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
     },
   ];
   pluginId = "pubchemfocusedlibrary";
-  tags = [Tag.All];
+tags = [Tag.LeadOptimization];
   intro = "Build a focused compound library of chemically similar analogs by searching the PubChem database.";
   details =
     "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your workspace.";

@@ -22,7 +22,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     checkCompoundLoaded,
     checkProteinLoaded,
-} from "@/Plugins/Core/CheckUseAllowedUtils";
+} from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {

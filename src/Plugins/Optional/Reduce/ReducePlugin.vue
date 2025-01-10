@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { checkProteinLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
@@ -61,7 +61,7 @@ export default class ReducePlugin extends PluginParentClass {
         // },
     ];
     pluginId = "reduce";
-    tags = [Tag.All];
+    tags = [Tag.Modeling, Tag.Docking];
     intro = `Protonate/deprotonate proteins, in preparation for docking.`;
     details = `Uses the reduce program to guess at proper protonation states.`;
 

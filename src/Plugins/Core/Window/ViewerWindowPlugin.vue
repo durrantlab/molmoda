@@ -29,7 +29,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
     },
 })
 export default class ViewerWindowPlugin extends PluginParentClass {
-    menuPath = ["[9] Window", "Molecules", "[3] Viewer"];
+    menuPath = ["[8] Window", "Molecules", "[3] Viewer"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

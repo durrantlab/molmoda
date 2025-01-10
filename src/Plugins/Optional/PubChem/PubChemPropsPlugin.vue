@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { fetchCompoundsProperties, fetchCid } from "./PubChemAPI";
-import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   IContributorCredit,
@@ -64,7 +64,7 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     },
   ];
   pluginId = "pubchemprops";
-  tags = [Tag.All];
+  tags = [Tag.Cheminformatics];
   intro = "Get the chemical properties of selected compounds from PubChem.";
   details =
     "Contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";

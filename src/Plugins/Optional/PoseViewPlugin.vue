@@ -59,10 +59,9 @@ import { Tag } from "@/Plugins/Tags/Tags";
 import {
   checkCompoundLoaded,
   checkProteinLoaded,
-} from "@/Plugins/Core/CheckUseAllowedUtils";
+} from "@/Plugins/CheckUseAllowedUtils";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
 import Popup from "@/UI/Layout/Popups/Popup.vue";
-import { Watch } from "vue-property-decorator";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeListToPDB";
@@ -108,7 +107,7 @@ export default class PoseViewPlugin extends PluginParentClass {
   pluginId = "poseview";
   intro =
     "Use PoseView to generate a 2D interaction diagram showing protein-ligand interactions.";
-  tags = [Tag.All];
+  tags = [Tag.Visualization, Tag.Docking];
   isActionBtnEnabled = false;
   numCompounds = 0;
   numProteins = 0;

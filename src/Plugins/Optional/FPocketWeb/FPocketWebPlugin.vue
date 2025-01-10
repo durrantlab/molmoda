@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { checkProteinLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {

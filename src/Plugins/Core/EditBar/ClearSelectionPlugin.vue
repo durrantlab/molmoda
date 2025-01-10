@@ -16,7 +16,7 @@ import {
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { checkAnyMolSelected } from "../../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";

@@ -32,7 +32,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { checkAnyCompoundSelected, checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { checkAnyCompoundSelected, checkAnyMolSelected } from "../../CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";

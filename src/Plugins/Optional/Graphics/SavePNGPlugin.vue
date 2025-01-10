@@ -16,7 +16,6 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -28,6 +27,7 @@ import {
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Tags/Tags";
+import { checkAnyMolLoaded } from "@/Plugins/CheckUseAllowedUtils";
 
 /**
  * SavePNGPlugin

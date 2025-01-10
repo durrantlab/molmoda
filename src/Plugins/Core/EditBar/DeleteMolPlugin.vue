@@ -22,7 +22,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
-import { checkAnyMolSelected } from "../CheckUseAllowedUtils";
+import { checkAnyMolSelected } from "../../CheckUseAllowedUtils";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";

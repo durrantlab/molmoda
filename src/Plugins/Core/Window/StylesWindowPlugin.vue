@@ -29,7 +29,7 @@ import { Tag } from "@/Plugins/Tags/Tags";
     },
 })
 export default class StylesWindowPlugin extends PluginParentClass {
-    menuPath = ["[9] Window", "Molecules", "[5] Styles"];
+    menuPath = ["[8] Window", "Molecules", "[5] Styles"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

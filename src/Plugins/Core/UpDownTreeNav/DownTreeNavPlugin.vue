@@ -24,7 +24,7 @@ import {
     getUpDownTreeNavMoleculesToActOn,
     toggleUpDownTreeNav,
 } from "./UpDownTreeNavUtils";
-import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import { Tag } from "@/Plugins/Tags/Tags";
 
 /** DownTreeNavPlugin */

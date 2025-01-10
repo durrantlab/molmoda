@@ -31,7 +31,7 @@ import {
     IUserArgMoleculeInputParams,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
-import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
@@ -69,7 +69,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         },
     ];
     pluginId = "protonatecomps";
-    tags = [Tag.All];
+    tags = [Tag.Modeling, Tag.Docking];
     intro = `Protonate/deprotonate compounds per a given pH, in preparation for docking.`;
     details = `Uses the Open Babel library to guess at proper protonation states.`;
 

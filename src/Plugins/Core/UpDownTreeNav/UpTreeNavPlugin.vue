@@ -21,7 +21,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getUpDownTreeNavMoleculesToActOn, toggleUpDownTreeNav } from "./UpDownTreeNavUtils";
-import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import { Tag } from "@/Plugins/Tags/Tags";
 
 /** UpTreeNavPlugin */

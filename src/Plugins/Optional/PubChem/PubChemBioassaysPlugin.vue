@@ -13,7 +13,7 @@
   
 <script lang="ts">
 import { fetchActiveAssays, fetchCid } from "./PubChemAPI";
-import { checkCompoundLoaded } from "@/Plugins/Core/CheckUseAllowedUtils";
+import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   IContributorCredit,
@@ -66,7 +66,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
     },
   ];
   pluginId = "pubchembioassays";
-  tags = [Tag.All];
+  tags = [Tag.Cheminformatics];
   intro = "Get the bioassay data of selected compounds from PubChem.";
   details =
     "Contacts the online PubChem database to retrieve up to 10 active bioassays for each compound.";

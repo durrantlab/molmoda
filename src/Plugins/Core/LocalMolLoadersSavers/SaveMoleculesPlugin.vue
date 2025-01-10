@@ -16,7 +16,7 @@
 <script lang="ts">
 import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
-import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
