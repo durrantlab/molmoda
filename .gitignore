@@ -72,3 +72,7 @@ wasm-compile/vina/support/temp
 old_*
 get_latest.sh
 compiled_versions
+
+vrml_optimize/*
+
+grid_test/*
