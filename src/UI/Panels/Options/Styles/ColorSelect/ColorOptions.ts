@@ -5,7 +5,6 @@ import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import isEqual from "lodash.isequal";
 import { hexToColorName, colorNameToHex } from "./ColorConverter";
 
-
 interface INameAndColorStyle {
     name: string;
     colorStyle: IColorStyle;
@@ -38,6 +37,10 @@ export class ColorOptions {
             colorStyle: { colorscheme: "chain" },
         },
         {
+            name: "Molecule",
+            colorStyle: { color: "@byMolecule" }, // Special marker for molecule-based coloring
+        },
+        {
             name: "Solid",
             colorStyle: { color: "#HEX" },
         },
@@ -53,6 +56,9 @@ export class ColorOptions {
      * @returns {number} The index.
      */
     public nameToIndex(name: string): number {
+        if (name === "ByMolecule") {
+            debugger
+        }
         return this._colorStyles.findIndex(
             (colorStyle) => colorStyle.name === name
         );
@@ -65,6 +71,10 @@ export class ColorOptions {
      * @returns {number} The index.
      */
     public styleToIndex(style: IColorStyle): number {
+        if (style.color !== undefined && style.color === "@byMolecule") {
+            return this.nameToIndex("Molecule");
+        }
+
         if (style.color !== undefined && style.color !== "spectrum") {
             // It must be "Solid"
             return this.nameToIndex("Solid");
@@ -78,7 +88,7 @@ export class ColorOptions {
             return this.nameToIndex("ColorCarbons");
         }
 
-        // If you get here, it's easy to determine based on deep equality. 
+        // If you get here, it's easy to determine based on deep equality.
         return this._colorStyles.findIndex((colorStyle) =>
             isEqual(colorStyle.colorStyle, style)
         );
@@ -101,7 +111,7 @@ export class ColorOptions {
      * @returns {IColorStyle}  The color style.
      */
     public indexToStyle(index: number): IColorStyle {
-        let {colorStyle} = this._colorStyles[index];
+        let { colorStyle } = this._colorStyles[index];
         colorStyle = this._addColorToStyle(colorStyle);
         return colorStyle;
     }
@@ -113,7 +123,7 @@ export class ColorOptions {
      * @returns {IColorStyle}  The color style.
      */
     public nameToStyle(name: string): IColorStyle {
-        let {colorStyle} = this._colorStyles[this.nameToIndex(name)];
+        let { colorStyle } = this._colorStyles[this.nameToIndex(name)];
         colorStyle = this._addColorToStyle(colorStyle);
         return colorStyle;
     }
@@ -154,7 +164,7 @@ export class ColorOptions {
      * @param {IColorStyle} colorStyle  The color style.
      * @returns {IColorStyle}  The color style with the color added.
      */
-     private _addColorToStyle(colorStyle: IColorStyle): IColorStyle {
+    private _addColorToStyle(colorStyle: IColorStyle): IColorStyle {
         let strColorStyle = JSON.stringify(colorStyle);
 
         // Has #HEX?

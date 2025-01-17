@@ -19,6 +19,10 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertIAtoms";
+import { getMoleculeColor } from "../../Options/Styles/ColorSelect/MoleculeColors";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 /**
  * Viewer3DMol
@@ -136,7 +140,7 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Create a label for a region.
-     * 
+     *
      * @param {string} id    The id of the region.
      * @param {string} text  The text of the label.
      */
@@ -163,7 +167,7 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Destroy a region label.
-     * 
+     *
      * @param {string} id  The id of the region.
      */
     destroyRegionLabel(id: string) {
@@ -243,7 +247,6 @@ export class Viewer3DMol extends ViewerParent {
     //         this.renderAll();
     //     }
     // }
-
 
     /**
      * Adds a model to the viewer. Returns same model, but now it's been added
@@ -553,12 +556,82 @@ export class Viewer3DMol extends ViewerParent {
      * Converts the 3DMoljs style stored in the molecules tree to a style format
      * compatible with this viewer.
      *
-     * @param {IStyle} style  The style to convert.
+     * @param {IStyle}   style     The style to convert.
+     * @param {TreeNode} treeNode  The treenode associated with the style.
      * @returns {IStyle}  The converted style.
      */
-    convertStyle(style: IStyle): IStyle {
-        // Already in 3Dmoljs format, so no conversion needed.
+    convertStyle(style: IStyle, treeNode: TreeNode): IStyle {
+        // Process style if it contains any @byMolecule colors
+        if (treeNode.id !== undefined && this._containsByMoleculeColor(style)) {
+            const processedStyle = this._processStyleColors(style, treeNode.id);
+            style = processedStyle;
+        }
         return style;
+    }
+
+    /**
+     * Recursively checks if a style object contains any @byMolecule colors
+     *
+     * @param obj The object to check
+     * @returns boolean Whether the object contains any @byMolecule colors
+     */
+    private _containsByMoleculeColor(obj: any): boolean {
+        if (!obj || typeof obj !== "object") {
+            return false;
+        }
+
+        return Object.entries(obj).some(([_, value]) => {
+            if (value === "@byMolecule") {
+                return true;
+            }
+            if (typeof value === "object") {
+                return this._containsByMoleculeColor(value);
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Recursively processes a style object, replacing any @byMolecule colors
+     * with the actual molecule color
+     *
+     * @param obj The style object to process
+     * @param moleculeId The ID of the molecule to get the color for
+     * @returns The processed style object
+     */
+    private _processStyleColors(
+        obj: any,
+        moleculeId: string
+    ): Record<string, any> {
+        if (!obj || typeof obj !== "object") {
+            return obj;
+        }
+
+        const result: Record<string, any> = Array.isArray(obj) ? [] : {};
+
+        let allMols: TreeNodeList | undefined = undefined;
+
+        Object.entries(obj).forEach(([key, value]) => {
+            if (value === "@byMolecule") {
+                if (allMols === undefined) {
+                    allMols = getMoleculesFromStore().flattened;
+                }
+                const treeNode = allMols.find((node) => node.id === moleculeId);
+                let colorId = moleculeId;
+                if (treeNode !== undefined) {
+                    // Associated treenode found. Get it's top-most ancestor.
+                    const topAncestor = treeNode.getAncestry(allMols).nodes[0];
+                    colorId = topAncestor.id || moleculeId;
+                }
+                result[key] = getMoleculeColor(colorId);
+            } else if (typeof value === "object") {
+                result[key] = this._processStyleColors(value, moleculeId);
+            } else {
+                result[key] = value;
+            }
+        });
+
+        return result;
     }
 
     /**
@@ -736,7 +809,7 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Exports the VRML for each model in the viewer.
-     * 
+     *
      * @returns {string[][]}  The VRML for each model.
      */
     exportVRMLPerModel(): [string, string][] {
@@ -766,15 +839,15 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Sets up a callback that runs every time the view changes.
-     * 
+     *
      * @param {Function} callback  The callback to run.
      */
     _registerViewChangeCallback(callback: (view: number[]) => void) {
         // NOTE: The below slows things down quite a bit, I think. Don't use it.
         // this._mol3dObj.setViewChangeCallback(callback);
 
-       let lastViewSum = this.getView().reduce((a, b) => a + b, 0);
-       
+        let lastViewSum = this.getView().reduce((a, b) => a + b, 0);
+
         setInterval(() => {
             const newView = this.getView();
             const newViewSum = newView.reduce((a, b) => a + b, 0);
@@ -787,7 +860,7 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Gets the current view.
-     * 
+     *
      * @returns {number[]}  The view.
      */
     getView(): number[] {
@@ -796,7 +869,7 @@ export class Viewer3DMol extends ViewerParent {
 
     /**
      * Sets the view.
-     * 
+     *
      * @param {number[]} view  The view to set.
      */
     setView(view: number[]) {
