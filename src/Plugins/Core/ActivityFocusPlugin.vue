@@ -12,7 +12,7 @@
           <Alert type="info">{{ tagDescriptions[selectedTag] }}</Alert>
         </div>
         <Alert type="warning">
-          Changing the activity focus will restart the application. Consider
+          Changing the activity focus will restart {{appName}}. Consider
           saving your work first using
           <PluginPathLink plugin="savemolecules"></PluginPathLink> </Alert
       ></template>
@@ -56,7 +56,7 @@
     pluginId = "activityfocus";
     intro = "Choose which activity to focus on.";
     details =
-      "Adapts the interface to show tools and features most relevant to your current activity.";
+      `Adapts the ${appName} interface to show tools and features most relevant to your chosen activity.`;
     tags = [Tag.All];
   
     selectedTag: Tag | null = null;
@@ -78,8 +78,12 @@
       } as IUserArgSelect,
     ];
   
-    get tagDescriptions() {
+    get tagDescriptions(): Record<Tag, string> {
       return tagDescriptions;
+    }
+
+    get appName(): string {
+      return appName;
     }
   
     capitalizeFirstLetter(string: string) {
