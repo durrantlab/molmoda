@@ -572,8 +572,8 @@ export class Viewer3DMol extends ViewerParent {
     /**
      * Recursively checks if a style object contains any @byMolecule colors
      *
-     * @param obj The object to check
-     * @returns boolean Whether the object contains any @byMolecule colors
+     * @param {any} obj The object to check
+     * @returns {boolean} Whether the object contains any @byMolecule colors
      */
     private _containsByMoleculeColor(obj: any): boolean {
         if (!obj || typeof obj !== "object") {
@@ -595,9 +595,9 @@ export class Viewer3DMol extends ViewerParent {
      * Recursively processes a style object, replacing any @byMolecule colors
      * with the actual molecule color
      *
-     * @param obj The style object to process
-     * @param moleculeId The ID of the molecule to get the color for
-     * @returns The processed style object
+     * @param {any}    obj         The style object to process
+     * @param {string} moleculeId  The ID of the molecule to get the color for
+     * @returns {Record<string, any>} The processed style object
      */
     private _processStyleColors(
         obj: any,

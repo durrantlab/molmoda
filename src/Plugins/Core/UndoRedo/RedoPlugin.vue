@@ -16,7 +16,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * RedoPlugin

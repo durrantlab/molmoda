@@ -52,7 +52,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { FPocketWebQueue } from "./FPocketWebQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * FPocketWebPlugin

@@ -32,7 +32,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { saveTxtFiles } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModelsUtils";

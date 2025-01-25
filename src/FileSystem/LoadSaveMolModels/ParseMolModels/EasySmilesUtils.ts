@@ -6,6 +6,9 @@
 /**
  * Counts heavy atoms in a SMILES fragment, ignoring hydrogens
  * and handling two-letter elements correctly.
+ * 
+ * @param {string} smilesStr  Input SMILES string
+ * @returns {number}  Number of heavy atoms
  */
 export function easyCountHeavyAtomsSmiles(smilesStr: string): number {
     let count = 0;
@@ -53,8 +56,9 @@ export function easyCountHeavyAtomsSmiles(smilesStr: string): number {
  * many smiles strings (for example, to process data from a PubChem API call.) I
  * recommend using this function sparingly.
  *
- * @param smilesStr - Input SMILES string that may contain multiple fragments
- * @returns SMILES string containing only the largest fragment
+ * @param {string} smilesStr  Input SMILES string that may contain multiple
+ *                            fragments
+ * @returns {string} SMILES string containing only the largest fragment
  */
 export function easyDesaltSMILES(smilesStr: string): string {
     // If there's no period in the smilesStr, just return that string.

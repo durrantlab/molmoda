@@ -196,22 +196,22 @@ function considerThreeDNeededWarning(
  *
  * @returns {Promise<IFormatInfo[]>}  A promise that resolves to the formats.
  */
-export async function getObabelFormats(): Promise<IFormatInfo[]> {
-    const fakeFile = new FileInfo({
-        name: "fakeFile",
-        contents: "",
-    } as IFileInfo);
-    const obabelFormats = await runOpenBabel(
-        "getFormats",
-        [["-L", "formats"]],
-        // [["--version"]],
-        [fakeFile]
-    );
+// export async function getObabelFormats(): Promise<IFormatInfo[]> {
+//     const fakeFile = new FileInfo({
+//         name: "fakeFile",
+//         contents: "",
+//     } as IFileInfo);
+//     const obabelFormats = await runOpenBabel(
+//         "getFormats",
+//         [["-L", "formats"]],
+//         // [["--version"]],
+//         [fakeFile]
+//     );
 
-    console.log(obabelFormats[0].stdOutOrErr);
+//     console.log(obabelFormats[0].stdOutOrErr);
 
-    return obabelFormats;
-}
+//     return obabelFormats;
+// }
 
 /**
  * Separates a file into multiple files, one for each molecule.

@@ -37,7 +37,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ReduceQueue } from "./ReduceQueue";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * ReducePlugin

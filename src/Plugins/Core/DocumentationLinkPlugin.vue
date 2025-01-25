@@ -23,7 +23,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 /** DocumentationLinkPlugin */
 @Options({

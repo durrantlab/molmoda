@@ -30,7 +30,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * MergeMolsPlugin

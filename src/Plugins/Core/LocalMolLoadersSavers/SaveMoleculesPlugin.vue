@@ -53,7 +53,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { appName } from "@/Core/GlobalVars";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * SaveMoleculesPlugin

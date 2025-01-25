@@ -1,5 +1,5 @@
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
-import { matchesTag } from "@/Plugins/Tags/Tags";
+import { matchesTag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { Vue } from "vue-class-component";
 
 export type IMenuEntry = IMenuItem | IMenuSubmenu;

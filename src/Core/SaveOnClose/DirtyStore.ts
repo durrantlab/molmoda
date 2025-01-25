@@ -11,6 +11,12 @@ export function setStoreIsDirty(val: boolean) {
     storeIsDirty = val;
 }
 
+/**
+ * Opens the save plugin if the store is dirty.
+ *
+ * @param {boolean} [preventCloseSaveModal=true]  Whether to prevent closing the
+ *                                                save modal. Default is true.
+ */
 export function openSavePluginIfStoreDirty(preventCloseSaveModal = true) {
     if (storeIsDirty) {
         setTimeout(() => {

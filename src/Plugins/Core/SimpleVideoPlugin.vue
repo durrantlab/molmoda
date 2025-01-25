@@ -51,7 +51,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { Watch } from "vue-property-decorator";
 import * as api from "@/Api";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 /**
  * SimpleVideoPlugin

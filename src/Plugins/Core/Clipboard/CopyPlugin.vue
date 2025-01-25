@@ -37,7 +37,7 @@ import { checkAnyMolSelected } from "../../CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /** CopyPlugin */
 @Options({

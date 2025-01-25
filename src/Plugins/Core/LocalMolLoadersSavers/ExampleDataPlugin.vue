@@ -30,7 +30,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import { appName } from "@/Core/GlobalVars";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * ExampleDataPlugin

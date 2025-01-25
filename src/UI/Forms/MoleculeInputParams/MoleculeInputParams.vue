@@ -33,10 +33,23 @@ import FormCheckBox from "../FormCheckBox.vue";
 import { IProtCmpdCounts, MoleculeInput } from "./MoleculeInput";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
+/**
+ * Returns a string with the number and noun, pluralizing the noun if necessary.
+ *
+ * @param {number} num   The number to use
+ * @param {string} noun  The noun to use
+ * @returns {string} The formatted string
+ */
 function numAndNoun(num: number, noun: string): string {
   return num === 1 ? `1 ${noun}` : `${num} ${noun}s`;
 }
 
+/**
+ * MoleculeInputParams component provides a user interface for selecting which
+ * molecules to consider in calculations. It allows users to choose between
+ * visible, selected, or all molecules, and provides feedback about how many
+ * molecules will be processed.
+ */
 @Options({
   components: {
     FormElementDescription,
@@ -46,11 +59,6 @@ function numAndNoun(num: number, noun: string): string {
     FormCheckBox,
   },
 })
-/**
- * MoleculeInputParams component provides a user interface for selecting which molecules to consider
- * in calculations. It allows users to choose between visible, selected, or all molecules, and provides
- * feedback about how many molecules will be processed.
- */
 export default class MoleculeInputParams extends Vue {
   @Prop({ default: new MoleculeInput() }) modelValue!: MoleculeInput;
   @Prop({ required: true }) tag!: string;
@@ -59,6 +67,12 @@ export default class MoleculeInputParams extends Vue {
   val: MoleculeInput = new MoleculeInput();
   selectionMode = "visible";
 
+  /**
+   * Gets the text to use in the UI. If the text prop is empty, uses a default
+   * message based on the molecule name.
+   *
+   * @returns {string} The text to use
+   */
   get textToUse(): string {
     return this.text !== "" || this.text === undefined
       ? this.text
@@ -109,6 +123,11 @@ export default class MoleculeInputParams extends Vue {
     return "protein/compound pairs";
   }
 
+  /**
+   * Updates the molsToConsider configuration based on the selection mode.
+   *
+   * @param {string} newMode The new selection mode
+   */
   @Watch("selectionMode")
   onSelectionModeChange(newMode: string) {
     // Update the molsToConsider based on selection mode
@@ -222,12 +241,23 @@ export default class MoleculeInputParams extends Vue {
     return msg;
   }
 
+  /**
+   * Updates the component when the val prop changes. Emits the
+   * update:modelValue event and the onChange event.
+   *
+   * @param {MoleculeInput} newVal The new val prop
+   */
   @Watch("val", { deep: true })
   onValChanged(newVal: MoleculeInput) {
     this.$emit("update:modelValue", newVal);
     this.$emit("onChange");
   }
 
+  /**
+   * Updates the component when the model value changes.
+   *
+   * @param {MoleculeInput} newVal The new model value
+   */
   @Watch("modelValue", { deep: true })
   onModelValueChanged(newVal: MoleculeInput) {
     this.val = newVal;

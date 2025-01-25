@@ -57,7 +57,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { slugify } from "@/Core/Utils/StringUtils";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * LoadPubChemPlugin

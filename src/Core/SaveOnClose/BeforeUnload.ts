@@ -3,7 +3,7 @@ import { openSavePluginIfStoreDirty } from "./DirtyStore";
 
 /**
  * Handles the beforeunload event.
- * 
+ *
  * @param {Event} e The event.
  */
 function _handleBeforeUnload(e: Event) {
@@ -16,14 +16,15 @@ function _handleBeforeUnload(e: Event) {
     openSavePluginIfStoreDirty(true);
 }
 
+/**
+ * Sets up the warn save on close.
+ */
 export function setupBeforeUnload() {
     if (PluginToTest.pluginToTest === "") {
         // If testing a plugin, don't prompt to save the state on close.
         window.addEventListener("beforeunload", _handleBeforeUnload, true);
     }
-
 }
-
 
 /**
  * Unregisters the warn save on close.

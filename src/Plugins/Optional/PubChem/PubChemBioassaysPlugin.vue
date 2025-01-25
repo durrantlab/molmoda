@@ -22,10 +22,9 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
-import { FailingTest } from "@/Testing/FailingTest";
 import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
@@ -154,7 +153,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
           "molecule2"
         ),
       afterPluginCloses: new TestCmdList()
-        .waitUntilRegex("#modal-tabledatapopup", "DSSTox")
+        .waitUntilRegex("#modal-tabledatapopup", "COX-1")
         .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
     };
   }

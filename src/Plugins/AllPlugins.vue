@@ -84,7 +84,7 @@ import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
 import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 
 // TEMPLATE2 START
-import ActivityFocusPlugin from "./Core/ActivityFocusPlugin.vue";
+import ActivityFocusPlugin from "./Core/ActivityFocus/ActivityFocusPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";

@@ -16,9 +16,9 @@ function _getBody(): HTMLBodyElement {
 /**
  * Lists all wait spinners for debugging.
  */
-export function listWaitSpinnersForDebug() {
-    console.log(spinnerMotives);
-}
+// export function listWaitSpinnersForDebug() {
+//     console.log(spinnerMotives);
+// }
 
 /**
  * Stops a wait spinner.

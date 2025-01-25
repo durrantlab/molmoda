@@ -36,7 +36,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 /**
  * A function that returns the options and validate functions for the available

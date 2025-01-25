@@ -182,6 +182,12 @@ export default class PluginComponent extends mixins(PopupMixin) {
         return true;
     }
 
+    /**
+     * Runs when the molecule counts change, as specified when using the
+     * MoleculeInputParams component.
+     *
+     * @param {IProtCmpdCounts} val  The molecule counts.
+     */
     onMolCountsChanged(val: IProtCmpdCounts) {
         // Runs when the molecule counts change.
         this.$emit("onMolCountsChanged", val);

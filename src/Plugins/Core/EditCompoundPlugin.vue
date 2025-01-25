@@ -19,7 +19,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 /**
  * EditCompoundPlugin

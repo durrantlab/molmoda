@@ -32,7 +32,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { pluginsApi } from "@/Api/Plugins";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
 import Table from "@/UI/Components/Table/Table.vue";
 

@@ -42,7 +42,7 @@ import {
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
   SelectedType,
@@ -60,6 +60,9 @@ enum SearchMode {
   Superstructure = "superstructure",
 }
 
+/**
+ * PubChemFocusedLibraryPlugin component
+ */
 @Options({
   components: {
     PluginComponent,

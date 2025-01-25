@@ -23,7 +23,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { checkAnyMolSelected } from "../../CheckUseAllowedUtils";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * ToggleVisiblePlugin

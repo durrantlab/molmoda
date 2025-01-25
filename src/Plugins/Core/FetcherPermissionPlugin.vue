@@ -43,7 +43,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { appName } from "@/Core/GlobalVars";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 // import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**

@@ -22,7 +22,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 /** ExpandAllPlugin */
 @Options({

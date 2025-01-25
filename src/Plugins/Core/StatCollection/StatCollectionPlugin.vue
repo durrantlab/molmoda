@@ -85,7 +85,7 @@ import { isTest } from "@/Testing/SetupTests";
 import { appName } from "@/Core/GlobalVars";
 import * as api from "@/Api";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * StatCollectionPlugin
@@ -100,12 +100,12 @@ export default class StatCollectionPlugin extends PluginParentClass {
     // menuPath = "Test/StatCollection...";
     menuPath = null;
     softwareCredits: ISoftwareCredit[] = [];
-    contributorCredits: IContributorCredit[] = [
-        {
-            name: "Yuri K. Kochnev",
-            // url: "durrantlab.com",
-        },
-    ];
+    contributorCredits: IContributorCredit[] = [];
+    //     {
+    //         name: "Yuri K. Kochnev",
+    //         // url: "durrantlab.com",
+    //     },
+    // ];
     pluginId = "statcollection";
     intro = "";
     title = `Allow Cookies?`;

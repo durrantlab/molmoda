@@ -34,7 +34,7 @@ import * as api from "@/Api";
 import { isTest } from "@/Testing/SetupTests";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /** PastePlugin */
 @Options({

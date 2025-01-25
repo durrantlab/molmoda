@@ -23,7 +23,7 @@ import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * RenameMolPlugin

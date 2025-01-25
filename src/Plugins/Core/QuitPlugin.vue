@@ -24,8 +24,8 @@ import { appName } from "@/Core/GlobalVars";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import * as api from "@/Api";
 import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
-import { Tag } from "../Tags/Tags";
-import { detectPlatform, HostOs } from "@/HostOs";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { detectPlatform, HostOs } from "@/Core/HostOs";
 
 /** QuitPlugin */
 @Options({

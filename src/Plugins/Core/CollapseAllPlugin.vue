@@ -21,7 +21,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 
 /** CollapseAllPlugin */

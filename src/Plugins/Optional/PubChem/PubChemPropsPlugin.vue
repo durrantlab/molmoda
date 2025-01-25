@@ -22,7 +22,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { Options } from "vue-class-component";
 import { ITest } from "@/Testing/TestCmd";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";

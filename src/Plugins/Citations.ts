@@ -72,6 +72,12 @@ function formatCitation(citation: ICitation): string {
     return `<a href="${url}" target="_blank"><i>${citation.journal}</i> ${citation.year};${volumeString};${citation.pages}</a>`;
 }
 
+/**
+ * Format a credit.
+ * 
+ * @param {ISoftwareCredit | IContributorCredit} credit  The credit to format.
+ * @returns {string[]} The formatted credit.
+ */
 function formatCredit(credit: ISoftwareCredit | IContributorCredit): string[] {
     if (credit.citations && credit.citations.length > 0) {
         // It's ISoftwareCredit

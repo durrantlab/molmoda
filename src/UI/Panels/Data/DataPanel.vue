@@ -56,7 +56,6 @@ import {
 } from "@/UI/Components/Table/Types";
 import {
   TreeNodeDataType,
-  SelectedType,
   ITreeNodeData,
   TableHeaderSort,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -133,10 +132,9 @@ export default class DataPanel extends Vue {
   /**
    * Whether the table should be allowed to wrap text.
    *
-   * @param {ITableData} tableData  The table data.
    * @returns {boolean}  Whether the table should be allowed to wrap text.
    */
-  noFixedTable(tableData: ITableData): boolean {
+  noFixedTable(/* tableData: ITableData */): boolean {
     // In the past I allowed text wrapping if there were more than 5 columns
     // to try to make it more readable, but I've come to prefer never
     // wrapping.

@@ -35,7 +35,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { storeIsDirty, setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore"
 
 /**

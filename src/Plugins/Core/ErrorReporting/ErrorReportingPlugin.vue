@@ -44,7 +44,7 @@ import {
 import * as api from "@/Api";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { reportErrorToServer } from "./ErrorReporting";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * ErrorReportingPlugin

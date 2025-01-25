@@ -50,7 +50,7 @@ import {
     IFormatInfo,
     getFormatInfoGivenType,
 } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * OpenMoleculesPlugin

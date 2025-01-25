@@ -12,11 +12,15 @@ import {
 } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
-import { setupTags } from "./Plugins/Tags/Tags";
+import { setupTags } from "./Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { setupSaveOnClose } from "./Core/SaveOnClose";
+import { Reactor } from "./Core/Reactor";
+
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
+
+
 
 /**
  * The main function.
@@ -42,6 +46,16 @@ async function main() {
         .component("font-awesome-icon", FontAwesomeIcon)
         .use(store)
         .mount("#app");
+    
+    const reactor = new Reactor();
+    await reactor.setup("Cl[C:1]([*:3])=O.[OH:2][*:4]>>[*:4][O:2][C:1]([*:3])=O")
+    reactor.addReactant("CC(Cl)=O", 0);
+    reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
+    reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
+    reactor.addReactant("CCCCCO", 1)
+
+    const results = reactor.runReaction();
+    debugger
 
     // getObabelFormats();
 

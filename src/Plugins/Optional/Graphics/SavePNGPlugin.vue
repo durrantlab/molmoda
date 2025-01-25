@@ -26,7 +26,7 @@ import {
 } from "@/FileSystem/FilenameManipulation";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { checkAnyMolLoaded } from "@/Plugins/CheckUseAllowedUtils";
 
 /**

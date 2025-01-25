@@ -34,7 +34,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
 import * as api from "@/Api";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 /** AboutPlugin */
 @Options({

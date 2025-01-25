@@ -34,7 +34,7 @@ import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { removeTerminalPunctuation } from "@/Core/Utils/StringUtils";
 import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
@@ -129,6 +129,13 @@ export abstract class PluginParentClass extends mixins(
      */
     abstract tags: Tag[];
 
+    /**
+     * Called when the number of molecules specified by the user changes. This
+     * is used with the MoleculeInput component. Override this function to react
+     * when the number of proteins and compounds change.
+     *
+     * @param {IProtCmpdCounts} val  The number of proteins and compounds.
+     */
     public onMolCountsChanged(val: IProtCmpdCounts) {
         // Override this function to react when the number of proteins and
         // compounds change.
@@ -219,6 +226,9 @@ export abstract class PluginParentClass extends mixins(
     private jobId = "";
 
     
+    /**
+     * Sets the jobId if it's not already set.
+     */
     private setJobIdIfNeeded() {
         // Only set jobId if it's not already set.
         if (this.jobId === "") {
@@ -514,6 +524,14 @@ export abstract class PluginParentClass extends mixins(
         // return jobResultFiles;
     }
 
+    /**
+     * Updates the progress of the job in the queue system. This is called by
+     * the plugin when it wants to update the progress of the job. The progress
+     * should be a number between 0 and 1. If the progress is greater than 1, it
+     * is assumed to be a percentage (e.g., 100 for 100%).
+     *
+     * @param {number} progress  The progress of the job (0 to 1).
+     */
     protected updateProgressInQueueStore(progress: number) {
         this.setJobIdIfNeeded();
         if (progress > 1) {

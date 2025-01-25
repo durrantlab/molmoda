@@ -136,7 +136,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "../Core/ActivityFocus/ActivityFocusUtils";
 
 interface IActivesOthers {
     labelScores: [number, number][];

@@ -25,6 +25,16 @@ export function capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/**
+ * Lowercases the first letter of a string.
+ * 
+ * @param  {string} s The string to lowerize.
+ * @returns {string} The lowerized string.
+ */
+export function lowerize(s: string): string {
+    return s.charAt(0).toLowerCase() + s.slice(1);
+}
+
 
 /**
  * Capitalizes the first letter of each word in a string.

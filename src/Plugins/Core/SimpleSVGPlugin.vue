@@ -44,7 +44,7 @@ import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { FailingTest } from "@/Testing/FailingTest";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -122,6 +122,9 @@ export default class SimpleSVGPlugin extends PluginParentClass {
     return Promise.resolve();
   }
 
+  /**
+   * Downloads the SVG file.
+   */
   downloadSVG() {
     const fileInfo = new FileInfo({
       name: "image.svg",
@@ -130,6 +133,9 @@ export default class SimpleSVGPlugin extends PluginParentClass {
     api.fs.saveTxt(fileInfo);
   }
 
+  /**
+   * Downloads the PNG file.
+   */
   async downloadPNG() {
     const svgElement = this.$refs.svgElement as HTMLElement;
     if (!svgElement) return;

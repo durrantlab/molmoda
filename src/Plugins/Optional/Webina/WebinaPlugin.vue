@@ -69,7 +69,7 @@ import { isTest } from "@/Testing/SetupTests";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { triggerErrorPopup } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 import { prepForErrorCustomMsg } from "./WebinaErrors";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 
 let msgOnJobsFinishedtoUse: string | undefined;

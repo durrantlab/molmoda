@@ -38,7 +38,7 @@ import {
 import { Options } from "vue-class-component";
 import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "../Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * AddRegionPlugin

@@ -75,6 +75,15 @@
                                         </PluginPathLink
                                         >.
                                     </p>
+                                    <Alert v-if="activityFocusModeInfo[0] !== 'All'" type="info">
+                                        You are running {{appName}} in
+                                        <b>{{activityFocusModeInfo[0]}}</b>
+                                        mode. In this mode, {{appName}} hides
+                                        some tools so you can
+                                        {{activityFocusModeInfo[1]}} <a
+                                        :href="standardModeUrl">Switch to All
+                                        mode</a> to restore access to all tools.
+                                    </Alert>
                                 </div>
                             </div>
                             <ViewerPanel @onViewerLoaded="onViewerLoaded" />
@@ -143,6 +152,9 @@ import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
 import { appName, appVersion, appDescription, logoPath } from "@/Core/GlobalVars";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
+import { getActivityFocusMode, getActvityFocusModeDescription, Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { capitalize, lowerize } from "@/Core/Utils/StringUtils";
+import Alert from "../Alert.vue";
 
 /**
  * GoldLayout component
@@ -159,10 +171,25 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
         QueuePanel,
         DataPanel,
         PluginPathLink,
+        Alert
     },
 })
 export default class GoldLayout extends Vue {
     viewerLoaded = false;
+
+    get activityFocusModeInfo(): string[] {
+        const mode = getActivityFocusMode();
+        const [shortDesc, longDesc] = getActvityFocusModeDescription(mode);
+
+        return [capitalize(mode), lowerize(shortDesc)];
+    }
+
+    get standardModeUrl(): string {
+        // Get the current URL, without the "focus" query parameter
+        let url = new URL(window.location.href);
+        url.searchParams.delete("focus");
+        return url.toString();
+    }
 
     /**
      * Gets the app name and version.

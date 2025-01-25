@@ -62,7 +62,7 @@ import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Tag } from "../Tags/Tags";
+import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html

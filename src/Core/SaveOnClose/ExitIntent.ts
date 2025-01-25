@@ -14,17 +14,22 @@ interface ExitIntentOptions {
 }
 
 /**
- * Creates an exit intent detector that triggers when the mouse moves toward
- * the top of the window or leaves through the top edge.
+ * Creates an exit intent detector that triggers when the mouse moves toward the
+ * top of the window or leaves through the top edge.
  *
- * @param {ExitIntentOptions} options  Configuration options for exit intent detection.
- * @param {number} options.threshold  Distance in pixels from top to trigger (default: 10).
- * @param {number} options.maxDisplays  Maximum times to trigger (default: 10000).
- * @param {number} options.eventThrottle  Minimum ms between triggers (default: 100).
- * @param {Function} options.onExitIntent  Callback when exit intent detected.
+ * @param {ExitIntentOptions} options                Configuration options for
+ *                                                   exit intent detection.
+ * @param {number}            options.threshold      Distance in pixels from top
+ *                                                   to trigger (default: 10).
+ * @param {number}            options.maxDisplays    Maximum times to trigger
+ *                                                   (default: 10000).
+ * @param {number}            options.eventThrottle  Minimum ms between triggers
+ *                                                   (default: 100).
+ * @param {Function}          options.onExitIntent   Callback when exit intent
+ *                                                   detected.
  * @returns {Function} Cleanup function to remove event listeners.
  */
-export function createExitIntent({
+function _createExitIntent({
     threshold = 10,
     maxDisplays = 10000,
     eventThrottle = 100,
@@ -130,7 +135,7 @@ export function createExitIntent({
  * @returns {Promise<void>} A promise that resolves when setup is complete.
  */
 export async function setupExitIntent(): Promise<void> {
-    createExitIntent({
+    _createExitIntent({
         threshold: 15,
         maxDisplays: 10000,
         eventThrottle: 15,

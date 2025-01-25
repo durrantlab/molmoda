@@ -25,7 +25,7 @@ import {
     toggleUpDownTreeNav,
 } from "./UpDownTreeNavUtils";
 import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /** DownTreeNavPlugin */
 @Options({

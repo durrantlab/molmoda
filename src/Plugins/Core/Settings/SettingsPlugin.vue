@@ -45,7 +45,7 @@ import {
 } from "../StatCollection/StatUtils";
 import { appName } from "@/Core/GlobalVars";
 import { restartAutoSaveTimer } from "@/Store/AutoSave";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /** SettingsPlugin */
 @Options({

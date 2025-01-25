@@ -132,9 +132,12 @@ export class RateLimitedFetcherQueue {
     /**
      * Creates a new RateLimitedFetcherQueue instance.
      *
-     * @param {number} requestsPerSecond - Maximum number of requests allowed per second
-     * @param {Object} options - Configuration options for the fetcher
-     * @param {ResponseType} options.responseType - Type of response expected (json, text, blob, etc.)
+     * @param {number}       requestsPerSecond     Maximum number of requests
+     *                                             allowed per second
+     * @param {object}       options               Configuration options for the
+     *                                             fetcher
+     * @param {ResponseType} options.responseType  Type of response expected
+     *                                             (json, text, blob, etc.)
      * @throws {Error} If requestsPerSecond is less than or equal to 0
      */
     constructor(

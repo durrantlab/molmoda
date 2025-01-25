@@ -36,7 +36,7 @@ import { checkAnyCompoundSelected, checkAnyMolSelected } from "../../CheckUseAll
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 /** CopyPlugin */

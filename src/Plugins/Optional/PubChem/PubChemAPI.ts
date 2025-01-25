@@ -236,7 +236,6 @@ export async function fetchCompoundsProperties(cid: string): Promise<any> {
  * @returns {Promise<any>} A promise that resolves to an object containing active assays or an error message.
  */
 export async function fetchActiveAssays(cid: string): Promise<any> {
-    alert("Need to prioritize these somehow...")
     const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/assaysummary/JSON`;
     try {
         const data = await pubChemQueue.enqueue(url);
@@ -250,7 +249,7 @@ export async function fetchActiveAssays(cid: string): Promise<any> {
             return { error: "Activity Outcome column not found in data." };
         }
 
-        const activeAssays: any[] = [];
+        let activeAssays: any[] = [];
         for (const row of rows) {
             const cells = row?.Cell ?? [];
             if (cells[outcomeIndex] === "Active") {
@@ -266,12 +265,104 @@ export async function fetchActiveAssays(cid: string): Promise<any> {
             return { error: "No active assays found for the provided CID." };
         }
 
-        return { ActiveAssays: activeAssays };
+        // Sort the assays by a custom score.
+        activeAssays.sort(
+            (a: { [key: string]: string }, b: { [key: string]: string }) => {
+                // Sort by the number of active compounds in the assay.
+                let aScore = 0;
+                let bScore = 0;
+
+                // Prioritize confirmatory assays.
+                if (
+                    a["Assay Type"] === "Confirmatory" &&
+                    b["Assay Type"] !== "Confirmatory"
+                ) {
+                    aScore += 1;
+                } else if (
+                    a["Assay Type"] !== "Confirmatory" &&
+                    b["Assay Type"] === "Confirmatory"
+                ) {
+                    bScore += 1;
+                }
+
+                // Prioritize assays with Target GeneID.
+                if (a["Target GeneID"] !== "" && b["Target GeneID"] === "") {
+                    aScore += 1;
+                } else if (
+                    a["Target GeneID"] === "" &&
+                    b["Target GeneID"] !== ""
+                ) {
+                    bScore += 1;
+                }
+
+                // Compare Activity Value [uM]
+                if (a["Activity Value [uM]"] === "") {
+                    a["Activity Value [uM]"] = "100";
+                }
+                if (b["Activity Value [uM]"] === "") {
+                    b["Activity Value [uM]"] = "100";
+                }
+                aScore -= parseFloat(a["Activity Value [uM]"]) / 10.0;
+                bScore -= parseFloat(b["Activity Value [uM]"]) / 10.0;
+
+                return bScore - aScore;
+            }
+        );
+
+        // Remove entries with duplicate AIDs. Keep only the first one. Not sure
+        // why this happens.
+        let uniqueAssays: any[] = [];
+        const aidSet = new Set<string>();
+        for (const assay of activeAssays) {
+            if (assay["AID"] === "") {
+                // If no AID, just add it to unique list.
+                uniqueAssays.push(assay);
+                continue;
+            }
+
+            if (!aidSet.has(assay["AID"])) {
+                aidSet.add(assay["AID"]);
+                uniqueAssays.push(assay);
+            }
+        }
+        activeAssays = uniqueAssays;
+
+        // Entries in the list could have duplicate Target GeneIDs. Keep only
+        // the first one. Put additional ones in new list.
+        uniqueAssays = [];
+        const duplicateAssays: any[] = [];
+        const geneIDs = new Set<string>();
+        for (const assay of activeAssays) {
+            if (assay["Target GeneID"] === "") {
+                // If no gene ID, just add it to unique list.
+                uniqueAssays.push(assay);
+                continue;
+            }
+
+            if (!geneIDs.has(assay["Target GeneID"])) {
+                geneIDs.add(assay["Target GeneID"]);
+                uniqueAssays.push(assay);
+                continue;
+            }
+
+            duplicateAssays.push(assay);
+        }
+
+        const activeAssaysReordered = uniqueAssays.concat(duplicateAssays);
+
+        return { ActiveAssays: activeAssaysReordered };
     } catch (error: any) {
         return { error: `Network issue occurred: ${error.message}` };
     }
 }
 
+/**
+ * A helper function that calculates the Tanimoto similarity between two fingerprints.
+ *
+ * @param {Uint8Array} fp1 The first fingerprint.
+ * @param {Uint8Array} fp2 The second fingerprint.
+ * @returns {number} The Tanimoto similarity.
+ */
 function _calculateTanimotoSimilarity(
     fp1: Uint8Array,
     fp2: Uint8Array
@@ -305,7 +396,12 @@ function _calculateTanimotoSimilarity(
     return intersectionBits / unionBits;
 }
 
-// Helper function to count the number of 1 bits in a byte
+/**
+ * Helper function to count the number of 1 bits in a byte
+ *
+ * @param {number} byte  The byte to count bits in.
+ * @returns {number} The number of 1 bits in the byte.
+ */
 function _countBits(byte: number): number {
     // Use Brian Kernighan's algorithm
     let count = 0;
@@ -317,6 +413,13 @@ function _countBits(byte: number): number {
     return count;
 }
 
+/**
+ * A helper function that fetches compound data given a list of CIDs.
+ *
+ * @param {number[]} cids  The list of CIDs.
+ * @returns {Promise<ICompoundData[]>} A promise that resolves to an array of
+ *     compound data objects.
+ */
 async function _getCompoundDataGivenCIDs(
     cids: number[]
 ): Promise<ICompoundData[]> {
@@ -348,6 +451,13 @@ async function _getCompoundDataGivenCIDs(
     return compoundData;
 }
 
+/**
+ * A helper function that fetches extra CIDs for a given URL.
+ *
+ * @param {string} url         The URL to fetch the CIDs from.
+ * @param {number} maxRecords  The maximum number of records to return.
+ * @returns {Promise<number[]>} A promise that resolves to an array of CIDs.
+ */
 async function _fetchExtraCIDs(
     url: string,
     maxRecords: number

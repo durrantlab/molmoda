@@ -6,8 +6,11 @@ import { randomPastelColor } from './ColorConverter';
 const moleculeColors: { [key: string]: string } = {};
 
 /**
- * Gets a consistent pastel color for a molecule ID.
- * The color will be the same each time for a given ID within a session.
+ * Gets a consistent pastel color for a molecule ID. The color will be the same
+ * each time for a given ID within a session.
+ * 
+ * @param {string} moleculeId  The molecule ID.
+ * @returns {string}  The color.
  */
 export function getMoleculeColor(moleculeId: string): string {
     if (!moleculeColors[moleculeId]) {

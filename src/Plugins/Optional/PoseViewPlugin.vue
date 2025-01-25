@@ -14,9 +14,9 @@
         <Alert v-if="numCompounds > 1" type="danger" extraClasses="mt-4">
           <span>
             PoseView works with only 1 compound (ligand) at a time. You have
-            chosen {{ numCompounds }} compounds. Please change which
-            proteins and compounds to consider (above), or modify your selection
-            in the Navigator panel if necessary.
+            chosen {{ numCompounds }} compounds. Please change which proteins
+            and compounds to consider (above), or modify your selection in the
+            Navigator panel if necessary.
           </span>
         </Alert>
 
@@ -24,8 +24,7 @@
           You have chosen {{ numProteins }} proteins. To calculate
           protein/ligand interactions, these proteins will be merged and
           considered as a single receptor. To generate separate 2D interaction
-          diagrams for each protein, run this plugin on each protein
-          separately.
+          diagrams for each protein, run this plugin on each protein separately.
         </Alert>
       </template>
     </PluginComponent>
@@ -54,8 +53,7 @@ import {
 import Alert from "@/UI/Layout/Alert.vue";
 import * as api from "@/Api";
 import { ITest } from "@/Testing/TestCmd";
-import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "@/Plugins/Tags/Tags";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import {
   checkCompoundLoaded,
   checkProteinLoaded,
@@ -66,10 +64,14 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeListToPDB";
 import { FailingTest } from "@/Testing/FailingTest";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 const PROXY_URL =
   "https://durrantlab.pitt.edu/apps/molmoda/beta/poseview-proxy.php";
 
+/**
+ * PoseViewPlugin
+ */
 @Options({
   components: {
     PluginComponent,
@@ -84,7 +86,7 @@ export default class PoseViewPlugin extends PluginParentClass {
     {
       name: "PoseView",
       url: "https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html",
-      license: Licenses.ACADEMICONLY,
+      license: Licenses.UNRESTRICTED, // https://proteins.plus/pages/about
       citations: [
         {
           title: "PoseView -- molecular interaction patterns at a glance",
@@ -94,6 +96,27 @@ export default class PoseViewPlugin extends PluginParentClass {
           volume: 2,
           issue: 1,
           pages: "P50",
+        },
+        {
+          title:
+            "ProteinsPlus: a comprehensive collection of web-based molecular modeling tools",
+          authors: [
+            "Schöning-Stierand, Katrin",
+            "Diedrich, Konrad",
+            "Ehrt, Christiane",
+            "Flachsenberg, Florian",
+            "Graef, Joel",
+            "Sieg, Jochen",
+            "Penner, Patrick",
+            "Poppinga, Martin",
+            "Ungethüm, Annett",
+            "Rarey, Matthias",
+          ],
+          journal: "Nucleic Acids Res",
+          year: 2022,
+          volume: 50,
+          issue: "W1",
+          pages: "W611-W615",
         },
       ],
     },
@@ -123,16 +146,26 @@ export default class PoseViewPlugin extends PluginParentClass {
         compoundFormat: "sdf",
         includeMetalsSolventAsProtein: false,
       }),
-      label: "Proteins and compound to consider"
+      label: "Proteins and compound to consider",
     } as IUserArgMoleculeInputParams,
   ];
 
+  /**
+   * Called when the user changes the number of proteins or compounds, as specified in the MoleculeInputParams.
+   *
+   * @param {IProtCmpdCounts} val The number of proteins and compounds
+   */
   public onMolCountsChanged(val: IProtCmpdCounts) {
     this.numCompounds = val.compounds;
     this.numProteins = val.proteins;
     this.isActionBtnEnabled = this.numCompounds === 1;
   }
 
+  /**
+   * Check if the plugin is allowed to be used.
+   *
+   * @returns {string | null} Error message if not allowed, else null.
+   */
   checkPluginAllowed(): string | null {
     // Must have at least one protein and one compound loaded.
     const protLoaded = checkProteinLoaded();
@@ -142,6 +175,16 @@ export default class PoseViewPlugin extends PluginParentClass {
     return checkCompoundLoaded();
   }
 
+  /**
+   * Polls the PoseView server for the status of a job.
+   *
+   * @param {string}   jobId             The ID of the job to poll
+   * @param {Function} progressCallback  Callback to report progress
+   * @param {number}   pollInterval      The interval at which to poll the
+   *                                     server (in ms)
+   * @param {number}   maxAttempts       The maximum number of polling attempts
+   * @returns {Promise<any>} The result of the job
+   */
   async _pollJob(
     jobId: string,
     progressCallback: (progress: number) => void,
@@ -173,6 +216,14 @@ export default class PoseViewPlugin extends PluginParentClass {
     throw new Error(`PoseView job timed out after ${maxAttempts} attempts`);
   }
 
+  /**
+   * Generate a PoseView diagram.
+   *
+   * @param {string}   pdbString        The PDB file contents
+   * @param {string}   sdfString        The SDF file contents
+   * @param {Function} progressCallback Callback to report progress
+   * @returns {Promise<string>} The URL of the generated image
+   */
   async generatePoseView(
     pdbString: string,
     sdfString: string,
@@ -217,10 +268,11 @@ export default class PoseViewPlugin extends PluginParentClass {
     return job.image;
   }
 
-  // async onPopupDone() {
-
-  // }
-
+  /**
+   * Run the plugin in the browser.
+   *
+   * @returns {Promise<void>} A promise that resolves when the job is complete
+   */
   async runJobInBrowser(): Promise<void> {
     try {
       const filePairs = this.getUserArg(
@@ -293,10 +345,20 @@ export default class PoseViewPlugin extends PluginParentClass {
     return Promise.resolve();
   }
 
-  async getTests(): Promise<ITest[]> {
-    return [
-      FailingTest
-    ];
+  /**
+   * Get the tests for the plugin.
+   *
+   * @returns {Promise<ITest>} The tests.
+   */
+  async getTests(): Promise<ITest> {
+    return {
+      beforePluginOpens: new TestCmdList()
+        .loadExampleMolecule()
+        .selectMoleculeInTree("Protein"),
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#modal-simplesvg", "Diagram generated using")
+        .click("#modal-simplesvg .cancel-btn"),
+    };
   }
 }
 </script>

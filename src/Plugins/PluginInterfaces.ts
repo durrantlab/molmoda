@@ -62,6 +62,10 @@ export const Licenses: { [key: string]: ILicense } = {
         name: "Custom Open Source",
         url: "https://opensource.org/licenses/",
     },
+    UNRESTRICTED: {
+        name: "Unrestricted",
+        url: "",
+    }
 };
 
 export type Credits = (ISoftwareCredit | IContributorCredit)[];
