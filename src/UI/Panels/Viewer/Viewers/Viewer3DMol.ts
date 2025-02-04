@@ -28,7 +28,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
  * Viewer3DMol
  */
 export class Viewer3DMol extends ViewerParent {
-    private _mol3dObj: any;
+    public _mol3dObj: any;  // public to make debugging easier
     private _zoomToModelsTimeout: any;
     private _renderAllTimeout: any;
 

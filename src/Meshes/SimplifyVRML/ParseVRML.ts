@@ -166,6 +166,8 @@ export function parseVRML(fileContent: string): {
         });
     }
 
+    debugger
+
     return { chunkDatas, firstChunkContent };
 }
 

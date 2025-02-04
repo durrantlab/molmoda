@@ -14,6 +14,11 @@ export async function openRemoteFile(url: string) {
         return;
     }
 
+    // If url is four characters, assume it's a PDB
+    if (url.length === 4) {
+        url = `https://files.rcsb.org/download/${url}.pdb`;
+    }
+
     try {
         // Fetch the file from the remote URL using axios
         const blob = await fetcher(url, { responseType: ResponseType.BLOB });
@@ -42,7 +47,16 @@ export async function openRemoteFile(url: string) {
  */
 export async function checkIfUrlOpen() {
     // Check of src is in the url. If it is, get its value.
-    const url = getUrlParam("open");
+    const params = ["open", "load", "src", "file", "url"];
+    let url = null;
+
+    for (const param of params) {
+        url = getUrlParam(param);
+        if (url !== null) {
+            break;
+        }
+    }
+
     await openRemoteFile(url as string);
 }
 
