@@ -1,4 +1,77 @@
-// parseVRML.js
+import { mergeVertices, updateIndices } from "./MergeVerticesByDistance";
+import { truncateValues } from "./Math";
+
+/**
+ * Merge multiple VRML chunks into a single chunk
+ *
+ * @param chunkDatas Array of chunk data containing vertices, indices, colors, and normals
+ * @param mergeCutoff Distance cutoff for merging vertices
+ * @returns Single merged chunk with combined vertices, indices, colors, and normals
+ */
+/**
+ * Merge multiple VRML chunks into a single chunk
+ *
+ * @param chunkDatas Array of chunk data containing vertices, indices, colors, and normals
+ * @param mergeCutoff Distance cutoff for merging vertices
+ * @returns Single merged chunk with combined vertices, indices, colors, and normals
+ */
+export function mergeChunks(
+    chunkDatas: {
+        vertices: [number, number, number][];
+        indices: number[];
+        colors: [number, number, number][];
+        normals: [number, number, number][];
+        shapeChunkContent: string;
+    }[],
+    mergeCutoff: number
+) {
+    // Initialize arrays for combined data
+    const allVertices: [number, number, number][] = [];
+    const allIndices: number[] = [];
+    const allColors: [number, number, number][] = [];
+    const allNormals: [number, number, number][] = [];
+    let vertexOffset = 0;
+
+    // First combine all chunks while updating indices
+    for (const chunk of chunkDatas) {
+        // Add vertices, colors and normals
+        allVertices.push(...chunk.vertices);
+        allColors.push(...chunk.colors);
+        if (chunk.normals.length > 0) {
+            allNormals.push(...chunk.normals);
+        }
+
+        // Update indices with offset and add to combined array - using for loop to avoid stack overflow
+        for (let i = 0; i < chunk.indices.length; i++) {
+            const idx = chunk.indices[i];
+            allIndices.push(idx === -1 ? -1 : idx + vertexOffset);
+        }
+
+        // Update offset for next chunk
+        vertexOffset += chunk.vertices.length;
+    }
+
+    // Then merge vertices using existing mergeVertices function
+    const { mergedVertices, mergedColors, mapping } = mergeVertices(
+        allVertices,
+        allColors,
+        mergeCutoff
+    );
+
+    // Update indices based on the vertex mapping
+    const mergedIndices = updateIndices(allIndices, mapping);
+
+    // Handle normals if they exist
+    const mergedNormals =
+        allNormals.length > 0 ? allNormals.map(truncateValues) : [];
+
+    return {
+        vertices: mergedVertices,
+        indices: mergedIndices,
+        colors: mergedColors,
+        normals: mergedNormals,
+    };
+}
 
 // Function to parse VRML file and extract vertices, face indices, colors, and normals
 /**
@@ -21,7 +94,7 @@ export function parseVRML(fileContent: string): {
     const shapeChunkContents = fileContent.split("Shape {");
     const firstChunkContent = shapeChunkContents.shift();
 
-    const chunkDatas = [];
+    let chunkDatas = [];
     for (const chunkIdx in shapeChunkContents) {
         const shapeChunkContent = shapeChunkContents[chunkIdx];
 
@@ -166,7 +239,20 @@ export function parseVRML(fileContent: string): {
         });
     }
 
-    debugger
+    if (chunkDatas.length > 1) {
+        const mergedData = mergeChunks(chunkDatas, 0.001);
+        chunkDatas = [chunkDatas[0]];
+        chunkDatas[0].vertices = mergedData.vertices;
+        chunkDatas[0].indices = mergedData.indices;
+        chunkDatas[0].colors = mergedData.colors;
+        chunkDatas[0].normals = mergedData.normals;
+
+
+        // (mergedData as any)["shapeChunkContent"] = chunkDatas[0].shapeChunkContent;
+        // chunkDatas = [mergedData];
+        // debugger;
+    }
+    // console.log("QQQ", mergedData);
 
     return { chunkDatas, firstChunkContent };
 }

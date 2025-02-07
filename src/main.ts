@@ -48,11 +48,18 @@ async function main() {
         .mount("#app");
     
     const reactor = new Reactor();
-    await reactor.setup("Cl[C:1]([*:3])=O.[OH:2][*:4]>>[*:4][O:2][C:1]([*:3])=O")
-    reactor.addReactant("CC(Cl)=O", 0);
-    reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
-    reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
-    reactor.addReactant("CCCCCO", 1)
+    // await reactor.setup("Cl[C:1]([*:3])=O.[OH:2][*:4]>>[*:4][O:2][C:1]([*:3])=O")
+    // reactor.addReactant("CC(Cl)=O", 0);
+    // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
+    // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
+    // reactor.addReactant("CCCCCO", 1)
+
+    // See https://zenodo.org/records/1209313
+    await reactor.setup("[#6:7][C:1](=[O:2])[O:3][#6:4]>>[#6:7][C:1]([H])([H])[O:2][H].[O:3]([H])[#6:4]")
+    reactor.addReactant("c1ccccc1CCCC(=O)OCCCC", 0);
+    // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
+    // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
+    // reactor.addReactant("CCCCCO", 1)
 
     const results = reactor.runReaction();
     debugger
