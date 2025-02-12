@@ -68,6 +68,7 @@ system uses these to autopopulate with plugins. -->
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
     <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
+    <SyntheticDecomposePlugin @onPluginSetup="onPluginSetup"></SyntheticDecomposePlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
     <!-- TEMPLATE1 END -->
   </div>
@@ -144,6 +145,7 @@ import PubChemPropsPlugin from "./Optional/PubChem/PubChemPropsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
 import SavePNGPlugin from "./Optional/Graphics/SavePNGPlugin.vue";
 import SaveVRMLPlugin from "./Optional/Graphics/SaveVRMLPlugin.vue";
+import SyntheticDecomposePlugin from "./Optional/SyntheticDecomposePlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
 
@@ -216,6 +218,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     ReducePlugin,
     SavePNGPlugin,
     SaveVRMLPlugin,
+    SyntheticDecomposePlugin,
     WebinaPlugin,
     // TEMPLATE3 END
 

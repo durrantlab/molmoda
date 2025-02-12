@@ -18,6 +18,10 @@ export class Reactor {
             reactionSmarts
         );
 
+        if (this._reaction === -1) {
+            throw new Error("Invalid reaction SMARTS: " + reactionSmarts);
+        }
+
         // Now create a table to store the reactants
         this._monomersTable = Indigo.createArray();
 

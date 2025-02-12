@@ -47,7 +47,7 @@ export async function openRemoteFile(url: string) {
  */
 export async function checkIfUrlOpen() {
     // Check of src is in the url. If it is, get its value.
-    const params = ["open", "load", "src", "file", "url"];
+    const params = ["open", "load", "src", "file", "url", "pdb"];
     let url = null;
 
     for (const param of params) {
