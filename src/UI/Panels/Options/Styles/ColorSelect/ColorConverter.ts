@@ -264,17 +264,49 @@ export function analyzeColor(color: string | number[]): IColorInfo {
     return colorInfo;
 }
 
+function _fnv1aHash(str: string) {
+    let hash = 2166136261; // FNV-1a 32-bit offset basis
+    for (let i = 0; i < str.length; i++) {
+      hash ^= str.charCodeAt(i);
+      hash = (hash * 16777619) >>> 0; // Prime multiplication and force 32-bit unsigned
+    }
+    return hash;
+  }
+  
+  function _stringToThreeNumbers(seedStr: string) {
+    const hash = _fnv1aHash(seedStr); // Get the hash
+    const n1 = ((hash & 0xFFFFFF) / 0x1000000); // Extract lower 24 bits and normalize
+    const n2 = (((hash >> 8) & 0xFFFFFF) / 0x1000000);
+    const n3 = (((hash >> 16) & 0xFFFFFF) / 0x1000000);
+    return [n1, n2, n3];
+  }
+
 /**
  * Get a random pastel color as a hex value.
- * 
+ *
+ * @param {string} [seedStr]  Seed string to generate a consistent color.
  * @returns {string}  Hex color value
  */
-export function randomPastelColor(): string {
-    // Make a random color
-    let rgb = [0, 0, 0];
-    for (let i = 0; i < 3; i++) {
-        rgb[i] = Math.floor(Math.random() * 256);
+export function randomPastelColor(seedStr?: string): string {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    if (seedStr === undefined) {
+        // Use random numbers
+        r = Math.floor(Math.random() * 256);
+        g = Math.floor(Math.random() * 256);
+        b = Math.floor(Math.random() * 256);
+    } else {
+        // Generate from the seed string for consistency.
+        const [r1, g1, b1] = _stringToThreeNumbers(seedStr);
+        r = Math.floor(r1 * 256);
+        g = Math.floor(g1 * 256);
+        b = Math.floor(b1 * 256);
     }
+
+    // Make the color
+    let rgb = [r, g, b];
 
     // Saturate it 10%
     const max = Math.max(...rgb);

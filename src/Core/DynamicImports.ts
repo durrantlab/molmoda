@@ -732,5 +732,26 @@ export const dynamicImports = {
                 return mod.default;
             });
         },
+    },
+    clipboardJs: {
+        credit: {
+            name: "clipboard.js",
+            url: "https://clipboardjs.com/",
+            license: Licenses.MIT
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "clipboard" */
+                /* webpackMode: "lazy" */
+                "clipboard"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
     }
 };

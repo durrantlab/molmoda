@@ -311,6 +311,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
                 smile = smile.replace(/:/g, "");
 
                 // If anything is left, it's not a valid SMILES.
+                debugger
                 if (smile.length > 0) {
                     return false;
                 }

@@ -62,7 +62,7 @@ async function main() {
     // reactor.addReactant("CCCCCO", 1)
 
     const results = reactor.runReaction();
-    debugger
+    console.warn("CRUFT HERE! FIX!!!")
 
     // getObabelFormats();
 

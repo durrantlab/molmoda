@@ -72,7 +72,7 @@
                         <td
                             v-for="header of tableDataToUse.headers"
                             v-bind:key="header.text"
-                            @click="rowClicked(rowIdx)"
+                            @click="rowClicked(rowIdx, getCell(row[header.text]).val.toString())"
                             class="cell px-2"
                             :style="clickableRows ? 'cursor: pointer;' : ''"
                         >
@@ -122,6 +122,7 @@ import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
 import Icon from "../Icon.vue";
 import { IDataRows } from "@/Core/FS/FSInterfaces";
 import { slugify } from "@/Core/Utils/StringUtils";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 // Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
 interface ITableDataInternal {
@@ -389,8 +390,9 @@ export default class Table extends Vue {
      * Runs when the row is clicked. Emits "rowClicked" event.
      *
      * @param {number} rowIdx  The index of the row that was clicked.
+     * @param {string} cellTxt The text of the cell that was clicked.
      */
-    rowClicked(rowIdx: number) {
+    async rowClicked(rowIdx: number, cellTxt?: string) {
         if (this.tableDataToUse === undefined) {
             return;
         }
@@ -410,6 +412,15 @@ export default class Table extends Vue {
             }
         }
         this.$emit("rowClicked", toEmit);
+
+        // Separate from above, make it so value of content is copied to the
+        // clipboard. TODO: The user has no indication that the text has been
+        // copied. We need some sort of non-intrusive notification.
+        if (cellTxt) {
+            const clipboardJs = await dynamicImports.clipboardJs.module;
+            clipboardJs.copy(cellTxt);
+        }
+
     }
 
     /**

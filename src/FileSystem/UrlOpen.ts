@@ -2,6 +2,10 @@ import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
 import { getUrlParam } from "@/Core/UrlParams";
+import { molFormatInformation } from "./LoadSaveMolModels/Types/MolFormats";
+import { FileInfo } from "./FileInfo";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * Open a remote file using its URL. TODO: Good to move this elsewhere, perhaps
@@ -46,18 +50,34 @@ export async function openRemoteFile(url: string) {
  * @returns {Promise<void>}  A promise that resolves when the file is opened.
  */
 export async function checkIfUrlOpen() {
-    // Check of src is in the url. If it is, get its value.
-    const params = ["open", "load", "src", "file", "url", "pdb"];
-    let url = null;
 
-    for (const param of params) {
+
+    // Check of src is in the url. If it is, get its value.
+    const params = ["open", "load", "src", "file", "url", "pdb", "smi", "smiles"];
+    let url = null;
+    let param = ""
+
+    for (param of params) {
         url = getUrlParam(param);
         if (url !== null) {
             break;
         }
     }
 
-    await openRemoteFile(url as string);
+    if (["smi", "smiles"].includes(param)) {
+        // It's a smiles
+        const smiles = url as string;
+        const fileInfo = new FileInfo({ name: "smiles.smi", contents: smiles });
+        const treenode = await TreeNode.loadFromFileInfo({fileInfo, tag: null});
+        if (treenode) {
+            const treeNodeList = new TreeNodeList([treenode]);
+            treeNodeList.addToMainTree(null);
+        }
+    } else {
+        // Not a smiles
+        await openRemoteFile(url as string);
+    }
+
 }
 
 /**
