@@ -26,6 +26,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 
 /**
  * PubChemPropsPlugin
@@ -97,14 +98,18 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     const cid = await fetchCid(smiles);
     if (cid === "0") {
       return {
-        CID: "PubChem compound not found!",
+        CID: `PubChem compound not found! <a href="https://pubchem.ncbi.nlm.nih.gov/#query=${easyNeutralizeSMILES(smiles)}" target="_blank">Search?</a>`,
       };
     }
     let properties = await fetchCompoundsProperties(cid);
     if (properties.error) {
       return {
-        CID: "PubChem compound not found!",
-      };
+        CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>: ${properties.error}`
+      }
+
+      // return {
+      //   CID: "PubChem compound not found!",
+      // };
     }
 
     properties = {

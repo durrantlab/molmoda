@@ -73,7 +73,8 @@ export default class YesNoPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
-
+    logAnalytics = false;
+    
     /**
      * Runs when the users presses the yes button.
      */

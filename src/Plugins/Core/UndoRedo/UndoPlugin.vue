@@ -46,6 +46,8 @@ export default class UndoPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
+
     hotkey = "z";
     intro = "Undo the last action.";
     tags = [Tag.All];

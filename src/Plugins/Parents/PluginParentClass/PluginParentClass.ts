@@ -157,6 +157,7 @@ export abstract class PluginParentClass extends mixins(
             details: this.details,
             softwareCredits: this.softwareCredits,
             contributorCredits: this.contributorCredits,
+            logAnalytics: this.logAnalytics
         };
     }
 
@@ -178,14 +179,25 @@ export abstract class PluginParentClass extends mixins(
     hotkey: string | string[] = "";
 
     /**
-     * Some jobs are so trivial that there is no need to log them. These run in
-     * the browser (not remotely or in docker). They occur immediately on the
-     * main thread, without delay. Examples include undo/redo buttons. You must
-     * explicitly set this to "false" to disable logging.
+     * Some jobs are so trivial that there is no need to log them in the log
+     * panel. These run in the browser (not remotely or in docker). They occur
+     * immediately on the main thread, without delay. Examples include undo/redo
+     * buttons. You must explicitly set this to "false" to disable logging.
      *
      * @type {boolean}
      */
     logJob = true;
+
+    /**
+     * Some jobs are so trivial that there is no need to log them in Google
+     * Analytics. These run in the browser (not remotely or in docker). They
+     * occur immediately on the main thread, without delay. Examples include
+     * undo/redo buttons. You must explicitly set this to "false" to disable
+     * logging.
+     *
+     * @type {boolean}
+     */
+    logAnalytics = true
 
     /**
      * The message to show when all jobs have finished. It is a string or a
@@ -251,7 +263,9 @@ export abstract class PluginParentClass extends mixins(
      */
     public async onPluginStart(payload?: any): Promise<void> {
         // Log plugin started
-        logGAEvent(this.pluginId, "started");
+        if (this.logAnalytics) {
+            logGAEvent(this.pluginId, "started");
+        }
 
         // Reset userArgs to defaults.
         this.userArgs = copyUserArgs(this.userArgDefaults);
@@ -356,7 +370,9 @@ export abstract class PluginParentClass extends mixins(
         }
 
         // Log plugin started
-        logGAEvent(this.pluginId, "jobSubmitted");
+        if (this.logAnalytics) {
+            logGAEvent(this.pluginId, "jobSubmitted");
+        }
 
         // Run each of the parameter sets through the _runJobInBrowser function.
         let jobs = parameterSets.map((p: any) => {
@@ -386,7 +402,9 @@ export abstract class PluginParentClass extends mixins(
         }
 
         // Log plugin finished
-        logGAEvent(this.pluginId, "jobFinished");
+        if (this.logAnalytics) {
+            logGAEvent(this.pluginId, "jobFinished");
+        }
 
         if (!this.skipLongRunningJobMsg) {
             clearTimeout(runningForAWhileTimers[this.pluginId]);

@@ -59,6 +59,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
 
     newCenter: [number, number, number] = [0, 0, 0];
 

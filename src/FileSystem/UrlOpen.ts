@@ -62,9 +62,10 @@ export async function checkIfUrlOpen() {
         if (url !== null) {
             break;
         }
+        param = "";
     }
 
-    if (["smi", "smiles"].includes(param)) {
+    if (param != "" && ["smi", "smiles"].includes(param)) {
         // It's a smiles
         const smiles = url as string;
         const fileInfo = new FileInfo({ name: "smiles.smi", contents: smiles });

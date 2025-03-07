@@ -30,6 +30,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 
 /**
  * PubChemNamesPlugin
@@ -106,7 +107,7 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     const cid = await fetchCid(smiles);
     if (cid === "0") {
       return {
-        CID: "PubChem compound not found!",
+        CID: `PubChem compound not found! <a href="https://pubchem.ncbi.nlm.nih.gov/#query=${easyNeutralizeSMILES(smiles)}" target="_blank">Search?</a>`,
       };
     }
 
@@ -114,13 +115,17 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     const properties = await fetchCompoundsProperties(cid);
     if (properties.error) {
       return {
-        CID: `PubChem compound not found!`,
-        // "Name 1": "N/A",
-        // "Name 2": "N/A",
-        // "Name 3": "N/A",
-        // "Name 4": "N/A",
-        // "Name 5": "N/A",
-      };
+        CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>: ${properties.error}`
+      }
+
+      // return {
+      //   CID: `PubChem compound not found!`,
+      //   // "Name 1": "N/A",
+      //   // "Name 2": "N/A",
+      //   // "Name 3": "N/A",
+      //   // "Name 4": "N/A",
+      //   // "Name 5": "N/A",
+      // };
     }
 
     const iupacName = properties["IUPAC Name"].toLowerCase();

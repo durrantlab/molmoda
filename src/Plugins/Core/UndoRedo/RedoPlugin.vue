@@ -44,6 +44,8 @@ export default class RedoPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
+
     hotkey = "y";
     intro = "Redo the last undo.";
     tags = [Tag.All];

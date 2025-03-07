@@ -46,6 +46,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
     intro = "Select all molecules in the tree.";
     tags = [Tag.All];
     hotkey = "a";

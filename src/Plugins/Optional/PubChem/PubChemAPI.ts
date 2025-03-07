@@ -3,6 +3,7 @@ import { RateLimitedFetcherQueue, ResponseType } from "../../../Core/Fetcher";
 import {
     easyCountHeavyAtomsSmiles,
     easyDesaltSMILES,
+    easyNeutralizeSMILES,
 } from "../../../FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 
 // Prevent calls to PubChem that are too frequent. They prefer 5 calls per
@@ -24,6 +25,7 @@ interface ICompoundData {
  * @returns {Promise<string>} A promise that resolves to a CID or an error message.
  */
 export async function fetchCid(smiles: string): Promise<string> {
+    smiles = easyNeutralizeSMILES(smiles);
     const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/${encodeURIComponent(
         smiles
     )}/cids/JSON`;
@@ -178,6 +180,10 @@ export async function fetchCompoundsProperties(cid: string): Promise<any> {
             return { error: "No properties found for the provided CID" };
         }
     } catch (error: any) {
+        if (error.response.data.Fault.Message) {
+            return { error: error.response.data.Fault.Message };
+        }
+
         return {
             error: `Failed to retrieve properties due to network issue: ${error.message}`,
         };
@@ -249,10 +255,12 @@ export async function fetchActiveAssays(cid: string): Promise<any> {
             return { error: "Activity Outcome column not found in data." };
         }
 
+        const activityValueIndex = columns.indexOf("Activity Value [uM]");
+
         let activeAssays: any[] = [];
         for (const row of rows) {
             const cells = row?.Cell ?? [];
-            if (cells[outcomeIndex] === "Active") {
+            if ((cells[outcomeIndex] === "Active") || (activityValueIndex !== -1 && cells[activityValueIndex] !== "")) {
                 const assay: any = {};
                 for (let i = 0; i < columns.length; i++) {
                     assay[columns[i]] = cells[i];
@@ -352,6 +360,9 @@ export async function fetchActiveAssays(cid: string): Promise<any> {
 
         return { ActiveAssays: activeAssaysReordered };
     } catch (error: any) {
+        if (error.response.data.Fault.Message) {
+            return { error: error.response.data.Fault.Message };
+        }
         return { error: `Network issue occurred: ${error.message}` };
     }
 }
@@ -501,7 +512,7 @@ export async function fetchSimilarCompounds(
     try {
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/smiles/${encodeURIComponent(
-                smiles
+                easyNeutralizeSMILES(smiles)
             )}/cids/JSON?Threshold=${threshold}`,
             maxRecords
         );
@@ -576,7 +587,7 @@ export async function fetchSubstructureCompounds(
     try {
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsubstructure/smiles/${encodeURIComponent(
-                smiles
+                easyNeutralizeSMILES(smiles)
             )}/cids/JSON?MatchIsotopes=false`,
             maxRecords
         );
@@ -639,7 +650,7 @@ export async function fetchSuperstructureCompounds(
     try {
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsuperstructure/smiles/${encodeURIComponent(
-                smiles
+                easyNeutralizeSMILES(smiles)
             )}/cids/JSON?MatchIsotopes=false`,
             maxRecords
         );

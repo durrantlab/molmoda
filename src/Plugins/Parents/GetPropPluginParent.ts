@@ -1,10 +1,19 @@
 import { IHeader, ITableData } from "@/UI/Components/Table/Types";
-import { PluginParentClass } from "./PluginParentClass/PluginParentClass"; 
+import { PluginParentClass } from "./PluginParentClass/PluginParentClass";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
-import { ITreeNodeData, TableHeaderSort, TreeNodeDataType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import {
+    ITreeNodeData,
+    TableHeaderSort,
+    TreeNodeDataType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
-import { IUserArgAlert, IUserArgMoleculeInputParams, UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import {
+    IUserArgAlert,
+    IUserArgMoleculeInputParams,
+    UserArg,
+    UserArgType,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 
@@ -29,10 +38,19 @@ class PropertyQueue extends QueueParent {
         callbacks?: any
     ) {
         const procsPerJobBatch = 1;
-        const simulBatches = 1;  // To prevent too many rapid calls to PubChem
-        const maxProcs = 1;  // To prevent too many rapid calls to PubChem
-        const batchSize = 1;  // Process one ligand at a time
-        super(jobTypeId, inputs, maxProcs, callbacks, procsPerJobBatch, simulBatches, batchSize, true);
+        const simulBatches = 1; // To prevent too many rapid calls to PubChem
+        const maxProcs = 1; // To prevent too many rapid calls to PubChem
+        const batchSize = 1; // Process one ligand at a time
+        super(
+            jobTypeId,
+            inputs,
+            maxProcs,
+            callbacks,
+            procsPerJobBatch,
+            simulBatches,
+            batchSize,
+            true
+        );
         this.parent = parent;
     }
 
@@ -50,8 +68,8 @@ class PropertyQueue extends QueueParent {
         const results: IJobInfo[] = [];
 
         for (const jobInfo of inputBatch) {
-            await this.parent.runJobInBrowser(jobInfo.input)
-            
+            await this.parent.runJobInBrowser(jobInfo.input);
+
             // Below is just to keep track of number completed. Results are
             // added to the tree nodes as completed.
             results.push(jobInfo);
@@ -107,7 +125,9 @@ export abstract class GetPropPluginParent extends PluginParentClass {
         const molecules = this.getUserArg("makemolinputparams") as FileInfo[];
 
         if (molecules.length === 0) {
-            messagesApi.popupError("No molecules match the current selection criteria.");
+            messagesApi.popupError(
+                "No molecules match the current selection criteria."
+            );
             return undefined;
         }
 
@@ -115,45 +135,44 @@ export abstract class GetPropPluginParent extends PluginParentClass {
         this.resultsData = {};
 
         // Create new queue with concrete class
-        const queue = new PropertyQueue(
-            this,
-            this.pluginId,
-            molecules,
-            {
-                onQueueDone: () => {
-                    // Show results in popup table when complete
-                    messagesApi.popupTableData(
-                        `${this.title} Results`,
-                        `Successfully retrieved data for ${molecules.length} compounds. The data have also been added to the Data panel.`,
-                        this.formattedTableData,
-                        "Results Summary",
-                        3
-                    );
-                }
-            }
-        );
+        const queue = new PropertyQueue(this, this.pluginId, molecules, {
+            onQueueDone: () => {
+                // Show results in popup table when complete
+                messagesApi.popupTableData(
+                    `${this.title} Results`,
+                    `Successfully retrieved data for ${molecules.length} compounds. The data have also been added to the Data panel.`,
+                    this.formattedTableData,
+                    "Results Summary",
+                    3
+                );
+            },
+        });
 
         // Run jobs
         queue.done.catch((err) => {
-            messagesApi.popupError(err.message);  // TODO: Does throwing the error do the same thing? Redudant?
+            messagesApi.popupError(err.message); // TODO: Does throwing the error do the same thing? Redudant?
             throw err;
         });
     }
 
-    abstract getMoleculeDetails(molFileInfo: FileInfo): Promise<{ [key: string]: any } | undefined>;
+    abstract getMoleculeDetails(
+        molFileInfo: FileInfo
+    ): Promise<{ [key: string]: any } | undefined>;
 
     /**
-     * Gets the formatted table data.
-     * 
-     * @returns {ITableData}  The formatted table data.
+     * Gets the formatted table data with merged headers from all rows.
+     *
+     * @returns {ITableData} The formatted table data.
      */
     get formattedTableData(): ITableData {
         if (this.resultsArray.length === 0) {
             return { headers: [], rows: [] };
         }
 
-        const sampleResult = this.resultsArray.find((result) => !result.error);
-        if (!sampleResult) {
+        // Check if all results have errors
+        const allErrors = this.resultsArray.every((result) => result.error);
+
+        if (allErrors) {
             const headers: IHeader[] = [
                 { text: "Name" },
                 { text: "SMILES" },
@@ -169,18 +188,43 @@ export abstract class GetPropPluginParent extends PluginParentClass {
             };
         }
 
-        const headers: IHeader[] = Object.keys(sampleResult)
-            .filter((key) => key !== "error")
-            .map((key) => ({
-                text: key,
-                sortable: true,
-                width: key === "name" ? 150 : undefined, 
-                note: `${key} from PubChem`,
-            }));
+        // Get non-error results
+        const validResults = this.resultsArray.filter(
+            (result) => !result.error
+        );
+
+        // Collect all possible headers from all valid results
+        const headerSet = new Set<string>();
+
+        // First add all keys from valid results
+        validResults.forEach((result) => {
+            Object.keys(result).forEach((key) => {
+                if (key !== "error") {
+                    headerSet.add(key);
+                }
+            });
+        });
+
+        // Create headers array from the collected unique keys
+        const headers: IHeader[] = Array.from(headerSet).map((key) => ({
+            text: key,
+            sortable: true,
+            width: key === "name" ? 150 : undefined,
+            note: `${key} from PubChem`,
+        }));
+
+        // Create rows with all possible fields, using "" for missing values
+        const rows = validResults.map((result) => {
+            const row: Record<string, any> = {};
+            headerSet.forEach((key) => {
+                row[key] = result[key] !== undefined ? result[key] : "";
+            });
+            return row;
+        });
 
         return {
             headers,
-            rows: this.resultsArray.filter((result) => !result.error),
+            rows,
         };
     }
 

@@ -40,6 +40,7 @@ export default class ExpandAllPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
     intro = "Expand all the nodes in the Navigator panel.";
     tags = [Tag.All];
 

@@ -46,6 +46,8 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
+
     intro = "Clear the selection of all molecules.";
     tags = [Tag.All];
 

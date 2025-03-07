@@ -45,6 +45,7 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     noPopup = true;
     
     logJob = false;
+    logAnalytics = false;
     tags = [Tag.All];
 
     /**

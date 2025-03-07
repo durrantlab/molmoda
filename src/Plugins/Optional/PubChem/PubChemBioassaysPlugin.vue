@@ -26,6 +26,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 
 /**
  * PubChemBioassaysPlugin
@@ -92,22 +93,23 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
       return;
     }
 
+    
     const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
     const cid = await fetchCid(smiles);
     if (cid === "0") {
       return {
-        CID: "PubChem compound not found!",
+        CID: `PubChem compound not found! <a href="https://pubchem.ncbi.nlm.nih.gov/#query=${easyNeutralizeSMILES(smiles)}" target="_blank">Search?</a>`,
       };
     }
 
     const bioassayData = await fetchActiveAssays(cid);
     if (bioassayData.error) {
       return {
-        CID: "PubChem compound not found!",
+        CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>: ${bioassayData.error}`
       };
     }
 
-    const activeAssays = bioassayData.ActiveAssays.slice(0, 10); // Get top 10 bioassays
+    const activeAssays = bioassayData.ActiveAssays; // .slice(0, 10); // Get top 10 bioassays
     const assayDescriptions = activeAssays.map((assay: any) => {
       // Add a string formatted like "DSSTox (FDAMDD) FDA Maximum
       // (Recommended) Daily Dose Database, AID 1234. Target:

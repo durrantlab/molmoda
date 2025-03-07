@@ -40,6 +40,7 @@ export default class CollapseAllPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
     intro = "Collapse all the nodes in the Navigator panel.";
     tags = [Tag.All];
 

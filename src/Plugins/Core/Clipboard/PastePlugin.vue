@@ -7,7 +7,9 @@
         @onMolCountsChanged="onMolCountsChanged"
     >
         <template #afterForm>
-            <Alert class="mt-3" type="info">{{ formatMsg }}</Alert>
+            <div class="mt-3">
+                <Alert type="info">{{ formatMsg }}</Alert>
+            </div>
         </template>
     </PluginComponent>
 </template>
@@ -35,6 +37,11 @@ import { isTest } from "@/Testing/SetupTests";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import {
+    getGen3DUserArg,
+    WhichMolsGen3D,
+    IGen3DOptions,
+} from "@/FileSystem/OpenBabel/OpenBabel";
 
 /** PastePlugin */
 @Options({
@@ -70,6 +77,11 @@ export default class PastePlugin extends PluginParentClass {
             },
         } as IUserArgText,
         getDesaltUserArg(),
+        getGen3DUserArg(
+            "Generate 3D coordinates", 
+            "For molecules without 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored.",
+            false
+        )
     ];
     
     logJob = false;
@@ -145,12 +157,18 @@ export default class PastePlugin extends PluginParentClass {
         }
 
         fileInfo.assignExtByContents();
+    
+        const gen3DParams = {
+            whichMols: WhichMolsGen3D.OnlyIfLacks3D,
+            level: this.getUserArg("gen3D"),
+        } as IGen3DOptions;
 
         const node = await TreeNode.loadFromFileInfo({
             fileInfo,
             tag: this.pluginId,
             desalt: this.getUserArg("desalt"),
             defaultTitle: this.getUserArg("pastedMolName"),
+            gen3D: gen3DParams
         });
 
         if (node === undefined) {

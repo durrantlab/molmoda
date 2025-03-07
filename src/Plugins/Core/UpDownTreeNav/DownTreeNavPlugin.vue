@@ -43,6 +43,8 @@ export default class DownTreeNavPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
 
     logJob = false;
+    logAnalytics = false;
+    
     intro =
         "Toggle visibility and focus with the molecule below the selected one.";
     hotkey = "]";

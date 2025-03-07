@@ -41,6 +41,7 @@ export default class SelectInvertPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
     intro = "Invert which molecules are selected in the tree.";
     tags = [Tag.All];
     hotkey = "i";

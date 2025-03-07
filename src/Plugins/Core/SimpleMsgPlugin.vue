@@ -60,17 +60,18 @@ export default class SimpleMsgPlugin extends PluginParentClass {
 
     // Below set via onPluginStart.
     simpleMsgs: ISimpleMsg[] = [];
-
+    
     title = "";
     // messages: string[] = [];
     // variant = PopupVariant.Primary;
     // callBack: any = undefined;
     neverClose = false;
     showInQueue = false;
-
+    
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
 
     /**
      * The variant to use for the popup.

@@ -37,6 +37,7 @@ import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { getGen3DUserArg, WhichMolsGen3D, IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /**
  * A function that returns the options and validate functions for the available
@@ -154,6 +155,11 @@ export default class MolTextPlugin extends PluginParentClass {
             val: "unknown",
         } as IUserArgSelect,
         getDesaltUserArg(),
+        getGen3DUserArg(
+            "Generate 3D coordinates",
+            "For molecules without 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored.",
+            false
+        ),
     ];
 
     /**
@@ -179,11 +185,17 @@ export default class MolTextPlugin extends PluginParentClass {
             name: "PastedFile" + randomID() + "." + this.getUserArg("format"),
             contents: this.getUserArg("molTextArea"),
         });
+        
+        const gen3DParams = {
+            whichMols: WhichMolsGen3D.OnlyIfLacks3D,
+            level: this.getUserArg("gen3D"),
+        } as IGen3DOptions;
 
         const treeNodePromise = TreeNode.loadFromFileInfo({
             fileInfo,
             tag: this.pluginId,
-            desalt: this.getUserArg("desalt")
+            desalt: this.getUserArg("desalt"),
+            gen3D: gen3DParams
         });
 
         if (treeNodePromise === undefined) {
@@ -249,11 +261,6 @@ export default class MolTextPlugin extends PluginParentClass {
         ];
 
         const txts = await Promise.all(promises);
-
-        // "c1ccccc1",
-        // "HETATM    1  C   UNL     1       0.982  -0.028  -0.094  1.00  0.00           C  \nHETATM    2  H   UNL     1       2.074  -0.028  -0.094  1.00  0.00           H  \nHETATM    3  H   UNL     1       0.618   0.313  -1.066  1.00  0.00           H  \nHETATM    4  H   UNL     1       0.618   0.642   0.687  1.00  0.00           H  \nHETATM    5  H   UNL     1       0.618  -1.040   0.096  1.00  0.00           H  ",
-        // "@<TRIPOS>MOLECULE\n*****\n 5 4 0 0 0\nSMALL\nGASTEIGER\n\n@<TRIPOS>ATOM\n      1 C           1.0793   -0.0578    0.0194 C.3     1  UNL1       -0.0776\n      2 H           2.1715   -0.0578    0.0194 H       1  UNL1        0.0194\n      3 H           0.7152   -0.8023    0.7308 H       1  UNL1        0.0194\n      4 H           0.7152   -0.3016   -0.9811 H       1  UNL1        0.0194\n      5 H           0.7152    0.9306    0.3084 H       1  UNL1        0.0194\n@<TRIPOS>BOND\n     1     1     2    1\n     2     1     3    1\n     3     1     4    1\n     4     1     5    1",
-        // "\n OpenBabel08312314413D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.9733   -0.0684    0.0679 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0655   -0.0684    0.0679 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6093    0.9241    0.3424 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.8023    0.7902 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6092   -0.3269   -0.9288 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  3  1  0  0  0  0\n  1  4  1  0  0  0  0\n  1  5  1  0  0  0  0\nM  END\n$$$$",
 
         const tests = txts.map((txt: string) => {
             return {

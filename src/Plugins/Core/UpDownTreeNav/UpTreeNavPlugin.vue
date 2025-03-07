@@ -40,6 +40,8 @@ export default class UpTreeNavPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
     
     logJob = false;
+    logAnalytics = false;
+    
     intro = "Toggle visibility and focus with the molecule above the selected one.";
     hotkey = "[";
     tags = [Tag.All];

@@ -198,7 +198,9 @@ export default class PluginComponent extends mixins(PopupMixin) {
      */
     onPopupCancel() {
         // Log plugin started
-        logGAEvent(this.infoPayload.pluginId, "cancelled");
+        if (this.infoPayload.logAnalytics !== false) {
+            logGAEvent(this.infoPayload.pluginId, "cancelled");
+        }
 
         this.$emit("update:modelValue", false);
         this.$emit("onPopupCancel");

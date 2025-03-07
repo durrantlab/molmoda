@@ -88,6 +88,7 @@ export interface IInfoPayload {
     details?: string;
     softwareCredits: ISoftwareCredit[];
     contributorCredits: IContributorCredit[];
+    logAnalytics?: boolean;
 }
 
 export interface IPluginSetupInfo {

@@ -55,6 +55,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     
     logJob = false;
     hotkey = ["backspace", "delete"];
+    logAnalytics = false;
 
     /**
      * Runs before the popup opens. Will almost always need this, so requiring
