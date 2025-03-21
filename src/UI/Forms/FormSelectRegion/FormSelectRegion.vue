@@ -106,16 +106,17 @@ import {
     RegionType,
 } from "../../Navigation/TreeView/TreeInterfaces";
 import FormInput from "../FormInput.vue";
+import { createNaturalSortFunc } from "@/Core/Utils/StringUtils"
 
-const sortFunc = (a: TreeNode, b: TreeNode) => {
-    if (a.title < b.title) {
-        return -1;
-    }
-    if (a.title > b.title) {
-        return 1;
-    }
-    return 0;
-};
+// const sortFunc = (a: TreeNode, b: TreeNode) => {
+//     if (a.title < b.title) {
+//         return -1;
+//     }
+//     if (a.title > b.title) {
+//         return 1;
+//     }
+//     return 0;
+// };
 
 const defaultVals = {
     center: [0, 0, 0],
@@ -338,10 +339,15 @@ export default class FormSelectRegion extends Vue {
         }
 
         // Sort visibleNotselectedRegions
-        visibleNotselectedRegions.sort(sortFunc);
-        visibleselectedRegions.sort(sortFunc);
-        selectedNotVisible.sort(sortFunc);
-        notVisibleNotSelected.sort(sortFunc);
+        // visibleNotselectedRegions.sort(sortFunc);
+        // visibleselectedRegions.sort(sortFunc);
+        // selectedNotVisible.sort(sortFunc);
+        // notVisibleNotSelected.sort(sortFunc);
+
+        visibleNotselectedRegions.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
+        visibleselectedRegions.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
+        selectedNotVisible.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
+        notVisibleNotSelected.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
 
         const options = [] as IUserArgOption[];
 

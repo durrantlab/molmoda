@@ -100,3 +100,78 @@ export function isSentence(txt: string): boolean {
     );
 }
 
+/**
+ * Generic natural sort function that can work with various data types
+ * and uses a key accessor function to extract the string to sort on
+ * 
+ * @param a First item to compare
+ * @param b Second item to compare
+ * @param keyAccessor Optional function to extract the string to sort on (defaults to identity function)
+ * @returns -1 if a < b, 0 if a === b, 1 if a > b
+ */
+export function naturalSort<T>(
+    a: T,
+    b: T,
+    keyAccessor: (item: T) => string = (item) => String(item)
+): number {
+    // Helper function to split a string into an array of text and number chunks
+    const splitIntoChunks = (str: string): (string | number)[] => {
+        // Use regex to match text and number sequences
+        const matches = str.match(/(\d+|\D+)/g) || [];
+        
+        // Convert number chunks to actual numbers
+        return matches.map(chunk => {
+            const numVal = Number(chunk);
+            return isNaN(numVal) ? chunk : numVal;
+        });
+    };
+    
+    // Extract strings to compare using the keyAccessor
+    const strA = keyAccessor(a);
+    const strB = keyAccessor(b);
+    
+    const chunksA = splitIntoChunks(strA);
+    const chunksB = splitIntoChunks(strB);
+    
+    // Compare each chunk
+    const minLength = Math.min(chunksA.length, chunksB.length);
+    
+    for (let i = 0; i < minLength; i++) {
+        const chunkA = chunksA[i];
+        const chunkB = chunksB[i];
+        
+        // If both chunks are of the same type
+        if (typeof chunkA === typeof chunkB) {
+            // Compare numbers numerically
+            if (typeof chunkA === 'number' && typeof chunkB === 'number') {
+                if (chunkA !== chunkB) {
+                    return chunkA - chunkB;
+                }
+            }
+            // Compare strings lexicographically
+            else if (chunkA !== chunkB) {
+                return String(chunkA) < String(chunkB) ? -1 : 1;
+            }
+        }
+        // Different types - numbers come before strings
+        else {
+            return typeof chunkA === 'number' ? -1 : 1;
+        }
+    }
+    
+    // If we get here, all comparable chunks are equal
+    // So the shorter one comes first
+    return chunksA.length - chunksB.length;
+}
+
+/**
+ * Creates a sorting function for use with Array.sort() that applies natural sorting
+ * 
+ * @param keyAccessor Optional function to extract the string to sort on
+ * @returns A sorting function that can be passed to Array.sort()
+ */
+export function createNaturalSortFunc<T>(
+    keyAccessor?: (item: T) => string
+): (a: T, b: T) => number {
+    return (a: T, b: T) => naturalSort(a, b, keyAccessor);
+}
