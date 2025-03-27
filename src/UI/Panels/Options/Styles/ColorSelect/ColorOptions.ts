@@ -88,6 +88,14 @@ export class ColorOptions {
             return this.nameToIndex("ColorCarbons");
         }
 
+        if (style.colorscheme !== undefined && style.colorscheme === "ssJmol") {
+            return this.nameToIndex("SecondaryStructure");
+        }
+
+        if (style.colorscheme !== undefined && style.colorscheme === "chain") {
+            return this.nameToIndex("Chain");
+        }
+
         // If you get here, it's easy to determine based on deep equality.
         return this._colorStyles.findIndex((colorStyle) =>
             isEqual(colorStyle.colorStyle, style)
