@@ -191,7 +191,8 @@ export default class StylesForMolType extends Vue {
         // this should happen in Styles.vue
         let style = (this.styleToUse ? { ...this.styleToUse } : {}) as any;
 
-        // If it's not already set and not a hidden representation, set the style
+        // If it's not already set and not a hidden representation, set the
+        // style. Use default.
         if (
             style[repName] === undefined &&
             ["atoms-hidden", "backbone-hidden", "surface-hidden"].indexOf(
@@ -203,9 +204,13 @@ export default class StylesForMolType extends Vue {
             // let styleUpdated = this.style === undefined ? {} : { ...this.style };
 
             // style[repName] should be like {color: 'spectrum'}.
-            style[repName] = (Styles.currentStyles[this.molType] as any)[0][
-                repName
-            ];
+            
+            // @ts-ignore
+            style[repName] = Styles.defaultStyles[this.molType][0][repName];
+            
+            // (Styles.currentStyles[this.molType] as any)[0][
+            //     repName
+            // ];
 
             // Happens when turning surface on for first time.
             if (style[repName] === undefined) style[repName] = {};

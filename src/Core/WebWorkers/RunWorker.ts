@@ -19,12 +19,16 @@ export function runWorker(
     // Promise to wait for webworker to return data.
     const returnPromise = new Promise((resolve) => {
         // Remove previous onmessage, if any
-        if (worker === null) throw new Error("Worker is null");
+        if (worker === null) {
+            throw new Error("Worker is null");
+        }
 
         worker.onmessage = null;
 
         worker.onmessage = (resp: MessageEvent) => {
-            if (worker === null) throw new Error("Worker is null");
+            if (worker === null) {
+                throw new Error("Worker is null");
+            }
             if (autoTerminate) {
                 // terminate the worker after use.
                 worker.terminate();
@@ -60,7 +64,9 @@ export function runWorker(
         debugger;
         console.log(data);
         console.error(err);
-        console.error("NOTE: perhaps the data couldn't be serialized. For example, did you remove all treenodes?");
+        console.error(
+            "NOTE: perhaps the data couldn't be serialized. For example, did you remove all treenodes?"
+        );
         throw err;
     }
 

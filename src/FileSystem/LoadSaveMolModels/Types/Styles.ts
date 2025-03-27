@@ -46,7 +46,9 @@ export const defaultSolventStyle: IStyle[] = [_stickStyle];
 // Empty on purpose to satisfy typescript
 const regionStyle: IStyle[] = [];
 
-export const currentStyles: { [key in TreeNodeType]: IStyle[] } = {
+// This is used to restore original styling, for example after hiding a
+// representation and then bringing it back.
+export const defaultStyles: { [key in TreeNodeType]: IStyle[] } = {
     [TreeNodeType.Protein]: defaultProteinStyle,
     [TreeNodeType.Nucleic]: defaultNucleicStyle,
     [TreeNodeType.Compound]: defaultLigandsStyle,
@@ -57,6 +59,12 @@ export const currentStyles: { [key in TreeNodeType]: IStyle[] } = {
     [TreeNodeType.Region]: regionStyle,
     [TreeNodeType.Other]: [],  // Must be defined explicitly (TreeNode.styles = [{...}])
 };
+
+// This is the styles actually used. It is initially set to be the same as the
+// defaults, but it will change per user specifications.
+export const currentStyles: { [key in TreeNodeType]: IStyle[] } = JSON.parse(
+    JSON.stringify(defaultStyles)
+);
 
 /**
  * Updates the styles in the viewer.

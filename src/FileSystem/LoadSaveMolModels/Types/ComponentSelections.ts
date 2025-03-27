@@ -19,10 +19,6 @@ export const standardProteinResidues = [
     "VAL",
     "TRP",
     "TYR",
-    
-    // Will usually be terminal residues
-    "ACE",
-    "NMA"
 ]
 
 export const proteinSel = {
@@ -44,11 +40,17 @@ export const proteinSel = {
         "HSD",
         "HSE",
         "HSP",
+        "HIE",
+        "HID",
         "SEP",
         "TPO",
         "PTR",
         "XLE",
         "XAA",
+
+        // Will usually be terminal residues
+        "ACE",
+        "NMA"
     ],
 };
 

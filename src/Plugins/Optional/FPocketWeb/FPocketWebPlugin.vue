@@ -102,7 +102,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     details = `Also calculate pocket properties using the fpocket algorithm (FPocketWeb).`;
 
     msgOnJobsFinished =
-        "Finished detecting pockets (see molecular viewer). Some pockets might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the detected pockets.";
+        "Finished detecting pockets (see molecular viewer). Some pockets might be hidden. You can toggle visibility using the Navigator panel. The Data panel includes additional information about the detected pockets (e.g., volume).";
 
     userArgDefaults: UserArg[] = [
         {
