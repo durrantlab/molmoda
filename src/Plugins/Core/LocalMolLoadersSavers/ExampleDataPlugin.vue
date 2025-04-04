@@ -42,7 +42,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class ExampleDataPlugin extends PluginParentClass {
-    menuPath = "Help/[6] Example Data...";
+    menuPath = "Help/[6] Example Data/[6] Example Data...";
     title = "Append Example Data";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

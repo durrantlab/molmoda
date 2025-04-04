@@ -31,7 +31,7 @@ import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
     },
 })
 export default class CollapseAllPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Tree", "[2] Collapse All"];
+    menuPath = ["View", "Tree", "[2] Collapse All"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

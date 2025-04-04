@@ -18,7 +18,7 @@
     >
       {{ menuData.text }}
     </a>
-    <ul class="dropdown-menu" :aria-labelledby="'menu1-' + idSlug">
+    <ul class="dropdown-menu" :aria-labelledby="'menu1-' + idSlug" style="min-width:180px;">
       <span v-for="(item, idx) in menuItemsWithSeparators" v-bind:key="idx">
         <li v-if="isSeparator(item)"><hr class="dropdown-divider" /></li>
         <MenuLevel2 v-else :menuData="item" />

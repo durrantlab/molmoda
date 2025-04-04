@@ -34,7 +34,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class ToggleVisiblePlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Molecules", "[5] Toggle Visible..."];
+    menuPath = ["Edit", "Molecules", "[6] Toggle Visible"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

@@ -4,15 +4,20 @@ export enum HostOs {
     Mac = "macOS"
 }
 
+const DEBUG_WINDOWS = false;
+
 /**
  * Detect the host OS.
  * 
  * @returns {HostOs}  The host OS.
  */
 export function detectPlatform(): HostOs {
+    if (DEBUG_WINDOWS) {
+        return HostOs.Windows;  // For debugging
+    }
+
     const navigatorWithUAData = navigator as Navigator & { userAgentData?: { platform: string } };
 
-    // return HostOs.Windows;  // For debugging
 
     if (navigatorWithUAData.userAgentData && navigatorWithUAData.userAgentData.platform) {
         const platform = navigatorWithUAData.userAgentData.platform.toLowerCase();

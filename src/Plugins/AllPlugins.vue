@@ -9,6 +9,7 @@ system uses these to autopopulate with plugins. -->
 
     <!-- TEMPLATE1 START -->
     <ActivityFocusPlugin @onPluginSetup="onPluginSetup"></ActivityFocusPlugin>
+    <ArchivedVersionsPlugin @onPluginSetup="onPluginSetup"></ArchivedVersionsPlugin>
     <ClearSelectionPlugin @onPluginSetup="onPluginSetup"></ClearSelectionPlugin>
     <CloneMolPlugin @onPluginSetup="onPluginSetup"></CloneMolPlugin>
     <CollapseAllPlugin @onPluginSetup="onPluginSetup"></CollapseAllPlugin>
@@ -86,6 +87,7 @@ import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
 
 // TEMPLATE2 START
 import ActivityFocusPlugin from "./Core/ActivityFocus/ActivityFocusPlugin.vue";
+import ArchivedVersionsPlugin from "./Core/ArchivedVersionsPlugin.vue";
 import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
 import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
 import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
@@ -159,6 +161,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 
     // TEMPLATE3 START
     ActivityFocusPlugin,
+    ArchivedVersionsPlugin,
     ClearSelectionPlugin,
     CloneMolPlugin,
     CollapseAllPlugin,

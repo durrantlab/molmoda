@@ -31,7 +31,7 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class ExpandAllPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Tree", "[1] Expand All"];
+    menuPath = ["[4] View", "Tree", "[1] Expand All"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

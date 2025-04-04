@@ -37,7 +37,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class DeleteMolPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Molecules", "[3] Delete..."];
+    menuPath = ["Edit", "Molecules", "[3] Delete..."];
     title = "Delete Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -34,7 +34,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class DownTreeNavPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "[6] Toggles", "[8] Toggle Down"];
+    menuPath = ["View", "[6] Toggles", "[8] Toggle Down"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

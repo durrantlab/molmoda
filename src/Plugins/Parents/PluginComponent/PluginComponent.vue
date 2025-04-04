@@ -63,7 +63,7 @@ import {
 } from "../UserInputUtils";
 import { IInfoPayload } from "@/Plugins/PluginInterfaces";
 import { citationsTxt } from "@/Plugins/Citations";
-import { logGAEvent } from "@/Core/GoogleAnalytics";
+import { logEvent } from "@/Core/Analytics";
 import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 
 /**
@@ -199,7 +199,7 @@ export default class PluginComponent extends mixins(PopupMixin) {
     onPopupCancel() {
         // Log plugin started
         if (this.infoPayload.logAnalytics !== false) {
-            logGAEvent(this.infoPayload.pluginId, "cancelled");
+            logEvent(this.infoPayload.pluginId, "cancelled");
         }
 
         this.$emit("update:modelValue", false);

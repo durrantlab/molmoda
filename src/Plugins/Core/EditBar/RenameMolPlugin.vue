@@ -34,7 +34,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class RenameMolPlugin extends PluginParentClass {
-    menuPath = "[4] Navigator/Molecules/[1] Rename...";
+    menuPath = "Edit/Molecules/[1] Rename...";
     title = "Rename Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

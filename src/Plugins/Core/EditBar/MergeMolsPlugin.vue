@@ -41,7 +41,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class MergeMolsPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Molecules", "[5] Merge..."];
+    menuPath = ["Edit", "Molecules", "[5] Merge..."];
     title = "Merge Molecules";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -27,7 +27,7 @@ import {
     updateProgressInQueueStore,
 } from "@/Queue/QueueStore";
 import { copyUserArgs } from "../UserInputUtils";
-import { logGAEvent } from "@/Core/GoogleAnalytics";
+import { logEvent } from "@/Core/Analytics";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import { isAnyPopupOpen } from "@/UI/Layout/Popups/OpenPopupList";
@@ -264,7 +264,7 @@ export abstract class PluginParentClass extends mixins(
     public async onPluginStart(payload?: any): Promise<void> {
         // Log plugin started
         if (this.logAnalytics) {
-            logGAEvent(this.pluginId, "started");
+            logEvent(this.pluginId, "started");
         }
 
         // Reset userArgs to defaults.
@@ -371,7 +371,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Log plugin started
         if (this.logAnalytics) {
-            logGAEvent(this.pluginId, "jobSubmitted");
+            logEvent(this.pluginId, "jobSubmitted");
         }
 
         // Run each of the parameter sets through the _runJobInBrowser function.
@@ -403,7 +403,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Log plugin finished
         if (this.logAnalytics) {
-            logGAEvent(this.pluginId, "jobFinished");
+            logEvent(this.pluginId, "jobFinished");
         }
 
         if (!this.skipLongRunningJobMsg) {

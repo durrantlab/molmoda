@@ -32,7 +32,7 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class SelectAllPlugin extends PluginParentClass {
-    menuPath = ["[4] Edit", "Selection", "[0] All"];
+    menuPath = ["[4] Edit", "Selection", "[0] Select All"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

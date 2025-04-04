@@ -11,6 +11,7 @@ import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
+import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 
 /**
  * TreeNodeList class
@@ -460,7 +461,10 @@ export class TreeNodeList {
      *                                          a single PDB string.
      * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
      */
-    public toFileInfos(targetExt: string, merge = true): Promise<FileInfo[]> {
+    public async toFileInfos(
+        targetExt: string,
+        merge = true
+    ): Promise<FileInfo[]> {
         // Determine if in worker
         const inWorker =
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -470,19 +474,30 @@ export class TreeNodeList {
             // @ts-ignore
             self instanceof WorkerGlobalScope;
 
+        const formatInfo = getFormatInfoGivenType(targetExt);
+
         // Start spinner
         let spinnerId: any;
         if (!inWorker) {
             spinnerId = messagesApi.startWaitSpinner();
         }
-        return _convertTreeNodeList(this, targetExt, merge).then(
-            (fileInfos: FileInfo[]) => {
-                if (!inWorker) {
-                    messagesApi.stopWaitSpinner(spinnerId);
-                }
-                return fileInfos;
+
+        const fileInfos = await _convertTreeNodeList(this, targetExt, merge);
+
+        // Update the molecule name in the fileInfo contents
+        for (let i = 0; i < fileInfos.length; i++) {
+            if (formatInfo && formatInfo.updateMolNameInContents) {
+                fileInfos[i].contents = formatInfo.updateMolNameInContents(
+                    fileInfos[i].contents,
+                    this._nodes[i].title
+                );
             }
-        );
+        }
+
+        if (!inWorker) {
+            messagesApi.stopWaitSpinner(spinnerId);
+        }
+        return fileInfos;
     }
 
     /**

@@ -119,7 +119,7 @@ def validate_plugin(ts_file):
             required_substrs.append(
                 (
                     '..."',
-                    'Unless a plugin defines noPopup to be true, its menu item must end in "..."',
+                    'Unless a plugin defines noPopup to be true, its menu item must end in "..." (use double quotes).',
                     [],
                 ),
             )

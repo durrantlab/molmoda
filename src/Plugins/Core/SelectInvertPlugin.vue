@@ -32,7 +32,7 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class SelectInvertPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Selection", "[1] Inverse"];
+    menuPath = ["Edit", "Selection", "[2] Invert Selection"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

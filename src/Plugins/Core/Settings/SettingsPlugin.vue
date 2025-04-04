@@ -46,6 +46,7 @@ import {
 import { appName } from "@/Core/GlobalVars";
 import { restartAutoSaveTimer } from "@/Store/AutoSave";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { detectPlatform, HostOs } from "@/Core/HostOs";
 
 /** SettingsPlugin */
 @Options({
@@ -54,8 +55,9 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class SettingsPlugin extends PluginParentClass {
-    menuPath = [`${appName}`, "[2] Settings..."];
-    title = "Settings";
+    menuPath = detectPlatform() === HostOs.Mac ? [`[1] ${appName}`, "[2] Settings..."]: ["Edit", "[9] Preferences..."];
+    
+    title = detectPlatform() === HostOs.Mac ? "Settings" : "Preferences";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {

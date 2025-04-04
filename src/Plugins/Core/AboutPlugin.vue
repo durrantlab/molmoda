@@ -58,6 +58,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { detectPlatform, HostOs } from "@/Core/HostOs";
 
 /** AboutPlugin */
 @Options({
@@ -69,7 +70,8 @@ export default class AboutPlugin extends PluginParentClass {
   @Prop({ required: true }) softwareCreditsToShow!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
-  menuPath = [`[1] ${appName}`, "[1] About..."];
+  menuPath = detectPlatform() === HostOs.Mac ? [`[1] ${appName}`, "[1] About..."] : ["Help", "[9] About..."];
+  
   title = "About";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [

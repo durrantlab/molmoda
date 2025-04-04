@@ -44,6 +44,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";
+import { detectPlatform, HostOs } from "@/Core/HostOs";
 
 /**
  * ActivityFocusPlugin
@@ -56,7 +57,7 @@ import { capitalize } from "@/Core/Utils/StringUtils";
   },
 })
 export default class ActivityFocusPlugin extends PluginParentClass {
-  menuPath = appName + "/Activity Focus...";
+  menuPath ="View/[9] Activity/Activity Focus...";
   title = "Activity Focus";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];

@@ -42,6 +42,11 @@ export interface IFormatInfo {
     // In some cases, you might want to pre-process text before loading it. (To
     // clean up SMILES strings, for example).
     textPreProcessor?: (text: string) => string;
+
+    // In some cases, you might want to update the molecule name in the contents
+    // before saving it. This is because for many formats, the molecule name is
+    // the tmp file used by open babel to perform the conversion.
+    updateMolNameInContents?: (contents: string, newName: string) => string;
 }
 
 const pdbLikeSeparators = [
@@ -160,6 +165,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
             // If contains @<TRIPOS>ATOM, assume it's a mol2 file.
             const mol2Regex = /^@<TRIPOS>ATOM/m;
             return mol2Regex.test(contents);
+        },
+        updateMolNameInContents: (contents: string, newName: string) => {
+            // Replace the second line with the new name.
+            const lines = contents.split("\n");
+            lines[1] = newName;
+            return lines.join("\n");
         }
     },
     MCIF: {

@@ -39,7 +39,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class CloneMolPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Molecules", "Clone..."];
+    menuPath = ["Edit", "Molecules", "Clone..."];
     title = "Clone Molecule";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

@@ -31,7 +31,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class UpTreeNavPlugin extends PluginParentClass {
-    menuPath = ["Navigator", "Toggles", "[7] Toggle Up"];
+    menuPath = ["View", "Toggles", "[7] Toggle Up"];
     title = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

@@ -28,7 +28,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
  * Viewer3DMol
  */
 export class Viewer3DMol extends ViewerParent {
-    public _mol3dObj: any;  // public to make debugging easier
+    public _mol3dObj: any; // public to make debugging easier
     private _zoomToModelsTimeout: any;
     private _renderAllTimeout: any;
 
@@ -538,7 +538,9 @@ export class Viewer3DMol extends ViewerParent {
                 viewer.setBackgroundColor(0xffffff);
                 this._mol3dObj = viewer;
 
-                // Changing the thickness of the fog doesn't seem to be possible.
+                // Changing the thickness of the fog doesn't seem to be
+                // possible. Also examined the libarry code with llm, which
+                // confirmed fog near/far values cannot be set externally.
                 this._mol3dObj.enableFog(true);
 
                 // Adding subtle outline makes things easier to see.
