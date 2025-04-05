@@ -752,7 +752,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
                 if (!newTreeNodesByInputProt[protId]) {
                     // Note: At this point, rootNode contains GLModel (already parsed).
-                    rootNode.addToMainTree(this.pluginId);
+                    rootNode.addToMainTree(this.pluginId, false);
                     newTreeNodesByInputProt[protId] = rootNode;
                 } else {
                     // Merge into the existing node

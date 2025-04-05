@@ -707,9 +707,18 @@ export class TreeNode {
     /**
      * A helper function. Adds this node to the molecules in the vuex store.
      *
-     * @param {string | null} tag  The tag to add to this node.
+     * @param {string | null} tag                         The tag to add to this
+     *                                                    node.
+     * @param {boolean}       terminalNodeTitleRevisable  Whether the title of
+     *                                                    the terminal node
+     *                                                    should be revisable.
+     *                                                    Revised if there is
+     *                                                    only one terminal
+     *                                                    node. If you're adding
+     *                                                    nodes incrementally,
+     *                                                    good to set to false.
      */
-    public async addToMainTree(tag: string | null) {
+    public async addToMainTree(tag: string | null, terminalNodeTitleRevisable = true) {
         this.reassignAllIds();
 
         if (SetupTests.isTest) {
@@ -733,6 +742,14 @@ export class TreeNode {
                     t.tags.push(tag);
                 });
             }
+        }
+
+        // If this node has only one terminal node, and that terminal, prepend
+        // the top-level title to the title of the terminal node.
+        if (terminalNodeTitleRevisable && this.nodes && this.nodes.terminals.length === 1) {
+            this.nodes.terminals.get(0).title = `${this.title}:${
+                this.nodes.terminals.get(0).title
+            }`;
         }
 
         getMoleculesFromStore().push(this);
