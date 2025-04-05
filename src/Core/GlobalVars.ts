@@ -34,6 +34,12 @@ export const delayForPopupOpenClose = 1000;
 export const formInputDelayUpdate = 1000;
 
 // localhost or 127.0.0.1 means that the app is running locally.
-export const isLocalHost =
-    window.location.href.includes("localhost") ||
-    window.location.href.includes("127.0.0.1");
+let _isLocalHost = false;
+try {
+    _isLocalHost =
+        window.location.href.includes("localhost") ||
+        window.location.href.includes("127.0.0.1");
+} catch (error) {
+    _isLocalHost = false;
+}
+export const isLocalHost = _isLocalHost;

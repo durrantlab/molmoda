@@ -430,7 +430,7 @@ export default class WebinaPlugin extends PluginParentClass {
             //     /\(4\) Unbound System's Energy\s*:\s*(-?[\d.]+)/
             // );
 
-            scoreLabel = "Webina Scores: " + protPath;
+            scoreLabel = "Docking: " + protPath;
 
             data[scoreLabel] = {
                 data: {

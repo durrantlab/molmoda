@@ -133,8 +133,7 @@ export default class DataPanel extends Vue {
    * @returns {ITableData | null}  The merged table data. Null if no data.
    */
   get mergedTableData(): ITableData | null {
-    if (this.allTableData.length === 0 || this.selectedSources.length === 0)
-      return null;
+    if (this.allTableData.length === 0 || this.selectedSources.length === 0) { return null; }
 
     // Filter the table data to only include selected sources
     const filteredTableData = this.allTableData.filter(([source]) =>
@@ -147,18 +146,15 @@ export default class DataPanel extends Vue {
       { text: "id", showColumnFunc: () => false },
     ];
 
-    // Collect all unique entries (molecule paths)
+    // Collect all unique entries (molecule paths + ids)
     const entries = new Set<string>();
-    const entryToId = new Map<string, string>();
-
-    debugger
 
     // First pass: collect all headers and entries
     filteredTableData.forEach(([source, tableData]) => {
       tableData.rows.forEach((row: { [key: string]: CellValue }) => {
-        const entry = row.Entry as string;
+        // const entry = (row.Entry as string) + "||>>" + row.id;
+        const entry = JSON.stringify([(row.Entry as string), row.id]);
         entries.add(entry);
-        entryToId.set(entry, row.id as string);
 
         // Add source-prefixed headers for all columns except Entry and id
         tableData.headers.forEach((header: IHeader) => {
@@ -175,14 +171,13 @@ export default class DataPanel extends Vue {
       });
     });
 
-    debugger
-
     // Build rows
     const rows: { [key: string]: CellValue }[] = Array.from(entries).map(
       (entry) => {
+        const [entryName, id] = JSON.parse(entry) as string[];
         const row: { [key: string]: CellValue } = {
-          Entry: { val: entry } as ICellValue,
-          id: { val: entryToId.get(entry) || "" } as ICellValue,
+          Entry: { val: entryName } as ICellValue,
+          id: { val: id } as ICellValue,
         };
 
         // Initialize all cells with empty values
@@ -195,7 +190,7 @@ export default class DataPanel extends Vue {
         // Fill in the data
         filteredTableData.forEach(([source, tableData]) => {
           const sourceRow = tableData.rows.find(
-            (r: { [key: string]: CellValue }) => r.Entry === entry
+            (r: { [key: string]: CellValue }) => r.Entry === entryName && r.id === id // + "||>>" + r.id === entry
           );
           if (sourceRow) {
             tableData.headers.forEach((header: IHeader) => {
