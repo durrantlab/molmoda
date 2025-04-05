@@ -12,6 +12,7 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import * as GlobalVars from "@/Core/GlobalVars";
 
 /**
  * TreeNodeList class
@@ -136,6 +137,23 @@ export class TreeNodeList {
         // }
 
         // node.title = newTitle;
+
+        // // Throw warning if title already exists.
+        // const titles = this._nodes.map((n) => n.title);
+
+        // console.log("titles", titles);
+
+        // // If the title already exists, throw warning.
+        // if (titles.includes(node.title)) {
+        //     const msg =
+        //         "Warning: Node with title " +
+        //         node.title +
+        //         " already exists. When adding nodes, try to make them unique to avoid problems in the data panel!";
+        //     // if (GlobalVars.isLocalHost) {
+        //     //     alert(msg);
+        //     // }
+        //     console.warn(msg);
+        // }
 
         this._nodes.push(node);
     }

@@ -6,41 +6,26 @@
       No molecules (visible or selected) have data to display.
     </p>
     <div v-else class="mb-3">
-        <p style="font-size: 14px" class="mb-2">Use these toggle buttons to indicate the data to display in the table below:</p>
+      <p style="font-size: 14px" class="mb-2">Use these toggle buttons to indicate the data to display in the table
+        below:</p>
       <div class="d-flex flex-wrap gap-2">
         <!-- Add unique ID to connect input and label -->
         <div v-for="tableData in allTableData" :key="tableData[0]">
-          <input
-            type="checkbox"
-            :id="'btn-check-' + tableData[0]"
-            :value="tableData[0]"
-            v-model="selectedSources"
-            class="btn-check"
-            autocomplete="off"
-          />
-          <label
-            :for="'btn-check-' + tableData[0]"
-            class="btn btn-outline-primary btn-sm"
-          >
+          <input type="checkbox" :id="'btn-check-' + tableData[0]" :value="tableData[0]" v-model="selectedSources"
+            class="btn-check" autocomplete="off" />
+          <label :for="'btn-check-' + tableData[0]" class="btn btn-outline-primary btn-sm">
             {{ tableData[0] }}
           </label>
         </div>
       </div>
     </div>
 
-    <Table
-      v-if="mergedTableData !== null"
-      id="merged-data"
-      :tableData="mergedTableData"
-      caption="All Molecular Data"
-      :noFixedTable="true"
-      @rowClicked="rowClicked"
-      :clickableRows="true"
-    >
+    <Table v-if="mergedTableData !== null" id="merged-data" :tableData="mergedTableData" caption="All Molecular Data"
+      :noFixedTable="true" @rowClicked="rowClicked" :clickableRows="true">
     </Table>
   </span>
 </template>
-  
+
 <script lang="ts">
 /* eslint-disable no-unreachable */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
@@ -166,6 +151,8 @@ export default class DataPanel extends Vue {
     const entries = new Set<string>();
     const entryToId = new Map<string, string>();
 
+    debugger
+
     // First pass: collect all headers and entries
     filteredTableData.forEach(([source, tableData]) => {
       tableData.rows.forEach((row: { [key: string]: CellValue }) => {
@@ -187,6 +174,8 @@ export default class DataPanel extends Vue {
         });
       });
     });
+
+    debugger
 
     // Build rows
     const rows: { [key: string]: CellValue }[] = Array.from(entries).map(

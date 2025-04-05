@@ -1,6 +1,7 @@
 /* eslint-disable prefer-rest-params */
 import { isStatCollectionEnabled } from "@/Plugins/Core/StatCollection/StatUtils";
 import { fetcher, ResponseType } from "./Fetcher";
+import * as GlobalVars from "@/Core/GlobalVars";
 
 // declare global {
 //     interface Window {
@@ -73,7 +74,13 @@ export async function logEvent(
     // If localhost, 127.0.0.1, or beta in the url, don't log to google
     // analytics. Use "track_debug" to force logging regardless.
     if (!url.includes("?track_debug")) {
-        const bannedUrls = ["localhost", "127.0.0.1", "?test=", "beta"]
+        if (GlobalVars.isLocalHost) {
+            console.warn(
+                `Analytics not sent from prohibited localhost domain: ${gaEventData}`
+            );
+            return;
+        }
+        const bannedUrls = ["?test=", "beta"];
         for (const bannedUrl of bannedUrls) {
             if (url.indexOf(bannedUrl) !== -1) {
                 console.warn(
@@ -96,7 +103,7 @@ export async function logEvent(
             cacheBust: true,
         }
     );
-    debugger
+    debugger;
 
     // Cookies.get("statcollection") is a cookie that is set when the user
     // accepts the cookie policy If the cookie is set, we load the google

@@ -12,7 +12,10 @@ export const appDetails = getUrlParam(
     "details",
     `It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.`
 ) as string;
-export const logoPath = getUrlParam("logo", "img/icons/android-chrome-192x192.png") as string;
+export const logoPath = getUrlParam(
+    "logo",
+    "img/icons/android-chrome-192x192.png"
+) as string;
 
 export const appIntro = `${appName} ${appVersion} is ${appShortDesc}, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>.`;
 export const appDescription = `${appIntro} ${appDetails}`;
@@ -29,3 +32,8 @@ export const delayForPopupOpenClose = 1000;
 // Delay to wait after keypress before reacting. This is to prevent the app from
 // reacting to every keypress, which would be slow.
 export const formInputDelayUpdate = 1000;
+
+// localhost or 127.0.0.1 means that the app is running locally.
+export const isLocalHost =
+    window.location.href.includes("localhost") ||
+    window.location.href.includes("127.0.0.1");
