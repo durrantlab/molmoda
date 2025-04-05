@@ -12,7 +12,7 @@
                 @click="runFunction(menuData)"
                 :id="'menu-plugin-' + idSlug"
             >
-                {{ menuData.text?.replace("_", "") }}
+                <span v-html='menuData.text?.replace("_", "")'></span>
                 <div v-if="showHotkey" style="float: right" class="text-muted">
                     {{ hotkeyPrefix }}{{ hotkeyToShow(menuData) }}
                 </div>

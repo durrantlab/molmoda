@@ -85,8 +85,8 @@ let msgOnJobsFinishedtoUse: string | undefined;
     },
 })
 export default class WebinaPlugin extends PluginParentClass {
-    menuPath = "[6] Binding/Docking/[2] Perform Docking...";
-    title = "Compound Docking";
+    menuPath = "[6] Binding/Docking/[2] Perform Docking&#47;Scoring...";
+    title = "Compound Docking/Scoring";
     softwareCredits: ISoftwareCredit[] = [
         {
             name: "AutoDock Vina",
