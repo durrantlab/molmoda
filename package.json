@@ -34,7 +34,6 @@
     "core-js": "^3.8.3",
     "detect-os": "^1.2.1",
     "dexie": "^4.0.4",
-    "exit-intent": "^1.1.0",
     "file-saver": "^2.0.5",
     "golden-layout": "2.5.0",
     "hotkeys-js": "^3.10.0",

@@ -1,5 +1,5 @@
 import {
-    IStyle,
+    ISelAndStyle,
     IRegion,
     RegionType,
     ISphere,
@@ -237,7 +237,9 @@ export abstract class ViewerParent {
      * @param  {Function} callback  The callback to register.
      * @returns {void}
      */
-    abstract _registerViewChangeCallback(callback: (view: number[]) => void): void;
+    abstract _registerViewChangeCallback(
+        callback: (view: number[]) => void
+    ): void;
 
     /**
      * Register a callback to be called when the view changes.
@@ -671,14 +673,17 @@ export abstract class ViewerParent {
      * Converts the 3DMoljs style stored in the molecules tree to a style format
      * compatible with this viewer.
      *
-     * @param {IStyle}   style     The style to convert.
+     * @param {ISelAndStyle}   style     The style to convert.
      * @param {TreeNode} treeNode  The molecular container, which may contain
      *                             additional/more accessible information about
      *                             the molecule than is available in the model
      *                             itself.
      * @returns {GenericStyleType}  The converted style.
      */
-    abstract convertStyle(style: IStyle, treeNode: TreeNode): GenericStyleType;
+    abstract convertStyle(
+        style: ISelAndStyle,
+        treeNode: TreeNode
+    ): GenericStyleType;
 
     /**
      * Converts a 3DMoljs selection to the selection format compatible with this
@@ -688,6 +693,35 @@ export abstract class ViewerParent {
      * @returns {any}  The converted selection.
      */
     abstract convertSelection(sel: any): any;
+
+    /**
+     * Converts a selection and style to the format compatible with this viewer.
+     *
+     * @param {ISelAndStyle} selAndStyle  The selection and style to convert.
+     * @param {TreeNode}     treeNode     The molecular container, which may
+     *                                    contain additional/more accessible
+     *                                    information about the molecule than is
+     *                                    available in the model itself.
+     * @returns {object}  An object containing the converted selection and
+     * style.
+     */
+    public convertSelectionAndStyle(
+        selAndStyle: ISelAndStyle,
+        treeNode: TreeNode
+    ) {
+        // Convert the selection
+        const selection = this.convertSelection(selAndStyle.selection);
+
+        // Copy the ISelAndStyle object and remove the selection
+        let style = { ...selAndStyle };
+        delete style.selection;
+
+        // Convert the style
+        style = this.convertStyle(style, treeNode);
+
+        // return converted selection and style
+        return { selection, style };
+    }
 
     /**
      * Unloads the viewer and removes it from api.
@@ -858,7 +892,9 @@ export abstract class ViewerParent {
         // as best I can tell.
 
         const id = treeNode.id as string;
-        const regionStyle = JSON.parse(JSON.stringify(treeNode.region as IRegion));
+        const regionStyle = JSON.parse(
+            JSON.stringify(treeNode.region as IRegion)
+        );
 
         if (treeNode.selected !== SelectedType.False) {
             // yellow

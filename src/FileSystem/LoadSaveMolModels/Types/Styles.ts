@@ -2,53 +2,67 @@ import {
     getMoleculesFromStore,
     setStoreVar,
 } from "@/Store/StoreExternalAccess";
-import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import isEqual from "lodash.isequal";
 
-export const unbondedAtomsStyle: IStyle = {
+export const unbondedAtomsStyle: ISelAndStyle = {
+    selection: {
+        bonds: 0,
+    },
     sphere: {
         radius: 0.5,
     },
 };
 
-const _sphereStyle: IStyle = {
+const _sphereStyle: ISelAndStyle = {
+    selection: {},
     sphere: {},
 };
 
-const _stickStyle: IStyle = {
+const _stickStyle: ISelAndStyle = {
+    selection: {},
     stick: {},
 };
 
-export const defaultProteinStyle: IStyle[] = [
+export const defaultProteinStyle: ISelAndStyle[] = [
     {
+        selection: {},
         cartoon: {
             color: "spectrum",
+        },
+    },
+    {
+        selection: {
+            resn: "LYS",
+        },
+        sphere: {
+            color: "blue",
         },
     }
 ];
 
-export const defaultNucleicStyle: IStyle[] = [_stickStyle];
+export const defaultNucleicStyle: ISelAndStyle[] = [_stickStyle];
 
-export const defaultLigandsStyle: IStyle[] = [_stickStyle];
+export const defaultLigandsStyle: ISelAndStyle[] = [_stickStyle];
 
-export const defaultMetalsStyle: IStyle[] = [_sphereStyle];
+export const defaultMetalsStyle: ISelAndStyle[] = [_sphereStyle];
 
-export const defaultLipidStyle: IStyle[] = [_stickStyle];
+export const defaultLipidStyle: ISelAndStyle[] = [_stickStyle];
 
-export const defaultIonsStyle: IStyle[] = [_sphereStyle];
+export const defaultIonsStyle: ISelAndStyle[] = [_sphereStyle];
 
-export const defaultSolventStyle: IStyle[] = [_stickStyle];
+export const defaultSolventStyle: ISelAndStyle[] = [_stickStyle];
 
 // export const defaultOtherStyle: IStyle[] = [_sphereStyle];
 
 // Empty on purpose to satisfy typescript
-const regionStyle: IStyle[] = [];
+const regionStyle: ISelAndStyle[] = [];
 
 // This is used to restore original styling, for example after hiding a
 // representation and then bringing it back.
-export const defaultStyles: { [key in TreeNodeType]: IStyle[] } = {
+export const defaultStyles: { [key in TreeNodeType]: ISelAndStyle[] } = {
     [TreeNodeType.Protein]: defaultProteinStyle,
     [TreeNodeType.Nucleic]: defaultNucleicStyle,
     [TreeNodeType.Compound]: defaultLigandsStyle,
@@ -57,12 +71,12 @@ export const defaultStyles: { [key in TreeNodeType]: IStyle[] } = {
     [TreeNodeType.Ions]: defaultIonsStyle,
     [TreeNodeType.Solvent]: defaultSolventStyle,
     [TreeNodeType.Region]: regionStyle,
-    [TreeNodeType.Other]: [],  // Must be defined explicitly (TreeNode.styles = [{...}])
+    [TreeNodeType.Other]: [], // Must be defined explicitly (TreeNode.styles = [{...}])
 };
 
 // This is the styles actually used. It is initially set to be the same as the
 // defaults, but it will change per user specifications.
-export const currentStyles: { [key in TreeNodeType]: IStyle[] } = JSON.parse(
+export const currentStyles: { [key in TreeNodeType]: ISelAndStyle[] } = JSON.parse(
     JSON.stringify(defaultStyles)
 );
 
@@ -112,12 +126,13 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
             // Add the styles to the node list if it's not empty ({}).
             terminalNode.styles = [];
             if (!isEqual(style, {})) {
-                terminalNode.styles.push(style[0]);
+                terminalNode.styles.push(...style);
             }
-            // TODO: Why style[0] above? Can the length ever be more than 1?
 
             // Mark this for rerendering in viewer.
             terminalNode.viewerDirty = true;
+
+            debugger
         }
     }
 

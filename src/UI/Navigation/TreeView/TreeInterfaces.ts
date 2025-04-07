@@ -146,7 +146,8 @@ export interface IColorStyle {
     opacity?: number;  // Only for surfaces. Not user editable.
 }
 
-export interface IStyle {
+export interface ISelAndStyle {
+    selection?: any;
     sphere?: IColorStyle;
     stick?: IColorStyle;
     line?: IColorStyle;

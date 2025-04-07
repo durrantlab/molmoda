@@ -514,8 +514,18 @@ export default class TitleBar extends Vue {
 
         // Collect all the items from the submenus, in one list.
         const allEditItems: IMenuItem[] = [];
+        
         editMenu.items.forEach((item) => {
-            for (const subItem of (item as IMenuSubmenu).items) {
+            const subItems = (item as IMenuSubmenu).items;
+            if (subItems === undefined) {
+                // This is really curious. Sometimes it is undefined on Windows
+                // (chrome), but never on mac. I think it's some sort of race
+                // condition. But if you just return, it will update later as
+                // the items does get populated.
+                return;
+            }
+
+            for (const subItem of subItems) {
                 // A few are skipped.
                 if (["Undo", "Redo"].includes(subItem.text as string)) {
                     continue;
@@ -535,6 +545,7 @@ export default class TitleBar extends Vue {
         while (allEditItems[allEditItems.length - 1].text === "separator") {
             allEditItems.pop();
         }
+
         return allEditItems;
     }
 

@@ -21,13 +21,13 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import StylesForMolType from "./StylesForMolType.vue";
 import { IStyleForMolType } from "./Interfaces";
 
 interface IStyleCount {
-    style: IStyle;
+    style: ISelAndStyle;
     count: number;
 }
 
@@ -50,7 +50,7 @@ export default class StylesAllMolTypes extends Vue {
      * @returns {IStyleForMolType[]}  The consensus styles, per mol type.
      */
     get stylesForMolTypes(): IStyleForMolType[] {
-        let allStyles: { [key: string]: IStyle[] } = {};
+        let allStyles: { [key: string]: ISelAndStyle[] } = {};
         let molecules = this.$store.state["molecules"] as TreeNodeList;
 
         // Get the styles for all visible components, organized by molecule type.
@@ -70,6 +70,8 @@ export default class StylesAllMolTypes extends Vue {
 
             allStyles[node.type].push(...node.styles);
         }
+
+        console.error("Note that it is here that entries with multiple styles get reduced to only one. Need to retain all somehow.")
 
         // For each type, get the styles that all molecules have in common. Note
         // that a given type may have no styles in common, in which case it will be
@@ -112,11 +114,11 @@ export default class StylesAllMolTypes extends Vue {
      * Convert a list of styles to a list of style counts. Counts are all 1
      * because this serves to initialize the style count list.
      *
-     * @param   {IStyle[]}  styles  The styles
+     * @param   {ISelAndStyle[]}  styles  The styles
      * @returns {IStyleCount[]}  The style counts
      */
-    private _initStyleToStyleCount(styles: IStyle[]): IStyleCount[] {
-        return styles.map((s: IStyle): IStyleCount => {
+    private _initStyleToStyleCount(styles: ISelAndStyle[]): IStyleCount[] {
+        return styles.map((s: ISelAndStyle): IStyleCount => {
             return { style: s, count: 1 };
         });
     }

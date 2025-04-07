@@ -6,7 +6,7 @@ import {
 
 import {
     IAtom,
-    IStyle,
+    ISelAndStyle,
     TreeNodeType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -290,9 +290,9 @@ function collapseSingles(
  * Adds the molecule type.
  *
  * @param  {TreeNode}  treeNode  The molecule to add the type and style to.
- * @param  {IStyle[]} stylesAndSels The styles and selections to add.
+ * @param  {ISelAndStyle[]} stylesAndSels The styles and selections to add.
  */
-function addMolTypeAndStyle(treeNode: TreeNode, stylesAndSels: IStyle[]) {
+function addMolTypeAndStyle(treeNode: TreeNode, stylesAndSels: ISelAndStyle[]) {
     const molType = treeNode.type;
     new TreeNodeList([treeNode]).filters.onlyTerminal.forEach(
         (mol: TreeNode) => {

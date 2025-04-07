@@ -15,7 +15,7 @@ import Section from "@/UI/Layout/Section.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
-import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IColorStyle, ISelAndStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -43,7 +43,7 @@ import { ColorOptions } from "./ColorOptions";
 })
 export default class ColorSelect extends Vue {
   // Looks like this: { "cartoon": { "color": "spectrum" } }
-  @Prop({ required: true }) modelValue!: IStyle;
+  @Prop({ required: true }) modelValue!: ISelAndStyle;
 
   @Prop({ required: true }) repName!: string;
   @Prop({ default: true }) allowColorByElement!: boolean;
@@ -59,7 +59,7 @@ export default class ColorSelect extends Vue {
    * @returns {any[]}  The color form.
    */
   get constructedColorForm(): any[] {
-    let style: IStyle = this.modelValue;
+    let style: ISelAndStyle = this.modelValue;
     // `style` looks like {"cartoon":{"color":"spectrum"}}
 
     this._setColorStyleDefaultsIfMissing(style);
@@ -110,7 +110,7 @@ export default class ColorSelect extends Vue {
     // { "cartoon": '{ "color": "spectrum" }' }
 
     // Copy the representations from the component.
-    let style: IStyle = { ...this.modelValue };
+    let style: ISelAndStyle = { ...this.modelValue };
 
     // Make sure the colorStyles color is set. If not, set it to the default
     // color.
@@ -141,10 +141,10 @@ export default class ColorSelect extends Vue {
    * Add default values to the style object if it is missing. Acts in place, so
    * returns nothing.
    *
-   * @param {IStyle} style  The style. Looks something like
+   * @param {ISelAndStyle} style  The style. Looks something like
    *                        {"cartoon":{"color":"spectrum"}}.
    */
-  private _setColorStyleDefaultsIfMissing(style: IStyle) {
+  private _setColorStyleDefaultsIfMissing(style: ISelAndStyle) {
     // If the value (IColorStyle) of style is {}, set to default color scheme.
 
     // If it's sticks, you should remove the radius. This is because radius

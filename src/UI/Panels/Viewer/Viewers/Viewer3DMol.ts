@@ -7,7 +7,7 @@ import {
     IBox,
     ICylinder,
     ISphere,
-    IStyle,
+    ISelAndStyle,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     GenericSurfaceType,
@@ -558,11 +558,11 @@ export class Viewer3DMol extends ViewerParent {
      * Converts the 3DMoljs style stored in the molecules tree to a style format
      * compatible with this viewer.
      *
-     * @param {IStyle}   style     The style to convert.
+     * @param {ISelAndStyle}   style     The style to convert.
      * @param {TreeNode} treeNode  The treenode associated with the style.
-     * @returns {IStyle}  The converted style.
+     * @returns {ISelAndStyle}  The converted style.
      */
-    convertStyle(style: IStyle, treeNode: TreeNode): IStyle {
+    convertStyle(style: ISelAndStyle, treeNode: TreeNode): ISelAndStyle {
         // Process style if it contains any @byMolecule colors
         if (treeNode.id !== undefined && this._containsByMoleculeColor(style)) {
             const processedStyle = this._processStyleColors(style, treeNode.id);

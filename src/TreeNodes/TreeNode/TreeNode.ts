@@ -9,7 +9,7 @@ import {
     SelectedType,
     ITreeNodeData,
     IAtom,
-    IStyle,
+    ISelAndStyle,
     IRegion,
     IBox,
     RegionType,
@@ -44,7 +44,7 @@ export interface ITreeNode {
     tags?: string[]; // tags for this node. Mostly just plugin ids of plugins used to generate this node.
 
     // These are specifically for terminal nodes
-    styles?: IStyle[]; // styles and selections for this node
+    styles?: ISelAndStyle[]; // styles and selections for this node
     model?: IAtom[] | GLModel | IFileInfo;
     region?: IRegion;
 
@@ -75,7 +75,7 @@ export class TreeNode {
 
     // These are specifically for terminal nodes
     model?: IAtom[] | GLModel | IFileInfo; // IAtom in worker, GLMoldel in main thread
-    styles?: IStyle[]; // styles and selections for this node
+    styles?: ISelAndStyle[]; // styles and selections for this node
     region?: IRegion;
 
     public triggerId = ""; // Purpose of this is just to trigger reactivity if needed
@@ -726,8 +726,8 @@ export class TreeNode {
             expandAndShowAllMolsInTree();
         }
 
+        // Update this nodes tag
         if (tag) {
-            // Update this nodes tag
             if (this.tags === undefined) {
                 this.tags = [];
             }
@@ -742,6 +742,13 @@ export class TreeNode {
                     t.tags.push(tag);
                 });
             }
+        }
+
+        // Make sure none are selected (because just added).
+        if (this.nodes) {
+            this.nodes.flattened.forEach((t) => {
+                t.selected = SelectedType.False;
+            });
         }
 
         // If this node has only one terminal node, and that terminal, prepend

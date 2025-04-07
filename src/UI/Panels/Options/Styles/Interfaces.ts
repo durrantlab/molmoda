@@ -1,6 +1,6 @@
-import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export interface IStyleForMolType {
-    style: IStyle;
+    style: ISelAndStyle;
     molType: TreeNodeType;
 }

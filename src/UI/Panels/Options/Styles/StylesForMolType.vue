@@ -82,7 +82,7 @@ import Section from "@/UI/Layout/Section.vue";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
-import { IStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import ColorSelect from "./ColorSelect/ColorSelect.vue";
@@ -104,7 +104,7 @@ import { capitalize } from "@/Core/Utils/StringUtils";
     },
 })
 export default class StylesForMolType extends Vue {
-    @Prop({ required: true }) style!: IStyle;
+    @Prop({ required: true }) style!: ISelAndStyle;
     @Prop({ required: true }) molType!: TreeNodeType;
 
     isVisible = true;
@@ -112,7 +112,7 @@ export default class StylesForMolType extends Vue {
     backboneOption = "backbone-hidden";
     surfaceOption = "surface-hidden";
 
-    styleToUse: IStyle = {};
+    styleToUse: ISelAndStyle = {};
 
     /**
      * Watches the style prop and updates the styleToUse accordingly.
@@ -253,6 +253,8 @@ export default class StylesForMolType extends Vue {
                 if (style.stick) delete style.stick;
                 break;
         }
+
+        debugger
         Styles.currentStyles[this.molType] = [style];
 
         Styles.updateStylesInViewer(this.molType);
@@ -283,9 +285,9 @@ export default class StylesForMolType extends Vue {
     /**
      * Set the initial values to use in the select.
      *
-     * @param {IStyle} style  The style name to selectino to use.
+     * @param {ISelAndStyle} style  The style name to selectino to use.
      */
-    private _setInitialSelectedStyles(style: IStyle) {
+    private _setInitialSelectedStyles(style: ISelAndStyle) {
         if (style === undefined) {
             // Happens when used has hidden all styles.
             style = {};

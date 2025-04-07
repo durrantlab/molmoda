@@ -37,7 +37,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     IColorStyle,
     ITreeNodeData,
-    IStyle,
+    ISelAndStyle,
     TreeNodeDataType,
     TreeNodeType,
     // IBox,
@@ -518,7 +518,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                             color: randomPastelColor(),
                             opacity: 0.9,
                         } as IColorStyle,
-                    } as IStyle,
+                    } as ISelAndStyle,
                 ];
 
                 // Rename it too. TODO: This should be the region...

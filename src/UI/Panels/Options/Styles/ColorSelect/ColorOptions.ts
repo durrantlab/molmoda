@@ -1,4 +1,4 @@
-import { IColorStyle, IStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { IColorStyle, ISelAndStyle } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -139,10 +139,10 @@ export class ColorOptions {
     /**
      * Given a color style, get the hex colors.
      *
-     * @param {IStyle} style  The style.
+     * @param {ISelAndStyle} style  The style.
      * @returns {string[]}  The hex colors.
      */
-    public extractHexColorsFromStyle(style: IStyle): string[] {
+    public extractHexColorsFromStyle(style: ISelAndStyle): string[] {
         const styleRecast = style as { [key: string]: IColorStyle };
         const colors: string[] = [];
         for (const rep in styleRecast) {

@@ -22,7 +22,7 @@ import {
 } from "./Viewers/ViewerParent";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
-  IStyle,
+  ISelAndStyle,
   SelectedType,
   TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -286,8 +286,10 @@ export default class ViewerPanel extends Vue {
 
     // Styles to apply, so make sure it's visible.
 
-    let surfaceStyles: IStyle[] = []; // Should only be one, but keep list for consistency.
-    let nonSurfaceStyles: IStyle[] = [];
+    let surfaceStyles: ISelAndStyle[] = []; // Should only be one, but keep list for consistency.
+    let nonSurfaceStyles: ISelAndStyle[] = [];
+
+    debugger
 
     // Separate surface style from other styles
     for (let style of treeNode.styles) {
@@ -307,10 +309,10 @@ export default class ViewerPanel extends Vue {
   /**
    * Set the non-surface style.
    *
-   * @param {IStyle[]} nonSurfaceStyles  The non-surface styles.
+   * @param {ISelAndStyle[]} nonSurfaceStyles  The non-surface styles.
    * @param {TreeNode} treeNode          The tree node to set the style of.
    */
-  private _setNonSurfaceStyle(nonSurfaceStyles: IStyle[], treeNode: TreeNode) {
+  private _setNonSurfaceStyle(nonSurfaceStyles: ISelAndStyle[], treeNode: TreeNode) {
     if (nonSurfaceStyles.length === 0) {
       return;
     }
@@ -331,17 +333,17 @@ export default class ViewerPanel extends Vue {
       // Deep copy style
       style = JSON.parse(JSON.stringify(style));
 
-      style = this._changeStyleIfSelected(treeNode, style);
+      style = this._changeStyleIfSelected(treeNode, style) as ISelAndStyle;
 
-      const convertedStyle = api.visualization.viewerObj?.convertStyle(
+      let convertedSelAndStyle = api.visualization.viewerObj?.convertSelectionAndStyle(
         style,
         treeNode
       );
 
       api.visualization.viewerObj?.setMolecularStyle(
         treeNode.id as string,
-        api.visualization.viewerObj?.convertSelection({}),
-        convertedStyle,
+        convertedSelAndStyle?.selection,
+        convertedSelAndStyle?.style,
         true
       );
 
@@ -369,7 +371,6 @@ export default class ViewerPanel extends Vue {
           }
         }
 
-
         console.log(style);
         let styleUnbonded = JSON.parse(JSON.stringify(unbondedAtomsStyle));
 
@@ -385,49 +386,36 @@ export default class ViewerPanel extends Vue {
         // atoms are visible.
         const selectedStyle = this._changeStyleIfSelected(treeNode, styleUnbonded);
 
-        const convertedStyle = api.visualization.viewerObj?.convertStyle(
+        convertedSelAndStyle = api.visualization.viewerObj?.convertSelectionAndStyle(
           selectedStyle,
           treeNode
         );
 
-        const convertedSel = api.visualization.viewerObj?.convertSelection({
-          bonds: 0,
-        });
-
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // const numAtoms = api.visualization.viewerObj?._mol3dObj // @ts-ignore
-        //   .selectedAtoms(convertedSel).length;
-
-        // console.log(numAtoms);
-        // if (numAtoms > 0) {
-        //   debugger;
-        // }
-
         api.visualization.viewerObj?.setMolecularStyle(
           treeNode.id as string,
-          convertedSel,
-          convertedStyle,
+          convertedSelAndStyle?.selection,
+          convertedSelAndStyle?.style,
           true
         );
       }
     }
   }
 
-  private previousSurfaceStylesCache: { [key: string]: IStyle } = {};
+  private previousSurfaceStylesCache: { [key: string]: ISelAndStyle } = {};
 
   /**
    * Set the surface style.
    *
    * @param {TreeNode}       treeNode         The tree node to set the style
    *                                          of.
-   * @param {IStyle[]}       surfaceStyles    The surface styles.
+   * @param {ISelAndStyle[]}       surfaceStyles    The surface styles.
    * @param {Promise<any>[]} surfacePromises  The promises for the surfaces.
    * @returns {Promise<void>}  A promise that resolves when the surface style
    *     has been set.
    */
   private async _setSurfaceStyle(
     treeNode: TreeNode,
-    surfaceStyles: IStyle[],
+    surfaceStyles: ISelAndStyle[],
     surfacePromises: Promise<any>[]
   ): Promise<void> {
     if (surfaceStyles.length === 0) {
@@ -579,7 +567,7 @@ export default class ViewerPanel extends Vue {
       viewer.setMolecularStyle(
         treeNode.id as string,
         viewer.convertSelection({}),
-        viewer.convertStyle({ line: {} }, treeNode)
+        viewer.convertStyle({ selection: {}, line: {} }, treeNode)
       );
       console.warn("error?");
     }
