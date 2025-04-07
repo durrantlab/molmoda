@@ -369,16 +369,16 @@ export default class ViewerPanel extends Vue {
           }
         }
 
-        
+
         console.log(style);
         let styleUnbonded = JSON.parse(JSON.stringify(unbondedAtomsStyle));
-        
+
         if (colorOrColorScheme !== "") {
-            // Add color to unbonded style
-            for (let key in styleUnbonded) {
-                const stylePart = (styleUnbonded as { [key: string]: any })[key];
-                stylePart[colorOrColorScheme] = colorValue;
-            }
+          // Add color to unbonded style
+          for (let key in styleUnbonded) {
+            const stylePart = (styleUnbonded as { [key: string]: any })[key];
+            stylePart[colorOrColorScheme] = colorValue;
+          }
         }
 
         // If there's any style, no style is spheres, make sure unbonded

@@ -26,7 +26,7 @@ export const defaultProteinStyle: IStyle[] = [
         cartoon: {
             color: "spectrum",
         },
-    },
+    }
 ];
 
 export const defaultNucleicStyle: IStyle[] = [_stickStyle];

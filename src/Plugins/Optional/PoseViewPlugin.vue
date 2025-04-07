@@ -325,10 +325,36 @@ export default class PoseViewPlugin extends PluginParentClass {
         ""
       );
 
+
+      // Create a wrapper for the SVG and add the legend/info below it
+      const wrapperHtml = `
+        <div style="display: flex; flex-direction: column; width: 100%; align-items: center;">
+          <!-- SVG Diagram Area -->
+          <div style="position: relative; width: 100%; max-width: 850px; /* Optional: constrain max SVG width */">
+        ${poseviewSvg}
+        </div>
+
+          <!-- Legend and Info Area Below SVG -->
+          <div style="width: 100%; margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-top: 1px solid #ddd; box-sizing: border-box;">
+            <!-- Legend Image (Centered) -->
+            <div style="text-align: center; margin-bottom: 10px;">
+              <img src="./poseview-legend.png" style="max-width: 100%; height: auto; display: inline-block;" alt="PoseView Legend" />
+            </div>
+
+            <!-- Text Description (Centered) -->
+            <div style="font-size: 14px; text-align: center;">
+                2D interaction diagram showing protein-ligand interactions for:<br>
+                <strong>Protein:</strong> ${proteinPath || 'Unknown'}<br>
+                <strong>Compound:</strong> ${compoundPath || 'Unknown'}
+            </div>
+          </div>
+      </div>
+    `;
+
       api.plugins.runPlugin("simplesvg", {
-        svgContents: poseviewSvg,
+        svgContents: wrapperHtml,
         title: "2D Interaction Diagram",
-        message: `Diagram generated using <a href="https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html" target="_blank">PoseView</a>.<br /><i>Protein</i>: ${proteinPath}<br/><i>Compound (ligand)</i>: ${compoundPath}`,
+        message: `Diagram generated using <a href="https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html" target="_blank">PoseView</a>.`,
       });
     } catch (error: any) {
       api.messages.popupError(
