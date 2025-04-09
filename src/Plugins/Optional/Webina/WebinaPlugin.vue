@@ -1,13 +1,7 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onPopupDone="onPopupDone"
-        actionBtnTxt="Dock"
-        @onUserArgChanged="onUserArgChanged"
-        :hideIfDisabled="true"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone"
+        :actionBtnTxt="actionButtonText" @onUserArgChanged="onUserArgChanged" :hideIfDisabled="true"
+        @onMolCountsChanged="onMolCountsChanged">
         <Alert type="warning">
             This plugin assumes your compound(s) and protein(s) have already
             been properly protonated. If necessary, be sure to use
@@ -298,6 +292,17 @@ export default class WebinaPlugin extends PluginParentClass {
             startOpened: false,
         } as IUserArgGroup,
     ];
+
+    /**
+     * Gets the text for the action button based on the 'score_only' setting.
+     *
+     * @returns {string} The text for the action button ('Score' or 'Dock').
+     */
+    get actionButtonText(): string {
+        const scoreOnly = this.getUserArg("score_only") as boolean;
+        return scoreOnly ? "Score" : "Dock";
+    }
+
 
     /**
      * Filters a candidate max processors value.
