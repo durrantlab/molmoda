@@ -247,6 +247,10 @@ export default class ViewerPanel extends Vue {
     if (justColorCarbons) {
       // Just color the carbons yellow
       for (let key in style) {
+        if (key === "selection") {
+          // Don't change the selection.
+          continue;
+        }
         if (style[key]["color"]) {
           delete style[key]["color"];
         }
@@ -256,6 +260,11 @@ export default class ViewerPanel extends Vue {
     } else {
       // Color everything yellow.
       for (let key in style) {
+        if (key === "selection") {
+          // Don't change the selection.
+          continue;
+        }
+
         if (style[key]["colorscheme"]) {
           delete style[key]["colorscheme"];
         }
@@ -354,12 +363,21 @@ export default class ViewerPanel extends Vue {
       // Regardless of specified style, anything not bound to other molecule
       // should be visible (unless sphere, in which case already visible, or
       // cartoon, in which case some atoms should not be visible).
-      if (!style.sphere && !style.cartoon) {
+      if (!convertedSelAndStyle?.style.sphere && !convertedSelAndStyle?.style.cartoon) {
         // Get the color or colorscheme entry.
         let colorOrColorScheme = "";
         let colorValue = "";
-        for (let key in style) {
-          const stylePart = (style as { [key: string]: any })[key];
+
+        
+        for (let key in convertedSelAndStyle?.style) {
+          if (treeNode.type === TreeNodeType.Solvent) {
+            debugger;
+          }
+          if (key === "selection") {
+            // Don't change the selection.
+            continue;
+          }
+          const stylePart = (convertedSelAndStyle?.style as { [key: string]: any })[key];
           if (stylePart["color"]) {
             colorOrColorScheme = "color";
             colorValue = stylePart["color"];
@@ -371,12 +389,16 @@ export default class ViewerPanel extends Vue {
           }
         }
 
-        console.log(style);
+        // console.log(convertedSelAndStyle?.style);
         let styleUnbonded = JSON.parse(JSON.stringify(unbondedAtomsStyle));
 
         if (colorOrColorScheme !== "") {
           // Add color to unbonded style
           for (let key in styleUnbonded) {
+            if (key === "selection") {
+              // Don't change the selection.
+              continue;
+            }
             const stylePart = (styleUnbonded as { [key: string]: any })[key];
             stylePart[colorOrColorScheme] = colorValue;
           }

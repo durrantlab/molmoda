@@ -1,14 +1,8 @@
 <template>
   <span>
-    <PluginComponent
-      v-model="open"
-      :infoPayload="infoPayload"
-      @onPopupDone="onPopupDone"
-      actionBtnTxt="Search"
-      @onUserArgChanged="onUserArgChanged"
-      :hideIfDisabled="true"
-      @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Search"
+      @onUserArgChanged="onUserArgChanged" :hideIfDisabled="true" @onMolCountsChanged="onMolCountsChanged">
+    </PluginComponent>
   </span>
 </template>
 
@@ -39,6 +33,8 @@ import {
   convertFileInfosOpenBabel,
   Gen3DLevel,
   WhichMolsGen3D,
+  getGen3DUserArg, // Import the function
+  IGen3DOptions, // Import the type
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
@@ -70,7 +66,7 @@ enum SearchMode {
 })
 export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
   menuPath = "Compounds/[8] Create Library/[2] Focused Library...";
-  title = "PubChem Structure Search";
+  title = "Focused Library";
   softwareCredits: ISoftwareCredit[] = [
     {
       name: "PubChem",
@@ -96,7 +92,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
     },
   ];
   pluginId = "pubchemfocusedlibrary";
-tags = [Tag.LeadOptimization];
+  tags = [Tag.LeadOptimization];
   intro = "Build a focused compound library of chemically similar analogs by searching the PubChem database.";
   details =
     "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your workspace.";
@@ -168,6 +164,13 @@ tags = [Tag.LeadOptimization];
         return "";
       },
     } as IUserArgRange,
+    // Add the 3D generation argument here
+    getGen3DUserArg(
+      "Generate 3D coordinates",
+      "Choose how to generate 3D atomic coordinates.",
+      false, // includeNoneOption = false
+      // Gen3DLevel.Better
+    ),
     {
       id: "warning",
       type: UserArgType.Alert,
@@ -215,10 +218,8 @@ tags = [Tag.LeadOptimization];
     if (numCompounds > maxResults) {
       messagesApi.popupMessage(
         "Warning",
-        `<p>You requested only ${maxResults} PubChem compound${
-          maxResults === 1 ? "" : "s"
-        } but chose ${numCompounds} query compound${
-          maxResults === 1 ? "" : "s"
+        `<p>You requested only ${maxResults} PubChem compound${maxResults === 1 ? "" : "s"
+        } but chose ${numCompounds} query compound${maxResults === 1 ? "" : "s"
         } from your workspace. Some query compounds will not be used in the search.</p>`,
         PopupVariant.Warning
       );
@@ -324,9 +325,8 @@ tags = [Tag.LeadOptimization];
           continue;
         }
 
-        const filenameId = `CID${compound.CID}_${
-          result.prep
-        }_${result.queryCompoundName.replace(/\.[^/.]+$/, "")}`;
+        const filenameId = `CID${compound.CID}_${result.prep
+          }_${result.queryCompoundName.replace(/\.[^/.]+$/, "")}`;
 
         allFileInfos.push(
           new FileInfo({
@@ -341,8 +341,7 @@ tags = [Tag.LeadOptimization];
     if (duplicatesNotAdded > 0) {
       messagesApi.popupMessage(
         "Warning",
-        `<p>PubChem provided ${duplicatesNotAdded} duplicate compound${
-          duplicatesNotAdded === 1 ? "" : "s"
+        `<p>PubChem provided ${duplicatesNotAdded} duplicate compound${duplicatesNotAdded === 1 ? "" : "s"
         }. The duplicates will not be loaded.</p>`,
         PopupVariant.Warning
       );
@@ -351,17 +350,16 @@ tags = [Tag.LeadOptimization];
     if (insufficientResultsReturned > 0) {
       messagesApi.popupMessage(
         "Warning",
-        `<p>PubChem provided ${insufficientResultsReturned} fewer compound${
-          insufficientResultsReturned === 1 ? "" : "s"
+        `<p>PubChem provided ${insufficientResultsReturned} fewer compound${insufficientResultsReturned === 1 ? "" : "s"
         } than requested.</p>`,
         PopupVariant.Warning
       );
     }
 
     // Step 3: Batch convert all structures to 3D
-    const gen3D = {
+    const gen3D: IGen3DOptions = {
       whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-      level: Gen3DLevel.Better,
+      level: this.getUserArg("gen3D"), // Use the selected level
     };
 
     // Converting to mol2 batch so you can add easily to tree later (which would
@@ -369,7 +367,7 @@ tags = [Tag.LeadOptimization];
     const convertedMols = await convertFileInfosOpenBabel(
       allFileInfos,
       "mol2",
-      gen3D,
+      gen3D, // Pass the 3D generation options
       undefined,
       false, // desalting already occured (when retrieved from pubchem, albeit using quick desalt).
       false // suppressMsgs
@@ -456,7 +454,8 @@ tags = [Tag.LeadOptimization];
         ),
         pluginOpen: new TestCmdList()
           .setUserArg("similarity", 90, this.pluginId)
-          .setUserArg("maxresults", 100, this.pluginId),
+          .setUserArg("maxresults", 100, this.pluginId)
+          .setUserArg("gen3D", Gen3DLevel.Fastest, this.pluginId), // Test fastest 3D gen
         afterPluginCloses: new TestCmdList().waitUntilRegex(
           "#navigator",
           "similar_"
@@ -472,7 +471,8 @@ tags = [Tag.LeadOptimization];
         ),
         pluginOpen: new TestCmdList()
           .setUserArg("searchmode", "Larger Compounds (Superstructures)", this.pluginId)
-          .setUserArg("maxresults", 100, this.pluginId),
+          .setUserArg("maxresults", 100, this.pluginId)
+          .setUserArg("gen3D", Gen3DLevel.None, this.pluginId), // Test no 3D gen
         afterPluginCloses: new TestCmdList().waitUntilRegex(
           "#navigator",
           "contains_"
@@ -488,7 +488,8 @@ tags = [Tag.LeadOptimization];
         ),
         pluginOpen: new TestCmdList()
           .setUserArg("searchmode", "Smaller Compounds (Substructures)", this.pluginId)
-          .setUserArg("maxresults", 100, this.pluginId),
+          .setUserArg("maxresults", 100, this.pluginId)
+          .setUserArg("gen3D", Gen3DLevel.Best, this.pluginId), // Test best 3D gen
         afterPluginCloses: new TestCmdList().waitUntilRegex(
           "#navigator",
           "contained_in_"
@@ -499,5 +500,4 @@ tags = [Tag.LeadOptimization];
 }
 </script>
 
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>

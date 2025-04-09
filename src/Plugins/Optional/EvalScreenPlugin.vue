@@ -519,9 +519,9 @@ export default class EvalScreenPlugin extends PluginParentClass {
                 throw new Error("No data found for node.");
             }
 
-            // Get all datas that have "Webina Docking Scores"
+            // Get all datas that have "Docking Scores"
             const scoreDatas = Object.keys(node.data).filter((key) => {
-                return key.includes("Webina Docking Scores");
+                return key.includes("Docking Scores");
             });
 
             // TODO: Check if more than one (one compound docked into multiple
@@ -609,7 +609,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
             return Object.keys(node.data)
                 .join("; ")
-                .includes("Webina Docking Scores");
+                .includes("Docking Scores");
         });
 
         return compounds;

@@ -447,7 +447,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 headerSort: TableHeaderSort.None,
             };
         } else {
-            scoreLabel = "Webina Docking Scores: " + protPath;
+            scoreLabel = "Docking Scores: " + protPath;
             const lineWithScore = pdbqtOutLines.find((line: string) =>
                 line.startsWith("REMARK VINA")
             );

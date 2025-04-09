@@ -48,12 +48,14 @@ export interface IGen3DOptions {
  * @param {string}  label              The label for the argument.
  * @param {string}  description        The description for the argument.
  * @param {boolean} includeNoneOption  Whether to include the "none" option.
+ * @param {string}  defaultVal         The default value for the argument.
  * @returns {IUserArgSelect}  The user argument.
  */
 export function getGen3DUserArg(
     label: string,
     description: string,
-    includeNoneOption = false
+    includeNoneOption = false,
+    defaultVal=Gen3DLevel.Medium
 ): IUserArgSelect {
     const options = [
         {
@@ -83,7 +85,7 @@ export function getGen3DUserArg(
         },
     ] as IUserArgOption[];
 
-    let defaultVal = "medium";
+    // let defaultVal = "medium";
 
     if (includeNoneOption) {
         options.unshift({
@@ -95,7 +97,7 @@ export function getGen3DUserArg(
             description: "none: do not generate 3D coordinates",
             val: "none",
         });
-        defaultVal = "none";
+        defaultVal = Gen3DLevel.None;
     }
 
     return {
