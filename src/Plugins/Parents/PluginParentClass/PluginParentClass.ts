@@ -157,7 +157,7 @@ export abstract class PluginParentClass extends mixins(
             details: this.details,
             softwareCredits: this.softwareCredits,
             contributorCredits: this.contributorCredits,
-            logAnalytics: this.logAnalytics
+            logAnalytics: this.logAnalytics,
         };
     }
 
@@ -197,7 +197,7 @@ export abstract class PluginParentClass extends mixins(
      *
      * @type {boolean}
      */
-    logAnalytics = true
+    logAnalytics = true;
 
     /**
      * The message to show when all jobs have finished. It is a string or a
@@ -237,7 +237,6 @@ export abstract class PluginParentClass extends mixins(
      */
     private jobId = "";
 
-    
     /**
      * Sets the jobId if it's not already set.
      */
@@ -272,7 +271,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
-        if (await this.onBeforePopupOpen(payload) === false) {
+        if ((await this.onBeforePopupOpen(payload)) === false) {
             return;
         }
 
@@ -589,8 +588,13 @@ export abstract class PluginParentClass extends mixins(
     /** mounted function */
     async mounted() {
         // Do some quick validation
-        this._validatePlugin(this.pluginId, this.intro, this.details);
-
+        this._validatePlugin(
+            this.pluginId,
+            this.intro,
+            this.details,
+            this.menuPath,
+            this.title
+        );
         registerLoadedPlugin(this);
 
         // Add to menu and credits.

@@ -75,6 +75,11 @@
                                         </PluginPathLink
                                         >.
                                     </p>
+                                    <!-- New Browser Warning Alert -->
+                                    <Alert v-if="!isChromeBrowser" type="warning">
+                                        We test {{ appName }} on many browsers to ensure it works well everywhere. However, if you experience any unexpected issues, consider Chrome for a smoother experience.
+                                    </Alert>
+                                    <!-- Existing Activity Focus Alert -->
                                     <Alert v-if="activityFocusModeInfo[0] !== 'All'" type="info">
                                         You are running {{appName}} in
                                         <b>{{activityFocusModeInfo[0]}}</b>
@@ -155,6 +160,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import { getActivityFocusMode, getActvityFocusModeDescription, Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { capitalize, lowerize } from "@/Core/Utils/StringUtils";
 import Alert from "../Alert.vue";
+import { detectBrowser, BrowserType } from "@/Core/HostOs"; // Import browser detection
 
 /**
  * GoldLayout component
@@ -189,6 +195,15 @@ export default class GoldLayout extends Vue {
         let url = new URL(window.location.href);
         url.searchParams.delete("focus");
         return url.toString();
+    }
+
+    /**
+     * Checks if the current browser is Google Chrome.
+     *
+     * @returns {boolean} True if the browser is Chrome, false otherwise.
+     */
+    get isChromeBrowser(): boolean {
+        return detectBrowser() === BrowserType.Chrome;
     }
 
     /**

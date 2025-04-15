@@ -1,5 +1,9 @@
-import { isSentence } from "@/Core/Utils/StringUtils";
+import {
+    isSentence,
+    removeTerminalPunctuation,
+} from "@/Core/Utils/StringUtils";
 import { Vue } from "vue-class-component";
+import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
 
 /**
  * ValidationMixin
@@ -12,18 +16,26 @@ export class ValidationMixin extends Vue {
      * @param {string} pluginId  The plugin ID.
      * @param {string} intro     The plugin intro.
      * @param {string} details   The plugin details.
+     * @param {string[] | string | null} menuPath The plugin's menu path.
+     * @param {string} title The plugin's title.
      */
-    protected _validatePlugin(pluginId: string, intro: string, details: string) {
+    protected _validatePlugin(
+        pluginId: string,
+        intro: string,
+        details: string,
+        menuPath: string[] | string | null,
+        title: string
+    ) {
         if (pluginId !== pluginId.toLowerCase()) {
             throw new Error(
-                "Plugin id must be lowercase. Plugin id: " + pluginId
+                `Plugin id must be lowercase. Plugin id: ${pluginId}`
             );
         }
 
         // Make sure intro is sentence
-        if (!(isSentence(intro))) {
+        if (!isSentence(intro)) {
             throw new Error(
-                "Plugin intro must be a sentence (start with capital letter, end with punctuation). Plugin id: " + pluginId + ". Intro: " + intro
+                `Plugin intro must be a sentence (start with capital letter, end with punctuation). Plugin id: ${pluginId}. Intro: ${intro}`
             );
         }
 
@@ -31,16 +43,37 @@ export class ValidationMixin extends Vue {
         const introWithoutHtml = intro.replace(/<[^>]*>?/g, "");
         if (introWithoutHtml.length > 100) {
             throw new Error(
-                "Plugin intro must be no longer than 100 characters. Use the details property if you need a more extended introduction. Plugin id: " + pluginId + ". Intro: " + introWithoutHtml + " Length: " + introWithoutHtml.length + "."
+                `Plugin intro must be no longer than 100 characters. Use the details property if you need a more extended introduction. Plugin id: ${pluginId}. Intro: ${introWithoutHtml}. Length: ${introWithoutHtml.length}.`
             );
         }
 
         // Made sure details is also a sentence.
-        if ((details !== "") && !(isSentence(details))) {
+        if (details !== "" && !isSentence(details)) {
             throw new Error(
-                "Plugin details must be a sentence (start with capital letter, end with punctuation). Plugin id: " + pluginId + ". Details: " + details
+                `Plugin details must be a sentence (start with capital letter, end with punctuation). Plugin id: ${pluginId}. Details: ${details}`
             );
         }
+
+        // Validate title against menuPath (decided to not enforce title == menu item requirement.)
+        // if (menuPath !== null && menuPath !== undefined) {
+        //     const pathInfo = processMenuPath(menuPath);
+        //     if (pathInfo && pathInfo.length > 0) {
+        //         const lastMenuItemText = pathInfo[pathInfo.length - 1].text;
+        //         const expectedTitle = removeTerminalPunctuation(
+        //             lastMenuItemText.replace(/\.+$/, "")
+        //         ).trim(); // Remove trailing '...' and trim
+        //         const actualTitle = removeTerminalPunctuation(
+        //             title.replace(/\.+$/, "")
+        //         ).trim(); // Remove trailing '...' and trim
+
+        //         // Allow empty title, but if not empty, it must match the menu path's last item
+        //         if (actualTitle !== "" && actualTitle !== expectedTitle) {
+        //             throw new Error(
+        //                 `Plugin title "${title}" does not match the last item in its menuPath "${lastMenuItemText}". Expected title: "${expectedTitle}" (ignoring ranking and '...'). Plugin id: ${pluginId}`
+        //             );
+        //         }
+        //     }
+        // }
 
         // if (this.menuPath === "") {
         //     throw new Error(`Plugin ${this.pluginId} does not define menuPath`);
@@ -78,7 +111,7 @@ export class ValidationMixin extends Vue {
      * provide a warning message when the user has not yet loaded the data
      * necessary to run the plugin successfully.
      *
-     * 
+     *
      * @document
      * @param {any} _  This parameter given only to enable reactivity
      *                 elsewhere. Not used.
