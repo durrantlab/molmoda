@@ -57,6 +57,9 @@ import { IJobStatusInfo } from "@/Queue/QueueTypes"; // Import JobStatusInfo typ
 // @ts-ignore
 // import "../assets/MDB5-STANDARD-UI-KIT-Free-6.4.0/js/mdb.min.js";
 
+const INACTIVITY_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
+const COMPLETION_PAUSE_MS = 250; // 0.25 seconds
+
 /**
  * Main app component
  */
@@ -94,9 +97,12 @@ export default class App extends Vue {
 
   // --- Progress Bar Data ---
   progressBarVisible = false;
-  progressBarProgress = 0;
+  progressBarProgress = 0; // Current displayed progress (0-1)
   progressBarMessage = "";
   progressBarInterval: number | null = null;
+  progressBarPauseActive = false; // Flag for the completion pause
+  progressBarPauseTimeout: number | null = null; // Timeout ID for the completion pause
+  progressBarInactivityTimeout: number | null = null; // Timeout ID for inactivity reset
   // -------------------------
 
   /**
@@ -162,43 +168,106 @@ export default class App extends Vue {
     });
   }
 
-  /** Updates the progress bar based on the most progressed running job in the queue. */
-  updateProgressBar() {
-    const queueState = getQueueStore();
-    const runningJobs = queueState.running;
-
-    if (runningJobs.length > 0) {
-      // Find the job with the highest progress
-      let mostProgressedJob: IJobStatusInfo | null = null;
-      let highestProgress = -1; // Start with -1 to ensure any progress is higher
-
-      for (const job of runningJobs) {
-        if (job.progress > highestProgress) {
-          highestProgress = job.progress;
-          mostProgressedJob = job;
-        }
-      }
-
-      if (mostProgressedJob) {
-        this.progressBarVisible = true;
-        this.progressBarProgress = mostProgressedJob.progress;
-        // Extract job type from ID (e.g., "webina-123456" -> "webina")
-        // const jobType = mostProgressedJob.id.split("-")[0];
-        // const totalJobs = runningJobs.length;
-        // Display message indicating total jobs and the type of the most progressed one
-        // const jobMsg = totalJobs > 1 ? `${totalJobs} jobs running` : `Job running`;
-        // this.progressBarMessage = `${jobMsg}: ${jobType}`;
-        this.progressBarMessage = "Job running";
-      } else {
-        // Should not happen if runningJobs.length > 0, but handle defensively
-        this.progressBarVisible = false;
-      }
-    } else {
-      this.progressBarVisible = false;
-      this.progressBarProgress = 0;
-      this.progressBarMessage = "";
+  /** Clears the inactivity timeout. */
+  private clearInactivityTimeout() {
+    if (this.progressBarInactivityTimeout) {
+      clearTimeout(this.progressBarInactivityTimeout);
+      this.progressBarInactivityTimeout = null;
     }
   }
+
+  /** Resets the inactivity timeout (clears existing, starts new). */
+  private resetInactivityTimeout() {
+    this.clearInactivityTimeout();
+    this.progressBarInactivityTimeout = window.setTimeout(() => {
+      console.warn("Progress bar timed out due to inactivity.");
+      this.resetProgressBarState(); // Reset if inactive for too long
+      this.progressBarInactivityTimeout = null;
+    }, INACTIVITY_TIMEOUT_MS);
+  }
+
+  /** Resets the progress bar to its initial hidden state. */
+  private resetProgressBarState() {
+    this.progressBarVisible = false;
+    this.progressBarProgress = 0;
+    this.progressBarMessage = "";
+    this.progressBarPauseActive = false;
+    this.clearInactivityTimeout();
+    this.cancelCompletionPause(); // Also cancel completion pause if resetting
+  }
+
+
+  /** Cancels any active completion pause. */
+  private cancelCompletionPause() {
+    if (this.progressBarPauseTimeout) {
+      clearTimeout(this.progressBarPauseTimeout);
+      this.progressBarPauseTimeout = null;
+    }
+    this.progressBarPauseActive = false; // Ensure flag is off
+  }
+
+
+  /** Updates the progress bar based on running jobs. */
+  updateProgressBar() {
+    // If a completion pause is active, wait for the timeout
+    if (this.progressBarPauseActive) {
+      return;
+    }
+
+    const queueState = getQueueStore();
+    const runningJobs = queueState.running;
+    const jobsAreRunningNow = runningJobs.length > 0;
+    const wasVisible = this.progressBarVisible; // Track state from previous cycle
+
+    if (jobsAreRunningNow) {
+      // --- Jobs are currently running ---
+      let currentHighestProgress = 0;
+      for (const job of runningJobs) {
+        currentHighestProgress = Math.max(currentHighestProgress, job.progress);
+      }
+
+      // Calculate the new progress, ensuring minimum 5% and never decreasing
+      const newProgressCandidate = Math.max(0.05, currentHighestProgress);
+      const newDisplayedProgress = Math.max(this.progressBarProgress, newProgressCandidate);
+
+      // Update state only if changing
+      if (this.progressBarProgress !== newDisplayedProgress || !this.progressBarVisible || this.progressBarMessage !== "Job running") {
+        this.progressBarProgress = newDisplayedProgress;
+        this.progressBarMessage = "Job running";
+        this.progressBarVisible = true;
+      }
+
+      // Reset inactivity timer whenever there's activity
+      this.resetInactivityTimeout();
+      // Cancel any potentially lingering completion pause (e.g., if jobs restart quickly)
+      this.cancelCompletionPause();
+
+    } else {
+      // --- No jobs are running now ---
+      this.clearInactivityTimeout(); // Stop inactivity check
+
+      if (wasVisible) {
+        // Jobs *just* finished (bar was visible, now no jobs running)
+        // Initiate the completion pause at 100%
+        this.progressBarProgress = 1;
+        this.progressBarMessage = "Finishing...";
+        this.progressBarVisible = true; // Keep visible for the pause
+        this.progressBarPauseActive = true;
+
+        // Start the timeout to reset after the pause
+        this.progressBarPauseTimeout = window.setTimeout(() => {
+          this.resetProgressBarState(); // Reset fully after pause
+        }, COMPLETION_PAUSE_MS);
+
+      } else {
+        // No jobs running, and the bar was already hidden. Ensure state is reset.
+        if (this.progressBarProgress !== 0 || this.progressBarMessage !== "") {
+          this.resetProgressBarState();
+        }
+      }
+    }
+  }
+
 
   /** mounted function */
   async mounted() {
@@ -228,7 +297,7 @@ export default class App extends Vue {
     // mainPubChemTest();
 
     // Start polling the queue store for progress updates
-    this.progressBarInterval = window.setInterval(this.updateProgressBar, 500); // Check every 500ms
+    this.progressBarInterval = window.setInterval(this.updateProgressBar, 250); // Check frequently
   }
 
   /** Clean up interval on unmount */
@@ -237,6 +306,8 @@ export default class App extends Vue {
       clearInterval(this.progressBarInterval);
       this.progressBarInterval = null;
     }
+    this.clearInactivityTimeout(); // Clear inactivity timeout
+    this.cancelCompletionPause(); // Clear completion pause timeout
   }
 }
 </script>
