@@ -1,28 +1,25 @@
 <template>
   <div class="full-screen" style="display: flex; flex-direction: column">
     <TestData></TestData>
-    <div
-      id="menuContainer"
-      style="
+    <div id="menuContainer" style="
         z-index: 100;
-        flex-grow: 5;
+        flex-grow: 0; /* Prevent growing */
+        flex-shrink: 0; /* Prevent shrinking */
         max-height: 56px;
         min-height: 56px;
         height: 56px;
-      "
-      class="bg-light hide-on-app-closed"
-    >
+      " class="bg-light hide-on-app-closed">
       <Menu :menuData="menuData" />
     </div>
-    <div style="flex-grow: 5" class="hide-on-app-closed">
+    <div style="flex-grow: 1; overflow: auto;" class="hide-on-app-closed">
+      <!-- GoldLayout needs to grow and handle overflow -->
       <GoldLayout />
     </div>
-    <AllPlugins
-      @onPluginSetup="onPluginSetup"
-      :softwareCredits="softwareCredits"
-      :contributorCredits="contributorCredits"
-      :loadedPlugins="loadedPlugins"
-    />
+    <!-- Progress Bar -->
+    <ProgressBar :visible="progressBarVisible" :progress="progressBarProgress" :message="progressBarMessage"
+      style="flex-grow: 0; flex-shrink: 0" />
+    <AllPlugins @onPluginSetup="onPluginSetup" :softwareCredits="softwareCredits"
+      :contributorCredits="contributorCredits" :loadedPlugins="loadedPlugins" />
     <DragDropFileLoad />
   </div>
 </template>
@@ -52,6 +49,9 @@ import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 import { checkIfUrlOpen } from "@/FileSystem/UrlOpen";
 import { setupAutoSave } from "@/Store/AutoSave";
 import { setupElectron } from "@/Core/Electron/ElectronUtils";
+import ProgressBar from "@/UI/Components/ProgressBar.vue"; // Import ProgressBar
+import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
+import { IJobStatusInfo } from "@/Queue/QueueTypes"; // Import JobStatusInfo type
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -68,6 +68,7 @@ import { setupElectron } from "@/Core/Electron/ElectronUtils";
     TestData,
     DragDropFileLoad,
     Viewer2D,
+    ProgressBar,
   },
 })
 export default class App extends Vue {
@@ -90,6 +91,13 @@ export default class App extends Vue {
 
   // Triggers error modal with this message.
   errorMsg = "";
+
+  // --- Progress Bar Data ---
+  progressBarVisible = false;
+  progressBarProgress = 0;
+  progressBarMessage = "";
+  progressBarInterval: number | null = null;
+  // -------------------------
 
   /**
    * Removes credits with duplicate names.
@@ -154,6 +162,44 @@ export default class App extends Vue {
     });
   }
 
+  /** Updates the progress bar based on the most progressed running job in the queue. */
+  updateProgressBar() {
+    const queueState = getQueueStore();
+    const runningJobs = queueState.running;
+
+    if (runningJobs.length > 0) {
+      // Find the job with the highest progress
+      let mostProgressedJob: IJobStatusInfo | null = null;
+      let highestProgress = -1; // Start with -1 to ensure any progress is higher
+
+      for (const job of runningJobs) {
+        if (job.progress > highestProgress) {
+          highestProgress = job.progress;
+          mostProgressedJob = job;
+        }
+      }
+
+      if (mostProgressedJob) {
+        this.progressBarVisible = true;
+        this.progressBarProgress = mostProgressedJob.progress;
+        // Extract job type from ID (e.g., "webina-123456" -> "webina")
+        // const jobType = mostProgressedJob.id.split("-")[0];
+        // const totalJobs = runningJobs.length;
+        // Display message indicating total jobs and the type of the most progressed one
+        // const jobMsg = totalJobs > 1 ? `${totalJobs} jobs running` : `Job running`;
+        // this.progressBarMessage = `${jobMsg}: ${jobType}`;
+        this.progressBarMessage = "Job running";
+      } else {
+        // Should not happen if runningJobs.length > 0, but handle defensively
+        this.progressBarVisible = false;
+      }
+    } else {
+      this.progressBarVisible = false;
+      this.progressBarProgress = 0;
+      this.progressBarMessage = "";
+    }
+  }
+
   /** mounted function */
   async mounted() {
     api.messages.log(`${appName} started`);
@@ -170,8 +216,8 @@ export default class App extends Vue {
 
       api.messages.popupError(
         "<p>The following compile errors were found:</p><ul><li>" +
-          compileErrorsArray.join("</li><li>") +
-          "</li></ul>"
+        compileErrorsArray.join("</li><li>") +
+        "</li></ul>"
       );
     }
 
@@ -180,6 +226,17 @@ export default class App extends Vue {
     setupElectron();
 
     // mainPubChemTest();
+
+    // Start polling the queue store for progress updates
+    this.progressBarInterval = window.setInterval(this.updateProgressBar, 500); // Check every 500ms
+  }
+
+  /** Clean up interval on unmount */
+  beforeUnmount() {
+    if (this.progressBarInterval) {
+      clearInterval(this.progressBarInterval);
+      this.progressBarInterval = null;
+    }
   }
 }
 </script>
@@ -212,6 +269,10 @@ export default class App extends Vue {
   position: absolute;
   width: 100%;
   height: 100%;
+  display: flex;
+  /* Ensure flex layout */
+  flex-direction: column;
+  /* Stack children vertically */
 }
 
 body.waiting * {
@@ -222,12 +283,18 @@ body.waiting * {
 
 // Select not input not textarea
 :not([textarea][input]) {
-  -webkit-touch-callout: none; /* iOS Safari */
-  -webkit-user-select: none; /* Safari */
-  -khtml-user-select: none; /* Konqueror HTML */
-  -moz-user-select: none; /* Old versions of Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Old versions of Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
 }
 
@@ -257,4 +324,3 @@ a {
   cursor: pointer;
 }
 </style>
-
