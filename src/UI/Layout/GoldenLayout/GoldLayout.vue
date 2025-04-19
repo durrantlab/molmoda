@@ -2,7 +2,7 @@
     <span>
         <div ref="golden-layout-data" id="golden-layout-data">
             <GoldenLayoutContainer type="column">
-                <GoldenLayoutContainer type="row" :height="80">
+                <GoldenLayoutContainer type="row" :height="100">
                     <GoldenLayoutComponent
                         name="Navigator"
                         extraClass="sortable-group"
@@ -99,6 +99,14 @@
                         <GoldenLayoutComponent name="Data" state="{}">
                             <DataPanel />
                         </GoldenLayoutComponent>
+                        <!-- Moved Log Panel Here -->
+                        <GoldenLayoutComponent
+                            name="Log"
+                            state="{}"
+                            :paddingSize="2"
+                        >
+                           <LogPanel />
+                        </GoldenLayoutComponent>
                     </GoldenLayoutContainer>
 
                     <GoldenLayoutContainer type="column" :width="20">
@@ -121,15 +129,14 @@
                         </GoldenLayoutComponent>
                     </GoldenLayoutContainer>
                 </GoldenLayoutContainer>
-                <GoldenLayoutContainer type="row" :height="20">
+                <!-- <GoldenLayoutContainer type="row" :height="20">
                     <GoldenLayoutComponent
-                        name="Log"
+                        name="Moose"
                         state="{}"
-                        :paddingSize="2"
+                        :paddingSize="0"
                     >
-                        <LogPanel />
                     </GoldenLayoutComponent>
-                </GoldenLayoutContainer>
+                </GoldenLayoutContainer> -->
             </GoldenLayoutContainer>
         </div>
 
@@ -272,19 +279,28 @@ export default class GoldLayout extends Vue {
                 let componentState = JSON.parse(
                     child.getAttribute("data-componentState") as string
                 );
-                content.push({
+                // Base component configuration
+                const componentConfig: any = {
                     type: type,
-                    componentType: type,
-                    // componentName: componentName,
+                    componentType: type, // GoldenLayout needs componentType
                     title: title,
                     componentState: componentState,
                     width: width,
                     height: height,
-                });
+                };
+
+                // Special handling for the "Moose" component
+                if (title === 'Moose') {
+                    componentConfig.hasHeaders = false; // Add this setting
+                    componentConfig.isClosable = false; // Prevent closing
+                }
+
+                content.push(componentConfig);
             }
         }
         return content;
     }
+
 
     /**
      * Set up the Golden Layout.
