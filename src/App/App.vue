@@ -49,12 +49,6 @@ import { setupAutoSave } from "@/Store/AutoSave";
 import { setupElectron } from "@/Core/Electron/ElectronUtils";
 import ProgressBar from "@/UI/Components/ProgressBar.vue"; // Import ProgressBar
 import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
-// No longer need IJobStatusInfo here
-// import { IJobStatusInfo } from "@/Queue/QueueTypes";
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// import "../assets/MDB5-STANDARD-UI-KIT-Free-6.4.0/js/mdb.min.js";
 
 /**
  * Main app component
@@ -173,8 +167,8 @@ export default class App extends Vue {
       }
       this.highestProgress = currentHighest;
     } else {
-      // If no jobs are running, the actual progress is 0
-      // The ProgressBar component handles the pause logic based on the active prop change
+      // If no jobs are running, the actual progress is 0. The ProgressBar
+      // component handles the pause logic based on the active prop change.
       this.highestProgress = 0;
     }
   }
@@ -273,8 +267,8 @@ body.waiting * {
   -ms-user-select: none;
   /* Internet Explorer/Edge */
   user-select: none;
-  /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
+  /* Non-prefixed version, currently supported by Chrome, Edge, Opera and
+  Firefox */
 }
 
 // https://stackoverflow.com/questions/7855590/preventing-scroll-bars-from-being-hidden-for-macos-trackpad-users-in-webkit-blin

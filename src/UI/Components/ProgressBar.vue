@@ -36,20 +36,17 @@ export default class ProgressBar extends Vue {
     @Prop({ type: Boolean, default: false })
     active!: boolean;
 
-    // --- Internal State ---
-    // displayVisible is removed - container is always visible
     displayProgress = 0; // The progress value shown (0-1), controls the inner bar width
     displayMessage = "";
     completionPauseActive = false;
     completionPauseTimeout: number | null = null;
     inactivityTimeout: number | null = null;
-    // ----------------------
 
     /**
      * Calculates the display percentage (0-100).
-       *
+     *
      * @returns {number} The display progress as an integer percentage.
-       */
+     */
     get progressPercent(): number {
         const percent = Math.round(this.displayProgress * 100);
         return Math.max(0, Math.min(100, percent)); // Clamp
@@ -127,8 +124,6 @@ export default class ProgressBar extends Vue {
         if (this.completionPauseActive) {
             return;
         }
-
-        // const wasVisible = this.displayProgress > 0; // Use progress > 0 as proxy for visibility
 
         if (this.active) {
             // --- Jobs are active ---
