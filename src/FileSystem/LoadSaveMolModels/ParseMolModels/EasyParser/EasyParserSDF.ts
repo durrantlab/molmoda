@@ -17,6 +17,11 @@ export class EasyParserSDF extends EasyParserParent {
     private _parsedBonds: ISDFBond[] = [];
     private _atomOriginalIndexMap: Map<number, number> = new Map();
 
+    /**
+     * Load the source.
+     *
+     * @param {IFileInfo} src  The source to parse.
+     */
     _load(src: IFileInfo | GLModel | IAtom[]): void {
         // Ensure fields are initialized before doing anything else
         if (!this._parsedBonds) {

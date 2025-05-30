@@ -56,7 +56,6 @@ import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeListToPDB";
-import { FailingTest } from "@/Testing/FailingTest";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FileInfo } from "@/FileSystem/FileInfo"; // Added import
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser"; // Added import

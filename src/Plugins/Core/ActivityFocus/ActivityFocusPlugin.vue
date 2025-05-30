@@ -44,7 +44,6 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";
-import { detectPlatform, HostOs } from "@/Core/HostOs";
 
 /**
  * ActivityFocusPlugin

@@ -8,12 +8,29 @@ import { truncateValues } from "./Math";
  * @param mergeCutoff Distance cutoff for merging vertices
  * @returns Single merged chunk with combined vertices, indices, colors, and normals
  */
+
 /**
- * Merge multiple VRML chunks into a single chunk
+ * Merge multiple VRML-like geometry chunks into a single, optimized chunk. This
+ * process involves:
+ * 1. Concatenating the vertices, indices (with offset adjustment), colors, and
+ *    normals from all input chunks.
+ * 2. Merging vertices that are spatially close to each other (within
+ *    `mergeCutoff`) to reduce redundancy.
+ * 3. Updating the indices to reflect the new, merged vertex list.
+ * 4. Combining associated color and normal data.
  *
- * @param chunkDatas Array of chunk data containing vertices, indices, colors, and normals
- * @param mergeCutoff Distance cutoff for merging vertices
- * @returns Single merged chunk with combined vertices, indices, colors, and normals
+ * @param {any}     chunkDatas   An array of chunk data objects. Each object
+ *                               represents a piece of geometry with its own
+ *                               vertices, indices, colors, and normals.
+ * @param {number}  mergeCutoff  The distance threshold. Vertices (after initial
+ *                               concatenation) that are within this Euclidean
+ *                               distance of each other will be merged into a
+ *                               single vertex.
+ * @returns {any} An object containing the data for the single merged chunk: -
+ *   `vertices`: Combined and merged vertex coordinates. - `indices`: Updated
+ *   indices for the merged geometry. - `colors`: Combined color data
+ *   corresponding to the merged vertices. - `normals`: Combined normal data
+ *   corresponding to the merged vertices.
  */
 export function mergeChunks(
     chunkDatas: {

@@ -1,9 +1,5 @@
-import {
-    isSentence,
-    removeTerminalPunctuation,
-} from "@/Core/Utils/StringUtils";
+import { isSentence } from "@/Core/Utils/StringUtils";
 import { Vue } from "vue-class-component";
-import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
 
 /**
  * ValidationMixin

@@ -164,7 +164,7 @@ import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
 import { appName, appVersion, appDescription, logoPath } from "@/Core/GlobalVars";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
-import { getActivityFocusMode, getActvityFocusModeDescription, Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { getActivityFocusMode, getActvityFocusModeDescription } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { capitalize, lowerize } from "@/Core/Utils/StringUtils";
 import Alert from "../Alert.vue";
 import { detectBrowser, BrowserType } from "@/Core/HostOs"; // Import browser detection
@@ -190,6 +190,11 @@ import { detectBrowser, BrowserType } from "@/Core/HostOs"; // Import browser de
 export default class GoldLayout extends Vue {
     viewerLoaded = false;
 
+    /**
+     * Gets the activity focus mode information.
+     *
+     * @returns {string[]}  An array containing the mode and its description.
+     */
     get activityFocusModeInfo(): string[] {
         const mode = getActivityFocusMode();
         const [shortDesc, longDesc] = getActvityFocusModeDescription(mode);
@@ -197,6 +202,11 @@ export default class GoldLayout extends Vue {
         return [capitalize(mode), lowerize(shortDesc)];
     }
 
+    /**
+     * Gets the URL to switch to standard mode.
+     *
+     * @returns {string}  The URL to switch to standard mode.
+     */
     get standardModeUrl(): string {
         // Get the current URL, without the "focus" query parameter
         let url = new URL(window.location.href);

@@ -1,5 +1,3 @@
-// math.js
-
 // Existing functions
 /**
  * Calculate the distance between two vertices.

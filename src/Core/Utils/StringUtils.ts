@@ -101,13 +101,14 @@ export function isSentence(txt: string): boolean {
 }
 
 /**
- * Generic natural sort function that can work with various data types
- * and uses a key accessor function to extract the string to sort on
- * 
- * @param a First item to compare
- * @param b Second item to compare
- * @param keyAccessor Optional function to extract the string to sort on (defaults to identity function)
- * @returns -1 if a < b, 0 if a === b, 1 if a > b
+ * Generic natural sort function that can work with various data types and uses
+ * a key accessor function to extract the string to sort on.
+ *
+ * @param {any}      a             First item to compare.
+ * @param {any}      b             Second item to compare.
+ * @param {Function} [keyAccessor] Optional function to extract the string to
+ *                                 sort on (defaults to identity function).
+ * @returns {number} -1 if a < b, 0 if a === b, 1 if a > b.
  */
 export function naturalSort<T>(
     a: T,
@@ -165,10 +166,12 @@ export function naturalSort<T>(
 }
 
 /**
- * Creates a sorting function for use with Array.sort() that applies natural sorting
- * 
- * @param keyAccessor Optional function to extract the string to sort on
- * @returns A sorting function that can be passed to Array.sort()
+ * Creates a sorting function for use with Array.sort() that applies natural
+ * sorting.
+ *
+ * @param {Function} [keyAccessor]  Optional function to extract the string to
+ *                                  sort on.
+ * @returns {Function} A sorting function that can be passed to Array.sort().
  */
 export function createNaturalSortFunc<T>(
     keyAccessor?: (item: T) => string

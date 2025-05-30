@@ -2,7 +2,6 @@ import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
 import { getUrlParam } from "@/Core/UrlParams";
-import { molFormatInformation } from "./LoadSaveMolModels/Types/MolFormats";
 import { FileInfo } from "./FileInfo";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";

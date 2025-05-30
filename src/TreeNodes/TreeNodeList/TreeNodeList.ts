@@ -12,7 +12,6 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import * as GlobalVars from "@/Core/GlobalVars";
 
 /**
  * TreeNodeList class

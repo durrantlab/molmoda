@@ -32,12 +32,13 @@ export class EasyParserPDB extends EasyParserParent {
 
     /**
      * Parse an atom.
-     * 
-     * @param {string} atomStr The string to parse.
-     * @param {number} [atomParserIndex] Optional: The 0-based index of this atom in the parser's internal list.
+     *
+     * @param {string} atomStr           The string to parse.
+     * @param {number} [atomParserIndex] Optional: The 0-based index of this
+     *                                   atom in the parser's internal list.
      * @returns {IAtom} The parsed atom.
      */
-    _parseAtomStr(atomStr: string): IAtom {
+    _parseAtomStr(atomStr: string, atomParserIndex?: number): IAtom {
         // You must parse it.
         const atomName = atomStr.slice(12, 16).trim();
         const serial = parseInt(atomStr.slice(6, 11).trim());

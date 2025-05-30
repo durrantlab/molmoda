@@ -264,6 +264,15 @@ export function analyzeColor(color: string | number[]): IColorInfo {
     return colorInfo;
 }
 
+/**
+ * Get a hash from a string using FNV-1a algorithm. This is a simple hash
+ * function that produces a 32-bit hash. It is not cryptographically secure, but
+ * it is fast and suitable for generating consistent pseudo-random numbers from
+ * strings.
+ *
+ * @param {string} str  The string to hash.
+ * @returns {number}  The 32-bit hash value.
+ */
 function _fnv1aHash(str: string) {
     let hash = 2166136261; // FNV-1a 32-bit offset basis
     for (let i = 0; i < str.length; i++) {
@@ -273,6 +282,14 @@ function _fnv1aHash(str: string) {
     return hash;
   }
   
+  /**
+   * Convert a seed string to three normalized numbers. This function uses the
+   * FNV-1a hash to generate a consistent pseudo-random triplet of numbers
+   * between 0 and 1 from the input string.
+   *
+   * @param {string} seedStr  The seed string to convert.
+   * @returns {number[]}  An array of three normalized numbers.
+   */
   function _stringToThreeNumbers(seedStr: string) {
     const hash = _fnv1aHash(seedStr); // Get the hash
     const n1 = ((hash & 0xFFFFFF) / 0x1000000); // Extract lower 24 bits and normalize

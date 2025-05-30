@@ -1,11 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Copy as SMILES"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        actionBtnTxt="Copy as SMILES" @onMolCountsChanged="onMolCountsChanged">
         <Alert type="warning">
             To save your molecules in other formats, consider
             <PluginPathLink plugin="savemolecules"></PluginPathLink> If you wish
@@ -23,16 +18,12 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import {
-    SelectedType,
-    TreeNodeType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { checkAnyCompoundSelected, checkAnyMolSelected } from "../../CheckUseAllowedUtils";
+import { checkAnyCompoundSelected } from "../../CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
@@ -70,7 +61,7 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
         //     alertType: "warning",
         // } as IUserArgAlert,
     ];
-    
+
     logJob = false;
     intro = "Copy the selected compound(s) to the clipboard as SMILES strings.";
 

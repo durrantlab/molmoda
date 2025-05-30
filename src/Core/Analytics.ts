@@ -95,7 +95,7 @@ export async function logEvent(
     // side, with minimal information stored. I believe it is compliant.
     const formData = new FormData();
     formData.append("e", `${eventName}-${eventAction}`);
-    const response = await fetcher(
+    await fetcher(
         "https://durrantlab.pitt.edu/apps/molmoda/e.php",
         {
             responseType: ResponseType.TEXT,
