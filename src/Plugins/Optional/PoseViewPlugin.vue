@@ -1,15 +1,8 @@
 <template>
   <span>
-    <PluginComponent
-      v-model="open"
-      :infoPayload="infoPayload"
-      @onPopupDone="onPopupDone"
-      actionBtnTxt="Generate"
-      @onUserArgChanged="onUserArgChanged"
-      :hideIfDisabled="true"
-      @onMolCountsChanged="onMolCountsChanged"
-      :isActionBtnEnabled="isActionBtnEnabled"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Generate"
+      @onUserArgChanged="onUserArgChanged" :hideIfDisabled="true" @onMolCountsChanged="onMolCountsChanged"
+      :isActionBtnEnabled="isActionBtnEnabled">
       <template #afterForm>
         <Alert v-if="numCompounds > 1" type="danger" extraClasses="mt-4">
           <span>
@@ -65,6 +58,8 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeListToPDB";
 import { FailingTest } from "@/Testing/FailingTest";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { FileInfo } from "@/FileSystem/FileInfo"; // Added import
+import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser"; // Added import
 
 const PROXY_URL =
   "https://durrantlab.pitt.edu/apps/molmoda/beta/poseview-proxy.php";
@@ -287,6 +282,7 @@ export default class PoseViewPlugin extends PluginParentClass {
       }
 
       // Collect all the protein tree nodes to convert into a single (merged) PDB file.
+      const filePair = filePairs[0];
       const proteinTreeNodes = filePairs
         .map((pair) => pair.prot.treeNode as TreeNode)
         .filter((node) => node !== undefined);
@@ -298,8 +294,23 @@ export default class PoseViewPlugin extends PluginParentClass {
 
       // For ligand consider only the first filePair (there should be ligand
       // only, so they should all be the same)
-      const filePair = filePairs[0];
       const sdfString = filePair.cmpd.contents;
+
+      // Proximity check logic
+      const proteinTempFileInfo = new FileInfo({ name: "protein_merged_for_check.pdb", contents: pdbString });
+      const ligandTempFileInfo = new FileInfo({ name: "ligand_for_check.sdf", contents: sdfString });
+
+      const proteinParser = makeEasyParser(proteinTempFileInfo);
+      const ligandParser = makeEasyParser(ligandTempFileInfo);
+
+      const DISTANCE_THRESHOLD = 10; // Angstroms
+      if (!proteinParser.isWithinDistance(ligandParser, DISTANCE_THRESHOLD, 5, 5)) {
+        api.messages.popupError(
+          `The selected protein and ligand are too far apart (more than ${DISTANCE_THRESHOLD} Å). Please select a protein/ligand pair that are in close proximity (i.e., interacting) for a meaningful interaction diagram.`
+        );
+        return;
+      }
+
 
       // Get paths
       const proteinPath = filePair.prot.treeNode?.descriptions.pathName(
@@ -383,5 +394,4 @@ export default class PoseViewPlugin extends PluginParentClass {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

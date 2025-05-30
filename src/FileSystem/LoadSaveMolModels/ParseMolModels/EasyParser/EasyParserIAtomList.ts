@@ -25,11 +25,15 @@ export class EasyParserIAtomList extends EasyParserParent {
 
     /**
      * Parse an atom.
-     * 
+     *
      * @param {string} atomStr The string to parse.
+     * @param {number} [atomParserIndex] Optional: The 0-based index of this atom in the parser's internal list.
      * @returns {IAtom | undefined} The parsed atom.
      */
-    _parseAtomStr(atomStr: string): IAtom | undefined {
+    _parseAtomStr(
+        atomStr: string,
+        atomParserIndex?: number
+    ): IAtom | undefined {
         return undefined;
     }
 }

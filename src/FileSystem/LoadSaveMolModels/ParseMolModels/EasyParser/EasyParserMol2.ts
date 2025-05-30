@@ -19,6 +19,9 @@ export class EasyParserMol2 extends EasyParserParent {
      * @param {IFileInfo} src  The source to parse.
      */
     _load(src: IFileInfo): void {
+        if (src.contents.indexOf("@<TRIPOS>ATOM") === -1) {
+            throw new Error("MOL2 file does not contain @<TRIPOS>ATOM section. Incorrect format?");
+        }
         const prts = src.contents.split("@<TRIPOS>ATOM");
         let atoms = prts[1].split("@<TRIPOS>")[0];
 
@@ -37,9 +40,10 @@ export class EasyParserMol2 extends EasyParserParent {
      * Parse an atom.
      * 
      * @param {string} atomStr The string to parse.
+     * @param {number} [atomParserIndex] Optional: The 0-based index of this atom in the parser's internal list.
      * @returns {IAtom} The parsed atom.
      */
-    _parseAtomStr(atomStr: string): IAtom {
+    _parseAtomStr(atomStr: string, atomParserIndex?: number): IAtom {
         // Atom looks like this:
         // "     31  C4        39.2670   22.5690   13.2440 C.ar  501  ATP501      0.1692"
 

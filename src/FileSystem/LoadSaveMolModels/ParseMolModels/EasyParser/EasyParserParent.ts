@@ -44,11 +44,17 @@ export abstract class EasyParserParent {
      * Parse an atom.
      *
      * @param {string} atomStr The string to parse.
+     * @param {number} [atomParserIndex] Optional: The 0-based index of this
+     *                                   atom in the parser's internal list.
+     *                                   Useful for parsers that need context
+     *                                   (e.g., SDF bond parsing).
      * @returns {IAtom | undefined} The parsed atom, or undefined if not
-     *     parsable or function not used.
+     *  parsable or function not used.
      */
-    abstract _parseAtomStr(atomStr: string): IAtom | undefined;
-
+    abstract _parseAtomStr(
+        atomStr: string,
+        atomParserIndex?: number
+    ): IAtom | undefined;
     /**
      * Get the atom at the given index.
      *
@@ -62,12 +68,11 @@ export abstract class EasyParserParent {
         if (typeof atom !== "string") {
             return atom as IAtom;
         }
-
-        const parsedAtom = this._parseAtomStr(atom as string);
+        const parsedAtom = this._parseAtomStr(atom as string, idx); // Pass the index here
         if (parsedAtom === undefined) {
             throw new Error("Failed to parse atom.");
         }
-
+        this._atoms[idx] = parsedAtom; // Cache the parsed atom
         return parsedAtom;
     }
 
@@ -300,21 +305,21 @@ export abstract class EasyParserParent {
                     continue;
                 }
                 const x2 = atom2.x; // Cache atom2 coordinate
-                
+
                 // Calculate squared distance component by component for early exit
                 const dx = x1 - x2;
                 const dxSq = dx * dx;
                 if (dxSq > distanceSqThreshold) {
                     continue; // X distance alone is too large
                 }
-                
+
                 const y2 = atom2.y; // Cache atom2 coordinate
                 const dy = y1 - y2;
                 const dySq = dy * dy;
                 if (dxSq + dySq > distanceSqThreshold) {
                     continue; // X + Y distance is too large
                 }
-                
+
                 const z2 = atom2.z; // Cache atom2 coordinate
                 const dz = z1 - z2;
                 const dzSq = dz * dz;
