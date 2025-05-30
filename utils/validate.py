@@ -14,7 +14,7 @@ def add_error(filename, msg):
     errors.append(f"{filename}: {msg}")
 
 
-def validate_plugin(ts_file):
+def validate_plugin(ts_file, content): # Added content as a parameter
     # ts_file is a plugin
 
     # It must end in Plugin.vue
@@ -171,7 +171,7 @@ def validate_plugin(ts_file):
             ts_file,
             'Core plugins must use the tag "Tag.All".',
         )
-    
+
     # No optional plugin should have tag "Tag.All".
     if "/Optional/" in ts_file and "Tag.All" in content:
         add_error(
@@ -208,7 +208,7 @@ for ts_file in ts_files:
 
     if "URLSearchParams(" in content and "UrlParams.ts" not in ts_file:
         add_error(ts_file, "Use getUrlParam() instead of URLSearchParams.")
-    
+
     if 'href="#"' in content or 'href= "#"' in content:
         add_error(ts_file, 'No <a> should have `href="#"`. Remove it and use `class="link-primary"` if needed.')
 
@@ -240,6 +240,13 @@ for ts_file in ts_files:
         add_error(
             ts_file,
             'The string "MolModa" should only be used in GlobalVars.ts. Import the app name from there.',
+        )
+
+    # The substring ".get_svg" is only allowed in the file "Mol2DView.vue"
+    if ".get_svg" in content and os.path.basename(ts_file) != "Mol2DView.vue":
+        add_error(
+            ts_file,
+            'The substring ".get_svg" is only allowed in Mol2DView.vue.'
         )
 
 
@@ -284,7 +291,7 @@ for ts_file in ts_files:
         # It's not a plugin (doesn't contain <PluginComponent)
         continue
 
-    validate_plugin(ts_file)
+    validate_plugin(ts_file, content) # Pass content to validate_plugin
 
 errors = sorted(set(errors))
 
