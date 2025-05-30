@@ -9,6 +9,16 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 
+/** Interface for bounding box */
+interface IBounds {
+    minX: number;
+    minY: number;
+    minZ: number;
+    maxX: number;
+    maxY: number;
+    maxZ: number;
+}
+
 /**
  * A parent class for easy parsers.
  */
@@ -41,7 +51,7 @@ export abstract class EasyParserParent {
 
     /**
      * Get the atom at the given index.
-     * 
+     *
      * @param {number} idx  The index.
      * @returns {IAtom} The atom.
      */
@@ -170,41 +180,192 @@ export abstract class EasyParserParent {
     }
 
     /**
+     * Calculates the bounding box of the atoms in this parser, considering the stride.
+     *
+     * @param {number} [stride=1] The step size for iterating through atoms. Must be >= 1.
+     * @returns {IBounds | null} The bounding box, or null if no atoms with coordinates are found.
+     */
+    getBounds(stride = 1): IBounds | null {
+        if (stride < 1) {
+            throw new Error("Stride must be >= 1");
+        }
+
+        let minX = Infinity;
+        let minY = Infinity;
+        let minZ = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        let maxZ = -Infinity;
+        let foundCoords = false;
+
+        for (let i = 0; i < this.length; i += stride) {
+            const atom = this.getAtom(i);
+            if (
+                atom.x !== undefined &&
+                atom.y !== undefined &&
+                atom.z !== undefined
+            ) {
+                foundCoords = true;
+                minX = Math.min(minX, atom.x);
+                minY = Math.min(minY, atom.y);
+                minZ = Math.min(minZ, atom.z);
+                maxX = Math.max(maxX, atom.x);
+                maxY = Math.max(maxY, atom.y);
+                maxZ = Math.max(maxZ, atom.z);
+            }
+        }
+
+        if (!foundCoords) {
+            return null; // No atoms with coordinates found
+        }
+
+        return { minX, minY, minZ, maxX, maxY, maxZ };
+    }
+
+    /**
+     * Checks if any atom in this parser is within a specified distance of any atom
+     * in another parser, optionally using strides to speed up the check.
+     * Optimized with bounding box check and early exit for distance components.
+     *
+     * @param {EasyParserParent} otherParser The other parser to compare against.
+     * @param {number}           distance    The distance threshold in Angstroms.
+     * @param {number}           [selfStride=1] The step size for iterating through
+     *                           atoms in this parser. Must be >= 1.
+     * @param {number}           [otherStride=1] The step size for iterating through
+     *                           atoms in the other parser. Must be >= 1.
+     * @returns {boolean} True if at least one pair of atoms (one from each parser,
+     *          considering strides) is within the specified distance, false otherwise.
+     */
+    isWithinDistance(
+        otherParser: EasyParserParent,
+        distance: number,
+        selfStride = 1,
+        otherStride = 1
+    ): boolean {
+        // Validate strides
+        if (selfStride < 1) {
+            throw new Error("selfStride must be >= 1");
+        }
+        if (otherStride < 1) {
+            throw new Error("otherStride must be >= 1");
+        }
+
+        const distanceSqThreshold = distance * distance; // Compare squared distances
+
+        // *** Optimization 1: Bounding Box Check ***
+        const bounds1 = this.getBounds(selfStride);
+        const bounds2 = otherParser.getBounds(otherStride);
+
+        // If either molecule has no coordinates, they can't be close
+        if (!bounds1 || !bounds2) {
+            return false;
+        }
+
+        // Check for non-overlap (expanded by distance)
+        if (
+            bounds1.maxX < bounds2.minX - distance ||
+            bounds1.minX > bounds2.maxX + distance ||
+            bounds1.maxY < bounds2.minY - distance ||
+            bounds1.minY > bounds2.maxY + distance ||
+            bounds1.maxZ < bounds2.minZ - distance ||
+            bounds1.minZ > bounds2.maxZ + distance
+        ) {
+            return false; // Bounding boxes are too far apart
+        }
+        // *** End Bounding Box Check ***
+
+        for (let i = 0; i < this.length; i += selfStride) {
+            const atom1 = this.getAtom(i);
+            // Ensure atom1 has coordinates
+            if (
+                atom1.x === undefined ||
+                atom1.y === undefined ||
+                atom1.z === undefined
+            ) {
+                continue;
+            }
+            // *** Optimization 2: Cache atom1 coordinates ***
+            const x1 = atom1.x;
+            const y1 = atom1.y;
+            const z1 = atom1.z;
+
+            for (let j = 0; j < otherParser.length; j += otherStride) {
+                const atom2 = otherParser.getAtom(j);
+                // Ensure atom2 has coordinates
+                if (
+                    atom2.x === undefined ||
+                    atom2.y === undefined ||
+                    atom2.z === undefined
+                ) {
+                    continue;
+                }
+                const x2 = atom2.x; // Cache atom2 coordinate
+                
+                // Calculate squared distance component by component for early exit
+                const dx = x1 - x2;
+                const dxSq = dx * dx;
+                if (dxSq > distanceSqThreshold) {
+                    continue; // X distance alone is too large
+                }
+                
+                const y2 = atom2.y; // Cache atom2 coordinate
+                const dy = y1 - y2;
+                const dySq = dy * dy;
+                if (dxSq + dySq > distanceSqThreshold) {
+                    continue; // X + Y distance is too large
+                }
+                
+                const z2 = atom2.z; // Cache atom2 coordinate
+                const dz = z1 - z2;
+                const dzSq = dz * dz;
+                const distanceSq = dxSq + dySq + dzSq;
+
+                // Check if within threshold
+                if (distanceSq <= distanceSqThreshold) {
+                    return true; // Found a pair within distance
+                }
+            }
+        }
+
+        return false; // No pairs found within distance
+    }
+
+    /**
      * Get the approximate bounds of the molecule. NOTE: This code not used, but
      * could be useful in the future.
      *
      * @returns {number[]} The approximate bounds [minX, minY, minZ, maxX, maxY,
      *     maxZ].
      */
-//     getApproximateBounds(): [number, number, number, number, number, number] {
-//         let minX = Infinity;
-//         let minY = Infinity;
-//         let minZ = Infinity;
-//         let maxX = -Infinity;
-//         let maxY = -Infinity;
-//         let maxZ = -Infinity;
+    //     getApproximateBounds(): [number, number, number, number, number, number] {
+    //         let minX = Infinity;
+    //         let minY = Infinity;
+    //         let minZ = Infinity;
+    //         let maxX = -Infinity;
+    //         let maxY = -Infinity;
+    //         let maxZ = -Infinity;
 
-//         const buffer = 5;
-//         const step = 10;
+    //         const buffer = 5;
+    //         const step = 10;
 
-//         for (let i = 0; i < this.length; i += step) {
-//             const atom = this.getAtom(i);
+    //         for (let i = 0; i < this.length; i += step) {
+    //             const atom = this.getAtom(i);
 
-//             minX = Math.min(minX, atom.x as number);
-//             minY = Math.min(minY, atom.y as number);
-//             minZ = Math.min(minZ, atom.z as number);
-//             maxX = Math.max(maxX, atom.x as number);
-//             maxY = Math.max(maxY, atom.y as number);
-//             maxZ = Math.max(maxZ, atom.z as number);
-//         }
+    //             minX = Math.min(minX, atom.x as number);
+    //             minY = Math.min(minY, atom.y as number);
+    //             minZ = Math.min(minZ, atom.z as number);
+    //             maxX = Math.max(maxX, atom.x as number);
+    //             maxY = Math.max(maxY, atom.y as number);
+    //             maxZ = Math.max(maxZ, atom.z as number);
+    //         }
 
-//         return [
-//             minX - buffer,
-//             minY - buffer,
-//             minZ - buffer,
-//             maxX + buffer,
-//             maxY + buffer,
-//             maxZ + buffer,
-//         ];
-//     }
+    //         return [
+    //             minX - buffer,
+    //             minY - buffer,
+    //             minZ - buffer,
+    //             maxX + buffer,
+    //             maxY + buffer,
+    //             maxZ + buffer,
+    //         ];
+    //     }
 }
