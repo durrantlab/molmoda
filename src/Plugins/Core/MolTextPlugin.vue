@@ -3,9 +3,10 @@
         @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" :submitOnEnter="false"
         @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
-            <div v-if="smilesSvgPreview" class="mt-3 border p-2 text-center"
-                style="max-height: 300px; overflow-y: auto;">
-                <div v-html="smilesSvgPreview"></div>
+            <div v-if="getUserArg('format') === 'smi' && currentSmilesForPreview.trim() !== ''"
+                class="mt-3 border p-2 text-center" style="max-height: 300px; overflow-y: auto;">
+                <!-- Mol2DView will handle displaying its own error message if currentSmilesForPreview is invalid -->
+                <Mol2DView :smiles="currentSmilesForPreview" :maxHeight="280" :minHeight="50" />
             </div>
         </template>
     </PluginComponent>
@@ -38,7 +39,7 @@ import { fetcher } from "@/Core/Fetcher";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { getGen3DUserArg, WhichMolsGen3D, IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
-import { dynamicImports } from "@/Core/DynamicImports";
+import Mol2DView from "@/UI/Components/Mol2DView.vue"; // Import the new component
 
 /**
  * A function that returns the options and validate functions for the available
@@ -103,11 +104,12 @@ function detectFileType(contents: string): string {
 @Options({
     components: {
         PluginComponent,
+        Mol2DView, // Register the new component
     },
 })
 export default class MolTextPlugin extends PluginParentClass {
     menuPath = "File/Import/[7] Molecular Text...";
-    softwareCredits: ISoftwareCredit[] = [dynamicImports.rdkitjs.credit];
+    softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         {
             name: "Yuri K. Kochnev",
@@ -120,7 +122,8 @@ export default class MolTextPlugin extends PluginParentClass {
     tags = [Tag.All];
 
     isActionBtnEnabled = false;
-    smilesSvgPreview = "";
+    currentSmilesForPreview = ""; // Only store the SMILES string for Mol2DView
+
     userArgDefaults: UserArg[] = [
         {
             id: "pastedMolName",
@@ -168,9 +171,9 @@ export default class MolTextPlugin extends PluginParentClass {
      * when the user arguments change. Access the arguments using this.userArgs.
      */
     async onUserArgChange() {
-        const contents = this.getUserArg("molTextArea");
+        const contents = this.getUserArg("molTextArea") as string;
         const detectedExt = detectFileType(contents);
-        const currentFormat = this.getUserArg("format");
+        const currentFormat = this.getUserArg("format") as string;
 
         if (detectedExt !== "unknown") {
             if (currentFormat === "unknown" || currentFormat !== detectedExt) {
@@ -182,23 +185,12 @@ export default class MolTextPlugin extends PluginParentClass {
             this.isActionBtnEnabled = currentFormat !== "unknown" && contents.trim() !== "";
         }
 
-        // Update SMILES SVG preview
+        // Update SMILES string for preview if format is SMILES
+        // Mol2DView will handle the actual rendering and error display if SMILES is invalid
         if (this.getUserArg("format") === "smi" && contents.trim() !== "") {
-            try {
-                const RDKitModule = await dynamicImports.rdkitjs.module;
-                const mol = RDKitModule.get_mol(contents.trim());
-                if (mol) {
-                    this.smilesSvgPreview = mol.get_svg();
-                    mol.delete();
-                } else {
-                    this.smilesSvgPreview = "<p class='text-danger'>Invalid SMILES string</p>";
-                }
-            } catch (e) {
-                console.error("Error generating SMILES SVG preview with RDKit:", e);
-                this.smilesSvgPreview = "<p class='text-danger'>Error generating preview</p>";
-            }
+            this.currentSmilesForPreview = contents.trim();
         } else {
-            this.smilesSvgPreview = "";
+            this.currentSmilesForPreview = "";
         }
     }
 
@@ -269,14 +261,15 @@ export default class MolTextPlugin extends PluginParentClass {
     }
 
     /**
-    * Runs before the popup opens. Good for initializing/resenting variables
-    * (e.g., clear inputs from previous open).
-    *
-    * @param {any} payload  The payload (if any)
-    */
+     * Runs before the popup opens. Good for initializing/resenting variables
+     * (e.g., clear inputs from previous open).
+     *
+     * @param {any} payload  The payload (if any)
+     */
     async onBeforePopupOpen(payload?: any) {
-        this.smilesSvgPreview = ""; // Reset preview on open
+        this.currentSmilesForPreview = ""; // Reset preview on open
     }
+
 
     /**
      * Gets the test commands for the plugin. For advanced use.

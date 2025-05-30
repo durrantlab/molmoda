@@ -40,7 +40,7 @@ import * as compileErrors from "../compile_errors.json";
 import { appName } from "@/Core/GlobalVars";
 import TestData from "@/Testing/TestData.vue";
 import DragDropFileLoad from "@/UI/DragDropFileLoad.vue";
-import Viewer2D from "@/UI/Components/Viewer2D.vue";
+import SmilesPopupViewer from "@/UI/Components/SmilesPopupViewer.vue";
 import { globalCredits } from "./GlobalCredits";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
@@ -60,7 +60,7 @@ import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
     AllPlugins,
     TestData,
     DragDropFileLoad,
-    Viewer2D,
+    SmilesPopupViewer,
     ProgressBar,
   },
 })

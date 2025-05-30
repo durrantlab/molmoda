@@ -4,7 +4,7 @@
         ref="information-container"
         v-if="smiles !== ''"
     >
-        <Viewer2D width="100%" :maxHeight="150" :smiles="smiles" />
+        <SmilesPopupViewer width="100%" :maxHeight="150" :smiles="smiles" />
         <FormWrapper cls="mb-3">
             <FormInput
                 v-model="smiles"
@@ -27,7 +27,7 @@
 <script lang="ts">
 import MolProps from "@/UI/Components/MolProps.vue";
 import Table from "@/UI/Components/Table/Table.vue";
-import Viewer2D from "@/UI/Components/Viewer2D.vue";
+import SmilesPopupViewer from "@/UI/Components/SmilesPopupViewer.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
@@ -43,7 +43,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
  */
 @Options({
     components: {
-        Viewer2D,
+        SmilesPopupViewer,
         MolProps,
         Table,
         FormInput,
