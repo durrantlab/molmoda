@@ -1,22 +1,12 @@
 <template>
     <div ref="smiles-container" class="mb-4" :style="containerStyles">
         <!-- THIS GOOD IF IN VIEWER: class="mb-2 ms-2" -->
-        <svg
-            @click="onClick"
-            :style="svgStyles"
-            :id="id"
-            ref="output-svg"
-            viewbox="0 0 0 0"
-            xmlns="http://www.w3.org/2000/svg"
-        ></svg>
-        <Popup
-            v-if="!inPopup"
-            v-model="showSmilesPopup"
-            title="Molecular Structure"
-            cancelBtnTxt="Close"
-            id="molStructure"
-        >
-            <Viewer2D :smiles="smiles" :inPopup="true"></Viewer2D>
+        <svg @click="onClick" :style="svgStyles" :id="id" ref="output-svg" viewBox="0 0 0 0"
+            xmlns="http://www.w3.org/2000/svg" v-html="embeddedSvgContent"></svg>
+        <Popup v-if="!inPopup" v-model="showSmilesPopup" title="Molecular Structure" cancelBtnTxt="Close"
+            id="molStructure">
+            <!-- For the popup, we'll also use RDKit to generate SVG, displayed in a simple div -->
+            <div v-if="showSmilesPopup" class="popup-svg-container" v-html="popupSvgContent"></div>
         </Popup>
     </div>
 </template>
@@ -29,11 +19,11 @@ import { Prop, Watch } from "vue-property-decorator";
 import Popup from "../Layout/Popups/Popup.vue";
 
 /**
- * Viewer2D component
+ * Viewer2D component (originally named Viewer3D.vue but functions as a 2D SMILES SVG viewer)
  */
 @Options({
     components: {
-        Popup,
+        Popup
     },
 })
 export default class Viewer2D extends Vue {
@@ -45,16 +35,18 @@ export default class Viewer2D extends Vue {
     @Prop({ default: "" }) extraStyles!: string;
     @Prop({ default: false }) inPopup!: boolean;
 
-    smilesContainer: HTMLDivElement | undefined = undefined;
-    interval: any = undefined;
-    id = randomID();
+    private smilesContainer: HTMLDivElement | undefined = undefined;
+    private interval: any = undefined;
+    private id = "viewer2d-smiles-svg-" + randomID();
+    private rdkitModule: any = null;
 
-    measuredContainerWidth = 0;
-    containerHeight = 0;
-    // svgOpacityStyle = "";
-    smilesFromSelected = "";
-    svgScaleFactor = 1;
-    showSmilesPopup = false;
+    // Reactive properties
+    private measuredContainerWidth = 0;
+    private containerHeight = 0;
+    private svgScaleFactor = 1; // Will be used to adjust viewBox effectively
+    private showSmilesPopup = false;
+    private embeddedSvgContent = ""; // For the main display
+    private popupSvgContent = ""; // For the popup display
 
     /**
      * Watcher for the smiles prop. Draws the molecule if smiles changes.
@@ -67,212 +59,243 @@ export default class Viewer2D extends Vue {
     /**
      * Watcher for the width prop. Draws the molecule if width changes.
      */
-    @Watch("containerWidth")
+    @Watch("measuredContainerWidth") // Changed from containerWidth to measuredContainerWidth
     onContainerWidth() {
         this.draw();
     }
 
     /**
      * Gets the css styles for the container div.
-     *
      * @returns {string} The css styles.
      */
     get containerStyles(): string {
-        // Note that height of the container div is always 0. We are only using it
-        // to detect resizes, and that only in the width. Height is determined by
-        // the dimensions of the molecule.
         const width = this.smilesToUse === "" ? "0" : this.width;
-        return `width:${width}; height:${this.containerHeight}px; ${this.extraStyles};`;
+        // Height is now controlled by the SVG's viewBox and the container's aspect ratio
+        return `width:${width}; height:${this.containerHeight}px; ${this.extraStyles}; display: flex; align-items: center; justify-content: center;`;
     }
 
     /**
      * Gets the css styles for the svg.
-     *
      * @returns {string} The css styles.
      */
     get svgStyles(): string {
-        const height = this.smilesToUse === "" ? "height: 0;" : "";
-        // let styles = `${height}`;
-        // let styles = `${height} ${this.svgScaleStyle}`;
-        let styles = `${height} width:${(this.svgScaleFactor * 100).toFixed(
-            0
-        )}%;`;
-        styles += "margin: auto; display: block; cursor: pointer;";
-        return styles;
-        // styles += `position: absolute; ${height} bottom: 0;`;
-        // styles += "border: 1px solid rgb(235, 235, 235); border-radius:15px;";
-        // return `${styles} background-color:rgba(255, 255, 255, 0.95); ${this.svgScaleStyle}`;
+        const heightStyle = this.smilesToUse === "" || this.embeddedSvgContent === "" ? "height: 0;" : "height: 100%;"; // SVG fills container
+        const widthStyle = "width: 100%;"; // SVG fills container
+        return `${heightStyle} ${widthStyle} margin: auto; display: block; cursor: pointer;`;
     }
 
     /**
      * Whether component is ready.
-     *
-     * @returns {boolean} Whether the smilesdrawer library is loaded and ready to
-     *     use.
+     * @returns {boolean} Whether the RDKit library is loaded and ready to use.
      */
     get readyToUse(): boolean {
         if (this.smilesToUse === "") {
-            // Not needed yet
             return false;
         }
-
-        return !(this.smilesContainer === undefined);
+        return !!(this.rdkitModule && this.smilesContainer);
     }
 
     /**
      * The smiles to use.
-     *
      * @returns {string} The smiles to use.
      */
     get smilesToUse(): string {
         return this.smiles.replace(/\t/g, " ").split(" ")[0].trim();
-        // if (!this.getSmilesFromSelected) {
-        // }
-
-        // return this.smilesFromSelected.trim();
     }
 
     /**
-     * Runs when the user clicks the SVG image. Opens the bigger popup with the
-     * SVG.
+     * Runs when the user clicks the SVG image. Opens the bigger popup with the SVG.
      */
     onClick() {
-        this.showSmilesPopup = true;
+        if (!this.inPopup) {
+            this.generatePopupSvg();
+            this.showSmilesPopup = true;
+        }
     }
+
+    /**
+     * Generates SVG for the popup.
+     */
+    private async generatePopupSvg() {
+        if (!this.rdkitModule || !this.smilesToUse) {
+            this.popupSvgContent = "";
+            return;
+        }
+        try {
+            const mol = this.rdkitModule.get_mol(this.smilesToUse);
+            if (mol) {
+                // For popup, let's use a fixed larger size or make it responsive within popup
+                const svgOptions = { width: 400, height: 300, kekulize: true };
+                this.popupSvgContent = mol.get_svg_with_highlights(JSON.stringify(svgOptions));
+                mol.delete();
+            } else {
+                this.popupSvgContent = `<p style="color:red;">Invalid SMILES for popup.</p>`;
+            }
+        } catch (e: any) {
+            console.error("Error generating popup SVG:", e);
+            this.popupSvgContent = `<p style="color:red;">Error generating popup SVG.</p>`;
+        }
+    }
+
 
     /**
      * Draws the molecule.
      */
-    draw() {
-        
-        if (!this.readyToUse) {
+    async draw() {
+        if (!this.readyToUse || this.measuredContainerWidth === 0) {
+            this.embeddedSvgContent = "";
+            this.containerHeight = 0;
             return;
         }
-        
-        dynamicImports.smilesdrawer.module
-            .then((SmilesDrawer) => {
-                // Give time for canvas to be resized.
 
-                this.$nextTick(() => {
-                    const options = {
-                        width: this.measuredContainerWidth,
-                        height: this.measuredContainerWidth, // this.containerHeight,
-                        bondThickness: 1,
-                        compactDrawing: false
-                    };
+        const svgElement = this.$refs["output-svg"] as SVGElement;
+        if (!svgElement) return;
 
-                    const svgDrawer = new SmilesDrawer.SvgDrawer(options);
-
-                    SmilesDrawer.parse(this.smilesToUse, (atomTree: any) => {
-                        svgDrawer.draw(atomTree, this.id, "light", false);
-
-                        const svgElement = this.$refs[
-                            "output-svg"
-                        ] as SVGAElement;
-
-                        // Crop the SVG image. See
-                        // https://gist.github.com/bignimbus/56b13326c1ffd54cff84f78fda6197b3
-                        const margin = 0;
-
-                        const { x, y, width, height } = svgElement.getBBox();
-                        const newWidth = width + 2 * margin;
-                        const newHeight = height + 2 * margin;
-                        svgElement.setAttribute(
-                            "viewBox",
-                            [x - margin, y - margin, newWidth, newHeight].join(
-                                " "
-                            )
-                        );
-
-                        setTimeout(() => {
-                            const svgClientHeight = svgElement.clientHeight;
-
-                            if (this.measuredContainerWidth === 0) {
-                                this.setMeasuredContainerWidth();
-                            }
-
-                            const maxHeightToUse =
-                                this.maxHeight === undefined
-                                    ? this.measuredContainerWidth
-                                    : Math.min(
-                                          this.maxHeight as number,
-                                          this.measuredContainerWidth
-                                      );
-
-                            // this.measuredContainerWidth !== 0 &&
-                            if (svgClientHeight > maxHeightToUse) {
-                                // It's too tall. Need to scale down.
-                                // this.svgScaleStyle =
-                                //   "transform: scale(" +
-                                //   (this.measuredContainerWidth / svgClientHeight).toFixed(3) +
-                                //   "); transform-origin: top left;";
-                                // this.draw(0.9 * this.measuredContainerWidth / svgClientHeight);
-                                const factor =
-                                    (0.99 * maxHeightToUse) / svgClientHeight;
-
-                                // this.svgScaleStyle = `width: ${percent}%;`;
-                                this.svgScaleFactor =
-                                    this.svgScaleFactor * factor;
-                            } else {
-                                // this.svgScaleStyle = "";
-                                this.svgScaleFactor = 1;
-                            }
-                            setTimeout(() => {
-                                this.containerHeight =
-                                    svgElement.clientHeight as number;
-                            }, 0);
-                        }, 0);
-                    });
-                });
-
+        try {
+            const mol = this.rdkitModule.get_mol(this.smilesToUse);
+            if (!mol) {
+                this.embeddedSvgContent = `<text x="50%" y="50%" fill="red" text-anchor="middle" dy=".3em">Invalid SMILES</text>`;
+                // Set a small fixed height for the error message to be visible
+                this.containerHeight = this.maxHeight !== undefined ? Math.min(30, this.maxHeight) : 30;
+                svgElement.setAttribute("viewBox", `0 0 ${this.measuredContainerWidth} ${this.containerHeight}`);
                 return;
-            })
-            .catch((error) => {
-                throw error;
-            });
+            }
+
+            // Generate SVG with dimensions based on container width
+            // Let RDKit determine height based on its internal aspect ratio for the given width
+            const svgOptions = {
+                width: Math.floor(this.measuredContainerWidth),
+                // height: undefined, // Let RDKit decide height based on molecule and width
+                kekulize: true,
+                // theme: this.theme, // RDKit might have its own theming options if needed
+            };
+            const rawSvg = mol.get_svg_with_highlights(JSON.stringify(svgOptions));
+            mol.delete();
+
+            // Parse the raw SVG to extract its actual dimensions (RDKit includes width/height attributes)
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(rawSvg, "image/svg+xml");
+            const svgRoot = svgDoc.documentElement;
+
+            let svgWidth = this.measuredContainerWidth;
+            let svgHeight = this.measuredContainerWidth; // Default to square if not found
+
+            const wAttr = svgRoot.getAttribute("width");
+            const hAttr = svgRoot.getAttribute("height");
+
+            if (wAttr) svgWidth = parseFloat(wAttr.replace("px", ""));
+            if (hAttr) svgHeight = parseFloat(hAttr.replace("px", ""));
+
+            // Calculate aspect ratio and set container height
+            const aspectRatio = svgHeight / svgWidth;
+            let finalHeight = this.measuredContainerWidth * aspectRatio;
+
+            if (this.maxHeight !== undefined && finalHeight > this.maxHeight) {
+                finalHeight = this.maxHeight;
+                // If capping by maxHeight, we might want to adjust the SVG's internal viewBox
+                // or let CSS handle the scaling within the fixed height container.
+                // For simplicity, we'll let the SVG scale within the container.
+            }
+            this.containerHeight = Math.floor(finalHeight);
+
+            // Set viewBox on our host SVG element to match the content SVG's dimensions
+            // This allows the embedded SVG (via v-html) to scale correctly.
+            svgElement.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+
+            // Extract only the inner content of the generated SVG (children of <svg> tag)
+            // to embed into our host <svg> element.
+            let innerContent = "";
+            for (const child of Array.from(svgRoot.children)) {
+                innerContent += child.outerHTML;
+            }
+            this.embeddedSvgContent = innerContent;
+
+        } catch (error: any) {
+            console.error("Error drawing molecule with RDKit.js:", error);
+            this.embeddedSvgContent = `<text x="50%" y="50%" fill="red" text-anchor="middle" dy=".3em">Render Error</text>`;
+            this.containerHeight = this.maxHeight !== undefined ? Math.min(30, this.maxHeight) : 30;
+            if (svgElement) {
+                svgElement.setAttribute("viewBox", `0 0 ${this.measuredContainerWidth} ${this.containerHeight}`);
+            }
+        }
     }
+
 
     /**
      * Sets the measuredContainerWidth value based on the actual width of the DOM
      * container. For resizing.
      */
     setMeasuredContainerWidth() {
-        this.measuredContainerWidth = this.smilesContainer
-            ?.offsetWidth as number;
+        if (this.smilesContainer) {
+            const newWidth = this.smilesContainer.offsetWidth;
+            // Only update and redraw if the width has actually changed significantly
+            if (Math.abs(this.measuredContainerWidth - newWidth) > 1) {
+                this.measuredContainerWidth = newWidth;
+                // Watcher on measuredContainerWidth will trigger draw()
+            }
+        }
     }
 
     /**
      * Unmounted function.
      */
     unmounted() {
-        clearInterval(this.interval);
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
     }
 
     /**
      * Mounted function.
      */
-    mounted() {
+    async mounted() {
         this.smilesContainer = this.$refs["smiles-container"] as HTMLDivElement;
 
-        // Monitor the actual dimensions of the canvas constantly. Redraw if it
-        // changes.
-        this.interval = setInterval(() => {
-            if (
-                this.measuredContainerWidth !==
-                this.smilesContainer?.offsetWidth
-            ) {
-                this.setMeasuredContainerWidth();
+        try {
+            this.rdkitModule = await dynamicImports.rdkitjs.module;
+        } catch (error: any) {
+            console.error("Error loading RDKit module:", error);
+            // Optionally, display an error message to the user in the component
+            this.embeddedSvgContent = `<text x="50%" y="50%" fill="red" text-anchor="middle" dy=".3em">Lib Load Error</text>`;
+            this.containerHeight = 30;
+            return;
+        }
+
+        this.$nextTick(() => {
+            this.setMeasuredContainerWidth(); // Initial measure
+            if (this.smilesToUse !== "") {
                 this.draw();
             }
-        }, 1000);
+        });
 
-        // Initial draw
-        if (this.smilesToUse !== "") {
-            this.draw();
-        }
+        this.interval = setInterval(() => {
+            this.setMeasuredContainerWidth();
+        }, 1000); // Check for resize periodically
     }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.viewer-2d-smiles-container {
+    display: inline-block;
+    /* Allows it to sit nicely with other elements if needed */
+    // border: 1px solid #ccc; /* For debugging layout */
+    position: relative;
+    /* If you need to position anything absolutely inside */
+}
+
+.popup-svg-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-svg-container> ::v-deep(svg) {
+    max-width: 100%;
+    max-height: 100%;
+}
+</style>

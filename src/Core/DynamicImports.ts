@@ -477,40 +477,6 @@ export const dynamicImports = {
             ],
         },
     },
-    smilesdrawer: {
-        credit: {
-            name: "smilesdrawer",
-            url: "https://github.com/reymond-group/smilesDrawer",
-            license: Licenses.MIT,
-            citations: [
-                {
-                    title: "SmilesDrawer: Parsing and Drawing SMILES-Encoded Molecular Structures Using Client-Side JavaScript",
-                    authors: ["Probst, Daniel", "Reymond, Jean-Louis"],
-                    journal: "J. Chem. Inf. Model.",
-                    year: 2018,
-                    volume: 58,
-                    issue: 1,
-                    pages: "1-7",
-                },
-            ],
-        },
-        /**
-         * Gets the module.
-         *
-         * @returns {Promise<any>}  A promise that resolves to the module.
-         */
-        get module(): Promise<any> {
-            return import(
-                /* webpackChunkName: "smilesdrawer" */
-                /* webpackMode: "lazy" */
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                "smiles-drawer"
-            ).then((SmilesDrawer) => {
-                return SmilesDrawer;
-            });
-        },
-    },
     axios: {
         credit: {
             name: "axios",
