@@ -6,7 +6,7 @@
             <div v-if="getUserArg('format') === 'smi' && currentSmilesForPreview.trim() !== ''"
                 class="mt-3 border p-2 text-center" style="max-height: 300px; overflow-y: auto;">
                 <!-- Mol2DView will handle displaying its own error message if currentSmilesForPreview is invalid -->
-                <Mol2DView :smiles="currentSmilesForPreview" :maxHeight="280" :minHeight="50" />
+                <Mol2DView :smiles="currentSmilesForPreview" :maxHeight="280" :minHeight="50" :showDownloadButtons="true" />
             </div>
         </template>
     </PluginComponent>

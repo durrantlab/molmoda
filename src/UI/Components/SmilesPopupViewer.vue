@@ -9,7 +9,7 @@
             id="molStructurePopupForSmiles">
             <!-- Use Mol2DView for the popup content -->
             <Mol2DView v-if="showSmilesPopup && smilesToUse" :smiles="smilesToUse" :drawingWidth="450"
-                :drawingHeight="350" :minHeight="50" />
+                :drawingHeight="350" :minHeight="50" :showDownloadButtons="true"/>
             <div v-else-if="showSmilesPopup && !smilesToUse" class="text-center p-3">
                 No SMILES string provided for popup view.
             </div>
