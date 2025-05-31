@@ -132,7 +132,9 @@ export default class ProgressBar extends Vue {
             if (potentialNewProgress > this.displayProgress || this.displayProgress === 0) {
                 this.displayProgress = potentialNewProgress;
             }
-            this.displayMessage = "Job running";
+
+            this.displayMessage = (this.progressPercent > 15) ? "Job running" : "";
+
             // displayVisible is always true now
             this.startInactivityTimeout(); // Keep resetting inactivity timer
             this.cancelCompletionPause(); // Ensure no pause is active

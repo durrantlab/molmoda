@@ -1,29 +1,15 @@
 <template>
-  <PluginComponent
-    :infoPayload="infoPayload"
-    v-model="open"
-    :cancelBtnTxt="neverClose ? '' : 'Ok'"
-    actionBtnTxt=""
-    @onClosed="onClosed"
-    :variant="variant"
-    @onUserArgChanged="onUserArgChanged"
-    @onPopupDone="onPopupDone"
-    modalWidth="xl"
-    @onMolCountsChanged="onMolCountsChanged"
-  >
+  <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
+    @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
+    modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
     <div class="svg-container d-flex flex-column">
-      <div
-        class="svg-wrapper text-center w-100"
-        ref="svgElement"
-        v-html="svgContents"
-      ></div>
+      <div class="svg-wrapper text-center w-100" ref="svgElement" v-html="svgContents"></div>
       <div class="download-links">
         <small>
           Download as
           <a @click.prevent="downloadSVG" class="link-primary">SVG</a>
           or
-          <a @click.prevent="downloadPNG" class="link-primary">PNG</a></small
-        >
+          <a @click.prevent="downloadPNG" class="link-primary">PNG</a></small>
       </div>
       <p class="mt-2" v-html="message"></p>
     </div>
@@ -130,7 +116,7 @@ export default class SimpleSVGPlugin extends PluginParentClass {
       name: "image.svg",
       contents: this.svgContents,
     });
-    api.fs.saveTxt(fileInfo);
+    api.fs.saveSvg(fileInfo);
   }
 
   /**
@@ -210,8 +196,10 @@ export default class SimpleSVGPlugin extends PluginParentClass {
 
 <style scoped lang="scss">
 .svg-container {
-  width: 100%; /* Ensures container scales with parent */
-  height: auto; /* Adapts height to content */
+  width: 100%;
+  /* Ensures container scales with parent */
+  height: auto;
+  /* Adapts height to content */
   display: flex;
   justify-content: center;
   //   align-items: center;
@@ -219,12 +207,15 @@ export default class SimpleSVGPlugin extends PluginParentClass {
 
 .svg-wrapper {
   width: 100%;
-  height: auto; /* Allows the height to scale proportionally */
+  height: auto;
+  /* Allows the height to scale proportionally */
 }
 
 .svg-wrapper svg {
   display: block;
-  width: 100%; /* Fills the container width */
-  height: auto; /* Maintains aspect ratio */
+  width: 100%;
+  /* Fills the container width */
+  height: auto;
+  /* Maintains aspect ratio */
 }
 </style>

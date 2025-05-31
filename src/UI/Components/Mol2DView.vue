@@ -261,10 +261,10 @@ export default class Mol2DView extends Vue {
             return;
         }
         const fileInfo = new FileInfo({
-            name: "molecule_2d.svg",
+            name: "molecule_2d.svg", // saveSvg will ensure .svg extension
             contents: this.svgContent,
         });
-        fsApi.saveTxt(fileInfo);
+        fsApi.saveSvg(fileInfo); // Use the new saveSvg method
     }
 
     /**

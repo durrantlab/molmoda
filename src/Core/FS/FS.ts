@@ -68,8 +68,57 @@ export function saveTxt(params: FileInfo): Promise<any> {
 
     // const promises: Promise<any>[] = [dynamicImports.fileSaver.module];
     // if (params.compress) {
-    //     promises.push(dynamicImports.jsZip.module);
+    //  promises.push(dynamicImports.jsZip.module);
     // }
+}
+
+/**
+ * Saves an SVG file.
+ *
+ * @param  {FileInfo} params The parameters describing the SVG file.
+ *              The `contents` should be the SVG string.
+ *              The `name` should be the desired filename (e.g., "image.svg").
+ * @returns {Promise<any>} A promise that resolves after saving the file.
+ */
+export function saveSvg(params: FileInfo): Promise<any> {
+    // Ensure the filename ends with .svg
+    if (!params.name.toLowerCase().endsWith(".svg")) {
+        params.name += ".svg";
+    }
+
+    // If a compressedName is provided, save as a zip containing the SVG file.
+    // This part remains consistent with saveTxt for compressed outputs.
+    const validCompressedExts = [".zip", ".molmoda", ".biotite"];
+    if (
+        params.compressedName &&
+        !validCompressedExts.some((ext) =>
+            params.compressedName?.toLowerCase().endsWith(ext)
+        )
+    ) {
+        params.compressedName += ".zip";
+    }
+
+    if (params.compressedName) {
+        // To save as a zip, we need to ensure the FileInfo for the SVG
+        // within the zip has the correct .svg extension.
+        // The saveZipWithTxtFiles function expects FileInfo objects.
+        // We'll create a new FileInfo for the SVG content to be zipped.
+        const svgFileInfoForZip = new FileInfo({
+            name: params.name, // Already ensured to end with .svg
+            contents: params.contents,
+            // No compressedName for the file *inside* the zip
+        });
+        return saveZipWithTxtFiles(params.compressedName, [svgFileInfoForZip]);
+    }
+
+    // Save directly as an SVG file (not compressed)
+    return dynamicImports.fileSaver.module.then((fileSaver: any) => {
+        const blob = new Blob([params.contents as string], {
+            type: "image/svg+xml", // Correct MIME type for SVG
+        });
+        fileSaver.saveAs(blob, params.name);
+        return;
+    });
 }
 
 /**
