@@ -15,9 +15,9 @@
       v-if="svgContents !== ''"
       :source="svgContents"
       :filenameBase="filenameBaseToUse"
-      :maxHeight="500" 
       :showDownloadButtons="true"
-    />
+      />
+      <!-- :maxHeight="500"  -->
     <p v-if="message !== ''" class="mt-2" v-html="message"></p>
   </PluginComponent>
 </template>
@@ -38,11 +38,11 @@ import { FailingTest } from "@/Testing/FailingTest";
 // import * as api from "@/Api"; // No longer needed for download if ImageViewer handles it
 // import { FileInfo } from "@/FileSystem/FileInfo"; // No longer needed for download if ImageViewer handles it
 import ImageViewer from "@/UI/Components/ImageViewer.vue"; // Import the new component
-import { FileInfo } from "@/FileSystem/FileInfo";
-import { fsApi } from "@/Api/FS";
+// import { FileInfo } from "@/FileSystem/FileInfo";
+// import { fsApi } from "@/Api/FS";
 
 /**
- * SimpleSVGPlugin
+ * SimpleSVGPopupPlugin
  */
 @Options({
   components: {
@@ -50,11 +50,11 @@ import { fsApi } from "@/Api/FS";
     ImageViewer,
   },
 })
-export default class SimpleSVGPlugin extends PluginParentClass {
+export default class SimpleSVGPopupPlugin extends PluginParentClass {
   menuPath = null;
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
-  pluginId = "simplesvg";
+  pluginId = "simplesvgpopup";
   intro = "";
   tags = [Tag.All];
 
@@ -121,58 +121,58 @@ export default class SimpleSVGPlugin extends PluginParentClass {
     return Promise.resolve();
   }
 
-  /**
-   * Downloads the SVG file.
-   * TODO: This method is now redundant if ImageViewer handles it. Kept for reference or if direct call needed.
-   */
-  downloadSVG() {
-    const fileInfo = new FileInfo({
-      name: `${this.filenameBaseToUse}.svg`,
-      contents: this.svgContents,
-    });
-    fsApi.saveSvg(fileInfo);
-  }
+  // /**
+  //  * Downloads the SVG file.
+  //  * TODO: This method is now redundant if ImageViewer handles it. Kept for reference or if direct call needed.
+  //  */
+  // downloadSVG() {
+  //   const fileInfo = new FileInfo({
+  //     name: `${this.filenameBaseToUse}.svg`,
+  //     contents: this.svgContents,
+  //   });
+  //   fsApi.saveSvg(fileInfo);
+  // }
 
-  /**
-   * Downloads the PNG file.
-   * TODO: This method is now redundant if ImageViewer handles it. Kept for reference or if direct call needed.
-   */
-  async downloadPNG() {
-    const svgElement = (this.$refs.imageViewerComponent as any)?.$refs.svgElementRef as HTMLElement;
-    if (!svgElement) return;
-    const svg = svgElement.querySelector("svg");
-    if (!svg) return;
+  // /**
+  //  * Downloads the PNG file.
+  //  * TODO: This method is now redundant if ImageViewer handles it. Kept for reference or if direct call needed.
+  //  */
+  // async downloadPNG() {
+  //   const svgElement = (this.$refs.imageViewerComponent as any)?.$refs.svgElementRef as HTMLElement;
+  //   if (!svgElement) return;
+  //   const svg = svgElement.querySelector("svg");
+  //   if (!svg) return;
 
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const img = new Image();
-    img.onload = () => {
-      const targetWidth = 1024; 
-      const originalWidth = img.width;
-      const originalHeight = img.height;
-      const aspectRatio = originalHeight / originalWidth;
-      const targetHeight = Math.round(targetWidth * aspectRatio);
+  //   const svgData = new XMLSerializer().serializeToString(svg);
+  //   const img = new Image();
+  //   img.onload = () => {
+  //     const targetWidth = 1024; 
+  //     const originalWidth = img.width;
+  //     const originalHeight = img.height;
+  //     const aspectRatio = originalHeight / originalWidth;
+  //     const targetHeight = Math.round(targetWidth * aspectRatio);
 
-      // Create canvas with new dimensions
-      const canvas = document.createElement("canvas");
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+  //     // Create canvas with new dimensions
+  //     const canvas = document.createElement("canvas");
+  //     canvas.width = targetWidth;
+  //     canvas.height = targetHeight;
+  //     const ctx = canvas.getContext("2d");
+  //     if (!ctx) return;
+  //     ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
-      // Convert canvas to Blob and then to data URI
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const dataUri = reader.result as string; 
-          fsApi.savePngUri(`${this.filenameBaseToUse}.png`, dataUri); 
-        };
-        reader.readAsDataURL(blob); 
-      }, "image/png");
-    };
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgData)}`;
-  }
+  //     // Convert canvas to Blob and then to data URI
+  //     canvas.toBlob((blob) => {
+  //       if (!blob) return;
+  //       const reader = new FileReader();
+  //       reader.onloadend = () => {
+  //         const dataUri = reader.result as string; 
+  //         fsApi.savePngUri(`${this.filenameBaseToUse}.png`, dataUri); 
+  //       };
+  //       reader.readAsDataURL(blob); 
+  //     }, "image/png");
+  //   };
+  //   img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgData)}`;
+  // }
 
   /**
    * Gets the test commands for the plugin. For advanced use.

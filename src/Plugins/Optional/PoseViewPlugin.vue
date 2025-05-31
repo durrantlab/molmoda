@@ -361,7 +361,7 @@ export default class PoseViewPlugin extends PluginParentClass {
       </div>
     `;
 
-      api.plugins.runPlugin("simplesvg", {
+      api.plugins.runPlugin("simplesvgpopup", {
         svgContents: wrapperHtml,
         title: "2D Interaction Diagram",
         message: `Diagram generated using <a href="https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html" target="_blank">PoseView</a>.`,
@@ -386,8 +386,8 @@ export default class PoseViewPlugin extends PluginParentClass {
         .loadExampleMolecule()
         .selectMoleculeInTree("Protein"),
       afterPluginCloses: new TestCmdList()
-        .waitUntilRegex("#modal-simplesvg", "Diagram generated using")
-        .click("#modal-simplesvg .cancel-btn"),
+        .waitUntilRegex("#modal-simplesvgpopup", "Diagram generated using")
+        .click("#modal-simplesvgpopup .cancel-btn"),
     };
   }
 }

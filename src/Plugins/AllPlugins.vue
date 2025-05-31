@@ -46,7 +46,7 @@ system uses these to autopopulate with plugins. -->
     <SelectInvertPlugin @onPluginSetup="onPluginSetup"></SelectInvertPlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
-    <SimpleSVGPlugin @onPluginSetup="onPluginSetup"></SimpleSVGPlugin>
+    <SimpleSVGPopupPlugin @onPluginSetup="onPluginSetup"></SimpleSVGPopupPlugin>
     <SimpleTableDataPlugin @onPluginSetup="onPluginSetup"></SimpleTableDataPlugin>
     <SimpleVideoPlugin @onPluginSetup="onPluginSetup"></SimpleVideoPlugin>
     <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
@@ -123,7 +123,7 @@ import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SelectInvertPlugin from "./Core/SelectInvertPlugin.vue";
 import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
 import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
-import SimpleSVGPlugin from "./Core/SimpleSVGPlugin.vue";
+import SimpleSVGPopupPlugin from "./Core/SimpleSVGPopupPlugin.vue";
 import SimpleTableDataPlugin from "./Core/SimpleTableDataPlugin.vue";
 import SimpleVideoPlugin from "./Core/SimpleVideoPlugin.vue";
 import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
@@ -196,7 +196,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SelectInvertPlugin,
     SettingsPlugin,
     SimpleMsgPlugin,
-    SimpleSVGPlugin,
+    SimpleSVGPopupPlugin,
     SimpleTableDataPlugin,
     SimpleVideoPlugin,
     StatCollectionPlugin,
