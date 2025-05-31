@@ -1,26 +1,29 @@
 <template>
-  <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
-    @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
-    modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
-    <div class="svg-container d-flex flex-column">
-      <div class="svg-wrapper text-center w-100" ref="svgElement" v-html="svgContents"></div>
-      <div class="download-links">
-        <small>
-          Download as
-          <a @click.prevent="downloadSVG" class="link-primary">SVG</a>
-          or
-          <a @click.prevent="downloadPNG" class="link-primary">PNG</a></small>
-      </div>
-      <p class="mt-2" v-html="message"></p>
-    </div>
+  <PluginComponent
+    :infoPayload="infoPayload"
+    v-model="open"
+    :cancelBtnTxt="neverClose ? '' : 'Ok'"
+    actionBtnTxt=""
+    @onClosed="onClosed"
+    :variant="variant"
+    @onUserArgChanged="onUserArgChanged"
+    @onPopupDone="onPopupDone"
+    modalWidth="xl"
+    @onMolCountsChanged="onMolCountsChanged"
+  >
+    <ImageViewer
+      v-if="svgContents !== ''"
+      :source="svgContents"
+      :filenameBase="filenameBaseToUse"
+      :maxHeight="500" 
+      :showDownloadButtons="true"
+    />
+    <p v-if="message !== ''" class="mt-2" v-html="message"></p>
   </PluginComponent>
 </template>
-
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
-
 import { Options } from "vue-class-component";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleSvg,
@@ -32,22 +35,22 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { FailingTest } from "@/Testing/FailingTest";
-import * as api from "@/Api";
+// import * as api from "@/Api"; // No longer needed for download if ImageViewer handles it
+// import { FileInfo } from "@/FileSystem/FileInfo"; // No longer needed for download if ImageViewer handles it
+import ImageViewer from "@/UI/Components/ImageViewer.vue"; // Import the new component
 import { FileInfo } from "@/FileSystem/FileInfo";
+import { fsApi } from "@/Api/FS";
 
 /**
- * SimpleVideoPlugin
+ * SimpleSVGPlugin
  */
 @Options({
   components: {
-    Popup,
     PluginComponent,
+    ImageViewer,
   },
 })
 export default class SimpleSVGPlugin extends PluginParentClass {
-  // @Prop({ required: true }) svgContents!: string;
-  // @Prop({ required: true }) message!: string;
-
   menuPath = null;
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
@@ -63,10 +66,19 @@ export default class SimpleSVGPlugin extends PluginParentClass {
   neverClose = false;
   showInQueue = false;
   svgContents = "";
+  filenameBasePayload = "image"; // Default filename base from payload
 
   userArgDefaults: UserArg[] = [];
-
   logJob = false;
+
+  /**
+   * Gets the filename base to use for downloads.
+   * 
+   * @returns {string} The filename base.
+   */
+  get filenameBaseToUse(): string {
+    return this.filenameBasePayload || "image";
+  }
 
   /**
    * Runs when the user first starts the plugin. For example, if the plugin is
@@ -86,6 +98,7 @@ export default class SimpleSVGPlugin extends PluginParentClass {
       payload.neverClose === undefined ? false : payload.neverClose;
     this.open = payload.open !== undefined ? payload.open : true;
     this.svgContents = payload.svgContents;
+    this.filenameBasePayload = payload.filenameBase || "image";
   }
 
   /**
@@ -110,35 +123,30 @@ export default class SimpleSVGPlugin extends PluginParentClass {
 
   /**
    * Downloads the SVG file.
+   * TODO: This method is now redundant if ImageViewer handles it. Kept for reference or if direct call needed.
    */
   downloadSVG() {
     const fileInfo = new FileInfo({
-      name: "image.svg",
+      name: `${this.filenameBaseToUse}.svg`,
       contents: this.svgContents,
     });
-    api.fs.saveSvg(fileInfo);
+    fsApi.saveSvg(fileInfo);
   }
 
   /**
    * Downloads the PNG file.
+   * TODO: This method is now redundant if ImageViewer handles it. Kept for reference or if direct call needed.
    */
   async downloadPNG() {
-    const svgElement = this.$refs.svgElement as HTMLElement;
+    const svgElement = (this.$refs.imageViewerComponent as any)?.$refs.svgElementRef as HTMLElement;
     if (!svgElement) return;
-
     const svg = svgElement.querySelector("svg");
     if (!svg) return;
 
-    // Convert SVG to data URL
     const svgData = new XMLSerializer().serializeToString(svg);
-    const encodedData = encodeURIComponent(svgData);
-    const svgUrl = `data:image/svg+xml;charset=utf-8,${encodedData}`;
-
-    // Create an image element and draw it on a canvas
     const img = new Image();
     img.onload = () => {
-      // Set desired width and calculate height to maintain aspect ratio
-      const targetWidth = 1024; // Desired width in pixels
+      const targetWidth = 1024; 
       const originalWidth = img.width;
       const originalHeight = img.height;
       const aspectRatio = originalHeight / originalWidth;
@@ -148,25 +156,22 @@ export default class SimpleSVGPlugin extends PluginParentClass {
       const canvas = document.createElement("canvas");
       canvas.width = targetWidth;
       canvas.height = targetHeight;
-
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-
       ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
 
       // Convert canvas to Blob and then to data URI
       canvas.toBlob((blob) => {
         if (!blob) return;
-
         const reader = new FileReader();
         reader.onloadend = () => {
-          const dataUri = reader.result as string; // The data URI
-          api.fs.savePngUri("image.png", dataUri); // Pass the data URI to savePngUri
+          const dataUri = reader.result as string; 
+          fsApi.savePngUri(`${this.filenameBaseToUse}.png`, dataUri); 
         };
-        reader.readAsDataURL(blob); // Convert the Blob to a data URI
+        reader.readAsDataURL(blob); 
       }, "image/png");
     };
-    img.src = svgUrl;
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgData)}`;
   }
 
   /**
