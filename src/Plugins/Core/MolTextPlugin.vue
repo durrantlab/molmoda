@@ -3,11 +3,13 @@
         @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" :submitOnEnter="false"
         @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
+            <div :class="smilesImgValid ? '' : 'hide-smiles-vis'">
             <div v-if="getUserArg('format') === 'smi' && currentSmilesForPreview.trim() !== ''"
                 class="mt-3 border p-2 text-center" style="max-height: 300px; overflow-y: auto;">
-                <!-- Mol2DView will handle displaying its own error message if currentSmilesForPreview is invalid -->
-                <Mol2DView :smiles="currentSmilesForPreview" :maxHeight="280" :minHeight="50" :showDownloadButtons="true" />
+                <Mol2DView @onValidImageDetect="onValidImageDetect" :smiles="currentSmilesForPreview" :maxHeight="280"
+                    :minHeight="50" :showDownloadButtons="true" />
             </div>
+        </div>
         </template>
     </PluginComponent>
 </template>
@@ -166,6 +168,12 @@ export default class MolTextPlugin extends PluginParentClass {
         ),
     ];
 
+    smilesImgValid = false;
+
+    onValidImageDetect(isValid: boolean) {
+        this.smilesImgValid = isValid;
+    }
+
     /**
      * Called when the user arguments change. Override this function to react
      * when the user arguments change. Access the arguments using this.userArgs.
@@ -322,4 +330,10 @@ export default class MolTextPlugin extends PluginParentClass {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.hide-smiles-vis {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+}
+</style>
