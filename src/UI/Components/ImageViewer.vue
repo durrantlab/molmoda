@@ -4,10 +4,10 @@
         </div>
         <img v-else-if="sourceType === 'png-datauri' || sourceType === 'png-url'" :src="source" ref="pngElementRef"
             alt="Image" class="png-image" :style="viewerStyle" @load="adjustImageDimensions" @error="onImageError" />
-        <div v-else class="invalid-source p-1 text-center">
+        <!-- <div v-else class="invalid-source p-1 text-center"> -->
             <!-- <Alert type="danger" class="p-0 m-0">Invalid image source or type provided.</Alert> -->
-            <p>Invalid image source or type provided.</p>
-        </div>
+            <!-- <p>Invalid image source or type provided.</p> -->
+        <!-- </div> -->
 
         <!-- Download and copy buttons -->
         <div v-if="showDownloadButtons && (sourceType === 'svg' || sourceType === 'png-datauri' || sourceType === 'png-url')"
@@ -221,11 +221,10 @@ export default class ImageViewer extends Vue {
                 svgNode.removeAttribute('height');
 
                 // Set explicit CSS properties to ensure scaling
-                const height = this.maxHeight ? `${this.maxHeight}px` : 'auto';
                 svgNode.style.width = '100%';
-                svgNode.style.height = '100%'; // height;
+                svgNode.style.height = '100%';
                 svgNode.style.maxWidth = '100%';
-                svgNode.style.maxHeight = height;
+                svgNode.style.maxHeight = this.maxHeight ? `${this.maxHeight}px` : 'auto';
                 svgNode.style.display = 'block';
 
                 // Add CSS class for styling

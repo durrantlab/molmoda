@@ -4,7 +4,7 @@
         ref="information-container"
         v-if="smiles !== ''"
     >
-        <SmilesPopupViewer width="100%" :maxHeight="150" :smiles="smiles" />
+        <SmilesPopupViewer width="100%" :maxHeight="100" :smiles="smiles" />
         <FormWrapper cls="mb-3">
             <FormInput
                 v-model="smiles"

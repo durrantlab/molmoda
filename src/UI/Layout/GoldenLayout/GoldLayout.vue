@@ -114,7 +114,7 @@
                             name="Styles"
                             state="{}"
                             :width="20"
-                            :height="75"
+                            :height="66"
                         >
                             <StylesPanel />
                         </GoldenLayoutComponent>
@@ -123,7 +123,7 @@
                             name="Information"
                             state="{}"
                             :width="20"
-                            :height="25"
+                            :height="34"
                         >
                             <InformationPanel />
                         </GoldenLayoutComponent>
