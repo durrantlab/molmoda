@@ -1,15 +1,26 @@
 <template>
     <div ref="smilesPopupViewerContainer" class="smiles-popup-viewer-container mb-4" :style="containerStyles">
         <span :style="{ cursor: inPopup || !smilesToUse ? 'default' : 'pointer' }">
-            <Mol2DView v-if="smilesToUse" :smiles="smilesToUse" :maxHeight="maxHeight"
+            <!--
+                The v-if="isIntersecting" ensures Mol2DView is only rendered
+                when the container is visible.
+            -->
+            <Mol2DView v-if="isIntersecting && smilesToUse" :smiles="smilesToUse" :maxHeight="maxHeight"
                 :drawingWidth="measuredContainerWidth > 0 ? measuredContainerWidth : undefined" :minHeight="30"
                 @click="onClick" />
+            <!-- 
+                Optional: Add a placeholder div that has a minimum height,
+                so the layout doesn't jump when the image loads.
+                This placeholder will be observed by IntersectionObserver.
+            -->
+            <div v-else-if="!isIntersecting && smilesToUse"
+                :style="{ minHeight: (maxHeight ? Math.min(maxHeight, 50) : 50) + 'px', width: '100%' }"></div>
         </span>
         <Popup v-if="!inPopup" v-model="showSmilesPopup" title="Molecular Structure" cancelBtnTxt="Close"
             id="molStructurePopupForSmiles">
             <!-- Use Mol2DView for the popup content -->
             <Mol2DView v-if="showSmilesPopup && smilesToUse" :smiles="smilesToUse" :drawingWidth="450"
-                :drawingHeight="350" :minHeight="50" :showDownloadButtons="true"/>
+                :drawingHeight="350" :minHeight="50" :showDownloadButtons="true" />
             <div v-else-if="showSmilesPopup && !smilesToUse" class="text-center p-3">
                 No SMILES string provided for popup view.
             </div>
@@ -26,6 +37,7 @@ import Mol2DView from "./Mol2DView.vue"; // Import the new reusable component
 /**
  * SmilesPopupViewer component: Displays a 2D rendering of a SMILES string using
  * Mol2DView and provides a popup for a larger view upon clicking the image.
+ * The initial Mol2DView is lazy-loaded.
  */
 @Options({
     components: {
@@ -42,10 +54,12 @@ export default class SmilesPopupViewer extends Vue {
 
     private smilesPopupViewerContainer: HTMLDivElement | undefined = undefined;
     private resizeInterval: any = undefined;
+    private intersectionObserver: IntersectionObserver | null = null;
 
     // Reactive properties
     private measuredContainerWidth = 0;
     private showSmilesPopup = false;
+    private isIntersecting = false; // True when the component is visible in the viewport
 
     /**
      * Watcher for the external width prop.
@@ -133,25 +147,65 @@ export default class SmilesPopupViewer extends Vue {
     }
 
     /**
+     * Sets up the IntersectionObserver to detect when the component is visible.
+     */
+    private setupIntersectionObserver(): void {
+        this.smilesPopupViewerContainer = this.$refs["smilesPopupViewerContainer"] as HTMLDivElement;
+        if (!this.smilesPopupViewerContainer) return;
+
+        const options = {
+            root: null, // relative to the viewport
+            rootMargin: "0px",
+            threshold: 0.01, // as soon as 1% of the element is visible
+        };
+
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    this.isIntersecting = true;
+                    // Once it's visible, we don't need to observe anymore
+                    if (this.smilesPopupViewerContainer && this.intersectionObserver) {
+                        this.intersectionObserver.unobserve(this.smilesPopupViewerContainer);
+                    }
+                }
+            });
+        }, options);
+
+        this.intersectionObserver.observe(this.smilesPopupViewerContainer);
+    }
+
+    /**
      * Lifecycle hook called when the component is unmounted.
-     * Clears the resize interval.
+     * Clears the resize interval and disconnects the IntersectionObserver.
      */
     unmounted() {
         if (this.resizeInterval) {
             clearInterval(this.resizeInterval);
             this.resizeInterval = null;
         }
+        if (this.intersectionObserver) {
+            this.intersectionObserver.disconnect();
+            this.intersectionObserver = null;
+        }
     }
 
     /**
      * Lifecycle hook called when the component is mounted.
-     * Sets up an interval to check for container width changes.
+     * Sets up an interval to check for container width changes and initializes the IntersectionObserver.
      */
     async mounted() {
         this.smilesPopupViewerContainer = this.$refs["smilesPopupViewerContainer"] as HTMLDivElement;
 
         this.$nextTick(() => {
             this.updateMeasuredContainerWidth();
+            // Only set up observer if there's a SMILES string to potentially display
+            if (this.smilesToUse) {
+                this.setupIntersectionObserver();
+            } else {
+                // If there's no SMILES, we can consider it "intersecting" to avoid blank space
+                // if it were to get SMILES later and not be observed. Or simply, do nothing.
+                // For now, if no smiles, it won't render Mol2DView anyway.
+            }
         });
 
         // Periodically check for width changes. A ResizeObserver on smilesPopupViewerContainer
