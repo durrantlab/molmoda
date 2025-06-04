@@ -67,7 +67,7 @@ import {
     IUserArgVector3D,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
-import { analyzeColor } from "./Styles/ColorSelect/ColorConverter";
+import { analyzeColor } from "../../../Core/Styling/Colors/ColorUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 

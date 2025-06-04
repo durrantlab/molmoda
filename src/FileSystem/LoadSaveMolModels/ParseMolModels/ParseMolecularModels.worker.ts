@@ -6,7 +6,6 @@ import {
 
 import {
     IAtom,
-    ISelAndStyle,
     TreeNodeType,
     SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -19,7 +18,7 @@ import {
     defaultLipidStyle,
     defaultIonsStyle,
     defaultSolventStyle,
-} from "../Types/Styles";
+} from "@/Core/Styling/SelAndStyleDefinitions";
 import {
     ionSel,
     lipidSel,
@@ -37,6 +36,8 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "./EasyParser";
 import { EasyParserParent } from "./EasyParser/EasyParserParent";
 import { convertIAtomsToIFileInfoPDB } from "../ConvertMolModels/_ConvertIAtoms";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+
 
 enum NodesOrModel {
     Nodes,

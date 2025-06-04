@@ -2,7 +2,7 @@
 // import { FileInfo } from "@/FileSystem/FileInfo";
 // import {
 //     IStyle,
-//     IColorStyle,
+//     IColorScheme,
 //     IRegion,
 //     IBox,
 //     ISphere,
@@ -158,7 +158,7 @@
 //      * @returns {GenericStyleType}  The converted style.
 //      */
 //     convertStyle(style: IStyle, treeNode: TreeNode): GenericStyleType {
-//         const styleAsDict = style as { [key: string]: IColorStyle };
+//         const styleAsDict = style as { [key: string]: IColorScheme };
 
 //         const newStyle: { [key: string]: any } = {
 //             multipleBond: true,
@@ -167,9 +167,9 @@
 //         // Iterate through properties of the style
 //         for (const component in style) {
 //             // component is like sphere, stick, line, etc.
-//             const colorStyle = styleAsDict[component];
+//             const colorScheme = styleAsDict[component];
 
-//             const {color, colorscheme, radius, opacity} = colorStyle;
+//             const {color, colorscheme, radius, opacity} = colorScheme;
 
 //             switch (color) {
 //                 case undefined:

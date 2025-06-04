@@ -1,5 +1,4 @@
 import {
-    ISelAndStyle,
     IRegion,
     RegionType,
     ISphere,
@@ -30,6 +29,7 @@ import { store } from "@/Store";
 export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 import { toRaw } from "vue";
 import { IFileInfo } from "@/FileSystem/Types";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 
 /**
  * Sets the loadViewerLibPromise variable.

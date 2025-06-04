@@ -2,73 +2,34 @@
     <Section v-bind:key="molType" :level="2" :title="capitalize(molType)">
         <template v-slot:afterTitle>
             <!-- First, the icon switcher to hide this mol type. -->
-            <IconSwitcher
-                :useFirst="isVisible"
-                :iconID1="['far', 'eye']"
-                :iconID2="['far', 'eye-slash']"
-                :icon2Style="{ color: 'lightgray' }"
-                :width="24"
-                @click="toggleVisible(molType)"
-                :clickable="true"
-                title="Visible"
-                tipPlacement="left"
-            />
+            <IconSwitcher :useFirst="isVisible" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
+                :icon2Style="{ color: 'lightgray' }" :width="24" @click="toggleVisible(molType)" :clickable="true"
+                title="Visible" tipPlacement="left" />
         </template>
 
         <!-- The atoms styling section for this moltype, with optional
         colorselect. All molecule types have atoms representations. -->
-        <FormSelect
-            :id="'atoms-' + molType"
-            v-model="atomsOption"
-            :options="atomsStyleOptions"
-            @onChange="updateMolecules(atomsOption)"
-        ></FormSelect>
-        <ColorSelect
-            v-if="atomsOption !== 'atoms-hidden'"
-            v-model="styleToUse"
-            :repName="atomsOption"
-            @onChange="updateMolecules(atomsOption)"
-            :allowColorCarbons="molType !== 'metal'"
-            :allowSpectrum="false"
-            :allowSecondaryStructure="molType === 'protein'"
-        />
+        <FormSelect :id="'atoms-' + molType" v-model="atomsOption" :options="atomsStyleOptions"
+            @onChange="updateMolecules(atomsOption)"></FormSelect>
+        <ColorSchemeSelect v-if="atomsOption !== 'atoms-hidden'" v-model="selAndStyleToUse" :repName="atomsOption"
+            :molType="molType" @onChange="updateMolecules(atomsOption)" />
 
         <!-- The protein (backbone) styling section for this moltype, with
         optional colorselect. Only if moltype is protein. -->
         <span v-if="molType === 'protein'">
-            <FormSelect
-                :id="'protein-' + molType"
-                v-model="backboneOption"
-                :options="proteinStyleOptions"
-                @onChange="updateMolecules(backboneOption)"
-            ></FormSelect>
-            <ColorSelect
-                v-if="backboneOption !== 'backbone-hidden'"
-                v-model="styleToUse"
-                :repName="backboneOption"
-                @onChange="updateMolecules(backboneOption)"
-                :allowColorByElement="false"
-                :allowColorCarbons="false"
-            />
+            <FormSelect :id="'protein-' + molType" v-model="backboneOption" :options="proteinStyleOptions"
+                @onChange="updateMolecules(backboneOption)"></FormSelect>
+            <ColorSchemeSelect v-if="backboneOption !== 'backbone-hidden'" v-model="selAndStyleToUse" :repName="backboneOption"
+                :molType="molType" @onChange="updateMolecules(backboneOption)" />
         </span>
 
         <!-- The surface styling section for this moltype, with optional
         colorselect. Only possible if not metal. -->
         <span v-if="molType !== 'metal'">
-            <FormSelect
-                :id="'surface-' + molType"
-                v-model="surfaceOption"
-                :options="metalStyleOptions"
-                @onChange="updateMolecules(surfaceOption)"
-            ></FormSelect>
-            <ColorSelect
-                v-if="surfaceOption !== 'surface-hidden'"
-                v-model="styleToUse"
-                :repName="surfaceOption"
-                @onChange="updateMolecules(surfaceOption)"
-                :allowSpectrum="false"
-                :allowSecondaryStructure="molType === 'protein'"
-            />
+            <FormSelect :id="'surface-' + molType" v-model="surfaceOption" :options="metalStyleOptions"
+                @onChange="updateMolecules(surfaceOption)"></FormSelect>
+            <ColorSchemeSelect v-if="surfaceOption !== 'surface-hidden'" v-model="selAndStyleToUse" :repName="surfaceOption"
+                :molType="molType" @onChange="updateMolecules(surfaceOption)" />
         </span>
     </Section>
 </template>
@@ -82,17 +43,22 @@ import Section from "@/UI/Layout/Section.vue";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
-import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
-import ColorSelect from "./ColorSelect/ColorSelect.vue";
+import ColorSchemeSelect from "./ColorSchemeSelect.vue";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import * as Styles from "@/FileSystem/LoadSaveMolModels/Types/Styles";
+import * as StyleManager from "@/Core/Styling/StyleManager";
+import { defaultStyles } from "@/Core/Styling/SelAndStyleDefinitions";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { capitalize } from "@/Core/Utils/StringUtils";
+import { AtomsRepresentation, BackBoneRepresentation, ISelAndStyle, Representation, SurfaceRepresentation } from "@/Core/Styling/SelAndStyleInterfaces";
+import { S } from "memfs/lib/constants";
 
 /**
- * StylesForMolType component
+ * StylesForMolType component. This contains all the representations (and color
+ * selections) for a give molecule type (e.g., proteins). It gets used multiple
+ * times, once for each molecule type. See StylesAllMolTypes.vue component.
  */
 @Options({
     components: {
@@ -100,37 +66,38 @@ import { capitalize } from "@/Core/Utils/StringUtils";
         FormSelect,
         IconSwitcher,
         FormFull,
-        ColorSelect,
+        ColorSchemeSelect,
     },
 })
 export default class StylesForMolType extends Vue {
-    @Prop({ required: true }) style!: ISelAndStyle;
+    @Prop({ required: true }) selAndStyle!: ISelAndStyle;
     @Prop({ required: true }) molType!: TreeNodeType;
 
     isVisible = true;
-    atomsOption = "atoms-hidden";
-    backboneOption = "backbone-hidden";
-    surfaceOption = "surface-hidden";
+    atomsOption = AtomsRepresentation.Hidden;
+    backboneOption = BackBoneRepresentation.Hidden;
+    surfaceOption = SurfaceRepresentation.Hidden;
 
-    styleToUse: ISelAndStyle = {};
+    selAndStyleToUse: ISelAndStyle = {};
 
     /**
      * Watches the style prop and updates the styleToUse accordingly.
      */
     @Watch("style")
     onStyleChange() {
-        this.styleToUse = this.style;
+        alert(JSON.stringify(this.selAndStyle));
+        this.selAndStyleToUse = this.selAndStyle;
     }
 
     proteinStyleOptions = [
-        { description: "Backbone: Hidden", val: "backbone-hidden" },
-        { description: "Backbone: Cartoon", val: "cartoon" },
+        { description: "Backbone: Hidden", val: BackBoneRepresentation.Hidden },
+        { description: "Backbone: Cartoon", val: BackBoneRepresentation.Cartoon },
         // {description: 'Protein: Tubes', val: 'tubes'},
     ] as IUserArgOption[];
 
     metalStyleOptions = [
-        { description: "Surface: Hidden", val: "surface-hidden" },
-        { description: "Surface", val: "surface" },
+        { description: "Surface: Hidden", val: SurfaceRepresentation.Hidden },
+        { description: "Surface", val: SurfaceRepresentation.Surface },
     ] as IUserArgOption[];
 
     /**
@@ -141,21 +108,21 @@ export default class StylesForMolType extends Vue {
      */
     get atomsStyleOptions(): IUserArgOption[] {
         let options = [
-            { description: "Atoms: Hidden", val: "atoms-hidden" },
+            { description: "Atoms: Hidden", val: AtomsRepresentation.Hidden },
         ] as IUserArgOption[];
 
         if (this.molType !== "metal") {
             options.push(
                 ...([
-                    { description: "Atoms: Lines", val: "line" },
-                    { description: "Atoms: Sticks", val: "stick" },
+                    { description: "Atoms: Lines", val: AtomsRepresentation.Line },
+                    { description: "Atoms: Sticks", val: AtomsRepresentation.Stick },
                 ] as IUserArgOption[])
             );
         }
 
         options.push({
             description: "Atoms: Spheres",
-            val: "sphere",
+            val: AtomsRepresentation.Sphere,
         } as IUserArgOption);
 
         return options;
@@ -183,20 +150,20 @@ export default class StylesForMolType extends Vue {
     /**
      * Update the style of a molecule.
      *
-     * @param {string} repName  The name of the representation. For example,
+     * @param {string} rep  The name of the representation. For example,
      *                          "atoms-hidden".
      */
-    updateMolecules(repName: string) {
+    updateMolecules(rep: Representation) {
         // Copy the styles. As any to avoid typescript errors. TODO: Seems like
         // this should happen in Styles.vue
-        let style = (this.styleToUse ? { ...this.styleToUse } : {}) as any;
+        let style = (this.selAndStyleToUse ? { ...this.selAndStyleToUse } : {}) as any;
 
         // If it's not already set and not a hidden representation, set the
         // style. Use default.
         if (
-            style[repName] === undefined &&
-            ["atoms-hidden", "backbone-hidden", "surface-hidden"].indexOf(
-                repName
+            style[rep] === undefined &&
+            [AtomsRepresentation.Hidden, BackBoneRepresentation.Hidden, SurfaceRepresentation.Hidden].indexOf(
+                rep
             ) === -1
         ) {
             // This required to deal with restoring a viz after everything set to
@@ -204,60 +171,58 @@ export default class StylesForMolType extends Vue {
             // let styleUpdated = this.style === undefined ? {} : { ...this.style };
 
             // style[repName] should be like {color: 'spectrum'}.
-            
+
             // @ts-ignore
-            style[repName] = Styles.defaultStyles[this.molType][0][repName];
-            
+            style[rep] = defaultStyles[this.molType][0][rep];
+
             // (Styles.currentStyles[this.molType] as any)[0][
             //     repName
             // ];
 
             // Happens when turning surface on for first time.
-            if (style[repName] === undefined) style[repName] = {};
+            if (style[rep] === undefined) style[rep] = {};
         }
 
-        switch (repName) {
+        switch (rep) {
             // Deal items with hidden visualizations. Delete entries that are
             // incompatible with hidden.
-            case "atoms-hidden":
+            case AtomsRepresentation.Hidden:
                 if (style.line) delete style.line;
                 if (style.stick) delete style.stick;
                 if (style.sphere) delete style.sphere;
                 break;
-            case "backbone-hidden":
+            case BackBoneRepresentation.Hidden:
                 if (style.cartoon) delete style.cartoon;
                 break;
-            case "surface-hidden":
+            case SurfaceRepresentation.Hidden:
                 if (style.surface) delete style.surface;
                 break;
 
             // In case of atoms, representations are mutually exclusive. So delete
             // other representations that might conflict with this one.
-            case "line":
+            case AtomsRepresentation.Line:
                 if (style.stick) delete style.stick;
                 if (style.sphere) delete style.sphere;
                 break;
-            case "stick":
+            case AtomsRepresentation.Stick:
                 if (style.line) delete style.line;
                 if (style.sphere) delete style.sphere;
 
                 // If it's a protein and the representation is stick, set the
                 // radius to 0.2. The goal here is to make the protein stick be
                 // thinner than any ligand stick.
-                style[repName]["radius"] =
+                style[rep]["radius"] =
                     this.molType === "protein" ? 0.1 : 0.4;
 
                 break;
-            case "sphere":
+            case AtomsRepresentation.Sphere:
                 if (style.line) delete style.line;
                 if (style.stick) delete style.stick;
                 break;
         }
 
-        debugger
-        Styles.currentStyles[this.molType] = [style];
-
-        Styles.updateStylesInViewer(this.molType);
+        StyleManager.currentSelsAndStyles[this.molType] = [style];
+        StyleManager.updateStylesInViewer(this.molType);
 
         // NOTE: No need to emit up. Parent component detects changes in
         // store.state.molecules.
@@ -277,8 +242,8 @@ export default class StylesForMolType extends Vue {
      * Runs when the Vue component is mounted.
      */
     mounted() {
-        this._setInitialSelectedStyles(this.style);
-        this.styleToUse = this.style;
+        this._setInitialSelectedStyles(this.selAndStyle);
+        this.selAndStyleToUse = this.selAndStyle;
         this.updateMolecules(this.atomsOption);
     }
 
@@ -294,25 +259,25 @@ export default class StylesForMolType extends Vue {
         }
 
         if (style.sphere) {
-            this.atomsOption = "sphere";
+            this.atomsOption = AtomsRepresentation.Sphere;
         } else if (style.stick) {
-            this.atomsOption = "stick";
+            this.atomsOption = AtomsRepresentation.Stick;
         } else if (style.line) {
-            this.atomsOption = "line";
+            this.atomsOption = AtomsRepresentation.Line;
         } else {
-            this.atomsOption = "atoms-hidden";
+            this.atomsOption = AtomsRepresentation.Hidden;
         }
 
         if (style.cartoon) {
-            this.backboneOption = "cartoon";
+            this.backboneOption = BackBoneRepresentation.Cartoon;
         } else {
-            this.backboneOption = "backbone-hidden";
+            this.backboneOption = BackBoneRepresentation.Hidden;
         }
 
         if (style.surface) {
-            this.surfaceOption = "surface";
+            this.surfaceOption = SurfaceRepresentation.Surface;
         } else {
-            this.surfaceOption = "surface-hidden";
+            this.surfaceOption = SurfaceRepresentation.Hidden;
         }
     }
 }

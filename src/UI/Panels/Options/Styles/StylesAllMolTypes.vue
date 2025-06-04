@@ -1,12 +1,12 @@
 <template>
     <Section title="">
         <span
-            v-for="styleForMolType in stylesForMolTypes"
-            v-bind:key="styleForMolType.molType"
+            v-for="selStyleForMolType in selStylesForMolTypes"
+            v-bind:key="selStyleForMolType.molType"
         >
             <StylesForMolType
-                :style="styleForMolType.style"
-                :molType="styleForMolType.molType"
+                :selAndStyle="selStyleForMolType.selAndStyle"
+                :molType="selStyleForMolType.molType"
             ></StylesForMolType>
         </span>
     </Section>
@@ -21,18 +21,25 @@ import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
 import isEqual from "lodash.isequal";
-import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import StylesForMolType from "./StylesForMolType.vue";
-import { IStyleForMolType } from "./Interfaces";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 
-interface IStyleCount {
-    style: ISelAndStyle;
+interface ISelAndStyleCount {
+    selAndStyle: ISelAndStyle;
     count: number;
 }
 
+interface ISelStyleForMolType {
+    selAndStyle: ISelAndStyle;
+    molType: TreeNodeType;
+}
+
 /**
- * StylesAllMolTypes component
+ * StylesAllMolTypes component. This is the component that allows the user to
+ * set style and colors on all molecule types. This is the "parent" component
+ * that gets used in StylesPanel.vue.
  */
 @Options({
     components: {
@@ -47,10 +54,10 @@ export default class StylesAllMolTypes extends Vue {
      * these molecules and finds the style elements that are most common, then
      * picks that consensus style (for each mol type).
      *
-     * @returns {IStyleForMolType[]}  The consensus styles, per mol type.
+     * @returns {ISelStyleForMolType[]}  The consensus styles, per mol type.
      */
-    get stylesForMolTypes(): IStyleForMolType[] {
-        let allStyles: { [key: string]: ISelAndStyle[] } = {};
+    get selStylesForMolTypes(): ISelStyleForMolType[] {
+        let allSelStylesCollected: { [key: string]: ISelAndStyle[] } = {};
         let molecules = this.$store.state["molecules"] as TreeNodeList;
 
         // Get the styles for all visible components, organized by molecule type.
@@ -64,50 +71,48 @@ export default class StylesAllMolTypes extends Vue {
 
             if (node.type === TreeNodeType.Other) { continue; }  // Can't change other style
 
-            if (allStyles[node.type] === undefined) {
-                allStyles[node.type] = [];
+            if (allSelStylesCollected[node.type] === undefined) {
+                allSelStylesCollected[node.type] = [];
             }
 
-            allStyles[node.type].push(...node.styles);
+            allSelStylesCollected[node.type].push(...node.styles);
         }
-
-        console.error("Note that it is here that entries with multiple styles get reduced to only one. Need to retain all somehow.")
 
         // For each type, get the styles that all molecules have in common. Note
         // that a given type may have no styles in common, in which case it will be
         // associated with an empty list.
-        let allStylesAndCounts: { [key: string]: IStyleCount[] } = {};
-        for (let type in allStyles) {
-            let styles = allStyles[type];
+        let allSelStylesAndCounts: { [key: string]: ISelAndStyleCount[] } = {};
+        for (let selStyleType in allSelStylesCollected) {
+            let selStyles = allSelStylesCollected[selStyleType];
 
-            let stylesAndCounts = this._initStyleToStyleCount([styles[0]]);
-            for (let i = 1; i < styles.length; i++) {
-                let newStyleCounts = this._initStyleToStyleCount([styles[i]]);
-                stylesAndCounts = this._tallyStyles(
-                    stylesAndCounts,
+            let selStylesAndCounts = this._initStyleToStyleCount([selStyles[0]]);
+            for (let i = 1; i < selStyles.length; i++) {
+                let newStyleCounts = this._initStyleToStyleCount([selStyles[i]]);
+                selStylesAndCounts = this._tallyStyles(
+                    selStylesAndCounts,
                     newStyleCounts
                 );
             }
 
             // Sort the styles by count, descending.
-            stylesAndCounts.sort((a, b) => b.count - a.count);
+            selStylesAndCounts.sort((a, b) => b.count - a.count);
 
-            allStylesAndCounts[type] = stylesAndCounts;
+            allSelStylesAndCounts[selStyleType] = selStylesAndCounts;
         }
 
-        let allStylesAndCountsInfo: IStyleForMolType[] = Object.keys(
-            allStylesAndCounts
+        let mostCommonSelStylesPerMolType: ISelStyleForMolType[] = Object.keys(
+            allSelStylesAndCounts
         ).map((k: string) => {
             return {
                 molType: k,
-                style:
-                    allStylesAndCounts[k].length > 0
-                        ? allStylesAndCounts[k][0].style // First one is the most common.
+                selAndStyle:
+                    allSelStylesAndCounts[k].length > 0
+                        ? allSelStylesAndCounts[k][0].selAndStyle // First one is the most common.
                         : {}, // No styles for this type.
-            } as IStyleForMolType;
+            } as ISelStyleForMolType;
         });
 
-        return allStylesAndCountsInfo;
+        return mostCommonSelStylesPerMolType;
     }
 
     /**
@@ -115,11 +120,11 @@ export default class StylesAllMolTypes extends Vue {
      * because this serves to initialize the style count list.
      *
      * @param   {ISelAndStyle[]}  styles  The styles
-     * @returns {IStyleCount[]}  The style counts
+     * @returns {ISelAndStyleCount[]}  The style counts
      */
-    private _initStyleToStyleCount(styles: ISelAndStyle[]): IStyleCount[] {
-        return styles.map((s: ISelAndStyle): IStyleCount => {
-            return { style: s, count: 1 };
+    private _initStyleToStyleCount(styles: ISelAndStyle[]): ISelAndStyleCount[] {
+        return styles.map((s: ISelAndStyle): ISelAndStyleCount => {
+            return { selAndStyle: s, count: 1 };
         });
     }
 
@@ -128,19 +133,19 @@ export default class StylesAllMolTypes extends Vue {
      * duplicates. It adds the counts where the styles are the same, and otherwise
      * merges the two counts lists.
      *
-     * @param   {IStyleCount[]}  stylesAndCounts  The existing styles and counts.
-     * @param   {IStyleCount[]}  newStyleCounts   The new styles and counts to
+     * @param   {ISelAndStyleCount[]}  stylesAndCounts  The existing styles and counts.
+     * @param   {ISelAndStyleCount[]}  newStyleCounts   The new styles and counts to
      *                                            add.
-     * @returns {IStyleCount[]} The styles and counts after tallying.
+     * @returns {ISelAndStyleCount[]} The styles and counts after tallying.
      */
     private _tallyStyles(
-        stylesAndCounts: IStyleCount[],
-        newStyleCounts: IStyleCount[]
-    ): IStyleCount[] {
+        stylesAndCounts: ISelAndStyleCount[],
+        newStyleCounts: ISelAndStyleCount[]
+    ): ISelAndStyleCount[] {
         for (let newStyleCount of newStyleCounts) {
             let styleExistsInStylesAndCounts = false;
             for (let styleAndCount of stylesAndCounts) {
-                if (isEqual(styleAndCount.style, newStyleCount.style)) {
+                if (isEqual(styleAndCount.selAndStyle, newStyleCount.selAndStyle)) {
                     styleAndCount.count++;
                     styleExistsInStylesAndCounts = true;
                     break;

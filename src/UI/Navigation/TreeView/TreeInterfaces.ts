@@ -139,22 +139,6 @@ export interface ITreeNodeData {
 
 // export interface IResidue extends TreeNode {}
 
-export interface IColorStyle {
-    color?: string;
-    colorscheme?: string;
-    radius?: number;
-    opacity?: number;  // Only for surfaces. Not user editable.
-}
-
-export interface ISelAndStyle {
-    selection?: any;
-    sphere?: IColorStyle;
-    stick?: IColorStyle;
-    line?: IColorStyle;
-    cartoon?: IColorStyle;
-    surface?: IColorStyle; // NOTE: Not how 3dmoljs handles surface.
-}
-
 // Below is used by the FormSelectRegion component in its emits.
 export interface ISphereOrBox {
     center: [number, number, number];

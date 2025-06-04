@@ -11,7 +11,7 @@ import * as api from "@/Api/";
 
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
-import { unbondedAtomsStyle } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
+import { unbondedAtomsStyle } from "@/Core/Styling/SelAndStyleDefinitions";
 import { Vue } from "vue-class-component";
 import { Watch } from "vue-property-decorator";
 // import { ViewerNGL } from "./Viewers/ViewerNGL";
@@ -22,10 +22,10 @@ import {
 } from "./Viewers/ViewerParent";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
-  ISelAndStyle,
   SelectedType,
   TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 
 /**
  * ViewerPanel component
@@ -298,8 +298,6 @@ export default class ViewerPanel extends Vue {
     let surfaceStyles: ISelAndStyle[] = []; // Should only be one, but keep list for consistency.
     let nonSurfaceStyles: ISelAndStyle[] = [];
 
-    debugger
-
     // Separate surface style from other styles
     for (let style of treeNode.styles) {
       if (style.surface) {
@@ -370,9 +368,9 @@ export default class ViewerPanel extends Vue {
 
         
         for (let key in convertedSelAndStyle?.style) {
-          if (treeNode.type === TreeNodeType.Solvent) {
-            debugger;
-          }
+          // if (treeNode.type === TreeNodeType.Solvent) {
+          //   debugger;
+          // }
           if (key === "selection") {
             // Don't change the selection.
             continue;

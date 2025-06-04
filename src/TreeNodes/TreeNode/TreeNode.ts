@@ -9,7 +9,6 @@ import {
     SelectedType,
     ITreeNodeData,
     IAtom,
-    ISelAndStyle,
     IRegion,
     IBox,
     RegionType,
@@ -22,10 +21,11 @@ import { store } from "@/Store";
 import * as api from "@/Api";
 import * as SetupTests from "@/Testing/SetupTests";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
-import { updateStylesInViewer } from "@/FileSystem/LoadSaveMolModels/Types/Styles";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {

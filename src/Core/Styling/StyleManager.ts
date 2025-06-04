@@ -2,83 +2,38 @@ import {
     getMoleculesFromStore,
     setStoreVar,
 } from "@/Store/StoreExternalAccess";
-import { ISelAndStyle, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import isEqual from "lodash.isequal";
+import { ISelAndStyle } from "./SelAndStyleInterfaces";
+import { defaultStyles } from "./SelAndStyleDefinitions";
 
-export const unbondedAtomsStyle: ISelAndStyle = {
-    selection: {
-        bonds: 0,
-    },
-    sphere: {
-        radius: 0.5,
-    },
-};
+// These are the styles actually used. It is initially set to be the same as the
+// defaults, but it will change per user specifications.
+export const currentSelsAndStyles: { [key in TreeNodeType]: ISelAndStyle[] } =
+    JSON.parse(JSON.stringify(defaultStyles));
 
-const _sphereStyle: ISelAndStyle = {
-    selection: {},
-    sphere: {},
-};
-
-const _stickStyle: ISelAndStyle = {
-    selection: {},
-    stick: {},
-};
-
-export const defaultProteinStyle: ISelAndStyle[] = [
-    {
-        selection: {},
-        cartoon: {
-            color: "spectrum",
-        },
-    },
-    {
+// These are the custom styles that the user can add. They are applied to every
+// molecule.
+export const customSelsAndStyles: { [key: string]: ISelAndStyle } = {
+    "Blue LYS": {
         selection: {
             resn: "LYS",
         },
         sphere: {
             color: "blue",
         },
-    }
-];
-
-export const defaultNucleicStyle: ISelAndStyle[] = [_stickStyle];
-
-export const defaultLigandsStyle: ISelAndStyle[] = [_stickStyle];
-
-export const defaultMetalsStyle: ISelAndStyle[] = [_sphereStyle];
-
-export const defaultLipidStyle: ISelAndStyle[] = [_stickStyle];
-
-export const defaultIonsStyle: ISelAndStyle[] = [_sphereStyle];
-
-export const defaultSolventStyle: ISelAndStyle[] = [_stickStyle];
-
-// export const defaultOtherStyle: IStyle[] = [_sphereStyle];
-
-// Empty on purpose to satisfy typescript
-const regionStyle: ISelAndStyle[] = [];
-
-// This is used to restore original styling, for example after hiding a
-// representation and then bringing it back.
-export const defaultStyles: { [key in TreeNodeType]: ISelAndStyle[] } = {
-    [TreeNodeType.Protein]: defaultProteinStyle,
-    [TreeNodeType.Nucleic]: defaultNucleicStyle,
-    [TreeNodeType.Compound]: defaultLigandsStyle,
-    [TreeNodeType.Metal]: defaultMetalsStyle,
-    [TreeNodeType.Lipid]: defaultLipidStyle,
-    [TreeNodeType.Ions]: defaultIonsStyle,
-    [TreeNodeType.Solvent]: defaultSolventStyle,
-    [TreeNodeType.Region]: regionStyle,
-    [TreeNodeType.Other]: [], // Must be defined explicitly (TreeNode.styles = [{...}])
+    },
+    "TRP red": {
+        selection: {
+            resn: "TRP",
+        },
+        stick: {
+            color: "red",
+        },
+    },
 };
-
-// This is the styles actually used. It is initially set to be the same as the
-// defaults, but it will change per user specifications.
-export const currentStyles: { [key in TreeNodeType]: ISelAndStyle[] } = JSON.parse(
-    JSON.stringify(defaultStyles)
-);
 
 /**
  * Updates the styles in the viewer.
@@ -115,7 +70,7 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
         // Iterate through the node types you're considering.
         for (let i = 0; i < treeNodeTypes.length; i++) {
             const molType = treeNodeTypes[i];
-            const style = currentStyles[molType];
+            const selStyle = currentSelsAndStyles[molType];
 
             // Check if the node type matches this type. If not, skip to the
             // next node.
@@ -125,14 +80,25 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
 
             // Add the styles to the node list if it's not empty ({}).
             terminalNode.styles = [];
-            if (!isEqual(style, {})) {
-                terminalNode.styles.push(...style);
+            if (!isEqual(selStyle, {})) {
+                terminalNode.styles.push(...selStyle);
+            }
+
+            // Also add all custom styles to the node list.
+            if (Object.keys(customSelsAndStyles).length > 0) {
+                // Add custom styles to the node list.
+                for (const customSelAndStyle of Object.values(
+                    customSelsAndStyles
+                )) {
+                    // Check if the custom style is not empty ({}).
+                    if (!isEqual(customSelAndStyle, {})) {
+                        terminalNode.styles.push(customSelAndStyle);
+                    }
+                }
             }
 
             // Mark this for rerendering in viewer.
             terminalNode.viewerDirty = true;
-
-            debugger
         }
     }
 

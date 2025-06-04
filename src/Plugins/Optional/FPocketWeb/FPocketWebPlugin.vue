@@ -35,16 +35,14 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { Options } from "vue-class-component";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
-    IColorStyle,
     ITreeNodeData,
-    ISelAndStyle,
     TreeNodeDataType,
     TreeNodeType,
     // IBox,
     SelectedType,
     TableHeaderSort,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { randomPastelColor } from "@/UI/Panels/Options/Styles/ColorSelect/ColorConverter";
+import { randomPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { messagesApi } from "@/Api/Messages";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { ITest } from "@/Testing/TestCmd";
@@ -53,6 +51,8 @@ import { FPocketWebQueue } from "./FPocketWebQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces";
 
 /**
  * FPocketWebPlugin
@@ -517,7 +517,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                         surface: {
                             color: randomPastelColor(),
                             opacity: 0.9,
-                        } as IColorStyle,
+                        } as IColorScheme,
                     } as ISelAndStyle,
                 ];
 

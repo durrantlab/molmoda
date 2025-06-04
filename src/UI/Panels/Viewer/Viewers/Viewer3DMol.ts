@@ -7,7 +7,6 @@ import {
     IBox,
     ICylinder,
     ISphere,
-    ISelAndStyle,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     GenericSurfaceType,
@@ -19,10 +18,11 @@ import { IFileInfo } from "@/FileSystem/Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertIAtoms";
-import { getMoleculeColor } from "../../Options/Styles/ColorSelect/MoleculeColors";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { getNamedPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 
 /**
  * Viewer3DMol
@@ -625,7 +625,7 @@ export class Viewer3DMol extends ViewerParent {
                     const topAncestor = treeNode.getAncestry(allMols).nodes[0];
                     colorId = topAncestor.id || moleculeId;
                 }
-                result[key] = getMoleculeColor(colorId);
+                result[key] = getNamedPastelColor(colorId);
             } else if (typeof value === "object") {
                 result[key] = this._processStyleColors(value, moleculeId);
             } else {

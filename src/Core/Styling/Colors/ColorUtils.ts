@@ -4,6 +4,11 @@ interface IColorInfo {
     rgb?: number[];
 }
 
+/**
+ * Cache to store molecule colors to ensure consistency within a session
+ */
+const namedPastelColors: { [key: string]: string } = {};
+
 // See https://www.scaler.com/topics/html-color-names/
 let colorInfomation = [
     { hex: "#F0F8FF", name: "AliceBlue" },
@@ -145,6 +150,7 @@ let colorInfomation = [
     { hex: "#FFFF00", name: "Yellow" },
     { hex: "#9ACD32", name: "YellowGreen" },
 ];
+
 /**
  * Convert hex to rgb values
  *
@@ -340,4 +346,18 @@ export function randomPastelColor(seedStr?: string): string {
 
     // Set color to hex
     return "#" + rgb.map((val) => val.toString(16)).join("");
+}
+
+/**
+ * Gets a consistent pastel color for a given name (e.g., molecule ID). The
+ * color will be the same each time for a given name within a session.
+ *
+ * @param {string} name  The molecule name.
+ * @returns {string}  The color.
+ */
+export function getNamedPastelColor(name: string): string {
+    if (!namedPastelColors[name]) {
+        namedPastelColors[name] = randomPastelColor();
+    }
+    return namedPastelColors[name];
 }
