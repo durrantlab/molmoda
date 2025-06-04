@@ -89,7 +89,7 @@ export function addCustomStyle(
 ): boolean {
     if (customSelsAndStyles[name] && !overwrite) {
         messagesApi.popupError(
-            `A custom style with the name "${name}" already exists.`
+   `A custom visualization with the name "${name}" already exists.`
         );
         return false;
     }

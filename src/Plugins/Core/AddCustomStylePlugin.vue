@@ -2,7 +2,7 @@
     <PluginComponent
       v-model="open"
       :infoPayload="infoPayload"
-      actionBtnTxt="Add Style"
+   actionBtnTxt="Add Visualization"
       @onPopupDone="onPopupDone"
       @onUserArgChanged="onUserArgChanged"
       :isActionBtnEnabled="isActionBtnEnabled"
@@ -21,7 +21,6 @@
       </template>
     </PluginComponent>
   </template>
-  
   <script lang="ts">
   import { Options } from "vue-class-component";
   import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -53,7 +52,6 @@
   import { TestCmdList } from "@/Testing/TestCmdList";
   import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
-  
   /**
    * Parses a comma-separated string of names into an array of uppercase
    * strings.
@@ -119,10 +117,10 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
     },
   })
   export default class AddCustomStylePlugin extends PluginParentClass {
-    menuPath = "Style/Custom Styles/Add New Custom Style...";
-    title = "Add New Custom Style";
+ menuPath = "View/Visualizations/Add New Visualization...";
+ title = "Add New Visualization";
     pluginId = "addcustomstyle";
-    intro = "Define a new custom style by specifying selection criteria, representation, and color.";
+ intro = "Define a new visualization by specifying selection criteria, representation, and color.";
     tags = [Tag.Visualization, Tag.All];
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
@@ -133,10 +131,10 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
     userArgDefaults: UserArg[] = [
       {
         id: "styleName",
-        label: "Style name",
+  label: "Visualization name",
         val: "",
-        placeHolder: "Blue Lysines...",
-        description: "A unique name for this custom style.",
+  placeHolder: "Blue Lysines Visualization...",
+  description: "A unique name for this visualization.",
         validateFunc: (val: string) => val.trim().length > 0,
       } as IUserArgText,
       {
@@ -189,7 +187,6 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
         description: "Comma-separated list of element symbols (e.g., C, Fe, S).",
       } as IUserArgText,
     ];
-  
     /**
      * Tree node type to pass to ColorSchemeSelect. Using 'Other' as a general
      * type for custom styles.
@@ -248,7 +245,7 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
     async onPopupDone(): Promise<void> {
       const styleName = (this.getUserArg("styleName") as string).trim();
       if (!styleName) {
-        messagesApi.popupError("Style name cannot be empty.");
+  messagesApi.popupError("Visualization name cannot be empty.");
         return;
       }
   
@@ -292,7 +289,7 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
   
       const success = StyleManager.addCustomStyle(styleName, finalStyle);
       if (success) {
-        messagesApi.popupMessage("Success", `Custom style "${styleName}" added.`, PopupVariant.Success);
+  messagesApi.popupMessage("Success", `Visualization "${styleName}" added.`, PopupVariant.Success);
         this.closePopup();
       }
       // If not successful, addCustomStyle would have shown an error.
@@ -329,7 +326,7 @@ import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
     async getTests(): Promise<ITest> {
       return {
         pluginOpen: new TestCmdList()
-          .setUserArg("styleName", "TestCustomSphere", this.pluginId)
+    .setUserArg("styleName", "TestCustomVisualization", this.pluginId)
           .setUserArg("representationType", AtomsRepresentation.Sphere, this.pluginId)
           .setUserArg("selectionResidueNames", "LYS", this.pluginId),
         // ColorSchemeSelect is tricky to test directly here without more interaction.

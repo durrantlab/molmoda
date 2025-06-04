@@ -1,8 +1,7 @@
 <template>
-    <Section title="Custom Styles">
+ <Section title="Custom Visualizations">
       <div v-if="customStylesForDisplay.length === 0" class="pb-0">
-        <p style="font-size: 14px">No custom styles defined.</p>
-        <!-- TODO: Add a way to create new custom styles in the future -->
+  <p style="font-size: 14px">No custom visualizations defined.</p>
       </div>
       <div v-else>
         <div
@@ -25,7 +24,7 @@
               :icon2Style="{ color: 'lightgray' }"
               :width="22"
               @click="handleToggleCustomStyle(name)"
-              title="Toggle Style"
+     title="Toggle Visualization"
               class="me-2 clickable"
             />
             <IconSwitcher
@@ -34,12 +33,17 @@
               :iconID2="['far', 'rectangle-xmark']"
               :width="22"
               @click="handleDeleteCustomStyle(name)"
-              title="Delete Style"
+     title="Delete Visualization"
               class="clickable"
             />
           </div>
         </div>
       </div>
+   <div class="text-end mt-2" style="padding-right: 11px;">
+  <span @click="openAddNewVisualizationPlugin" role="button" tabindex="0" title="Add New Visualization" class="clickable" style="font-size: 1.1rem; text-decoration: none;">
+ <Icon :icon="['fas', 'plus']" />
+  </span>
+   </div>
     </Section>
   </template>
   <script lang="ts">
@@ -48,6 +52,8 @@
   import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
   import * as StyleManager from "@/Core/Styling/StyleManager";
   import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+  import { pluginsApi } from "@/Api/Plugins"; // Import the API
+  import Icon from "@/UI/Components/Icon.vue"; // Import Icon component
   /**
    * StylesCustom component for managing and displaying custom styles.
    */
@@ -55,6 +61,7 @@
     components: {
       Section,
       IconSwitcher,
+   Icon,
     },
   })
   export default class StylesCustom extends Vue {
@@ -95,6 +102,13 @@
       StyleManager.deleteCustomStyle(name);
    // this.updateTrigger++; // Force re-render -- Removed
     }
+
+  /**
+   * Opens the "Add New Visualization" plugin.
+   */
+   openAddNewVisualizationPlugin(): void {
+   pluginsApi.runPlugin("addcustomstyle"); // The pluginId is still 'addcustomstyle'
+  }
   }
   </script>
   <style scoped lang="scss">
