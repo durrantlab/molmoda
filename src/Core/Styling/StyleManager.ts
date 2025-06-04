@@ -35,6 +35,43 @@ export const customSelsAndStyles: { [key: string]: ISelAndStyle } = {
     },
 };
 
+const disabledCustomStyleNames = new Set<string>();
+
+/**
+ * Checks if a custom style is currently enabled.
+ *
+ * @param {string} name The name of the custom style.
+ * @returns {boolean} True if the style is enabled, false otherwise.
+ */
+export function isCustomStyleEnabled(name: string): boolean {
+ return !disabledCustomStyleNames.has(name);
+}
+
+/**
+ * Toggles the enabled/disabled state of a custom style.
+ *
+ * @param {string} name The name of the custom style to toggle.
+ */
+export function toggleCustomStyle(name: string): void {
+ if (disabledCustomStyleNames.has(name)) {
+  disabledCustomStyleNames.delete(name);
+ } else {
+  disabledCustomStyleNames.add(name);
+ }
+ updateStylesInViewer();
+}
+
+/**
+ * Deletes a custom style.
+ *
+ * @param {string} name The name of the custom style to delete.
+ */
+export function deleteCustomStyle(name: string): void {
+ delete customSelsAndStyles[name];
+ disabledCustomStyleNames.delete(name); // Ensure it's also removed from disabled set
+ updateStylesInViewer();
+}
+
 /**
  * Updates the styles in the viewer.
  *
@@ -52,9 +89,9 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
 
     // iterate through terminal nodes
     const terminalNodes = molecules.filters.onlyTerminal;
+
     for (let idx = 0; idx < terminalNodes.length; idx++) {
         const terminalNode = terminalNodes.get(idx);
-
         // Terminal node must have a type, styles, and be visible.
         if (
             !terminalNode.type ||
@@ -87,9 +124,12 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
             // Also add all custom styles to the node list.
             if (Object.keys(customSelsAndStyles).length > 0) {
                 // Add custom styles to the node list.
-                for (const customSelAndStyle of Object.values(
+    for (const [styleName, customSelAndStyle] of Object.entries(
                     customSelsAndStyles
                 )) {
+     if (disabledCustomStyleNames.has(styleName)) {
+      continue;
+     }
                     // Check if the custom style is not empty ({}).
                     if (!isEqual(customSelAndStyle, {})) {
                         terminalNode.styles.push(customSelAndStyle);

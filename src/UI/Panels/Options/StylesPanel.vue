@@ -2,13 +2,9 @@
     <span>
         <!-- For regions -->
         <Section title="Region" v-if="numselectedRegions === 1">
-            <FormFull
-                v-model="constructedRegionForm"
-                id="region-style"
-            ></FormFull>
+            <FormFull v-model="constructedRegionForm" id="region-style"></FormFull>
             <hr class="mt-4" />
         </Section>
-
         <!-- For molecules -->
         <Section title="Molecules">
             <div v-if="visibleTreeNodes.length === 0" class="pb-0">
@@ -23,11 +19,11 @@
                 <StylesAllMolTypes />
             </div>
         </Section>
-
-        <!-- For regions -->
-        <div
-            v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0"
-        >
+        <!-- Custom Styles Section -->
+        <hr class="mt-4 mb-3" />
+        <StylesCustom />
+        <!-- For regions (fallback message if no specific region selected) -->
+        <div v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0">
             <hr class="mt-4 mb-3" />
             <Section title="Region" class="pb-2">
                 <p style="font-size: 14px">
@@ -45,7 +41,6 @@
         </div>
     </span>
 </template>
-
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
@@ -70,6 +65,7 @@ import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { analyzeColor } from "../../../Core/Styling/Colors/ColorUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import StylesCustom from "./Styles/StylesCustom.vue"; // Import the new component
 
 /**
  * StylesPanel component
@@ -82,6 +78,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
         Section,
         StylesAllMolTypes,
         FormFull,
+        StylesCustom,
     },
 })
 export default class StylesPanel extends Vue {
@@ -255,6 +252,5 @@ export default class StylesPanel extends Vue {
     }
 }
 </script>
-
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss"></style>
