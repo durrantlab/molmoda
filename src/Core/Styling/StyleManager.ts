@@ -8,6 +8,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import isEqual from "lodash.isequal";
 import { ISelAndStyle } from "./SelAndStyleInterfaces";
 import { defaultStyles } from "./SelAndStyleDefinitions";
+import { messagesApi } from "@/Api/Messages"; // Added import
 
 // These are the styles actually used. It is initially set to be the same as the
 // defaults, but it will change per user specifications.
@@ -44,7 +45,7 @@ const disabledCustomStyleNames = new Set<string>();
  * @returns {boolean} True if the style is enabled, false otherwise.
  */
 export function isCustomStyleEnabled(name: string): boolean {
- return !disabledCustomStyleNames.has(name);
+    return !disabledCustomStyleNames.has(name);
 }
 
 /**
@@ -53,12 +54,12 @@ export function isCustomStyleEnabled(name: string): boolean {
  * @param {string} name The name of the custom style to toggle.
  */
 export function toggleCustomStyle(name: string): void {
- if (disabledCustomStyleNames.has(name)) {
-  disabledCustomStyleNames.delete(name);
- } else {
-  disabledCustomStyleNames.add(name);
- }
- updateStylesInViewer();
+    if (disabledCustomStyleNames.has(name)) {
+        disabledCustomStyleNames.delete(name);
+    } else {
+        disabledCustomStyleNames.add(name);
+    }
+    updateStylesInViewer();
 }
 
 /**
@@ -67,9 +68,37 @@ export function toggleCustomStyle(name: string): void {
  * @param {string} name The name of the custom style to delete.
  */
 export function deleteCustomStyle(name: string): void {
- delete customSelsAndStyles[name];
- disabledCustomStyleNames.delete(name); // Ensure it's also removed from disabled set
- updateStylesInViewer();
+    delete customSelsAndStyles[name];
+    disabledCustomStyleNames.delete(name); // Ensure it's also removed from disabled set
+    updateStylesInViewer();
+}
+
+/**
+ * Adds a new custom style to the application.
+ *
+ * @param {string} name The name of the custom style.
+ * @param {ISelAndStyle} style The custom style object.
+ * @param {boolean} [overwrite=false] Whether to overwrite if a style with the same name exists.
+ * @returns {boolean} True if the style was added/updated, false if a name collision occurred and overwrite was false.
+ */
+export function addCustomStyle(
+    name: string,
+    style: ISelAndStyle,
+    overwrite = false
+): boolean {
+    if (customSelsAndStyles[name] && !overwrite) {
+        messagesApi.popupError(
+            `A custom style with the name "${name}" already exists.`
+        );
+        return false;
+    }
+    customSelsAndStyles[name] = style;
+    updateStylesInViewer(); // Trigger viewer update
+    // The StylesCustom.vue component uses a computed property that directly reads
+    // from customSelsAndStyles. Vue's reactivity should handle the update
+    // automatically if customSelsAndStyles is a reactive object.
+    // If it doesn't, we might need an event bus or a different reactivity trigger.
+    return true;
 }
 
 /**
@@ -124,12 +153,12 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
             // Also add all custom styles to the node list.
             if (Object.keys(customSelsAndStyles).length > 0) {
                 // Add custom styles to the node list.
-    for (const [styleName, customSelAndStyle] of Object.entries(
+                for (const [styleName, customSelAndStyle] of Object.entries(
                     customSelsAndStyles
                 )) {
-     if (disabledCustomStyleNames.has(styleName)) {
-      continue;
-     }
+                    if (disabledCustomStyleNames.has(styleName)) {
+                        continue;
+                    }
                     // Check if the custom style is not empty ({}).
                     if (!isEqual(customSelAndStyle, {})) {
                         terminalNode.styles.push(customSelAndStyle);
