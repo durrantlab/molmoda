@@ -42,7 +42,6 @@
       </div>
     </Section>
   </template>
-  
   <script lang="ts">
   import { Options, Vue } from "vue-class-component";
   import Section from "@/UI/Layout/Section.vue";
@@ -59,7 +58,7 @@
     },
   })
   export default class StylesCustom extends Vue {
-  private updateTrigger = 0; // Reactive property to force updates
+  // private updateTrigger = 0; // Reactive property to force updates -- Removed
     /**
      * Gets the custom styles for display in the template.
      * This computed property ensures reactivity when styles are added or removed.
@@ -67,11 +66,8 @@
      * @returns {any} An array of [name, styleObject] pairs.
      */
     get customStylesForDisplay(): Array<[string, ISelAndStyle]> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ = this.updateTrigger; // Make this computed property dependent on updateTrigger
       return Object.entries(StyleManager.customSelsAndStyles);
     }
-  
     /**
      * Checks if a custom style is enabled.
      *
@@ -81,7 +77,6 @@
     isCustomStyleEnabled(name: string): boolean {
       return StyleManager.isCustomStyleEnabled(name);
     }
-  
     /**
      * Handles the toggling of a custom style's visibility (enabled/disabled state).
      *
@@ -89,9 +84,8 @@
      */
     handleToggleCustomStyle(name: string): void {
       StyleManager.toggleCustomStyle(name);
-   this.updateTrigger++; // Force re-render
+   // this.updateTrigger++; // Force re-render -- Removed
     }
-  
     /**
      * Handles the deletion of a custom style.
      *
@@ -99,11 +93,10 @@
      */
     handleDeleteCustomStyle(name: string): void {
       StyleManager.deleteCustomStyle(name);
-   this.updateTrigger++; // Force re-render
+   // this.updateTrigger++; // Force re-render -- Removed
     }
   }
   </script>
-  
   <style scoped lang="scss">
   .clickable {
     cursor: pointer;

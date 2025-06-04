@@ -9,6 +9,7 @@ import isEqual from "lodash.isequal";
 import { ISelAndStyle } from "./SelAndStyleInterfaces";
 import { defaultStyles } from "./SelAndStyleDefinitions";
 import { messagesApi } from "@/Api/Messages"; // Added import
+import { reactive } from "vue"; // Import reactive
 
 // These are the styles actually used. It is initially set to be the same as the
 // defaults, but it will change per user specifications.
@@ -17,7 +18,7 @@ export const currentSelsAndStyles: { [key in TreeNodeType]: ISelAndStyle[] } =
 
 // These are the custom styles that the user can add. They are applied to every
 // molecule.
-export const customSelsAndStyles: { [key: string]: ISelAndStyle } = {
+export const customSelsAndStyles: { [key: string]: ISelAndStyle } = reactive({
     "Blue LYS": {
         selection: {
             resn: "LYS",
@@ -34,9 +35,9 @@ export const customSelsAndStyles: { [key: string]: ISelAndStyle } = {
             color: "red",
         },
     },
-};
+});
 
-const disabledCustomStyleNames = new Set<string>();
+const disabledCustomStyleNames: Set<string> = reactive(new Set<string>());
 
 /**
  * Checks if a custom style is currently enabled.
