@@ -74,6 +74,20 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   contributorCredits: IContributorCredit[] = [];
   currentSelectionRepType: Representation | null = null;
   currentRepresentationStyle: ISelAndStyle = {};
+
+  // Residue name macro definitions (see VMD definitions for reference)
+  private readonly residueMacros: Record<string, string[]> = {
+    acidic: ['ASP', 'GLU'],
+    aliphatic: ['ALA', 'GLY', 'ILE', 'LEU', 'VAL'],
+    aromatic: ['HIS', 'PHE', 'TRP', 'TYR'],
+    basic: ['ARG', 'HIS', 'LYS', 'HSP'],
+    charged: ['ARG', 'HIS', 'LYS', 'HSP', 'ASP', 'GLU'], // basic + acidic
+    hydrophobic: ['ALA', 'LEU', 'VAL', 'ILE', 'PRO', 'PHE', 'MET', 'TRP'],
+    neutral: ['VAL', 'PHE', 'GLN', 'TYR', 'HIS', 'CYS', 'MET', 'TRP', 'ASX', 'GLX', 'PCA', 'HYP'],
+    purine: ['ADE', 'A', 'GUA', 'G'],
+    pyrimidine: ['CYT', 'C', 'THY', 'T', 'URA', 'U']
+  };
+
   userArgDefaults: UserArg[] = [
     {
       id: "styleName",
@@ -89,10 +103,10 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       type: UserArgType.ListSelect,
       inputType: 'text',
       val: [],
-      placeHolder: "LYS,ALA,TRP (or leave empty for all)...",
-      description: "Comma or space separated list of residue names (e.g. LYS ALA TRP). 'Any' (empty list) to include all residues.",
+      placeHolder: "LYS,ALA,TRP or acidic,basic (or leave empty for all)...",
+      description: "Comma or space separated list of residue names (e.g. LYS ALA TRP) or macro keywords (acidic, basic, hydrophobic, etc.). 'Any' (empty list) to include all residues.",
       options: [
-        // Will be populated dynamically
+        // Will be populated dynamically with both macros and actual residues
       ] as IUserArgOption[],
     } as IUserArgListSelect,
     {
@@ -151,6 +165,29 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   ];
 
   /**
+   * Expands macro keywords into their corresponding residue names.
+   *
+   * @param {string[]} items The list of items that may contain macros.
+   * @returns {string[]} The expanded list with macros replaced by their values.
+   */
+  private expandResidueNameMacros(items: string[]): string[] {
+    const expandedSet = new Set<string>();
+
+    for (const item of items) {
+      const lowerItem = item.toLowerCase();
+      if (this.residueMacros[lowerItem]) {
+        // Add all residues from the macro
+        this.residueMacros[lowerItem].forEach(residue => expandedSet.add(residue));
+      } else {
+        // Add the item as-is (convert to uppercase for consistency with residue names)
+        expandedSet.add(item.toUpperCase());
+      }
+    }
+
+    return Array.from(expandedSet).sort();
+  }
+
+  /**
    * Tree node type to pass to ColorSchemeSelect. Using 'Other' as a general
    * type for custom styles.
    *
@@ -196,7 +233,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     this.$forceUpdate(); // Force update if necessary
   }
 
-
   /**
    * Called when the plugin's main action ("Add Style") is triggered. Parses
    * user inputs, constructs an ISelAndStyle object, and adds it to the
@@ -214,8 +250,12 @@ export default class AddVizualizationPlugin extends PluginParentClass {
 
     const selection: any = {};
 
+    // Get and expand residue names (including macros)
     let resNames = this.getUserArg("selectionResidueNames") as string[];
-    if (resNames.length > 0) selection.resn = resNames;
+    if (resNames.length > 0) {
+      const expandedResNames = this.expandResidueNameMacros(resNames);
+      selection.resn = expandedResNames;
+    }
 
     let resIds = this.getUserArg("selectionResidueIds") as number[];
     if (resIds.length > 0) selection.resi = resIds;
@@ -310,7 +350,16 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   private updateResidueOptions(): void {
     const { names, ids } = getUniqueResiduesFromVisibleMolecules();
 
+    // Create macro options for the dropdown
+    const macroOptions: IUserArgOption[] = Object.keys(this.residueMacros).map(macro => ({
+      description: macro,  // `${macro} (${this.residueMacros[macro].join(', ')})`,
+      val: macro
+    }));
+
+    // Create regular residue name options
     const nameOptions: IUserArgOption[] = names.map(name => ({ description: name, val: name }));
+
+    // Create residue ID options
     const idOptions: IUserArgOption[] = ids.map(id => ({ description: String(id), val: id }));
 
     // Find the userArgs for residue names and IDs
@@ -318,7 +367,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     const selectionResidueIdsArg = this.userArgs.find(arg => arg.id === "selectionResidueIds") as IUserArgListSelect | undefined;
 
     if (selectionResidueNamesArg) {
-      selectionResidueNamesArg.options = nameOptions;
+      // Combine macro options with regular residue names
+      selectionResidueNamesArg.options = [...nameOptions, ...macroOptions];
     }
     if (selectionResidueIdsArg) {
       selectionResidueIdsArg.options = idOptions;
