@@ -4,7 +4,8 @@ import { TreeNode } from "../../../TreeNodes/TreeNode/TreeNode";
 import { SelectedType } from "./TreeInterfaces";
 import { TreeNodeList } from "../../../TreeNodes/TreeNodeList/TreeNodeList";
 import { treeNodeDeepClone } from "../../../TreeNodes/Deserializers";
-
+import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 /**
  * Given a IMolsToConsider variable, gets the molecules to consider.
  *
@@ -137,7 +138,7 @@ export function cloneMolsWithAncestry(
 }
 
 /**
- * Merges a list of molecules into a single molecule. 
+ * Merges a list of molecules into a single molecule.
  *
  * @param  {TreeNodeList} nodeList               The list of molecules to merge.
  * @param  {string}       [newName="mergedMol"]  The name of the new merged
@@ -222,4 +223,36 @@ export function mergeTreeNodes(
     // mergedTreeNode.title = newName;
 
     // return mergedTreeNode;
+}
+
+/**
+ * Retrieves unique residue names and IDs from all currently visible terminal
+ * molecular models.
+ *
+ * @returns {{ names: string[], ids: number[] }} An object containing an
+ *  alphabetically sorted array of unique residue names and a numerically
+ *  sorted array of unique residue IDs.
+ */
+export function getUniqueResiduesFromVisibleMolecules(): {
+    names: string[];
+    ids: number[];
+} {
+    const allMolecules: TreeNodeList = getMoleculesFromStore();
+    const visibleTerminalNodes: TreeNodeList =
+        allMolecules.filters.onlyTerminal.filters.keepVisible();
+    const allResidueNames = new Set<string>();
+    const allResidueIds = new Set<number>();
+    visibleTerminalNodes.forEach((node: TreeNode) => {
+        if (node.model) {
+            const parser: EasyParserParent = makeEasyParser(node.model);
+            const { names: nodeResNames, ids: nodeResIds } =
+                parser.getUniqueResidues();
+            nodeResNames.forEach((name) => allResidueNames.add(name));
+            nodeResIds.forEach((id) => allResidueIds.add(id));
+        }
+    });
+    return {
+        names: Array.from(allResidueNames).sort(),
+        ids: Array.from(allResidueIds).sort((a, b) => a - b),
+    };
 }

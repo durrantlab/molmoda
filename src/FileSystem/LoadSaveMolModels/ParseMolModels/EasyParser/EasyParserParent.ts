@@ -336,6 +336,29 @@ export abstract class EasyParserParent {
     }
 
     /**
+     * Extracts all unique residue names (resn) and residue IDs (resi) from the
+     * atoms in this parser.
+     *
+     * @returns {{ names: Set<string>, ids: Set<number> }} An object containing a
+     *  Set of unique residue names and a Set of unique residue IDs.
+     */
+    public getUniqueResidues(): { names: Set<string>; ids: Set<number> } {
+        const residueNames = new Set<string>();
+        const residueIds = new Set<number>();
+        for (let i = 0; i < this.length; i++) {
+            const atom = this.getAtom(i);
+            if (atom.resn) {
+                residueNames.add(atom.resn);
+            }
+            if (atom.resi !== undefined) {
+                // Assuming resi is a number. If it could be a string, adjust accordingly.
+                residueIds.add(atom.resi);
+            }
+        }
+        return { names: residueNames, ids: residueIds };
+    }
+
+    /**
      * Get the approximate bounds of the molecule. NOTE: This code not used, but
      * could be useful in the future.
      *

@@ -1,7 +1,7 @@
 <template>
     <span>
         <FormInput :id="id + '-input'" v-model="textValue" type="text" :placeHolder="placeHolder" :disabled="disabled"
-            :filterFunc="null" :warningFunc="null" :description="null"
+            :filterFunc="null" :warningFunc="null" :description="undefined"
             :delayBetweenChangesDetected="delayBetweenChangesDetected" @update:modelValue="handleTextInput" />
         <FormSelect v-if="options && options.length > 0" :id="id + '-select'" v-model="selectedDropdownOption"
             :options="dropdownOptionsWithPlaceholder" :disabled="disabled" @update:modelValue="handleDropdownSelect"
@@ -36,8 +36,9 @@ const DROPDOWN_PLACEHOLDER_VALUE = "__FORM_LIST_SELECT_PLACEHOLDER__";
 })
 export default class FormListSelect extends Vue {
     /**
-     * The current list value, as an array of strings or numbers.
-     * This is the v-model prop.
+     * The current list value, as an array of strings or numbers. This is the
+     * v-model prop.
+     * 
      * @type {(string[] | number[])}
      * @required
      */
@@ -45,34 +46,39 @@ export default class FormListSelect extends Vue {
 
     /**
      * A unique identifier for the form element.
+     * 
      * @type {string}
      * @required
      */
     @Prop({ required: true }) id!: string;
 
     /**
-     * Specifies the type of items in the list: 'text' or 'number'.
-     * If 'number', the input supports numeric ranges (e.g., "1-5").
+     * Specifies the type of items in the list: 'text' or 'number'. If 'number',
+     * the input supports numeric ranges (e.g., "1-5").
+     * 
      * @type {('text' | 'number')}
      * @default 'text'
      */
     @Prop({ default: 'text' }) inputType!: 'text' | 'number';
 
     /**
-     * An optional array of predefined options for the dropdown select.
-     * Each option can be a string or an IUserArgOption object.
+     * An optional array of predefined options for the dropdown select. Each
+     * option can be a string or an IUserArgOption object.
+     * 
      * @type {(string | IUserArgOption)[]}
      */
     @Prop({ default: () => [] }) options!: (string | IUserArgOption)[];
 
     /**
      * A description of the form element, displayed below the input fields.
+     *
      * @type {string}
      */
     @Prop({ default: "" }) description!: string;
 
     /**
      * If true, disables the input fields.
+     * 
      * @type {boolean}
      * @default false
      */
@@ -80,25 +86,31 @@ export default class FormListSelect extends Vue {
 
     /**
      * Placeholder text for the text input field.
+     *
      * @type {string}
      * @default "Enter items, comma or space separated..."
      */
     @Prop({ default: "Enter items, comma or space separated..." }) placeHolder!: string;
 
     /**
-     * A function that returns a warning message string based on the current list value.
-     * @type {((val: string[] | number[]) => string)}
+     * A function that returns a warning message string based on the current
+     * list value.
+     *
+     * @type {Function}
      */
     @Prop({ default: null }) warningFunc!: ((val: string[] | number[]) => string) | null;
 
     /**
      * A function that validates the current list value.
-     * @type {((val: string[] | number[]) => boolean)}
+     *
+     * @type {Function}
      */
     @Prop({ default: null }) validateFunc!: ((val: string[] | number[]) => boolean) | null;
 
     /**
-     * Delay in milliseconds after input before triggering change detection for the text input.
+     * Delay in milliseconds after input before triggering change detection for
+     * the text input.
+     *
      * @type {number}
      * @default formInputDelayUpdate
      */
@@ -109,8 +121,8 @@ export default class FormListSelect extends Vue {
     private currentWarningMessage = "";
 
     /**
-     * Lifecycle hook called when the component is created.
-     * Initializes `textValue` from `modelValue`.
+     * Lifecycle hook called when the component is created. Initializes
+     * `textValue` from `modelValue`.
      */
     created() {
         this.updateTextValueFromModelValue(this.modelValue);

@@ -168,7 +168,7 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
             }
 
             // Mark this for rerendering in viewer.
-            console.log("MOO", JSON.stringify(terminalNode.styles, null, 2));
+            // console.log("MOO", JSON.stringify(terminalNode.styles, null, 2));
             terminalNode.viewerDirty = true;
         }
     }

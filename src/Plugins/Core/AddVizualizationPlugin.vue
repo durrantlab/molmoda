@@ -24,6 +24,7 @@ import {
   UserArgType,
   IUserArgSelect,
   IUserArgOption,
+  IUserArgListSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import {
   ISoftwareCredit,
@@ -45,66 +46,10 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
-import FormElementDescription from "@/UI/Forms/FormElementDescription.vue"; // Import FormElementDescription
+import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { FailingTest } from "@/Testing/FailingTest";
-
-/**
- * Parses a comma-separated or space-separated string of names into an array of uppercase
- * strings. Handles "Any" as a special case for no filter.
- *
- * @param {string | undefined | null} input The comma-separated or space-separated string of names.
- * @returns {string[]} An array of parsed, trimmed, and uppercased names.
- */
-function parseNameListString(input: string | undefined | null): string[] {
-  if (!input) return []; // Handle null or undefined input
-  const trimmedInput = input.trim();
-  if (!trimmedInput || trimmedInput.toLowerCase() === "any") return [];
-  return trimmedInput
-    .split(/[\s,]+/) // Split by one or more spaces or commas
-    .map((s) => s.trim().toUpperCase())
-    .filter((s) => s.length > 0);
-}
-
-/**
- * Parses a comma-separated or space-separated string of numbers and numeric
- * ranges (e.g., "1-5,7,10-12" or "1-5 7 10-12") into a sorted array of unique
- * numbers. Handles "Any" as a special case for no filter.
- *
- * @param {string | undefined | null} input The string containing numbers and ranges.
- * @returns {number[]} A sorted array of unique numbers derived from the input
- *    string.
- */
-function parseNumericRangeString(input: string | undefined | null): number[] {
-  if (!input) return []; // Handle null or undefined input
-  const trimmedInput = input.trim();
-  if (!trimmedInput || trimmedInput.toLowerCase() === "any") return [];
-  const result: Set<number> = new Set();
-  const parts = trimmedInput.split(/[\s,]+/); // Split by one or more spaces or commas
-  for (const part of parts) {
-    const trimmedPart = part.trim();
-    if (trimmedPart.includes("-")) {
-      const [startStr, endStr] = trimmedPart.split("-");
-      const start = parseInt(startStr, 10);
-      const end = parseInt(endStr, 10);
-      if (!isNaN(start) && !isNaN(end) && start <= end) {
-        for (let i = start; i <= end; i++) {
-          result.add(i);
-        }
-      } else {
-        // console.warn(`Malformed range: ${trimmedPart}`);
-      }
-    } else {
-      const num = parseInt(trimmedPart, 10);
-      if (!isNaN(num)) {
-        result.add(num);
-      } else {
-        // console.warn(`Malformed number: ${trimmedPart}`);
-      }
-    }
-  }
-  return Array.from(result).sort((a, b) => a - b);
-}
-
+import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/TreeUtils";
+import { Watch } from "vue-property-decorator";
 /**
  * AddCustomStylePlugin allows users to define and add new custom molecular
  * visualization styles. These styles are based on selection criteria (like
@@ -116,7 +61,7 @@ function parseNumericRangeString(input: string | undefined | null): number[] {
     PluginComponent,
     ColorSchemeSelect,
     FormWrapper,
-    FormElementDescription, // Add FormElementDescription to components
+    FormElementDescription,
   },
 })
 export default class AddVizualizationPlugin extends PluginParentClass {
@@ -128,7 +73,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
   currentSelectionRepType: Representation | null = null;
-  currentRepresentationStyle: ISelAndStyle = {}; // Will hold e.g., { sphere: IColorScheme }
+  currentRepresentationStyle: ISelAndStyle = {};
   userArgDefaults: UserArg[] = [
     {
       id: "styleName",
@@ -141,21 +86,58 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     {
       id: "selectionResidueNames",
       label: "Residue names",
-      val: "Any",
-      placeHolder: "Any, or LYS,ALA,TRP...",
-      description: "Comma-separated or space-separated list of residue names (case-sensitive). 'Any' to include all residues.",
-    } as IUserArgText,
+      type: UserArgType.ListSelect,
+      inputType: 'text',
+      val: [],
+      placeHolder: "LYS,ALA,TRP (or leave empty for all)...",
+      description: "Comma or space separated list of residue names (e.g. LYS ALA TRP). 'Any' (empty list) to include all residues.",
+      options: [
+        // Will be populated dynamically
+      ] as IUserArgOption[],
+    } as IUserArgListSelect,
     {
       id: "selectionResidueIds",
       label: "Residue numbers",
-      val: "Any",
-      placeHolder: "Any, or 10-20,35,42...",
-      description: "Comma-separated or space-separated list of residue numbers or ranges (e.g., 10-20). 'Any' to include all residues.",
-    } as IUserArgText,
+      type: UserArgType.ListSelect,
+      inputType: 'number',
+      val: [],
+      placeHolder: "10-20,35,42 (or leave empty for all)...",
+      description: "Comma or space separated list of residue numbers or ranges (e.g., 10-20 35 42). 'Any' (empty list) to include all residues.",
+      options: [
+        // Will be populated dynamically
+      ] as IUserArgOption[],
+    } as IUserArgListSelect,
+    // {
+    //   id: "selectionChainIds",
+    //   label: "Chain IDs",
+    //   type: UserArgType.ListSelect,
+    //   inputType: 'text',
+    //   val: [],
+    //   placeHolder: "Any, or A,B...",
+    //   description: "Comma or space separated list of chain identifiers. 'Any' (empty list) for no filter.",
+    // } as IUserArgListSelect,
+    // {
+    //   id: "selectionAtomNames",
+    //   label: "Atom names",
+    //   type: UserArgType.ListSelect,
+    //   inputType: 'text',
+    //   val: [],
+    //   placeHolder: "Any, or CA,N,O...",
+    //   description: "Comma or space separated list of atom names (e.g., CA CB OXT). 'Any' (empty list) for no filter.",
+    // } as IUserArgListSelect,
+    // {
+    //   id: "selectionElements",
+    //   label: "Elements",
+    //   type: UserArgType.ListSelect,
+    //   inputType: 'text',
+    //   val: [],
+    //   placeHolder: "Any, or C,N,O...",
+    //   description: "Comma or space separated list of element symbols (e.g., C Fe S). 'Any' (empty list) for no filter.",
+    // } as IUserArgListSelect,
     {
       id: "representationType",
       label: "Representation",
-      val: AtomsRepresentation.Sphere, // Default to sphere
+      val: AtomsRepresentation.Sphere,
       type: UserArgType.Select,
       description: "Choose how the selected atoms will be displayed.",
       options: [
@@ -166,28 +148,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         { description: "Surface", val: SurfaceRepresentation.Surface },
       ] as IUserArgOption[],
     } as IUserArgSelect,
-    // {
-    //   id: "selectionChainIds",
-    //   label: "Chain IDs",
-    //   val: "Any",
-    //   placeHolder: "Any, or A,B...",
-    //   description: "Comma-separated or space-separated list of chain identifiers. 'Any' for no filter.",
-    // } as IUserArgText,
-    // {
-    //   id: "selectionAtomNames",
-    //   label: "Atom names",
-    //   val: "Any",
-    //   placeHolder: "Any, or CA,N,O...",
-    //   description: "Comma-separated or space-separated list of atom names (e.g., CA, CB, OXT). 'Any' for no filter.",
-    // } as IUserArgText,
-    // {
-    //   id: "selectionElements",
-    //   label: "Elements",
-    //   val: "Any",
-    //   placeHolder: "Any, or C,N,O...",
-    //   description: "Comma-separated or space-separated list of element symbols (e.g., C, Fe, S). 'Any' for no filter.",
-    // } as IUserArgText,
   ];
+
   /**
    * Tree node type to pass to ColorSchemeSelect. Using 'Other' as a general
    * type for custom styles.
@@ -250,25 +212,22 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       return;
     }
 
-    const selection: any = {}; // Initialize selection as an empty object
+    const selection: any = {};
 
-    const resNames = parseNameListString(this.getUserArg("selectionResidueNames") as string);
+    let resNames = this.getUserArg("selectionResidueNames") as string[];
     if (resNames.length > 0) selection.resn = resNames;
 
-    const resIds = parseNumericRangeString(this.getUserArg("selectionResidueIds") as string);
+    let resIds = this.getUserArg("selectionResidueIds") as number[];
     if (resIds.length > 0) selection.resi = resIds;
 
-    const chainIds = parseNameListString(this.getUserArg("selectionChainIds") as string);
-    if (chainIds.length > 0) selection.chain = chainIds; // 3Dmol handles array of chains
+    // const chainIds = this.getUserArg("selectionChainIds") as string[];
+    // if (chainIds.length > 0) selection.chain = chainIds;
 
-    const atomNames = parseNameListString(this.getUserArg("selectionAtomNames") as string);
-    if (atomNames.length > 0) selection.atom = atomNames;
+    // const atomNames = this.getUserArg("selectionAtomNames") as string[];
+    // if (atomNames.length > 0) selection.atom = atomNames;
 
-    const elements = parseNameListString(this.getUserArg("selectionElements") as string);
-    if (elements.length > 0) selection.elem = elements;
-
-    // Removed the check: if (Object.keys(selection).length === 0)
-    // An empty selection object {} means "select all", which is valid.
+    // const elements = this.getUserArg("selectionElements") as string[];
+    // if (elements.length > 0) selection.elem = elements;
 
     if (!this.currentSelectionRepType) {
       messagesApi.popupError("A representation type must be selected.");
@@ -276,8 +235,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     }
 
     const finalStyle: ISelAndStyle = { selection };
-    // this.currentRepresentationStyle might be { sphere: {color: 'red'} }
-    // we need to extract the value: {color: 'red'}
     const colorSchemeObject = (this.currentRepresentationStyle as any)[this.currentSelectionRepType];
 
     if (!colorSchemeObject || Object.keys(colorSchemeObject).length === 0) {
@@ -292,7 +249,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       messagesApi.popupMessage("Success", `Visualization "${styleName}" added.`, PopupVariant.Success);
       this.closePopup();
     }
-    // If not successful, addCustomStyle would have shown an error.
   }
 
   /**
@@ -307,6 +263,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     // Initialize currentSelectionRepType from default userArgs
     this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
     this.currentRepresentationStyle = {}; // Reset
+    this.updateResidueOptions();
   }
 
   /**
@@ -337,6 +294,35 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     //   closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
     //   afterPluginCloses: new TestCmdList().wait(1), // Wait for potential messages
     // };
+  }
+  /**
+ * Watches for changes in the global molecules store and updates residue options.
+ */
+  @Watch("$store.state.molecules", { deep: true })
+  onMoleculesChanged() {
+    this.updateResidueOptions();
+  }
+
+  /**
+   * Updates the options for residue name and ID selection dropdowns based on
+   * currently visible molecules.
+   */
+  private updateResidueOptions(): void {
+    const { names, ids } = getUniqueResiduesFromVisibleMolecules();
+
+    const nameOptions: IUserArgOption[] = names.map(name => ({ description: name, val: name }));
+    const idOptions: IUserArgOption[] = ids.map(id => ({ description: String(id), val: id }));
+
+    // Find the userArgs for residue names and IDs
+    const selectionResidueNamesArg = this.userArgs.find(arg => arg.id === "selectionResidueNames") as IUserArgListSelect | undefined;
+    const selectionResidueIdsArg = this.userArgs.find(arg => arg.id === "selectionResidueIds") as IUserArgListSelect | undefined;
+
+    if (selectionResidueNamesArg) {
+      selectionResidueNamesArg.options = nameOptions;
+    }
+    if (selectionResidueIdsArg) {
+      selectionResidueIdsArg.options = idOptions;
+    }
   }
 }
 </script>
