@@ -1,13 +1,30 @@
 <template>
-    <span>
-        <FormInput :id="id + '-input'" v-model="textValue" type="text" :placeHolder="placeHolder" :disabled="disabled"
-            :filterFunc="null" :warningFunc="null" :description="undefined"
-            :delayBetweenChangesDetected="delayBetweenChangesDetected" @update:modelValue="handleTextInput" />
-        <FormSelect v-if="options && options.length > 0" :id="id + '-select'" v-model="selectedDropdownOption"
-            :options="dropdownOptionsWithPlaceholder" :disabled="disabled" @update:modelValue="handleDropdownSelect"
-            class="mt-1" />
+    <div class="form-list-select-wrapper">
+        <div class="custom-input-group">
+            <div class="input-wrapper">
+                <FormInput :id="id + '-input'" v-model="textValue" type="text" :placeHolder="placeHolder"
+                    :disabled="disabled" :filterFunc="null" :warningFunc="null" :description="undefined"
+                    :delayBetweenChangesDetected="delayBetweenChangesDetected" @update:modelValue="handleTextInput"
+                    :ariaDescribedBy="id + '-dropdown-button'" />
+            </div>
+            <button v-if="options && options.length > 0"
+                :class="`btn btn-primary dropdown-toggle btn-sm custom-add-button ${disabled ? 'disabled' : ''}`" type="button"
+                :id="id + '-dropdown-button'" data-bs-toggle="dropdown" aria-expanded="false" :disabled="disabled">
+                Add
+            </button>
+            <ul v-if="options && options.length > 0"
+                class="dropdown-menu dropdown-menu-end form-list-select-dropdown-menu"
+                :aria-labelledby="id + '-dropdown-button'">
+                <li v-for="option in actualOptions" :key="option.val">
+                    <a :class="`dropdown-item ${option.disabled ? 'disabled' : ''}`"
+                        @click.prevent="handleDropdownItemClick(option)">
+                        {{ option.description }}
+                    </a>
+                </li>
+            </ul>
+        </div>
         <FormElementDescription :description="description" :warning="currentWarningMessage" :validate="false" />
-    </span>
+    </div>
 </template>
 
 <script lang="ts">
@@ -16,11 +33,9 @@ import { Prop, Watch } from "vue-property-decorator";
 import { IUserArgOption } from "./FormFull/FormFullInterfaces";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
 import FormInput from "./FormInput.vue";
-import FormSelect from "./FormSelect.vue";
+// FormSelect is no longer directly used in the template
+// import FormSelect from "./FormSelect.vue";
 import FormElementDescription from "./FormElementDescription.vue";
-
-const DROPDOWN_PLACEHOLDER_VALUE = "__FORM_LIST_SELECT_PLACEHOLDER__";
-
 /**
  * FormListSelect component allows users to input a list of items (text or
  * numbers, with support for numeric ranges) via a text field. Optionally, a
@@ -29,7 +44,7 @@ const DROPDOWN_PLACEHOLDER_VALUE = "__FORM_LIST_SELECT_PLACEHOLDER__";
 @Options({
     components: {
         FormInput,
-        FormSelect,
+        // FormSelect, // No longer used here
         FormElementDescription,
     },
     emits: ["update:modelValue", "onChange"],
@@ -117,7 +132,8 @@ export default class FormListSelect extends Vue {
     @Prop({ default: formInputDelayUpdate }) delayBetweenChangesDetected!: number;
 
     private textValue = "";
-    private selectedDropdownOption: string = DROPDOWN_PLACEHOLDER_VALUE;
+    // selectedDropdownOption is no longer needed as FormSelect is removed
+    // private selectedDropdownOption: string = DROPDOWN_PLACEHOLDER_VALUE;
     private currentWarningMessage = "";
 
     /**
@@ -207,42 +223,40 @@ export default class FormListSelect extends Vue {
     }
 
     /**
-     * Computed property for dropdown options, including a placeholder.
+     * Computed property for dropdown options, ensuring they are in IUserArgOption format.
      *
-     * @returns {IUserArgOption[]} The options for the FormSelect.
+     * @returns {IUserArgOption[]} The options for the dropdown menu.
      */
-    get dropdownOptionsWithPlaceholder(): IUserArgOption[] {
-        const placeholderOption: IUserArgOption = {
-            description: "Add from list...",
-            val: DROPDOWN_PLACEHOLDER_VALUE,
-        };
-        const actualOptions = this.options.map(opt =>
-            typeof opt === 'string' ? { description: opt, val: opt } : opt
+    get actualOptions(): IUserArgOption[] {
+        return this.options.map(opt =>
+            typeof opt === 'string' ? { description: opt, val: opt, disabled: false } : { ...opt, disabled: opt.disabled === true }
         );
-        return [placeholderOption, ...actualOptions];
     }
 
     /**
      * Handles selection from the dropdown. Appends the selected value to
      * `textValue`.
      *
-     * @param {string} selectedValue The value selected from the dropdown.
+     * @param {IUserArgOption} selectedOption The option selected from the dropdown.
      */
-    private handleDropdownSelect(selectedValue: string): void {
-        if (selectedValue && selectedValue !== DROPDOWN_PLACEHOLDER_VALUE) {
-            if (this.textValue.trim() === "") {
-                this.textValue = selectedValue;
-            } else {
+    private handleDropdownItemClick(selectedOption: IUserArgOption): void {
+        if (selectedOption.disabled) {
+            return;
+        }
+        const selectedValue = String(selectedOption.val); // Ensure it's a string
+        if (this.textValue.trim() === "") {
+            this.textValue = selectedValue;
+        } else {
+            // Check if the value already exists in the text input before appending
+            const currentList = this.parseTextToList(this.textValue);
+            const valueExists = currentList.some(item => String(item) === selectedValue);
+            if (!valueExists) {
                 this.textValue += `, ${selectedValue}`;
             }
-            this.handleTextInput(); // Process the updated textValue
         }
-        // Reset dropdown to placeholder
-        this.$nextTick(() => {
-            this.selectedDropdownOption = DROPDOWN_PLACEHOLDER_VALUE;
-        });
+        this.handleTextInput(); // Process the updated textValue
+        // The dropdown will close automatically due to Bootstrap behavior.
     }
-
     /**
      * Updates the warning message based on the `warningFunc` prop.
      */
@@ -257,5 +271,50 @@ export default class FormListSelect extends Vue {
 </script>
 
 <style scoped lang="scss">
-/* Add any specific styles for FormListSelect here */
+.form-list-select-wrapper {
+    display: block;
+    width: 100%;
+}
+
+.custom-input-group {
+    display: flex;
+    width: 100%;
+    position: relative;
+}
+
+.input-wrapper {
+    flex: 1;
+    min-width: 0;
+
+    // Force the FormInput component to take full width
+    :deep(.form-control),
+    :deep(input) {
+        width: 100% !important;
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+
+    // Ensure the entire FormInput component wrapper takes full width
+    :deep(.form-group),
+    :deep(.input-group),
+    :deep(div) {
+        width: 100% !important;
+        margin-bottom: 0 !important;
+    }
+}
+
+.custom-add-button {
+    flex-shrink: 0;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-left: 0;
+    margin-left: -1px;
+}
+
+/* Styling for the dropdown menu itself to make it scrollable */
+.form-list-select-dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
 </style>
