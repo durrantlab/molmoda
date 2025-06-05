@@ -1,5 +1,5 @@
 <template>
-  <div class="ms-2">
+  <div :class="cls">
     <FormFull v-model="constructedColorForm" id="color-style" spacing="0"></FormFull>
   </div>
 </template>
@@ -47,6 +47,7 @@ export default class ColorSchemeSelect extends Vue {
   @Prop({ required: true }) modelValue!: ISelAndStyle;
   @Prop({ required: true }) repName!: Representation;
   @Prop({ required: true }) molType!: TreeNodeType;
+  @Prop({ default: "ms-2" }) cls!: string;
 
   colorSchemeOptionsForSelect = new ColorSchemeOptionsForSelect();
 

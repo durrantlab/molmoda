@@ -166,6 +166,20 @@
           :regionName="makeGeneric(formElem).regionName"
           :warningFunc="makeGeneric(formElem).warningFunc"
         ></FormSelectRegion>
+  <FormListSelect
+    v-else-if="formElem.type === FormElementType.ListSelect"
+    v-model="makeGeneric(formElem).val"
+    :id="itemId(formElem)"
+    :inputType="makeGeneric(formElem).inputType"
+    :options="makeGeneric(formElem).options"
+    :description="makeGeneric(formElem).description"
+    :disabled="disabled(formElem)"
+    :placeHolder="getPlaceHolder(formElem)"
+    :warningFunc="makeGeneric(formElem).warningFunc"
+    :validateFunc="makeGeneric(formElem).validateFunc"
+    :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected"
+    @onChange="onDataUpdated"
+  />
       </FormWrapper>
     </span>
   </span>
@@ -185,6 +199,7 @@ import {
   IUserArgOption,
   IUserArgRange,
   IUserArgSelect,
+  IUserArgListSelect,
 } from "./FormFullInterfaces";
 import Accordian from "@/UI/Layout/Accordian/Accordian.vue";
 import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
@@ -194,6 +209,7 @@ import FormVector3D from "../FormVector3D.vue";
 import Alert from "@/UI/Layout/Alert.vue";
 import FormSelectRegion from "../FormSelectRegion/FormSelectRegion.vue";
 import FormTextArea from "../FormTextArea.vue";
+import FormListSelect from "../FormListSelect.vue";
 import { isSentence } from "@/Core/Utils/StringUtils";
 import { IProtCmpdCounts } from "../MoleculeInputParams/MoleculeInput";
 
@@ -213,6 +229,7 @@ import { IProtCmpdCounts } from "../MoleculeInputParams/MoleculeInput";
     FormVector3D,
     Alert,
     FormSelectRegion,
+    FormListSelect,
   },
 })
 export default class FormFull extends Vue {

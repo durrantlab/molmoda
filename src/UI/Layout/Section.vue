@@ -1,5 +1,5 @@
 <template>
-  <div :id="id" class="mb-2">
+  <div :id="id" :class="cls">
     <div class="mb-0">
       <strong v-if="level === 1">{{title}}</strong>
       <em v-else-if="title !== ''">{{title}}</em>
@@ -27,6 +27,7 @@ export default class Section extends Vue {
   @Prop({ default: "" }) id!: string;
   @Prop({ default: "My Title" }) title!: string;
   @Prop({ default: 1 }) level!: number;
+  @Prop({ default: "mb-2" }) cls!: string;
 }
 </script>
 

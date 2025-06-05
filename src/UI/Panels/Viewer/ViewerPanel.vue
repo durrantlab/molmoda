@@ -442,9 +442,10 @@ export default class ViewerPanel extends Vue {
       return;
     }
 
-    // Clear current (nonsurface) styles. Because if there's a surface, why
-    // show anything beneath it?
-    api.visualization.viewerObj?.clearMoleculeStyles(treeNode.id as string);
+    // Clear current (nonsurface) styles. Because if there's a surface, why show
+    // anything beneath it? NOTE: Actually, there are circumstances where you'd
+    // want to maintain what's beneath the surface.
+    // api.visualization.viewerObj?.clearMoleculeStyles(treeNode.id as string);
 
     const previousSurfaceStyle =
       this.previousSurfaceStylesCache[treeNode.id as string];

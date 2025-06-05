@@ -229,12 +229,23 @@ export class Viewer3DMol extends ViewerParent {
     ): Promise<GenericSurfaceType> {
         // NOTE: any in the promise is the surface object.
         const model = this.lookup(id);
+        let atomSelectionForSurface = { model: model as any }; // Default to all atoms in the model
+
+        // Check if a more specific selection is provided in ISelAndStyle
+        // The selection object from ISelAndStyle (e.g., {resn: "LYS"})
+        // is compatible with 3Dmol.js selection specification when
+        // model context is also provided.
+        if (style.selection && Object.keys(style.selection).length > 0) {
+            atomSelectionForSurface = {
+                ...this.convertSelection(style.selection), // convertSelection is currently identity
+                model: model as any, // Ensure the model context is part of the selection
+            };
+        }
+
         return this._mol3dObj.addSurface(
-            // $3Dmol.SurfaceType.VDW,
-            // $3Dmol.SurfaceType.MS,
-            2, // surface type $3Dmol.SurfaceType.MS
-            style.surface, // style
-            { model: model as any } // selection
+            2, // surface type $3Dmol.SurfaceType.MS (Molecular Surface)
+            style.surface, // style for the surface itself (e.g., color, opacity)
+            atomSelectionForSurface // selection of atoms to base the surface on
         );
     }
 

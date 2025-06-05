@@ -21,10 +21,10 @@
         </Section>
         <!-- Custom Styles Section -->
         <hr class="mt-4 mb-3" />
-        <StylesCustom />
+        <VizualizationsCustom />
         <!-- For regions (fallback message if no specific region selected) -->
         <div v-if="numselectedRegions !== 1 || treeNodesWithRegions.length === 0">
-            <hr class="mt-4 mb-3" />
+            <hr class="mt-3 mb-3" />
             <Section title="Region" class="pb-2">
                 <p style="font-size: 14px">
                     <span v-if="treeNodesWithRegions.length === 0">
@@ -65,7 +65,7 @@ import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import { analyzeColor } from "../../../Core/Styling/Colors/ColorUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import StylesCustom from "./Styles/StylesCustom.vue"; // Import the new component
+import VizualizationsCustom from "./Styles/VizualizationsCustom.vue"; // Import the new component
 
 /**
  * StylesPanel component
@@ -78,7 +78,7 @@ import StylesCustom from "./Styles/StylesCustom.vue"; // Import the new componen
         Section,
         StylesAllMolTypes,
         FormFull,
-        StylesCustom,
+        VizualizationsCustom,
     },
 })
 export default class StylesPanel extends Vue {

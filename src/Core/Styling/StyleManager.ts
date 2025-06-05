@@ -19,22 +19,22 @@ export const currentSelsAndStyles: { [key in TreeNodeType]: ISelAndStyle[] } =
 // These are the custom styles that the user can add. They are applied to every
 // molecule.
 export const customSelsAndStyles: { [key: string]: ISelAndStyle } = reactive({
-    "Blue LYS": {
-        selection: {
-            resn: "LYS",
-        },
-        sphere: {
-            color: "blue",
-        },
-    },
-    "TRP red": {
-        selection: {
-            resn: "TRP",
-        },
-        stick: {
-            color: "red",
-        },
-    },
+    // "Blue LYS": {
+    //     selection: {
+    //         resn: "LYS",
+    //     },
+    //     sphere: {
+    //         color: "blue",
+    //     },
+    // },
+    // "TRP red": {
+    //     selection: {
+    //         resn: "TRP",
+    //     },
+    //     stick: {
+    //         color: "red",
+    //     },
+    // },
 });
 
 const disabledCustomStyleNames: Set<string> = reactive(new Set<string>());
@@ -95,7 +95,7 @@ export function addCustomStyle(
     }
     customSelsAndStyles[name] = style;
     updateStylesInViewer(); // Trigger viewer update
-    // The StylesCustom.vue component uses a computed property that directly reads
+    // The VizualizationsCustom.vue component uses a computed property that directly reads
     // from customSelsAndStyles. Vue's reactivity should handle the update
     // automatically if customSelsAndStyles is a reactive object.
     // If it doesn't, we might need an event bus or a different reactivity trigger.
@@ -168,6 +168,7 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
             }
 
             // Mark this for rerendering in viewer.
+            console.log("MOO", JSON.stringify(terminalNode.styles, null, 2));
             terminalNode.viewerDirty = true;
         }
     }

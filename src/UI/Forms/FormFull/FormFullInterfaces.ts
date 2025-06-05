@@ -1,5 +1,8 @@
 import { ISphereOrBox } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { IProtCmpdTreeNodePair, MoleculeInput } from "../MoleculeInputParams/MoleculeInput";
+import {
+    IProtCmpdTreeNodePair,
+    MoleculeInput,
+} from "../MoleculeInputParams/MoleculeInput";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
 export enum UserArgType {
@@ -14,22 +17,15 @@ export enum UserArgType {
     Checkbox,
     Vector3D,
     Alert,
-    SelectRegion
+    SelectRegion,
+    ListSelect,
 }
 
-export type UserArg =
-    | IUserArgText
-    | IUserArgNumber
-    | IUserArgSelect
-    | IUserArgRange
-    | IUserArgTextArea
-    | IUserArgGroup
-    | IUserArgMoleculeInputParams
-    | IUserArgColor
-    | IUserArgCheckbox
-    | IUserArgVector3D
-    | IUserArgAlert
-    | IUserSelectRegion;
+export interface IUserArgOption {
+    description: string;
+    val: any;
+    disabled?: boolean;
+}
 
 interface IUserArg {
     id: string;
@@ -72,6 +68,7 @@ export interface IUserArgTextArea extends IUserArg {
 export interface IUserArgColor extends IUserArg {
     val: string;
 }
+
 export interface IUserArgNumber extends IUserArg {
     val: number;
     placeHolder?: string;
@@ -92,12 +89,6 @@ export interface IUserArgVector3D extends IUserArg {
     val: [number, number, number];
 }
 
-export interface IUserArgOption {
-    description: string;
-    val: any;
-    disabled?: boolean;
-}
-
 export interface IUserArgSelect extends IUserArg {
     val: string;
     options: (string | IUserArgOption)[];
@@ -115,11 +106,45 @@ export interface IUserArgMoleculeInputParams extends IUserArg {
 
 export interface IUserArgAlert extends IUserArg {
     // Use val (not label!) as message.
-    alertType: string;  // warning, info, etc.
-    val: string;  // Required
+    alertType: string; // warning, info, etc.
+    val: string; // Required
 }
 
 export interface IUserSelectRegion extends IUserArg {
-    val: ISphereOrBox | null,
+    val: ISphereOrBox | null;
     regionName?: string;
 }
+
+/**
+ * Interface for the ListSelect user argument.
+ * This allows for a text input of a list (comma or space separated)
+ * and an optional dropdown to append items to that list.
+ */
+export interface IUserArgListSelect extends IUserArg {
+    // The current value of the list, as an array of strings or numbers. */
+    val: string[] | number[];
+    // Specifies whether the input items are 'text' or 'number'. If 'number',
+    // ranges like "1-5" are supported. */
+    inputType: "text" | "number";
+    // Optional array of predefined options to append from a dropdown. */
+    options?: (string | IUserArgOption)[];
+    // Placeholder text for the text input field. */
+    placeHolder?: string;
+    // Delay in ms after input before triggering change detection. */
+    delayBetweenChangesDetected?: number;
+}
+
+export type UserArg =
+    | IUserArgText
+    | IUserArgNumber
+    | IUserArgSelect
+    | IUserArgRange
+    | IUserArgTextArea
+    | IUserArgGroup
+    | IUserArgMoleculeInputParams
+    | IUserArgColor
+    | IUserArgCheckbox
+    | IUserArgVector3D
+    | IUserArgAlert
+    | IUserSelectRegion
+    | IUserArgListSelect; // New type added
