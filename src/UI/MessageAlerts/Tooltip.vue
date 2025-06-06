@@ -23,12 +23,11 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { isTest } from "@/Testing/SetupTests";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-// import BSToolTip from "bootstrap/js/dist/tooltip";
 
 const allOpenTooltips: {[key: string]: Tooltip} = {};
 
 /**
- * Tooltip component
+ * Tooltip component with enhanced flicker prevention
  */
 @Options({
     components: {},
@@ -83,56 +82,63 @@ export default class Tooltip extends Vue {
     }
 
     /**
-     * Sets up the tooltip. Dynamic imports, etc.
+     * Sets up the tooltip with enhanced flicker prevention
      */
-    loadTip() {
+    async loadTip() {
         if (!this.tipLoaded) {
             this.tipLoaded = true;
 
-            dynamicImports.bootstrapTooltip.module
-                .then((BSToolTip: any) => {
-                    this.tipObj = new BSToolTip(
-                        this.$refs["tooltip"] as Element
-                    );
-                    this.tipObj.show();
+            try {
+                const BSToolTip = await dynamicImports.bootstrapTooltip.module;
+                    const element = this.$refs["tooltip"] as Element;
+                    this.tipObj = new BSToolTip(element);
 
-                    // Validate tooltip after a brief delay to allow positioning
+                    // Listen for Bootstrap's positioning event for optimal timing
+                    element.addEventListener('inserted.bs.tooltip', () => {
+                        // Validate immediately when tooltip is inserted into DOM
                     setTimeout(() => {
                         if (!this.validateTooltip()) {
                             this.hideTip();
                             return;
                         }
 
-                    // Make sure all other tool tips close.
+                            // Make sure all other tooltips close
                     for (const key in allOpenTooltips) {
                         if (key !== this.id) {
                             allOpenTooltips[key].hideTip();
                         }
                     }
 
-                    // Add this to list of ones that are open.
+                            // Add this to list of ones that are open
                     allOpenTooltips[this.id] = this;
 
-                        // Set up periodic validation to check if target still exists
-                        // and tooltip is properly positioned
+                            // Set up periodic validation
                         this.validationInterval = setInterval(() => {
                             if (!this.validateTooltip()) {
                                 this.hideTip();
                             }
-                        }, 500) as unknown as number; // Check every 500ms
+                            }, 500) as unknown as number;
 
-                        // Always automatically close after 15 seconds
+                            // Auto-close after 15 seconds
                     setTimeout(() => {
                         this.hideTip();
                     }, 15000);
-                    }, 100); // Small delay to allow Bootstrap to position the tooltip
+                        }, 10); // Very small delay to allow positioning
+                    });
 
-                    return;
-                })
-                .catch((err: any) => {
-                    this.tipLoaded = false; // Reset flag on error
+                    // Also add immediate validation as fallback
+                    this.tipObj.show();
+                    
+                    // Immediate check right after show() as additional safeguard
+                    setTimeout(() => {
+                        if (!this.validateTooltip()) {
+                            this.hideTip();
+                        }
+                    }, 1);
+            } catch (err: any) {
+                    this.tipLoaded = false;
                     throw err;
-                });
+            }
         }
     }
 
@@ -140,7 +146,7 @@ export default class Tooltip extends Vue {
      * Called when the component is mounted.
      */
     mounted() {
-        // No tool tips if testing.
+        // No tooltips if testing
         if (isTest) {
             this.testMode = true;
         }
@@ -158,5 +164,27 @@ export default class Tooltip extends Vue {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+// CSS-based flicker prevention - hide tooltips at 0,0 position
+:deep(.tooltip) {
+    // Hide tooltips that are positioned at 0,0 (common Bootstrap bug)
+    &[style*="left: 0px"][style*="top: 0px"],
+    &[style*="left:0px"][style*="top:0px"],
+    &[style*="left: 0"][style*="top: 0"] {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    
+    // Also catch transform-based positioning at origin
+    &[style*="transform: translate3d(0px, 0px"],
+    &[style*="transform: translate(0px, 0px"] {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    
+    // Smooth transition when tooltip becomes visible
+    transition: opacity 0.1s ease-in-out;
+}
+</style>
