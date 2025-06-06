@@ -5,14 +5,16 @@
             <span v-for="(residue, index) in sequence" :key="`${residue.chain}-${residue.resi}-${index}`"
                 class="residue"
                 :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
-                @mouseover="showTooltip(residue, $event)" @mouseleave="hideTooltip" @click="residueClicked(residue)">
+                @click="residueClicked(residue)"
+                :title="`${residue.threeLetterCode} ${residue.resi}`"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top">
                 {{ residue.oneLetterCode }}
             </span>
         </div>
         <div v-else class="no-sequence-message">
             No protein sequence to display.
         </div>
-        <Tooltip :tip="tooltipText" :placement="'top'" ref="tooltipVue" />
     </div>
 </template>
 
@@ -21,17 +23,15 @@ import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 import { ResidueInfo } from "./InformationPanelUtils";
 import { getAminoAcidProperty } from "@/Core/Bioinformatics/AminoAcidUtils";
-import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import * as api from "@/Api";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { dynamicImports } from "@/Core/DynamicImports";
 
 @Options({
-    components: {
-        Tooltip,
-    },
+    components: {},
 })
 export default class ProteinSequenceViewer extends Vue {
     @Prop({ type: Array as () => ResidueInfo[], required: true })
@@ -40,9 +40,7 @@ export default class ProteinSequenceViewer extends Vue {
     @Prop({ type: Object as () => TreeNode | undefined, default: undefined })
     treeNode?: TreeNode;
 
-
-    tooltipText = "";
-    tooltipVisible = false; // Not directly used to show/hide, Tooltip.vue handles it
+    private tooltipInstances: any[] = [];
 
     /**
      * Gets the background color for a residue based on its one-letter code.
@@ -79,33 +77,6 @@ export default class ProteinSequenceViewer extends Vue {
     }
 
     /**
-     * Shows the tooltip with residue information.
-     *
-     * @param {ResidueInfo} residue The residue data.
-     * @param {MouseEvent} event The mouse event.
-     */
-    showTooltip(residue: ResidueInfo, event: MouseEvent) {
-        this.tooltipText = `${residue.threeLetterCode} ${residue.resi} (Chain ${residue.chain})`;
-        const tooltipVue = this.$refs.tooltipVue as any;
-        if (tooltipVue && tooltipVue.loadTip) {
-            const span = event.currentTarget as HTMLElement;
-            tooltipVue.$refs.tooltip = span;
-            tooltipVue.loadTip();
-        }
-    }
-
-    /**
-     * Hides the tooltip.
-     */
-    hideTooltip() {
-        this.tooltipText = "";
-        const tooltipVue = this.$refs.tooltipVue as any;
-        if (tooltipVue && tooltipVue.hideTip) {
-            tooltipVue.hideTip();
-        }
-    }
-
-    /**
      * Handles click on a residue.
      * Selects the corresponding residue in the 3D viewer.
      *
@@ -130,11 +101,55 @@ export default class ProteinSequenceViewer extends Vue {
         }
     }
 
+    /**
+     * Initialize tooltips for all residue elements
+     */
+    async initializeTooltips() {
+        try {
+            const BSToolTip = await dynamicImports.bootstrapTooltip.module;
+            const residueElements = this.$el.querySelectorAll('.residue[data-bs-toggle="tooltip"]');
+            
+            // Clean up existing tooltips
+            this.disposeTooltips();
+            
+            // Create new tooltip instances
+            residueElements.forEach((element) => {
+                const tooltip = new BSToolTip(element);
+                this.tooltipInstances.push(tooltip);
+            });
+        } catch (error) {
+            console.error('Failed to initialize tooltips:', error);
+        }
+    }
+
+    /**
+     * Dispose of all tooltip instances
+     */
+    disposeTooltips() {
+        this.tooltipInstances.forEach(tooltip => {
+            if (tooltip && tooltip.dispose) {
+                tooltip.dispose();
+            }
+        });
+        this.tooltipInstances = [];
+    }
 
     @Watch("sequence")
-    onSequenceChanged() {
-        // If the sequence changes, existing tooltips might be orphaned if not hidden.
-        this.hideTooltip();
+    async onSequenceChanged() {
+        // Reinitialize tooltips when sequence changes
+        await this.$nextTick();
+        this.initializeTooltips();
+    }
+
+    async mounted() {
+        // Initialize tooltips after component is mounted
+        await this.$nextTick();
+        this.initializeTooltips();
+    }
+
+    beforeUnmount() {
+        // Clean up tooltips before component is destroyed
+        this.disposeTooltips();
     }
 }
 </script>
