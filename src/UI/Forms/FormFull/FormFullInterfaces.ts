@@ -57,7 +57,6 @@ export interface IUserArgText extends IUserArg {
     placeHolder?: string;
     delayBetweenChangesDetected?: number;
     filterFunc?: (val: any) => any;
-    readonly?: boolean; // Added for edit mode
 }
 
 export interface IUserArgTextArea extends IUserArg {
@@ -148,4 +147,4 @@ export type UserArg =
     | IUserArgVector3D
     | IUserArgAlert
     | IUserSelectRegion
-    | IUserArgListSelect; // New type added
+    | IUserArgListSelect;

@@ -9,7 +9,6 @@
                     (type === 'color' ? ' form-control-color' : '') +
                     (type === 'range' ? ' form-range border-0 shadow-none' : '')
                 "
-                :readonly="readonly"
                 :id="id"
                 :placeholder="placeHolder"
                 :disabled="disabled"
@@ -65,7 +64,6 @@ export default class FormInput extends Vue {
     @Prop({}) description!: string;
     @Prop({ default: formInputDelayUpdate })
     delayBetweenChangesDetected!: number;
-    @Prop({ default: false }) readonly!: boolean;
     @Prop({ default: true }) validateDescription!: boolean;
     @Prop({ default: undefined }) actionBtnTxt!: string; // If undefined, no action button button
 

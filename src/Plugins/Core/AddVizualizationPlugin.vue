@@ -1,6 +1,6 @@
 <template>
-  <PluginComponent v-model="open" :infoPayload="infoPayload" :actionBtnTxt="dynamicActionBtnTxt" @onPopupDone="onPopupDone"
-    @onUserArgChanged="onUserArgChanged" :isActionBtnEnabled="isActionBtnEnabled"
+  <PluginComponent v-model="open" :infoPayload="infoPayload" :actionBtnTxt="dynamicActionBtnTxt"
+    @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" :isActionBtnEnabled="isActionBtnEnabled"
     @onMolCountsChanged="onMolCountsChanged">
     <template #afterForm>
       <div v-if="currentSelectionRepType" class="mt-3">
@@ -104,7 +104,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       placeHolder: "Blue Lysines...",
       description: "A unique name for this visualization.",
       validateFunc: (val: string) => val.trim().length > 0,
-   readonly: false, // Default to not readonly
     } as IUserArgText,
     {
       id: "selectionResidueNames",
@@ -253,18 +252,18 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   }
 
   /**
-   * Called when the plugin's main action is triggered. Parses user inputs,
-   * constructs an ISelAndStyle object, and adds or updates it in the
-   * StyleManager.
+   * Called when the plugin's main action is triggered. Parses
+   * user inputs, constructs an ISelAndStyle object, and adds or updates it
+   * in the StyleManager.
    *
    * @returns {Promise<void>} A promise that resolves when the operation is
-   *     complete.
+   *  complete.
    */
   async onPopupDone(): Promise<void> {
     const formStyleName = (this.getUserArg("styleName") as string).trim();
     const nameToUse = this.editMode && this.editingStyleName ? this.editingStyleName : formStyleName;
 
-    if (!nameToUse) {
+    if (!formStyleName) {
       messagesApi.popupError("Visualization name cannot be empty.");
       return;
     }
@@ -311,18 +310,40 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       // or a default one if available.
       (finalStyle as any)[this.currentSelectionRepType] = {}; // Or a default if applicable
     } else {
-    (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
+      (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
     }
 
-
-    const success = StyleManager.addCustomStyle(nameToUse, finalStyle, this.editMode); // Pass this.editMode as overwrite flag
-    if (success) {
-      messagesApi.popupMessage(
-        "Success",
-        `Visualization "${nameToUse}" ${this.editMode ? 'updated' : 'added'}.`,
-        PopupVariant.Success
-      );
-      this.closePopup();
+    if (this.editMode && this.editingStyleName) {
+      // Editing existing style
+      if (formStyleName !== this.editingStyleName && StyleManager.customSelsAndStyles[formStyleName]) {
+        messagesApi.popupError(`A custom visualization with the name "${formStyleName}" already exists. Please choose a different name.`);
+        return;
+      }
+      // If name changed, delete old one first
+      if (formStyleName !== this.editingStyleName) {
+        StyleManager.deleteCustomStyle(this.editingStyleName);
+        // Add with new name (overwrite should be false as we're adding a "new" entry after deleting old)
+        const success = StyleManager.addCustomStyle(formStyleName, finalStyle, false);
+        if (success) {
+          messagesApi.popupMessage("Success", `Visualization "${formStyleName}" updated.`, PopupVariant.Success);
+          this.closePopup();
+        }
+      } else {
+        // Name is the same, just update the style content
+        const success = StyleManager.addCustomStyle(formStyleName, finalStyle, true); // Overwrite is true here
+        if (success) {
+          messagesApi.popupMessage("Success", `Visualization "${formStyleName}" updated.`, PopupVariant.Success);
+          this.closePopup();
+        }
+      }
+    } else {
+      // Adding new style
+      const success = StyleManager.addCustomStyle(formStyleName, finalStyle, false);
+      if (success) {
+        messagesApi.popupMessage("Success", `Visualization "${formStyleName}" added.`, PopupVariant.Success);
+        this.closePopup();
+      }
+      // StyleManager.addCustomStyle handles the name collision error message if overwrite is false
     }
   }
 
@@ -333,23 +354,18 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    *
    * @param {AddVizPayload} [payload] Optional payload, e.g., for editing.
    * @returns {Promise<void>} A promise that resolves when pre-open operations
-   *     are complete.
+   *  are complete.
    */
   async onBeforePopupOpen(payload?: AddVizPayload) {
-    // this.userArgs is already a fresh copy from userArgDefaults due to PluginParentClass.onPluginStart
-    // which calls copyUserArgs(this.userArgDefaults).
-
-    const styleNameArg = this.userArgs.find(arg => arg.id === 'styleName') as IUserArgText | undefined;
+    // const styleNameArg = this.userArgs.find(arg => arg.id === 'styleName') as IUserArgText | undefined;
 
     if (payload && payload.styleNameToEdit) {
       this.editMode = true;
       this.editingStyleName = payload.styleNameToEdit;
-      this.title = "Edit Visualization"; // This will be picked up by PluginComponent
+      this.title = "Edit Visualization";
 
-      if (styleNameArg) {
-        styleNameArg.val = this.editingStyleName;
-        styleNameArg.readonly = true; // Make name field read-only
-      }
+      this.setUserArg("styleName", this.editingStyleName);
+
 
       const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName];
       if (styleToEdit) {
@@ -368,15 +384,16 @@ export default class AddVizualizationPlugin extends PluginParentClass {
           this.currentSelectionRepType = repType;
           this.currentRepresentationStyle = { [repType]: (styleToEdit as any)[repType] || {} };
         } else {
-    this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
-          this.currentRepresentationStyle = {};
+          // If no specific representation key is found, default to the one in userArgs
+          // This handles cases where the style might be just a selection with no explicit representation type like sphere/stick
+          this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
+          this.currentRepresentationStyle = {}; // Reset style or try to infer if possible
         }
       } else {
         // Style to edit not found, revert to add mode or show error
         this.editMode = false;
         this.editingStyleName = null;
         this.title = "New Visualization";
-        if (styleNameArg) styleNameArg.readonly = false;
         messagesApi.popupError(`Style "${payload.styleNameToEdit}" not found. Opening in 'New Visualization' mode.`);
         // Ensure form is in a clean "add" state
         this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
@@ -386,11 +403,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.editMode = false;
       this.editingStyleName = null;
       this.title = "New Visualization";
-      if (styleNameArg) {
-        styleNameArg.readonly = false; // Ensure name field is editable for new styles
-        // styleNameArg.val = ""; // Parent class resets this from userArgDefaults
-      }
-      // Initialize from defaults for add mode
       this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
       this.currentRepresentationStyle = {};
     }
