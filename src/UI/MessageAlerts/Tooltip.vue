@@ -40,8 +40,30 @@ export default class Tooltip extends Vue {
     private tipLoaded = false;
     private tipObj: any = null;
     private id = ""
+    private validationInterval: number | null = null;
 
     testMode = false;
+
+    /**
+     * Validates tooltip position and target existence
+     *
+     * @returns {boolean} True if tooltip is valid, false otherwise.
+     */
+    private validateTooltip(): boolean {
+        if (!this.tipObj || !this.tipObj.tip) {
+            return false;
+        }
+
+        // Check if the target element still exists in the DOM
+        const targetElement = this.$refs["tooltip"] as Element;
+        if (!targetElement || !document.contains(targetElement)) {
+            return false;
+        }
+
+        // Check tooltip position - if at 0,0 it's likely a positioning bug
+        const box = this.tipObj.tip.getBoundingClientRect();
+        return !(box.x === 0 && box.y === 0);
+    }
 
     /**
      * Hides the tooltip.
@@ -51,6 +73,12 @@ export default class Tooltip extends Vue {
             this.tipLoaded = false;
             this.tipObj.hide();
             delete allOpenTooltips[this.id];
+            
+            // Clear validation interval
+            if (this.validationInterval) {
+                clearInterval(this.validationInterval);
+                this.validationInterval = null;
+            }
         }
     }
 
@@ -68,13 +96,12 @@ export default class Tooltip extends Vue {
                     );
                     this.tipObj.show();
 
-                    // Make sure tip is not at 0, 0, a common bug that should be
-                    // avoided.
-                    // const box = this.tipObj.tip.getBoundingClientRect();
-                    // if (box.x === 0 && box.y === 0) {
-                    //     this.hideTip();
-                    //     return;
-                    // }
+                    // Validate tooltip after a brief delay to allow positioning
+                    setTimeout(() => {
+                        if (!this.validateTooltip()) {
+                            this.hideTip();
+                            return;
+                        }
 
                     // Make sure all other tool tips close.
                     for (const key in allOpenTooltips) {
@@ -86,15 +113,24 @@ export default class Tooltip extends Vue {
                     // Add this to list of ones that are open.
                     allOpenTooltips[this.id] = this;
 
-                    // Always automatically close after 15 seconds. Probably
-                    // buggy by then.
+                        // Set up periodic validation to check if target still exists
+                        // and tooltip is properly positioned
+                        this.validationInterval = setInterval(() => {
+                            if (!this.validateTooltip()) {
+                                this.hideTip();
+                            }
+                        }, 500) as unknown as number; // Check every 500ms
+
+                        // Always automatically close after 15 seconds
                     setTimeout(() => {
                         this.hideTip();
                     }, 15000);
+                    }, 100); // Small delay to allow Bootstrap to position the tooltip
+
                     return;
                 })
                 .catch((err: any) => {
-                    // throw "Error loading bootstrap tooltip.";
+                    this.tipLoaded = false; // Reset flag on error
                     throw err;
                 });
         }
@@ -104,7 +140,7 @@ export default class Tooltip extends Vue {
      * Called when the component is mounted.
      */
     mounted() {
-        // No tool tips if teting.
+        // No tool tips if testing.
         if (isTest) {
             this.testMode = true;
         }
@@ -112,10 +148,13 @@ export default class Tooltip extends Vue {
         this.id = Math.random().toString();
     }
 
-    /** mounted function */
-    // mounted() {
-    // new BSToolTip(this.$refs["tooltip"] as Element);
-    // }
+    /**
+     * Called when component is about to be unmounted
+     */
+    beforeUnmount() {
+        // Clean up tooltip and interval when component is destroyed
+        this.hideTip();
+    }
 }
 </script>
 
