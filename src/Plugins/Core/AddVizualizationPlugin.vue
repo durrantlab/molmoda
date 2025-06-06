@@ -1,5 +1,5 @@
 <template>
-  <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Add Visualization" @onPopupDone="onPopupDone"
+  <PluginComponent v-model="open" :infoPayload="infoPayload" :actionBtnTxt="dynamicActionBtnTxt" @onPopupDone="onPopupDone"
     @onUserArgChanged="onUserArgChanged" :isActionBtnEnabled="isActionBtnEnabled"
     @onMolCountsChanged="onMolCountsChanged">
     <template #afterForm>
@@ -50,6 +50,11 @@ import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { FailingTest } from "@/Testing/FailingTest";
 import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/TreeUtils";
 import { Watch } from "vue-property-decorator";
+
+interface AddVizPayload {
+  styleNameToEdit?: string;
+}
+
 /**
  * AddCustomStylePlugin allows users to define and add new custom molecular
  * visualization styles. These styles are based on selection criteria (like
@@ -88,6 +93,9 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     pyrimidine: ['CYT', 'C', 'THY', 'T', 'URA', 'U']
   };
 
+  editMode = false;
+  editingStyleName: string | null = null;
+
   userArgDefaults: UserArg[] = [
     {
       id: "styleName",
@@ -96,6 +104,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       placeHolder: "Blue Lysines...",
       description: "A unique name for this visualization.",
       validateFunc: (val: string) => val.trim().length > 0,
+   readonly: false, // Default to not readonly
     } as IUserArgText,
     {
       id: "selectionResidueNames",
@@ -163,6 +172,16 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       ] as IUserArgOption[],
     } as IUserArgSelect,
   ];
+
+  /**
+   * Gets the text for the main action button, depending on whether the plugin
+   * is in "add" or "edit" mode.
+   *
+   * @returns {string} The text for the action button.
+   */
+  get dynamicActionBtnTxt(): string {
+    return this.editMode ? "Update Visualization" : "Add Visualization";
+  }
 
   /**
    * Expands macro keywords into their corresponding residue names.
@@ -234,16 +253,18 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   }
 
   /**
-   * Called when the plugin's main action ("Add Style") is triggered. Parses
-   * user inputs, constructs an ISelAndStyle object, and adds it to the
+   * Called when the plugin's main action is triggered. Parses user inputs,
+   * constructs an ISelAndStyle object, and adds or updates it in the
    * StyleManager.
    *
    * @returns {Promise<void>} A promise that resolves when the operation is
    *     complete.
    */
   async onPopupDone(): Promise<void> {
-    const styleName = (this.getUserArg("styleName") as string).trim();
-    if (!styleName) {
+    const formStyleName = (this.getUserArg("styleName") as string).trim();
+    const nameToUse = this.editMode && this.editingStyleName ? this.editingStyleName : formStyleName;
+
+    if (!nameToUse) {
       messagesApi.popupError("Visualization name cannot be empty.");
       return;
     }
@@ -278,15 +299,29 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     const colorSchemeObject = (this.currentRepresentationStyle as any)[this.currentSelectionRepType];
 
     if (!colorSchemeObject || Object.keys(colorSchemeObject).length === 0) {
-      messagesApi.popupError("Color scheme for the selected representation is not defined.");
-      return;
+      messagesApi.popupMessage(
+        "Info",
+        `No specific color scheme was defined for ${this.currentSelectionRepType}. Default coloring will be applied by the viewer for this representation.`,
+        PopupVariant.Info
+      );
+      // If no color scheme is explicitly set (e.g. user interaction didn't happen with ColorSchemeSelect)
+      // we might imply that the representation itself is the primary style information,
+      // and the viewer will use its default coloring for that representation.
+      // So, we can proceed by setting an empty object for the representation's style,
+      // or a default one if available.
+      (finalStyle as any)[this.currentSelectionRepType] = {}; // Or a default if applicable
+    } else {
+    (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
     }
 
-    (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
 
-    const success = StyleManager.addCustomStyle(styleName, finalStyle);
+    const success = StyleManager.addCustomStyle(nameToUse, finalStyle, this.editMode); // Pass this.editMode as overwrite flag
     if (success) {
-      messagesApi.popupMessage("Success", `Visualization "${styleName}" added.`, PopupVariant.Success);
+      messagesApi.popupMessage(
+        "Success",
+        `Visualization "${nameToUse}" ${this.editMode ? 'updated' : 'added'}.`,
+        PopupVariant.Success
+      );
       this.closePopup();
     }
   }
@@ -294,17 +329,74 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   /**
    * Lifecycle hook, called before the popup opens. Initializes the current
    * representation type based on default user arguments and resets the current
-   * representation style.
+   * representation style. If editing, pre-populates the form.
    *
+   * @param {AddVizPayload} [payload] Optional payload, e.g., for editing.
    * @returns {Promise<void>} A promise that resolves when pre-open operations
    *     are complete.
    */
-  async onBeforePopupOpen() {
-    // Initialize currentSelectionRepType from default userArgs
+  async onBeforePopupOpen(payload?: AddVizPayload) {
+    // this.userArgs is already a fresh copy from userArgDefaults due to PluginParentClass.onPluginStart
+    // which calls copyUserArgs(this.userArgDefaults).
+
+    const styleNameArg = this.userArgs.find(arg => arg.id === 'styleName') as IUserArgText | undefined;
+
+    if (payload && payload.styleNameToEdit) {
+      this.editMode = true;
+      this.editingStyleName = payload.styleNameToEdit;
+      this.title = "Edit Visualization"; // This will be picked up by PluginComponent
+
+      if (styleNameArg) {
+        styleNameArg.val = this.editingStyleName;
+        styleNameArg.readonly = true; // Make name field read-only
+      }
+
+      const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName];
+      if (styleToEdit) {
+        this.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
+        this.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
+
+        let repType: Representation | null = null;
+        if (styleToEdit.sphere) repType = AtomsRepresentation.Sphere;
+        else if (styleToEdit.stick) repType = AtomsRepresentation.Stick;
+        else if (styleToEdit.line) repType = AtomsRepresentation.Line;
+        else if (styleToEdit.cartoon) repType = BackBoneRepresentation.Cartoon;
+        else if (styleToEdit.surface) repType = SurfaceRepresentation.Surface;
+
+        if (repType) {
+          this.setUserArg("representationType", repType);
+          this.currentSelectionRepType = repType;
+          this.currentRepresentationStyle = { [repType]: (styleToEdit as any)[repType] || {} };
+        } else {
     this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
-    this.currentRepresentationStyle = {}; // Reset
-    this.updateResidueOptions();
+          this.currentRepresentationStyle = {};
+        }
+      } else {
+        // Style to edit not found, revert to add mode or show error
+        this.editMode = false;
+        this.editingStyleName = null;
+        this.title = "New Visualization";
+        if (styleNameArg) styleNameArg.readonly = false;
+        messagesApi.popupError(`Style "${payload.styleNameToEdit}" not found. Opening in 'New Visualization' mode.`);
+        // Ensure form is in a clean "add" state
+        this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
+        this.currentRepresentationStyle = {};
+      }
+    } else {
+      this.editMode = false;
+      this.editingStyleName = null;
+      this.title = "New Visualization";
+      if (styleNameArg) {
+        styleNameArg.readonly = false; // Ensure name field is editable for new styles
+        // styleNameArg.val = ""; // Parent class resets this from userArgDefaults
+      }
+      // Initialize from defaults for add mode
+      this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
+      this.currentRepresentationStyle = {};
+    }
+    this.updateResidueOptions(); // Ensure dropdown options are current
   }
+
 
   /**
    * Required by PluginParentClass. This plugin performs its action

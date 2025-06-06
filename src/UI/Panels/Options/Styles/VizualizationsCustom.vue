@@ -10,6 +10,9 @@
           {{ name }}
         </span>
         <div class="d-flex">
+    <IconSwitcher :useFirst="true" :iconID1="['fa', 'pencil']" :iconID2="['fa', 'pencil']"
+   :icon2Style="{ color: 'lightgray' }" :width="22" @click="handleEditCustomStyle(name)"
+   title="Edit Visualization" class="me-2 clickable" />
           <IconSwitcher :useFirst="isCustomStyleEnabled(name)" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
             :icon2Style="{ color: 'lightgray' }" :width="22" @click="handleToggleCustomStyle(name)"
             title="Toggle Visualization" class="me-2 clickable" />
@@ -90,6 +93,16 @@ export default class VizualizationsCustom extends Vue {
    */
   openAddNewVisualizationPlugin(): void {
     pluginsApi.runPlugin("addnewvisualization");
+  }
+
+  /**
+   * Handles the editing of a custom style.
+   * Opens the AddVizualizationPlugin with the style's data.
+   *
+   * @param {string} name The name of the custom style to edit.
+   */
+   handleEditCustomStyle(name: string): void {
+    pluginsApi.runPlugin("addnewvisualization", { styleNameToEdit: name });
   }
 }
 </script>
