@@ -7,7 +7,7 @@
         <FormWrapper label="Color Scheme" cls="border-0">
           <ColorSchemeSelect :key="currentSelectionRepType" v-model="currentRepresentationStyle"
             :repName="currentSelectionRepType" :molType="treeNodeTypeForColorSchemes" @onChange="onColorSchemeChange"
-            cls="" />
+            :excludeSchemeNames="['Molecule', 'Chain']" cls="" />
           <FormElementDescription description="Choose the coloring method for the selected representation." />
         </FormWrapper>
       </div>

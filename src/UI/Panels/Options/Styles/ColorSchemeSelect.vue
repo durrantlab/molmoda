@@ -21,13 +21,13 @@ import {
   UserArgType,
   IUserArgSelect,
   IUserArgColor,
+  IUserArgOption,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ISelAndStyle, Representation } from "@/Core/Styling/SelAndStyleInterfaces";
 import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces";
 import { ColorSchemeOptionsForSelect, defaultColor } from "@/UI/Panels/Options/Styles/ColorSchemeOptionsForSelect";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { colorDefinitionNameToIndex, colorSchemeToDefinitionIndex } from "@/Core/Styling/Colors/ColorSchemeDefinitions";
-
+import { colorDefinitionIndexToName, colorDefinitionNameToIndex, colorSchemeToDefinitionIndex } from "@/Core/Styling/Colors/ColorSchemeDefinitions";
 /**
  * ColorSchemeSelect component. This is just to select the color style for a
  * single molecular type (e.g., protein) and representation (e.g., surface). The
@@ -48,6 +48,7 @@ export default class ColorSchemeSelect extends Vue {
   @Prop({ required: true }) repName!: Representation;
   @Prop({ required: true }) molType!: TreeNodeType;
   @Prop({ default: "ms-2" }) cls!: string;
+  @Prop({ type: Array, default: () => [] }) excludeSchemeNames!: string[];
 
   colorSchemeOptionsForSelect = new ColorSchemeOptionsForSelect();
 
@@ -63,10 +64,18 @@ export default class ColorSchemeSelect extends Vue {
     this._setColorSchemeDefaultsIfMissing(style);
 
     // Get the available color-form options.
-    const colorSchemeOptionsForSelect = this.colorSchemeOptionsForSelect.createColorSchemeOptionsForSelect(
+ let colorSchemeOptions = this.colorSchemeOptionsForSelect.createColorSchemeOptionsForSelect(
       this.repName,
       this.molType
-    )
+ );
+
+ // Filter out excluded scheme names
+ if (this.excludeSchemeNames && this.excludeSchemeNames.length > 0) {
+  colorSchemeOptions = colorSchemeOptions.filter(option => {
+    const schemeName = colorDefinitionIndexToName(Number(option.val));
+    return !this.excludeSchemeNames.includes(schemeName);
+  });
+ }
 
     // Get the index in the options list of the current color style.
     let colorSchemeIdx = colorSchemeToDefinitionIndex(
@@ -77,8 +86,8 @@ export default class ColorSchemeSelect extends Vue {
     const colorFormSelect = {
       type: UserArgType.Select,
       id: "colorscheme",
-      val: colorSchemeIdx.toString(),         // Current color style index as a string
-      options: colorSchemeOptionsForSelect,  // Options for the select dropdown
+   val: colorSchemeIdx.toString(),   // Current color style index as a string
+   options: colorSchemeOptions,  // Options for the select dropdown
     } as IUserArgSelect;
 
     // Make the form
