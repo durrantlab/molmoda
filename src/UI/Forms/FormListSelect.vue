@@ -8,8 +8,9 @@
                     :ariaDescribedBy="id + '-dropdown-button'" />
             </div>
             <button v-if="options && options.length > 0"
-                :class="`btn btn-primary dropdown-toggle btn-sm custom-add-button ${disabled ? 'disabled' : ''}`" type="button"
-                :id="id + '-dropdown-button'" data-bs-toggle="dropdown" aria-expanded="false" :disabled="disabled">
+                :class="`btn btn-primary dropdown-toggle btn-sm custom-add-button ${disabled ? 'disabled' : ''}`"
+                type="button" :id="id + '-dropdown-button'" data-bs-toggle="dropdown" aria-expanded="false"
+                :disabled="disabled">
                 Add
             </button>
             <ul v-if="options && options.length > 0"
@@ -26,7 +27,6 @@
         <FormElementDescription :description="description" :warning="currentWarningMessage" :validate="false" />
     </div>
 </template>
-
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
@@ -36,6 +36,12 @@ import FormInput from "./FormInput.vue";
 // FormSelect is no longer directly used in the template
 // import FormSelect from "./FormSelect.vue";
 import FormElementDescription from "./FormElementDescription.vue";
+
+interface ParsedListResult {
+    parsedList: string[] | number[];
+    isValid: boolean;
+}
+
 /**
  * FormListSelect component allows users to input a list of items (text or
  * numbers, with support for numeric ranges) via a text field. Optionally, a
@@ -132,8 +138,7 @@ export default class FormListSelect extends Vue {
     @Prop({ default: formInputDelayUpdate }) delayBetweenChangesDetected!: number;
 
     private textValue = "";
-    // selectedDropdownOption is no longer needed as FormSelect is removed
-    // private selectedDropdownOption: string = DROPDOWN_PLACEHOLDER_VALUE;
+    private isInputValid = true; // Tracks internal parsing validity
     private currentWarningMessage = "";
 
     /**
@@ -152,8 +157,8 @@ export default class FormListSelect extends Vue {
      * @param {string[] | number[]} newValue The new `modelValue`.
      */
     @Watch("modelValue")
-    onModelValueChanged(newValue: string[] | number[]) {
-        const currentParsedValue = this.parseTextToList(this.textValue);
+    onModelValueChanged(newValue: string[] | number[]): void {
+        const { parsedList: currentParsedValue } = this.parseTextToList(this.textValue);
         // Avoid feedback loop if the change originated from textValue internal update
         if (JSON.stringify(newValue) !== JSON.stringify(currentParsedValue)) {
             this.updateTextValueFromModelValue(newValue);
@@ -172,14 +177,17 @@ export default class FormListSelect extends Vue {
 
     /**
      * Parses the text from the input field into a list of strings or numbers.
+     * Also determines if the entire input string was valid.
      *
      * @param {string} text The text to parse.
-     * @returns {(string[] | number[])} The parsed list.
+     * @returns {ParsedListResult} An object containing the parsed list and a boolean indicating validity.
      */
-    private parseTextToList(text: string): string[] | number[] {
+    private parseTextToList(text: string): ParsedListResult {
         const trimmedText = text.trim();
+        let isValid = true;
+
         if (trimmedText === "") {
-            return [];
+            return { parsedList: [], isValid: true };
         }
 
         const parts = trimmedText.split(/[\s,]+/).map(s => s.trim()).filter(s => s.length > 0);
@@ -195,30 +203,43 @@ export default class FormListSelect extends Vue {
                         for (let i = start; i <= end; i++) {
                             numericSet.add(i);
                         }
+                    } else {
+                        isValid = false; // Invalid range or non-numeric parts
                     }
                 } else {
                     const num = parseInt(part, 10);
                     if (!isNaN(num)) {
                         numericSet.add(num);
+                    } else {
+                        isValid = false; // Non-numeric part
                     }
                 }
             }
-            return Array.from(numericSet).sort((a, b) => a - b); // This correctly returns number[]
+            return { parsedList: Array.from(numericSet).sort((a, b) => a - b), isValid };
         } else { // 'text'
             const stringSet = new Set<string>();
             parts.forEach(part => stringSet.add(part));
-            return Array.from(stringSet); // This correctly returns string[]
+            // For text input, parsing itself doesn't really "fail" unless specific rules were added.
+            // Assuming any non-empty part is a valid text item.
+            return { parsedList: Array.from(stringSet), isValid: true };
         }
     }
 
     /**
      * Handles input from the text field. Updates `textValue` and emits the parsed list.
+     * If parsing is not valid, emits an empty list to signal invalidity to FormFull.
      */
     private handleTextInput(): void {
         // textValue is already updated by v-model on FormInput
-        const parsedList = this.parseTextToList(this.textValue);
-        this.$emit("update:modelValue", parsedList);
-        this.$emit("onChange", parsedList);
+        const { parsedList, isValid } = this.parseTextToList(this.textValue);
+        this.isInputValid = isValid;
+
+        if (!this.isInputValid) {
+            this.$emit("update:modelValue", []); // Emit empty list on parsing error
+        } else {
+            this.$emit("update:modelValue", parsedList);
+        }
+        this.$emit("onChange", this.isInputValid ? parsedList : []);
         this.updateWarning();
     }
 
@@ -248,8 +269,8 @@ export default class FormListSelect extends Vue {
             this.textValue = selectedValue;
         } else {
             // Check if the value already exists in the text input before appending
-            const currentList = this.parseTextToList(this.textValue);
-            const valueExists = currentList.some(item => String(item) === selectedValue);
+            const currentListResult = this.parseTextToList(this.textValue);
+            const valueExists = currentListResult.parsedList.some(item => String(item) === selectedValue);
             if (!valueExists) {
                 this.textValue += `, ${selectedValue}`;
             }
@@ -257,11 +278,14 @@ export default class FormListSelect extends Vue {
         this.handleTextInput(); // Process the updated textValue
         // The dropdown will close automatically due to Bootstrap behavior.
     }
+
     /**
-     * Updates the warning message based on the `warningFunc` prop.
+  * Updates the warning message based on the `isInputValid` state and `warningFunc` prop.
      */
     private updateWarning(): void {
-        if (this.warningFunc) {
+        if (!this.isInputValid) {
+            this.currentWarningMessage = "Invalid input. Please check list format (e.g., for numbers: 1, 2, 3-5).";
+        } else if (this.warningFunc) {
             this.currentWarningMessage = this.warningFunc(this.modelValue);
         } else {
             this.currentWarningMessage = "";
