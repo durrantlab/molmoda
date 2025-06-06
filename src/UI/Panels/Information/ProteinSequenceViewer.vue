@@ -1,4 +1,3 @@
-// ================== FILE: UI/Panels/Information/ProteinSequenceViewer.vue ==================
 <template>
     <div class="protein-sequence-viewer" ref="sequenceContainer">
         <div v-if="sequence && sequence.length > 0" class="sequence-wrapper">
@@ -156,58 +155,49 @@ export default class ProteinSequenceViewer extends Vue {
 
 <style scoped lang="scss">
 .protein-sequence-viewer {
-    font-family: monospace;
-    line-height: 1.5;
-    word-break: break-all;
-    padding: 5px;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    max-height: 200px;
-    /* Or use prop for maxHeight */
-    overflow-y: auto;
-    text-align: left;
-    /* Ensure text aligns left */
+  font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace; 
+  line-height: 1.2; 
+  word-break: break-all; 
+  padding: 2px; 
+  background-color: #f8f9fa; 
+  border: 1px solid #e0e0e0; 
+  border-radius: 2px; 
+  max-height: 150px; 
+  overflow-y: auto; 
+  text-align: left; 
+  width: 100%; 
+  box-sizing: border-box;
 }
 
 .sequence-wrapper {
-    display: flex;
+  display: flex; 
     flex-wrap: wrap;
+  align-items: flex-start; 
 }
 
 .residue {
-    display: inline-block;
-    min-width: 1.2em;
-    /* Ensure a minimum width for very short text */
-    padding-left: 0.1em;
-    /* Add a little padding for aesthetics */
-    padding-right: 0.1em;
-    height: 1.2em;
-    /* Adjust for desired height */
+  display: inline-flex; 
+  align-items: center;  
+  justify-content: center; 
+  
+  padding: 0.05em 0.15em; 
+  min-width: 0.8em;    
+  height: 1.2em;         
+  
+  font-size: 0.95em; 
     text-align: center;
-    line-height: 1.2em;
-    /* Vertically center text */
-    margin: 1px;
-    border-radius: 3px;
-    /* Slightly more rounded */
-    cursor: default;
-    user-select: none;
-    font-weight: bold;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.1);
-    /* Subtle shadow for depth */
-}
 
-.residue:hover {
-    outline: 1.5px solid #007bff;
-    /* Bootstrap primary blue for hover */
-    transform: scale(1.1);
-    /* Slight zoom on hover */
-    transition: transform 0.1s ease-out;
+  margin: 0; 
+  border-radius: 0; 
+  cursor: default; 
+  user-select: none; 
+  font-weight: normal; 
 }
 
 .no-sequence-message {
     text-align: center;
-    color: #6c757d;
-    padding: 10px;
+  color: #6c757d; 
+  padding: 8px; 
+  font-size: 0.9em;
 }
 </style>
