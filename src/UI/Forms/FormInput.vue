@@ -1,35 +1,19 @@
 <template>
     <span>
         <div class="input-group">
-            <input
-                ref="inputElem"
-                :type="type"
-                :class="
-                    'form-control form-control-sm' +
-                    (type === 'color' ? ' form-control-color' : '') +
-                    (type === 'range' ? ' form-range border-0 shadow-none' : '')
-                "
-                :id="id"
-                :placeholder="placeHolder"
-                :disabled="disabled"
-                @input="handleInput"
-                @keydown="onKeyDown"
-                :value="modelValue"
-                :min="min"
-                :max="max"
-                :step="step"
-            />
+            <input ref="inputElem" :type="type" :class="'form-control form-control-sm' +
+                (type === 'color' ? ' form-control-color' : '') +
+                (type === 'range' ? ' form-range border-0 shadow-none' : '')
+                " :id="id" :placeholder="placeHolder" :disabled="disabled" @input="handleInput" @keydown="onKeyDown"
+                :value="modelValue" :min="min" :max="max" :step="step" />
             <div v-if="actionBtnTxt !== undefined" class="input-group-append">
                 <button @click="onActionBtnClick" class="btn btn-primary" type="button">
                     {{ actionBtnTxt }}
                 </button>
             </div>
         </div>
-        <FormElementDescription
-            :description="descriptionToUse"
-            :validate="validateDescription"
-            :warning="warning"
-        ></FormElementDescription>
+        <FormElementDescription :description="descriptionToUse" :validate="validateDescription" :warning="warning">
+        </FormElementDescription>
         <!-- :disabled="!isActionBtnEnabled || isClosing"
         @click="actionBtn" -->
         <!-- <button type="button" class="btn btn-primary action-btn">TEST</button> -->
