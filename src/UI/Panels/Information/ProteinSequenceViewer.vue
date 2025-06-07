@@ -3,13 +3,13 @@
         <div class="line-number-gutter" ref="lineNumberGutter">
             <!-- Line numbers will be dynamically inserted here -->
         </div>
-        <div class="protein-sequence-scroll-area" ref="sequenceScrollArea">
+        <div class="protein-sequence-scroll-area" ref="sequenceScrollArea" @scroll="handleScroll">
             <div v-if="sequence && sequence.length > 0" class="sequence-wrapper" ref="sequenceWrapper">
                 <span v-for="(residue, index) in sequence" :key="`${residue.chain}-${residue.resi}-${index}`"
                     :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`]"
                     :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
                     @click="residueClicked(residue)"
-                    :title="`${residue.threeLetterCode} ${residue.resi} (Chain ${residue.chain})`"
+                    :title="`${residue.threeLetterCode} ${residue.resi}`"
                 data-bs-toggle="tooltip"
                     data-bs-placement="top"
                     :data-residue-key="`${residue.chain}-${residue.resi}`"> 
@@ -35,6 +35,27 @@ import * as api from "@/Api";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { dynamicImports } from "@/Core/DynamicImports";
 
+/**
+ * Debounce function to limit the rate at which a function can fire. Useful for
+ * performance optimization, especially for scroll and resize events.
+ *
+ * @param {Function} func  The function to debounce. This function should not
+ *                         expect arguments from the debounce caller.
+ * @param {number}   delay The delay in milliseconds.
+ * @returns {Function} A debounced version of the input function.
+ */
+function debounce(func: () => Promise<void> | void, delay: number) {
+    let timeoutId: number;
+    return function (this: any) {
+        clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(() => func.apply(this), delay);
+    };
+}
+
+/**
+ * ProteinSequenceViewer component displays a protein sequence with residues
+ * color-coded and clickable to select in a 3D viewer.
+ */
 @Options({
     components: {},
 })
@@ -47,6 +68,12 @@ export default class ProteinSequenceViewer extends Vue {
 
     private tooltipInstances: any[] = [];
     private resizeObserver: ResizeObserver | null = null;
+    
+    // Initialize with a linter-friendly no-op function.
+    // It will be replaced by the actual debounced function in `mounted`.
+    private debouncedUpdateLineNumbers: (() => void) = function() { /* no-op */ };
+
+    // No constructor needed for this change
 
     /**
      * Gets the background color for a residue based on its one-letter code.
@@ -113,13 +140,12 @@ export default class ProteinSequenceViewer extends Vue {
     async initializeTooltips() {
         try {
             const BSToolTip = await dynamicImports.bootstrapTooltip.module;
-            const residueElements = this.$el.querySelectorAll('.residue[data-bs-toggle="tooltip"]');
+            // Correctly query for HTMLElements and iterate
+            const residueElements = this.$el.querySelectorAll('.residue[data-bs-toggle="tooltip"]') as [HTMLElement];
             
-            // Clean up existing tooltips
-            this.disposeTooltips();
+            this.disposeTooltips(); // Clean up existing tooltips
             
-            // Create new tooltip instances
-            residueElements.forEach((element) => {
+            residueElements.forEach((element) => { // Iterate over the NodeList
                 const tooltip = new BSToolTip(element);
                 this.tooltipInstances.push(tooltip);
             });
@@ -213,17 +239,33 @@ export default class ProteinSequenceViewer extends Vue {
         }
     }
 
+    /**
+     * Sets up a ResizeObserver to handle changes in the size of the root
+     * container. This is used to re-calculate line numbers when the container
+     * is resized.
+     */
     setupResizeObserver() {
         const container = this.$refs.rootContainer as HTMLElement; 
         if (container && !this.resizeObserver) {
             this.resizeObserver = new ResizeObserver(() => {
-                // Debounce or throttle this if it fires too often
-                this.updateLineNumbers();
+                // Use the debounced version for resize as well, or a direct call if preferred
+                this.debouncedUpdateLineNumbers();
             });
             this.resizeObserver.observe(container);
         }
     }
 
+    /**
+     * Handles the scroll event on the sequenceScrollArea.
+     */
+    handleScroll() {
+        this.debouncedUpdateLineNumbers();
+    }
+
+    /**
+     * Watches for changes in the sequence prop and updates line numbers
+     * accordingly. This is triggered when the sequence data changes.
+     */
     @Watch("sequence", { immediate: true, deep: true })
     async onSequenceChanged() {
         // When sequence changes, re-calculate line numbers and re-init tooltips
@@ -232,14 +274,30 @@ export default class ProteinSequenceViewer extends Vue {
         this.initializeTooltips();
     }
 
+    /**
+     * Lifecycle hook called when the component is mounted. Initializes tooltips
+     * and sets up resize observer.
+     */
     async mounted() {
+        // Properly initialize debouncedUpdateLineNumbers here
+        this.debouncedUpdateLineNumbers = debounce(this.updateLineNumbers, 100);
+
         // Initialize tooltips after component is mounted
         await this.$nextTick();
         this.setupResizeObserver();
-        this.updateLineNumbers(); // Initial calculation
+        this.updateLineNumbers(); 
         this.initializeTooltips();
+
+        // const scrollArea = this.$refs.sequenceScrollArea as HTMLElement; // Not needed for @scroll
+        // if (scrollArea) {
+            // The event listener is added directly in the template now: @scroll="handleScroll"
+        // }
     }
 
+    /**
+     * Lifecycle hook called before the component is unmounted. Cleans up
+     * tooltips and resize observer to prevent memory leaks.
+     */
     beforeUnmount() {
         // Clean up tooltips before component is destroyed
         this.disposeTooltips();
@@ -249,6 +307,10 @@ export default class ProteinSequenceViewer extends Vue {
             this.resizeObserver.disconnect();
             this.resizeObserver = null;
         }
+        // const scrollArea = this.$refs.sequenceScrollArea as HTMLElement;
+        // if (scrollArea) {
+        //     scrollArea.removeEventListener('scroll', this.debouncedUpdateLineNumbers);
+        // } // No longer needed due to template listener
     }
 }
 </script>
