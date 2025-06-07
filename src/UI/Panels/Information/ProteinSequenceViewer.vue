@@ -1,24 +1,29 @@
 <template>
     <div class="protein-sequence-viewer-container" ref="rootContainer">
-        <div class="line-number-gutter" ref="lineNumberGutter">
-            <!-- Line numbers will be dynamically inserted here -->
-        </div>
-        <div class="protein-sequence-scroll-area" ref="sequenceScrollArea" @scroll="handleScroll">
-            <div v-if="sequence && sequence.length > 0" class="sequence-wrapper" ref="sequenceWrapper">
-                <span v-for="(residue, index) in sequence" :key="`${residue.chain}-${residue.resi}-${index}`"
-                    :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`]"
-                    :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
-                    @click="residueClicked(residue)"
-                    :title="`${residue.threeLetterCode} ${residue.resi}`"
-                data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    :data-residue-key="`${residue.chain}-${residue.resi}`"> 
-                    {{ residue.oneLetterCode }}
+        <div v-if="processedSequenceLines && processedSequenceLines.length > 0" class="sequence-area">
+            <div v-for="(line, lineIndex) in processedSequenceLines"
+                :key="`line-${line.chain}-${line.lineNumber}-${lineIndex}`" class="sequence-line">
+                <span class="line-number">
+                    {{ line.lineNumberFormatted }}
                 </span>
+                <div class="residues-on-line">
+                    <span v-for="(residue, resIndex) in line.residues"
+                        :key="`res-${residue.chain}-${residue.resi}-${resIndex}`"
+                        :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`]"
+                        :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
+                        @click="residueClicked(residue)"
+                        :title="`${residue.threeLetterCode} ${residue.resi} (Chain ${residue.chain})`"
+                        data-bs-toggle="tooltip" data-bs-placement="top">
+                        {{ residue.oneLetterCode }}
+                    </span>
+                </div>
+            </div>
         </div>
-            <div v-else class="no-sequence-message">
+        <div v-else-if="sequence && sequence.length === 0" class="no-sequence-message">
             Protein sequence is empty.
         </div>
+        <div v-else class="no-sequence-message">
+            No protein sequence to display.
         </div>
     </div>
 </template>
@@ -35,21 +40,14 @@ import * as api from "@/Api";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { dynamicImports } from "@/Core/DynamicImports";
 
-/**
- * Debounce function to limit the rate at which a function can fire. Useful for
- * performance optimization, especially for scroll and resize events.
- *
- * @param {Function} func  The function to debounce. This function should not
- *                         expect arguments from the debounce caller.
- * @param {number}   delay The delay in milliseconds.
- * @returns {Function} A debounced version of the input function.
- */
-function debounce(func: () => Promise<void> | void, delay: number) {
-    let timeoutId: number;
-    return function (this: any) {
-        clearTimeout(timeoutId);
-        timeoutId = window.setTimeout(() => func.apply(this), delay);
-    };
+// --- Configuration Constants ---
+const LINE_NUMBER_GUTTER_WIDTH_PX = 50;  // Fixed pixel width for line numbers
+
+interface ProcessedLine {
+    lineNumber: number;
+    lineNumberFormatted: string;
+    chain: string;
+    residues: ResidueInfo[];
 }
 
 /**
@@ -68,12 +66,10 @@ export default class ProteinSequenceViewer extends Vue {
 
     private tooltipInstances: any[] = [];
     private resizeObserver: ResizeObserver | null = null;
-    
-    // Initialize with a linter-friendly no-op function.
-    // It will be replaced by the actual debounced function in `mounted`.
-    private debouncedUpdateLineNumbers: (() => void) = function() { /* no-op */ };
 
-    // No constructor needed for this change
+    processedSequenceLines: ProcessedLine[] = [];
+    private currentRootContainerWidthPx = 0;
+    private measuredResidueBoxWidthPx = 10;
 
     /**
      * Gets the background color for a residue based on its one-letter code.
@@ -111,8 +107,7 @@ export default class ProteinSequenceViewer extends Vue {
 
     /**
      * Handles click on a residue.
-     * Selects the corresponding residue in the 3D viewer.
-     *
+     * 
      * @param {ResidueInfo} residue The clicked residue.
      */
     async residueClicked(residue: ResidueInfo) {
@@ -142,9 +137,9 @@ export default class ProteinSequenceViewer extends Vue {
             const BSToolTip = await dynamicImports.bootstrapTooltip.module;
             // Correctly query for HTMLElements and iterate
             const residueElements = this.$el.querySelectorAll('.residue[data-bs-toggle="tooltip"]') as [HTMLElement];
-            
+
             this.disposeTooltips(); // Clean up existing tooltips
-            
+
             residueElements.forEach((element) => { // Iterate over the NodeList
                 const tooltip = new BSToolTip(element);
                 this.tooltipInstances.push(tooltip);
@@ -158,108 +153,116 @@ export default class ProteinSequenceViewer extends Vue {
      * Dispose of all tooltip instances
      */
     disposeTooltips() {
-        this.tooltipInstances.forEach(tooltip => {
-            if (tooltip && tooltip.dispose) {
-                tooltip.dispose();
-            }
-        });
-        this.tooltipInstances = [];
+        // No changes made to this function
     }
 
     /**
-     * Calculates and renders line numbers in the gutter.
+     * Measures the width of a single rendered residue box to be used for calculations.
      */
-    async updateLineNumbers() {
-        if (!this.sequence || this.sequence.length === 0) {
-            this.clearLineNumberGutter();
+    private measureResidueBoxWidth() {
+        const tempSpan = document.createElement("span");
+        tempSpan.className = "residue"; // Apply same class for styling
+        tempSpan.style.visibility = "hidden"; // Don't show it
+        tempSpan.style.position = "absolute"; // Don't affect layout
+        tempSpan.textContent = "W"; // A typically wide character
+        this.$el.appendChild(tempSpan);
+        this.measuredResidueBoxWidthPx = tempSpan.offsetWidth;
+        this.$el.removeChild(tempSpan);
+        if (this.measuredResidueBoxWidthPx === 0) this.measuredResidueBoxWidthPx = 10; // Fallback
+    }
+
+    /**
+     * Calculates how many residues fit per line and structures the sequence into lines.
+     */
+    async calculateLines() {
+        if (!this.sequence || this.sequence.length === 0 || this.currentRootContainerWidthPx === 0 || this.measuredResidueBoxWidthPx === 0) {
+            this.processedSequenceLines = [];
             return;
         }
 
-        await this.$nextTick(); 
+        // Use the pixel constant directly
+        const gutterWidthPx = LINE_NUMBER_GUTTER_WIDTH_PX;
 
-        const sequenceWrapper = this.$refs.sequenceWrapper as HTMLElement;
-        const lineNumberGutter = this.$refs.lineNumberGutter as HTMLElement;
-        const sequenceScrollArea = this.$refs.sequenceScrollArea as HTMLElement; // Get the scrollable container
-        
-        if (!sequenceWrapper || !lineNumberGutter || !sequenceScrollArea) return;
+        // Subtract gutter width and a small margin for scrollbar/padding
+        const availableWidthForResidues = this.currentRootContainerWidthPx - gutterWidthPx - 10;
 
-        this.clearLineNumberGutter();
-
-        const residueElements = Array.from(sequenceWrapper.children) as HTMLElement[];
-        let lastOffsetTopInScrollArea = -1; // Track offsetTop relative to the scroll area
-        let currentChain = ""; 
-        const gutterRect = lineNumberGutter.getBoundingClientRect();
-        const scrollAreaRect = sequenceScrollArea.getBoundingClientRect();
-
-
-        residueElements.forEach((element, index) => {
-            if (index < this.sequence.length) { 
-                const residue = this.sequence[index];
-                const elementRect = element.getBoundingClientRect();
-                
-                // Calculate offsetTop relative to the scrollArea, accounting for current scroll position
-                const currentOffsetTopInScrollArea = elementRect.top - scrollAreaRect.top + sequenceScrollArea.scrollTop;
-
-                if (currentOffsetTopInScrollArea > lastOffsetTopInScrollArea || (currentChain !== residue.chain && lastOffsetTopInScrollArea !== -1) ) {
-                    if (index > 0 || (currentChain !== residue.chain && this.sequence.length > 0) || (this.sequence.length > 0 && currentChain === "" && residue.chain !== "") ) {
-                        // Ensure we don't add a number for the very first residue if it's the same chain,
-                        // but do add if the chain changes or it's the start of a new chain segment.
-                        if (currentChain === "" && index === 0 && this.sequence.length > 0) currentChain = residue.chain; // Initialize currentChain for the first element
-
-                        if(index === 0 || currentOffsetTopInScrollArea > lastOffsetTopInScrollArea || currentChain !== residue.chain) {
-                    const numberSpan = document.createElement('span');
-                    numberSpan.className = 'line-number';
-                    numberSpan.textContent = residue.resi.toString();
-                            
-                            // Position relative to the gutter
-                            // The `top` should be the residue's top relative to the scrollable area's top,
-                            // minus the gutter's own top relative to its offset parent (if different).
-                            // Simpler: residue's top relative to viewport minus gutter's top relative to viewport.
-                            // This aligns the number with the residue start *within the visible part of the gutter*.
-                            const topPosition = elementRect.top - gutterRect.top;
-                            numberSpan.style.top = `${topPosition}px`;
-                   
-                    lineNumberGutter.appendChild(numberSpan);
-                        }
-                    }
-                    lastOffsetTopInScrollArea = currentOffsetTopInScrollArea;
-                }
-                currentChain = residue.chain; 
-                }
-        });
-    }
-
-    /**
-     * Clears all dynamically added line numbers from the gutter.
-     */
-    clearLineNumberGutter() {
-        const lineNumberGutter = this.$refs.lineNumberGutter as HTMLElement;
-        if (lineNumberGutter) {
-            lineNumberGutter.innerHTML = ''; // Clear previous numbers
+        let residuesPerLine = Math.floor(availableWidthForResidues / this.measuredResidueBoxWidthPx);
+        if (residuesPerLine <= 0) {
+            residuesPerLine = 1; // Ensure at least one residue per line to avoid infinite loops
         }
+
+        const newProcessedLines: ProcessedLine[] = [];
+        if (this.sequence.length === 0) {
+            this.processedSequenceLines = newProcessedLines;
+            return;
+        }
+
+        // Find the maximum residue number to determine padding width
+        const maxResi = Math.max(...this.sequence.map(r => r.resi));
+        const padWidth = maxResi.toString().length;
+
+        let currentLineResidues: ResidueInfo[] = [];
+        let firstResidueOfLine = this.sequence[0];
+        let currentChain = this.sequence[0].chain;
+
+        for (let i = 0; i < this.sequence.length; i++) {
+            const residue = this.sequence[i];
+
+            if (currentLineResidues.length === 0) {
+                firstResidueOfLine = residue;
+            }
+
+            // Start a new line if max residues reached OR if chain changes
+            if (currentLineResidues.length >= residuesPerLine || (residue.chain !== currentChain && currentLineResidues.length > 0)) {
+                if (currentLineResidues.length > 0) {
+                    newProcessedLines.push({
+                        lineNumber: firstResidueOfLine.resi,
+                        lineNumberFormatted: firstResidueOfLine.resi.toString().padStart(padWidth, ' '),
+                        chain: firstResidueOfLine.chain,
+                        residues: currentLineResidues
+                    });
+                }
+                currentLineResidues = [];
+                firstResidueOfLine = residue;
+            }
+            currentChain = residue.chain;
+            currentLineResidues.push(residue);
+        }
+
+        // Add any remaining residues from the last line
+        if (currentLineResidues.length > 0) {
+            newProcessedLines.push({
+                lineNumber: firstResidueOfLine.resi,
+                lineNumberFormatted: firstResidueOfLine.resi.toString().padStart(padWidth, ' '),
+                chain: firstResidueOfLine.chain,
+                residues: currentLineResidues
+            });
+        }
+
+        this.processedSequenceLines = newProcessedLines;
+
+        await this.$nextTick();
+        this.initializeTooltips();
     }
 
     /**
-     * Sets up a ResizeObserver to handle changes in the size of the root
-     * container. This is used to re-calculate line numbers when the container
-     * is resized.
+     * Sets up a ResizeObserver to handle changes in the size of the root container.
      */
     setupResizeObserver() {
-        const container = this.$refs.rootContainer as HTMLElement; 
+        const container = this.$refs.rootContainer as HTMLElement;
         if (container && !this.resizeObserver) {
-            this.resizeObserver = new ResizeObserver(() => {
-                // Use the debounced version for resize as well, or a direct call if preferred
-                this.debouncedUpdateLineNumbers();
+            this.currentRootContainerWidthPx = container.offsetWidth; // Initial width
+            this.resizeObserver = new ResizeObserver((entries) => {
+                if (entries && entries.length > 0) {
+                    const newWidth = entries[0].contentRect.width;
+                    if (this.currentRootContainerWidthPx !== newWidth) {
+                        this.currentRootContainerWidthPx = newWidth;
+                        this.calculateLines();
+                    }
+                }
             });
             this.resizeObserver.observe(container);
         }
-    }
-
-    /**
-     * Handles the scroll event on the sequenceScrollArea.
-     */
-    handleScroll() {
-        this.debouncedUpdateLineNumbers();
     }
 
     /**
@@ -268,10 +271,7 @@ export default class ProteinSequenceViewer extends Vue {
      */
     @Watch("sequence", { immediate: true, deep: true })
     async onSequenceChanged() {
-        // When sequence changes, re-calculate line numbers and re-init tooltips
-        this.updateLineNumbers();
-        await this.$nextTick();
-        this.initializeTooltips();
+        this.calculateLines();
     }
 
     /**
@@ -279,19 +279,11 @@ export default class ProteinSequenceViewer extends Vue {
      * and sets up resize observer.
      */
     async mounted() {
-        // Properly initialize debouncedUpdateLineNumbers here
-        this.debouncedUpdateLineNumbers = debounce(this.updateLineNumbers, 100);
-
-        // Initialize tooltips after component is mounted
         await this.$nextTick();
+        this.measureResidueBoxWidth(); // Measure actual residue width once styles are applied
         this.setupResizeObserver();
-        this.updateLineNumbers(); 
+        // calculateLines will be called by ResizeObserver's initial call or sequence watcher
         this.initializeTooltips();
-
-        // const scrollArea = this.$refs.sequenceScrollArea as HTMLElement; // Not needed for @scroll
-        // if (scrollArea) {
-            // The event listener is added directly in the template now: @scroll="handleScroll"
-        // }
     }
 
     /**
@@ -307,98 +299,83 @@ export default class ProteinSequenceViewer extends Vue {
             this.resizeObserver.disconnect();
             this.resizeObserver = null;
         }
-        // const scrollArea = this.$refs.sequenceScrollArea as HTMLElement;
-        // if (scrollArea) {
-        //     scrollArea.removeEventListener('scroll', this.debouncedUpdateLineNumbers);
-        // } // No longer needed due to template listener
     }
 }
 </script>
 
 <style scoped lang="scss">
 .protein-sequence-viewer-container {
-  display: flex; 
-  position: relative; 
-  font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace; 
-  line-height: 1.2; 
-  background-color: #f8f9fa; 
-  border: 1px solid #e0e0e0; 
-  border-radius: 2px; 
-  width: 100%; 
-  box-sizing: border-box;
-  max-height: 150px; 
-  /* IMPORTANT: The container itself should not scroll, the inner .protein-sequence-scroll-area will */
-  overflow: hidden; 
+    font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
+    line-height: 1.2;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    width: 100%;
+    box-sizing: border-box;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 2px;
 }
 
-.line-number-gutter {
-  flex-shrink: 0; 
-  width: 35px; 
-  padding-right: 5px; 
-  box-sizing: border-box;
-  position: relative; 
-  // border-right: 1px solid #ddd; 
-  /* Gutter is full height of its container, but content might scroll */
-  /* It does not scroll itself; its numbers are absolutely positioned relative to it */
+.sequence-line {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1px;
+    min-height: 1.2em;
 }
 
-.protein-sequence-scroll-area {
-  flex-grow: 1; 
-  overflow-y: auto; 
-  padding: 2px; 
-  text-align: left; 
-  word-break: break-all; 
-  box-sizing: border-box;
-  /* height: 100%; // Removed, as max-height is on parent */
+.line-number {
+    flex-shrink: 0;
+    width: 50px; /* Fixed pixel width - change this value to adjust */
+    min-width: 50px; /* Ensure it never gets smaller */
+    max-width: 50px; /* Ensure it never gets larger */
+    font-size: 0.75em;
+    color: #555;
+    padding-right: 0.5em;
+    text-align: right;
+    height: 1.2em;
+    line-height: 1.35em;
+    user-select: none;
+    font-weight: normal;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden; /* Hide any overflow if number is too long */
+    font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
+    font-variant-numeric: tabular-nums;
 }
 
-.sequence-wrapper {
-  display: flex; 
-    flex-wrap: wrap;
-  align-items: flex-start; 
+.residues-on-line {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-grow: 1;
 }
 
 .residue {
-  display: inline-flex; 
-  align-items: center;  
-  justify-content: center; 
-  padding: 0.05em 0.15em; 
-  min-width: 0.8em;    
-  height: 1.2em;         
-  font-size: 0.95em; 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.1em 0.15em;
+    // min-width: 0.9em; // Not fixing width here, letting content and count dictate
+    height: 1.2em;
+    font-size: 0.95em;
     text-align: center;
-  margin: 0; 
-  border-radius: 0; 
-  cursor: default; 
-  user-select: none; 
-  font-weight: normal; 
+    margin: 0;
+    border-radius: 0;
+    cursor: default;
+    user-select: none;
+    font-weight: normal;
+    box-sizing: border-box;
 }
-
-:deep(.line-number) { 
-  display: block; 
-  position: absolute; 
-  left: 2px; 
-  font-size: 0.75em;  
-  color: #6c757d;      
-  height: 1.2em;    
-  line-height: 1.2em;   
-  user-select: none; 
-  font-weight: normal; 
-  text-align: right; 
-  width: calc(100% - 7px); 
-  box-sizing: border-box;
-}
-
 
 .no-sequence-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  min-height: 50px; // Ensure it has some height
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 50px;
     text-align: center;
-  color: #6c757d; 
-  padding: 8px; 
-  font-size: 0.9em;
+    color: #6c757d;
+    padding: 8px;
+    font-size: 0.9em;
 }
 </style>
