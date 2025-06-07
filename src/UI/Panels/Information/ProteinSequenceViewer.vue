@@ -41,7 +41,7 @@ import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ea
 import { dynamicImports } from "@/Core/DynamicImports";
 
 // --- Configuration Constants ---
-const LINE_NUMBER_GUTTER_WIDTH_PX = 50;  // Fixed pixel width for line numbers
+const LABEL_WIDTH = 40;  // Width of line number labels in pixels
 
 interface ProcessedLine {
     lineNumber: number;
@@ -102,6 +102,19 @@ export default class ProteinSequenceViewer extends Vue {
             return brightness > 125 ? 'black' : 'white';
         } catch (e) {
             return 'black'; // Fallback
+        }
+    }
+
+    /**
+     * Updates the line number column width dynamically
+     * @param {number} widthPx The new width in pixels
+     */
+    updateLineNumberWidth(widthPx: number) {
+        const container = this.$refs.rootContainer as HTMLElement;
+        if (container) {
+            container.style.setProperty('--line-number-width', `${widthPx}px`);
+            // Recalculate lines since the available width has changed
+            this.calculateLines();
         }
     }
 
@@ -181,7 +194,7 @@ export default class ProteinSequenceViewer extends Vue {
         }
 
         // Use the pixel constant directly
-        const gutterWidthPx = LINE_NUMBER_GUTTER_WIDTH_PX;
+        const gutterWidthPx = LABEL_WIDTH;
 
         // Subtract gutter width and a small margin for scrollbar/padding
         const availableWidthForResidues = this.currentRootContainerWidthPx - gutterWidthPx - 10;
@@ -280,6 +293,18 @@ export default class ProteinSequenceViewer extends Vue {
      */
     async mounted() {
         await this.$nextTick();
+        
+        // Apply the label width from JavaScript constant to CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            .protein-sequence-viewer-container .line-number {
+                width: ${LABEL_WIDTH}px !important;
+                min-width: ${LABEL_WIDTH}px !important;
+                max-width: ${LABEL_WIDTH}px !important;
+            }
+        `;
+        document.head.appendChild(style);
+        
         this.measureResidueBoxWidth(); // Measure actual residue width once styles are applied
         this.setupResizeObserver();
         // calculateLines will be called by ResizeObserver's initial call or sequence watcher
@@ -326,9 +351,6 @@ export default class ProteinSequenceViewer extends Vue {
 
 .line-number {
     flex-shrink: 0;
-    width: 50px; /* Fixed pixel width - change this value to adjust */
-    min-width: 50px; /* Ensure it never gets smaller */
-    max-width: 50px; /* Ensure it never gets larger */
     font-size: 0.75em;
     color: #555;
     padding-right: 0.5em;
@@ -339,7 +361,7 @@ export default class ProteinSequenceViewer extends Vue {
     font-weight: normal;
     box-sizing: border-box;
     white-space: nowrap;
-    overflow: hidden; /* Hide any overflow if number is too long */
+    overflow: hidden;
     font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
     font-variant-numeric: tabular-nums;
 }
