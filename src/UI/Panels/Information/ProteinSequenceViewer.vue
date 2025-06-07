@@ -1,5 +1,6 @@
 <template>
     <div class="protein-sequence-viewer-container" ref="rootContainer">
+
         <div v-if="processedSequenceLines && processedSequenceLines.length > 0" class="sequence-area">
             <div v-for="(line, lineIndex) in processedSequenceLines"
                 :key="`line-${line.chain}-${line.lineNumber}-${lineIndex}`" class="sequence-line">
@@ -11,8 +12,7 @@
                         :key="`res-${residue.chain}-${residue.resi}-${resIndex}`"
                         :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`]"
                         :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
-                        @click="residueClicked(residue)"
-                        :title="`${residue.threeLetterCode} ${residue.resi} (Chain ${residue.chain})`"
+                        @click="residueClicked(residue)" :title="`${residue.threeLetterCode} ${residue.resi}`"
                         data-bs-toggle="tooltip" data-bs-placement="top">
                         {{ residue.oneLetterCode }}
                     </span>
@@ -42,6 +42,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 
 // --- Configuration Constants ---
 const LABEL_WIDTH = 40;  // Width of line number labels in pixels
+const AMINO_ACID_WIDTH = 15;
 
 interface ProcessedLine {
     lineNumber: number;
@@ -69,7 +70,6 @@ export default class ProteinSequenceViewer extends Vue {
 
     processedSequenceLines: ProcessedLine[] = [];
     private currentRootContainerWidthPx = 0;
-    private measuredResidueBoxWidthPx = 10;
 
     /**
      * Gets the background color for a residue based on its one-letter code.
@@ -107,6 +107,7 @@ export default class ProteinSequenceViewer extends Vue {
 
     /**
      * Updates the line number column width dynamically
+     * 
      * @param {number} widthPx The new width in pixels
      */
     updateLineNumberWidth(widthPx: number) {
@@ -166,40 +167,32 @@ export default class ProteinSequenceViewer extends Vue {
      * Dispose of all tooltip instances
      */
     disposeTooltips() {
-        // No changes made to this function
-    }
-
-    /**
-     * Measures the width of a single rendered residue box to be used for calculations.
-     */
-    private measureResidueBoxWidth() {
-        const tempSpan = document.createElement("span");
-        tempSpan.className = "residue"; // Apply same class for styling
-        tempSpan.style.visibility = "hidden"; // Don't show it
-        tempSpan.style.position = "absolute"; // Don't affect layout
-        tempSpan.textContent = "W"; // A typically wide character
-        this.$el.appendChild(tempSpan);
-        this.measuredResidueBoxWidthPx = tempSpan.offsetWidth;
-        this.$el.removeChild(tempSpan);
-        if (this.measuredResidueBoxWidthPx === 0) this.measuredResidueBoxWidthPx = 10; // Fallback
+        this.tooltipInstances.forEach(tooltip => {
+            if (tooltip && typeof tooltip.dispose === 'function') {
+                tooltip.dispose();
+            }
+        });
+        this.tooltipInstances = [];
     }
 
     /**
      * Calculates how many residues fit per line and structures the sequence into lines.
      */
     async calculateLines() {
-        if (!this.sequence || this.sequence.length === 0 || this.currentRootContainerWidthPx === 0 || this.measuredResidueBoxWidthPx === 0) {
+        if (!this.sequence || this.sequence.length === 0 || this.currentRootContainerWidthPx === 0) {
             this.processedSequenceLines = [];
             return;
         }
 
-        // Use the pixel constant directly
-        const gutterWidthPx = LABEL_WIDTH;
+        // await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Subtract gutter width and a small margin for scrollbar/padding
-        const availableWidthForResidues = this.currentRootContainerWidthPx - gutterWidthPx - 10;
+        // Calculate total space taken by the label column
+        const totalLabelWidthPx = LABEL_WIDTH; //  + labelPaddingPx;
 
-        let residuesPerLine = Math.floor(availableWidthForResidues / this.measuredResidueBoxWidthPx);
+        // Calculate available width for residues
+        const availableWidthForResidues = this.currentRootContainerWidthPx - totalLabelWidthPx; // - containerPaddingPx - scrollbarWidthPx - safetyMarginPx;
+
+        let residuesPerLine = Math.floor(availableWidthForResidues / AMINO_ACID_WIDTH);
         if (residuesPerLine <= 0) {
             residuesPerLine = 1; // Ensure at least one residue per line to avoid infinite loops
         }
@@ -293,7 +286,7 @@ export default class ProteinSequenceViewer extends Vue {
      */
     async mounted() {
         await this.$nextTick();
-        
+
         // Apply the label width from JavaScript constant to CSS
         const style = document.createElement('style');
         style.textContent = `
@@ -302,10 +295,14 @@ export default class ProteinSequenceViewer extends Vue {
                 min-width: ${LABEL_WIDTH}px !important;
                 max-width: ${LABEL_WIDTH}px !important;
             }
+            .residue {
+                width: ${AMINO_ACID_WIDTH}px !important;
+                min-width: ${AMINO_ACID_WIDTH}px !important;
+                max-width: ${AMINO_ACID_WIDTH}px !important;
+            }
         `;
         document.head.appendChild(style);
-        
-        this.measureResidueBoxWidth(); // Measure actual residue width once styles are applied
+
         this.setupResizeObserver();
         // calculateLines will be called by ResizeObserver's initial call or sequence watcher
         this.initializeTooltips();
@@ -337,7 +334,7 @@ export default class ProteinSequenceViewer extends Vue {
     border-radius: 2px;
     width: 100%;
     box-sizing: border-box;
-    max-height: 150px;
+    // max-height: 150px;
     overflow-y: auto;
     padding: 2px;
 }
@@ -377,7 +374,6 @@ export default class ProteinSequenceViewer extends Vue {
     align-items: center;
     justify-content: center;
     padding: 0.1em 0.15em;
-    // min-width: 0.9em; // Not fixing width here, letting content and count dictate
     height: 1.2em;
     font-size: 0.95em;
     text-align: center;
