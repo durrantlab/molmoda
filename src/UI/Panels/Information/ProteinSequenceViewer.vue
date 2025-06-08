@@ -1,6 +1,5 @@
 <template>
     <div class="protein-sequence-viewer-container" ref="rootContainer">
-
         <div v-if="processedSequenceLines && processedSequenceLines.length > 0" class="sequence-area">
             <div v-for="(line, lineIndex) in processedSequenceLines"
                 :key="`line-${line.chain}-${line.lineNumber}-${lineIndex}`" class="sequence-line">
@@ -9,8 +8,8 @@
                 </span>
                 <div class="residues-on-line">
                     <span v-for="(residue, resIndex) in line.residues"
-                        :key="`res-${residue.chain}-${residue.resi}-${resIndex}`"
-                        :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`]"
+      :key='`${lineIndex}-${resIndex}-${residue.atomIndex}`'
+      :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`, { 'clicked-residue': residue.atomIndex === clickedResidueAtomIndex }]"
                         :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
                         @click="residueClicked(residue)" :title="`${residue.threeLetterCode} ${residue.resi}`"
                         data-bs-toggle="tooltip" data-bs-placement="top">
@@ -27,7 +26,6 @@
         </div>
     </div>
 </template>
-
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
@@ -65,15 +63,14 @@ interface ProcessedLine {
 export default class ProteinSequenceViewer extends Vue {
     @Prop({ type: Array as () => ResidueInfo[], required: true })
     sequence!: ResidueInfo[];
-
     @Prop({ type: Object as () => TreeNode | undefined, default: undefined })
     treeNode?: TreeNode;
 
     private tooltipInstances: any[] = [];
     private resizeObserver: ResizeObserver | null = null;
-
     processedSequenceLines: ProcessedLine[] = [];
     private currentRootContainerWidthPx = 0;
+ private clickedResidueAtomIndex: number | null | undefined = null;
 
     /**
      * Gets the background color for a residue based on its one-letter code.
@@ -123,7 +120,12 @@ export default class ProteinSequenceViewer extends Vue {
         }
     }
 
-    stylizeSelectedResidue(residue: ResidueInfo): string {
+    /**
+     * Stylizes the selected residue by applying a specific style.
+     * 
+     * @param {ResidueInfo} residue The residue to stylize.
+     */
+    stylizeSelectedResidue(residue: ResidueInfo) {
 
         const styleName = "ClickedResidue";
         const targetResidueName = residue.threeLetterCode;
@@ -155,6 +157,8 @@ export default class ProteinSequenceViewer extends Vue {
      * @param {ResidueInfo} residue The clicked residue.
      */
     async residueClicked(residue: ResidueInfo) {
+        this.clickedResidueAtomIndex = residue.atomIndex; // ADD THIS LINE
+
         if (!this.treeNode || !this.treeNode.id || residue.atomIndex === undefined) {
             return;
         }
@@ -189,16 +193,18 @@ export default class ProteinSequenceViewer extends Vue {
      * Initialize tooltips for all residue elements
      */
     async initializeTooltips() {
+  // Ensure old tooltips are disposed of before creating new ones
+  this.disposeTooltips(); 
         try {
             const BSToolTip = await dynamicImports.bootstrapTooltip.module;
-            // Correctly query for HTMLElements and iterate
-            const residueElements = this.$el.querySelectorAll('.residue[data-bs-toggle="tooltip"]') as [HTMLElement];
-
-            this.disposeTooltips(); // Clean up existing tooltips
-
-            residueElements.forEach((element) => { // Iterate over the NodeList
+   // Query for all elements that should have a tooltip
+   const residueElements = this.$el.querySelectorAll('.residue[data-bs-toggle="tooltip"]');
+   residueElements.forEach((element: Element) => { // Specify Element type
+    // Ensure element is an HTMLElement before creating a tooltip
+    if (element instanceof HTMLElement) {
                 const tooltip = new BSToolTip(element);
                 this.tooltipInstances.push(tooltip);
+    }
             });
         } catch (error) {
             console.error('Failed to initialize tooltips:', error);
@@ -206,7 +212,8 @@ export default class ProteinSequenceViewer extends Vue {
     }
 
     /**
-     * Dispose of all tooltip instances
+     * Dispose of all currently active Bootstrap tooltip instances. This should
+     * be called before the component updates or unmounts.
      */
     disposeTooltips() {
         this.tooltipInstances.forEach(tooltip => {
@@ -214,7 +221,7 @@ export default class ProteinSequenceViewer extends Vue {
                 tooltip.dispose();
             }
         });
-        this.tooltipInstances = [];
+  this.tooltipInstances = []; // Reset the array
     }
 
     /**
@@ -226,17 +233,11 @@ export default class ProteinSequenceViewer extends Vue {
             return;
         }
 
-        // await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Calculate total space taken by the label column
-        const totalLabelWidthPx = LABEL_WIDTH; //  + labelPaddingPx;
-
-        // Calculate available width for residues
-        const availableWidthForResidues = this.currentRootContainerWidthPx - totalLabelWidthPx; // - containerPaddingPx - scrollbarWidthPx - safetyMarginPx;
-
+  const totalLabelWidthPx = LABEL_WIDTH; 
+  const availableWidthForResidues = this.currentRootContainerWidthPx - totalLabelWidthPx; 
         let residuesPerLine = Math.floor(availableWidthForResidues / AMINO_ACID_WIDTH);
         if (residuesPerLine <= 0) {
-            residuesPerLine = 1; // Ensure at least one residue per line to avoid infinite loops
+   residuesPerLine = 1; 
         }
 
         const newProcessedLines: ProcessedLine[] = [];
@@ -245,13 +246,12 @@ export default class ProteinSequenceViewer extends Vue {
             return;
         }
 
-        // Find the maximum residue number to determine padding width
-        const maxResi = Math.max(...this.sequence.map(r => r.resi));
+  const maxResi = Math.max(...this.sequence.map(r => r.resi), 0);
         const padWidth = maxResi.toString().length;
-
         let currentLineResidues: ResidueInfo[] = [];
-        let firstResidueOfLine = this.sequence[0];
-        let currentChain = this.sequence[0].chain;
+  
+  let firstResidueOfLine: ResidueInfo = this.sequence[0] || { oneLetterCode: '', threeLetterCode: '', resi: 0, chain: 'A' };
+  let currentChain: string = this.sequence[0]?.chain || 'A';
 
         for (let i = 0; i < this.sequence.length; i++) {
             const residue = this.sequence[i];
@@ -286,11 +286,7 @@ export default class ProteinSequenceViewer extends Vue {
                 residues: currentLineResidues
             });
         }
-
         this.processedSequenceLines = newProcessedLines;
-
-        await this.$nextTick();
-        this.initializeTooltips();
     }
 
     /**
@@ -344,9 +340,28 @@ export default class ProteinSequenceViewer extends Vue {
             }
         `;
         document.head.appendChild(style);
-
         this.setupResizeObserver();
-        // calculateLines will be called by ResizeObserver's initial call or sequence watcher
+  this.currentRootContainerWidthPx = (this.$refs.rootContainer as HTMLElement)?.offsetWidth || 0;
+  await this.calculateLines();
+  // Initialize tooltips after the first render and line calculation
+  await this.$nextTick();
+  this.initializeTooltips();
+ }
+
+ /**
+  * Lifecycle hook called before the component is updated.
+  * Disposes of tooltips before the DOM is patched.
+  */
+ beforeUpdate() {
+  this.disposeTooltips();
+ }
+
+ /**
+  * Lifecycle hook called after the component’s DOM has been updated.
+  * Re-initializes tooltips on the new/updated DOM elements.
+  */
+ async updated() {
+  await this.$nextTick(); // Ensure DOM is fully updated
         this.initializeTooltips();
     }
 
@@ -355,8 +370,7 @@ export default class ProteinSequenceViewer extends Vue {
      * tooltips and resize observer to prevent memory leaks.
      */
     beforeUnmount() {
-        // Clean up tooltips before component is destroyed
-        this.disposeTooltips();
+  this.disposeTooltips(); // Ensure tooltips are cleaned up
         if (this.resizeObserver) {
             const container = this.$refs.rootContainer as HTMLElement;
             if (container) this.resizeObserver.unobserve(container);
@@ -366,7 +380,6 @@ export default class ProteinSequenceViewer extends Vue {
     }
 }
 </script>
-
 <style scoped lang="scss">
 .protein-sequence-viewer-container {
     font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
@@ -425,6 +438,13 @@ export default class ProteinSequenceViewer extends Vue {
     user-select: none;
     font-weight: normal;
     box-sizing: border-box;
+}
+
+.residue.clicked-residue {
+  outline: 2px solid black;
+  outline-offset: -2px; /* Draws the outline slightly inside the border to avoid layout shift */
+  /* If you prefer a box-shadow for a softer effect: */
+  /* box-shadow: 0 0 0 1.5px #007bff inset; */
 }
 
 .no-sequence-message {
