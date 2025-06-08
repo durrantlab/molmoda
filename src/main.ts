@@ -16,6 +16,10 @@ import { setupTags } from "./Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { setupSaveOnClose } from "./Core/SaveOnClose";
 import { Reactor } from "./Core/Reactor";
 import { logEvent } from "./Core/Analytics";
+import { colorDefinitionNameToScheme } from "./Core/Styling/Colors/ColorSchemeDefinitions";
+import { ISelAndStyle } from "./Core/Styling/SelAndStyleInterfaces";
+import { pluginsApi } from "./Api/Plugins";
+import { colorNameToHex } from "./Core/Styling/Colors/ColorUtils";
 
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 

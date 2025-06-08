@@ -50,9 +50,24 @@ import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { FailingTest } from "@/Testing/FailingTest";
 import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/TreeUtils";
 import { Watch } from "vue-property-decorator";
+// import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces"; // Potentially needed
 
 interface AddVizPayload {
   styleNameToEdit?: string;
+}
+
+/**
+ * Payload for programmatic execution of AddVizualizationPlugin.
+ */
+interface ProgrammaticAddVizPayload {
+  /** Flag to indicate programmatic execution. */
+  runProgrammatically: true;
+  /** The name for the new or existing style. */
+  styleName: string;
+  /** The full definition of the style. */
+  styleDefinition: ISelAndStyle;
+  /** Whether to overwrite an existing style with the same name. Defaults to false. */
+  overwrite?: boolean;
 }
 
 /**
@@ -95,6 +110,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
 
   editMode = false;
   editingStyleName: string | null = null;
+  // Store overwrite flag for programmatic runs temporarily
+  private programmaticOverwrite = false;
 
   userArgDefaults: UserArg[] = [
     {
@@ -244,130 +261,88 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * Called when the ColorSchemeSelect component emits a change.
    */
   onColorSchemeChange(): void {
-    // The v-model on ColorSchemeSelect should directly update
-    // this.currentRepresentationStyle. We might need to force a re-evaluation
-    // if Vue doesn't pick up deep changes within currentRepresentationStyle,
-    // but usually v-model handles this.
-    this.$forceUpdate(); // Force update if necessary
-  }
-
-  /**
-   * Called when the plugin's main action is triggered. Parses
-   * user inputs, constructs an ISelAndStyle object, and adds or updates it
-   * in the StyleManager.
-   *
-   * @returns {Promise<void>} A promise that resolves when the operation is
-   *  complete.
-   */
-  async onPopupDone(): Promise<void> {
-    const formStyleName = (this.getUserArg("styleName") as string).trim();
-    const nameToUse = this.editMode && this.editingStyleName ? this.editingStyleName : formStyleName;
-
-    if (!formStyleName) {
-      messagesApi.popupError("Visualization name cannot be empty.");
-      return;
-    }
-
-    const selection: any = {};
-
-    // Get and expand residue names (including macros)
-    let resNames = this.getUserArg("selectionResidueNames") as string[];
-    if (resNames.length > 0) {
-      const expandedResNames = this.expandResidueNameMacros(resNames);
-      selection.resn = expandedResNames;
-    }
-
-    let resIds = this.getUserArg("selectionResidueIds") as number[];
-    if (resIds.length > 0) selection.resi = resIds;
-
-    // const chainIds = this.getUserArg("selectionChainIds") as string[];
-    // if (chainIds.length > 0) selection.chain = chainIds;
-
-    // const atomNames = this.getUserArg("selectionAtomNames") as string[];
-    // if (atomNames.length > 0) selection.atom = atomNames;
-
-    // const elements = this.getUserArg("selectionElements") as string[];
-    // if (elements.length > 0) selection.elem = elements;
-
-    if (!this.currentSelectionRepType) {
-      messagesApi.popupError("A representation type must be selected.");
-      return;
-    }
-
-    const finalStyle: ISelAndStyle = { selection };
-    const colorSchemeObject = (this.currentRepresentationStyle as any)[this.currentSelectionRepType];
-
-    if (!colorSchemeObject || Object.keys(colorSchemeObject).length === 0) {
-      messagesApi.popupMessage(
-        "Info",
-        `No specific color scheme was defined for ${this.currentSelectionRepType}. Default coloring will be applied by the viewer for this representation.`,
-        PopupVariant.Info
-      );
-      // If no color scheme is explicitly set (e.g. user interaction didn't happen with ColorSchemeSelect)
-      // we might imply that the representation itself is the primary style information,
-      // and the viewer will use its default coloring for that representation.
-      // So, we can proceed by setting an empty object for the representation's style,
-      // or a default one if available.
-      (finalStyle as any)[this.currentSelectionRepType] = {}; // Or a default if applicable
-    } else {
-      (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
-    }
-
-    if (this.editMode && this.editingStyleName) {
-      // Editing existing style
-      if (formStyleName !== this.editingStyleName && StyleManager.customSelsAndStyles[formStyleName]) {
-        messagesApi.popupError(`A custom visualization with the name "${formStyleName}" already exists. Please choose a different name.`);
-        return;
-      }
-      // If name changed, delete old one first
-      if (formStyleName !== this.editingStyleName) {
-        StyleManager.deleteCustomStyle(this.editingStyleName);
-        // Add with new name (overwrite should be false as we're adding a "new" entry after deleting old)
-        const success = StyleManager.addCustomStyle(formStyleName, finalStyle, false);
-        if (success) {
-          messagesApi.popupMessage("Success", `Visualization "${formStyleName}" updated.`, PopupVariant.Success);
-          this.closePopup();
-        }
-      } else {
-        // Name is the same, just update the style content
-        const success = StyleManager.addCustomStyle(formStyleName, finalStyle, true); // Overwrite is true here
-        if (success) {
-          messagesApi.popupMessage("Success", `Visualization "${formStyleName}" updated.`, PopupVariant.Success);
-          this.closePopup();
-        }
-      }
-    } else {
-      // Adding new style
-      const success = StyleManager.addCustomStyle(formStyleName, finalStyle, false);
-      if (success) {
-        messagesApi.popupMessage("Success", `Visualization "${formStyleName}" added.`, PopupVariant.Success);
-        this.closePopup();
-      }
-      // StyleManager.addCustomStyle handles the name collision error message if overwrite is false
-    }
+    // No changes made to this function
   }
 
   /**
    * Lifecycle hook, called before the popup opens. Initializes the current
    * representation type based on default user arguments and resets the current
-   * representation style. If editing, pre-populates the form.
+   * representation style. If editing, pre-populates the form. If called with a
+   * programmatic payload, sets up for no-UI execution.
    *
-   * @param {AddVizPayload} [payload] Optional payload, e.g., for editing.
-   * @returns {Promise<void>} A promise that resolves when pre-open operations
-   *  are complete.
+   * @param {AddVizPayload | ProgrammaticAddVizPayload} [payload] Optional
+   *                                                              payload for UI
+   *                                                              editing or
+   *                                                              programmatic
+   *                                                              run.
+   * @returns {Promise<void | boolean>} A promise that resolves. Returns false
+   *     if popup opening should be prevented (programmatic run).
    */
-  async onBeforePopupOpen(payload?: AddVizPayload) {
-    // const styleNameArg = this.userArgs.find(arg => arg.id === 'styleName') as IUserArgText | undefined;
+  async onBeforePopupOpen(payload?: AddVizPayload | ProgrammaticAddVizPayload): Promise<void | boolean> {
+    this.noPopup = false; // Default to UI mode
 
-    if (payload && payload.styleNameToEdit) {
+    if (payload && (payload as ProgrammaticAddVizPayload).runProgrammatically) {
+      const progPayload = payload as ProgrammaticAddVizPayload;
+      this.setUserArg("styleName", progPayload.styleName);
+
+      const { selection, ...representationAndColor } = progPayload.styleDefinition;
+
+      if (selection) {
+        this.setUserArg("selectionResidueNames", selection.resn || []);
+        this.setUserArg("selectionResidueIds", selection.resi || []);
+        // Note: Other selection criteria (chain, atom, elem) are not in
+        // userArgDefaults by default. If they were, they'd be set here too.
+      } else { // Ensure defaults are empty if no selection provided
+        this.setUserArg("selectionResidueNames", []);
+        this.setUserArg("selectionResidueIds", []);
+      }
+
+      const repTypes: Representation[] = [
+        AtomsRepresentation.Sphere, AtomsRepresentation.Stick, AtomsRepresentation.Line,
+        BackBoneRepresentation.Cartoon, SurfaceRepresentation.Surface
+      ];
+      let foundRepType: Representation | null = null;
+
+      for (const rt of repTypes) {
+        if (Object.prototype.hasOwnProperty.call(representationAndColor, rt)) {
+          foundRepType = rt;
+          break;
+        }
+      }
+
+      if (foundRepType) {
+        this.setUserArg("representationType", foundRepType);
+        this.currentSelectionRepType = foundRepType;
+        // Ensure currentRepresentationStyle has the correct structure for
+        // ColorSchemeSelect or direct use
+        this.currentRepresentationStyle = { [foundRepType]: (representationAndColor as any)[foundRepType] || {} };
+      } else {
+        messagesApi.popupError("Programmatic style definition is missing a valid representation (e.g., sphere, stick).");
+        return false; // Prevent further processing
+      }
+
+      this.programmaticOverwrite = progPayload.overwrite ?? false;
+      this.noPopup = true; // Signal to PluginParentClass to bypass UI and call onPopupDone
+      // `onPopupDone` will be called by PluginParentClass due to `this.noPopup
+      // = true` The state (userArgs, currentRepresentationStyle) is now set up
+      // for onPopupDone.
+      return; // Let PluginParentClass call openPopup, which then calls onPopupDone
+    }
+
+    // --- Existing UI-driven onBeforePopupOpen logic ---
+    this.editMode = false;
+    this.editingStyleName = null;
+    this.title = "New Visualization"; // Default title for UI
+
+    if (payload && (payload as AddVizPayload).styleNameToEdit) { // UI Edit mode
+      const uiEditPayload = payload as AddVizPayload;
       this.editMode = true;
-      this.editingStyleName = payload.styleNameToEdit;
+      this.editingStyleName = uiEditPayload.styleNameToEdit ?? null; // Ensure it's null if undefined
       this.title = "Edit Visualization";
-
       this.setUserArg("styleName", this.editingStyleName);
 
-
-      const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName];
+      // Cast assuming it will be string if editMode is true
+      const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName as string];
       if (styleToEdit) {
         this.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
         this.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
@@ -384,35 +359,131 @@ export default class AddVizualizationPlugin extends PluginParentClass {
           this.currentSelectionRepType = repType;
           this.currentRepresentationStyle = { [repType]: (styleToEdit as any)[repType] || {} };
         } else {
-          // If no specific representation key is found, default to the one in userArgs
-          // This handles cases where the style might be just a selection with no explicit representation type like sphere/stick
+          // If no specific representation key is found, default to the one in
+          // userArgs This handles cases where the style might be just a
+          // selection with no explicit representation type like sphere/stick
           this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
-          this.currentRepresentationStyle = {}; // Reset style or try to infer if possible
+          // Reset style or try to infer if possible
+          this.currentRepresentationStyle = {};
         }
       } else {
-        // Style to edit not found, revert to add mode or show error
-        this.editMode = false;
+        this.editMode = false; // Revert to add mode if style not found
         this.editingStyleName = null;
         this.title = "New Visualization";
-        messagesApi.popupError(`Style "${payload.styleNameToEdit}" not found. Opening in 'New Visualization' mode.`);
-        // Ensure form is in a clean "add" state
+        messagesApi.popupError(`Style "${uiEditPayload.styleNameToEdit}" not found. Opening in 'New Visualization' mode.`);
         this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
         this.currentRepresentationStyle = {};
       }
-    } else {
-      this.editMode = false;
-      this.editingStyleName = null;
-      this.title = "New Visualization";
+    } else { // UI Add mode
       this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
       this.currentRepresentationStyle = {};
     }
-    this.updateResidueOptions(); // Ensure dropdown options are current
+    this.updateResidueOptions();
   }
 
 
   /**
-   * Required by PluginParentClass. This plugin performs its action
-   * synchronously within onPopupDone, so this method is a no-op.
+   * Called when the plugin's main action is triggered. Parses user inputs,
+   * constructs an ISelAndStyle object, and adds or updates it in the
+   * StyleManager.
+   *
+   * @returns {Promise<void>} A promise that resolves when the operation is
+   *  complete.
+   */
+  async onPopupDone(): Promise<void> {
+    let styleName: string;
+    let finalStyle: ISelAndStyle;
+    let overwriteForStyleManagerCall: boolean;
+
+    const formStyleNameVal = this.getUserArg("styleName");
+    styleName = typeof formStyleNameVal === 'string' ? formStyleNameVal.trim() : "";
+
+
+    if (!styleName) {
+      if (!this.noPopup) {
+        messagesApi.popupError("Visualization name cannot be empty.");
+      }
+      if (this.noPopup) this.noPopup = false; // Reset for next UI run
+      return;
+    }
+
+    const selection: any = {};
+    const resNamesArg = this.getUserArg("selectionResidueNames");
+    if (Array.isArray(resNamesArg) && resNamesArg.length > 0) {
+      selection.resn = this.expandResidueNameMacros(resNamesArg);
+    }
+
+    const resIdsArg = this.getUserArg("selectionResidueIds");
+    if (Array.isArray(resIdsArg) && resIdsArg.length > 0) {
+      selection.resi = resIdsArg;
+    }
+
+    // Note: chainIds, atomNames, elements are not in default userArgs, but if
+    // they were, they would be processed here.
+
+    finalStyle = { selection };
+
+    if (!this.currentSelectionRepType) {
+      if (!this.noPopup) {
+        messagesApi.popupError("A representation type must be selected.");
+      }
+      if (this.noPopup) this.noPopup = false; // Reset
+      return;
+    }
+
+    // Safely access the color scheme, defaulting to an empty object if not set
+    const colorSchemeObject = (this.currentRepresentationStyle as any)[this.currentSelectionRepType] || {};
+
+    if (Object.keys(colorSchemeObject).length === 0 && !this.noPopup) { // Only show UI message if not programmatic
+      messagesApi.popupMessage(
+        "Info",
+        `No specific color scheme was defined for ${this.currentSelectionRepType}. Default coloring will be applied by the viewer for this representation.`,
+        PopupVariant.Info
+      );
+    }
+    (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
+
+
+    if (this.noPopup) { // Programmatic run path
+      overwriteForStyleManagerCall = this.programmaticOverwrite;
+    } else { // UI-driven path
+      if (this.editMode && this.editingStyleName) {
+        // UI Edit mode
+        if (styleName !== this.editingStyleName && StyleManager.customSelsAndStyles[styleName]) {
+          messagesApi.popupError(`A custom visualization with the name "${styleName}" already exists. Please choose a different name.`);
+          return;
+        }
+        if (styleName !== this.editingStyleName) {
+          StyleManager.deleteCustomStyle(this.editingStyleName);
+          overwriteForStyleManagerCall = false; // Adding as new after delete
+        } else {
+          overwriteForStyleManagerCall = true; // Updating existing style with the same name
+        }
+      } else {
+        // UI Add mode
+        overwriteForStyleManagerCall = false; // For addCustomStyle, overwrite is false if it's a new style
+      }
+    }
+
+    // Common logic for adding/updating the style
+    const success = StyleManager.addCustomStyle(styleName, finalStyle, overwriteForStyleManagerCall);
+
+    if (success && !this.noPopup) {
+      const actionVerb = (this.editMode) || (overwriteForStyleManagerCall) ? 'updated' : 'added';
+      messagesApi.popupMessage("Success", `Visualization "${styleName}" ${actionVerb}.`, PopupVariant.Success);
+      this.closePopup();
+    }
+    // StyleManager.addCustomStyle itself handles the "name collision and
+    // overwrite=false" error message (if UI-driven).
+
+    if (this.noPopup) { // Reset noPopup if it was set true for this programmatic run
+      this.noPopup = false;
+    }
+    this.programmaticOverwrite = false; // Reset temporary prop
+  }
+
+  /**
+   * Required by PluginParentClass.
    *
    * @returns {Promise<void>} A promise that resolves immediately.
    */
@@ -439,9 +510,11 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     //   afterPluginCloses: new TestCmdList().wait(1), // Wait for potential messages
     // };
   }
+
   /**
- * Watches for changes in the global molecules store and updates residue options.
- */
+   * Watches for changes in the global molecules store and updates residue
+   * options.
+   */
   @Watch("$store.state.molecules", { deep: true })
   onMoleculesChanged() {
     this.updateResidueOptions();

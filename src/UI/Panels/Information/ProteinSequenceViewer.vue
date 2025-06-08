@@ -39,6 +39,10 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import * as api from "@/Api";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { colorDefinitionNameToScheme } from "@/Core/Styling/Colors/ColorSchemeDefinitions";
+import { colorNameToHex } from "@/Core/Styling/Colors/ColorUtils";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { pluginsApi } from "@/Api/Plugins";
 
 // --- Configuration Constants ---
 const LABEL_WIDTH = 40;  // Width of line number labels in pixels
@@ -119,28 +123,66 @@ export default class ProteinSequenceViewer extends Vue {
         }
     }
 
+    stylizeSelectedResidue(residue: ResidueInfo): string {
+
+        const styleName = "ClickedResidue";
+        const targetResidueName = residue.threeLetterCode;
+        const targetResidueId = residue.resi;
+        const stickStyleWithYellowCarbons = colorDefinitionNameToScheme(
+            "ColorCarbons",
+            colorNameToHex("yellow")
+        );
+
+        const styleDefinition: ISelAndStyle = {
+            selection: {
+                resn: [targetResidueName],
+                resi: [targetResidueId],
+            },
+            stick: stickStyleWithYellowCarbons,
+        };
+
+        pluginsApi.runPlugin("addnewvisualization", {
+            runProgrammatically: true,
+            styleName: styleName,
+            styleDefinition: styleDefinition,
+            overwrite: true,
+        });
+    }
+
     /**
      * Handles click on a residue.
      * 
      * @param {ResidueInfo} residue The clicked residue.
      */
     async residueClicked(residue: ResidueInfo) {
-        if (this.treeNode && this.treeNode.id && residue.atomIndex !== undefined) {
-            const allMols = getMoleculesFromStore();
-            const targetNode = allMols.filters.onlyId(this.treeNode.id);
-            if (targetNode && targetNode.model) {
-                const parser = makeEasyParser(targetNode.model);
-                const atom = parser.getAtom(residue.atomIndex);
-                if (atom && atom.x !== undefined && atom.y !== undefined && atom.z !== undefined) {
-                    const viewer = await api.visualization.viewer;
-                    // Prevent error if viewer is not ready or does not have centerOnPoint
-                    if (viewer && typeof viewer.centerOnPoint === 'function') {
-                        viewer.centerOnPoint(atom.x, atom.y, atom.z);
-                    }
-                    selectProgramatically(this.treeNode.id); // Select the parent protein node
-                }
-            }
+        if (!this.treeNode || !this.treeNode.id || residue.atomIndex === undefined) {
+            return;
         }
+
+        const allMols = getMoleculesFromStore();
+        const targetNode = allMols.filters.onlyId(this.treeNode.id);
+
+        if (!targetNode || !targetNode.model) {
+            return;
+        }
+
+        const parser = makeEasyParser(targetNode.model);
+        const atom = parser.getAtom(residue.atomIndex);
+
+        if (!atom || atom.x === undefined || atom.y === undefined || atom.z === undefined) {
+            return;
+        }
+
+        const viewer = await api.visualization.viewer;
+
+        // Prevent error if viewer is not ready or does not have centerOnPoint
+        if (viewer && typeof viewer.centerOnPoint === 'function') {
+            viewer.centerOnPoint(atom.x, atom.y, atom.z);
+        }
+
+        this.stylizeSelectedResidue(residue); // Apply the style to highlight the residue
+
+        selectProgramatically(this.treeNode.id); // Select the parent protein node
     }
 
     /**
