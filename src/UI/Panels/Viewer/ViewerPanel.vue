@@ -247,7 +247,7 @@ export default class ViewerPanel extends Vue {
     if (justColorCarbons) {
       // Just color the carbons yellow
       for (let key in style) {
-        if (key === "selection") {
+        if (key === "selection" || key === "moleculeId") {
           // Don't change the selection.
           continue;
         }
@@ -260,7 +260,7 @@ export default class ViewerPanel extends Vue {
     } else {
       // Color everything yellow.
       for (let key in style) {
-        if (key === "selection") {
+        if (key === "selection" || key === "moleculeId") {
           // Don't change the selection.
           continue;
         }
@@ -366,7 +366,7 @@ export default class ViewerPanel extends Vue {
         let colorOrColorScheme = "";
         let colorValue = "";
 
-        
+
         for (let key in convertedSelAndStyle?.style) {
           // if (treeNode.type === TreeNodeType.Solvent) {
           //   debugger;

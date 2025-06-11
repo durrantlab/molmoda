@@ -89,7 +89,7 @@ export function addCustomStyle(
 ): boolean {
     if (customSelsAndStyles[name] && !overwrite) {
         messagesApi.popupError(
-   `A custom visualization with the name "${name}" already exists.`
+            `A custom visualization with the name "${name}" already exists.`
         );
         return false;
     }
@@ -162,11 +162,20 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
                     }
                     // Check if the custom style is not empty ({}).
                     if (!isEqual(customSelAndStyle, {})) {
-                        terminalNode.styles.push(customSelAndStyle);
+                        if (customSelAndStyle.moleculeId) {
+                            // This style is for a specific molecule.
+                            if (
+                                customSelAndStyle.moleculeId === terminalNode.id
+                            ) {
+                                terminalNode.styles.push(customSelAndStyle);
+                            }
+                        } else {
+                            // This style is for all molecules.
+                            terminalNode.styles.push(customSelAndStyle);
+                        }
                     }
                 }
             }
-
             // Mark this for rerendering in viewer.
             // console.log("MOO", JSON.stringify(terminalNode.styles, null, 2));
             terminalNode.viewerDirty = true;

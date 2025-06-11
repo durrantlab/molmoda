@@ -7,26 +7,27 @@ export interface ISelAndStyle {
     line?: IColorScheme;
     cartoon?: IColorScheme;
     surface?: IColorScheme; // NOTE: Not how 3dmoljs handles surface.
+    moleculeId?: string;
 }
 
 export enum AtomsRepresentation {
     Hidden = "atoms-hidden",
     Line = "line",
     Stick = "stick",
-    Sphere = "sphere"
+    Sphere = "sphere",
 }
 
 export enum BackBoneRepresentation {
     Hidden = "backbone-hidden",
-    Cartoon = "cartoon"
+    Cartoon = "cartoon",
 }
 
 export enum SurfaceRepresentation {
     Hidden = "surface-hidden",
-    Surface = "surface"
+    Surface = "surface",
 }
 
-export type Representation = 
+export type Representation =
     | AtomsRepresentation
     | BackBoneRepresentation
     | SurfaceRepresentation;

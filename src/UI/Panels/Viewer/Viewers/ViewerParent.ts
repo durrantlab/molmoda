@@ -715,7 +715,7 @@ export abstract class ViewerParent {
         // Copy the ISelAndStyle object and remove the selection
         let style = { ...selAndStyle };
         delete style.selection;
-
+  delete style.moleculeId; // This is for our internal use only
         // Convert the style
         style = this.convertStyle(style, treeNode);
 

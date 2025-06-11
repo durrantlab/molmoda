@@ -1,7 +1,7 @@
 <template>
   <PluginComponent v-model="open" :infoPayload="infoPayload" :actionBtnTxt="dynamicActionBtnTxt"
     @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" :isActionBtnEnabled="isActionBtnEnabled"
-    @onMolCountsChanged="onMolCountsChanged">
+    @onMolCountsChanged="onMolCountsChanged" :hideIfDisabled="true">
     <template #afterForm>
       <div v-if="currentSelectionRepType" class="mt-3">
         <FormWrapper label="Color Scheme" cls="border-0">
@@ -50,6 +50,7 @@ import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { FailingTest } from "@/Testing/FailingTest";
 import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/TreeUtils";
 import { Watch } from "vue-property-decorator";
+// import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 // import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces"; // Potentially needed
 
 interface AddVizPayload {
@@ -112,7 +113,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   editingStyleName: string | null = null;
   // Store overwrite flag for programmatic runs temporarily
   private programmaticOverwrite = false;
-
+  private programmaticMoleculeId: string | undefined = undefined;
   userArgDefaults: UserArg[] = [
     {
       id: "styleName",
@@ -121,6 +122,16 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       placeHolder: "Blue Lysines...",
       description: "A unique name for this visualization.",
       validateFunc: (val: string) => val.trim().length > 0,
+    } as IUserArgText,
+    {
+      id: "moleculeId",
+      label: "Apply to molecule",
+      type: UserArgType.Text,
+      val: "",
+      enabled: false, // This will hide it from the UI
+      placeHolder: "(Optional) Molecule ID...",
+      description:
+        "Optional. Apply this visualization only to the molecule with this ID. Leave blank to apply to all molecules.",
     } as IUserArgText,
     {
       id: "selectionResidueNames",
@@ -280,13 +291,13 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    */
   async onBeforePopupOpen(payload?: AddVizPayload | ProgrammaticAddVizPayload): Promise<void | boolean> {
     this.noPopup = false; // Default to UI mode
-
+    this.programmaticMoleculeId = undefined; // Reset at the start
     if (payload && (payload as ProgrammaticAddVizPayload).runProgrammatically) {
       const progPayload = payload as ProgrammaticAddVizPayload;
       this.setUserArg("styleName", progPayload.styleName);
-
       const { selection, ...representationAndColor } = progPayload.styleDefinition;
-
+      this.programmaticMoleculeId = progPayload.styleDefinition.moleculeId;
+      this.setUserArg("moleculeId", this.programmaticMoleculeId || "");
       if (selection) {
         this.setUserArg("selectionResidueNames", selection.resn || []);
         this.setUserArg("selectionResidueIds", selection.resi || []);
@@ -344,6 +355,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       // Cast assuming it will be string if editMode is true
       const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName as string];
       if (styleToEdit) {
+        this.programmaticMoleculeId = styleToEdit.moleculeId;
+        this.setUserArg("moleculeId", styleToEdit.moleculeId || "");
         this.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
         this.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
 
@@ -375,6 +388,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         this.currentRepresentationStyle = {};
       }
     } else { // UI Add mode
+      this.setUserArg("moleculeId", "");
       this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
       this.currentRepresentationStyle = {};
     }
@@ -422,7 +436,12 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     // they were, they would be processed here.
 
     finalStyle = { selection };
-
+    const moleculeId = (this.getUserArg("moleculeId") as string)?.trim();
+    if (moleculeId) {
+      finalStyle.moleculeId = moleculeId;
+    } else if (this.programmaticMoleculeId) {
+      finalStyle.moleculeId = this.programmaticMoleculeId;
+    }
     if (!this.currentSelectionRepType) {
       if (!this.noPopup) {
         messagesApi.popupError("A representation type must be selected.");
@@ -480,6 +499,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.noPopup = false;
     }
     this.programmaticOverwrite = false; // Reset temporary prop
+    this.programmaticMoleculeId = undefined;
   }
 
   /**

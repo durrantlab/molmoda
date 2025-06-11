@@ -53,7 +53,6 @@ import { defaultStyles } from "@/Core/Styling/SelAndStyleDefinitions";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { capitalize } from "@/Core/Utils/StringUtils";
 import { AtomsRepresentation, BackBoneRepresentation, ISelAndStyle, Representation, SurfaceRepresentation } from "@/Core/Styling/SelAndStyleInterfaces";
-import { S } from "memfs/lib/constants";
 
 /**
  * StylesForMolType component. This contains all the representations (and color
@@ -81,12 +80,12 @@ export default class StylesForMolType extends Vue {
     selAndStyleToUse: ISelAndStyle = {};
 
     /**
-     * Watches the style prop and updates the styleToUse accordingly.
+     * Watches the selAndStyle prop and updates the local state accordingly.
      */
-    @Watch("style")
-    onStyleChange() {
-        alert(JSON.stringify(this.selAndStyle));
+ @Watch("selAndStyle", { deep: true })
+ onSelAndStyleChange() {
         this.selAndStyleToUse = this.selAndStyle;
+  this._setInitialSelectedStyles(this.selAndStyle);
     }
 
     proteinStyleOptions = [
