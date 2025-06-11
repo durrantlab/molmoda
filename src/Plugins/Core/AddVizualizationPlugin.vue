@@ -488,7 +488,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     const success = StyleManager.addCustomStyle(styleName, finalStyle, overwriteForStyleManagerCall);
 
     if (success && !this.noPopup) {
-      const actionVerb = (this.editMode) || (overwriteForStyleManagerCall) ? 'updated' : 'added';
+      // const actionVerb = (this.editMode) || (overwriteForStyleManagerCall) ? 'updated' : 'added';
       // messagesApi.popupMessage("Success", `Visualization "${styleName}" ${actionVerb}.`, PopupVariant.Success);
       this.closePopup();
     }
