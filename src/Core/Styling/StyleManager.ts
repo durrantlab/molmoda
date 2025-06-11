@@ -103,6 +103,26 @@ export function addCustomStyle(
 }
 
 /**
+ * Replaces all custom styles with a new set.
+ *
+ * @param {{ string: ISelAndStyle }} newStyles The new styles to apply.
+ */
+export function replaceAllCustomStyles(newStyles: {
+    [key: string]: ISelAndStyle;
+}): void {
+    // Clear existing styles
+    for (const name in customSelsAndStyles) {
+        delete customSelsAndStyles[name];
+    }
+    disabledCustomStyleNames.clear();
+    // Add new styles
+    for (const name in newStyles) {
+        customSelsAndStyles[name] = newStyles[name];
+    }
+    updateStylesInViewer();
+}
+
+/**
  * Updates the styles in the viewer.
  *
  * @param {TreeNodeType} [treeNodeType] The type of node to update. If

@@ -8,7 +8,7 @@ import type { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { ILog } from "@/UI/Panels/Log/LogUtils";
 import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
-
+import { replaceAllCustomStyles } from "@/Core/Styling/StyleManager";
 export const molmodaStateKeysToRetain = [
     "molecules",
     "log",
@@ -59,7 +59,10 @@ export async function parseUsingMolModa(
                 break;
         }
     }
-
+    // Load custom styles if present
+    if (stateFromJson["customSelsAndStyles"]) {
+        replaceAllCustomStyles(stateFromJson["customSelsAndStyles"]);
+    }
     fixLog();
 
     return undefined;

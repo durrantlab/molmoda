@@ -4,6 +4,8 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { molmodaStateKeysToRetain } from "../ParseMolModels/_ParseUsingMolModa";
 import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
+import { toRaw } from "vue";
+import { customSelsAndStyles } from "@/Core/Styling/StyleManager";
 
 /**
  * Runs the job when the user wants to save in the .molmoda format.
@@ -43,6 +45,11 @@ export function stateToJsonStr(state: any): string {
         // the existing version.
         newState[key] = key === "molecules" ? newMolData : state[key];
     }
+
+ const rawCustomStyles = toRaw(customSelsAndStyles);
+ if (Object.keys(rawCustomStyles).length > 0) {
+  newState["customSelsAndStyles"] = rawCustomStyles;
+ }
 
     // Custom replacer function to handle circular references
     const seen = new WeakSet();
