@@ -1,5 +1,8 @@
 import { colorNameToHex } from "@/Core/Styling/Colors/ColorUtils";
-import { ISelAndStyle, Representation } from "@/Core/Styling/SelAndStyleInterfaces";
+import {
+    ISelAndStyle,
+    Representation,
+} from "@/Core/Styling/SelAndStyleInterfaces";
 import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -37,7 +40,10 @@ export class ColorSchemeOptionsForSelect {
 
         for (const colorSchemeDefinition of allColorSchemeDefinitions) {
             // Make sure it doesn't have both excludeCases and includeCases.
-            if (colorSchemeDefinition.excludeCases && colorSchemeDefinition.includeCases) {
+            if (
+                colorSchemeDefinition.excludeCases &&
+                colorSchemeDefinition.includeCases
+            ) {
                 throw new Error(
                     "Color style must have either excludeCases or includeCases, but not both."
                 );
@@ -68,7 +74,9 @@ export class ColorSchemeOptionsForSelect {
             // If we get here, the color style is valid for this mol type/representation.
             colorFormOptions.push({
                 description: colorSchemeDefinition.description,
-                val: colorDefinitionNameToIndex(colorSchemeDefinition.name),
+                val: colorDefinitionNameToIndex(
+                    colorSchemeDefinition.name
+                ).toString(),
             });
         }
 

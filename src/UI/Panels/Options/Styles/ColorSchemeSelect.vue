@@ -64,30 +64,39 @@ export default class ColorSchemeSelect extends Vue {
     this._setColorSchemeDefaultsIfMissing(style);
 
     // Get the available color-form options.
- let colorSchemeOptions = this.colorSchemeOptionsForSelect.createColorSchemeOptionsForSelect(
+    let colorSchemeOptions = this.colorSchemeOptionsForSelect.createColorSchemeOptionsForSelect(
       this.repName,
       this.molType
- );
+    );
 
- // Filter out excluded scheme names
- if (this.excludeSchemeNames && this.excludeSchemeNames.length > 0) {
-  colorSchemeOptions = colorSchemeOptions.filter(option => {
-    const schemeName = colorDefinitionIndexToName(Number(option.val));
-    return !this.excludeSchemeNames.includes(schemeName);
-  });
- }
+    // Filter out excluded scheme names
+    if (this.excludeSchemeNames && this.excludeSchemeNames.length > 0) {
+      colorSchemeOptions = colorSchemeOptions.filter(option => {
+        const schemeName = colorDefinitionIndexToName(Number(option.val));
+        return !this.excludeSchemeNames.includes(schemeName);
+      });
+    }
+
+    const rawColorScheme = (style as any)[this.repName];
+    // Create a "clean" version of the color scheme for matching, excluding properties
+    // like 'radius' that are not part of the base definition.
+    const cleanColorScheme: IColorScheme = {};
+    if (rawColorScheme && rawColorScheme.color) {
+      cleanColorScheme.color = rawColorScheme.color;
+    }
+    if (rawColorScheme && rawColorScheme.colorscheme) {
+      cleanColorScheme.colorscheme = rawColorScheme.colorscheme;
+    }
 
     // Get the index in the options list of the current color style.
-    let colorSchemeIdx = colorSchemeToDefinitionIndex(
-      (style as any)[this.repName]
-    );
+    let colorSchemeIdx = colorSchemeToDefinitionIndex(cleanColorScheme);
 
     // Create the color form select object.
     const colorFormSelect = {
       type: UserArgType.Select,
       id: "colorscheme",
-   val: colorSchemeIdx.toString(),   // Current color style index as a string
-   options: colorSchemeOptions,  // Options for the select dropdown
+      val: colorSchemeIdx.toString(),   // Current color style index as a string
+      options: colorSchemeOptions,  // Options for the select dropdown
     } as IUserArgSelect;
 
     // Make the form

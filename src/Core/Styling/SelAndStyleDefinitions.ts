@@ -24,7 +24,7 @@ const _stickStyle: ISelAndStyle = {
     // no need to select by residue name, for example. Each style will apply to
     // all atoms in the given molecule.
     selection: {},
-    stick: {},
+    stick: { colorscheme: "default" },
 };
 
 export const defaultProteinStyle: ISelAndStyle[] = [
@@ -36,8 +36,8 @@ export const defaultProteinStyle: ISelAndStyle[] = [
 
         // Not sure why you need to specify color here and not for default
         // styles.
-        cartoon: colorDefinitionNameToScheme("Spectrum", "")
-    }
+        cartoon: colorDefinitionNameToScheme("Spectrum", ""),
+    },
 ];
 
 export const defaultNucleicStyle: ISelAndStyle[] = [_stickStyle];
