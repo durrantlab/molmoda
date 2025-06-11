@@ -10,12 +10,12 @@
           {{ name }}
         </span>
         <div class="d-flex">
-    <IconSwitcher :useFirst="true" :iconID1="['fa', 'pencil']" :iconID2="['fa', 'pencil']"
-   :icon2Style="{ color: 'lightgray' }" :width="22" @click="handleEditCustomStyle(name)"
-   title="Edit Visualization" class="me-2 clickable" />
+          <IconSwitcher :useFirst="true" :iconID1="['fa', 'pencil']" :iconID2="['fa', 'pencil']"
+            :icon2Style="{ color: 'lightgray' }" :width="22" @click="handleEditCustomStyle(name)"
+            title="Edit Visualization" class="icon-spacing1 clickable" />
           <IconSwitcher :useFirst="isCustomStyleEnabled(name)" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
             :icon2Style="{ color: 'lightgray' }" :width="22" @click="handleToggleCustomStyle(name)"
-            title="Toggle Visualization" class="me-2 clickable" />
+            title="Toggle Visualization" class="icon-spacing2 clickable" />
           <IconSwitcher :useFirst="true" :iconID1="['far', 'rectangle-xmark']" :iconID2="['far', 'rectangle-xmark']"
             :width="22" @click="handleDeleteCustomStyle(name)" title="Delete Visualization" class="clickable" />
         </div>
@@ -101,7 +101,7 @@ export default class VizualizationsCustom extends Vue {
    *
    * @param {string} name The name of the custom style to edit.
    */
-   handleEditCustomStyle(name: string): void {
+  handleEditCustomStyle(name: string): void {
     pluginsApi.runPlugin("addnewvisualization", { styleNameToEdit: name });
   }
 }
@@ -110,5 +110,13 @@ export default class VizualizationsCustom extends Vue {
 <style scoped lang="scss">
 .clickable {
   cursor: pointer;
+}
+
+.icon-spacing1 {
+  margin-right: 0px;
+}
+
+.icon-spacing2 {
+  margin-right: 2px;
 }
 </style>
