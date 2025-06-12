@@ -122,7 +122,7 @@ export class TreeNode {
 
     /**
      * Get the selected state.
-     * 
+     *
      * @returns {SelectedType}  The selected state.
      */
     get selected(): SelectedType {
@@ -131,7 +131,7 @@ export class TreeNode {
 
     /**
      * Set the selected state.
-     * 
+     *
      * @param {SelectedType} val  The selected state.
      */
     set selected(val: SelectedType) {
@@ -709,7 +709,13 @@ export class TreeNode {
      *
      * @param {string | null} tag                         The tag to add to this
      *                                                    node.
-     * @param {boolean}       terminalNodeTitleRevisable  Whether the title of
+     * @param {boolean} [reassignIds=true]                Whether to reassign
+     *                                                    IDs to the new nodes
+     *                                                    to avoid collisions.
+     *                                                    Set to false when
+     *                                                    loading a saved
+     *                                                    session.
+     * @param {boolean} [terminalNodeTitleRevisable=true] Whether the title of
      *                                                    the terminal node
      *                                                    should be revisable.
      *                                                    Revised if there is
@@ -718,9 +724,14 @@ export class TreeNode {
      *                                                    nodes incrementally,
      *                                                    good to set to false.
      */
-    public async addToMainTree(tag: string | null, terminalNodeTitleRevisable = true) {
-        this.reassignAllIds();
-
+    public async addToMainTree(
+        tag: string | null,
+        reassignIds = true,
+        terminalNodeTitleRevisable = true
+    ) {
+        if (reassignIds) {
+            this.reassignAllIds();
+        }
         if (SetupTests.isTest) {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
@@ -753,7 +764,11 @@ export class TreeNode {
 
         // If this node has only one terminal node, and that terminal, prepend
         // the top-level title to the title of the terminal node.
-        if (terminalNodeTitleRevisable && this.nodes && this.nodes.terminals.length === 1) {
+        if (
+            terminalNodeTitleRevisable &&
+            this.nodes &&
+            this.nodes.terminals.length === 1
+        ) {
             this.nodes.terminals.get(0).title = `${this.title}:${
                 this.nodes.terminals.get(0).title
             }`;

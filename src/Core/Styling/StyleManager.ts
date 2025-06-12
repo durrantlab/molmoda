@@ -37,6 +37,10 @@ export const customSelsAndStyles: { [key: string]: ISelAndStyle } = reactive({
     // },
 });
 
+// setInterval(() => {
+//     console.log(JSON.stringify(customSelsAndStyles, null, 2));
+// }, 1000);
+
 const disabledCustomStyleNames: Set<string> = reactive(new Set<string>());
 
 /**

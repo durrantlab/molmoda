@@ -522,10 +522,13 @@ export class TreeNodeList {
      * the vuex store.
      *
      * @param {string | null} tag  The tag to add to the main tree.
+     * @param {boolean} [reassignIds=true] Whether to reassign IDs to the new
+     *             nodes to avoid collisions. Set to false
+     *             when loading a saved session.
      */
-    public addToMainTree(tag: string | null) {
+    public addToMainTree(tag: string | null, reassignIds = true) {
         for (const node of this._nodes) {
-            node.addToMainTree(tag);
+            node.addToMainTree(tag, reassignIds);
         }
     }
 
