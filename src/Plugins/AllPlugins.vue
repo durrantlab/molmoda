@@ -52,6 +52,7 @@ system uses these to autopopulate with plugins. -->
     <SimpleVideoPlugin @onPluginSetup="onPluginSetup"></SimpleVideoPlugin>
     <StatCollectionPlugin @onPluginSetup="onPluginSetup"></StatCollectionPlugin>
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
+    <TemporarySharePlugin @onPluginSetup="onPluginSetup"></TemporarySharePlugin>
     <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <UpTreeNavPlugin @onPluginSetup="onPluginSetup"></UpTreeNavPlugin>
@@ -130,6 +131,7 @@ import SimpleTableDataPlugin from "./Core/SimpleTableDataPlugin.vue";
 import SimpleVideoPlugin from "./Core/SimpleVideoPlugin.vue";
 import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
 import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
+import TemporarySharePlugin from "./Core/TemporaryShare/TemporarySharePlugin.vue";
 import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
 import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
 import UpTreeNavPlugin from "./Core/UpDownTreeNav/UpTreeNavPlugin.vue";
@@ -204,6 +206,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     SimpleVideoPlugin,
     StatCollectionPlugin,
     StylesWindowPlugin,
+    TemporarySharePlugin,
     ToggleVisiblePlugin,
     UndoPlugin,
     UpTreeNavPlugin,

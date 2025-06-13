@@ -35,7 +35,7 @@ export interface ITableDataMsg {
 export enum YesNo {
     Yes,
     No,
-  Cancel,
+    Cancel,
 }
 
 export interface IYesNoMsg {
@@ -53,5 +53,6 @@ export interface ISimpleVideo extends ISimpleMsg {
 
 export interface ISimpleSvg extends ISimpleMsg {
     svgContents: string;
-  filenameBase?: string; // For specifying download filenames
+    filenameBase?: string; // For specifying download filenames
+    showDownloadButtons?: boolean;
 }

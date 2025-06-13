@@ -230,6 +230,7 @@ for ts_file in ts_files:
     content_without_dot_molmoda = content_without_dot_molmoda.lower()
     content_without_dot_molmoda = content_without_dot_molmoda.replace('"molmoda"', '')
     content_without_dot_molmoda = content_without_dot_molmoda.replace(".molmoda", "")
+    content_without_dot_molmoda = content_without_dot_molmoda.replace("/molmoda/", "")
 
     # Remove comments
     content_without_dot_molmoda = re.sub(r"//.*", "", content_without_dot_molmoda)

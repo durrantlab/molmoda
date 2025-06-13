@@ -122,22 +122,13 @@ export function saveSvg(params: FileInfo): Promise<any> {
 }
 
 /**
- * Saves a zip file containing one or more text files.
+ * Creates a zip file blob from a list of FileInfo objects.
  *
- * @param  {string} compressedName The parameters describing the zip file.
- * @param  {FileInfo[]} files      A list of parameters describing the text
- *                                 files to add to the zip file.
- * @returns {Promise<any>} A promise that resolves after saving the zip file.
+ * @param {FileInfo[]} files An array of FileInfo objects to include in the zip.
+ * @returns {Promise<Blob>} A promise that resolves with the zip file as a Blob.
  */
-export function saveZipWithTxtFiles(
-    compressedName: string,
-    files: FileInfo[]
-): Promise<any> {
-    // compressedName = _addExt(compressedName, ".zip");
-    // files = files.map((file) => _addExt(file, ".txt"));
-
-    const makeZipPromise = dynamicImports.jsZip.module.then((JSZip: any) => {
-        // Compress the output
+export function createZipBlob(files: FileInfo[]): Promise<Blob> {
+    return dynamicImports.jsZip.module.then((JSZip: any) => {
         const zip = new JSZip();
         files.forEach((file) => {
             zip.file(file.name, file.contents, {
@@ -151,6 +142,23 @@ export function saveZipWithTxtFiles(
         });
         return zip.generateAsync({ type: "blob" });
     });
+}
+
+/**
+ * Saves a zip file containing one or more text files.
+ *
+ * @param  {string} compressedName The parameters describing the zip file.
+ * @param  {FileInfo[]} files      A list of parameters describing the text
+ *                                 files to add to the zip file.
+ * @returns {Promise<any>} A promise that resolves after saving the zip file.
+ */
+export function saveZipWithTxtFiles(
+    compressedName: string,
+    files: FileInfo[]
+): Promise<any> {
+    // compressedName = _addExt(compressedName, ".zip");
+    // files = files.map((file) => _addExt(file, ".txt"));
+    const makeZipPromise = createZipBlob(files);
 
     const promises: Promise<any>[] = [
         dynamicImports.fileSaver.module,

@@ -1,23 +1,10 @@
 <template>
-  <PluginComponent
-    :infoPayload="infoPayload"
-    v-model="open"
-    :cancelBtnTxt="neverClose ? '' : 'Ok'"
-    actionBtnTxt=""
-    @onClosed="onClosed"
-    :variant="variant"
-    @onUserArgChanged="onUserArgChanged"
-    @onPopupDone="onPopupDone"
-    modalWidth="xl"
-    @onMolCountsChanged="onMolCountsChanged"
-  >
-    <ImageViewer
-      v-if="svgContents !== ''"
-      :source="svgContents"
-      :filenameBase="filenameBaseToUse"
-      :showDownloadButtons="true"
-      />
-      <!-- :maxHeight="500"  -->
+  <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
+    @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
+    modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
+    <ImageViewer v-if="svgContents !== ''" :source="svgContents" :filenameBase="filenameBaseToUse"
+      :showDownloadButtons="showDownloadButtons" />
+    <!-- :maxHeight="500"  -->
     <p v-if="message !== ''" class="mt-2" v-html="message"></p>
   </PluginComponent>
 </template>
@@ -67,7 +54,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
   showInQueue = false;
   svgContents = "";
   filenameBasePayload = "image"; // Default filename base from payload
-
+  showDownloadButtons = true;
   userArgDefaults: UserArg[] = [];
   logJob = false;
 
@@ -99,6 +86,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
     this.open = payload.open !== undefined ? payload.open : true;
     this.svgContents = payload.svgContents;
     this.filenameBasePayload = payload.filenameBase || "image";
+    this.showDownloadButtons = payload.showDownloadButtons !== false; // Default to true if undefined
   }
 
   /**

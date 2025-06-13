@@ -5,7 +5,7 @@ import { getUrlParam } from "@/Core/UrlParams";
 import { FileInfo } from "./FileInfo";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-
+import { validateShareCode } from "@/Plugins/Core/TemporaryShare/TemporaryShareUtils";
 /**
  * Open a remote file using its URL. TODO: Good to move this elsewhere, perhaps
  * in FS.
@@ -45,39 +45,61 @@ export async function openRemoteFile(url: string) {
 /**
  * Check if the URL has an open parameter and open the file if it does.
  * This function is called when the app is loaded.
- * 
+ *
  * @returns {Promise<void>}  A promise that resolves when the file is opened.
  */
-export async function checkIfUrlOpen() {
+export async function checkIfUrlOpen(): Promise<void> {
+    const params = [
+        "open",
+        "load",
+        "src",
+        "file",
+        "url",
+        "pdb",
+        "smi",
+        "smiles",
+        "code",
+    ];
+    let urlValue: string | null = null;
+    let paramName = "";
 
-
-    // Check of src is in the url. If it is, get its value.
-    const params = ["open", "load", "src", "file", "url", "pdb", "smi", "smiles"];
-    let url = null;
-    let param = ""
-
-    for (param of params) {
-        url = getUrlParam(param);
-        if (url !== null) {
+    for (const param of params) {
+        urlValue = getUrlParam(param);
+        if (urlValue !== null) {
+            paramName = param;
             break;
         }
-        param = "";
     }
 
-    if (param != "" && ["smi", "smiles"].includes(param)) {
-        // It's a smiles
-        const smiles = url as string;
+    if (urlValue === null) {
+        return;
+    }
+
+    // Check if the parameter value is a share code, regardless of the parameter name
+    if (validateShareCode(urlValue)) {
+        const fullUrl = `https://durrantlab.pitt.edu/tmp/${encodeURIComponent(
+            urlValue
+        )}.molmoda`;
+        await openRemoteFile(fullUrl);
+        return;
+    }
+
+    // If not a share code, proceed with existing logic
+    if (paramName !== "" && ["smi", "smiles"].includes(paramName)) {
+        const smiles = urlValue as string;
         const fileInfo = new FileInfo({ name: "smiles.smi", contents: smiles });
-        const treenode = await TreeNode.loadFromFileInfo({fileInfo, tag: null});
+        const treenode = await TreeNode.loadFromFileInfo({
+            fileInfo,
+            tag: null,
+        });
         if (treenode) {
             const treeNodeList = new TreeNodeList([treenode]);
             treeNodeList.addToMainTree(null);
         }
     } else {
-        // Not a smiles
-        await openRemoteFile(url as string);
+        // Not a SMILES string, treat as a direct URL to a file.
+        await openRemoteFile(urlValue as string);
     }
-
 }
 
 /**

@@ -140,13 +140,20 @@ export const dynamicImports = {
             citations: [
                 {
                     title: "Indigo: universal cheminformatics API",
-                    authors: ["Pavlov, D", "Rybalkin, M", "Karulin, B", "Kozhevnikov, M", "Savelyev, A", "Churinov, A"],
+                    authors: [
+                        "Pavlov, D",
+                        "Rybalkin, M",
+                        "Karulin, B",
+                        "Kozhevnikov, M",
+                        "Savelyev, A",
+                        "Churinov, A",
+                    ],
                     journal: "J. Cheminform.",
                     year: 2011,
                     volume: 3,
                     issue: "Suppl 1",
                     pages: "P4",
-                },                             
+                },
                 {
                     title: "Kekule.js: An Open Source JavaScript Chemoinformatics Toolkit",
                     authors: ["Jiang, Chen", "Jin, Xi"],
@@ -163,37 +170,33 @@ export const dynamicImports = {
          *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
-        get module(): Promise<any>{
-            return addToHeader(
-                "indigo",
-                "js/indigo/indigo.js",
-                () => {
-                    // var Indigo = CreateIndigo();
+        get module(): Promise<any> {
+            return addToHeader("indigo", "js/indigo/indigo.js", () => {
+                // var Indigo = CreateIndigo();
 
-                    return (window as any).IndigoModule
-                },
-            )
-            .then(() => {
-                return addToHeader(
-                    "indigoadapter",
-                    "js/indigo/indigoAdapter.js",
-                    () => {
-                        // var Indigo = CreateIndigo();
-    
-                        return (window as any).CreateIndigo
-                    },
-                )
+                return (window as any).IndigoModule;
             })
-            .then(() => {
-                return (window as any).CreateIndigo();
-            })
-            .then((Indigo: any) => {
-                return new Promise((resolve) => {
-                    Indigo.Module.onRuntimeInitialized = () => {
-                        resolve(Indigo);
-                    }
+                .then(() => {
+                    return addToHeader(
+                        "indigoadapter",
+                        "js/indigo/indigoAdapter.js",
+                        () => {
+                            // var Indigo = CreateIndigo();
+
+                            return (window as any).CreateIndigo;
+                        }
+                    );
+                })
+                .then(() => {
+                    return (window as any).CreateIndigo();
+                })
+                .then((Indigo: any) => {
+                    return new Promise((resolve) => {
+                        Indigo.Module.onRuntimeInitialized = () => {
+                            resolve(Indigo);
+                        };
+                    });
                 });
-            })
         },
     } as IDynamicImport,
     fileSaver: {
@@ -509,7 +512,7 @@ export const dynamicImports = {
         },
         /**
          * Gets the module.
-         * 
+         *
          * @returns {Promise<any>}  A promise that resolves to the module.
          */
         get module(): Promise<any> {
@@ -679,7 +682,7 @@ export const dynamicImports = {
         credit: {
             name: "clipboard.js",
             url: "https://clipboardjs.com/",
-            license: Licenses.MIT
+            license: Licenses.MIT,
         },
         /**
          * Gets the module.
@@ -695,5 +698,26 @@ export const dynamicImports = {
                 return mod.default;
             });
         },
-    }
+    },
+    qrcode: {
+        credit: {
+            name: "node-qrcode",
+            url: "https://github.com/soldair/node-qrcode",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>}  A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "qrcode" */
+                /* webpackMode: "lazy" */
+                "qrcode"
+            ).then((mod: any) => {
+                return mod;
+            });
+        },
+    },
 };
