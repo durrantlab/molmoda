@@ -55,4 +55,6 @@ export interface ISimpleSvg extends ISimpleMsg {
     svgContents: string;
     filenameBase?: string; // For specifying download filenames
     showDownloadButtons?: boolean;
+    maxHeight?: number;
+    alertMessage?: string;
 }

@@ -3,9 +3,12 @@
     @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
     modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
     <ImageViewer v-if="svgContents !== ''" :source="svgContents" :filenameBase="filenameBaseToUse"
-      :showDownloadButtons="showDownloadButtons" />
+      :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight" />
     <!-- :maxHeight="500"  -->
     <p v-if="message !== ''" class="mt-2" v-html="message"></p>
+    <Alert v-if="alertMessage !== ''" type="info" extraClasses="mt-2">
+      {{ alertMessage }}
+    </Alert>
   </PluginComponent>
 </template>
 <script lang="ts">
@@ -25,6 +28,7 @@ import { FailingTest } from "@/Testing/FailingTest";
 // import * as api from "@/Api"; // No longer needed for download if ImageViewer handles it
 // import { FileInfo } from "@/FileSystem/FileInfo"; // No longer needed for download if ImageViewer handles it
 import ImageViewer from "@/UI/Components/ImageViewer.vue"; // Import the new component
+import Alert from "@/UI/Layout/Alert.vue";
 // import { FileInfo } from "@/FileSystem/FileInfo";
 // import { fsApi } from "@/Api/FS";
 
@@ -35,6 +39,7 @@ import ImageViewer from "@/UI/Components/ImageViewer.vue"; // Import the new com
   components: {
     PluginComponent,
     ImageViewer,
+    Alert,
   },
 })
 export default class SimpleSVGPopupPlugin extends PluginParentClass {
@@ -48,6 +53,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
   // Below set via onPluginStart.
   title = "";
   message = "";
+  alertMessage = "";
   variant = PopupVariant.Primary;
   callBack: any = undefined;
   neverClose = false;
@@ -55,6 +61,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
   svgContents = "";
   filenameBasePayload = "image"; // Default filename base from payload
   showDownloadButtons = true;
+  maxHeight: number | undefined = undefined;
   userArgDefaults: UserArg[] = [];
   logJob = false;
 
@@ -78,6 +85,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
   async onPluginStart(payload: ISimpleSvg): Promise<void> {
     this.title = payload.title;
     this.message = payload.message;
+    this.alertMessage = payload.alertMessage || "";
     this.callBack = payload.callBack;
     this.variant =
       payload.variant === undefined ? PopupVariant.Primary : payload.variant;
@@ -87,6 +95,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
     this.svgContents = payload.svgContents;
     this.filenameBasePayload = payload.filenameBase || "image";
     this.showDownloadButtons = payload.showDownloadButtons !== false; // Default to true if undefined
+    this.maxHeight = payload.maxHeight;
   }
 
   /**

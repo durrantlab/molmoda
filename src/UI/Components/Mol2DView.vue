@@ -1,6 +1,7 @@
 <template>
     <div ref="mol2dViewContainer" class="mol2d-view-container" :style="containerStyle">
-        <ImageViewer @onValidImageDetect="onValidImageDetect" :source="svgContent" :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight"/>
+        <ImageViewer @onValidImageDetect="onValidImageDetect" :source="svgContent"
+            :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight" />
         <!-- <div class="svg-render-area" v-html="svgContent"></div> -->
         <!-- <div v-if="showDownloadButtons && svgContent && svgContent.includes('<svg')"
             class="download-buttons-container mt-2">
@@ -173,7 +174,10 @@ export default class Mol2DView extends Vue {
                     const newWidth = entries[0].contentRect.width;
                     if (this.internalContainerWidth !== newWidth) {
                         this.internalContainerWidth = newWidth;
-                        this.renderMolecule();
+                        // Defer the re-render to the next animation frame to avoid the loop error.
+                        window.requestAnimationFrame(() => {
+                            this.renderMolecule();
+                        });
                     }
                 }
             });
@@ -399,5 +403,4 @@ export default class Mol2DView extends Vue {
     max-height: 100%;
     display: block;
 }
-
 </style>

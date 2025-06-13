@@ -114,17 +114,20 @@ export default class TemporarySharePlugin extends PluginParentClass {
 
             const message = `
           <div style="text-align:center;"><a href="${shareUrl}" target="_blank" rel="noopener noreferrer">${shareUrl}</a></div>
-          <br />
-          <p>Your session has been temporarily shared. Use the link or QR code to access it on another device. This link will expire shortly.</p>
           `;
-            //   <p>Your code is: <strong>${trimmedCode}</strong></p>
+            
+            const alertMessage = "Your session has been temporarily shared. Use the link or QR code to access it on another device. This link will expire shortly.";
+
+            const maxHeight = window.innerHeight * 0.6;
 
             api.plugins.runPlugin("simplesvgpopup", {
                 title: "Temporary Share Link",
                 svgContents: qrCodeSvg,
                 message: message,
+                alertMessage: alertMessage,
                 filenameBase: "session-qr",
                 showDownloadButtons: false,
+                maxHeight: maxHeight
             });
         } catch (error: any) {
             api.messages.popupError(
