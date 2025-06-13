@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -44,7 +40,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     pluginId = "clearselection";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
 
@@ -89,7 +85,12 @@ export default class ClearSelectionPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule(true)
-                .selectMoleculeInTree("Protein"),
+                .selectMoleculeInTree("Protein")
+                .waitUntilRegex('#navigator div[data-label="Protein"]', "selected"), // Verify it IS selected first
+            afterPluginCloses: new TestCmdList().waitUntilNotRegex(
+                '#navigator div[data-label="Protein"]',
+                "title selected"
+            ), // Verify it's NOT selected after
         };
     }
 }

@@ -1,11 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Copy"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged" actionBtnTxt="Copy"
+        @onMolCountsChanged="onMolCountsChanged">
         <Alert type="info">{{ formatMsg }}</Alert>
         <Alert type="warning">
             To save your molecules in other formats, consider
@@ -70,7 +65,7 @@ export default class CopyPlugin extends PluginParentClass {
         //     alertType: "warning",
         // } as IUserArgAlert,
     ];
-    
+
     logJob = false;
     intro = "Copy the selected molecules to the clipboard.";
     formatMsg = "";
@@ -233,6 +228,10 @@ export default class CopyPlugin extends PluginParentClass {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule()
                 .selectMoleculeInTree("Protein"),
+            closePlugin: new TestCmdList().pressPopupButton(
+                ".action-btn",
+                this.pluginId
+            ),
             afterPluginCloses: new TestCmdList(),
         };
     }

@@ -1,19 +1,8 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        cancelBtnTxt="Done"
-        actionBtnTxt=""
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
-        <FilterInput
-            :list="loadedPlugins"
-            :extractTextToFilterFunc="extractTextToFilterFunc"
-            @onFilter="onFilter"
-            v-model="filterStr"
-        ></FilterInput>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" cancelBtnTxt="Done" actionBtnTxt=""
+        @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
+        <FilterInput :list="loadedPlugins" :extractTextToFilterFunc="extractTextToFilterFunc" @onFilter="onFilter"
+            v-model="filterStr"></FilterInput>
 
         <span v-for="plugin of loadedPluginsToUse" :key="plugin.pluginId">
             <span v-if="plugin.title !== '' && plugin.menuPath !== null">
@@ -22,21 +11,14 @@
                 <p class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent">
                     <!-- <small v-html="menuPathToUse(plugin.menuPath)"></small> -->
                     <small>
-                        Menu: <PluginPathLink :plugin="plugin"></PluginPathLink
-                    ></small>
+                        Menu: <PluginPathLink :plugin="plugin"></PluginPathLink></small>
                 </p>
 
-                <p
-                    v-if="creditsToShow(plugin) !== ''"
-                    class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent"
-                >
+                <p v-if="creditsToShow(plugin) !== ''" class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent">
                     <small v-html="creditsToShow(plugin)"></small>
                 </p>
 
-                <p
-                    v-if="citationsToShow(plugin) !== ''"
-                    class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent"
-                >
+                <p v-if="citationsToShow(plugin) !== ''" class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent">
                     <small v-html="citationsToShow(plugin)"></small>
                 </p>
 
@@ -83,9 +65,9 @@ export default class HelpPlugin extends PluginParentClass {
     ];
     pluginId = "help";
     intro = "List information about each of the loaded plugins.";
-    filterStr="";  // Not used, but needed for FilterInput component.
+    filterStr = "";  // Not used, but needed for FilterInput component.
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     tags = [Tag.All];
 
@@ -243,13 +225,24 @@ export default class HelpPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    async getTests(): Promise<ITest> {
-        return {
+    async getTests(): Promise<ITest[]> {
+        const basicTest: ITest = {
             closePlugin: new TestCmdList().pressPopupButton(
                 ".cancel-btn",
                 this.pluginId
             ),
         };
+        const filterTest: ITest = {
+            pluginOpen: new TestCmdList()
+                .waitUntilRegex(`#modal-${this.pluginId}`, "About") // Wait for "About" to be visible
+                .text(`#modal-${this.pluginId} input[type="text"]`, "Quit") // Filter for "Quit"
+                .waitUntilNotRegex(`#modal-${this.pluginId}`, "About"), // "About" should now be hidden
+            closePlugin: new TestCmdList().pressPopupButton(
+                ".cancel-btn",
+                this.pluginId
+            ),
+        };
+        return [basicTest, filterTest];
     }
 }
 </script>

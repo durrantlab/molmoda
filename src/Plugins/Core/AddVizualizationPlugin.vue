@@ -516,21 +516,45 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * 
    * @returns {Promise<ITest>} The selenium test commands.
    */
-  async getTests(): Promise<ITest> {
-    return {
-      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-      pluginOpen: new TestCmdList()
-        .setUserArg("styleName", "TestCustomVisualization", this.pluginId)
-        .setUserArg("selectionResidueNames", "LYS", this.pluginId)
-        .setUserArg("representationType", AtomsRepresentation.Sphere, this.pluginId),
+  async getTests(): Promise<ITest[]> {
+    const tests: ITest[] = [];
 
-      // ColorSchemeSelect is tricky to test directly here without more
-      // interaction. We'll assume its internal v-model works and the correct
-      // data is passed. The main thing is to check if 'Add Style' can be
-      // clicked.
-      closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
-      // afterPluginCloses: new TestCmdList().wait(5), // Wait for potential errors
-    };
+    // ColorSchemeSelect is tricky to test directly here without more
+    // interaction. We'll assume its internal v-model works and the correct data
+    // is passed. The main thing is to check if 'Add Style' can be clicked.
+
+    const representations = [
+      { name: "Sphere", value: AtomsRepresentation.Sphere },
+      { name: "Stick", value: AtomsRepresentation.Stick },
+      { name: "Line", value: AtomsRepresentation.Line },
+      { name: "Cartoon", value: BackBoneRepresentation.Cartoon },
+      { name: "Surface", value: SurfaceRepresentation.Surface },
+    ];
+
+    representations.forEach((rep, index) => {
+      const styleName = `TestViz-${rep.name}`;
+
+      const pluginOpenCmds = new TestCmdList()
+        .setUserArg("styleName", styleName, this.pluginId)
+        .setUserArg("representationType", rep.value, this.pluginId);
+
+      if (index % 2 === 0) {
+        // Even index, use residue names
+        pluginOpenCmds.setUserArg("selectionResidueNames", "LYS", this.pluginId);
+      } else {
+        // Odd index, use residue IDs
+        pluginOpenCmds.setUserArg("selectionResidueIds", "10", this.pluginId);
+      }
+
+      tests.push({
+        beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+        pluginOpen: pluginOpenCmds,
+        closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
+        afterPluginCloses: new TestCmdList().waitUntilRegex("#styles", styleName),
+      });
+    });
+
+    return tests;
   }
 
   /**

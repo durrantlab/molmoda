@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -43,7 +39,7 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
 
     noPopup = true;
-    
+
     logJob = false;
     logAnalytics = false;
     tags = [Tag.All];
@@ -110,7 +106,15 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(true)
+                    .selectMoleculeInTree("Protein"), // Select a molecule to toggle
+                afterPluginCloses: new TestCmdList()
+                    // It starts visible (fa-eye), after toggle it should be invisible (fa-eye-slash)
+                    .waitUntilRegex(
+                        '#navigator div[data-label="Protein"]',
+                        'svg.+?data-icon="eye-slash"'
+                    ),
             },
         ];
     }
