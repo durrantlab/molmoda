@@ -517,18 +517,20 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * @returns {Promise<ITest>} The selenium test commands.
    */
   async getTests(): Promise<ITest> {
-    return FailingTest
-    // {
-    //   pluginOpen: new TestCmdList()
-    //     .setUserArg("styleName", "TestCustomVisualization", this.pluginId)
-    //     .setUserArg("representationType", AtomsRepresentation.Sphere, this.pluginId)
-    //     .setUserArg("selectionResidueNames", "LYS", this.pluginId),
-    //   // ColorSchemeSelect is tricky to test directly here without more interaction.
-    //   // We'll assume its internal v-model works and the correct data is passed.
-    //   // The main thing is to check if 'Add Style' can be clicked.
-    //   closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
-    //   afterPluginCloses: new TestCmdList().wait(1), // Wait for potential messages
-    // };
+    return {
+      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+      pluginOpen: new TestCmdList()
+        .setUserArg("styleName", "TestCustomVisualization", this.pluginId)
+        .setUserArg("selectionResidueNames", "LYS", this.pluginId)
+        .setUserArg("representationType", AtomsRepresentation.Sphere, this.pluginId),
+
+      // ColorSchemeSelect is tricky to test directly here without more
+      // interaction. We'll assume its internal v-model works and the correct
+      // data is passed. The main thing is to check if 'Add Style' can be
+      // clicked.
+      closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
+      // afterPluginCloses: new TestCmdList().wait(5), // Wait for potential errors
+    };
   }
 
   /**

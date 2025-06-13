@@ -2,7 +2,7 @@
     <div class="form-list-select-wrapper">
         <div class="custom-input-group">
             <div class="input-wrapper">
-                <FormInput :id="id + '-input'" v-model="textValue" type="text" :placeHolder="placeHolder"
+                <FormInput :id="id" v-model="textValue" type="text" :placeHolder="placeHolder"
                     :disabled="disabled" :filterFunc="null" :warningFunc="null" :description="undefined"
                     :delayBetweenChangesDetected="delayBetweenChangesDetected" @update:modelValue="handleTextInput"
                     :ariaDescribedBy="id + '-dropdown-button'" />

@@ -29,7 +29,7 @@ import { validateShareCode } from "./TemporaryShareUtils";
     },
 })
 export default class TemporarySharePlugin extends PluginParentClass {
-    menuPath = "File/[8] Share/[1] Temporary Share...";
+    menuPath = "File/[1] Project/[7] Share...";
     title = "Temporary Share";
     pluginId = "temporaryshare";
     intro = "Temporarily share your current session via a link and QR code.";
