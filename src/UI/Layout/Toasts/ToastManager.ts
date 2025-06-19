@@ -23,6 +23,16 @@ export function addToast(
     callBack?: () => void,
     options?: IToastOptions
 ) {
+    const toastOptions = { ...options }; // Clone to avoid modifying the original object
+    // If duration is not specified, calculate it based on word count.
+    if (toastOptions.duration === undefined) {
+        const words = message.trim().split(/\s+/).length;
+        const readingSpeedWPM = 150; // Slow reader speed
+        const baseDurationMs = 4000; // Minimum duration
+        const extraTimePerWordMs = (60 / readingSpeedWPM) * 1000;
+        toastOptions.duration = baseDurationMs + words * extraTimePerWordMs;
+    }
+
     toasts.push({
         id: randomID(),
         title,
@@ -33,10 +43,15 @@ export function addToast(
             minute: "2-digit",
         }),
         callBack,
-        ...options,
+        ...toastOptions,
     });
 }
-
+/**
+ * Removes all active toasts from the list.
+ */
+export function clearAllToasts() {
+    toasts.length = 0;
+}
 /**
  * Removes a toast from the active list by its ID.
  *

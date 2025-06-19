@@ -351,7 +351,10 @@ export abstract class PluginParentClass extends mixins(
                 api.messages.popupMessage(
                     "Job Running",
                     "Your job is currently running. Check the Jobs panel to monitor job progress.",
-                    PopupVariant.Success
+                    PopupVariant.Success,
+                    undefined,
+                    false,
+                    {}
                 );
             }, 5000);
         }
@@ -423,7 +426,10 @@ export abstract class PluginParentClass extends mixins(
                 api.messages.popupMessage(
                     "Job Finished",
                     msgToUse,
-                    PopupVariant.Success
+                    PopupVariant.Success,
+                    undefined,
+                    false,
+                    {}
                 );
             }, delayForPopupOpenClose);
         }

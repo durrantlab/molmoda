@@ -438,7 +438,10 @@ export class TreeNodeList {
             messagesApi.popupMessage(
                 "Some Molecules not Visible",
                 `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
-                PopupVariant.Info
+                PopupVariant.Info,
+                undefined,
+                false,
+                {}
             );
         }
 

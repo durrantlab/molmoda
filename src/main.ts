@@ -75,7 +75,7 @@ async function testToasts() {
         }
     );
 }
-testToasts();
+// testToasts();
 
 /**
  * The main function.

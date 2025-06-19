@@ -16,7 +16,7 @@ import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
-import { addToast } from "@/UI/Layout/Toasts/ToastManager";
+import { addToast, clearAllToasts } from "@/UI/Layout/Toasts/ToastManager";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
@@ -73,6 +73,7 @@ export const messagesApi = {
             message: "",
             open: false, // close
         } as ISimpleMsg);
+        clearAllToasts();
     },
 
     /**

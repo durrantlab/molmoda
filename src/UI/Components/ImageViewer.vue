@@ -467,7 +467,7 @@ export default class ImageViewer extends Vue {
 
         try {
             await navigator.clipboard.writeText(pureSvgString);
-            api.messages.popupMessage("Success", "SVG code copied to clipboard.", PopupVariant.Success);
+            api.messages.popupMessage("Success", "SVG code copied to clipboard.", PopupVariant.Success, undefined, false, {});
         } catch (err) {
             console.error("Failed to copy SVG text: ", err);
             api.messages.popupError("Failed to copy SVG code to clipboard.");
@@ -493,7 +493,7 @@ export default class ImageViewer extends Vue {
                 await navigator.clipboard.write([
                     new (window as any).ClipboardItem({ [blob.type]: blob })
                 ]);
-                api.messages.popupMessage("Success", "Image copied to clipboard.", PopupVariant.Success);
+                api.messages.popupMessage("Success", "Image copied to clipboard.", PopupVariant.Success, undefined, false, {});
             } else {
                 // Fallback for browsers that don't support ClipboardItem or write for blobs (e.g. older Safari)
                 // Copy as data URI text
@@ -501,7 +501,7 @@ export default class ImageViewer extends Vue {
                 reader.onloadend = async () => {
                     try {
                         await navigator.clipboard.writeText(reader.result as string);
-                        api.messages.popupMessage("Success", "Image Data URI copied to clipboard (fallback).", PopupVariant.Success);
+                        api.messages.popupMessage("Success", "Image Data URI copied to clipboard (fallback).", PopupVariant.Success, undefined, false, {});
                     } catch (copyErr) {
                         console.error("Fallback: Failed to copy PNG Data URI: ", copyErr);
                         api.messages.popupError("Fallback: Failed to copy image data to clipboard.");

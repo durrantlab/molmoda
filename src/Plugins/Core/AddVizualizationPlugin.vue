@@ -457,7 +457,10 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       messagesApi.popupMessage(
         "Info",
         `No specific color scheme was defined for ${this.currentSelectionRepType}. Default coloring will be applied by the viewer for this representation.`,
-        PopupVariant.Info
+        PopupVariant.Info,
+        undefined,
+        false,
+        {}
       );
     }
     (finalStyle as any)[this.currentSelectionRepType] = colorSchemeObject;
