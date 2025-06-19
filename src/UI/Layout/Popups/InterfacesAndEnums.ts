@@ -13,6 +13,16 @@ export enum PopupVariant {
     Dark = "dark",
 }
 
+export interface IToastOptions {
+ /**
+  * The duration in milliseconds for the toast to be visible. If 0 or less, the
+  * toast will not automatically hide. If undefined, it will use the default
+  * auto-hide duration.
+  */
+ duration?: number;
+    showCloseBtn?: boolean;
+}
+
 export interface ISimpleMsg {
     title: string;
     message: string;

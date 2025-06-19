@@ -3,6 +3,7 @@ import { pushToStoreList } from "@/Store/StoreExternalAccess";
 import {
     ISimpleMsg,
     ITableDataMsg,
+    IToastOptions,
     IYesNoMsg,
     PopupVariant,
 } from "@/UI/Layout/Popups/InterfacesAndEnums";
@@ -20,19 +21,20 @@ export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
      *
-     * @param  {string}       title                        The title of the
-     *                                                     popup.
-     * @param  {string}       message                      The message to
-     *                                                     display.
-     * @param  {PopupVariant} [variant=PopupVariant.Info]  The type of message.
-     * @param  {Function}     [callBack]                   A function to call
-     *                                                     when the popup is
-     *                                                     closed.
-     * @param  {boolean}      [neverClose=false]           If true, the modal
-     *                                                     can never be closed.
-     * @param {boolean}       [useToast=false]             If true, displays a
-     *                                                     toast instead of a
-     *                                                     modal.
+     * @param  {string}        title                        The title of the
+     *                                                      popup.
+     * @param  {string}        message                      The message to
+     *                                                      display.
+     * @param  {PopupVariant}  [variant=PopupVariant.Info]  The type of message.
+     * @param  {Function}      [callBack]                   A function to call
+     *                                                      when the popup is
+     *                                                      closed.
+     * @param  {boolean}       [neverClose=false]           If true, the modal
+     *                                                      can never be closed.
+     * @param {IToastOptions}  [toastParams]                If provided,
+     *                                                      displays a toast
+     *                                                      instead of a modal,
+     *                                                      with given options.
      */
     popupMessage: function (
         title: string,
@@ -40,15 +42,14 @@ export const messagesApi = {
         variant = PopupVariant.Info,
         callBack: any = undefined,
         neverClose = false,
-        useToast = false
+        toastParams?: IToastOptions
     ) {
-        if (useToast) {
-            addToast(title, message, variant);
-            if (callBack) {
-                // Callbacks are not directly supported on toasts in the same way,
-                // but we can call it immediately if provided.
-                callBack();
+        if (toastParams) {
+            if (neverClose) {
+                toastParams.duration = 0; // Never autohides
+                toastParams.showCloseBtn = false; // No close button
             }
+            addToast(title, message, variant, callBack, toastParams);
             return;
         }
 

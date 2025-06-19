@@ -37,8 +37,8 @@ async function testToasts() {
             // Reload the page, preserving only the focus parameter if it exists.
             // alert("Done!")
         },
-        false,
-        true
+        true,
+        {}
     );
 
     // Wait 5 seconds.
@@ -53,7 +53,10 @@ async function testToasts() {
             // alert("Done!")
         },
         false,
-        true
+        {
+            duration: 10000, // Show for 10 seconds
+            showCloseBtn: false
+        }
     );
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -64,10 +67,12 @@ async function testToasts() {
         PopupVariant.Danger,
         () => {
             // Reload the page, preserving only the focus parameter if it exists.
-            // alert("Done!")
+            alert("Done!");
         },
         false,
-        true
+        {
+            duration: 0
+        }
     );
 }
 testToasts();
