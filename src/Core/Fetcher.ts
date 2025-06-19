@@ -2,11 +2,13 @@
 
 import { dynamicImports } from "./DynamicImports";
 import * as pluginsApi from "@/Api/Plugins";
-import { delayForPopupOpenClose } from "./GlobalVars";
+import { appName, delayForPopupOpenClose, isLocalHost } from "./GlobalVars";
 import { localStorageSetItem } from "./LocalStorage";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Testing/SetupTests";
-import { isLocalHost } from "@/Core/GlobalVars"; // Import isLocalHost
+import { messagesApi } from "@/Api/Messages";
+import { detectPlatform, HostOs } from "./HostOs";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
 export enum ResponseType {
     JSON = "json",
@@ -75,32 +77,51 @@ export async function fetcher(
     )) as boolean;
 
     let permissionResp = "allowed"; // for internal urls (!isExternal).
-    if (isExternal && !allowExternalWebAccess && !isTest) {
-        permissionResp = await new Promise((resolve) => {
-            // Stop the spinner
-            pluginsApi.pluginsApi.runPlugin("fetcherpermission", {
-                url,
-                onDeny: () => {
-                    setTimeout(() => {
-                        resolve("denied");
-                    }, delayForPopupOpenClose);
-                },
-                onAllow: () => {
-                    setTimeout(() => {
-                        resolve("allowed");
-                    }, delayForPopupOpenClose);
-                },
-                onAllowAll: async () => {
-                    // TODO: Update settings for allow all
 
-                    localStorageSetItem("allowExternalWebAccess", true);
+    if (isExternal && !isTest) {
+        if (allowExternalWebAccess) {
+            // User has already allowed access. Show a toast.
+            const settingsPath =
+                detectPlatform() === HostOs.Mac
+                    ? `${appName} → Settings...`
+                    : "Edit → Preferences...";
+            const baseUrl = new URL(url).hostname;
+            messagesApi.popupMessage(
+                "Accessing External Resource",
+                `Contacting <b>${baseUrl}</b> because you have allowed access to all external resources. You can manage this permission via <b>${settingsPath}</b>.`,
+                PopupVariant.Info,
+                undefined,
+                false,
+                {}
+            );
+        } else {
+            // User has not allowed access. Ask for permission.
+            permissionResp = await new Promise((resolve) => {
+                // Stop the spinner
+                pluginsApi.pluginsApi.runPlugin("fetcherpermission", {
+                    url,
+                    onDeny: () => {
+                        setTimeout(() => {
+                            resolve("denied");
+                        }, delayForPopupOpenClose);
+                    },
+                    onAllow: () => {
+                        setTimeout(() => {
+                            resolve("allowed");
+                        }, delayForPopupOpenClose);
+                    },
+                    onAllowAll: async () => {
+                        // TODO: Update settings for allow all
 
-                    setTimeout(() => {
-                        resolve("allowed");
-                    }, delayForPopupOpenClose);
-                },
+                        localStorageSetItem("allowExternalWebAccess", true);
+
+                        setTimeout(() => {
+                            resolve("allowed");
+                        }, delayForPopupOpenClose);
+                    },
+                });
             });
-        });
+        }
     }
 
     if (permissionResp === "denied") {
