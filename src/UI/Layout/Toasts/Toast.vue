@@ -86,7 +86,11 @@ export default class Toast extends Vue {
                     if (this.toast.callBack) {
                         this.toast.callBack();
                     }
+     // Defer removal to prevent race condition where Vue removes the element
+     // before Bootstrap's hide transition logic is fully complete.
+     setTimeout(() => {
                     removeToast(this.toast.id);
+     }, 0);
                 };
                 // When the toast is hidden by Bootstrap, remove it from our manager
                 toastEl.addEventListener("hidden.bs.toast", this.onHiddenCallback);

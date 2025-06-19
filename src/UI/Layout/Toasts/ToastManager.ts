@@ -23,6 +23,14 @@ export function addToast(
     callBack?: () => void,
     options?: IToastOptions
 ) {
+    // Do not show duplicate toasts.
+    const isDuplicate = toasts.some(
+        (toast) => toast.title === title && toast.message === message
+    );
+    if (isDuplicate) {
+        return;
+    }
+
     const toastOptions = { ...options }; // Clone to avoid modifying the original object
     // If duration is not specified, calculate it based on word count.
     if (toastOptions.duration === undefined) {
