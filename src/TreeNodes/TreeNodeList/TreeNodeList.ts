@@ -318,6 +318,20 @@ export class TreeNodeList {
     }
 
     /**
+     * Tests whether at least one element in the list passes the test
+     * implemented by the provided function.
+     *
+     * @param  {Function} func  The function to test for each element.
+     * @returns {boolean}  `true` if the callback function returns a truthy
+     *         value for at least one element in the list. Otherwise, `false`.
+     */
+    public some(
+        func: (node: TreeNode, index?: number, array?: TreeNode[]) => boolean
+    ): boolean {
+        return this._nodes.some(func);
+    }
+
+    /**
      * Sorts the nodes.
      *
      * @param {Function} func  The function to call for each node. The function

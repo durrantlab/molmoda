@@ -60,6 +60,7 @@ system uses these to autopopulate with plugins. -->
     <YesNoPlugin @onPluginSetup="onPluginSetup"></YesNoPlugin>
 
     <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
+    <AlignProteinsPlugin @onPluginSetup="onPluginSetup"></AlignProteinsPlugin>
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <PoseViewPlugin @onPluginSetup="onPluginSetup"></PoseViewPlugin>
@@ -139,6 +140,7 @@ import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
 import YesNoPlugin from "./Core/YesNoPlugin.vue";
 
 import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
+import AlignProteinsPlugin from "./Optional/Align/AlignProteinsPlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
 import PoseViewPlugin from "./Optional/PoseViewPlugin.vue";
@@ -214,6 +216,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     YesNoPlugin,
 
     AddRegionPlugin,
+    AlignProteinsPlugin,
     EvalScreenPlugin,
     FPocketWebPlugin,
     PoseViewPlugin,

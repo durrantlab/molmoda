@@ -333,6 +333,25 @@ export const dynamicImports = {
         //     });
         // }
     } as IDynamicImport,
+    usalign: {
+        credit: {
+         name: "US-align",
+         url: "https://zhanggroup.org/US-align/",
+         license: Licenses.CUSTOM,
+         citations: [
+          {
+           title:
+            "US-align: universal structure alignment of proteins and nucleic acids",
+           authors: ["Zhang, Chengxin", "Zhang, Yang"],
+           journal: "Bioinformatics",
+           year: 2022,
+           volume: 38,
+           issue: 20,
+           pages: "4633-4640",
+          },
+         ],
+        },
+       },
     webina: {
         credit: {
             name: "Webina",

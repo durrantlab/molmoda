@@ -4,7 +4,7 @@ import {
     MoleculeInput,
 } from "../MoleculeInputParams/MoleculeInput";
 import { FileInfo } from "@/FileSystem/FileInfo";
-
+import { MoleculeTypeFilter } from "../FormSelectMolecule/FormSelectMoleculeInterfaces";
 export enum UserArgType {
     Text,
     TextArea,
@@ -19,6 +19,7 @@ export enum UserArgType {
     Alert,
     SelectRegion,
     ListSelect,
+    SelectMolecule,
 }
 
 export interface IUserArgOption {
@@ -133,7 +134,10 @@ export interface IUserArgListSelect extends IUserArg {
     // Delay in ms after input before triggering change detection. */
     delayBetweenChangesDetected?: number;
 }
-
+export interface IUserArgSelectMolecule extends IUserArg {
+    val: string; // Will hold the ID of the selected molecule
+    filterType?: MoleculeTypeFilter;
+}
 export type UserArg =
     | IUserArgText
     | IUserArgNumber
@@ -147,4 +151,5 @@ export type UserArg =
     | IUserArgVector3D
     | IUserArgAlert
     | IUserSelectRegion
-    | IUserArgListSelect;
+    | IUserArgListSelect
+    | IUserArgSelectMolecule;

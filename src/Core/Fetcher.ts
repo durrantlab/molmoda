@@ -27,12 +27,15 @@ interface IFetcherOptions {
  * @returns {Promise<void>} A promise that resolves after the delay.
  */
 async function _introduceRandomDelayForTesting(): Promise<void> {
- // Add a random delay between 0 and 2 seconds (2000ms)
- const delay = Math.random() * 2000;
- console.log(`Fetcher (localhost testing): introducing delay of ${delay.toFixed(0)}ms`);
- return new Promise(resolve => setTimeout(resolve, delay));
+    // Add a random delay between 0 and 2 seconds (2000ms)
+    const delay = Math.random() * 2000;
+    console.log(
+        `Fetcher (localhost testing): introducing delay of ${delay.toFixed(
+            0
+        )}ms`
+    );
+    return new Promise((resolve) => setTimeout(resolve, delay));
 }
-
 
 /**
  * Fetch a file from a remote URL.
@@ -107,15 +110,17 @@ export async function fetcher(
     // If cacheBust is true, add a cache-busting query parameter to the URL.
     if (options.cacheBust) {
         const cacheBustParam = `cacheBust=${Date.now()}`;
-        url = url.includes("?") ? `${url}&${cacheBustParam}` : `${url}?${cacheBustParam}`;
+        url = url.includes("?")
+            ? `${url}&${cacheBustParam}`
+            : `${url}?${cacheBustParam}`;
     }
 
- // *** START localhost delay modification ***
- // If running on localhost and fetching an external resource, introduce a random delay for testing race conditions.
- if (isLocalHost) {
-    await _introduceRandomDelayForTesting();
- }
- // *** END localhost delay modification ***
+    // *** START localhost delay modification ***
+    // If running on localhost and fetching an external resource, introduce a random delay for testing race conditions.
+    if (isLocalHost && !isTest) {
+        await _introduceRandomDelayForTesting();
+    }
+    // *** END localhost delay modification ***
 
     // Load axios
     const axios = await dynamicImports.axios.module;

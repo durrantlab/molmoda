@@ -304,7 +304,7 @@ allowed_threads = {
 drivers = {}
 browser = ""
 
-def run_test(plugin_id):
+def run_test(plugin_id_tuple):
     global drivers
     global browser
 
@@ -314,19 +314,18 @@ def run_test(plugin_id):
 
     driver = drivers[key]
 
-    plugin_idx = plugin_id[1]
-    plugin_id = plugin_id[0]
-    # plugin_id, plugin_idx = plugin_id
+    plugin_name, plugin_idx = plugin_id_tuple
 
-    url = f"{root_url}/?test={plugin_id}"
+    # MODIFICATION START: Added more informative logging at the start of the test.
+    test_lbl = f"{plugin_name}{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
+    print(f"Starting test: {test_lbl}...")
+    # MODIFICATION END
+
+    url = f"{root_url}/?test={plugin_name}"
     if plugin_idx is not None:
         url += f"&index={str(plugin_idx)}"
 
     driver.get(url)
-
-    plugin_idx_str = f" #{str(plugin_idx + 1)}" if plugin_idx is not None else ""
-    test_lbl = f"{plugin_id}{plugin_idx_str}"
-    # resp = f"Result of {test_lbl}: "
 
     cmds_str = None
     cmds = None
@@ -338,9 +337,12 @@ def run_test(plugin_id):
         except Exception as JSONDecodeError:
             time.sleep(0.25)
 
+    # MODIFICATION START: Replaced sys.exit(1) with an exception.
+    # This allows the test runner to catch the failure, report it, and
+    # continue with other tests instead of halting the entire suite.
     if cmds is None:
-        print("No commands found. Are you sure you specified an actual plugin id?")
-        sys.exit(1)
+        raise Exception("No commands found. Are you sure you specified an actual plugin id?")
+    # MODIFICATION END
 
     if cmds_str is None:
         print(f"Failed to parse JSON: {cmds_str}")
@@ -381,7 +383,7 @@ def run_test(plugin_id):
             elif cmd["cmd"] == "upload":
                 el(cmd["selector"], driver).upload_file(cmd["data"])
             elif cmd["cmd"] == "addTests":
-                return [(plugin_id, i) for i in range(cmd["data"])]
+                return [(plugin_name, i) for i in range(cmd["data"])]
             elif cmd["cmd"] == "checkBox":
                 el(cmd["selector"], driver).checkBox(cmd["data"])
 
@@ -471,6 +473,7 @@ plugin_ids.sort()
 # all_test_results = {}
 
 passed_tests = []
+failed_tests = [] # MODIFICATION: Added a global failed_tests list
 
 for browser_to_use in browsers_to_use:
     # Set global var
@@ -481,7 +484,8 @@ for browser_to_use in browsers_to_use:
     plugin_ids_per_browser = plugin_ids.copy()
 
     for try_idx in range(4):
-        failed_tests = []
+        # MODIFICATION: Reset failed_tests_this_round for each attempt
+        failed_tests_this_round = []
         drivers = {}
 
         with ThreadPoolExecutor(max_workers=allowed_threads[browser_to_use]) as executor:
@@ -494,7 +498,7 @@ for browser_to_use in browsers_to_use:
             while plugin_ids_per_browser or futures_to_tests:
                 # While there are tests to submit or futures that haven't been processed
                 while plugin_ids_per_browser:
-                    test = plugin_ids_per_browser.pop()
+                    test = plugin_ids_per_browser.pop(0) # MODIFICATION: Use pop(0) to run tests in alphabetical order
                     future = executor.submit(run_test, test)
                     futures_to_tests[future] = test
 
@@ -506,7 +510,9 @@ for browser_to_use in browsers_to_use:
 
                         # Is result a list?
                         if isinstance(result, list):
-                            plugin_ids_per_browser.extend(result)
+                            # MODIFICATION START: Insert new tests at the beginning of the list to run next
+                            plugin_ids_per_browser = result + plugin_ids_per_browser
+                            # MODIFICATION END
                             print(f"Added tests: {json.dumps(result)}")
                             continue
 
@@ -515,18 +521,24 @@ for browser_to_use in browsers_to_use:
                             f"{result['status'][:1].upper()}{result['status'][1:]}: {result['test']} {result['error']}"
                         )
                         if result["status"] == "passed":
-                            # test is like ('clearselection', None)
-                            passed_tests.append([test[0], test[1], try_idx, browser_to_use])
+                            # MODIFICATION: Append the result dictionary to passed_tests
+                            passed_tests.append({**result, "try": try_idx + 1, "browser": browser_to_use})
                         else:
-                            failed_tests.append([test[0], test[1], try_idx, browser_to_use])
+                            # MODIFICATION: Append the original test tuple to the list for retrying
+                            failed_tests_this_round.append(test)
+                            # MODIFICATION: Append the full result to the global failed_tests list for reporting
+                            failed_tests.append({**result, "try": try_idx + 1, "browser": browser_to_use})
                     except Exception as e:
                         print(f"Test {test} raised an exception: {e}")
-                        # all_test_results[test[0]] = f"failed (try {str(tryIdx + 1)})"
-                        failed_tests.append([test[0], test[1], try_idx, browser_to_use])
+                        # MODIFICATION: Append the original test tuple for retrying
+                        failed_tests_this_round.append(test)
+                        # MODIFICATION: Append a constructed error result for reporting
+                        failed_tests.append({"status": "failed", "test": f"{test[0]}{f' #{test[1] + 1}' if test[1] is not None else ''}", "error": str(e), "try": try_idx + 1, "browser": browser_to_use})
                     finally:
                         del futures_to_tests[future]
 
-        plugin_ids_per_browser = failed_tests
+        # MODIFICATION: Use the list of failed tests from this round for the next retry
+        plugin_ids_per_browser = failed_tests_this_round
         plugin_ids_per_browser.sort()
 
         # Go through all the drivers and quit
@@ -549,39 +561,21 @@ for browser_to_use in browsers_to_use:
 
 # import pdb; pdb.set_trace()
 
+# MODIFICATION START: Simplified the final reporting loops
 print("")
 print("Tests that passed:")
-for test_name, test_idx, try_idx, browser in passed_tests:
-    lbl = f"   {test_name}-{browser}"
-    if test_idx is not None:
-        lbl += f" #{test_idx + 1}"
-    lbl += f" (try {try_idx + 1})"
-    print(lbl)
-
-    # if "passed" in value:
-    #     print(f"   {test}: {all_test_results[test]}")
-    #     # if all("passed" in i for i in all_test_results[test]):
+for result in passed_tests:
+    print(f"   {result['test']}-{result['browser']} (try {result['try']})")
 
 print("")
 print("Tests that failed:")
-for test_name, test_idx, try_idx, browser in failed_tests:
-    lbl = f"   {test_name}-{browser}"
-    if test_idx is not None:
-        lbl += f" #{test_idx + 1}"
-    lbl += f" (try {try_idx + 1})"
-    print(lbl)
-
-if len(failed_tests) == 0:
+unique_failed_tests = {f"{t['test']}-{t['browser']}": t for t in failed_tests}.values()
+if not unique_failed_tests:
     print("   None!")
-
-    # if "passed" in value:
-    #     print(f"   {test}: {all_test_results[test]}")
-    #     # if all("passed" in i for i in all_test_results[test]):
-
-# for test, value in all_test_results.items():
-#     if "failed" in value:
-#         print(f"   {test}: {all_test_results[test]}")
-#         # if all("passed" in i for i in all_test_results[test]):
+else:
+    for result in unique_failed_tests:
+        print(f"   {result['test']}-{result['browser']} (Final Error: {result['error']})")
+# MODIFICATION END
 
 print("")
 print(urls[chosen_index] + "\n")

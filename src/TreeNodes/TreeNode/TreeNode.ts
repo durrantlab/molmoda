@@ -339,13 +339,52 @@ export class TreeNode {
     /**
      * Convert this TreeNode to a specified molecular format.
      *
-     * @param  {string}          targetExt      The extension of the format to
-     *                                          convert to.
-     * @returns {FileInfo} The text-formatted (e.g., PDB, MOL2) strings.
+     * @param  {string}    targetExt   The extension of the format to
+     *            convert to.
+     * @param {boolean} [considerDescendants=false] If true and this is a container node,
+     *            its descendants will be merged into a single file.
+     * @returns {Promise<FileInfo>} The text-formatted (e.g., PDB, MOL2) string as a FileInfo object.
      */
-    public toFileInfo(targetExt: string): Promise<FileInfo> {
-        return _convertTreeNodeList(new TreeNodeList([this]), targetExt, false)
+    public toFileInfo(
+        targetExt: string,
+        considerDescendants = false
+    ): Promise<FileInfo> {
+        let nodesToConvert: TreeNodeList;
+        let merge = false;
+        if (this.model) {
+            // It's a terminal node with a model. Always convert just this node.
+            nodesToConvert = new TreeNodeList([this]);
+            merge = false;
+        } else if (this.nodes && this.nodes.terminals.length > 0) {
+            // It's a container node.
+            if (considerDescendants) {
+                // Get all its terminal descendants and merge them.
+                nodesToConvert = this.nodes.terminals;
+                merge = true;
+            } else {
+                // Default behavior for a container: cannot be converted directly.
+                return Promise.reject(
+                    new Error(
+                        `Cannot convert container node "${this.title}" directly. To convert its contents, set considerDescendants to true.`
+                    )
+                );
+            }
+        } else {
+            // It's an empty or non-convertible node.
+            return Promise.reject(
+                new Error(
+                    `Node "${this.title}" has no model or descendant nodes with models to convert.`
+                )
+            );
+        }
+        return _convertTreeNodeList(nodesToConvert, targetExt, merge)
             .then((fileInfos: FileInfo[]) => {
+                if (fileInfos.length === 0) {
+                    // This can happen if conversion yields no output.
+                    throw new Error(
+                        `Conversion of node "${this.title}" to "${targetExt}" resulted in an empty file.`
+                    );
+                }
                 return fileInfos[0];
             })
             .catch((err: Error) => {

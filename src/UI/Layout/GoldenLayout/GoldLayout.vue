@@ -79,6 +79,14 @@
                                     <Alert v-if="!isChromeBrowser" type="warning">
                                         We test {{ appName }} on many browsers to ensure it works well everywhere. However, if you experience any unexpected issues, consider Chrome for a smoother experience.
                                     </Alert>
+         <!-- Additional Messages -->
+         <Alert
+          v-for="msg in additionalMessages"
+          v-bind:key="msg.text"
+          :type="msg.type"
+         >
+          {{ msg.text }}
+         </Alert>
                                     <!-- Existing Activity Focus Alert -->
                                     <Alert v-if="activityFocusModeInfo[0] !== 'All'" type="info">
                                         You are running {{appName}} in
@@ -168,7 +176,7 @@ import { getActivityFocusMode, getActvityFocusModeDescription } from "@/Plugins/
 import { capitalize, lowerize } from "@/Core/Utils/StringUtils";
 import Alert from "../Alert.vue";
 import { detectBrowser, BrowserType } from "@/Core/HostOs"; // Import browser detection
-
+import { fetcher, ResponseType } from "@/Core/Fetcher";
 /**
  * GoldLayout component
  */
@@ -189,7 +197,7 @@ import { detectBrowser, BrowserType } from "@/Core/HostOs"; // Import browser de
 })
 export default class GoldLayout extends Vue {
     viewerLoaded = false;
-
+ additionalMessages: { text: string; type: string }[] = [];
     /**
      * Gets the activity focus mode information.
      *
@@ -372,7 +380,7 @@ export default class GoldLayout extends Vue {
     }
 
     /** mounted function */
-    mounted() {
+ async mounted() {
         let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
 
         let config = {
@@ -387,8 +395,24 @@ export default class GoldLayout extends Vue {
 
         // Remove dataDOM
         dataDOM.remove();
-    }
-
+  try {
+   const messages = await fetcher("messages.json", { responseType: ResponseType.JSON, cacheBust: true });
+   if (Array.isArray(messages)) {
+    this.additionalMessages = messages.filter(
+     (msg) =>
+      msg && typeof msg.text === "string" && typeof msg.type === "string"
+    );
+   }
+  } catch (error: any) {
+   // According to user request, log if parsing error, but ignore if file not found.
+   // Axios error object has `response.status`.
+   if (error.response && error.response.status === 404) {
+    console.log("messages.json not found, skipping additional messages.");
+   } else {
+    console.error("Error fetching or parsing messages.json:", error);
+   }
+  }
+ }
     /**
      * Called when the viewer is loaded.
      */
