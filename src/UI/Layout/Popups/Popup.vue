@@ -95,6 +95,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
 import { popupClosed, popupOpened } from "./OpenPopupList";
 import { capitalizeEachWord } from "@/Core/Utils/StringUtils";
+import { getNextZIndex, releaseZIndex } from "./ZIndexManager";
 
 /**
  * Popup component
@@ -138,7 +139,8 @@ export default class Popup extends Vue {
   // Allows you to force the modal closed regardless of the modelValue
   // property. Use with caution. Should always restore to true quickly.
   isClosing = false;
-
+  zIndex = 0;
+  
   /**
    * Gets the title to use on the modal.
    *
@@ -311,6 +313,20 @@ export default class Popup extends Vue {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     modalElem.addEventListener("show.bs.modal", (_event) => {
+   // Get and apply the next z-index as soon as the modal starts to show.
+   this.zIndex = getNextZIndex();
+   const dialog = this.$refs.dialog as HTMLElement;
+   dialog.style.zIndex = this.zIndex.toString();
+
+   // The backdrop is added to the DOM right after this event fires.
+   // A microtask or macrotask delay is needed to find it.
+   setTimeout(() => {
+  const backdrops = document.querySelectorAll<HTMLElement>(".modal-backdrop");
+  if (backdrops.length > 0) {
+    const myBackdrop = backdrops[backdrops.length - 1];
+    myBackdrop.style.zIndex = (this.zIndex - 5).toString();
+  }
+   }, 0);
       if (this.onBeforeShown) {
         this.onBeforeShown();
       }
@@ -318,6 +334,10 @@ export default class Popup extends Vue {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     modalElem.addEventListener("hidden.bs.modal", (_event) => {
+   if (this.zIndex) {
+  releaseZIndex(this.zIndex);
+  this.zIndex = 0;
+   }
       this.$emit("update:modelValue", false);
 
       // Below fires regardless of how closed. In contrast, onDone fires if
