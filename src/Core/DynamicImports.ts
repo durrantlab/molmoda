@@ -335,23 +335,22 @@ export const dynamicImports = {
     } as IDynamicImport,
     usalign: {
         credit: {
-         name: "US-align",
-         url: "https://zhanggroup.org/US-align/",
-         license: Licenses.CUSTOM,
-         citations: [
-          {
-           title:
-            "US-align: universal structure alignment of proteins and nucleic acids",
-           authors: ["Zhang, Chengxin", "Zhang, Yang"],
-           journal: "Bioinformatics",
-           year: 2022,
-           volume: 38,
-           issue: 20,
-           pages: "4633-4640",
-          },
-         ],
+            name: "US-align",
+            url: "https://zhanggroup.org/US-align/",
+            license: Licenses.CUSTOM,
+            citations: [
+                {
+                    title: "US-align: universal structure alignment of proteins and nucleic acids",
+                    authors: ["Zhang, Chengxin", "Zhang, Yang"],
+                    journal: "Bioinformatics",
+                    year: 2022,
+                    volume: 38,
+                    issue: 20,
+                    pages: "4633-4640",
+                },
+            ],
         },
-       },
+    },
     webina: {
         credit: {
             name: "Webina",
@@ -608,6 +607,28 @@ export const dynamicImports = {
                 /* webpackChunkName: "bootstrap-tooltip" */
                 /* webpackMode: "lazy" */
                 "bootstrap/js/dist/tooltip"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
+
+    bootstrapToast: {
+        credit: {
+            name: "Bootstrap",
+            url: "https://getbootstrap.com/",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>} A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "bootstrap-toast" */
+                /* webpackMode: "lazy" */
+                "bootstrap/js/dist/toast"
             ).then((mod: any) => {
                 return mod.default;
             });

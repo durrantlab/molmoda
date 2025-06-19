@@ -21,9 +21,56 @@ import { ISelAndStyle } from "./Core/Styling/SelAndStyleInterfaces";
 import { pluginsApi } from "./Api/Plugins";
 import { colorNameToHex } from "./Core/Styling/Colors/ColorUtils";
 
+import * as api from "@/Api";
+import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
+
+async function testToasts() {
+    api.messages.popupMessage(
+        "Test Title",
+        "Test message content.",
+        PopupVariant.Info,
+        () => {
+            // Reload the page, preserving only the focus parameter if it exists.
+            // alert("Done!")
+        },
+        false,
+        true
+    );
+
+    // Wait 5 seconds.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    api.messages.popupMessage(
+        "Test Title2",
+        "Test message content.",
+        PopupVariant.Warning,
+        () => {
+            // Reload the page, preserving only the focus parameter if it exists.
+            // alert("Done!")
+        },
+        false,
+        true
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    api.messages.popupMessage(
+        "Test Title3",
+        "Test message content.",
+        PopupVariant.Danger,
+        () => {
+            // Reload the page, preserving only the focus parameter if it exists.
+            // alert("Done!")
+        },
+        false,
+        true
+    );
+}
+testToasts();
 
 /**
  * The main function.
@@ -54,17 +101,16 @@ async function main() {
     // custom logging system does not.
     logEvent("page", "load");
 
-    console.warn("BELOW IS PLAYING WITH REACTION")
+    console.warn("BELOW IS PLAYING WITH REACTION");
 
-    const t = async function() {
-
+    const t = async function () {
         const reactor = new Reactor();
         // await reactor.setup("Cl[C:1]([*:3])=O.[OH:2][*:4]>>[*:4][O:2][C:1]([*:3])=O")
         // reactor.addReactant("CC(Cl)=O", 0);
         // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
         // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
         // reactor.addReactant("CCCCCO", 1)
-    
+
         // See https://zenodo.org/records/1209313
         await reactor.setup(
             "[#6:7][C:1](=[O:2])[O:3][#6:4]>>[#6:7][C:1]([H])([H])[O:2][H].[O:3]([H])[#6:4]"
@@ -73,9 +119,9 @@ async function main() {
         // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
         // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
         // reactor.addReactant("CCCCCO", 1)
-    
+
         const results = reactor.runReaction();
-    }
+    };
     // t();
 
     console.warn("CRUFT HERE! FIX!!!");

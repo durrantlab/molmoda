@@ -13,13 +13,12 @@ import { stopWaitSpinner as stopWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSp
 import { stopAllWaitSpinners as stopAllWaitSpinnersSrc } from "@/UI/MessageAlerts/WaitSpinner";
 import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
 
-
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
-
+import { addToast } from "@/UI/Layout/Toasts/ToastManager";
 export const messagesApi = {
     /**
-     * Displays a popup message.
+     * Displays a popup message or a toast notification.
      *
      * @param  {string}       title                        The title of the
      *                                                     popup.
@@ -31,14 +30,28 @@ export const messagesApi = {
      *                                                     closed.
      * @param  {boolean}      [neverClose=false]           If true, the modal
      *                                                     can never be closed.
+     * @param {boolean}       [useToast=false]             If true, displays a
+     *                                                     toast instead of a
+     *                                                     modal.
      */
     popupMessage: function (
         title: string,
         message = "",
         variant = PopupVariant.Info,
         callBack: any = undefined,
-        neverClose = false
+        neverClose = false,
+        useToast = false
     ) {
+        if (useToast) {
+            addToast(title, message, variant);
+            if (callBack) {
+                // Callbacks are not directly supported on toasts in the same way,
+                // but we can call it immediately if provided.
+                callBack();
+            }
+            return;
+        }
+
         // If popup already open, do not open another one.
         pluginsApi.runPlugin("simplemsg", {
             title,
@@ -72,7 +85,6 @@ export const messagesApi = {
         this.popupMessage("Error", message, PopupVariant.Danger, callBack);
     },
 
-
     /**
      * Displays a Yes-No popup message.
      *
@@ -87,7 +99,7 @@ export const messagesApi = {
         title?: string,
         yesBtnTxt?: string,
         noBtnTxt?: string,
-        showCancelBtn?: boolean,
+        showCancelBtn?: boolean
     ): Promise<any> {
         return await new Promise((resolve: any) => {
             pluginsApi.runPlugin("yesnomsg", {
@@ -98,8 +110,8 @@ export const messagesApi = {
                 },
                 yesBtnTxt,
                 noBtnTxt,
-                showCancelBtn
-            } as IYesNoMsg)
+                showCancelBtn,
+            } as IYesNoMsg);
         });
     },
 
@@ -118,14 +130,14 @@ export const messagesApi = {
         message: string,
         tableData: ITableData,
         caption: string,
-        precision = 3,
+        precision = 3
     ) {
         // If popup already open, do not open another one.
         pluginsApi.runPlugin("tabledatapopup", {
             title,
             message,
             tableData,
-            caption, 
+            caption,
             precision,
             open: true, // open
         } as ITableDataMsg);

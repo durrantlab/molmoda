@@ -11,7 +11,7 @@
       " class="bg-light hide-on-app-closed">
       <Menu :menuData="menuData" />
     </div>
-    <div style="flex-grow: 1; overflow: auto;" class="hide-on-app-closed">
+    <div style="flex-grow: 1; overflow: auto" class="hide-on-app-closed">
       <!-- GoldLayout needs to grow and handle overflow -->
       <GoldLayout />
     </div>
@@ -20,6 +20,7 @@
     <AllPlugins @onPluginSetup="onPluginSetup" :softwareCredits="softwareCredits"
       :contributorCredits="contributorCredits" :loadedPlugins="loadedPlugins" />
     <DragDropFileLoad />
+    <ToastContainer />
   </div>
 </template>
 <script lang="ts">
@@ -49,7 +50,7 @@ import { setupAutoSave } from "@/Store/AutoSave";
 import { setupElectron } from "@/Core/Electron/ElectronUtils";
 import ProgressBar from "@/UI/Components/ProgressBar.vue"; // Import ProgressBar
 import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
-
+import ToastContainer from "@/UI/Layout/Toasts/ToastContainer.vue";
 /**
  * Main app component
  */
@@ -62,6 +63,7 @@ import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
     DragDropFileLoad,
     SmilesPopupViewer,
     ProgressBar,
+    ToastContainer,
   },
 })
 export default class App extends Vue {
