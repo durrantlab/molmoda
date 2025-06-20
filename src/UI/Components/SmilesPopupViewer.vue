@@ -31,7 +31,7 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import Popup from "../Layout/Popups/Popup.vue";
+import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import Mol2DView from "./Mol2DView.vue"; // Import the new reusable component
 
 /**

@@ -2,11 +2,13 @@ import { reactive } from "vue";
 import { IToast } from "./ToastInterfaces";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { IToastOptions, PopupVariant } from "../Popups/InterfacesAndEnums";
+import { showSystemNotification } from "@/UI/MessageAlerts/SystemNotifications";
+import { toTitleCase } from "@/Core/Utils/StringUtils";
+
 /**
  * A reactive array to hold the currently active toast notifications.
  */
 export const toasts = reactive<IToast[]>([]);
-
 /**
  * Adds a new toast to the list of active toasts.
  *
@@ -43,7 +45,7 @@ export function addToast(
 
     toasts.push({
         id: randomID(),
-        title,
+        title: toTitleCase(title),
         message,
         variant,
         timestamp: new Date().toLocaleTimeString([], {
@@ -53,6 +55,14 @@ export function addToast(
         callBack,
         ...toastOptions,
     });
+    // Show system notification if window is not focused OR if permission has not been set yet.
+    if (
+        "Notification" in window &&
+        (!document.hasFocus() || Notification.permission === "default")
+    ) {
+        showSystemNotification(title, message);
+    }
+    // showSystemNotification(title, message);
 }
 /**
  * Removes all active toasts from the list.

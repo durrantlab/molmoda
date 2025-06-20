@@ -6,9 +6,9 @@
 
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
-import { toasts } from "./ToastManager";
 import Toast from "./Toast.vue";
 import { IToast } from "./ToastInterfaces";
+import { toasts } from "./ToastManager";
 
 /**
  * A container component that renders all active toast notifications.

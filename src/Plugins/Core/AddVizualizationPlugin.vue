@@ -44,7 +44,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { messagesApi } from "@/Api/Messages";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { FailingTest } from "@/Testing/FailingTest";

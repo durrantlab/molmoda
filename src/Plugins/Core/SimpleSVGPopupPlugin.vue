@@ -18,7 +18,7 @@ import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleSvg,
   PopupVariant,
-} from "@/UI/Layout/Popups/InterfacesAndEnums";
+} from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";

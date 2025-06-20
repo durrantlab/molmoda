@@ -3,8 +3,10 @@
 // being exported in a molmoda file. TODO: Perhaps reconsider this
 // implementation later.
 
+import { showSystemNotification } from "@/UI/MessageAlerts/SystemNotifications";
 import { IJobStatusInfo, JobStatus } from "./QueueTypes";
-
+import { appName } from "@/Core/GlobalVars";
+import { capitalize } from "@/Core/Utils/StringUtils";
 interface IQueueStore {
     running: IJobStatusInfo[];
     done: IJobStatusInfo[];
@@ -42,7 +44,7 @@ export function startInQueueStore(
         id: id,
         progress: 0,
         numProcessors: nprocs,
-        startTime: Date.now() + Math.random(),  // To make sure unique.
+        startTime: Date.now() + Math.random(), // To make sure unique.
         endTime: undefined,
         status: JobStatus.Running,
         cancelFunc: cancelFunc,
@@ -67,7 +69,7 @@ export function updateProgressInQueueStore(id: string, progress: number) {
 
 /**
  * Move a job from the running queue to the done queue.
- * 
+ *
  * @param {string} id  The job ID.
  * @param {JobStatus} status  The status of the job.
  */
@@ -80,9 +82,17 @@ function _moveToDoneInQueueStore(id: string, status: JobStatus) {
         queueStore.running = queueStore.running.filter(
             (item) => item.id !== id
         );
+        // Show system notification when a job finishes, but only if not focused.
+        if (!document.hasFocus()) {
+            const jobType = item.id.split("-")[0];
+            const statusText =
+                status === JobStatus.Done ? "finished" : "cancelled";
+            const title = `${appName} Job Done: ${capitalize(jobType)}`;
+            const body = `The "${jobType}" job has ${statusText}.`;
+            showSystemNotification(title, body);
+        }
     }
 }
-
 /**
  * Mark a job as done in the queue store.
  *

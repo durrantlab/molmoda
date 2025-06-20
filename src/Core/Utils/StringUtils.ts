@@ -10,9 +10,10 @@ export function slugify(text: string, lowerCase = true): string {
         text = text.toLowerCase();
     }
     return text
+        .trim()
         .replace(/[:.]/g, "-")
         .replace(/[^\w -]+/g, "")
-        .replace(/ +/g, "-");
+        .replace(/\s+/g, "-");
 }
 
 /**
@@ -27,7 +28,7 @@ export function capitalize(s: string): string {
 
 /**
  * Lowercases the first letter of a string.
- * 
+ *
  * @param  {string} s The string to lowerize.
  * @returns {string} The lowerized string.
  */
@@ -35,16 +36,122 @@ export function lowerize(s: string): string {
     return s.charAt(0).toLowerCase() + s.slice(1);
 }
 
-
 /**
  * Capitalizes the first letter of each word in a string.
- * 
+ *
  * @param  {string} s The string to capitalize.
  * @returns {string} The capitalized string.
  */
 export function capitalizeEachWord(s: string): string {
-    const wrds = s.split(" ").map(wrd => capitalize(wrd));
+    if (!s) {
+        return "";
+    }
+    const wrds = s
+        .trim()
+        .split(/\s+/)
+        .map((wrd) => capitalize(wrd));
     return wrds.join(" ");
+}
+
+/**
+ * A set of short English words that are typically not capitalized in a title,
+ * unless they are the first or last word.
+ *
+ * @private
+ */
+const _shortWords = new Set([
+    "a",
+    "an",
+    "the",
+    "and",
+    "but",
+    "or",
+    "for",
+    "nor",
+    "on",
+    "at",
+    "to",
+    "from",
+    "by",
+    "with",
+    "in",
+    "of",
+    "over",
+    "under",
+    "not",
+]);
+
+/**
+ * Converts a string to title case, capitalizing the first letter of each word
+ * except for short words (articles, prepositions, conjunctions) which are not
+ * the first or last word.
+ *
+ * @param {string} s The string to convert.
+ * @returns {string} The title-cased string.
+ */
+export function toTitleCase(s: string): string {
+    if (!s) {
+        return "";
+    }
+    const words = s.trim().split(/\s+/);
+    const titleCasedWords = words.map((word, index) => {
+        const lowerWord = word.toLowerCase();
+        if (
+            index === 0 ||
+            index === words.length - 1 ||
+            !_shortWords.has(lowerWord)
+        ) {
+            return capitalize(word);
+        }
+        return lowerWord;
+    });
+    return titleCasedWords.join(" ");
+}
+
+/**
+ * Checks if a word contains a capital letter at an index greater than 0.
+ *
+ * @param {string} word The word to check.
+ * @returns {boolean} True if the word has an internal capital letter.
+ * @private
+ */
+function _hasInternalCapital(word: string): boolean {
+    if (word.length < 2) {
+        return false;
+    }
+    // Check characters from the second one onwards
+    for (let i = 1; i < word.length; i++) {
+        const char = word[i];
+        // If the character is a letter and is uppercase
+        if (char >= "A" && char <= "Z") {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Converts a string to sentence case. Capitalizes the first word and
+ * lowercases all other words, unless those other words have internal capital
+ * letters (e.g., "PubChem").
+ *
+ * @param {string} s The string to convert.
+ * @returns {string} The sentence-cased string.
+ */
+export function toSentenceCase(s: string): string {
+    if (!s) {
+        return "";
+    }
+    const trimmed = s.trim();
+    if (trimmed.length === 0) {
+        return "";
+    }
+    const words = trimmed.split(/\s+/);
+    const firstWord = capitalize(words[0]);
+    const otherWords = words.slice(1).map((word) => {
+        return _hasInternalCapital(word) ? word : word.toLowerCase();
+    });
+    return [firstWord, ...otherWords].join(" ");
 }
 
 /**
@@ -119,32 +226,32 @@ export function naturalSort<T>(
     const splitIntoChunks = (str: string): (string | number)[] => {
         // Use regex to match text and number sequences
         const matches = str.match(/(\d+|\D+)/g) || [];
-        
+
         // Convert number chunks to actual numbers
-        return matches.map(chunk => {
+        return matches.map((chunk) => {
             const numVal = Number(chunk);
             return isNaN(numVal) ? chunk : numVal;
         });
     };
-    
+
     // Extract strings to compare using the keyAccessor
     const strA = keyAccessor(a);
     const strB = keyAccessor(b);
-    
+
     const chunksA = splitIntoChunks(strA);
     const chunksB = splitIntoChunks(strB);
-    
+
     // Compare each chunk
     const minLength = Math.min(chunksA.length, chunksB.length);
-    
+
     for (let i = 0; i < minLength; i++) {
         const chunkA = chunksA[i];
         const chunkB = chunksB[i];
-        
+
         // If both chunks are of the same type
         if (typeof chunkA === typeof chunkB) {
             // Compare numbers numerically
-            if (typeof chunkA === 'number' && typeof chunkB === 'number') {
+            if (typeof chunkA === "number" && typeof chunkB === "number") {
                 if (chunkA !== chunkB) {
                     return chunkA - chunkB;
                 }
@@ -156,10 +263,10 @@ export function naturalSort<T>(
         }
         // Different types - numbers come before strings
         else {
-            return typeof chunkA === 'number' ? -1 : 1;
+            return typeof chunkA === "number" ? -1 : 1;
         }
     }
-    
+
     // If we get here, all comparable chunks are equal
     // So the shorter one comes first
     return chunksA.length - chunksB.length;

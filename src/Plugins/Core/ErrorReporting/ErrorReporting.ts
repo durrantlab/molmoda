@@ -5,7 +5,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import {
     ISimpleMsg,
     PopupVariant,
-} from "@/UI/Layout/Popups/InterfacesAndEnums";
+} from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 interface IErrorData {
     message: string;

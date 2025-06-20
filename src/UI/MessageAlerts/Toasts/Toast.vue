@@ -48,7 +48,9 @@ export default class Toast extends Vue {
     }
 
     /**
-     * Determines the appropriate class for the close button based on the toast variant.
+     * Determines the appropriate class for the close button based on the toast
+     * variant.
+     *
      * @returns {string} The class string for the close button.
      */
     get closeButtonClass(): string {
@@ -56,8 +58,8 @@ export default class Toast extends Vue {
     }
 
     /**
-     * Lifecycle hook called when the component is mounted.
-     * Initializes and shows the Bootstrap toast.
+     * Lifecycle hook called when the component is mounted. Initializes and
+     * shows the Bootstrap toast.
      */
     async mounted() {
         try {

@@ -24,9 +24,9 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { Options } from "vue-class-component";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
+import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-import { ITableDataMsg } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { ITableDataMsg } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";

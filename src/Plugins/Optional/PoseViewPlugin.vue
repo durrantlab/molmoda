@@ -52,7 +52,7 @@ import {
   checkProteinLoaded,
 } from "@/Plugins/CheckUseAllowedUtils";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
+import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeListToPDB";

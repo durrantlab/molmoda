@@ -19,7 +19,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import * as api from "@/Api";
-import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { detectPlatform, HostOs } from "@/Core/HostOs";
 

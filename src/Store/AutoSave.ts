@@ -8,7 +8,7 @@ import { stateToJsonStr } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Sav
 import { parseUsingMolModa } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/_ParseUsingMolModa";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
-import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 let timerId: any = undefined;

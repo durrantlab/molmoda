@@ -8,7 +8,7 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Testing/SetupTests";
 import { messagesApi } from "@/Api/Messages";
 import { detectPlatform, HostOs } from "./HostOs";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 export enum ResponseType {
     JSON = "json",
@@ -88,7 +88,7 @@ export async function fetcher(
             const baseUrl = new URL(url).hostname;
             messagesApi.popupMessage(
                 "Accessing External Resource",
-                `Contacting <b>${baseUrl}</b> because you have allowed access to all external resources. You can manage this permission via <b>${settingsPath}</b>.`,
+                `Coordinating with <b>${baseUrl}</b> because you have allowed access to all external resources. You can manage this permission via <b>${settingsPath}</b>.`,
                 PopupVariant.Info,
                 undefined,
                 false,

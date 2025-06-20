@@ -50,7 +50,7 @@ import { setupAutoSave } from "@/Store/AutoSave";
 import { setupElectron } from "@/Core/Electron/ElectronUtils";
 import ProgressBar from "@/UI/Components/ProgressBar.vue"; // Import ProgressBar
 import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
-import ToastContainer from "@/UI/Layout/Toasts/ToastContainer.vue";
+import ToastContainer from "@/UI/MessageAlerts/Toasts/ToastContainer.vue";
 /**
  * Main app component
  */

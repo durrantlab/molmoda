@@ -31,7 +31,7 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { ISimpleMsg } from "../Layout/Popups/InterfacesAndEnums";
+import { ISimpleMsg } from "./Popups/InterfacesAndEnums";
 import Alert from "../Layout/Alert.vue";
 
 /**

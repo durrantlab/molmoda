@@ -6,17 +6,18 @@ import {
     IToastOptions,
     IYesNoMsg,
     PopupVariant,
-} from "@/UI/Layout/Popups/InterfacesAndEnums";
+} from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 // Import startWaitSpinner as startWaitSpinnerSrc
 import { startWaitSpinner as startWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
 import { stopWaitSpinner as stopWaitSpinnerSrc } from "@/UI/MessageAlerts/WaitSpinner";
 import { stopAllWaitSpinners as stopAllWaitSpinnersSrc } from "@/UI/MessageAlerts/WaitSpinner";
-import { YesNo } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
-import { addToast, clearAllToasts } from "@/UI/Layout/Toasts/ToastManager";
+import { addToast, clearAllToasts } from "@/UI/MessageAlerts/Toasts/ToastManager";
+import { toSentenceCase, toTitleCase } from "@/Core/Utils/StringUtils";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.

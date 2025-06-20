@@ -22,7 +22,7 @@ import { pluginsApi } from "./Api/Plugins";
 import { colorNameToHex } from "./Core/Styling/Colors/ColorUtils";
 
 import * as api from "@/Api";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 

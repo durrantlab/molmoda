@@ -37,7 +37,7 @@ import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
 import Alert from "@/UI/Layout/Alert.vue";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 type SourceType = "svg" | "png-datauri" | "png-url" | "unknown";
 

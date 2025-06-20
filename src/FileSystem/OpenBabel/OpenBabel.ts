@@ -1,5 +1,5 @@
 import { messagesApi } from "@/Api/Messages";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { FileInfo } from "../FileInfo";
 import { IFileInfo } from "../Types";
 import {

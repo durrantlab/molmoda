@@ -1,5 +1,5 @@
 import { dynamicImports } from "./DynamicImports";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import * as api from "@/Api/";
 
 let _db: any = undefined;

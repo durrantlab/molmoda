@@ -18,12 +18,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { Options } from "vue-class-component";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
+import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
     ISimpleMsg,
     PopupVariant,
-} from "@/UI/Layout/Popups/InterfacesAndEnums";
+} from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -31,6 +31,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { pluginsApi } from "@/Api/Plugins";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { toTitleCase } from "@/Core/Utils/StringUtils";
 
 /**
  * SimpleMsgPlugin
@@ -125,7 +126,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
 
         // get all the titles in this.simpleMsgs. If there is only one unique
         // title, use that. Otherwise, use "Messages".
-        const titles = this.simpleMsgs.map((x) => x.title);
+        const titles = this.simpleMsgs.map((x) => toTitleCase(x.title));
         const uniqueTitles = Array.from(new Set(titles));
         this.title = uniqueTitles.length === 1 ? uniqueTitles[0] : "Messages";
 

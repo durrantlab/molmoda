@@ -40,7 +40,7 @@ import { appName } from "@/Core/GlobalVars";
 import {
     ISimpleMsg,
     PopupVariant,
-} from "@/UI/Layout/Popups/InterfacesAndEnums";
+} from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import * as api from "@/Api";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { reportErrorToServer } from "./ErrorReporting";

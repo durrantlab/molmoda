@@ -47,7 +47,7 @@ import {
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { messagesApi } from "@/Api/Messages";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
 
 enum SearchMode {

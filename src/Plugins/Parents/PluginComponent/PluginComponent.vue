@@ -54,9 +54,9 @@ import { Options, mixins } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
-import Popup from "@/UI/Layout/Popups/Popup.vue";
+import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { PopupMixin } from "./Mixins/PopupMixin";
-import { PopupVariant } from "@/UI/Layout/Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import {
     fixUserArgs,
     convertMoleculeInputParamsToFileInfos,
