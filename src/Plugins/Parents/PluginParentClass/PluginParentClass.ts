@@ -663,7 +663,7 @@ export abstract class PluginParentClass extends mixins(
                 // Note: If loading molmoda file, newTreeNodeList will be
                 // undefined.
                 if (newTreeNodeList) {
-                    newTreeNodeList.addToMainTree(this.pluginId);
+                    // newTreeNodeList.addToMainTree(this.pluginId);
 
                     if (hideOnLoad) {
                         newTreeNodeList.flattened.forEach((n) => {

@@ -414,9 +414,7 @@ export class TreeNodeList {
         }
 
         // If there are more than MAX_VISIBLE nodes, let user know some not visible.
-        const initialCompoundsVisible = await getSetting(
-            "initialCompoundsVisible"
-        );
+  const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
         if (terminalNodes.length > initialCompoundsVisible) {
             // Expand trees to make the user aware of hidden molecules.
             // NOTE: I decided against the below for consistency. Leave
