@@ -14,9 +14,13 @@
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { IToast } from "./ToastInterfaces";
-import { removeToast } from "./ToastManager";
+import {
+ removeToast,
+ registerToastInstance,
+ unregisterToastInstance,
+} from "./ToastManager";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { PopupVariant } from "../Popups/InterfacesAndEnums";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 /**
  * A component representing a single Bootstrap toast notification.
@@ -84,6 +88,7 @@ export default class Toast extends Vue {
                             : 5000;
                 }
                 this.toastInstance = new Toast(toastEl, toastOptions);
+    registerToastInstance(this.toast.id, this.toastInstance); // Register instance
                 this.onHiddenCallback = () => {
                     if (this.toast.callBack) {
                         this.toast.callBack();
@@ -108,6 +113,7 @@ export default class Toast extends Vue {
      * Disposes of the Bootstrap toast instance to prevent memory leaks.
      */
     beforeUnmount() {
+  unregisterToastInstance(this.toast.id); // Unregister instance
         if (this.toastInstance) {
             // Prevent the hidden event from firing during disposal
             const toastEl = this.$refs.toastEl as HTMLElement;

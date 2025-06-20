@@ -47,8 +47,7 @@ import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 export default class AlignProteinsPlugin extends PluginParentClass {
     menuPath = "Proteins/[8] Align...";
     title = "Align Proteins";
-    softwareCredits: ISoftwareCredit[] = [dynamicImports.usalign.credit]
-
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.usalign.credit];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "alignproteins";
     intro =
@@ -74,6 +73,8 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 considerProteins: true,
                 considerCompounds: false,
                 proteinFormat: "pdb",
+                allowUserToToggleIncludeMetalsSolventAsProtein: false,
+                includeMetalsSolventAsProtein: true,
             }),
             label: "Proteins to align",
         } as IUserArgMoleculeInputParams,
@@ -96,7 +97,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
     /**
      * Handles changes to user arguments to update button state.
      */
-    onUserArgChanged() {
+    onUserArgChange() {
         const refId = this.getUserArg("referenceMolecule");
         const moleculeInput: MoleculeInput = this.getUserArg("mobileMolecules");
         if (!moleculeInput || !moleculeInput.molsToConsider) {

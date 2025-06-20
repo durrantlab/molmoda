@@ -9,6 +9,31 @@ import { toTitleCase } from "@/Core/Utils/StringUtils";
  * A reactive array to hold the currently active toast notifications.
  */
 export const toasts = reactive<IToast[]>([]);
+
+/**
+ * A map to hold the live Bootstrap toast instances, allowing programmatic control.
+ */
+const toastInstances: { [key: string]: any } = {};
+
+/**
+ * Registers a live Bootstrap toast instance with the manager.
+ * 
+ * @param {string} id The unique ID of the toast.
+ * @param {any} instance The live Bootstrap toast instance.
+ */
+export function registerToastInstance(id: string, instance: any) {
+    toastInstances[id] = instance;
+}
+
+/**
+ * Unregisters a toast instance from the manager.
+ * 
+ * @param {string} id The unique ID of the toast to unregister.
+ */
+export function unregisterToastInstance(id: string) {
+    delete toastInstances[id];
+}
+
 /**
  * Adds a new toast to the list of active toasts.
  *
@@ -64,11 +89,17 @@ export function addToast(
     }
     // showSystemNotification(title, message);
 }
+
 /**
- * Removes all active toasts from the list.
+ * Hides all active toasts gracefully.
+ * Each toast will be removed from the UI and state after its hide animation completes.
  */
 export function clearAllToasts() {
-    toasts.length = 0;
+    Object.values(toastInstances).forEach((instance) => {
+        if (instance) {
+            instance.hide();
+        }
+    });
 }
 /**
  * Removes a toast from the active list by its ID.
