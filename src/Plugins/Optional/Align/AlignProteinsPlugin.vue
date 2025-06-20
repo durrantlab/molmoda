@@ -30,12 +30,12 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { SelectedType, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FailingTest } from "@/Testing/FailingTest";
 import { MoleculeTypeFilter } from "@/UI/Forms/FormSelectMolecule/FormSelectMoleculeInterfaces";
-
+import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 /**
  * A plugin to align multiple protein structures to a reference protein.
  */
@@ -154,7 +154,6 @@ export default class AlignProteinsPlugin extends PluginParentClass {
             if (!referenceNode) {
                 throw new Error("Reference protein not found.");
             }
-
             const refFileInfo = await referenceNode.toFileInfo("pdb", true); // Consider descendants
             if (!refFileInfo || !refFileInfo.contents) {
                 throw new Error(
@@ -162,26 +161,32 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 );
             }
             const referencePdb = refFileInfo.contents;
-            // Exclude the reference protein from the list of mobile proteins
-            const mobileNodes = mobileInfos
-                .map((info) => info.treeNode)
-                .filter(
-                    (node): node is TreeNode =>
-                        !!node && node.getAncestry().get(0).id !== refId
-                );
-            if (mobileNodes.length === 0) {
+            // For each selected mobile protein, find its top-level molecule container to
+            // ensure all components (ligands, solvent, etc.) are included.
+            const mobileTopLevelNodes = new Map<string, TreeNode>();
+            for (const info of mobileInfos) {
+                if (info.treeNode) {
+                    const topLevelNode = info.treeNode.getAncestry().get(0);
+                    if (topLevelNode.id !== refId) {
+                        // Exclude the reference molecule from being aligned to itself.
+                        mobileTopLevelNodes.set(topLevelNode.id as string, topLevelNode);
+                    }
+                }
+            }
+            const mobileNodesToAlign = Array.from(mobileTopLevelNodes.values());
+            if (mobileNodesToAlign.length === 0) {
                 messagesApi.popupError(
                     "No proteins to align. Ensure you have selected proteins to align that are different from the reference."
                 );
                 messagesApi.stopWaitSpinner(spinnerId);
                 return;
             }
-            const mobilePdbPromises = mobileNodes.map(async (node) => {
-                // A mobile protein might be a container, so we must consider its descendants.
+            const mobilePdbPromises = mobileNodesToAlign.map(async (node) => {
+                // Generate PDB for the entire top-level molecule.
                 const fi = await node.toFileInfo("pdb", true);
                 if (!fi || !fi.contents) {
                     console.warn(
-                        `Could not convert mobile protein ${node.title} to PDB. It will be skipped.`
+                        `Could not convert mobile molecule ${node.title} to PDB. It will be skipped.`
                     );
                     return null; // Return null for failed conversions
                 }
@@ -189,11 +194,12 @@ export default class AlignProteinsPlugin extends PluginParentClass {
             });
             const mobilePdbsWithNulls = await Promise.all(mobilePdbPromises);
             const validMobilePdbs: string[] = [];
-            const validMobileNodes: TreeNode[] = [];
-            mobilePdbsWithNulls.forEach((pdb, index) => {
+            const validMobileNodes: TreeNode[] = mobileNodesToAlign.filter(
+                (_, index) => mobilePdbsWithNulls[index] !== null
+            );
+            mobilePdbsWithNulls.forEach((pdb) => {
                 if (pdb !== null) {
                     validMobilePdbs.push(pdb);
-                    validMobileNodes.push(mobileNodes[index]);
                 }
             });
             if (validMobilePdbs.length === 0) {
@@ -216,38 +222,36 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 throw new Error(result.error);
             }
             const { alignedPdbs } = result;
-            const newNodes: TreeNode[] = [];
+            // 1. Clone the reference protein and add it to the workspace.
+            const clonedRefList = await cloneMolsWithAncestry(
+                new TreeNodeList([referenceNode]),
+                true
+            );
+            const clonedRef = clonedRefList.get(0);
+            if (clonedRef) {
+                clonedRef.title = `${referenceNode.title}-aligned`;
+                clonedRef.addToMainTree(this.pluginId);
+            }
+            // 2. Process and add each aligned mobile molecule.
             for (let i = 0; i < alignedPdbs.length; i++) {
                 const alignedContent = alignedPdbs[i];
                 if (alignedContent.startsWith("ERROR:")) {
                     console.error(alignedContent);
                     continue;
                 }
-                const originalNode = validMobileNodes[i];
+                const originalTopLevelNode = validMobileNodes[i];
                 const newFileInfo = new FileInfo({
-                    name: `${originalNode.title}_aligned.pdb`,
+                    name: `${originalTopLevelNode.title}-aligned.pdb`,
                     contents: alignedContent,
                 });
-                const loadedNode = await TreeNode.loadFromFileInfo({
+                const loadedNodeContainer = await TreeNode.loadFromFileInfo({
                     fileInfo: newFileInfo,
                     tag: this.pluginId,
                 });
-                if (loadedNode) {
-                    loadedNode.title = `${originalNode.title}:aligned`;
-                    newNodes.push(loadedNode);
+                if (loadedNodeContainer) {
+                    loadedNodeContainer.title = `${originalTopLevelNode.title}-aligned`;
+                    loadedNodeContainer.addToMainTree(this.pluginId);
                 }
-            }
-            if (newNodes.length > 0) {
-                const rootNode = new TreeNode({
-                    title: `Aligned to ${referenceNode.title}`,
-                    treeExpanded: true,
-                    visible: true,
-                    selected: SelectedType.False,
-                    focused: false,
-                    viewerDirty: false,
-                    nodes: new TreeNodeList(newNodes),
-                });
-                rootNode.addToMainTree(this.pluginId);
             }
         } catch (error: any) {
             messagesApi.popupError(`Alignment failed: ${error.message}`);
