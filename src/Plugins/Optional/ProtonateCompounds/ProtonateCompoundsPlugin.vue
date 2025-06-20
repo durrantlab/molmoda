@@ -174,27 +174,17 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         let treeNodes = (await Promise.all(
             treeNodePromises
         )) as (void | TreeNode)[];
-
-        const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
-
-        treeNodes = treeNodes.map((n, i) => {
+ treeNodes = treeNodes.map((n) => {
             if (n === undefined) {
                 return undefined;
             }
-
             if (n.nodes) {
                 // Should have only one terminal
                 n = n.nodes.terminals.get(0);
             }
-
-            n.visible = i < initialCompoundsVisible;
-            n.selected = SelectedType.False;
-            n.focused = false;
-            n.viewerDirty = true;
             n.type = TreeNodeType.Compound;
-
-            const compound = compounds[i];
-            if (compound.treeNode !== undefined) {
+   const compound = compounds.find((c) => c.auxData === n?.title);
+   if (compound && compound.treeNode !== undefined) {
                 n.title = compound.treeNode.title;
             }
             return n;

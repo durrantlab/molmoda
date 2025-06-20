@@ -405,19 +405,13 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
     let treeNodes = (await Promise.all(
       treeNodePromises
     )) as (void | TreeNode)[];
-    const initialCompoundsVisible = await getSetting("initialCompoundsVisible");
-
     // Filter and process nodes
     treeNodes = treeNodes
       .filter((n): n is TreeNode => n !== undefined)
-      .map((n, i) => {
+      .map((n) => {
         if (n.nodes) {
           n = n.nodes.terminals.get(0);
         }
-        n.visible = i < initialCompoundsVisible;
-        n.selected = SelectedType.False;
-        n.focused = false;
-        n.viewerDirty = true;
         n.type = TreeNodeType.Compound;
         return n;
       });

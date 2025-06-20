@@ -114,7 +114,6 @@ export default class CloneMolPlugin extends PluginParentClass {
             .then((treeNodeList: TreeNodeList) => {
                 const node = treeNodeList.get(0);
                 node.title = this.getUserArg("newName");
-                node.visible = true;
                 treeNodeList.addToMainTree(this.pluginId);
                 // this.$store.commit("pushToMolecules", node);
                 return;

@@ -168,14 +168,12 @@ export default class PastePlugin extends PluginParentClass {
             tag: this.pluginId,
             desalt: this.getUserArg("desalt"),
             defaultTitle: this.getUserArg("pastedMolName"),
-            gen3D: gen3DParams
+   gen3D: gen3DParams,
         });
 
         if (node === undefined) {
             return;
         }
-
-        node.visible = true;
         node.title = this.getUserArg("pastedMolName");
 
         node.addToMainTree(this.pluginId);

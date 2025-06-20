@@ -36,7 +36,12 @@ export async function parseUsingMolModa(
                 pushToStoreList(key, stateFromJson[key]);
                 break;
             case "molecules":
-    (stateFromJson[key] as TreeNodeList).addToMainTree(null, false);
+                (stateFromJson[key] as TreeNodeList).addToMainTree(
+                    null,
+                    false,
+                    true,
+                    false
+                );
                 break;
             case "goldenLayout":
                 setStoreVar("goldenLayout", stateFromJson[key]);

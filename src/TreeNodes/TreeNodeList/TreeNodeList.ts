@@ -396,14 +396,7 @@ export class TreeNodeList {
             // TODO: Show error message?
             return;
         }
-
-        const initialCompoundsVisible = await getSetting(
-            "initialCompoundsVisible"
-        );
-
-        // Expand some of the nodes so the user can see what was loaded.
-        treeNodeList._nodes[0].visible = true;
-
+        treeNodeList.addToMainTree(params.tag);
         // Get all the terminal nodes.
         const terminalNodes = treeNodeList.terminals;
 
@@ -416,11 +409,14 @@ export class TreeNodeList {
                 const { basename } = getFileNameParts(fileName);
                 node.title = basename + ":" + (i + 1).toString();
             }
-            node.visible = i < initialCompoundsVisible;
+            // node.visible = i < initialCompoundsVisible;
             // node.treeExpanded = false;
         }
 
         // If there are more than MAX_VISIBLE nodes, let user know some not visible.
+        const initialCompoundsVisible = await getSetting(
+            "initialCompoundsVisible"
+        );
         if (terminalNodes.length > initialCompoundsVisible) {
             // Expand trees to make the user aware of hidden molecules.
             // NOTE: I decided against the below for consistency. Leave
@@ -540,12 +536,34 @@ export class TreeNodeList {
      *
      * @param {string | null} tag  The tag to add to the main tree.
      * @param {boolean} [reassignIds=true] Whether to reassign IDs to the new
-     *             nodes to avoid collisions. Set to false
-     *             when loading a saved session.
+     *    nodes to avoid collisions. Set to false
+     *    when loading a saved session.
+     * @param {boolean} [terminalNodeTitleRevisable=true] Whether the title of
+     *             the terminal node
+     *             should be revisable.
+     *             Revised if there is
+     *             only one terminal
+     *             node. If you're adding
+     *             nodes incrementally,
+     *             good to set to false.
+     * @param {boolean} [resetVisibilityAndSelection=true] Whether to make the molecule
+     *            visible and unselected. Set to false
+     *            when loading a saved session where these
+     *            properties should be preserved.
      */
-    public addToMainTree(tag: string | null, reassignIds = true) {
+    public addToMainTree(
+        tag: string | null,
+        reassignIds = true,
+        terminalNodeTitleRevisable = true,
+        resetVisibilityAndSelection = true
+    ) {
         for (const node of this._nodes) {
-            node.addToMainTree(tag, reassignIds);
+            node.addToMainTree(
+                tag,
+                reassignIds,
+                terminalNodeTitleRevisable,
+                resetVisibilityAndSelection
+            );
         }
     }
 

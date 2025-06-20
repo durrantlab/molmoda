@@ -302,7 +302,10 @@ export default class ProteinSequenceViewer extends Vue {
                     const newWidth = entries[0].contentRect.width;
                     if (this.currentRootContainerWidthPx !== newWidth) {
                         this.currentRootContainerWidthPx = newWidth;
+      // Defer the re-render to the next animation frame to avoid the loop error.
+      window.requestAnimationFrame(() => {
                         this.calculateLines();
+      });
                     }
                 }
             });

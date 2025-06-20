@@ -26,7 +26,7 @@ import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ea
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
-
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
     // Properties common to both non-terminal and terminal nodes.
@@ -746,27 +746,32 @@ export class TreeNode {
     /**
      * A helper function. Adds this node to the molecules in the vuex store.
      *
-     * @param {string | null} tag                         The tag to add to this
-     *                                                    node.
-     * @param {boolean} [reassignIds=true]                Whether to reassign
-     *                                                    IDs to the new nodes
-     *                                                    to avoid collisions.
-     *                                                    Set to false when
-     *                                                    loading a saved
-     *                                                    session.
+     * @param {string | null} tag       The tag to add to this
+     *             node.
+     * @param {boolean} [reassignIds=true]    Whether to reassign
+     *             IDs to the new nodes
+     *             to avoid collisions.
+     *             Set to false when
+     *             loading a saved
+     *             session.
      * @param {boolean} [terminalNodeTitleRevisable=true] Whether the title of
-     *                                                    the terminal node
-     *                                                    should be revisable.
-     *                                                    Revised if there is
-     *                                                    only one terminal
-     *                                                    node. If you're adding
-     *                                                    nodes incrementally,
-     *                                                    good to set to false.
+     *             the terminal node
+     *             should be revisable.
+     *             Revised if there is
+     *             only one terminal
+     *             node. If you're adding
+     *             nodes incrementally,
+     *             good to set to false.
+     * @param {boolean} [resetVisibilityAndSelection=true] Whether to make the molecule
+     *            visible and unselected. Set to false
+     *            when loading a saved session where these
+     *            properties should be preserved.
      */
     public async addToMainTree(
         tag: string | null,
         reassignIds = true,
-        terminalNodeTitleRevisable = true
+        terminalNodeTitleRevisable = true,
+        resetVisibilityAndSelection = true
     ) {
         if (reassignIds) {
             this.reassignAllIds();
@@ -775,32 +780,48 @@ export class TreeNode {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
         }
-
-        // Update this nodes tag
+        // Get all nodes in the subtree to set selection and tags.
+        const allNodesInSubtree = new TreeNodeList([this]).flattened;
+        // Add tag if provided.
         if (tag) {
-            if (this.tags === undefined) {
-                this.tags = [];
-            }
-            this.tags.push(tag);
-
-            // Update the tags of any children.
-            if (this.nodes) {
-                this.nodes.flattened.forEach((t) => {
-                    if (t.tags === undefined) {
-                        t.tags = [];
-                    }
-                    t.tags.push(tag);
-                });
-            }
-        }
-
-        // Make sure none are selected (because just added).
-        if (this.nodes) {
-            this.nodes.flattened.forEach((t) => {
-                t.selected = SelectedType.False;
+            allNodesInSubtree.forEach((node) => {
+                if (node.tags === undefined) {
+                    node.tags = [];
+                }
+                // Avoid adding duplicate tags.
+                if (!node.tags.includes(tag)) {
+                    node.tags.push(tag);
+                }
             });
         }
-
+        if (resetVisibilityAndSelection) {
+            // Set visibility to true for this node and all its non-terminal children.
+            allNodesInSubtree.forEach((node) => {
+                if (node.nodes) {
+                    // It's a container node
+                    node.visible = true;
+                }
+            });
+            this.visible = true;
+            // For terminal nodes, make only the first few visible.
+            const terminalNodes = this.nodes
+                ? this.nodes.terminals
+                : new TreeNodeList([]);
+            if (this.model) {
+                // This node is a terminal node itself.
+                terminalNodes.push(this);
+            }
+            const initialCompoundsVisible = await getSetting(
+                "initialCompoundsVisible"
+            );
+            terminalNodes.forEach((node, i) => {
+                node.visible = i < initialCompoundsVisible;
+            });
+            // Ensure nodes are not selected when added.
+            allNodesInSubtree.forEach((node) => {
+                node.selected = SelectedType.False;
+            });
+        }
         // If this node has only one terminal node, and that terminal, prepend
         // the top-level title to the title of the terminal node.
         if (

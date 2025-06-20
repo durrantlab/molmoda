@@ -264,7 +264,6 @@ export default class AddRegionPlugin extends PluginParentClass {
             };
         }
         treeNode.region = region;
-        treeNode.visible = true;
         treeNode.addToMainTree(this.pluginId);
 
         return Promise.resolve();
