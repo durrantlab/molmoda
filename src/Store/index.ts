@@ -12,6 +12,7 @@ import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
 import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
+import { incrementTreeVersion } from "@/TreeNodes/TreeCache";
 
 const _commonMutations = {
     /**
@@ -179,6 +180,7 @@ export function setupVueXStore(): Store<any> {
         },
         // Run this callback
         (molecules: any) => {
+            incrementTreeVersion(); // This invalidates all caches.
             allHooks.onMoleculesChanged.forEach((func) => {
                 func(molecules);
             });

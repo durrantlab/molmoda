@@ -1,6 +1,6 @@
 import type { TreeNode } from "../TreeNode/TreeNode";
 import type { TreeNodeList } from "./TreeNodeList";
-
+import { getFlattenedFromCache, setFlattenedInCache } from "../TreeCache";
 /**
  * TreeNodeListNodeActions class
  */
@@ -91,6 +91,10 @@ export class TreeNodeListNodeActions {
      * @returns {TreeNodeList}  The flat array of all nodes.
      */
     public get flattened(): TreeNodeList {
+        const cached = getFlattenedFromCache(this.parentTreeNodeList);
+        if (cached) {
+            return cached;
+        }
         /**
          * A recursive function to find the terminal leaves of mols.
          *
@@ -109,7 +113,9 @@ export class TreeNodeListNodeActions {
             });
             return allNodes;
         };
-        return findNodes(this.parentTreeNodeList);
+        const result = findNodes(this.parentTreeNodeList);
+        setFlattenedInCache(this.parentTreeNodeList, result);
+        return result;
     }
 
     /**

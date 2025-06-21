@@ -1,8 +1,11 @@
 // Only called from TreeNodeList.
-
 import { TreeNodeType, SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import type { TreeNode } from "../TreeNode/TreeNode";
 import type { TreeNodeList } from "./TreeNodeList";
+import {
+ getTerminalsFromCache,
+ setTerminalsInCache,
+} from "../TreeCache";
 
 // Naming convention:
 // If you can pass something to invert the filter, start with "keep" or "remove".
@@ -23,7 +26,7 @@ export class TreeNodeListFilters {
 
     /**
      * Creates an instance of TreeNodeListFilters.
-     * 
+     *
      * @param  {TreeNodeList} parentTreeNodeList  The parent TreeNodeList.
      */
     constructor(parentTreeNodeList: TreeNodeList) {
@@ -77,7 +80,10 @@ export class TreeNodeListFilters {
      * @returns {TreeNodeList}  The list of nodes that have (or do not have)
      *    regions.
      */
-    public keepRegions(keepRegion = true, deepAndFlatten = false): TreeNodeList {
+    public keepRegions(
+        keepRegion = true,
+        deepAndFlatten = false
+    ): TreeNodeList {
         const treeNodeList = this.getFlattenedIfAppropriate(deepAndFlatten);
 
         // mol_filter_ok
@@ -244,7 +250,7 @@ export class TreeNodeListFilters {
             return this.cache.get(i) as TreeNode;
         }
 
-        const {_nodes} = mls;
+        const { _nodes } = mls;
 
         // Calculate only once for speed. Not using length property for
         // speed.
@@ -253,7 +259,6 @@ export class TreeNodeListFilters {
         // Use while loop because might be faster.
         let idx = 0;
         while (idx < mlsLength) {
-            
             // Generally good to use .get() instead of [], but this function
             // is a bottle neck, so access array directly.
             const mol = _nodes[idx];
@@ -291,7 +296,7 @@ export class TreeNodeListFilters {
     /**
      * Get the nodes with the given ids. If a node has sub-nodes, keep those with
      * matching ids too.
-     * 
+     *
      * @param  {string[]} ids  The ids of the nodes to keep.
      * @returns {TreeNodeList}  The list of nodes with the given ids.
      */
@@ -320,6 +325,10 @@ export class TreeNodeListFilters {
      * @returns {TreeNodeList}  The array of terminal nodes.
      */
     public get onlyTerminal(): TreeNodeList {
+  const cached = getTerminalsFromCache(this.parentTreeNodeList);
+  if (cached) {
+   return cached;
+        }
         /**
          * A recursive function to find the terminal leaves of mols.
          *
@@ -339,7 +348,9 @@ export class TreeNodeListFilters {
             });
             return leaves;
         };
-        return findLeaves(this.parentTreeNodeList);
+        const result = findLeaves(this.parentTreeNodeList);
+  setTerminalsInCache(this.parentTreeNodeList, result);
+        return result;
     }
 
     /**
@@ -358,7 +369,7 @@ export class TreeNodeListFilters {
         }
 
         const hits = this.parentTreeNodeList.newTreeNodeList();
-        const {newTreeNodeList} = this.parentTreeNodeList;
+        const { newTreeNodeList } = this.parentTreeNodeList;
         const recurse = (
             searchCrit: EasyCriterion[],
             treeNodeList: TreeNodeList
