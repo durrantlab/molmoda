@@ -36,14 +36,12 @@ const _commonMutations = {
      * @param {NameValPair} payload  The name and value to push to the list.
      */
     pushToList(state: any, payload: NameValPair) {
-        // If payload.val is an instance of TreeNodeList, then we need to
-        // use pushToMolecules instead.
-        if (payload.val.nodes) {
-            // It's TreeNodeList
+  // If the list is molecules, use the dedicated mutation which handles reactivity.
+  if (payload.name === "molecules") {
             (this as any).commit("pushToMolecules", payload.val);
             return;
         }
-
+  // Generic list push for other state arrays like 'log'.
         if (Array.isArray(payload.val)) {
             state[payload.name].push(...payload.val);
         } else {

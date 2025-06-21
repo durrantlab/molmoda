@@ -2,7 +2,10 @@ import { randomID } from "@/Core/Utils/MiscUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import {
+    getMoleculesFromStore,
+    pushToStoreList,
+} from "@/Store/StoreExternalAccess";
 import type { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import {
     TreeNodeType,
@@ -833,9 +836,7 @@ export class TreeNode {
                 this.nodes.terminals.get(0).title
             }`;
         }
-
-        getMoleculesFromStore().push(this);
-
+        pushToStoreList("molecules", this);
         // If you add new molecules to the tree, focus on everything.
         const viewer = await api.visualization.viewer;
 

@@ -2,6 +2,8 @@ import type { TreeNodeList } from "./TreeNodeList/TreeNodeList";
 
 let version = 0;
 
+const DO_CACHE = true;
+
 // Create WeakMaps to store caches. The key will be the TreeNodeList instance.
 const flattenedCache = new WeakMap<
     TreeNodeList,
@@ -38,6 +40,10 @@ export function getTreeVersion(): number {
 export function getFlattenedFromCache(
  list: TreeNodeList
 ): TreeNodeList | null {
+    if (!DO_CACHE) {
+        return null; // Caching is disabled
+    }
+
     const cacheEntry = flattenedCache.get(list);
     if (cacheEntry && cacheEntry.version === version) {
         return cacheEntry.list;
@@ -67,6 +73,10 @@ export function setFlattenedInCache(
 export function getTerminalsFromCache(
  list: TreeNodeList
 ): TreeNodeList | null {
+    if (!DO_CACHE) {
+        return null; // Caching is disabled
+    }
+
     const cacheEntry = terminalsCache.get(list);
     if (cacheEntry && cacheEntry.version === version) {
         return cacheEntry.list;
