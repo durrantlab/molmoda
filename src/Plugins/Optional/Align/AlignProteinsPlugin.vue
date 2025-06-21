@@ -21,7 +21,7 @@ import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
+import { checkMultipleTopLevelProteinsLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -30,7 +30,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { SelectedType, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FailingTest } from "@/Testing/FailingTest";
@@ -47,7 +47,7 @@ import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 export default class AlignProteinsPlugin extends PluginParentClass {
     menuPath = "Proteins/[8] Align...";
     title = "Align Proteins";
-    softwareCredits: ISoftwareCredit[] = [dynamicImports.usalign.credit];
+    softwareCredits: ISoftwareCredit[] = [dynamicImports.usalign.credit]
     contributorCredits: IContributorCredit[] = [];
     pluginId = "alignproteins";
     intro =
@@ -85,15 +85,9 @@ export default class AlignProteinsPlugin extends PluginParentClass {
      * @returns {string | null} An error message if not allowed, otherwise null.
      */
     checkPluginAllowed(): string | null {
-        const proteinCheck = checkProteinLoaded();
-        if (proteinCheck) {
-            return proteinCheck;
-        }
-        if (getMoleculesFromStore().filters.keepType(TreeNodeType.Protein, true).length < 2) {
-            return "At least two proteins are required for alignment.";
-        }
-        return null;
+        return checkMultipleTopLevelProteinsLoaded();
     }
+
     /**
      * Handles changes to user arguments to update button state.
      */
@@ -268,21 +262,17 @@ export default class AlignProteinsPlugin extends PluginParentClass {
      * @returns {ITest[]} The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        return [FailingTest];
-        // [
-        //     {
-        //         beforePluginOpens: new TestCmdList()
-        //             .loadExampleMolecule(true, "testmols/1XDN.pdb")
-        //             .waitUntilRegex("#navigator", "1XDN")
-        //             .loadExampleMolecule(true, "testmols/2HU4.pdb")
-        //             .waitUntilRegex("#navigator", "2HU4"),
-        //         pluginOpen: new TestCmdList().wait(2), // wait for UI to settle
-        //         afterPluginCloses: new TestCmdList().waitUntilRegex(
-        //             "#navigator",
-        //             "Aligned to 1XDN"
-        //         ),
-        //     },
-        // ];
+        return [
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(true, "https://files.rcsb.org/view/1XDN.pdb")
+                    .loadExampleMolecule(true, "https://files.rcsb.org/view/1S68.pdb"),
+                pluginOpen: new TestCmdList().wait(2), // wait for UI to settle
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", "1XDN-aligned")
+                    .waitUntilRegex("#navigator", "1S68-aligned"),
+            },
+        ];
     }
 }
 </script>

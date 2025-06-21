@@ -18,6 +18,7 @@ import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
 import { addToast, clearAllToasts } from "@/UI/MessageAlerts/Toasts/ToastManager";
 import { toSentenceCase, toTitleCase } from "@/Core/Utils/StringUtils";
+import { appName } from "@/Core/GlobalVars";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
@@ -85,7 +86,7 @@ export const messagesApi = {
      *                                closed.
      */
     popupError: function (message: string, callBack?: any) {
-        this.popupMessage("Error", message, PopupVariant.Danger, callBack);
+        this.popupMessage(appName + " Error", message, PopupVariant.Danger, callBack);
     },
 
     /**

@@ -313,113 +313,105 @@ def run_test(plugin_id_tuple):
         drivers[key] = make_driver(browser)
 
     driver = drivers[key]
-
-    plugin_name, plugin_idx = plugin_id_tuple
-
-    # MODIFICATION START: Added more informative logging at the start of the test.
-    test_lbl = f"{plugin_name}{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
-    print(f"Starting test: {test_lbl}...")
-    # MODIFICATION END
-
-    url = f"{root_url}/?test={plugin_name}"
-    if plugin_idx is not None:
-        url += f"&index={str(plugin_idx)}"
-
-    driver.get(url)
-
-    cmds_str = None
-    cmds = None
-    for _ in range(4):
-        cmds_str = el("#test-cmds", driver).text
-        try:
-            cmds = json.loads(cmds_str)
-            break
-        except Exception as JSONDecodeError:
-            time.sleep(0.25)
-
-    # MODIFICATION START: Replaced sys.exit(1) with an exception.
-    # This allows the test runner to catch the failure, report it, and
-    # continue with other tests instead of halting the entire suite.
-    if cmds is None:
-        raise Exception("No commands found. Are you sure you specified an actual plugin id?")
-    # MODIFICATION END
-
-    if cmds_str is None:
-        print(f"Failed to parse JSON: {cmds_str}")
-        return {
-            "status": "failed",
-            "test": test_lbl,
-            "error": f"Failed to parse JSON: {cmds_str}",
-        }
-
-    if os.path.exists(f"./screenshots/{test_lbl}"):
-        shutil.rmtree(f"./screenshots/{test_lbl}")
-    if not os.path.exists("./screenshots"):
-        os.makedirs("./screenshots")
-    if not os.path.exists(f"./screenshots/{test_lbl}"):
-        os.makedirs(f"./screenshots/{test_lbl}")
-
-    # print(f"Starting {test_lbl}...")
+    
     try:
-        # print(json.dumps(cmds, indent=4))
-        for cmd_idx, cmd in enumerate(cmds):
-            # print(cmd)
-            # resp += f"   {json.dumps(cmd)}\n"
+        plugin_name, plugin_idx = plugin_id_tuple
+        # MODIFICATION START: Added more informative logging at the start of the test.
+        test_lbl = f"{plugin_name}{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
+        print(f"Starting test: {test_lbl}...")
+        # MODIFICATION END
+        url = f"{root_url}/?test={plugin_name}"
+        if plugin_idx is not None:
+            url += f"&index={str(plugin_idx)}"
+        driver.get(url)
+        cmds_str = None
+        cmds = None
+        for _ in range(4):
+            cmds_str = el("#test-cmds", driver).text
+            try:
+                cmds = json.loads(cmds_str)
+                break
+            except Exception as JSONDecodeError:
+                time.sleep(0.25)
+        # MODIFICATION START: Replaced sys.exit(1) with an exception.
+        # This allows the test runner to catch the failure, report it, and
+        # continue with other tests instead of halting the entire suite.
+        if cmds is None:
+            raise Exception("No commands found. Are you sure you specified an actual plugin id?")
+        # MODIFICATION END
+        if cmds_str is None:
+            print(f"Failed to parse JSON: {cmds_str}")
+            return {
+                "status": "failed",
+                "test": test_lbl,
+                "error": f"Failed to parse JSON: {cmds_str}",
+            }
+        
+        screenshot_dir = f"./screenshots/{test_lbl}"
+        if os.path.exists(screenshot_dir):
+            shutil.rmtree(screenshot_dir)
+        if not os.path.exists("./screenshots"):
+            os.makedirs("./screenshots")
+        if not os.path.exists(screenshot_dir):
+            os.makedirs(screenshot_dir)
 
-            if cmd["cmd"] == "click":
-                el(cmd["selector"], driver).click(
-                    cmd["data"] if "data" in cmd else False
-                )
-            elif cmd["cmd"] == "text":
-                el(cmd["selector"], driver).text = cmd["data"]
-            elif cmd["cmd"] == "wait":
-                time.sleep(cmd["data"])
-            elif cmd["cmd"] == "waitUntilRegex":
-                el(cmd["selector"], driver).wait_until_contains_regex(cmd["data"])
-            elif cmd["cmd"] == "waitUntilNotRegex":
-                el(cmd["selector"], driver).wait_until_does_not_contain_regex(
-                    cmd["data"]
-                )
-            elif cmd["cmd"] == "upload":
-                el(cmd["selector"], driver).upload_file(cmd["data"])
-            elif cmd["cmd"] == "addTests":
-                return [(plugin_name, i) for i in range(cmd["data"])]
-            elif cmd["cmd"] == "checkBox":
-                el(cmd["selector"], driver).checkBox(cmd["data"])
-
-            screenshot_path = f"./screenshots/{test_lbl}/{test_lbl}_{cmd_idx}.png"            
-            driver.save_screenshot(screenshot_path)
-
-            js_errs = do_logs_have_errors(driver, browser)
-            if js_errs != False:
-                raise Exception(f"JavaScript error: {js_errs}")
-
-        # resp = f"Passed: {test_lbl}"
-        resp = {
-            "status": "passed",
-            "test": test_lbl,
-            "error": "",
-        }
-    except Exception as e:
-        # Do a trace
-
-        # Get the stack trace
-        # stack_trace = traceback.format_exc()
-        # print(stack_trace)
-        # resp = f"Failed: {test_lbl} {e}"
-        resp = {
-            "status": "failed",
-            "test": test_lbl,
-            "error": str(e),
-        }
-
-    js_errs = do_logs_have_errors(driver, browser)
-    if js_errs != False:
-        raise Exception(f"JavaScript error: {js_errs}")
-
-    # driver.quit()
-    return resp
-
+        # print(f"Starting {test_lbl}...")
+        try:
+            # print(json.dumps(cmds, indent=4))
+            for cmd_idx, cmd in enumerate(cmds):
+                # print(cmd)
+                # resp += f"   {json.dumps(cmd)}\n"
+                if cmd["cmd"] == "click":
+                    el(cmd["selector"], driver).click(
+                        cmd["data"] if "data" in cmd else False
+                    )
+                elif cmd["cmd"] == "text":
+                    el(cmd["selector"], driver).text = cmd["data"]
+                elif cmd["cmd"] == "wait":
+                    time.sleep(cmd["data"])
+                elif cmd["cmd"] == "waitUntilRegex":
+                    el(cmd["selector"], driver).wait_until_contains_regex(cmd["data"])
+                elif cmd["cmd"] == "waitUntilNotRegex":
+                    el(cmd["selector"], driver).wait_until_does_not_contain_regex(
+                        cmd["data"]
+                    )
+                elif cmd["cmd"] == "upload":
+                    el(cmd["selector"], driver).upload_file(cmd["data"])
+                elif cmd["cmd"] == "addTests":
+                    return [(plugin_name, i) for i in range(cmd["data"])]
+                elif cmd["cmd"] == "checkBox":
+                    el(cmd["selector"], driver).checkBox(cmd["data"])
+                screenshot_path = f"{screenshot_dir}/{test_lbl}_{cmd_idx}.png"
+                driver.save_screenshot(screenshot_path)
+                js_errs = do_logs_have_errors(driver, browser)
+                if js_errs != False:
+                    raise Exception(f"JavaScript error: {js_errs}")
+            # resp = f"Passed: {test_lbl}"
+            resp = {
+                "status": "passed",
+                "test": test_lbl,
+                "error": "",
+            }
+        except Exception as e:
+            # Do a trace
+            # Get the stack trace
+            # stack_trace = traceback.format_exc()
+            # print(stack_trace)
+            # resp = f"Failed: {test_lbl} {e}"
+            resp = {
+                "status": "failed",
+                "test": test_lbl,
+                "error": str(e),
+            }
+        js_errs = do_logs_have_errors(driver, browser)
+        if js_errs != False:
+            raise Exception(f"JavaScript error: {js_errs}")
+        # driver.quit()
+        return resp
+    finally:
+        # Clear browser storage to ensure a clean state for the next test
+        with contextlib.suppress(Exception):
+            driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
 
 # If first argument given, use that as plugin_id
 if len(sys.argv) > 1:

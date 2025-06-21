@@ -217,7 +217,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
     // Check if too few compounds requested.
     if (numCompounds > maxResults) {
       messagesApi.popupMessage(
-        "Warning",
+        "Some Query Compounds Not Used",
         `<p>You requested only ${maxResults} PubChem compound${maxResults === 1 ? "" : "s"
         } but chose ${numCompounds} query compound${maxResults === 1 ? "" : "s"
         } from your workspace. Some query compounds will not be used in the search.</p>`,
@@ -340,7 +340,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
 
     if (duplicatesNotAdded > 0) {
       messagesApi.popupMessage(
-        "Warning",
+        "Duplicate Compounds Detected",
         `<p>PubChem provided ${duplicatesNotAdded} duplicate compound${duplicatesNotAdded === 1 ? "" : "s"
         }. The duplicates will not be loaded.</p>`,
         PopupVariant.Warning
@@ -349,7 +349,7 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
 
     if (insufficientResultsReturned > 0) {
       messagesApi.popupMessage(
-        "Warning",
+        "Fewer Compounds Provided",
         `<p>PubChem provided ${insufficientResultsReturned} fewer compound${insufficientResultsReturned === 1 ? "" : "s"
         } than requested.</p>`,
         PopupVariant.Warning

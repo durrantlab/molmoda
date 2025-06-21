@@ -455,7 +455,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
 
     if (Object.keys(colorSchemeObject).length === 0 && !this.noPopup) { // Only show UI message if not programmatic
       messagesApi.popupMessage(
-        "Info",
+        "Color Scheme not Found",
         `No specific color scheme was defined for ${this.currentSelectionRepType}. Default coloring will be applied by the viewer for this representation.`,
         PopupVariant.Info,
         undefined,
@@ -492,7 +492,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
 
     if (success && !this.noPopup) {
       // const actionVerb = (this.editMode) || (overwriteForStyleManagerCall) ? 'updated' : 'added';
-      // messagesApi.popupMessage("Success", `Visualization "${styleName}" ${actionVerb}.`, PopupVariant.Success);
+      // messagesApi.popupMessage("Visualization Updated", `Visualization "${styleName}" ${actionVerb}.`, PopupVariant.Success);
       this.closePopup();
     }
     // StyleManager.addCustomStyle itself handles the "name collision and

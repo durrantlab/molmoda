@@ -1,8 +1,11 @@
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { selectInstructionsLong } from "@/UI/Navigation/TitleBar/MolSelecting";
-import { SelectedType, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import {
+    SelectedType,
+    TreeNodeType,
+} from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-
+import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 /**
  * Checks whether the user has selected any molecule.
  *
@@ -41,7 +44,9 @@ export function checkAnyCompoundSelected(
         treeNodeList = getMoleculesFromStore();
     }
 
-    const compounds = treeNodeList.flattened.filters.keepType(TreeNodeType.Compound);
+    const compounds = treeNodeList.flattened.filters.keepType(
+        TreeNodeType.Compound
+    );
     const selectedCompounds = compounds.filters.keepSelected(true);
 
     if (selectedCompounds.length === 0) {
@@ -143,7 +148,10 @@ export function checkAnyMolLoaded(treeNodeList?: TreeNodeList): string | null {
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *    null otherwise.
  */
-function _checkTypeLoaded(type: TreeNodeType, treeNodeList?: TreeNodeList): string | null {
+function _checkTypeLoaded(
+    type: TreeNodeType,
+    treeNodeList?: TreeNodeList
+): string | null {
     if (treeNodeList === undefined) {
         treeNodeList = getMoleculesFromStore();
     }
@@ -170,7 +178,6 @@ export function checkProteinLoaded(treeNodeList?: TreeNodeList): string | null {
     return _checkTypeLoaded(TreeNodeType.Protein, treeNodeList);
 }
 
-
 /**
  * Checks whether the user has loaded any compound.
  *
@@ -180,6 +187,41 @@ export function checkProteinLoaded(treeNodeList?: TreeNodeList): string | null {
  * @returns {string | null}  An error if the user hasn't selected any molecules,
  *     null otherwise.
  */
-export function checkCompoundLoaded(treeNodeList?: TreeNodeList): string | null {
+export function checkCompoundLoaded(
+    treeNodeList?: TreeNodeList
+): string | null {
     return _checkTypeLoaded(TreeNodeType.Compound, treeNodeList);
+}
+
+/**
+ * Checks if at least two top-level molecules containing proteins are loaded.
+ * A top-level molecule is considered to contain a protein if it or any of its
+ * descendants has the type `TreeNodeType.Protein`.
+ *
+ * @param {TreeNodeList} [treeNodeList] The list of molecules to consider.
+ *          Defaults to all molecules from the store.
+ * @returns {string | null} An error message if the condition is not met, otherwise null.
+ */
+export function checkMultipleTopLevelProteinsLoaded(
+    treeNodeList?: TreeNodeList
+): string | null {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
+    }
+    let proteinContainerCount = 0;
+    // `treeNodeList` at the root is a list of top-level molecules.
+    treeNodeList.forEach((topLevelNode: TreeNode) => {
+        // For each top-level node, check if it or any of its descendants is a protein.
+        const flattenedDescendants = new TreeNodeList([topLevelNode]).flattened;
+        const hasProtein = flattenedDescendants.some(
+            (node) => node.type === TreeNodeType.Protein
+        );
+        if (hasProtein) {
+            proteinContainerCount++;
+        }
+    });
+    if (proteinContainerCount < 2) {
+        return "At least two molecules with protein components are required for alignment.";
+    }
+    return null;
 }

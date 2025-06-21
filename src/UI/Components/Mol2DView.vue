@@ -365,7 +365,7 @@ export default class Mol2DView extends Vue {
     //                 // @ts-ignore - ClipboardItem is standard but TS might complain without full DOM lib
     //                 const clipboardItem = new window.ClipboardItem({ 'image/png': blob });
     //                 await navigator.clipboard.write([clipboardItem]);
-    //                 messagesApi.popupMessage("Success", "Image copied to clipboard!", PopupVariant.Success);
+    //                 messagesApi.popupMessage("Image Copied", "Image copied to clipboard!", PopupVariant.Success);
     //             } catch (error: any) {
     //                 console.error("Failed to copy image to clipboard:", error);
     //                 messagesApi.popupError(`Failed to copy image: ${error.message}`);

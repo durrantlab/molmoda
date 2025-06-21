@@ -250,6 +250,22 @@ for ts_file in ts_files:
             'The substring ".get_svg" is only allowed in Mol2DView.vue.'
         )
 
+    # Find all `.popupMessage` calls and check if the title is descriptive enough.
+    # The regex finds `.popupMessage(`, optional whitespace, then captures the content
+    # of the first string argument (single, double, or backtick quoted).
+    popup_title_pattern = r'\.popupMessage\(\s*(["\'`])(.*?)\1'
+    for match in re.finditer(popup_title_pattern, content, re.DOTALL):
+        # group(2) captures the content inside the quotes
+        title = match.group(2)
+        
+        # Count words by splitting on whitespace.
+        # A title like "Error" (1 word) or "Access Denied" (2 words) is too short.
+        if len(title.strip().split()) < 2:
+            add_error(
+                ts_file,
+                f'Popup titles must be more than two words long for clarity. Found: "{title}"'
+            )
+
 
     # Try to avoid filtering molecules directly. Use the shallowFilters
     # subclass.

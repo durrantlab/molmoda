@@ -181,7 +181,7 @@ function considerThreeDNeededWarning(
             // Warn user
 
             messagesApi.popupMessage(
-                "Warning",
+                "Converting Compounds to 3D",
                 "<p>One or more input molecules does not include 3D coordinates. Currently calculating coordinates, which could take a while. Molecule(s) will appear in the Viewer when ready.</p><p>Tip: You can select the method for generating coordinates via <i>File → Open...</i> to speed up the calculation or improve the quality of the generated structures.</p>",
                 PopupVariant.Warning,
                 undefined,

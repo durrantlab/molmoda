@@ -439,7 +439,7 @@ export class TreeNodeList {
             );
         }
 
-        this.extend(treeNodeList);
+        // this.extend(treeNodeList);
         return treeNodeList;
     }
 
