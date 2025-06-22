@@ -78,6 +78,7 @@ export interface IContributorCredit {
 
 export interface ISoftwareCredit extends IContributorCredit {
     license: ILicense;
+    licenseUrl?: string;
 }
 
 export interface IInfoPayload {

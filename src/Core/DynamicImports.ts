@@ -310,6 +310,7 @@ export const dynamicImports = {
             name: "Reduce",
             url: "https://github.com/rlabduke/reduce",
             license: Licenses.CUSTOM,
+            licenseUrl: "https://github.com/rlabduke/reduce/blob/master/LICENSE.txt",
             citations: [
                 {
                     title: "Asparagine and glutamine: using hydrogen atom contacts in the choice of side-chain amide orientation",
@@ -337,17 +338,27 @@ export const dynamicImports = {
     usalign: {
         credit: {
             name: "US-align",
-            url: "https://zhanggroup.org/US-align/",
+            url: "https://github.com/pylelab/USalign",
             license: Licenses.CUSTOM,
+            licenseUrl: "https://github.com/pylelab/USalign/blob/master/LICENSE",
             citations: [
                 {
-                    title: "US-align: universal structure alignment of proteins and nucleic acids",
-                    authors: ["Zhang, Chengxin", "Zhang, Yang"],
-                    journal: "Bioinformatics",
+                    title: "US-align: universal structure alignments of proteins, nucleic acids, and macromolecular complexes",
+                    authors: ["Zhang, Chengxin", "Shine, Morgan", "Pyle, Anna Marie", "Zhang, Yang"],
+                    journal: "Nature Methods",
                     year: 2022,
-                    volume: 38,
-                    issue: 20,
-                    pages: "4633-4640",
+                    volume: 19,
+                    issue: 9,
+                    pages: "1109-1115",
+                },
+                {
+                    title: "A unified approach to sequential and non-sequential structure alignment of proteins, RNAs, and DNAs",
+                    authors: ["Zhang, Chengxin", "Pyle, Anna Marie"],
+                    journal: "iScience",
+                    year: 2022,
+                    volume: 25,
+                    issue: 10,
+                    pages: "105218",
                 },
             ],
         },

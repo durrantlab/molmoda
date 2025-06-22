@@ -342,6 +342,11 @@ export default class ViewerPanel extends Vue {
 
       style = this._changeStyleIfSelected(treeNode, style) as ISelAndStyle;
 
+      if (style.selection === undefined) {
+        // No selection specified, so set to all atoms.
+        style.selection = {};
+      }
+
       let convertedSelAndStyle = api.visualization.viewerObj?.convertSelectionAndStyle(
         style,
         treeNode

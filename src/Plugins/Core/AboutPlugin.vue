@@ -37,7 +37,7 @@
         v-bind:key="credit.name"
       >
         <a :href="credit.url" target="_blank">{{ credit.name }}</a> (<a
-          :href="credit.license.url"
+    :href="getLicenseUrl(credit)"
           target="_blank"
           >{{ credit.license.name }} </a
         >)
@@ -122,6 +122,17 @@ export default class AboutPlugin extends PluginParentClass {
     });
   }
 
+  /**
+   * Get the license URL for a software credit. Prioritizes licenseUrl over
+   * the default license URL.
+   *
+   * @param {ISoftwareCredit} credit The software credit.
+   * @returns {string} The URL for the license.
+   */
+  getLicenseUrl(credit: ISoftwareCredit): string {
+    return credit.licenseUrl || credit.license.url;
+  }
+  
   /**
    * Get the name of the app.
    *

@@ -472,7 +472,7 @@ export class Viewer3DMol extends ViewerParent {
             return;
         }
 
-        this._mol3dObj.zoomTo({ model: models.map(m => m.id) }, 1000, true);
+        this._mol3dObj.zoomTo({ model: models.map(m => m.id) }, 750, true);
 
 
         // // Clear any existing timeout
