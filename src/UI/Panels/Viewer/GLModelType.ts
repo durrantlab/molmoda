@@ -8,4 +8,5 @@ export interface GLModel {
     setStyle: Function;
     setClickable: Function;
     setHoverable: Function;
+    id: number;
 }

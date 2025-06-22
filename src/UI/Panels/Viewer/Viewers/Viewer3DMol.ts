@@ -23,6 +23,7 @@ import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { getNamedPastelColor } from "@/Core/Styling/Colors/ColorUtils";
+import { waitForCondition } from "@/Core/Utils/MiscUtils";
 
 /**
  * Viewer3DMol
@@ -436,39 +437,60 @@ export class Viewer3DMol extends ViewerParent {
         });
     }
 
+    private _getMolsForZooming(ids: string[]): GLModel[] {
+        let models = ids.map((id) => this.lookup(id));
+        models = models.filter((model) => model !== undefined);
+
+        // Remove ones that aren't molecules. So can't focus on boxes.
+        // Appears to be a limitation of 3dmoljs.
+        models = models.filter(
+            (model) => model.selectedAtoms !== undefined
+        );
+        return models;
+    }
+
     /**
      * Zoom in on a set of models.
      *
      * @param  {string[]} ids  The models to zoom in on.
      */
-    zoomToModels(ids: string[]) {
+    async zoomToModels(ids: string[]) {
         // This zooming is quite expensive. Use a timeout to avoid doing it
         // too often.
 
-        // Clear any existing timeout
-        if (this._zoomToModelsTimeout) {
-            clearTimeout(this._zoomToModelsTimeout);
+        let models: GLModel[] = [];
+        const startTime = performance.now();
+
+        await waitForCondition(() => {
+            models = this._getMolsForZooming(ids);
+            const elapsedTime = performance.now() - startTime;
+            return models.length > 0 || elapsedTime > 5000;  // Wait for five seconds max.
+        }, 100);
+
+        // If no models found, don't zoom.
+        if (models.length === 0) {
+            return;
         }
 
-        // Set a new timeout
-        this._zoomToModelsTimeout = setTimeout(() => {
-            let models = ids.map((id) => this.lookup(id));
-            models = models.filter((model) => model !== undefined);
+        this._mol3dObj.zoomTo({ model: models.map(m => m.id) }, 1000, true);
 
-            // Remove ones that aren't molecules. So can't focus on boxes.
-            // Appears to be a limitation of 3dmoljs.
-            models = models.filter(
-                (model) => model.selectedAtoms !== undefined
-            );
 
-            if (models.length > 0) {
-                this._mol3dObj.zoomTo({ model: models }, 500, true);
-            } else {
-                // Zoom to all as backup option. Commented out because if there are
-                // regions, this causes problems.
-                // this._mol3dObj.zoomTo();
-            }
-        }, 500);
+        // // Clear any existing timeout
+        // if (this._zoomToModelsTimeout) {
+        //     clearTimeout(this._zoomToModelsTimeout);
+        // }
+
+        // // Set a new timeout
+        // this._zoomToModelsTimeout = setTimeout(() => {
+        //     debugger
+        //     this._mol3dObj.zoomTo({ model: models }, 500, true);
+        //     // if (models.length > 0) {
+        //     // } else {
+        //     //     // Zoom to all as backup option. Commented out because if there are
+        //     //     // regions, this causes problems.
+        //     //     // this._mol3dObj.zoomTo();
+        //     // }
+        // }, 500);
     }
 
     /**
