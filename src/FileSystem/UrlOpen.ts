@@ -77,6 +77,7 @@ export async function checkIfUrlOpen(): Promise<void> {
 
     // Check if the parameter value is a share code, regardless of the parameter name
     if (validateShareCode(urlValue)) {
+        // NOTE: Below must be durrantlab.pitt.edu, not molmoda.org.
         const fullUrl = `https://durrantlab.pitt.edu/tmp/${encodeURIComponent(
             urlValue
         )}.molmoda`;

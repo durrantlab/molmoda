@@ -83,7 +83,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
             formData.append("molmoda_file", zipBlob, "session.molmoda");
 
             const shareCode = await fetcher(
-                "https://durrantlab.pitt.edu/apps/molmoda/share_temp.php",
+                "https://molmoda.org/share_temp.php",
                 {
                     responseType: ResponseType.TEXT,
                     formPostData: formData,

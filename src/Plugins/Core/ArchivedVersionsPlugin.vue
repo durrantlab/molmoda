@@ -72,8 +72,8 @@ export default class ArchivedVersionsPlugin extends PluginParentClass {
      * Prepare the version data before the popup opens.
      */
     async onBeforePopupOpen() {
-        const baseArchiveUrl = "https://durrantlab.pitt.edu/molmoda/archive/";
-        const betaUrl = "https://durrantlab.pitt.edu/apps/molmoda/beta/";
+        const baseArchiveUrl = "https://molmoda.org/archive/";
+        const betaUrl = "https://beta.molmoda.org/";
 
         // Process the imported JSON data
         const processedVersions: IArchivedVersion[] = versionsData.map((v: any) => ({

@@ -61,7 +61,7 @@ import { FileInfo } from "@/FileSystem/FileInfo"; // Added import
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser"; // Added import
 
 const PROXY_URL =
-  "https://durrantlab.pitt.edu/apps/molmoda/beta/poseview-proxy.php";
+  "https://molmoda.org/poseview-proxy.php";
 
 /**
  * PoseViewPlugin

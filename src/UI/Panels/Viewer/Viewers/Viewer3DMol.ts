@@ -845,16 +845,41 @@ export class Viewer3DMol extends ViewerParent {
     /**
      * Exports the VRML for each model in the viewer.
      *
+     * @param {boolean} [simplify=false]  Whether to simplify the VRML.
      * @returns {string[][]}  The VRML for each model.
      */
-    exportVRMLPerModel(): [string, string][] {
+    exportVRMLPerModel(simplify = false): [string, string][] {
         // const vrmls: {[id: string]: string} = {};
         const vrmls: [string, string][] = [];
+
+        let simpParams = {};
+        let surfaceSimpParams = {};
+
+        if (simplify === true) {
+            // If simplify is true, we need to merge the vertices and reduce the
+            // precision of the VRML, etc.
+            simpParams = {
+                mergeVertices: 0.1,  // NOTE: 0.1 is lowest value that still looks good.
+                precision: 2,  // NOTE: at 1, starts to degrade.
+                sphereQuality: 1,  // NOTE this is good enough
+                cylinderSubdivisions: 3,  // NOTE: minimum to get a decent cylinder
+                cylinderHeightSegments: 4,  // NOTE: must be even, four is good enough
+                cartoonQuality: 5 // NOTE: Minimum to get a decent cartoon
+            }
+
+            surfaceSimpParams = {
+                mergeVertices: 0.5,  // NOTE: 0.1 is lowest value that still looks good.
+                precision: 2,  // NOTE: at 1, starts to degrade.
+            }
+        }
+
         // Get all the models
         for (const id in this.molCache) {
             const model = this.lookup(id);
             if (model) {
-                vrmls.push([id, model.exportVRML()]);
+                vrmls.push([
+                    id, model.exportVRML(simpParams)
+                ]);
             }
         }
 
@@ -864,7 +889,7 @@ export class Viewer3DMol extends ViewerParent {
             for (const surfaceId of surfaceIds) {
                 const surfaces = this._mol3dObj.getSurface(surfaceId);
                 for (const surface of surfaces) {
-                    vrmls.push([id, surface.lastGL.vrml()]);
+                    vrmls.push([id, surface.lastGL.vrml(surfaceSimpParams)]);
                 }
             }
         }

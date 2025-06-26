@@ -770,10 +770,11 @@ export abstract class ViewerParent {
 
     /**
      * Gets an object that maps the model ids to VRML.
-     *
+     * 
+     * @param {boolean} [simplify]  Whether to simplify the VRML mesh.
      * @returns {any}  A list with the model ids and VRML.
      */
-    abstract exportVRMLPerModel(): [string, string][];
+    abstract exportVRMLPerModel(simplify?: boolean): [string, string][];
 
     /**
      * A helper function that looks up a model or region in cache (in the

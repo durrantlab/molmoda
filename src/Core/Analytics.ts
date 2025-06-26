@@ -96,7 +96,7 @@ export async function logEvent(
     const formData = new FormData();
     formData.append("e", `${eventName}-${eventAction}`);
     await fetcher(
-        "https://durrantlab.pitt.edu/apps/molmoda/e.php",
+        "https://molmoda.org/e.php",
         {
             responseType: ResponseType.TEXT,
             formPostData: formData,

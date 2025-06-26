@@ -181,7 +181,9 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     let filename = parameters.filename;
     const viewer = await api.visualization.viewer;
 
-    const vrmlData = viewer.exportVRMLPerModel();
+    // TODO: This is set to simplify (true).
+    const vrmlData = viewer.exportVRMLPerModel(true);
+    debugger
     viewer.renderAll();
 
     const mols = getMoleculesFromStore();
@@ -193,6 +195,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     } else {
       newVrmlData = vrmlData;
     }
+
 
     const files: FileInfo[] = [];
     for (const payload of newVrmlData) {
