@@ -594,7 +594,12 @@ export default class AddVizualizationPlugin extends PluginParentClass {
 
     if (selectionResidueNamesArg) {
       // Combine macro options with regular residue names
-      selectionResidueNamesArg.options = [...nameOptions, ...macroOptions];
+      const separator: IUserArgOption = { description: '---', val: '--separator--', disabled: true };
+      if (nameOptions.length > 0 && macroOptions.length > 0) {
+        selectionResidueNamesArg.options = [...nameOptions, separator, ...macroOptions];
+      } else {
+        selectionResidueNamesArg.options = [...nameOptions, ...macroOptions];
+      }
     }
     if (selectionResidueIdsArg) {
       selectionResidueIdsArg.options = idOptions;

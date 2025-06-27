@@ -2,8 +2,8 @@
     <div class="form-list-select-wrapper">
         <div class="custom-input-group">
             <div class="input-wrapper">
-                <FormInput :id="id" v-model="textValue" type="text" :placeHolder="placeHolder"
-                    :disabled="disabled" :filterFunc="null" :warningFunc="null" :description="undefined"
+                <FormInput :id="id" v-model="textValue" type="text" :placeHolder="placeHolder" :disabled="disabled"
+                    :filterFunc="null" :warningFunc="null" :description="undefined"
                     :delayBetweenChangesDetected="delayBetweenChangesDetected" @update:modelValue="handleTextInput"
                     :ariaDescribedBy="id + '-dropdown-button'" />
             </div>
@@ -17,7 +17,8 @@
                 class="dropdown-menu dropdown-menu-end form-list-select-dropdown-menu"
                 :aria-labelledby="id + '-dropdown-button'">
                 <li v-for="option in actualOptions" :key="option.val">
-                    <a :class="`dropdown-item ${option.disabled ? 'disabled' : ''}`"
+                    <hr v-if="option.val === '--separator--'" class="dropdown-divider" />
+                    <a v-else :class="`dropdown-item ${option.disabled ? 'disabled' : ''}`"
                         @click.prevent="handleDropdownItemClick(option)">
                         {{ option.description }}
                     </a>
