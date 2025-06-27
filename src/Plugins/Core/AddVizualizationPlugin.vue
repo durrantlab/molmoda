@@ -114,6 +114,9 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   // Store overwrite flag for programmatic runs temporarily
   private programmaticOverwrite = false;
   private programmaticMoleculeId: string | undefined = undefined;
+  private _userHasManuallyEditedName = false;
+  private prevResidueNames: (string | number)[] = [];
+  private prevResidueIds: (string | number)[] = [];
   userArgDefaults: UserArg[] = [
     {
       id: "styleName",
@@ -266,13 +269,42 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       // This ensures ColorSchemeSelect gets a fresh object or {}
       this.currentRepresentationStyle = {};
     }
+
+    const currentName = (this.getUserArg("styleName") as string) || "";
+    const currentResNames = (this.getUserArg("selectionResidueNames") as string[]) || [];
+    const currentResIds = (this.getUserArg("selectionResidueIds") as (string | number)[]) || [];
+
+    const selectionsChanged =
+      JSON.stringify(currentResNames) !== JSON.stringify(this.prevResidueNames) ||
+      JSON.stringify(currentResIds) !== JSON.stringify(this.prevResidueIds);
+
+    // If selections did NOT change, but the name did, it must be a manual edit.
+    if (!selectionsChanged) {
+      const expectedNameBasedOnPrevSelections = this.generateNameFromSelections(this.prevResidueNames, this.prevResidueIds);
+      if (currentName !== expectedNameBasedOnPrevSelections) {
+        this._userHasManuallyEditedName = true;
+      }
+    }
+
+    if (!this._userHasManuallyEditedName) {
+      const newGeneratedName = this.generateNameFromSelections(currentResNames, currentResIds);
+      this.setUserArg("styleName", newGeneratedName);
+    }
+
+    // Update previous state for next change detection
+    this.prevResidueNames = [...currentResNames];
+    this.prevResidueIds = [...currentResIds];
   }
 
   /**
    * Called when the ColorSchemeSelect component emits a change.
    */
   onColorSchemeChange(): void {
-    // No changes made to this function
+    // The v-model on ColorSchemeSelect should directly update
+    // this.currentRepresentationStyle. We might need to force a re-evaluation
+    // if Vue doesn't pick up deep changes within currentRepresentationStyle,
+    // but usually v-model handles this.
+    this.$forceUpdate(); // Force update if necessary
   }
 
   /**
@@ -344,6 +376,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     this.editMode = false;
     this.editingStyleName = null;
     this.title = "New Visualization"; // Default title for UI
+    this.prevResidueNames = [];
+    this.prevResidueIds = [];
 
     if (payload && (payload as AddVizPayload).styleNameToEdit) { // UI Edit mode
       const uiEditPayload = payload as AddVizPayload;
@@ -352,14 +386,19 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.title = "Edit Visualization";
       this.setUserArg("styleName", this.editingStyleName);
 
+      this._userHasManuallyEditedName = true;
+
       // Cast assuming it will be string if editMode is true
       const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName as string];
       if (styleToEdit) {
         this.programmaticMoleculeId = styleToEdit.moleculeId;
         this.setUserArg("moleculeId", styleToEdit.moleculeId || "");
-        this.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
-        this.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
-
+        const resn = styleToEdit.selection?.resn || [];
+        const resi = styleToEdit.selection?.resi || [];
+        this.setUserArg("selectionResidueNames", resn);
+        this.setUserArg("selectionResidueIds", resi);
+        this.prevResidueNames = [...resn];
+        this.prevResidueIds = [...resi];
         let repType: Representation | null = null;
         if (styleToEdit.sphere) repType = AtomsRepresentation.Sphere;
         else if (styleToEdit.stick) repType = AtomsRepresentation.Stick;
@@ -388,6 +427,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         this.currentRepresentationStyle = {};
       }
     } else { // UI Add mode
+      this._userHasManuallyEditedName = false;
       this.setUserArg("moleculeId", "");
       this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
       this.currentRepresentationStyle = {};
@@ -604,6 +644,24 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     if (selectionResidueIdsArg) {
       selectionResidueIdsArg.options = idOptions;
     }
+  }
+  /**
+   * Generates a descriptive name from the current residue selections.
+   *
+   * @param {(string | number)[]} resNames The list of residue names/macros.
+   * @param {(string | number)[]} resIds The list of residue IDs/ranges.
+   * @returns {string} The generated name.
+   */
+  private generateNameFromSelections(resNames: (string | number)[], resIds: (string | number)[]): string {
+    const selectionParts: string[] = [];
+    if (resNames && resNames.length > 0) {
+      selectionParts.push(resNames.map(s => String(s).toUpperCase()).join(', '));
+    }
+    if (resIds && resIds.length > 0) {
+      selectionParts.push(resIds.join(', '));
+    }
+
+    return selectionParts.join(' & ');
   }
 }
 </script>
