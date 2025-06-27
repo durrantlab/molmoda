@@ -4,8 +4,6 @@ import { setPluginToTest } from "./PluginToTest";
 import { getUrlParam } from "@/Core/UrlParams";
 import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
-export let isTest = false;
-
 /**
  * If running a selenium test, this function will set things up.
  */
@@ -18,7 +16,8 @@ export function setupTests() {
         return;
     }
 
-    isTest = true;
+    // Note that isTest now resides in GlobalVars.ts to avoid circular
+    // dependencies.
 
     const idx = getUrlParam("index");
 

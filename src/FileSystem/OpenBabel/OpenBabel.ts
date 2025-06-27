@@ -7,12 +7,12 @@ import {
     getFormatInfoGivenType,
 } from "../LoadSaveMolModels/Types/MolFormats";
 import { OpenBabelQueue } from "./OpenBabelQueue";
-import { isTest } from "@/Testing/SetupTests";
 import {
     IUserArgOption,
     IUserArgSelect,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { isTest } from "@/Core/GlobalVars";
 
 export enum WhichMolsGen3D {
     All,

@@ -81,7 +81,7 @@ import {
 } from "@/Plugins/PluginInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { isTest } from "@/Testing/SetupTests";
+import { isTest } from "@/Core/GlobalVars";
 import { appName } from "@/Core/GlobalVars";
 import * as api from "@/Api";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";

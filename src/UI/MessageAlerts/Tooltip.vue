@@ -12,7 +12,7 @@
 
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
-import { isTest } from "@/Testing/SetupTests";
+import { isTest } from "@/Core/GlobalVars";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 

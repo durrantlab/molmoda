@@ -22,7 +22,6 @@ import { TreeNodeAncestry } from "./_Ancestry";
 import { TreeNodeDescriptions } from "./_Descriptions";
 import { store } from "@/Store";
 import * as api from "@/Api";
-import * as SetupTests from "@/Testing/SetupTests";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
@@ -30,6 +29,7 @@ import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ty
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { isTest } from "@/Core/GlobalVars";
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
     // Properties common to both non-terminal and terminal nodes.
@@ -779,7 +779,7 @@ export class TreeNode {
         if (reassignIds) {
             this.reassignAllIds();
         }
-        if (SetupTests.isTest) {
+        if (isTest) {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
         }

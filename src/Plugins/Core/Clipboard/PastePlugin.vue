@@ -33,7 +33,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import Alert from "@/UI/Layout/Alert.vue";
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import * as api from "@/Api";
-import { isTest } from "@/Testing/SetupTests";
+import { isTest } from "@/Core/GlobalVars";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";

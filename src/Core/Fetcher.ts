@@ -2,10 +2,9 @@
 
 import { dynamicImports } from "./DynamicImports";
 import * as pluginsApi from "@/Api/Plugins";
-import { appName, delayForPopupOpenClose, isLocalHost } from "./GlobalVars";
+import { appName, delayForPopupOpenClose, isLocalHost, isTest } from "./GlobalVars";
 import { localStorageSetItem } from "./LocalStorage";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
-import { isTest } from "@/Testing/SetupTests";
 import { messagesApi } from "@/Api/Messages";
 import { detectPlatform, HostOs } from "./HostOs";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";

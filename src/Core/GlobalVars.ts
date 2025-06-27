@@ -43,3 +43,6 @@ try {
     _isLocalHost = false;
 }
 export const isLocalHost = _isLocalHost;
+
+// Putting isTest here to avoid circular dependencies with other modules
+export const isTest = getUrlParam("test") !== null

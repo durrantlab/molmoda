@@ -59,7 +59,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import * as api from "@/Api";
 import { IQueueCallbacks } from "@/Queue/QueueTypes";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
-import { isTest } from "@/Testing/SetupTests";
+import { isTest } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { triggerErrorPopup } from "@/Plugins/Core/ErrorReporting/ErrorReporting";
 import { prepForErrorCustomMsg } from "./WebinaErrors";

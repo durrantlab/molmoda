@@ -18,7 +18,7 @@ import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
 import { addToast, clearAllToasts } from "@/UI/MessageAlerts/Toasts/ToastManager";
 import { toSentenceCase, toTitleCase } from "@/Core/Utils/StringUtils";
-import { appName } from "@/Core/GlobalVars";
+import { appName, isTest } from "@/Core/GlobalVars";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
@@ -87,6 +87,12 @@ export const messagesApi = {
      */
     popupError: function (message: string, callBack?: any) {
         this.popupMessage(appName + " Error", message, PopupVariant.Danger, callBack);
+        // Also throw the error to the console, unless it's a test. If you throw
+        // this error in a test, it will fail the test, but sometimes failure
+        // means the test passes. 
+        if (!isTest) {
+            throw new Error(message);
+        }
     },
 
     /**

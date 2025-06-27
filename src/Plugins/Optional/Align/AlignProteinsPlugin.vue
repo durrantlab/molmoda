@@ -9,7 +9,6 @@ import { Options } from "vue-class-component";
 import {
     IContributorCredit,
     ISoftwareCredit,
-    Licenses,
 } from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
@@ -30,10 +29,8 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
-import { SelectedType, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { FailingTest } from "@/Testing/FailingTest";
 import { MoleculeTypeFilter } from "@/UI/Forms/FormSelectMolecule/FormSelectMoleculeInterfaces";
 import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 /**

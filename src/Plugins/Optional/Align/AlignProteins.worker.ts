@@ -20,7 +20,7 @@ async function alignPdbContents(
     if (!usalignModuleLoaded) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        importScripts(`${basePath}js/usalign/USalign.js`);
+        importScripts(`${basePath}js/USalign/USalign.js`);
         usalignModuleLoaded = true;
     }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -35,7 +35,7 @@ async function alignPdbContents(
     const usalign = await USalignModule({
         locateFile(path: string): string {
             // The path for locateFile should be relative to where the main USalign.js script is.
-            return `${basePath}js/usalign/${path}`;
+            return `${basePath}js/USalign/${path}`;
         },
     });
     const alignedPdbResults: string[] = [];

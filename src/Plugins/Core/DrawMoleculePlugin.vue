@@ -56,13 +56,13 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ITest } from "@/Testing/TestCmd";
-import { isTest } from "@/Testing/SetupTests";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { isTest } from "@/Core/GlobalVars";
 
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
