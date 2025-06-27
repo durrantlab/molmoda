@@ -1,14 +1,13 @@
 <template>
     <div class="protein-sequence-viewer-container" ref="rootContainer">
-        <div v-if="processedSequenceLines && processedSequenceLines.length > 0" class="sequence-area">
-            <div v-for="(line, lineIndex) in processedSequenceLines"
-                :key="`line-${line.chain}-${line.lineNumber}-${lineIndex}`" class="sequence-line">
-                <span class="line-number">
-                    {{ line.lineNumberFormatted }}
-                </span>
-                <div class="residues-on-line">
-                    <span v-for="(residue, resIndex) in line.residues"
-                        :key='`${lineIndex}-${resIndex}-${residue.atomIndex}`'
+        <div v-if="processedSequenceLines && processedSequenceLines.length > 0">
+            <div class="sequence-area">
+                <div v-for="line in processedSequenceLines" :key="line.lineNumber" class="sequence-line">
+     <span class="line-number">
+                        {{ line.lineNumberFormatted }}
+                    </span>
+                    <div class="residues-on-line">
+                    <span class="aa-let" v-for="residue in line.residues" :key="residue.atomIndex"
                         :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`, { 'clicked-residue': residue.atomIndex === clickedResidueAtomIndex }]"
                         :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
                         @click="residueClicked(residue)" :title="`${residue.threeLetterCode} ${residue.resi}`"
@@ -18,6 +17,10 @@
                 </div>
             </div>
         </div>
+   <div class="text-end mt-0 pb-2">
+    <a class="link-primary" @click="copyFasta" style="font-size: 14px; cursor: pointer;">Copy as FASTA</a>
+   </div>
+  </div>
         <div v-else-if="sequence && sequence.length === 0" class="no-sequence-message">
             Protein sequence is empty.
         </div>
@@ -41,7 +44,7 @@ import { colorDefinitionNameToScheme } from "@/Core/Styling/Colors/ColorSchemeDe
 import { colorNameToHex } from "@/Core/Styling/Colors/ColorUtils";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { pluginsApi } from "@/Api/Plugins";
-
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 // --- Configuration Constants ---
 const LABEL_WIDTH = 40;  // Width of line number labels in pixels
 const AMINO_ACID_WIDTH = 15;
@@ -189,6 +192,44 @@ export default class ProteinSequenceViewer extends Vue {
 
         selectProgramatically(this.treeNode.id); // Select the parent protein node
     }
+
+ /**
+  * Copies the protein sequence to the clipboard in FASTA format.
+  */
+  async copyFasta(): Promise<void> {
+  if (!this.sequence || this.sequence.length === 0) {
+   return;
+  }
+  const sequenceName = this.treeNode?.descriptions.pathName(" | ", 0) || "protein_sequence";
+  const oneLetterSequence = this.sequence.map((r) => r.oneLetterCode).join("");
+
+  const wrapSequence = (seq: string, len: number) => {
+   let wrapped = '';
+   for (let i = 0; i < seq.length; i += len) {
+    wrapped += seq.substring(i, i + len) + '\n';
+   }
+   return wrapped.trim(); // remove trailing newline
+  };
+  const wrappedSequence = wrapSequence(oneLetterSequence, 80);
+
+  // FASTA format is >header\nsequence
+  const fastaString = `>${sequenceName}\n${wrappedSequence}`;
+
+  try {
+   await navigator.clipboard.writeText(fastaString);
+   api.messages.popupMessage(
+    "FASTA Copied",
+    "Sequence copied to clipboard.",
+    PopupVariant.Success,
+    undefined,
+    false,
+    {}
+   );
+  } catch (err) {
+   console.error("Failed to copy FASTA string: ", err);
+   api.messages.popupError("Failed to copy sequence to clipboard.");
+  }
+ }
 
     /**
      * Initialize tooltips for all residue elements
@@ -385,7 +426,7 @@ export default class ProteinSequenceViewer extends Vue {
 }
 </script>
 <style scoped lang="scss">
-.protein-sequence-viewer-container {
+.protein-sequence-viewer-container.aa-let {
     font-family: 'Menlo', 'Monaco', 'Consolas', "Courier New", monospace;
     line-height: 1.2;
     background-color: #f8f9fa;
