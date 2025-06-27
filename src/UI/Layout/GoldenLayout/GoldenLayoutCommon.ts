@@ -1,6 +1,5 @@
 import { setStoreVar } from "@/Store/StoreExternalAccess";
-import { GoldenLayout } from "golden-layout";
-
+import { GoldenLayout, Stack, Tab } from "golden-layout";
 export let goldenLayout: GoldenLayout;
 
 /**
@@ -19,6 +18,18 @@ export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
     // if (savedLayout !== null) {
     //     goldenLayout.loadLayout(savedLayout);
     // }
+
+ // Add a double-click listener to tabs to toggle maximize/minimize
+ goldenLayout.on("tabCreated", (tab: Tab) => {
+  const tabElement = tab.element;
+  tabElement.addEventListener("dblclick", () => {
+   const parent = tab.contentItem.parent;
+   // Check if the parent is a Stack, then toggle its maximized state.
+   if (parent && parent.isStack) {
+    (parent as Stack).toggleMaximise();
+   }
+  });
+ });
 
     goldenLayout.on( 'stateChanged', function(){
         const state = goldenLayout.saveLayout();
