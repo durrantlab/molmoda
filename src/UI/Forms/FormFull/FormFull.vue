@@ -79,7 +79,8 @@
           :description="makeGeneric(formElem).description" :disabled="disabled(formElem)"
           :placeHolder="getPlaceHolder(formElem)" :warningFunc="makeGeneric(formElem).warningFunc"
           :validateFunc="makeGeneric(formElem).validateFunc"
-          :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected" @onChange="onDataUpdated" />
+          :delayBetweenChangesDetected="makeGeneric(formElem).delayBetweenChangesDetected" @onChange="onDataUpdated"
+          @onRawValChange="(val) => onRawValChange(formElem.id, val)" />
         <FormSelectMolecule v-else-if="formElem.type === FormElementType.SelectMolecule"
           v-model="makeGeneric(formElem).val" :id="itemId(formElem)" :disabled="disabled(formElem)"
           :description="makeGeneric(formElem).description" :filterType="makeGeneric(formElem).filterType"
@@ -136,6 +137,7 @@ import FormSelectMolecule from "../FormSelectMolecule/FormSelectMolecule.vue";
     FormListSelect,
     FormSelectMolecule,
   },
+  emits: ["update:modelValue", "onRawValChange", "onMolCountsChanged"],
 })
 export default class FormFull extends Vue {
   @Prop({ required: true }) modelValue!: UserArg[];
@@ -351,6 +353,11 @@ export default class FormFull extends Vue {
    */
   onMolCountsChanged(val: IProtCmpdCounts) {
     this.$emit("onMolCountsChanged", val);
+  }
+
+  onRawValChange(id: string, val: string): void {
+    // Emit the raw string value for FormListSelect
+    this.$emit("onRawValChange", id, val);
   }
 }
 </script>

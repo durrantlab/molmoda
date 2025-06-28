@@ -19,3 +19,6 @@ now_hash=$(echo $now | md5sum | cut -d " " -f 1)
 
 # Create a json file with this information
 echo "{\"date\": \"$now\", \"hash\": \"$now_hash\"}" > ../src/last_updated.json
+
+# Note that this runs python3 in the docker container if using webdev.
+python3 update_version.py

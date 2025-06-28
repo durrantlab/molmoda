@@ -1,47 +1,21 @@
 <template>
-    <Popup
-        v-if="renderInnerPopup"
-        :title="infoPayload.title"
-        v-model="openToUse"
-        :cancelBtnTxt="cancelBtnTxt"
-        :actionBtnTxt="actionBtnTxt"
-        :actionBtnTxt2="actionBtnTxt2"
-        :actionBtnTxt3="actionBtnTxt3"
-        :actionBtnTxt4="actionBtnTxt4"
-        :isActionBtnEnabled="validateUserInputs"
-        :prohibitCancel="prohibitCancel"
-        :variant="variant"
-        @onDone="onPopupDone"
-        @onDone2="onPopupDone2"
-        @onDone3="onPopupDone3"
-        @onDone4="onPopupDone4"
-        @onClosed="onClosed"
-        @onCancel="onPopupCancel"
-        :id="'modal-' + infoPayload.pluginId"
-        :modalWidth="modalWidth"
-        :submitOnEnter="submitOnEnter"
-        :styleBtn1AsCancel="styleBtn1AsCancel"
-    >
+    <Popup v-if="renderInnerPopup" :title="infoPayload.title" v-model="openToUse" :cancelBtnTxt="cancelBtnTxt"
+        :actionBtnTxt="actionBtnTxt" :actionBtnTxt2="actionBtnTxt2" :actionBtnTxt3="actionBtnTxt3"
+        :actionBtnTxt4="actionBtnTxt4" :isActionBtnEnabled="validateUserInputs" :prohibitCancel="prohibitCancel"
+        :variant="variant" @onDone="onPopupDone" @onDone2="onPopupDone2" @onDone3="onPopupDone3" @onDone4="onPopupDone4"
+        @onClosed="onClosed" @onCancel="onPopupCancel" :id="'modal-' + infoPayload.pluginId" :modalWidth="modalWidth"
+        :submitOnEnter="submitOnEnter" :styleBtn1AsCancel="styleBtn1AsCancel">
         <!-- <span v-if="openToUse"> -->
         <!-- :footerTxt="citationTxt" -->
-        <p
-            v-if="infoPayload.intro !== ''"
-            v-html="
-                infoPayload.intro +
-                ' ' 
-                + (infoPayload.details ? infoPayload.details : '')
-            "
-        ></p>
+        <p v-if="infoPayload.intro !== ''" v-html="infoPayload.intro +
+            ' '
+            + (infoPayload.details ? infoPayload.details : '')
+            "></p>
         <span v-if="citationsTxt !== ''" v-html="citationsTxt"></span>
         <slot></slot>
-        <FormFull
-            ref="formfull"
-            :id="infoPayload.pluginId"
-            v-model="userArgsFixed"
-            @onChange="onChange"
-            @onMolCountsChanged="onMolCountsChanged"
-            :hideIfDisabled="hideIfDisabled"
-        ></FormFull>
+        <FormFull ref="formfull" :id="infoPayload.pluginId" v-model="userArgsFixed" @onChange="onChange"
+            @onMolCountsChanged="onMolCountsChanged" @onRawValChange="onRawValChange" :hideIfDisabled="hideIfDisabled">
+        </FormFull>
         <slot name="afterForm"></slot>
         <!-- </span> -->
     </Popup>
@@ -191,6 +165,10 @@ export default class PluginComponent extends mixins(PopupMixin) {
     onMolCountsChanged(val: IProtCmpdCounts) {
         // Runs when the molecule counts change.
         this.$emit("onMolCountsChanged", val);
+    }
+
+    onRawValChange(id: string, val: string) {
+        this.$emit("onRawValChange", id, val);
     }
 
     /**

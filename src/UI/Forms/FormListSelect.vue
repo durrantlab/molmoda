@@ -54,7 +54,7 @@ interface ParsedListResult {
         // FormSelect, // No longer used here
         FormElementDescription,
     },
-    emits: ["update:modelValue", "onChange"],
+    emits: ["update:modelValue", "onChange", "onRawValChange"],
 })
 export default class FormListSelect extends Vue {
     /**
@@ -191,9 +191,12 @@ export default class FormListSelect extends Vue {
             return { parsedList: [], isValid: true };
         }
 
+        this.$emit("onRawValChange", trimmedText); // Emit the raw string value
+        
         const parts = trimmedText.split(/[\s,]+/).map(s => s.trim()).filter(s => s.length > 0);
 
         if (this.inputType === 'number') {
+            // A number. Could be a range.
             const numericSet = new Set<number>();
             for (const part of parts) {
                 if (part.includes("-")) {

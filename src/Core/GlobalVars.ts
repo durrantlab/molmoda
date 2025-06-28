@@ -1,9 +1,39 @@
 import compileTimeInfo from "../last_updated.json";
 import { getUrlParam } from "./UrlParams";
 
+// Putting isTest here to avoid circular dependencies with other modules
+export const isTest = getUrlParam("test") !== null;
+
+// localhost or 127.0.0.1 means that the app is running locally.
+let _isLocalHost = false;
+try {
+ _isLocalHost =
+  window.location.href.includes("localhost") ||
+  window.location.href.includes("127.0.0.1");
+} catch (error) {
+ _isLocalHost = false;
+}
+export const isLocalHost = _isLocalHost;
+
+// Check if running on beta site.
+let _isBeta = false;
+try {
+ _isBeta = window.location.href.includes("beta");
+} catch (error) {
+ _isBeta = false;
+}
+export const isBeta = _isBeta;
+
 // These can also be defined via the url parameters (for making task-specific modes).
 export const appName = getUrlParam("name", "MolModa") as string;
-export const appVersion = getUrlParam("version", "1.0.1") as string;
+
+// Define appVersion, adding ".beta" suffix if on localhost or beta site, but not in test mode.
+let versionString = getUrlParam("version", compileTimeInfo.version) as string;
+if (!isTest && (isLocalHost || isBeta)) {
+    versionString += ".beta";
+}
+export const appVersion = versionString;
+
 const appShortDesc = getUrlParam(
     "description",
     "a browser-based drug-discovery suite"
@@ -16,7 +46,6 @@ export const logoPath = getUrlParam(
     "logo",
     "img/icons/android-chrome-192x192.png"
 ) as string;
-
 export const appIntro = `${appName} ${appVersion} is ${appShortDesc}, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>.`;
 export const appDescription = `${appIntro} ${appDetails}`;
 
@@ -32,17 +61,3 @@ export const delayForPopupOpenClose = 1000;
 // Delay to wait after keypress before reacting. This is to prevent the app from
 // reacting to every keypress, which would be slow.
 export const formInputDelayUpdate = 1000;
-
-// localhost or 127.0.0.1 means that the app is running locally.
-let _isLocalHost = false;
-try {
-    _isLocalHost =
-        window.location.href.includes("localhost") ||
-        window.location.href.includes("127.0.0.1");
-} catch (error) {
-    _isLocalHost = false;
-}
-export const isLocalHost = _isLocalHost;
-
-// Putting isTest here to avoid circular dependencies with other modules
-export const isTest = getUrlParam("test") !== null

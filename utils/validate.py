@@ -193,6 +193,15 @@ for ts_file in ts_files:
     # try:
     with open(ts_file, "r") as file:
         content = file.read()
+
+    # The string "LAST_NAME" must not appear anywhere.
+    if "LAST_NAME" in content:
+        add_error(ts_file, 'The string "LAST_NAME" must not appear anywhere in any file.')
+
+    # The string "No changes" must not appear anywhere.
+    if "No changes" in content:
+        add_error(ts_file, 'The string "No changes" should not appear anywhere.')
+
     # No use fetch( anywhere. Prefer fetcher().
     if "fetch(" in content:
         add_error(ts_file, "Use fetcher() instead of fetch.")

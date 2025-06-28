@@ -1,7 +1,7 @@
 <template>
   <PluginComponent v-model="open" :infoPayload="infoPayload" :actionBtnTxt="dynamicActionBtnTxt"
     @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" :isActionBtnEnabled="isActionBtnEnabled"
-    @onMolCountsChanged="onMolCountsChanged" :hideIfDisabled="true">
+    @onMolCountsChanged="onMolCountsChanged" @onRawValChange="onRawValChange" :hideIfDisabled="true">
     <template #afterForm>
       <div v-if="currentSelectionRepType" class="mt-3">
         <FormWrapper label="Color Scheme" cls="border-0">
@@ -96,6 +96,13 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   currentSelectionRepType: Representation | null = null;
   currentRepresentationStyle: ISelAndStyle = {};
 
+  private lastProgrammaticStyleName = "";
+  private rawVals = {
+    "selectionResidueNames": "",
+    "selectionResidueIds": "",
+  }
+
+
   // Residue name macro definitions (see VMD definitions for reference)
   private readonly residueMacros: Record<string, string[]> = {
     acidic: ['ASP', 'GLU'],
@@ -114,9 +121,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   // Store overwrite flag for programmatic runs temporarily
   private programmaticOverwrite = false;
   private programmaticMoleculeId: string | undefined = undefined;
-  private _userHasManuallyEditedName = false;
-  private prevResidueNames: (string | number)[] = [];
-  private prevResidueIds: (string | number)[] = [];
   userArgDefaults: UserArg[] = [
     {
       id: "styleName",
@@ -270,30 +274,19 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.currentRepresentationStyle = {};
     }
 
-    const currentName = (this.getUserArg("styleName") as string) || "";
-    const currentResNames = (this.getUserArg("selectionResidueNames") as string[]) || [];
-    const currentResIds = (this.getUserArg("selectionResidueIds") as (string | number)[]) || [];
-
-    const selectionsChanged =
-      JSON.stringify(currentResNames) !== JSON.stringify(this.prevResidueNames) ||
-      JSON.stringify(currentResIds) !== JSON.stringify(this.prevResidueIds);
-
-    // If selections did NOT change, but the name did, it must be a manual edit.
-    if (!selectionsChanged) {
-      const expectedNameBasedOnPrevSelections = this.generateNameFromSelections(this.prevResidueNames, this.prevResidueIds);
-      if (currentName !== expectedNameBasedOnPrevSelections) {
-        this._userHasManuallyEditedName = true;
+    if (this.getUserArg("styleName") === this.lastProgrammaticStyleName) {
+      // This means the user has not yet manually changed the style name,      
+      const prts: string[] = [];
+      if (this.rawVals["selectionResidueNames"]) {
+        prts.push(this.rawVals["selectionResidueNames"]);
       }
+      if (this.rawVals["selectionResidueIds"]) {
+        prts.push(this.rawVals["selectionResidueIds"]);
+      }
+      const name = prts.join(" & ");
+      this.setUserArg("styleName", name);
+      this.lastProgrammaticStyleName = name;
     }
-
-    if (!this._userHasManuallyEditedName) {
-      const newGeneratedName = this.generateNameFromSelections(currentResNames, currentResIds);
-      this.setUserArg("styleName", newGeneratedName);
-    }
-
-    // Update previous state for next change detection
-    this.prevResidueNames = [...currentResNames];
-    this.prevResidueIds = [...currentResIds];
   }
 
   /**
@@ -323,6 +316,11 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    */
   async onBeforePopupOpen(payload?: AddVizPayload | ProgrammaticAddVizPayload): Promise<void | boolean> {
     this.noPopup = false; // Default to UI mode
+    this.lastProgrammaticStyleName = ""; // Reset last programmatic style name
+    this.rawVals = {
+      "selectionResidueNames": "",
+      "selectionResidueIds": "",
+    }
     this.programmaticMoleculeId = undefined; // Reset at the start
     if (payload && (payload as ProgrammaticAddVizPayload).runProgrammatically) {
       const progPayload = payload as ProgrammaticAddVizPayload;
@@ -376,8 +374,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     this.editMode = false;
     this.editingStyleName = null;
     this.title = "New Visualization"; // Default title for UI
-    this.prevResidueNames = [];
-    this.prevResidueIds = [];
 
     if (payload && (payload as AddVizPayload).styleNameToEdit) { // UI Edit mode
       const uiEditPayload = payload as AddVizPayload;
@@ -386,19 +382,14 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.title = "Edit Visualization";
       this.setUserArg("styleName", this.editingStyleName);
 
-      this._userHasManuallyEditedName = true;
-
       // Cast assuming it will be string if editMode is true
       const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName as string];
       if (styleToEdit) {
         this.programmaticMoleculeId = styleToEdit.moleculeId;
         this.setUserArg("moleculeId", styleToEdit.moleculeId || "");
-        const resn = styleToEdit.selection?.resn || [];
-        const resi = styleToEdit.selection?.resi || [];
-        this.setUserArg("selectionResidueNames", resn);
-        this.setUserArg("selectionResidueIds", resi);
-        this.prevResidueNames = [...resn];
-        this.prevResidueIds = [...resi];
+        this.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
+        this.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
+
         let repType: Representation | null = null;
         if (styleToEdit.sphere) repType = AtomsRepresentation.Sphere;
         else if (styleToEdit.stick) repType = AtomsRepresentation.Stick;
@@ -427,7 +418,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         this.currentRepresentationStyle = {};
       }
     } else { // UI Add mode
-      this._userHasManuallyEditedName = false;
       this.setUserArg("moleculeId", "");
       this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
       this.currentRepresentationStyle = {};
@@ -554,6 +544,10 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     return Promise.resolve();
   }
 
+  onRawValChange(id: "selectionResidueNames" | "selectionResidueIds", val: string) {
+    this.rawVals[id] = val;
+  }
+
   /**
    * Gets the test commands for the plugin.
    * 
@@ -644,24 +638,6 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     if (selectionResidueIdsArg) {
       selectionResidueIdsArg.options = idOptions;
     }
-  }
-  /**
-   * Generates a descriptive name from the current residue selections.
-   *
-   * @param {(string | number)[]} resNames The list of residue names/macros.
-   * @param {(string | number)[]} resIds The list of residue IDs/ranges.
-   * @returns {string} The generated name.
-   */
-  private generateNameFromSelections(resNames: (string | number)[], resIds: (string | number)[]): string {
-    const selectionParts: string[] = [];
-    if (resNames && resNames.length > 0) {
-      selectionParts.push(resNames.map(s => String(s).toUpperCase()).join(', '));
-    }
-    if (resIds && resIds.length > 0) {
-      selectionParts.push(resIds.join(', '));
-    }
-
-    return selectionParts.join(' & ');
   }
 }
 </script>
