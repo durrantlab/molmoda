@@ -182,7 +182,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     const viewer = await api.visualization.viewer;
 
     // TODO: This is set to simplify (true).
-    const vrmlData = viewer.exportVRMLPerModel(true);
+    const vrmlData = await viewer.exportVRMLPerModel(true);
     debugger
     viewer.renderAll();
 

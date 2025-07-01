@@ -243,6 +243,8 @@ export class Viewer3DMol extends ViewerParent {
             };
         }
 
+        style.surface["resolution"] = 0.75;  // Reduce resolution from 3Dmoljs default.
+
         return this._mol3dObj.addSurface(
             2, // surface type $3Dmol.SurfaceType.MS (Molecular Surface)
             style.surface, // style for the surface itself (e.g., color, opacity)
@@ -848,7 +850,7 @@ export class Viewer3DMol extends ViewerParent {
      * @param {boolean} [simplify=false]  Whether to simplify the VRML.
      * @returns {string[][]}  The VRML for each model.
      */
-    exportVRMLPerModel(simplify = false): [string, string][] {
+    async exportVRMLPerModel(simplify = false): Promise<[string, string][]> {
         // const vrmls: {[id: string]: string} = {};
         const vrmls: [string, string][] = [];
 
@@ -860,16 +862,20 @@ export class Viewer3DMol extends ViewerParent {
             // precision of the VRML, etc.
             simpParams = {
                 mergeVertices: 0.1,  // NOTE: 0.1 is lowest value that still looks good.
+                removeOrphanVertexes: true,
                 precision: 2,  // NOTE: at 1, starts to degrade.
                 sphereQuality: 1,  // NOTE this is good enough
                 cylinderSubdivisions: 3,  // NOTE: minimum to get a decent cylinder
                 cylinderHeightSegments: 4,  // NOTE: must be even, four is good enough
-                cartoonQuality: 5 // NOTE: Minimum to get a decent cartoon
+                cartoonQuality: 5, // NOTE: Minimum to get a decent cartoon,
+                minimizeWhiteSpace: true
             }
-
+            
             surfaceSimpParams = {
                 mergeVertices: 0.5,  // NOTE: 0.1 is lowest value that still looks good.
                 precision: 2,  // NOTE: at 1, starts to degrade.
+                removeOrphanVertexes: true,
+                minimizeWhiteSpace: true
             }
         }
 
