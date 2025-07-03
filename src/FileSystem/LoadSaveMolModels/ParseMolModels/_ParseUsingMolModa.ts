@@ -10,6 +10,8 @@ import type { ILog } from "@/UI/Panels/Log/LogUtils";
 import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
 import { replaceAllCustomStyles } from "@/Core/Styling/StyleManager";
 import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
+import { layoutApi } from "@/Api/Layout";
+
 export const molmodaStateKeysToRetain = [
     "molecules",
     "log",
@@ -48,6 +50,7 @@ export async function parseUsingMolModa(
                 if (stateFromJson[key]) {
                     setStoreVar("goldenLayout", stateFromJson[key]);
                     if (goldenLayout) {
+                        layoutApi.setSessionLayoutActive(true); // Activate session layout mode
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         goldenLayout.loadLayout(stateFromJson[key]);
