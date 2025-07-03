@@ -1,6 +1,7 @@
 <template>
     <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Find"
-        @onUserArgChanged="onUserArgChanged" :hideIfDisabled="true" @onMolCountsChanged="onMolCountsChanged">
+        @onUserArgChanged="onUserArgChanged" :hideIfDisabled="true" @onMolCountsChanged="onMolCountsChanged"
+        :isActionBtnEnabled="isActionBtnEnabled">
     </PluginComponent>
 </template>
 
@@ -22,18 +23,21 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
+import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
-import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-
+import { alignFileInfos } from "../Align/AlignProteinsUtils";
+import { dynamicImports } from "@/Core/DynamicImports";
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
  */
@@ -43,11 +47,12 @@ import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
     },
 })
 export default class FindSimilarProteinsPlugin extends PluginParentClass {
-    menuPath = "Proteins/Find Similar...";
+    menuPath = "Proteins/[8] Search/Find Similar...";
     title = "Find Similar Proteins";
     pluginId = "findsimilarproteins";
     intro = "Find proteins with similar sequences using the RCSB PDB sequence search.";
     tags = [Tag.Modeling];
+    isActionBtnEnabled = false;
     softwareCredits: ISoftwareCredit[] = [
         {
             name: "RCSB Protein Data Bank",
@@ -65,6 +70,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 },
             ],
         },
+        dynamicImports.usalign.credit,
     ];
     contributorCredits: IContributorCredit[] = [];
 
@@ -76,6 +82,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 considerProteins: true,
                 considerCompounds: false,
                 proteinFormat: "pdb",
+                includeMetalsSolventAsProtein: true,
+                allowUserToToggleIncludeMetalsSolventAsProtein: false
             }),
             label: "Proteins to use as queries",
         } as IUserArgMoleculeInputParams,
@@ -100,16 +108,23 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             id: "max_results",
             type: UserArgType.Number,
             label: "Maximum results per query",
-            val: 25,
+            val: 10,
             min: 1,
             max: 1000,
-            description: "The maximum number of similar proteins to retrieve for each query.",
+            description: "The maximum number of similar proteins to retrieve for each query protein.",
         } as IUserArgNumber,
         {
             id: "downloadStructures",
             type: UserArgType.Checkbox,
             label: "Download structures",
-            description: "If checked, all found protein structures will be downloaded into the workspace.",
+            description: "Download all protein structures into the workspace.",
+            val: true,
+        } as IUserArgCheckbox,
+        {
+            id: "alignStructures",
+            type: UserArgType.Checkbox,
+            label: "Align structures",
+            description: "Align structures to their respective query proteins.",
             val: true,
         } as IUserArgCheckbox,
     ];
@@ -124,30 +139,49 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     }
 
     /**
+     * Handles changes to user arguments to update button state.
+     */
+    onUserArgChange() {
+        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+        this.setUserArgEnabled("alignStructures", downloadStructures);
+        const moleculeInput: MoleculeInput = this.getUserArg("protein_to_query");
+        if (!moleculeInput || !moleculeInput.molsToConsider) {
+            this.isActionBtnEnabled = false;
+            return;
+        }
+        // Use compileMolModels to get a synchronous representation of what will be processed.
+        const compiledMols = compileMolModels(moleculeInput.molsToConsider, true);
+        // mobileMolecules only considers proteins, so compoundsNodes can be ignored.
+        // nodeGroups contains a TreeNodeList for each top-level molecule that has matching proteins.
+        this.isActionBtnEnabled = compiledMols.nodeGroups.length > 0;
+    }
+
+    /**
      * Executes when the user clicks the "Find" button.
      *
      * @returns {Promise<void>}
      */
     async onPopupDone(): Promise<void> {
         this.closePopup();
-
         const proteinFileInfos: FileInfo[] = this.getUserArg("protein_to_query");
         if (proteinFileInfos.length === 0) {
             messagesApi.popupError("No proteins selected to query.");
             return;
         }
-
         const evalue = this.getUserArg("evalue_cutoff");
         const identity = (this.getUserArg("identity_cutoff") as number) / 100.0;
         const maxResults = this.getUserArg("max_results");
-
-        const payloads = proteinFileInfos.map((fi) => ({
-            proteinFileInfo: fi,
-            evalue,
-            identity,
-            maxResults,
-        }));
-
+        const payloads = proteinFileInfos.map((fi) => {
+            if (!fi.treeNode) return null; // Should not happen
+            const queryPdbId = fi.treeNode.getAncestry().get(0).title;
+            return {
+                proteinFileInfo: fi,
+                evalue,
+                identity,
+                maxResults,
+                queryPdbId,
+            };
+        }).filter((p): p is NonNullable<typeof p> => p !== null);
         const maxProcs = await getSetting("maxProcs");
         const queue = new FindSimilarProteinsQueue(
             this.pluginId,
@@ -157,25 +191,22 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             1, // procsPerJobBatch
             5  // simulBatches (to respect PDB rate limit)
         );
-
         const allJobOutputs: any[] = await queue.done;
         this.processAndDisplayResults(allJobOutputs);
     }
-
     /**
      * Processes the combined results from all jobs and displays them in a table.
      *
      * @param {any[]} allJobOutputs - The completed job outputs.
      */
     private async processAndDisplayResults(allJobOutputs: any[]): Promise<void> {
-        const combinedResults = new Map<string, { score: number; queries: Set<string> }>();
-
+        const combinedResults = new Map<string, { score: number; queries: Set<TreeNode> }>();
         allJobOutputs.forEach((jobOutput: any) => {
             if (jobOutput.error) {
-                console.error(`Error for ${jobOutput.query}: ${jobOutput.error}`);
+                const queryTitle = jobOutput.query ? jobOutput.query.title : 'Unknown Query';
+                console.error(`Error for ${queryTitle}: ${jobOutput.error}`);
                 return;
             }
-
             jobOutput.results?.forEach((item: any) => {
                 const existing = combinedResults.get(item.identifier);
                 if (existing) {
@@ -191,29 +222,25 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 }
             });
         });
-
         if (combinedResults.size === 0) {
             messagesApi.popupMessage("No Similar Proteins", "No similar proteins were found for the selected queries.");
             return;
         }
-
         const sortedResults = [...combinedResults.entries()].sort(
             (a, b) => b[1].score - a[1].score
         );
-
         const tableData = {
             headers: [
                 { text: "PDB ID", width: 80 },
                 { text: "Score", note: "PDB Search Score" },
-                { text: "Found via Query" },
+                { text: "Query Protein" },
             ],
             rows: sortedResults.map(([pdbId, data]) => ({
                 "PDB ID": `<a href="https://www.rcsb.org/structure/${pdbId}" target="_blank" rel="noopener noreferrer">${pdbId}</a>`,
                 "Score": data.score.toFixed(4),
-                "Found via Query": Array.from(data.queries).join(", "),
+                "Query Protein": Array.from(data.queries).map(q => q.descriptions.pathName(" > ", 30)).join(", "),
             })),
         };
-
         messagesApi.popupTableData(
             "Similar Proteins Found",
             `Found ${sortedResults.length} unique similar proteins.`,
@@ -221,6 +248,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             "Search Results"
         );
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+        const alignStructures = this.getUserArg("alignStructures") as boolean;
         if (downloadStructures) {
             const pdbIdsToLoad = sortedResults.map(([pdbId]) => pdbId);
             const spinnerId = messagesApi.startWaitSpinner();
@@ -230,7 +258,25 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                     const chunk = pdbIdsToLoad.slice(i, i + chunkSize);
                     const loadPromises = chunk.map(async (pdbId: string) => {
                         try {
-                            const fileInfo = await loadPdbIdToFileInfo(pdbId);
+                            let fileInfo = await loadPdbIdToFileInfo(pdbId);
+                            if (alignStructures) {
+                                // Find one of the original query proteins for this PDB ID
+                                const queryData = sortedResults.find(([id]) => id === pdbId)?.[1];
+                                if (queryData && queryData.queries.size > 0) {
+                                    const queryNode = queryData.queries.values().next().value as TreeNode; // Pick first query node
+                                    const refFileInfo = await queryNode.toFileInfo("pdb", true);
+                                    const alignedFileInfos = await alignFileInfos(refFileInfo, [fileInfo]);
+                                    if (alignedFileInfos.length > 0) {
+                                        fileInfo = alignedFileInfos[0];
+                                        // Update the name to indicate it's aligned.
+                                        fileInfo.name = `${pdbId}-aligned-to-${queryNode.getAncestry().get(0).title}.pdb`;
+                                    } else {
+                                        console.warn(`Alignment failed for ${pdbId}, loading unaligned structure.`);
+                                    }
+                                } else {
+                                    console.warn(`Could not find query protein node for ${pdbId}, loading unaligned structure.`);
+                                }
+                            }
                             await this.addFileInfoToViewer({
                                 fileInfo,
                                 tag: this.pluginId,

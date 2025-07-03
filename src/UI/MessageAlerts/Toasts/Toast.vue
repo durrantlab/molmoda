@@ -1,5 +1,5 @@
 <template>
-    <div ref="toastEl" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div ref="toastEl" class="toast" role="alert" aria-live="assertive" aria-atomic="true" @mouseup="handleMouseUp">
         <div :class="['toast-header', `bg-${toast.variant}`, headerTextColorClass]">
             <strong class="me-auto">{{ toast.title }}</strong>
             <small>{{ toast.timestamp }}</small>
@@ -128,6 +128,15 @@ export default class Toast extends Vue {
             // still garbage collected by Vue.
             // this.toastInstance.dispose();
 
+        }
+    }
+
+    /**
+     * Hides the toast on mouse up.
+     */
+    private handleMouseUp(): void {
+        if (this.toastInstance) {
+            this.toastInstance.hide();
         }
     }
 }

@@ -35,8 +35,13 @@ export class FindSimilarProteinsQueue extends QueueParent {
      */
     private async runSingleJob(jobInfo: IJobInfo): Promise<void> {
         try {
-            const { proteinFileInfo, evalue, identity, maxResults } =
-                jobInfo.input;
+            const {
+                proteinFileInfo,
+                evalue,
+                identity,
+                maxResults,
+                queryPdbId,
+            } = jobInfo.input;
 
             // 1. Get protein sequence
             const parser = makeEasyParser(proteinFileInfo);
@@ -84,16 +89,20 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 responseType: ResponseType.JSON,
                 formPostData: query,
             });
-
+            // Filter out the query protein itself from the results
+            const filteredResults = results.result_set.filter(
+                (item: any) =>
+                    item.identifier.toUpperCase() !== queryPdbId.toUpperCase()
+            );
             // 4. Store the results in the job output
             jobInfo.output = {
-                results: results.result_set,
-                query: proteinFileInfo.treeNode?.title,
+                results: filteredResults,
+                query: proteinFileInfo.treeNode,
             };
         } catch (e: any) {
             jobInfo.output = {
                 error: e.message,
-                query: jobInfo.input.proteinFileInfo.treeNode?.title,
+                query: jobInfo.input.proteinFileInfo.treeNode,
             };
         }
     }

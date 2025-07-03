@@ -57,16 +57,16 @@ enum SearchMode {
 }
 
 /**
- * PubChemFocusedLibraryPlugin component
+ * PubChemFindSimilarPlugin component
  */
 @Options({
   components: {
     PluginComponent,
   },
 })
-export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
-  menuPath = "Compounds/[8] Create Library/[2] Focused Library...";
-  title = "Focused Library";
+export default class PubChemFindSimilarPlugin extends PluginParentClass {
+  menuPath = "Compounds/[8] Create Library/[2] Find Similar...";
+  title = "Find Similar Compounds";
   softwareCredits: ISoftwareCredit[] = [
     {
       name: "PubChem",
@@ -91,9 +91,9 @@ export default class PubChemFocusedLibraryPlugin extends PluginParentClass {
       url: "https://www.linkedin.com/in/nonso-duaka-958b91316/",
     },
   ];
-  pluginId = "pubchemfocusedlibrary";
+  pluginId = "pubchemfindsimilar";
   tags = [Tag.LeadOptimization];
-  intro = "Build a focused compound library of chemically similar analogs by searching the PubChem database.";
+  intro = "Build a compound library of chemically similar analogs by searching the PubChem database.";
   details =
     "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your workspace.";
 
