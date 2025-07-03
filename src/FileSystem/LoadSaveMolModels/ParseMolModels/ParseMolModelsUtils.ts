@@ -24,7 +24,11 @@ export async function parseMolecularModelFromTexts(
 
     try {
         const workerParams = fileInfos.map((fi) => {
-            return { fileInfo: fi.serialize ? fi.serialize() : fi, format };
+            const serializableFile = fi.serialize ? fi.serialize() : { ...fi };
+            // VERY IMPORTANT: The treeNode property is not serializable and will
+            // cause a DataCloneError if sent to a worker. We must remove it.
+            delete serializableFile.treeNode;
+            return { fileInfo: serializableFile, format };
         }) as IMolData[];
 
         // molecularDataDeserialized is a pure javascript object
@@ -32,11 +36,11 @@ export async function parseMolecularModelFromTexts(
             parseMolecularModelsWorker,
             workerParams
         );
-        
+
         const molecularDataNodeList = await treeNodeListDeserialize(
             molecularDataDeserialized
         );
-            
+
         // (window as any).testing_var = {
         //     workerParams: workerParams[0].fileInfo.contents,
         //     molecularDataDeserialized: molecularDataDeserialized,
@@ -44,7 +48,7 @@ export async function parseMolecularModelFromTexts(
         // };
 
         // For aspirin:
-        //   Txt on disk: 
+        //   Txt on disk:
         //   molecularDataDeserialized: 6.0 KB
         //   molecularDataNodeList: 12.8 KB
         // For 1XDN:

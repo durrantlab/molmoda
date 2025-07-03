@@ -15,9 +15,9 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { IToast } from "./ToastInterfaces";
 import {
- removeToast,
- registerToastInstance,
- unregisterToastInstance,
+    removeToast,
+    registerToastInstance,
+    unregisterToastInstance,
 } from "./ToastManager";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
@@ -88,16 +88,16 @@ export default class Toast extends Vue {
                             : 5000;
                 }
                 this.toastInstance = new Toast(toastEl, toastOptions);
-    registerToastInstance(this.toast.id, this.toastInstance); // Register instance
+                registerToastInstance(this.toast.id, this.toastInstance); // Register instance
                 this.onHiddenCallback = () => {
                     if (this.toast.callBack) {
                         this.toast.callBack();
                     }
-     // Defer removal to prevent race condition where Vue removes the element
-     // before Bootstrap's hide transition logic is fully complete.
-     setTimeout(() => {
-                    removeToast(this.toast.id);
-     }, 0);
+                    // Defer removal to prevent race condition where Vue removes the element
+                    // before Bootstrap's hide transition logic is fully complete.
+                    setTimeout(() => {
+                        removeToast(this.toast.id);
+                    }, 0);
                 };
                 // When the toast is hidden by Bootstrap, remove it from our manager
                 toastEl.addEventListener("hidden.bs.toast", this.onHiddenCallback);
@@ -113,14 +113,21 @@ export default class Toast extends Vue {
      * Disposes of the Bootstrap toast instance to prevent memory leaks.
      */
     beforeUnmount() {
-  unregisterToastInstance(this.toast.id); // Unregister instance
+        unregisterToastInstance(this.toast.id); // Unregister instance
         if (this.toastInstance) {
             // Prevent the hidden event from firing during disposal
             const toastEl = this.$refs.toastEl as HTMLElement;
             if (toastEl && this.onHiddenCallback) {
                 toastEl.removeEventListener("hidden.bs.toast", this.onHiddenCallback);
             }
-            this.toastInstance.dispose();
+            // Do not call this.toastInstance.dispose() here. While this may lead
+            // to a very minor memory leak within Bootstrap's internal data cache,
+            // it prevents a race condition where a pending hide() call from
+            // Bootstrap's timers would execute on a disposed object, throwing an
+            // uncaught exception. The DOM element itself and its listeners are
+            // still garbage collected by Vue.
+            // this.toastInstance.dispose();
+
         }
     }
 }
