@@ -14,9 +14,11 @@ import {
 import {
     UserArg,
     UserArgType,
+    IUserArgSelectMolecule,
     IUserArgMoleculeInputParams,
     IUserArgNumber,
     IUserArgRange,
+    IUserArgCheckbox,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
@@ -27,7 +29,6 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { pluginsApi } from "@/Api/Plugins";
-import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
@@ -102,6 +103,13 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             max: 1000,
             description: "The maximum number of similar proteins to retrieve for each query.",
         } as IUserArgNumber,
+        {
+            id: "downloadStructures",
+            type: UserArgType.Checkbox,
+            label: "Download structures",
+            description: "If checked, all found protein structures will be downloaded into the workspace.",
+            val: true,
+        } as IUserArgCheckbox,
     ];
 
     /**
@@ -210,13 +218,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             tableData,
             "Search Results"
         );
-        const userResponse = await messagesApi.popupYesNo(
-            `Found ${sortedResults.length} similar proteins. Would you like to load them all into the workspace?`,
-            "Load Similar Proteins?",
-            "Load All",
-            "Don't Load"
-        );
-        if (userResponse === YesNo.Yes) {
+        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+        if (downloadStructures) {
             const pdbIdsToLoad = sortedResults.map(([pdbId]) => pdbId).join(" ");
             pluginsApi.runPlugin("loadpdb", {
                 runProgrammatically: true,
