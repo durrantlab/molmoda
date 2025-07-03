@@ -4,7 +4,6 @@
 import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType } from "./LoadSaveMolModels/Types/MolFormats";
 import { IFileInfo } from "./Types";
-import { messagesApi } from "@/Api/Messages";
 
 type FileInfo = IFileInfo; // To avoid circular dependencies.
 
@@ -73,13 +72,6 @@ export function getFileType(fileInfo: FileInfo | string): string | undefined {
 
     // It's not a molecular filetype. TODO: Will need to implement something
     // separate for other foramts (CSV, etc.).
-    // console.warn("Could not determine filetype for " + fileInfo.name);
-    // return ext;
-
-    // Throw error instead
-    messagesApi.popupError(
-        'Could not determine format of file "' + fileInfo.name + '"'
-    );
     return;
     // throw new Error("Could not determine filetype for " + fileInfo.name);
 }

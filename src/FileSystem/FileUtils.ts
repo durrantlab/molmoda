@@ -11,16 +11,16 @@ export interface IFileParts {
  * Checks if a given file type is acceptable.
  *
  * @param  {string[]} allAcceptableFileTypes  The file types to check against.
+ * @param  {string | undefined}   type    The file type to check.
  * @param  {string}   filename                The filename to check.
  * @returns {string | undefined}  An error message if the file type is not
  *     acceptable. If acceptable, undefined.
  */
 function checkBadFileType(
     allAcceptableFileTypes: string[],
-    // type: string,
+    type: string | undefined,
     filename: string
 ): string | undefined {
-    const type = getFileType(filename);
     if (type === undefined || allAcceptableFileTypes.indexOf(type) === -1) {
         return `Error loading "${filename}". Cannot load files of this type.`;
     }
@@ -47,7 +47,10 @@ export function filesToFileInfos(
     for (const file of fileList) {
         const type = getFileType(file.name);
         if (type === undefined) {
-            return Promise.resolve(undefined);
+            fileInfoBatchesPromises.push(
+                Promise.resolve(`Could not determine format of file "${file.name}".`)
+            );
+            continue;
         }
 
         const treatAsZip =
@@ -61,6 +64,7 @@ export function filesToFileInfos(
                     // If it's not an acceptable file type, abort effort.
                     const err = checkBadFileType(
                         allAcceptableFileTypes,
+                        type,
                         file.name
                     );
                     if (err) {
@@ -127,8 +131,10 @@ export function filesToFileInfos(
                         }
 
                         // If it's not an acceptable file type, abort effort.
+                        const type = getFileType(fileInfo.name);
                         const err = checkBadFileType(
                             allAcceptableFileTypes,
+                            type,
                             fileInfo.name
                         );
                         if (err) {
