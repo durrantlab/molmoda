@@ -52,8 +52,9 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
         // Only show a warning if showWarning is true and at least a second has
         // passed since last warning.
         const now = new Date().getTime();
-        if (!isTest && showWarning && now - lastCookieMsgTime > 1000) {
+        if (showWarning && now - lastCookieMsgTime > 1000) {
             lastCookieMsgTime = now;
+
             api.messages.popupMessage(
                 "Cookies Disallowed!", // Just call it a cookie.
                 "Your settings will be lost when you reload this page because you have disallowed cookies. Consider enabling cookies for a better user experience in the future.",
@@ -135,11 +136,14 @@ export async function localStorageGetItem(
  * @param {string} key             The key of the item.
  * @param {string} value           The value of the item.
  * @param {number} [daysToExpire]  The number of days until the item expires.
+ * @param {boolean} [showWarning=true]  Whether to show a warning message if
+ *                                      cookies are not allowed.
  */
 export async function localStorageSetItem(
     key: string,
     value: any,
-    daysToExpire?: number
+    daysToExpire?: number,
+    showWarning = true
 ): Promise<void> {
     let valueToStore = value;
     // Sanitize non-null objects to prevent DataCloneError with IndexedDB.
@@ -153,7 +157,7 @@ export async function localStorageSetItem(
     // Because this is what makes cookiesAllowed return true.
     const enablingCookiesAllowed = key === "statcollection" && valueToStore === true;
     // You cannot save settings if the user has not consented to cookies.
-    if (!enablingCookiesAllowed && !(await cookiesAllowed())) {
+    if (!enablingCookiesAllowed && !(await cookiesAllowed(showWarning))) {
         // If saving cookies not allowed, set the item to memoryStorage.
         memoryStorage[key] = valueToStore;
         return;

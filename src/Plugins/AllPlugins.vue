@@ -64,6 +64,7 @@ system uses these to autopopulate with plugins. -->
     <AlignProteinsPlugin @onPluginSetup="onPluginSetup"></AlignProteinsPlugin>
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
+    <FindSimilarProteinsPlugin @onPluginSetup="onPluginSetup"></FindSimilarProteinsPlugin>
     <PoseViewPlugin @onPluginSetup="onPluginSetup"></PoseViewPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <PubChemBioassaysPlugin @onPluginSetup="onPluginSetup"></PubChemBioassaysPlugin>
@@ -145,6 +146,7 @@ import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
 import AlignProteinsPlugin from "./Optional/Align/AlignProteinsPlugin.vue";
 import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
 import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
+import FindSimilarProteinsPlugin from "./Optional/FindSimilarProteins/FindSimilarProteinsPlugin.vue";
 import PoseViewPlugin from "./Optional/PoseViewPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import PubChemBioassaysPlugin from "./Optional/PubChem/PubChemBioassaysPlugin.vue";
@@ -222,6 +224,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     AlignProteinsPlugin,
     EvalScreenPlugin,
     FPocketWebPlugin,
+    FindSimilarProteinsPlugin,
     PoseViewPlugin,
     ProtonateCompoundsPlugin,
     PubChemBioassaysPlugin,

@@ -38,7 +38,7 @@ export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
         setStoreVar("goldenLayout", state);
         // Only save to local storage if a session layout is NOT active.
         if (!layoutApi.isSessionLayoutActive()) {
-            localStorageSetItem("goldenLayoutState", state);
+            localStorageSetItem("goldenLayoutState", state, undefined, false);
         }
     });
 

@@ -184,12 +184,15 @@ export default class LoadPubChemPlugin extends PluginParentClass {
      * Loads the 1D molecule (SMILES) from PubChem.
      *
      * @param {string} filename  The filename to use.
+     * @param {boolean} [getIsomeric=true]  Whether to get isomeric SMILES.
+     *     If false, will get regular SMILES.
      * @returns {Promise<FileInfo | void>} A promise that resolves when it is
      *     loaded.
      */
-    get1DVersion(filename: string): Promise<FileInfo | void> {
+    get1DVersion(filename: string, getIsomeric = true): Promise<FileInfo | void> {
+        const simStr = getIsomeric ? "IsomericSMILES" : "SMILES";
         return loadRemoteToFileInfo(
-            `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${this.cid}/property/IsomericSMILES/TXT`
+            `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${this.cid}/property/${simStr}/TXT`
         )
             .then((fileInfo: FileInfo) => {
                 fileInfo.name = correctFilenameExt(filename, "SMI");
@@ -292,9 +295,15 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         // if (fileInfo === undefined)
         //     fileInfo = await this.get2DVersion(filename);
 
-        // If 2D not available, use SMILES
-        if (fileInfo === undefined)
-            fileInfo = await this.get1DVersion(filename);
+        // If 2D not available, use isomeric SMILES
+        if (fileInfo === undefined) {
+            fileInfo = await this.get1DVersion(filename, true);
+        }
+
+        // If no isomeric smiles, try regular smiles
+        if (fileInfo === undefined) {
+            fileInfo = await this.get1DVersion(filename, false);
+        }
 
         if (fileInfo === undefined) {
             api.messages.popupError(

@@ -1,3 +1,4 @@
+import { prop } from "vue-class-component";
 import { dynamicImports } from "../../../Core/DynamicImports";
 import { RateLimitedFetcherQueue, ResponseType } from "../../../Core/Fetcher";
 import {
@@ -437,20 +438,45 @@ async function _getCompoundDataGivenCIDs(
     const batchSize = 100; // Arbitrary batch size (adjust based on PubChem's limits)
     const compoundData: ICompoundData[] = [];
 
+    const defaultPropsToTry = [
+        "CanonicalSMILES",
+        "IsomericSMILES",
+        "SMILES"
+    ];
+
+    let propsToTry = defaultPropsToTry.slice();
+
     for (let i = 0; i < cids.length; i += batchSize) {
         const batchCIDs = cids.slice(i, i + batchSize).join(",");
-        const propUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${batchCIDs}/property/CanonicalSMILES/JSON`;
+
+        let propData: any = undefined;
+        let propToTry = "";
+
+        for (propToTry of propsToTry) {
+            try {
+                const propUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${batchCIDs}/property/${propToTry}/JSON`
+                propData = await pubChemQueue.enqueue(propUrl);
+                break;
+            } catch {
+                propsToTry = propsToTry.filter(
+                    (prop) => prop !== propToTry
+                );
+                if (propsToTry.length === 0) {
+                    propsToTry = defaultPropsToTry.slice();
+                }
+                continue;
+            }
+        }
 
         try {
-            const propData = await pubChemQueue.enqueue(propUrl);
-
             const propertiesList = propData?.PropertyTable?.Properties ?? [];
             for (const prop of propertiesList) {
                 // Desalt the smiles string. Using easyDesaltSMILES because it is fast,
                 // though not as rigorous as converting to OpenBabel.
                 compoundData.push({
                     CID: prop.CID,
-                    SMILES: easyDesaltSMILES(prop.CanonicalSMILES) ?? "N/A",
+                    // SMILES: easyDesaltSMILES(prop.CanonicalSMILES) ?? "N/A",
+                    SMILES: easyDesaltSMILES(prop[propToTry]) ?? "N/A",
                     sortMetric: 0,
                 });
             }

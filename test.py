@@ -573,6 +573,10 @@ else:
 
 print("")
 print(urls[chosen_index] + "\n")
+
+if failed_tests:
+    unique_failed_names = sorted(list(set([t['test'].split(' #')[0] for t in failed_tests])))
+    print(f" RUN AGAIN (FAILED)?: {' '.join(unique_failed_names)}")
 # input("Done. Press Enter to end all tests...")
 
 # driver.quit()

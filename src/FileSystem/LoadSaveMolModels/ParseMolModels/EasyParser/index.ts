@@ -33,8 +33,9 @@ export function makeEasyParser(
         return new EasyParserGLModel(src);
     }
 
-    // Get type of src.
+    // Get the file type from the FileInfo object.
     const typ = new FileInfo(src as IFileInfo).getFileType();
+
     const formatInfo = getFormatInfoGivenType(typ as string);
 
     if (formatInfo?.primaryExt === "pdb") {
