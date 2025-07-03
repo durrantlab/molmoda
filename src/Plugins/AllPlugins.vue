@@ -42,6 +42,7 @@ system uses these to autopopulate with plugins. -->
     <QuitPlugin @onPluginSetup="onPluginSetup"></QuitPlugin>
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
     <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
+    <ResetLayoutPlugin @onPluginSetup="onPluginSetup"></ResetLayoutPlugin>
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
     <SelectInvertPlugin @onPluginSetup="onPluginSetup"></SelectInvertPlugin>
@@ -122,6 +123,7 @@ import PastePlugin from "./Core/Clipboard/PastePlugin.vue";
 import QuitPlugin from "./Core/QuitPlugin.vue";
 import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
 import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
+import ResetLayoutPlugin from "./Core/Window/ResetLayoutPlugin.vue";
 import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
 import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
 import SelectInvertPlugin from "./Core/SelectInvertPlugin.vue";
@@ -198,6 +200,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     QuitPlugin,
     RedoPlugin,
     RenameMolPlugin,
+    ResetLayoutPlugin,
     SaveMoleculesPlugin,
     SelectAllPlugin,
     SelectInvertPlugin,

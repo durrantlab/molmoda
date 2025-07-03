@@ -9,6 +9,7 @@ import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { ILog } from "@/UI/Panels/Log/LogUtils";
 import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
 import { replaceAllCustomStyles } from "@/Core/Styling/StyleManager";
+import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 export const molmodaStateKeysToRetain = [
     "molecules",
     "log",
@@ -44,9 +45,18 @@ export async function parseUsingMolModa(
                 );
                 break;
             case "goldenLayout":
-                setStoreVar("goldenLayout", stateFromJson[key]);
-                // goldenLayout.loadLayout(stateFromJson[key]);
-                console.warn("NOT IMPLEMENTED: RESTORE GOLDEN LAYOUT");
+                if (stateFromJson[key]) {
+                    setStoreVar("goldenLayout", stateFromJson[key]);
+                    if (goldenLayout) {
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        goldenLayout.loadLayout(stateFromJson[key]);
+                    } else {
+                        console.warn(
+                            "GoldenLayout object not available to load layout state."
+                        );
+                    }
+                }
                 break;
             case "viewerVantagePoint":
                 setStoreVar("viewerVantagePoint", stateFromJson[key]);

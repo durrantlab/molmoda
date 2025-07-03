@@ -1,6 +1,7 @@
 import { dynamicImports } from "./DynamicImports";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import * as api from "@/Api/";
+import { isTest } from "./GlobalVars";
 
 let _db: any = undefined;
 
@@ -51,7 +52,7 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
         // Only show a warning if showWarning is true and at least a second has
         // passed since last warning.
         const now = new Date().getTime();
-        if (showWarning && now - lastCookieMsgTime > 1000) {
+        if (!isTest && showWarning && now - lastCookieMsgTime > 1000) {
             lastCookieMsgTime = now;
             api.messages.popupMessage(
                 "Cookies Disallowed!", // Just call it a cookie.
@@ -140,15 +141,21 @@ export async function localStorageSetItem(
     value: any,
     daysToExpire?: number
 ): Promise<void> {
+    let valueToStore = value;
+    // Sanitize non-null objects to prevent DataCloneError with IndexedDB.
+    // This ensures that complex objects like GoldenLayout state are storable.
+    if (value !== null && typeof value === 'object') {
+        valueToStore = JSON.parse(JSON.stringify(value));
+    }
+
     // Need to make special exception when key is statcollection. In this case,
     // if the value is true, you can set even if cookiesAllowed returned false.
     // Because this is what makes cookiesAllowed return true.
-    const enablingCookiesAllowed = key === "statcollection" && value === true;
-
+    const enablingCookiesAllowed = key === "statcollection" && valueToStore === true;
     // You cannot save settings if the user has not consented to cookies.
     if (!enablingCookiesAllowed && !(await cookiesAllowed())) {
         // If saving cookies not allowed, set the item to memoryStorage.
-        memoryStorage[key] = value;
+        memoryStorage[key] = valueToStore;
         return;
     }
 
@@ -162,7 +169,7 @@ export async function localStorageSetItem(
     // Overwrites if already exists (unlike .add).
     await db.data.put({
         key,
-        value,
+        value: valueToStore,
         expireTimestamp,
     });
 }

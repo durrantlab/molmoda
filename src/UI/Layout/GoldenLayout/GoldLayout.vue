@@ -3,41 +3,22 @@
         <div ref="golden-layout-data" id="golden-layout-data">
             <GoldenLayoutContainer type="column">
                 <GoldenLayoutContainer type="row" :height="100">
-                    <GoldenLayoutComponent
-                        name="Navigator"
-                        extraClass="sortable-group"
-                        state="{}"
-                        :width="20"
-                    >
-                        <div
-                            @click.self="clearSelection"
-                            style="height: 100%; overflow-x: clip"
-                        >
+                    <GoldenLayoutComponent name="Navigator" extraClass="sortable-group" state="{}" :width="20">
+                        <div @click.self="clearSelection" style="height: 100%; overflow-x: clip">
                             <TreeView />
                         </div>
                     </GoldenLayoutComponent>
 
                     <GoldenLayoutContainer type="stack" :width="60">
-                        <GoldenLayoutComponent
-                            name="Viewer"
-                            state="{}"
-                            :style="'height:100%; padding:0 !important;'"
-                        >
+                        <GoldenLayoutComponent name="Viewer" state="{}" :style="'height:100%; padding:0 !important;'">
                             <div v-if="!viewerLoaded" class="splash-screen">
                                 <div class="container-fluid p-3">
-                                    <div
-                                        style="
+                                    <div style="
                                             float: right;
                                             margin-left: 0.5rem;
-                                        "
-                                        class="d-none d-sm-block"
-                                    >
-                                        <img
-                                            :src="logoPath"
-                                            class="rounded mx-auto d-block"
-                                            alt="Logo"
-                                            style="width: 128px; height: 128px"
-                                        />
+                                        " class="d-none d-sm-block">
+                                        <img :src="logoPath" class="rounded mx-auto d-block" alt="Logo"
+                                            style="width: 128px; height: 128px" />
                                         <p class="text-center">
                                             {{ appInfo }}
                                         </p>
@@ -50,16 +31,9 @@
                                     </p>
                                     <p>
                                         To get started, take a look at the
-                                        <PluginPathLink
-                                            plugin="help"
-                                            :title="appName + ' Help System'"
-                                        >
-                                        </PluginPathLink
-                                        >, read the
-                                        <PluginPathLink
-                                            plugin="documentation"
-                                            title="documentation"
-                                        ></PluginPathLink>,
+                                        <PluginPathLink plugin="help" :title="appName + ' Help System'">
+                                        </PluginPathLink>, read the
+                                        <PluginPathLink plugin="documentation" title="documentation"></PluginPathLink>,
 
                                         <!-- , view a
                                         <PluginPathLink
@@ -68,34 +42,27 @@
                                         >
                                         </PluginPathLink>, -->
                                         or load some
-                                        <PluginPathLink
-                                            plugin="openexampleproject"
-                                            title="example data"
-                                        >
-                                        </PluginPathLink
-                                        >.
+                                        <PluginPathLink plugin="openexampleproject" title="example data">
+                                        </PluginPathLink>.
                                     </p>
                                     <!-- New Browser Warning Alert -->
                                     <Alert v-if="!isChromeBrowser" type="warning">
-                                        We test {{ appName }} on many browsers to ensure it works well everywhere. However, if you experience any unexpected issues, consider Chrome for a smoother experience.
+                                        We test {{ appName }} on many browsers to ensure it works well everywhere.
+                                        However, if you experience any unexpected issues, consider Chrome for a smoother
+                                        experience.
                                     </Alert>
-         <!-- Additional Messages -->
-         <Alert
-          v-for="msg in additionalMessages"
-          v-bind:key="msg.text"
-          :type="msg.type"
-         >
-          {{ msg.text }}
-         </Alert>
+                                    <!-- Additional Messages -->
+                                    <Alert v-for="msg in additionalMessages" v-bind:key="msg.text" :type="msg.type">
+                                        {{ msg.text }}
+                                    </Alert>
                                     <!-- Existing Activity Focus Alert -->
                                     <Alert v-if="activityFocusModeInfo[0] !== 'All'" type="info">
-                                        You are running {{appName}} in
-                                        <b>{{activityFocusModeInfo[0]}}</b>
-                                        mode. In this mode, {{appName}} hides
+                                        You are running {{ appName }} in
+                                        <b>{{ activityFocusModeInfo[0] }}</b>
+                                        mode. In this mode, {{ appName }} hides
                                         some tools so you can
-                                        {{activityFocusModeInfo[1]}} <a
-                                        :href="standardModeUrl">Switch to All
-                                        mode</a> to restore access to all tools.
+                                        {{ activityFocusModeInfo[1] }} <a :href="standardModeUrl">Switch to All
+                                            mode</a> to restore access to all tools.
                                     </Alert>
                                 </div>
                             </div>
@@ -108,31 +75,17 @@
                             <DataPanel />
                         </GoldenLayoutComponent>
                         <!-- Moved Log Panel Here -->
-                        <GoldenLayoutComponent
-                            name="Log"
-                            state="{}"
-                            :paddingSize="2"
-                        >
-                           <LogPanel />
+                        <GoldenLayoutComponent name="Log" state="{}" :paddingSize="2">
+                            <LogPanel />
                         </GoldenLayoutComponent>
                     </GoldenLayoutContainer>
 
                     <GoldenLayoutContainer type="column" :width="20">
-                        <GoldenLayoutComponent
-                            name="Styles"
-                            state="{}"
-                            :width="20"
-                            :height="66"
-                        >
+                        <GoldenLayoutComponent name="Styles" state="{}" :width="20" :height="66">
                             <StylesPanel />
                         </GoldenLayoutComponent>
 
-                        <GoldenLayoutComponent
-                            name="Information"
-                            state="{}"
-                            :width="20"
-                            :height="34"
-                        >
+                        <GoldenLayoutComponent name="Information" state="{}" :width="20" :height="34">
                             <InformationPanel />
                         </GoldenLayoutComponent>
                     </GoldenLayoutContainer>
@@ -167,7 +120,7 @@ import LogPanel from "@/UI/Panels/Log/LogPanel.vue";
 import * as api from "@/Api";
 import InformationPanel from "@/UI/Panels/Information/InformationPanel.vue";
 import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
-import { makeGoldenLayout } from "./GoldenLayoutCommon";
+import { goldenLayout, makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
 import { appName, appVersion, appDescription, logoPath } from "@/Core/GlobalVars";
@@ -177,6 +130,8 @@ import { capitalize, lowerize } from "@/Core/Utils/StringUtils";
 import Alert from "../Alert.vue";
 import { detectBrowser, BrowserType } from "@/Core/HostOs"; // Import browser detection
 import { fetcher, ResponseType } from "@/Core/Fetcher";
+import { localStorageGetItem } from "@/Core/LocalStorage";
+import { registerResetLayoutFunc } from "@/Api/Layout";
 /**
  * GoldLayout component
  */
@@ -197,7 +152,9 @@ import { fetcher, ResponseType } from "@/Core/Fetcher";
 })
 export default class GoldLayout extends Vue {
     viewerLoaded = false;
- additionalMessages: { text: string; type: string }[] = [];
+    additionalMessages: { text: string; type: string }[] = [];
+    defaultLayoutConfig: any = null;
+    private componentContents: { [key: string]: HTMLElement } = {};
     /**
      * Gets the activity focus mode information.
      *
@@ -336,18 +293,23 @@ export default class GoldLayout extends Vue {
         myLayout.registerComponentFactoryFunction(
             "component",
             (container: ComponentContainer, componentState: any) => {
-                // container.element.innerHTML = "<h2>" + componentState.label + "</h2>";
-                let domID = componentState.domID;
-
-                // search dataDOM for the element with the given ID
-                let el = dataDOM.querySelector(`#${domID}`) as HTMLElement;
-
-                // Move el to the container
-                container.element.appendChild(el);
-
-                // Also add classes to make it work with bootstrap
-                // container.element
-                // container.tab.element
+                const domID = componentState.domID;
+                let el = this.componentContents[domID];
+                if (!el) {
+                    // If not cached, find it in the original template DOM
+                    el = dataDOM.querySelector(`#${domID}`) as HTMLElement;
+                    if (el) {
+                        // and cache it for future use
+                        this.componentContents[domID] = el;
+                    }
+                }
+                if (el) {
+                    container.element.appendChild(el);
+                } else {
+                    console.error(
+                        `Golden Layout component content with ID #${domID} not found.`
+                    );
+                }
             }
         );
 
@@ -379,40 +341,54 @@ export default class GoldLayout extends Vue {
         api.plugins.runPlugin("clearselection");
     }
 
+    /**
+     * Resets the layout to the default configuration without reloading the page.
+     */
+    resetLayout() {
+        if (this.defaultLayoutConfig && goldenLayout) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            goldenLayout.loadLayout(this.defaultLayoutConfig);
+        } else {
+            console.error("Default layout configuration not available for reset.");
+        }
+    }
     /** mounted function */
- async mounted() {
+    async mounted() {
         let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
-
-        let config = {
+        // First, generate and store the default layout from the template
+        this.defaultLayoutConfig = {
             settings: {
                 showPopoutIcon: false,
                 // showCloseIcon: false
             },
             content: this._convertDOMToData(dataDOM),
         };
-
+        // Register the reset function
+        registerResetLayoutFunc(this.resetLayout.bind(this));
+        const savedLayout = await localStorageGetItem("goldenLayoutState");
+        const config = savedLayout ? savedLayout : this.defaultLayoutConfig;
         this._setupGoldenLayout(dataDOM, config);
-
-        // Remove dataDOM
+        // It is now safe to remove dataDOM as its contents have been cached or moved.
         dataDOM.remove();
-  try {
-   const messages = await fetcher("messages.json", { responseType: ResponseType.JSON, cacheBust: true });
-   if (Array.isArray(messages)) {
-    this.additionalMessages = messages.filter(
-     (msg) =>
-      msg && typeof msg.text === "string" && typeof msg.type === "string"
-    );
-   }
-  } catch (error: any) {
-   // According to user request, log if parsing error, but ignore if file not found.
-   // Axios error object has `response.status`.
-   if (error.response && error.response.status === 404) {
-    console.log("messages.json not found, skipping additional messages.");
-   } else {
-    console.error("Error fetching or parsing messages.json:", error);
-   }
-  }
- }
+        try {
+            const messages = await fetcher("messages.json", { responseType: ResponseType.JSON, cacheBust: true });
+            if (Array.isArray(messages)) {
+                this.additionalMessages = messages.filter(
+                    (msg) =>
+                        msg && typeof msg.text === "string" && typeof msg.type === "string"
+                );
+            }
+        } catch (error: any) {
+            // According to user request, log if parsing error, but ignore if file not found.
+            // Axios error object has `response.status`.
+            if (error.response && error.response.status === 404) {
+                console.log("messages.json not found, skipping additional messages.");
+            } else {
+                console.error("Error fetching or parsing messages.json:", error);
+            }
+        }
+    }
     /**
      * Called when the viewer is loaded.
      */
