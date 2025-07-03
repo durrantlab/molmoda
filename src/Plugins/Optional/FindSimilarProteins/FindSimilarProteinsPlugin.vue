@@ -19,18 +19,18 @@ import {
     IUserArgRange,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
-import { FileInfo } from "@/FileSystem/FileInfo";
-import { IJobInfo } from "@/Queue/QueueTypes";
-import { messagesApi } from "@/Api/Messages";
-import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
-import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { FileInfo } from "@/FileSystem/FileInfo";
+import { messagesApi } from "@/Api/Messages";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-
+import { pluginsApi } from "@/Api/Plugins";
+import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
  */
@@ -157,7 +157,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      *
      * @param {any[]} allJobOutputs - The completed job outputs.
      */
-    private processAndDisplayResults(allJobOutputs: any[]): void {
+    private async processAndDisplayResults(allJobOutputs: any[]): Promise<void> {
         const combinedResults = new Map<string, { score: number; queries: Set<string> }>();
 
         allJobOutputs.forEach((jobOutput: any) => {
@@ -210,8 +210,20 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             tableData,
             "Search Results"
         );
+        const userResponse = await messagesApi.popupYesNo(
+            `Found ${sortedResults.length} similar proteins. Would you like to load them all into the workspace?`,
+            "Load Similar Proteins?",
+            "Load All",
+            "Don't Load"
+        );
+        if (userResponse === YesNo.Yes) {
+            const pdbIdsToLoad = sortedResults.map(([pdbId]) => pdbId).join(" ");
+            pluginsApi.runPlugin("loadpdb", {
+                runProgrammatically: true,
+                pdbId: pdbIdsToLoad,
+            });
+        }
     }
-
     /**
      * This plugin does not run jobs in the browser directly; it uses a queue.
      *
