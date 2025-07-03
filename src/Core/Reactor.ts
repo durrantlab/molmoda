@@ -185,6 +185,8 @@ export class Reactor {
         Indigo.free(this._reaction);
         this._monomersTableGroups.forEach((group) => Indigo.free(group));
         Indigo.free(this._monomersTable);
+        Indigo.free(iterator);
+        Indigo.free(outputReactions);
 
         // Require new setup if you reuse this object.
         this._reaction = -1;

@@ -16,7 +16,10 @@ import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 import { describeParameters, ILog } from "@/UI/Panels/Log/LogUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
-import { addToast, clearAllToasts } from "@/UI/MessageAlerts/Toasts/ToastManager";
+import {
+    addToast,
+    clearAllToasts,
+} from "@/UI/MessageAlerts/Toasts/ToastManager";
 import { toSentenceCase, toTitleCase } from "@/Core/Utils/StringUtils";
 import { appName, isTest } from "@/Core/GlobalVars";
 export const messagesApi = {
@@ -86,13 +89,18 @@ export const messagesApi = {
      *                                closed.
      */
     popupError: function (message: string, callBack?: any) {
-        this.popupMessage(appName + " Error", message, PopupVariant.Danger, callBack);
+        this.popupMessage(
+            appName + " Error",
+            message,
+            PopupVariant.Danger,
+            callBack
+        );
         // Also throw the error to the console, unless it's a test. If you throw
         // this error in a test, it will fail the test, but sometimes failure
-        // means the test passes. 
-        if (!isTest) {
-            throw new Error(message);
-        }
+        // means the test passes.
+        // if (!isTest) {
+        //     throw new Error(message);
+        // }
     },
 
     /**
@@ -111,17 +119,23 @@ export const messagesApi = {
         noBtnTxt?: string,
         showCancelBtn?: boolean
     ): Promise<any> {
-        return await new Promise((resolve: any) => {
-            pluginsApi.runPlugin("yesnomsg", {
-                title,
-                message,
-                callBack: (val: YesNo) => {
-                    resolve(val);
-                },
-                yesBtnTxt,
-                noBtnTxt,
-                showCancelBtn,
-            } as IYesNoMsg);
+        return await new Promise((resolve: any, reject: any) => {
+            // Add reject parameter
+            try {
+                pluginsApi.runPlugin("yesnomsg", {
+                    title,
+                    message,
+                    callBack: (val: YesNo) => {
+                        resolve(val);
+                    },
+                    yesBtnTxt,
+                    noBtnTxt,
+                    showCancelBtn,
+                } as IYesNoMsg);
+            } catch (error) {
+                // Reject the promise if the plugin fails to run
+                reject(error);
+            }
         });
     },
 

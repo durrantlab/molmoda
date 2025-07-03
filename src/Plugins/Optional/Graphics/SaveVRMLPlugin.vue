@@ -1,12 +1,6 @@
 <template>
-  <PluginComponent
-    v-model="open"
-    :infoPayload="infoPayload"
-    actionBtnTxt="Save"
-    @onPopupDone="onPopupDone"
-    @onUserArgChanged="onUserArgChanged"
-    @onMolCountsChanged="onMolCountsChanged"
-  ></PluginComponent>
+  <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Save" @onPopupDone="onPopupDone"
+    @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -205,24 +199,25 @@ export default class SaveVRMLPlugin extends PluginParentClass {
       if (!mol) {
         continue;
       }
-
-      const filename = slugify(mol.descriptions.pathName("_", 0));
-
+      const innerFilename = slugify(mol.descriptions.pathName("_", 0));
       if (vrml !== "") {
         const fileInfo = new FileInfo({
-          name: filename + ".wrl",
+          name: innerFilename + ".wrl",
           contents: vrml,
         });
 
         files.push(fileInfo);
       }
     }
-
-    filename = correctFilenameExt(filename, "zip");
-
-    saveTxtFiles(files, filename);
-
-    return;
+    if (files.length === 1) {
+      // If there's only one file, its name should be the one provided by the user.
+      if (!filename.toLowerCase().endsWith(".wrl")) {
+        filename += ".wrl";
+      }
+      files[0].name = filename;
+    }
+    // saveTxtFiles handles single vs multiple files and zip extension for multiple.
+    return saveTxtFiles(files, filename);
   }
 
   /**
@@ -232,19 +227,33 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    * @document
    * @returns {ITest}  The selenium test commands.
    */
-  async getTests(): Promise<ITest> {
-    return {
-      beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-      pluginOpen: new TestCmdList().setUserArg(
-        "filename",
-        "test",
-        this.pluginId
-      ),
-      afterPluginCloses: new TestCmdList().waitUntilRegex(
-        "#log",
-        "Job savevrml.*? ended"
-      ),
-    };
+  async getTests(): Promise<ITest[]> {
+    return [
+      {
+        beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+        pluginOpen: new TestCmdList().setUserArg(
+          "filename",
+          "test",
+          this.pluginId
+        ),
+        afterPluginCloses: new TestCmdList().waitUntilRegex(
+          "#log",
+          "Job savevrml.*? ended"
+        ),
+      },
+      {
+        beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+        pluginOpen: new TestCmdList().setUserArg(
+          "filename",
+          "test.with.dots",
+          this.pluginId
+        ),
+        afterPluginCloses: new TestCmdList().waitUntilRegex(
+          "#log",
+          "Job savevrml.*? ended"
+        ),
+      },
+    ];
   }
 }
 </script>

@@ -421,7 +421,10 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
           if (allFileInfos.length > 0) {
             // Use the user-provided filename with the correct extension
             const ext = oneMolFileFormat.toLowerCase();
-            const combinedFileName = correctFilenameExt(filename, ext);
+            let combinedFileName = filename;
+            if (!filename.toLowerCase().endsWith("." + ext)) {
+              combinedFileName += "." + ext;
+            }
             allFileInfos[0].name = combinedFileName;
 
             // Update the fileInfos collections

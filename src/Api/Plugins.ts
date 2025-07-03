@@ -10,6 +10,13 @@ export const pluginsApi = {
      */
     runPlugin: function (pluginName: string, params?: any) {
         const plugin = api.loadedPlugins[pluginName];
+        // Add a check to ensure the plugin exists
+        if (!plugin) {
+            console.error(
+                `Attempted to run a non-existent plugin: "${pluginName}"`
+            );
+            return;
+        }
         if (plugin.onPluginStart !== null) {
             plugin.onPluginStart(params);
         }

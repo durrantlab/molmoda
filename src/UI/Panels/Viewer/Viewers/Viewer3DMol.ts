@@ -243,8 +243,6 @@ export class Viewer3DMol extends ViewerParent {
             };
         }
 
-        style.surface["resolution"] = 0.75;  // Reduce resolution from 3Dmoljs default.
-
         return this._mol3dObj.addSurface(
             2, // surface type $3Dmol.SurfaceType.MS (Molecular Surface)
             style.surface, // style for the surface itself (e.g., color, opacity)
@@ -875,7 +873,9 @@ export class Viewer3DMol extends ViewerParent {
                 mergeVertices: 0.5,  // NOTE: 0.1 is lowest value that still looks good.
                 precision: 2,  // NOTE: at 1, starts to degrade.
                 removeOrphanVertexes: true,
-                minimizeWhiteSpace: true
+                minimizeWhiteSpace: true,
+                simplifySurfaces: 0.7,
+                smoothSurfaces: 1
             }
         }
 
