@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Load"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Load" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -15,7 +9,7 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { loadRemoteToFileInfo } from "./RemoteMolLoadersUtils";
+import { loadPdbIdToFileInfo } from "./RemoteMolLoadersUtils";
 import * as api from "@/Api";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -137,32 +131,19 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
         for (const pdbId of pdbIdList) {
             try {
-                const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
-                const fileInfo = await loadRemoteToFileInfo(url);
+                const fileInfo = await loadPdbIdToFileInfo(pdbId)
                 await this.addFileInfoToViewer({
                     fileInfo,
                     tag: this.pluginId,
                 });
-            } catch (err) {
-                console.warn(err);
+            } catch (err: any) {
+                // Failed a second time! Probably not a valid PDB.
 
-                // If you get here, it failed. Try CIF.
-                try {
-                    const url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
-                    const fileInfo2 = await loadRemoteToFileInfo(url);
-                    await this.addFileInfoToViewer({
-                        fileInfo: fileInfo2,
-                        tag: this.pluginId,
-                    });
-                } catch (err: any) {
-                    // Failed a second time! Probably not a valid PDB.
-
-                    api.messages.popupError(
-                        "Could not load PDB ID " +
-                            pdbId +
-                            ". Are you sure this ID is valid?"
-                    );
-                }
+                api.messages.popupError(
+                    "Could not load PDB ID " +
+                    pdbId +
+                    ". Are you sure this ID is valid?"
+                );
             }
         }
     }

@@ -28,10 +28,12 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { pluginsApi } from "@/Api/Plugins";
 import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
+import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
  */
@@ -220,11 +222,40 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         );
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
         if (downloadStructures) {
-            const pdbIdsToLoad = sortedResults.map(([pdbId]) => pdbId).join(" ");
-            pluginsApi.runPlugin("loadpdb", {
-                runProgrammatically: true,
-                pdbId: pdbIdsToLoad,
-            });
+            const pdbIdsToLoad = sortedResults.map(([pdbId]) => pdbId);
+            const spinnerId = messagesApi.startWaitSpinner();
+            const chunkSize = 5; // To respect RCSB rate limits
+            try {
+                for (let i = 0; i < pdbIdsToLoad.length; i += chunkSize) {
+                    const chunk = pdbIdsToLoad.slice(i, i + chunkSize);
+                    const loadPromises = chunk.map(async (pdbId: string) => {
+                        try {
+                            const fileInfo = await loadPdbIdToFileInfo(pdbId);
+                            await this.addFileInfoToViewer({
+                                fileInfo,
+                                tag: this.pluginId,
+                            });
+                        } catch (error) {
+                            console.error(`Failed to load PDB ID ${pdbId}:`, error);
+                            messagesApi.popupMessage(
+                                "Load Error",
+                                `Could not load PDB ID ${pdbId}.`,
+                                PopupVariant.Warning,
+                                undefined,
+                                false,
+                                {}
+                            );
+                        }
+                    });
+                    await Promise.all(loadPromises);
+                }
+            } catch (error) {
+                messagesApi.popupError(
+                    "An unexpected error occurred while downloading structures."
+                );
+            } finally {
+                messagesApi.stopWaitSpinner(spinnerId);
+            }
         }
     }
     /**
