@@ -319,7 +319,10 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
     const lastMenuData = menuData.pop();
 
     const lastSel =
-        ".navbar #menu-plugin-" + slugify(lastMenuData?.text as string);
+        ".navbar #menu-plugin-" +
+        plugin.pluginId +
+        "-" +
+        slugify(lastMenuData?.text as string);
 
     // If there are more than two items remaining in menuData, the second one is
     // a separator (not triggering an actual submenu that would require a

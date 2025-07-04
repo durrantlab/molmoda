@@ -137,7 +137,7 @@ export default class MenuActionLink extends Vue {
      * @returns {string}  The slug.
      */
     get idSlug(): string {
-        return slugify(this.menuData.text as string);
+        return `${this.menuData.pluginId}-${slugify(this.menuData.text as string)}`;
     }
 
     /**

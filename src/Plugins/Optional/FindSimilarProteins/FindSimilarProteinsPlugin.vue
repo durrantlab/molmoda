@@ -15,7 +15,6 @@ import {
 import {
     UserArg,
     UserArgType,
-    IUserArgSelectMolecule,
     IUserArgMoleculeInputParams,
     IUserArgNumber,
     IUserArgRange,
@@ -316,16 +315,67 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     /**
      * Defines the test case for this plugin.
      *
-     * @returns {Promise<ITest>} The test configuration.
+     * @returns {Promise<ITest[]>} The test configuration.
      */
-    async getTests(): Promise<ITest> {
-        return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#modal-tabledatapopup",
-                "1S68"
-            ),
-        };
+    async getTests(): Promise<ITest[]> {
+        const pdb1xdn = "https://files.rcsb.org/view/1XDN.pdb";
+        const pdb4wp4 = "https://files.rcsb.org/view/4WP4.pdb";
+        return [
+            // Test 1: Basic Search and Download (with Alignment)
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, pdb1xdn, 0),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "1S68")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "1S68-aligned-to-1XDN"),
+            },
+            // Test 2: Search and Download (without Alignment)
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, pdb1xdn, 1),
+                pluginOpen: new TestCmdList().click("#alignStructures-findsimilarproteins-item"), // Uncheck align
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "1S68")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "1S68"),
+            },
+            // Test 3: Search without Downloading
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, pdb1xdn, 2),
+                pluginOpen: new TestCmdList().click("#downloadStructures-findsimilarproteins-item"), // Uncheck download
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "1S68")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .wait(2) // Wait a bit to ensure nothing is being added
+                    .waitUntilNotRegex("#navigator", "1S68"),
+            },
+            // Test 4: Multiple Query Proteins
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(true, pdb4wp4, 3)
+                    .loadExampleMolecule(true, pdb1xdn, 3),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "Query Protein")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "aligned-to-4WP4")
+                    .waitUntilRegex("#navigator", "aligned-to-1XDN"),
+            },
+            // Test 5: No Results Found
+            // {
+            //     beforePluginOpens: new TestCmdList().loadExampleMolecule(true, pdb1xdn, 4),
+            //     pluginOpen: new TestCmdList().setUserArg("identity_cutoff", 100, "findsimilarproteins"), // 100% identity
+            //     afterPluginCloses: new TestCmdList()
+            //         .waitUntilRegex("#modal-simplemsg", "No similar proteins were found"),
+            // },
+            // Test 6: Capping Maximum Results
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, pdb1xdn, 4),
+                pluginOpen: new TestCmdList().setUserArg("max_results", 3, "findsimilarproteins"),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "Similar Proteins Found")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "aligned-to-1XDN"),
+            },
+        ];
     }
 }
 </script>
