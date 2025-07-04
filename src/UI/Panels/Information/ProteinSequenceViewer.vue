@@ -32,8 +32,7 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
-import { ResidueInfo } from "./InformationPanelUtils";
-import { getAminoAcidProperty } from "@/Core/Bioinformatics/AminoAcidUtils";
+import { getAminoAcidProperty, ResidueInfo } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";

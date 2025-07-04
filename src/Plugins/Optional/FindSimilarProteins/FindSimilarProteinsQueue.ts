@@ -37,24 +37,34 @@ export class FindSimilarProteinsQueue extends QueueParent {
         try {
             const {
                 proteinFileInfo,
+                sequence,
                 evalue,
                 identity,
                 maxResults,
-                queryPdbId,
+                queryIdentifier,
+                query,
             } = jobInfo.input;
-
-            // 1. Get protein sequence
-            const parser = makeEasyParser(proteinFileInfo);
-            const sequenceInfo = await getOrderedResidueSequenceFromModel(
-                parser.atoms
-            );
-            const sequence = sequenceInfo.map((r) => r.oneLetterCode).join("");
-            if (!sequence) {
+            let proteinSequence: string;
+            if (sequence) {
+                proteinSequence = sequence;
+            } else if (proteinFileInfo) {
+                const parser = makeEasyParser(proteinFileInfo);
+                const sequenceInfo = await getOrderedResidueSequenceFromModel(
+                    parser.atoms
+                );
+                proteinSequence = sequenceInfo
+                    .map((r) => r.oneLetterCode)
+                    .join("");
+            } else {
+                throw new Error(
+                    "No sequence or proteinFileInfo provided in job input."
+                );
+            }
+            if (!proteinSequence) {
                 throw new Error("Could not extract sequence from protein.");
             }
-
             // 2. Build the PDB API query
-            const query = {
+            const apiQuery = {
                 query: {
                     type: "terminal",
                     service: "sequence",
@@ -62,7 +72,7 @@ export class FindSimilarProteinsQueue extends QueueParent {
                         evalue_cutoff: evalue,
                         identity_cutoff: identity,
                         sequence_type: "protein",
-                        value: sequence,
+                        value: proteinSequence,
                     },
                 },
                 return_type: "entry",
@@ -87,22 +97,23 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 "https://search.rcsb.org/rcsbsearch/v2/query";
             const results = await fetcher(PDB_SEARCH_API, {
                 responseType: ResponseType.JSON,
-                formPostData: query,
+                formPostData: apiQuery,
             });
             // Filter out the query protein itself from the results
             const filteredResults = results.result_set.filter(
                 (item: any) =>
-                    item.identifier.toUpperCase() !== queryPdbId.toUpperCase()
+                    item.identifier.toUpperCase() !==
+                    queryIdentifier.toUpperCase()
             );
             // 4. Store the results in the job output
             jobInfo.output = {
                 results: filteredResults,
-                query: proteinFileInfo.treeNode,
+                query: query,
             };
         } catch (e: any) {
             jobInfo.output = {
                 error: e.message,
-                query: jobInfo.input.proteinFileInfo.treeNode,
+                query: jobInfo.input.query,
             };
         }
     }
