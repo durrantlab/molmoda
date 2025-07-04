@@ -1,23 +1,8 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { IAtom, TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
-import { GLModel } from "../Viewer/GLModelType";
-import { IFileInfo } from "@/FileSystem/Types";
-import { threeLetterToPdbOneLetter } from "@/Core/Bioinformatics/AminoAcidUtils";
 
-/**
- * Represents information about a single residue in a protein sequence.
- */
-export interface ResidueInfo {
-    oneLetterCode: string;
-    threeLetterCode: string;
-    resi: number;
-    chain: string;
-    atomIndex?: number; // Optional: 0-based index of the first atom of this residue in the full atom list
-}
 
 /**
  * Gets the first of all the selected molecules.
