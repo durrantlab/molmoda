@@ -1,5 +1,6 @@
 import * as PluginToTest from "@/Testing/PluginToTest";
 import { openSavePluginIfStoreDirty } from "./DirtyStore";
+import { isTest } from "@/Core/GlobalVars";
 
 /**
  * Handles the beforeunload event.
@@ -20,8 +21,8 @@ function _handleBeforeUnload(e: Event) {
  * Sets up the warn save on close.
  */
 export function setupBeforeUnload() {
-    if (PluginToTest.pluginToTest === "") {
-        // If testing a plugin, don't prompt to save the state on close.
+    if (!isTest) {
+        // If not testing a plugin, don't prompt to save the state on close.
         window.addEventListener("beforeunload", _handleBeforeUnload, true);
     }
 }

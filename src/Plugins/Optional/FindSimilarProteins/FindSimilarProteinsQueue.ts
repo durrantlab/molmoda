@@ -1,6 +1,6 @@
+import { getOrderedResidueSequenceFromModel } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { getOrderedResidueSequenceFromModel } from "@/UI/Panels/Information/InformationPanelUtils";
 import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 

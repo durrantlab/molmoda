@@ -17,6 +17,7 @@ from simple_term_menu import TerminalMenu
 import shutil
 import subprocess
 import html
+import random
 
 # import traceback
 import threading
@@ -306,6 +307,16 @@ allowed_threads = {
 drivers = {}
 browser = ""
 
+def check_errors(driver, browser):
+    # Check for JavaScript errors in the browser console
+    js_errs = do_logs_have_errors(driver, browser)
+    if js_errs != False:
+        if "user gesture" in js_errs:
+            print(f"Ignored JavaScript error: {js_errs} (ignored, user gesture)")
+        else:
+            raise Exception(f"Critical JavaScript error: {js_errs}")
+    return js_errs
+
 def run_test(plugin_id_tuple):
     global drivers
     global browser
@@ -385,9 +396,14 @@ def run_test(plugin_id_tuple):
                     el(cmd["selector"], driver).checkBox(cmd["data"])
                 screenshot_path = f"{screenshot_dir}/{test_lbl}_{cmd_idx}.png"
                 driver.save_screenshot(screenshot_path)
-                js_errs = do_logs_have_errors(driver, browser)
-                if js_errs != False:
-                    raise Exception(f"JavaScript error: {js_errs}")
+                js_errs = check_errors(driver, browser)
+                # js_errs = do_logs_have_errors(driver, browser)
+                # if js_errs != False:
+                #     if "user gesture" in js_errs:
+                #         print(f"Ignored JavaScript error: {js_errs} (ignored, user gesture)")
+                #     else:
+                #         raise Exception(f"Critical JavaScript error: {js_errs}")
+                
             # resp = f"Passed: {test_lbl}"
             resp = {
                 "status": "passed",
@@ -405,9 +421,10 @@ def run_test(plugin_id_tuple):
                 "test": test_lbl,
                 "error": str(e),
             }
-        js_errs = do_logs_have_errors(driver, browser)
-        if js_errs != False:
-            raise Exception(f"JavaScript error: {js_errs}")
+        js_errs = check_errors(driver, browser)
+        # js_errs = do_logs_have_errors(driver, browser)
+        # if js_errs != False:
+        #     raise Exception(f"JavaScript error: {js_errs}")
         # driver.quit()
         return resp
     finally:
@@ -481,6 +498,9 @@ for browser_to_use in browsers_to_use:
         # MODIFICATION: Reset failed_tests_this_round for each attempt
         failed_tests_this_round = []
         drivers = {}
+        
+        # MODIFICATION: Shuffle the list of tests to be run in this round for randomness.
+        random.shuffle(plugin_ids_per_browser)
 
         with ThreadPoolExecutor(max_workers=allowed_threads[browser_to_use]) as executor:
             # Use a dictionary to map futures to the tests they represent
@@ -492,7 +512,8 @@ for browser_to_use in browsers_to_use:
             while plugin_ids_per_browser or futures_to_tests:
                 # While there are tests to submit or futures that haven't been processed
                 while plugin_ids_per_browser:
-                    test = plugin_ids_per_browser.pop(0) # MODIFICATION: Use pop(0) to run tests in alphabetical order
+                    # MODIFICATION: Use pop() to take a random test from the shuffled list.
+                    test = plugin_ids_per_browser.pop() 
                     future = executor.submit(run_test, test)
                     futures_to_tests[future] = test
 

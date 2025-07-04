@@ -393,7 +393,17 @@ function addTestDefaults(
                 ? []
                 : [new _TestClick(`#modal-${pluginId} .action-btn`).cmd];
         }
-
+        // If the plugin has a popup, add a wait after closing it to prevent
+        // intercepted click errors.
+        if (!plugin.noPopup) {
+            
+            const waitCmd = new _TestWaitUntilNotRegex("body", 'class="modal-open"').cmd;
+            if (test.afterPluginCloses) {
+                test.afterPluginCloses.unshift(waitCmd);
+            } else {
+                test.afterPluginCloses = [waitCmd];
+            }
+        }
         // Now consider test.afterPluginCloses. If logJob, use that to wait for
         // indication that job finished.
         if (!test.afterPluginCloses) {
