@@ -1,60 +1,27 @@
 <template>
-    <!-- <ContextMenu
-        :options="contextMenuOptions"
-        @onMenuItemClick="onMenuItemClick"
-    > -->
-    <!-- <div
-            v-if="allTreeData.length > 0 && depth === 0"
-            class="input-group input-group-sm mb-1"
-        >
-            <div class="input-group-prepend">
-                <span class="input-group-text">
-                    <font-awesome-icon
-                        style="color: #212529"
-                        :icon="['fas', 'magnifying-glass']"
-                    />
-                </span>
+    <div class="tree-view-wrapper" ref="scroller" @scroll.passive="handleScroll">
+        <FilterInput v-if="allTreeDataFlattened.length > 0 && depth === 0" :list="allTreeDataFlattened"
+            :extractTextToFilterFunc="extractTextToFilterFunc" @onFilter="onFilter" mb="1" v-model="filterStr">
+        </FilterInput>
+
+        <div v-if="isVirtualizable" :style="sizerStyles">
+            <div :style="virtualListStyles">
+                <div v-for="(treeDatum, idx) in visibleNodes" :key="treeDatum.id" :data-molid="treeDatum.id"
+                    :style="styleToUse" :data-idx="idx + startIndex">
+                    <TitleBar :treeDatum="treeDatum" :depth="depth" :treeData="treeData" :filterStr="filterStr" />
+                </div>
             </div>
-            <input type="text" class="form-control" v-model="filterStr" />
-        </div> -->
-    <div>
-        <FilterInput
-            v-if="allTreeDataFlattened.length > 0 && depth === 0"
-            :list="allTreeDataFlattened"
-            :extractTextToFilterFunc="extractTextToFilterFunc"
-            @onFilter="onFilter"
-            mb="1"
-            v-model="filterStr"
-        ></FilterInput>
+        </div>
 
-        <div
-            v-for="(treeDatum, idx) in getLocalTreeData"
-            v-bind:key="treeDatum.id"
-            :data-molid="treeDatum.id"
-            :style="styleToUse"
-            :data-idx="idx"
-        >
-            <!-- {{idx}} -->
-            <TitleBar
-                :treeDatum="treeDatum"
-                :depth="depth"
-                :treeData="treeData"
-                :filterStr="filterStr"
-            />
-
-            <!-- Show sub-items if appropriate -->
-            <!-- <Transition name="slide"> -->
-            <TreeView
-                v-if="treeDatum?.nodes && treeDatum?.treeExpanded"
-                :treeData="treeDatum?.nodes"
-                :depth="depth + 1"
-                :styleToUse="indentStyle"
-                :ref="treeDatum?.id"
-            />
-            <!-- </Transition> -->
+        <div v-else>
+            <div v-for="(treeDatum, idx) in getLocalTreeData" :key="treeDatum.id" :data-molid="treeDatum.id"
+                :style="styleToUse" :data-idx="idx">
+                <TitleBar :treeDatum="treeDatum" :depth="depth" :treeData="treeData" :filterStr="filterStr" />
+                <TreeView v-if="treeDatum?.nodes && treeDatum?.treeExpanded && filteredTreeNodes === null"
+                    :treeData="treeDatum?.nodes" :depth="depth + 1" :styleToUse="indentStyle" :ref="treeDatum?.id" />
+            </div>
         </div>
     </div>
-    <!-- </ContextMenu> -->
 </template>
 
 <script lang="ts">
@@ -87,10 +54,13 @@ export default class TreeView extends Vue {
     @Prop({ default: 0 }) depth!: number;
     @Prop({ default: undefined }) treeData!: TreeNodeList | undefined;
     @Prop({ default: undefined }) styleToUse!: string;
-
     filteredTreeNodes: TreeNode[] | null = null;
     filterStr = "";
-
+    // VIRTUALIZATION STATE
+    itemHeight = 24; // Estimated height of one row (TitleBar)
+    scrollTop = 0;
+    containerHeight = 0;
+    resizeObserver: ResizeObserver | null = null;
     /**
      * Get the style for a fixed-width element.
      *
@@ -171,6 +141,7 @@ export default class TreeView extends Vue {
         return this.filteredTreeNodes;
     }
 
+
     // fixTitle(title: string): string {
     //   // For compounds, remove text and put chain at end.
     //   title = title.replace(/Compounds:(.):(.+)$/g, "$2:$1");
@@ -237,6 +208,118 @@ export default class TreeView extends Vue {
 
     //   // return curMolCont;
     // }
+    /**
+     * Determines if the current list is long and flat enough to be virtualized.
+     *
+     * @returns {boolean} True if virtualization should be used.
+     */
+    get isVirtualizable(): boolean {
+        if (this.depth !== 0) return false;
+        if (this.filteredTreeNodes === null) return false;
+        return this.filteredTreeNodes.length >= 50;
+    }
+
+    /**
+     * Calculates the index of the first visible item in the virtualized list.
+     *
+     * @returns {number} The start index.
+     */
+    get startIndex(): number {
+        return Math.floor(this.scrollTop / this.itemHeight);
+    }
+
+    /**
+     * Gets the subset of nodes that should be visible in the virtualized list.
+     *
+     * @returns {TreeNode[]} An array of TreeNodes to render.
+     */
+    get visibleNodes(): TreeNode[] {
+        if (!this.isVirtualizable || !this.filteredTreeNodes) {
+            return this.getLocalTreeData;
+        }
+        const visibleCount = Math.ceil(this.containerHeight / this.itemHeight) + 2;
+        const endIndex = Math.min(
+            this.startIndex + visibleCount,
+            this.filteredTreeNodes.length
+        );
+        return this.filteredTreeNodes.slice(this.startIndex, endIndex);
+    }
+
+    /**
+     * Gets the style for the sizer element, which ensures the scrollbar is the correct size.
+     *
+     * @returns {object} A style object for the sizer div.
+     */
+    get sizerStyles(): object {
+        if (!this.isVirtualizable || !this.filteredTreeNodes) return {};
+        return {
+            position: "relative",
+            height: `${this.filteredTreeNodes.length * this.itemHeight}px`,
+        };
+    }
+
+    /**
+     * Gets the style for the list wrapper, which positions the visible items correctly.
+     *
+     * @returns {object} A style object for the list wrapper div.
+     */
+    get virtualListStyles(): object {
+        if (!this.isVirtualizable) return {};
+        return {
+            position: "absolute",
+            top: "0",
+            left: "0",
+            width: "100%",
+            transform: `translateY(${this.startIndex * this.itemHeight}px)`,
+        };
+    }
+
+    /**
+     * Handles the scroll event on the root container.
+     *
+     * @param {UIEvent} event The scroll event.
+     */
+    handleScroll(event: UIEvent): void {
+        if (this.depth === 0) {
+            const target = event.target as HTMLElement;
+            this.scrollTop = target.scrollTop;
+        }
+    }
+
+    /**
+     * Sets up a ResizeObserver to monitor the size of the scrollable container.
+     */
+    setupResizeObserver(): void {
+        if (this.depth === 0) {
+            const scroller = this.$refs.scroller as HTMLElement;
+            if (scroller) {
+                this.containerHeight = scroller.clientHeight;
+                this.resizeObserver = new ResizeObserver((entries) => {
+                    if (entries[0]) {
+                        this.containerHeight = entries[0].contentRect.height;
+                    }
+                });
+                this.resizeObserver.observe(scroller);
+            }
+        }
+    }
+
+    /**
+     * Lifecycle hook: called when the component is mounted.
+     */
+    mounted() {
+        this.setupResizeObserver();
+    }
+
+    /**
+     * Lifecycle hook: called before the component is unmounted.
+     */
+    beforeUnmount() {
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
+    }
 }
 </script>
 
@@ -244,8 +327,16 @@ export default class TreeView extends Vue {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss" scoped>
+.tree-view-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    position: relative;
+    /* For sizer/virtual list positioning */
+}
+
 // See https://codepen.io/kdydesign/pen/VrQZqx
 $transition-time: 0.2s;
+
 .slide-enter-active {
     -moz-transition-duration: $transition-time;
     -webkit-transition-duration: $transition-time;

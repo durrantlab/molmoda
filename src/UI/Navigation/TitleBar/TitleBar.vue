@@ -1,112 +1,55 @@
 <template>
-    <ContextMenu
-        :options="contextMenuItems"
-        @onMenuItemClick="onContextMenuItemClick"
-        @onMenuItemRightClick="onContextMenuItemRightClick"
-    >
-        <div
-            :class="'title' + selectedclass(treeDatumID)"
-            :style="indentStyle"
-            :data-label="treeDatum.title"
-            @click="titleBarClick"
-        >
+    <ContextMenu :options="contextMenuItems" @onMenuItemClick="onContextMenuItemClick"
+        @onMenuItemRightClick="onContextMenuItemRightClick">
+        <div :class="'title' + selectedclass(treeDatumID)" :style="indentStyle" :data-label="treeDatum.title"
+            @click="titleBarClick">
             <!-- expand icon -->
-            <IconSwitcher
-                v-if="treeDatum.nodes"
-                class="title-element clickable expand-icon"
-                :useFirst="treeDatum.treeExpanded"
-                :iconID1="['fa', 'angle-down']"
-                :iconID2="['fa', 'angle-right']"
-                :width="15"
-                @click="toggleExpand(treeDatumID)"
-            />
+            <IconSwitcher v-if="treeDatum.nodes" class="title-element clickable expand-icon"
+                :useFirst="treeDatum.treeExpanded" :iconID1="['fa', 'angle-down']" :iconID2="['fa', 'angle-right']"
+                :width="15" @click="toggleExpand(treeDatumID)" />
             <div v-else :style="flexFixedWidth(7)"></div>
-
             <!-- item icon -->
             <!-- <IconSwitcher
-      class="title-element clickable"
-      :useFirst="treeDatum.nodes !== undefined"
-      :iconID1="['far', 'folder']"
-      :iconID2="['far', 'file']"
-      :width="18"
-      @click="titleClick(treeDatumID)"
-    /> -->
-
+   class="title-element clickable"
+   :useFirst="treeDatum.nodes !== undefined"
+   :iconID1="['far', 'folder']"
+   :iconID2="['far', 'file']"
+   :width="18"
+   @click="titleClick(treeDatumID)"
+ /> -->
             <!-- title text -->
             <!-- :placement="tipPlacement" -->
             <Tooltip :tip="selInstructions">
-                <div
-                    class="title-text clickable"
-                    @click="titleClick(treeDatumID)"
-                    :style="treeDatum.visible ? '' : 'color: lightgray;'"
-                >
+                <div class="title-text clickable" @click="titleClick(treeDatumID)"
+                    :style="treeDatum.visible ? '' : 'color: lightgray;'">
                     {{ title }}
                     <span v-if="treeDatum.nodes">
                         {{ descendentCounts(treeDatum) }}
                     </span>
                 </div>
             </Tooltip>
-
             <!-- menu-item buttons -->
-            <IconBar
-                :width="24 * Object.keys(iconsToDisplay).length"
-                extraClasses="me-2 selected"
-                style="margin-right: 8px"
-            >
+            <IconBar :width="24 * Object.keys(iconsToDisplay).length" extraClasses="me-2 selected"
+                style="margin-right: 8px">
                 <!-- the eye icon should always be farthest to the right, so list it first -->
-                <IconSwitcher
-                    class="title-element clickable"
-                    :useFirst="treeDatum.visible"
-                    :iconID1="visibleIconToUse"
-                    :iconID2="visibleIconToUse"
-                    :icon2Style="{ color: 'lightgray' }"
-                    :width="22"
-                    @click="toggleVisible(treeDatumID)"
-                    title="Visible"
-                />
-                <IconSwitcher
-                    v-if="iconsToDisplay.focused"
-                    class="title-element clickable"
-                    :useFirst="treeDatum.focused"
-                    :iconID1="['fa', 'arrows-to-eye']"
-                    :iconID2="['fa', 'arrows-to-eye']"
-                    :icon2Style="{ color: 'lightgray' }"
-                    :width="22"
-                    @click="toggleFocused(treeDatumID)"
-                    title="Focus"
-                />
-                <IconSwitcher
-                    v-if="iconsToDisplay.delete"
-                    class="title-element clickable delete"
-                    :useFirst="true"
-                    :iconID1="['far', 'rectangle-xmark']"
-                    :iconID2="['far', 'rectangle-xmark']"
-                    :width="22"
-                    @click="deleteMol(treeDatumID)"
-                    title="Delete"
-                />
-                <IconSwitcher
-                    v-if="iconsToDisplay.cloneExtract"
-                    class="title-element clickable cloneextract"
-                    :useFirst="true"
-                    :iconID1="['far', 'clone']"
-                    :iconID2="['far', 'clone']"
-                    :width="22"
-                    @click="cloneMol(treeDatumID)"
-                    title="Clone"
-                />
-                <IconSwitcher
-                    v-if="iconsToDisplay.rename"
-                    class="title-element clickable rename"
-                    :useFirst="true"
-                    :iconID1="['fa', 'pencil']"
-                    :iconID2="['fa', 'pencil']"
-                    :width="22"
-                    @click="renameMol(treeDatumID)"
-                    title="Rename"
-                />
-                <!-- 
-        :icon2Style="{ color: 'lightgray' }" -->
+                <IconSwitcher class="title-element clickable" :useFirst="treeDatum.visible" :iconID1="visibleIconToUse"
+                    :iconID2="visibleIconToUse" :icon2Style="{ color: 'lightgray' }" :width="22"
+                    @click="toggleVisible(treeDatumID)" title="Visible" />
+                <IconSwitcher v-if="iconsToDisplay.focused" class="title-element clickable"
+                    :useFirst="treeDatum.focused" :iconID1="['fa', 'arrows-to-eye']" :iconID2="['fa', 'arrows-to-eye']"
+                    :icon2Style="{ color: 'lightgray' }" :width="22" @click="toggleFocused(treeDatumID)"
+                    title="Focus" />
+                <IconSwitcher v-if="iconsToDisplay.delete" class="title-element clickable delete" :useFirst="true"
+                    :iconID1="['far', 'rectangle-xmark']" :iconID2="['far', 'rectangle-xmark']" :width="22"
+                    @click="deleteMol(treeDatumID)" title="Delete" />
+                <IconSwitcher v-if="iconsToDisplay.cloneExtract" class="title-element clickable cloneextract"
+                    :useFirst="true" :iconID1="['far', 'clone']" :iconID2="['far', 'clone']" :width="22"
+                    @click="cloneMol(treeDatumID)" title="Clone" />
+                <IconSwitcher v-if="iconsToDisplay.rename" class="title-element clickable rename" :useFirst="true"
+                    :iconID1="['fa', 'pencil']" :iconID2="['fa', 'pencil']" :width="22" @click="renameMol(treeDatumID)"
+                    title="Rename" />
+                <!--
+  :icon2Style="{ color: 'lightgray' }" -->
             </IconBar>
         </div>
     </ContextMenu>
@@ -115,21 +58,21 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+// import "bootstrap/js/dist/collapse";
+import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
+import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
+import ContextMenu from "../ContextMenu/ContextMenu.vue";
+import { IContextMenuOption } from "../ContextMenu/ContextMenuInterfaces";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { TreeNodeType, SelectedType } from "../TreeView/TreeInterfaces";
 import { flexFixedWidthStyle } from "../TitleBar/IconBar/IconBarUtils";
-import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as api from "@/Api";
 import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
 import { IMenuItem, IMenuSubmenu } from "../Menu/Menu";
-import ContextMenu from "../ContextMenu/ContextMenu.vue";
-import { IContextMenuOption } from "../ContextMenu/ContextMenuInterfaces";
-import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
-
 interface IIconsToDisplay {
     visible?: boolean;
     focused?: boolean;
@@ -234,9 +177,13 @@ export default class TitleBar extends Vue {
      * @returns {string} The indent style for the title bar.
      */
     get indentStyle(): string {
-        return `margin-left:${8 * this.depth}px;`;
+        let depthToUse = this.depth;
+        if (this.depth === 0 && this.treeDatum.parentId) {
+            // It's in a flat list, calculate real depth
+            depthToUse = this.treeDatum.getAncestry(getMoleculesFromStore()).length - 1;
+        }
+        return `margin-left:${8 * depthToUse}px;`;
     }
-
     /**
      * Get the data associated with this.treeData.
      *
@@ -514,7 +461,7 @@ export default class TitleBar extends Vue {
 
         // Collect all the items from the submenus, in one list.
         const allEditItems: IMenuItem[] = [];
-        
+
         editMenu.items.forEach((item) => {
             const subItems = (item as IMenuSubmenu).items;
             if (subItems === undefined) {
@@ -634,6 +581,7 @@ export default class TitleBar extends Vue {
 
 // See https://codepen.io/kdydesign/pen/VrQZqx
 $transition-time: 0.2s;
+
 .slide-enter-active {
     -moz-transition-duration: $transition-time;
     -webkit-transition-duration: $transition-time;
