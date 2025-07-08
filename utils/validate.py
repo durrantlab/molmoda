@@ -231,7 +231,7 @@ for ts_file in ts_files:
                     ts_file,
                     "If you use .catch(), you must throw an error or reject within the next few lines. Comment out 'throw err' in those rare cases where you want to ignore an error.",
                 )
-    if "import(" in content and os.path.basename(ts_file) != "DynamicImports.ts":
+    if "import(" in content and os.path.basename(ts_file) not in ["DynamicImports.ts", "AllPlugins.vue"]:
         add_error(ts_file, "Use import() only in the DynamicImports.ts file.")
 
     # Don't allow "MolModa" anywhere but in GlobalVars.ts

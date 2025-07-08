@@ -26,8 +26,6 @@
 
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-
-// import "bootstrap/js/dist/collapse";
 import { IMenuItem } from "./Menu";
 import { dynamicImports } from "@/Core/DynamicImports";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";

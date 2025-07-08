@@ -58,7 +58,6 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-// import "bootstrap/js/dist/collapse";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";

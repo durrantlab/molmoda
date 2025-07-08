@@ -35,10 +35,6 @@ import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { IContextMenuOption } from "./ContextMenuInterfaces";
 
-// Need below for menu to work. No need to lazy load. Always available.
-// import "bootstrap/js/dist/dropdown";
-// import "bootstrap/js/dist/collapse";
-
 /**
  * ContextMenu component
  */
