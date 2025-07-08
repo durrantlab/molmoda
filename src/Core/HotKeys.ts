@@ -10,7 +10,7 @@ export let controlKeyDown = false;
 
 /**
  * Check if text is selected.
- * 
+ *
  * @returns {boolean}  Whether text is selected.
  */
 function isTextSelected(): boolean {
@@ -23,37 +23,41 @@ function isTextSelected(): boolean {
 
 // Detect click anywhere, but only once. Don't start listening for shift and
 // control until then.
-let clickDetected = false;
-document.addEventListener("click", () => {
-    if (!clickDetected) {
-        clickDetected = true;
-        hotkeyslibPromise()
-            .then((hotkeys) => {
-                hotkeys("*", { keyup: true }, (event: any) => {
-                    if (hotkeys.shift) {
-                        shiftKeyDown = event.type === "keydown";
-                    }
-                    if (hotkeys.ctrl) {
-                        controlKeyDown = event.type === "keydown";
-                    }
-                    if (hotkeys.command) {
-                        controlKeyDown = event.type === "keydown";
-                    }
-                });
-                return;
-            })
-            .catch((err) => {
-                throw err;
+function onInitialClick() {
+    hotkeyslibPromise()
+        .then((hotkeys) => {
+            hotkeys("*", { keyup: true }, (event: any) => {
+                if (hotkeys.shift) {
+                    shiftKeyDown = event.type === "keydown";
+                }
+                if (hotkeys.ctrl) {
+                    controlKeyDown = event.type === "keydown";
+                }
+                if (hotkeys.command) {
+                    controlKeyDown = event.type === "keydown";
+                }
             });
-    }
-});
-
+            // Remove the listener after it has run once.
+            document.removeEventListener("click", onInitialClick);
+            return;
+        })
+        .catch((err) => {
+            throw err;
+        });
+}
 // If user unfocuses this tab, clear shift/control hotkeys.
-window.addEventListener("blur", () => {
+function onWindowBlur() {
     shiftKeyDown = false;
     controlKeyDown = false;
-});
-
+}
+/**
+ * Sets up global event listeners for hotkey state management.
+ * Should be called once when the application starts.
+ */
+export function setupGlobalKeyListeners() {
+    document.addEventListener("click", onInitialClick);
+    window.addEventListener("blur", onWindowBlur);
+}
 /**
  * Get the hotkeys object (library). If it is not yet loaded, load it.
  *
@@ -86,7 +90,7 @@ export function registerHotkeys(
             return;
         }
         callback(e);
-    }
+    };
 
     // If hotkeys is a string, make it an array.
     if (typeof hotkeys === "string") {

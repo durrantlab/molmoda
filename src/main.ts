@@ -7,74 +7,74 @@ import { loadFontAwesomeFonts } from "./UI/FontAwesome";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { setupTests } from "./Testing/SetupTests";
 import {
-    applySettings,
-    getSettings,
+ applySettings,
+ getSettings,
 } from "./Plugins/Core/Settings/LoadSaveSettings";
 import { defineMakerFuncs } from "./TreeNodes/TreeNode/TreeNode";
 import { errorReportingSetup } from "./Plugins/Core/ErrorReporting/ErrorReporting";
 import { setupTags } from "./Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { setupSaveOnClose } from "./Core/SaveOnClose";
-import { Reactor } from "./Core/Reactor";
+// import { Reactor } from "./Core/Reactor";
 import { logEvent } from "./Core/Analytics";
-import { colorDefinitionNameToScheme } from "./Core/Styling/Colors/ColorSchemeDefinitions";
-import { ISelAndStyle } from "./Core/Styling/SelAndStyleInterfaces";
-import { pluginsApi } from "./Api/Plugins";
-import { colorNameToHex } from "./Core/Styling/Colors/ColorUtils";
+// import { colorDefinitionNameToScheme } from "./Core/Styling/Colors/ColorSchemeDefinitions";
+// import { ISelAndStyle } from "./Core/Styling/SelAndStyleInterfaces";
+// import { pluginsApi } from "./Api/Plugins";
+// import { colorNameToHex } from "./Core/Styling/Colors/ColorUtils";
 
-import * as api from "@/Api";
-import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-
+// import * as api from "@/Api";
+// import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { setupGlobalKeyListeners } from "./Core/HotKeys";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
 
-async function testToasts() {
-    api.messages.popupMessage(
-        "Test Title",
-        "Test message content.",
-        PopupVariant.Info,
-        () => {
-            // Reload the page, preserving only the focus parameter if it exists.
-            // alert("Done!")
-        },
-        true,
-        {}
-    );
+// async function testToasts() {
+//     api.messages.popupMessage(
+//         "Test Title",
+//         "Test message content.",
+//         PopupVariant.Info,
+//         () => {
+//             // Reload the page, preserving only the focus parameter if it exists.
+//             // alert("Done!")
+//         },
+//         true,
+//         {}
+//     );
 
-    // Wait 5 seconds.
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+//     // Wait 5 seconds.
+//     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    api.messages.popupMessage(
-        "Test Title2",
-        "Test message content.",
-        PopupVariant.Warning,
-        () => {
-            // Reload the page, preserving only the focus parameter if it exists.
-            // alert("Done!")
-        },
-        false,
-        {
-            duration: 10000, // Show for 10 seconds
-            showCloseBtn: false
-        }
-    );
+//     api.messages.popupMessage(
+//         "Test Title2",
+//         "Test message content.",
+//         PopupVariant.Warning,
+//         () => {
+//             // Reload the page, preserving only the focus parameter if it exists.
+//             // alert("Done!")
+//         },
+//         false,
+//         {
+//             duration: 10000, // Show for 10 seconds
+//             showCloseBtn: false
+//         }
+//     );
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+//     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    api.messages.popupMessage(
-        "Test Title3",
-        "Test message content.",
-        PopupVariant.Danger,
-        () => {
-            // Reload the page, preserving only the focus parameter if it exists.
-            alert("Done!");
-        },
-        false,
-        {
-            duration: 0
-        }
-    );
-}
+//     api.messages.popupMessage(
+//         "Test Title3",
+//         "Test message content.",
+//         PopupVariant.Danger,
+//         () => {
+//             // Reload the page, preserving only the focus parameter if it exists.
+//             alert("Done!");
+//         },
+//         false,
+//         {
+//             duration: 0
+//         }
+//     );
+// }
 // testToasts();
 
 /**
@@ -88,6 +88,7 @@ async function main() {
     setupTags();
 
     defineMakerFuncs();
+    setupGlobalKeyListeners();
     // setupUpDownTreeNav();
 
     // api.sys.loadStatus.pluginsLoaded = true;
@@ -108,71 +109,71 @@ async function main() {
 
     console.warn("BELOW IS PLAYING WITH REACTION");
 
-    const t = async function () {
-        const reactor = new Reactor();
-        // await reactor.setup("Cl[C:1]([*:3])=O.[OH:2][*:4]>>[*:4][O:2][C:1]([*:3])=O")
-        // reactor.addReactant("CC(Cl)=O", 0);
-        // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
-        // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
-        // reactor.addReactant("CCCCCO", 1)
+//     const t = async function () {
+//         const reactor = new Reactor();
+//         // await reactor.setup("Cl[C:1]([*:3])=O.[OH:2][*:4]>>[*:4][O:2][C:1]([*:3])=O")
+//         // reactor.addReactant("CC(Cl)=O", 0);
+//         // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
+//         // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
+//         // reactor.addReactant("CCCCCO", 1)
 
-        // See https://zenodo.org/records/1209313
-        await reactor.setup(
-            "[#6:7][C:1](=[O:2])[O:3][#6:4]>>[#6:7][C:1]([H])([H])[O:2][H].[O:3]([H])[#6:4]"
-        );
-        reactor.addReactant("c1ccccc1CCCC(=O)OCCCC", 0);
-        // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
-        // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
-        // reactor.addReactant("CCCCCO", 1)
+//         // See https://zenodo.org/records/1209313
+//         await reactor.setup(
+//             "[#6:7][C:1](=[O:2])[O:3][#6:4]>>[#6:7][C:1]([H])([H])[O:2][H].[O:3]([H])[#6:4]"
+//         );
+//         reactor.addReactant("c1ccccc1CCCC(=O)OCCCC", 0);
+//         // reactor.addReactant("OC1CCC(CC1)C(Cl)=O", 0);
+//         // reactor.addReactant("O[C@H]1[C@H](O)[C@@H](O)[C@H](O)[C@@H](O)[C@@H]1O", 1)
+//         // reactor.addReactant("CCCCCO", 1)
 
-        const results = reactor.runReaction();
-    };
-    // t();
+//         const results = reactor.runReaction();
+//     };
+//     // t();
 
-    console.warn("CRUFT HERE! FIX!!!");
+//     console.warn("CRUFT HERE! FIX!!!");
 
-    // getObabelFormats();
+//     // getObabelFormats();
 
-    // For debugging...
-    // (window as any).testids = () => {
-    //     getMoleculesFromStore().flattened.forEach((m) => {
-    //         if (m.nodes) {
-    //             m.nodes.forEach((n) => {
-    //                 console.log(m.id, n.parentId);
-    //             });
-    //         }
-    //     });
-    // }
+//     // For debugging...
+//     // (window as any).testids = () => {
+//     //     getMoleculesFromStore().flattened.forEach((m) => {
+//     //         if (m.nodes) {
+//     //             m.nodes.forEach((n) => {
+//     //                 console.log(m.id, n.parentId);
+//     //             });
+//     //         }
+//     //     });
+//     // }
 
-    // setTimeout(() => {
-    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //     // @ts-ignore
-    //     throw new Error("Test error");
-    //     // api.messages.popupMessage(
-    //     //     "Job Running",
-    //     //     "Your job is currently running. Check the Jobs panel to monitor job progress.",
-    //     //     PopupVariant.Danger
-    //     // );
-    // }, 3000);
+//     // setTimeout(() => {
+//     //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//     //     // @ts-ignore
+//     //     throw new Error("Test error");
+//     //     // api.messages.popupMessage(
+//     //     //     "Job Running",
+//     //     //     "Your job is currently running. Check the Jobs panel to monitor job progress.",
+//     //     //     PopupVariant.Danger
+//     //     // );
+//     // }, 3000);
 
-    // setTimeout(() => {
-    //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //     // @ts-ignore
-    //     throw new Error("Test error2");
-    //     // api.messages.popupMessage(
-    //     //     "Job Running",
-    //     //     "Your job is2 currently running. Check the Jobs panel to monitor job progress.",
-    //     //     PopupVariant.Danger
-    //     // );
-    // }, 6000);
+//     // setTimeout(() => {
+//     //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//     //     // @ts-ignore
+//     //     throw new Error("Test error2");
+//     //     // api.messages.popupMessage(
+//     //     //     "Job Running",
+//     //     //     "Your job is2 currently running. Check the Jobs panel to monitor job progress.",
+//     //     //     PopupVariant.Danger
+//     //     // );
+//     // }, 6000);
 
-    // api.messages.popupError(
-    //     "<p>The following compile errors were found:</p><ul><li>" +
-    //         compileErrorsArray.join("</li><li>") +
-    //         "</li></ul>"
-    // );
+//     // api.messages.popupError(
+//     //     "<p>The following compile errors were found:</p><ul><li>" +
+//     //         compileErrorsArray.join("</li><li>") +
+//     //         "</li></ul>"
+//     // );
 
-    // const img = await generatePoseView("", "");
+//     // const img = await generatePoseView("", "");
 }
 
 main();
