@@ -60,4 +60,4 @@ export const delayForPopupOpenClose = 1000;
 
 // Delay to wait after keypress before reacting. This is to prevent the app from
 // reacting to every keypress, which would be slow.
-export const formInputDelayUpdate = 1000;
+export const formInputDelayUpdate = 500;
