@@ -4,7 +4,7 @@
 import { getFileNameParts } from "./FilenameManipulation";
 import { getFormatInfoGivenType } from "./LoadSaveMolModels/Types/MolFormats";
 import { IFileInfo } from "./Types";
-import { memoize } from "lodash";
+import memoize from "lodash.memoize";
 type FileInfo = IFileInfo; // To avoid circular dependencies.
 
 /**

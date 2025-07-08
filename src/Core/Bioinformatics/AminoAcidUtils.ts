@@ -2,7 +2,7 @@
 /**
  * Defines properties and utilities for amino acids.
  */
-import { memoize } from "lodash";
+import memoize from "lodash.memoize";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 import { IFileInfo } from "@/FileSystem/Types";

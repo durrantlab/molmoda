@@ -9,7 +9,7 @@ import { IColorScheme } from "./ColorInterfaces";
 // @ts-ignore
 import isEqual from "lodash.isequal";
 import { hexToColorName } from "./ColorUtils";
-import { memoize } from "lodash";
+import memoize from "lodash.memoize";
 interface IColorSchemeDefinition {
     name: string;
     description: string;

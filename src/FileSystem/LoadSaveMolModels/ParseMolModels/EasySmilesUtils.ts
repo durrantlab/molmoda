@@ -2,7 +2,7 @@
 // of converting to OpenBabel or rdkit. These functions example direct
 // manipulation of SMILES string. Probably not as good as the Open Babel
 // implementations, so use sparingly.
-import { memoize } from "lodash";
+import memoize from "lodash.memoize";
 /**
  * Counts heavy atoms in a SMILES fragment, ignoring hydrogens
  * and handling two-letter elements correctly.

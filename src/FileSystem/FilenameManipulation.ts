@@ -1,5 +1,5 @@
 import { IFileParts } from "./FileUtils";
-import { memoize } from "lodash";
+import memoize from "lodash.memoize";
 const regexAcceptableChars = "\\w\\-.";
 
 /**

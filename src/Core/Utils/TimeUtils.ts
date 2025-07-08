@@ -1,4 +1,4 @@
-import { memoize } from "lodash";
+import memoize from "lodash.memoize";
 
 /**
  * Given to timestamps, produces a string that describes the time between the
