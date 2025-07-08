@@ -31,8 +31,20 @@ import { waitForCondition } from "@/Core/Utils/MiscUtils";
 export class Viewer3DMol extends ViewerParent {
     public _mol3dObj: any; // public to make debugging easier
     private _zoomToModelsTimeout: any;
-    private _renderAllTimeout: any;
+    // New properties for hybrid debounce
+    private _renderCooldownTimer: number | null = null;
+    private _renderTrailingEdgeTimer: number | null = null;
+    private _isInRenderCooldown = false;
 
+    // Time after initial (immediate) render before we allow another render. In
+    // other words, cooldown after an immediate render.
+    private readonly RENDER_COOLDOWN_MS = 500;
+
+    // Time to wait for the trailing render after the last call in a burst. This
+    // is the time after the last call before we render again. In other words,
+    // wait time for the trailing render.
+    private readonly RENDER_DEBOUNCE_MS = 1000;
+    
     // Keep track of labels on regions so you can show and hide them with the
     // region itself.
     private _regionLabels: { [key: string]: GenericLabelType } = {};
@@ -416,25 +428,52 @@ export class Viewer3DMol extends ViewerParent {
     }
 
     /**
-     * Render all the molecules and surfaces currently added to the viewer.
-     *
-     * @returns {Promise<void>}  A promise that resolves when the molecules and
-     *    surfaces are rendered.
+     * Performs the actual render call to 3dmol.js. This is separated from the
+     * scheduling logic in `renderAll`.
      */
-    async renderAll(): Promise<void> {
-        // This is pretty expensive, I think. Be sure to not call it too often.
-        return new Promise((resolve) => {
-            // Clear any existing timeout
-            if (this._renderAllTimeout) {
-                clearTimeout(this._renderAllTimeout);
+    private _performRender(): void {
+        if (this._mol3dObj) {
+            this._mol3dObj.render();
+        }
+    }
+    /**
+     * Schedules a render of the viewer. This uses a hybrid "leading-edge"
+     * debounce strategy. The first call in a series triggers an immediate
+     * render. Subsequent calls within a short cooldown period are debounced,
+     * meaning only the last one in the burst will trigger a render after the
+     * cooldown. This provides immediate feedback while preventing performance
+     * issues from too many render calls in rapid succession.
+     *
+     * @returns {Promise<void>} A promise that resolves immediately, as the
+     *   render is scheduled asynchronously.
+     */
+    public renderAll(): Promise<void> {
+        // If we are NOT in a cooldown period, render immediately.
+        if (!this._isInRenderCooldown) {
+            this._performRender();
+            this._isInRenderCooldown = true;
+            // Clear any existing cooldown timer.
+            if (this._renderCooldownTimer) {
+                clearTimeout(this._renderCooldownTimer);
             }
-
-            // Set a new timeout
-            this._renderAllTimeout = setTimeout(() => {
-                this._mol3dObj.render();
-                resolve();
-            }, 250);  // Keep it responsive. Used to be 1000.
-        });
+            // Set a timer to end the cooldown period.
+            this._renderCooldownTimer = window.setTimeout(() => {
+                this._isInRenderCooldown = false;
+                this._renderCooldownTimer = null;
+            }, this.RENDER_COOLDOWN_MS);
+        } else {
+            // We ARE in a cooldown period. Schedule a trailing-edge render.
+            // Clear any previously scheduled trailing-edge render to debounce.
+            if (this._renderTrailingEdgeTimer) {
+                clearTimeout(this._renderTrailingEdgeTimer);
+            }
+            // Schedule a new one to run after a short delay.
+            this._renderTrailingEdgeTimer = window.setTimeout(() => {
+                this._performRender();
+                this._renderTrailingEdgeTimer = null;
+            }, this.RENDER_DEBOUNCE_MS);
+        }
+        return Promise.resolve();
     }
 
     private _getMolsForZooming(ids: string[]): GLModel[] {
@@ -443,9 +482,7 @@ export class Viewer3DMol extends ViewerParent {
 
         // Remove ones that aren't molecules. So can't focus on boxes.
         // Appears to be a limitation of 3dmoljs.
-        models = models.filter(
-            (model) => model.selectedAtoms !== undefined
-        );
+        models = models.filter((model) => model.selectedAtoms !== undefined);
         return models;
     }
 
@@ -464,7 +501,7 @@ export class Viewer3DMol extends ViewerParent {
         await waitForCondition(() => {
             models = this._getMolsForZooming(ids);
             const elapsedTime = performance.now() - startTime;
-            return models.length > 0 || elapsedTime > 5000;  // Wait for five seconds max.
+            return models.length > 0 || elapsedTime > 5000; // Wait for five seconds max.
         }, 100);
 
         // If no models found, don't zoom.
@@ -472,8 +509,7 @@ export class Viewer3DMol extends ViewerParent {
             return;
         }
 
-        this._mol3dObj.zoomTo({ model: models.map(m => m.id) }, 750, true);
-
+        this._mol3dObj.zoomTo({ model: models.map((m) => m.id) }, 750, true);
 
         // // Clear any existing timeout
         // if (this._zoomToModelsTimeout) {
@@ -574,7 +610,10 @@ export class Viewer3DMol extends ViewerParent {
 
         // If viewer creation fails even after the DOM element is present, it's
         // likely a critical error. But let's keep waiting.
-        await waitForCondition(() => viewer !== null && viewer !== undefined, 100);
+        await waitForCondition(
+            () => viewer !== null && viewer !== undefined,
+            100
+        );
 
         viewer.setBackgroundColor(0xffffff);
         this._mol3dObj = viewer;
@@ -862,33 +901,31 @@ export class Viewer3DMol extends ViewerParent {
             // If simplify is true, we need to merge the vertices and reduce the
             // precision of the VRML, etc.
             simpParams = {
-                mergeVertices: 0.1,  // NOTE: 0.1 is lowest value that still looks good.
+                mergeVertices: 0.1, // NOTE: 0.1 is lowest value that still looks good.
                 removeOrphanVertexes: true,
-                precision: 2,  // NOTE: at 1, starts to degrade.
-                sphereQuality: 1,  // NOTE this is good enough
-                cylinderSubdivisions: 3,  // NOTE: minimum to get a decent cylinder
-                cylinderHeightSegments: 4,  // NOTE: must be even, four is good enough
+                precision: 2, // NOTE: at 1, starts to degrade.
+                sphereQuality: 1, // NOTE this is good enough
+                cylinderSubdivisions: 3, // NOTE: minimum to get a decent cylinder
+                cylinderHeightSegments: 4, // NOTE: must be even, four is good enough
                 cartoonQuality: 5, // NOTE: Minimum to get a decent cartoon,
-                minimizeWhiteSpace: true
-            }
-            
+                minimizeWhiteSpace: true,
+            };
+
             surfaceSimpParams = {
-                mergeVertices: 0.5,  // NOTE: 0.1 is lowest value that still looks good.
-                precision: 2,  // NOTE: at 1, starts to degrade.
+                mergeVertices: 0.5, // NOTE: 0.1 is lowest value that still looks good.
+                precision: 2, // NOTE: at 1, starts to degrade.
                 removeOrphanVertexes: true,
                 minimizeWhiteSpace: true,
                 simplifySurfaces: 0.7,
-                smoothSurfaces: 1
-            }
+                smoothSurfaces: 1,
+            };
         }
 
         // Get all the models
         for (const id in this.molCache) {
             const model = this.lookup(id);
             if (model) {
-                vrmls.push([
-                    id, model.exportVRML(simpParams)
-                ]);
+                vrmls.push([id, model.exportVRML(simpParams)]);
             }
         }
 
