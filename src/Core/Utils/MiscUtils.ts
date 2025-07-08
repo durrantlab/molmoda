@@ -28,6 +28,13 @@ export function waitForCondition(
     checkFrequency = 100
 ): Promise<undefined> {
     return new Promise((resolve) => {
+        // Perform an immediate check
+        if (conditionFunc()) {
+            resolve(undefined);
+            return;
+        }
+
+        // If the condition is not met, set up the interval for subsequent checks
         const interval = setInterval(() => {
             if (conditionFunc()) {
                 clearInterval(interval);

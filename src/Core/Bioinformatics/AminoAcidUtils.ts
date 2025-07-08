@@ -369,6 +369,7 @@ export function convertFastaToSeqences(text: string): [string, string][] {
                 currentSequence += trimmedLine;
             }
         }
+        currentSequence = currentSequence.replace("*", ""); // Remove any stop codon asterisk
         if (currentSequence !== "") {
             sequences.push(currentSequence);
         }
@@ -385,7 +386,8 @@ export function convertFastaToSeqences(text: string): [string, string][] {
         const lines = block.split(/\r?\n/);
         const name = lines[0].trim();
         const sequenceParts = lines.slice(1);
-        const sequence = sequenceParts.join("").replace(/\s/g, "");
+        let sequence = sequenceParts.join("").replace(/\s/g, "");
+        sequence = sequence.replace("*", ""); // Remove any stop codon asterisk
         if (name || sequence) {
             results.push([name, sequence]);
         }

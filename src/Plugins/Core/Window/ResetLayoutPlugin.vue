@@ -1,5 +1,5 @@
 <template>
-    <PluginComponent v-model="open" :infoPayload="infoPayload"></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 <script lang="ts">
 import { Options } from "vue-class-component";

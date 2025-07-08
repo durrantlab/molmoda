@@ -68,7 +68,7 @@ system uses these to autopopulate with plugins. -->
     <PoseViewPlugin @onPluginSetup="onPluginSetup"></PoseViewPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <PubChemBioassaysPlugin @onPluginSetup="onPluginSetup"></PubChemBioassaysPlugin>
-    <PubChemFocusedLibraryPlugin @onPluginSetup="onPluginSetup"></PubChemFocusedLibraryPlugin>
+    <PubChemFindSimilarPlugin @onPluginSetup="onPluginSetup"></PubChemFindSimilarPlugin>
     <PubChemNamesPlugin @onPluginSetup="onPluginSetup"></PubChemNamesPlugin>
     <PubChemPropsPlugin @onPluginSetup="onPluginSetup"></PubChemPropsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
@@ -150,7 +150,7 @@ import FindSimilarProteinsPlugin from "./Optional/FindSimilarProteins/FindSimila
 import PoseViewPlugin from "./Optional/PoseViewPlugin.vue";
 import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
 import PubChemBioassaysPlugin from "./Optional/PubChem/PubChemBioassaysPlugin.vue";
-import PubChemFocusedLibraryPlugin from "./Optional/PubChem/PubChemFocusedLibraryPlugin.vue";
+import PubChemFindSimilarPlugin from "./Optional/PubChem/PubChemFindSimilarPlugin.vue";
 import PubChemNamesPlugin from "./Optional/PubChem/PubChemNamesPlugin.vue";
 import PubChemPropsPlugin from "./Optional/PubChem/PubChemPropsPlugin.vue";
 import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
@@ -228,7 +228,7 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     PoseViewPlugin,
     ProtonateCompoundsPlugin,
     PubChemBioassaysPlugin,
-    PubChemFocusedLibraryPlugin,
+    PubChemFindSimilarPlugin,
     PubChemNamesPlugin,
     PubChemPropsPlugin,
     ReducePlugin,

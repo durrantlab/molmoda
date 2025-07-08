@@ -433,7 +433,7 @@ export class Viewer3DMol extends ViewerParent {
             this._renderAllTimeout = setTimeout(() => {
                 this._mol3dObj.render();
                 resolve();
-            }, 1000);
+            }, 250);  // Keep it responsive. Used to be 1000.
         });
     }
 
@@ -562,29 +562,32 @@ export class Viewer3DMol extends ViewerParent {
      * @returns {Promise<any>}  A promise that resolves the viewer object when
      *     3dmol.js is loaded.
      */
-    _loadAndSetupViewerLibrary(id: string): Promise<ViewerParent> {
-        return dynamicImports.mol3d.module
-            .then(($3Dmol: any) => {
-                const viewer = $3Dmol.createViewer(id, {
-                    defaultcolors: $3Dmol.rasmolElementColors,
-                });
-                viewer.setBackgroundColor(0xffffff);
-                this._mol3dObj = viewer;
+    async _loadAndSetupViewerLibrary(id: string): Promise<ViewerParent> {
+        const $3Dmol: any = await dynamicImports.mol3d.module;
 
-                // Changing the thickness of the fog doesn't seem to be
-                // possible. Also examined the libarry code with llm, which
-                // confirmed fog near/far values cannot be set externally.
-                this._mol3dObj.enableFog(true);
+        // Wait for the DOM element to be present before attempting to create the viewer.
+        await waitForCondition(() => document.getElementById(id) !== null, 100);
 
-                // Adding subtle outline makes things easier to see.
-                viewer.setViewStyle({ style: "outline", width: 0.02 });
+        const viewer = $3Dmol.createViewer(id, {
+            defaultcolors: $3Dmol.rasmolElementColors,
+        });
 
-                return this as ViewerParent;
-            })
-            .catch((err: any) => {
-                throw err;
-                // return this as ViewerParent;
-            });
+        // If viewer creation fails even after the DOM element is present, it's
+        // likely a critical error. But let's keep waiting.
+        await waitForCondition(() => viewer !== null && viewer !== undefined, 100);
+
+        viewer.setBackgroundColor(0xffffff);
+        this._mol3dObj = viewer;
+
+        // Changing the thickness of the fog doesn't seem to be
+        // possible. Also examined the libarry code with llm, which
+        // confirmed fog near/far values cannot be set externally.
+        this._mol3dObj.enableFog(true);
+
+        // Adding subtle outline makes things easier to see.
+        viewer.setViewStyle({ style: "outline", width: 0.02 });
+
+        return this as ViewerParent;
     }
 
     /**

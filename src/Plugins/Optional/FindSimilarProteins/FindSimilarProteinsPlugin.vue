@@ -21,11 +21,12 @@ import {
     IUserArgCheckbox,
     IUserArgSelect,
     IUserArgTextArea,
+    IUserArgOption,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { checkProteinLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -35,11 +36,12 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { convertFastaToSeqences } from "@/Core/Bioinformatics/AminoAcidUtils";
+import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
-import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { alignFileInfos } from "../Align/AlignProteinsUtils";
-import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
  */
@@ -73,6 +75,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "findsimilarproteins";
     intro = "Find proteins with similar sequences using the RCSB PDB sequence search.";
+    details =
+        "This tool uses US-align to perform structural alignment. Aligned structures will be added to the workspace.";
     tags = [Tag.Modeling];
     isActionBtnEnabled = false;
     userArgDefaults: UserArg[] = [
@@ -149,7 +153,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             type: UserArgType.Checkbox,
             label: "Align structures",
             description:
-                "Align structures to their respective query proteins. Only available when using proteins from the workspace.",
+                "Align structures to their respective query proteins. For FASTA queries, aligns to the top search result.",
             val: true,
         } as IUserArgCheckbox,
     ];
@@ -160,9 +164,28 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      * @returns {string | null} An error message if no protein is loaded, otherwise null.
      */
     checkPluginAllowed(): string | null {
-        return checkProteinLoaded();
+        return null; // Always allow opening, logic is handled in onBeforePopupOpen
     }
 
+    /**
+     * Called before the popup opens. Sets the initial state of the form based
+     * on whether proteins are present in the workspace.
+     */
+    async onBeforePopupOpen() {
+        const allMolecules = getMoleculesFromStore();
+        const proteinNodes = allMolecules.flattened.filters.keepType(
+            TreeNodeType.Protein
+        );
+        const hasProteins = proteinNodes.length > 0;
+        this.setUserArgEnabled("inputType", hasProteins);
+        if (!hasProteins) {
+            this.setUserArg("inputType", "fasta");
+        } else {
+            this.setUserArg("inputType", "workspace");
+        }
+        // Trigger onUserArgChange to update the visibility of other fields
+        this.onUserArgChange();
+    }
     /**
      * Handles changes to user arguments to update button state.
      */
@@ -172,20 +195,20 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
         this.setUserArgEnabled("protein_to_query", isWorkspace);
         this.setUserArgEnabled("fastaText", !isWorkspace);
-        this.setUserArgEnabled(
-            "alignStructures",
-            downloadStructures && isWorkspace
-        );
+        this.setUserArgEnabled("alignStructures", downloadStructures);
         if (isWorkspace) {
             const moleculeInput: MoleculeInput = this.getUserArg("protein_to_query");
             if (!moleculeInput || !moleculeInput.molsToConsider) {
                 this.isActionBtnEnabled = false;
                 return;
             }
+            // Use compileMolModels to get a synchronous representation of what will be processed.
             const compiledMols = compileMolModels(
                 moleculeInput.molsToConsider,
                 true
             );
+            // mobileMolecules only considers proteins, so compoundsNodes can be ignored.
+            // nodeGroups contains a TreeNodeList for each top-level molecule that has matching proteins.
             this.isActionBtnEnabled = compiledMols.nodeGroups.length > 0;
         } else {
             const fastaText = (this.getUserArg("fastaText") as string).trim();
@@ -328,70 +351,101 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
         const alignStructures = this.getUserArg("alignStructures") as boolean;
         if (downloadStructures) {
-            const pdbIdsToLoad = sortedResults.map(([pdbId]) => pdbId);
-            const spinnerId = messagesApi.startWaitSpinner();
-            const chunkSize = 5; // To respect RCSB rate limits
-            try {
-                for (let i = 0; i < pdbIdsToLoad.length; i += chunkSize) {
-                    const chunk = pdbIdsToLoad.slice(i, i + chunkSize);
-                    const loadPromises = chunk.map(async (pdbId: string) => {
-                        try {
-                            let fileInfo = await loadPdbIdToFileInfo(pdbId);
-                            if (alignStructures) {
-                                // Find one of the original query proteins for this PDB ID
-                                const queryData = sortedResults.find(([id]) => id === pdbId)?.[1];
-                                if (queryData && queryData.queries.size > 0) {
-                                    const query = queryData.queries.values().next()
-                                        .value as TreeNode; // Pick first query node
-                                    if (query instanceof TreeNode) {
-                                        const queryNode = query as TreeNode;
-                                        const refFileInfo = await queryNode.toFileInfo("pdb", true);
-                                        const alignedFileInfos = await alignFileInfos(refFileInfo, [
-                                            fileInfo,
-                                        ]);
-                                        if (alignedFileInfos.length > 0) {
-                                            fileInfo = alignedFileInfos[0];
-                                            // Update the name to indicate it's aligned.
-                                            fileInfo.name = `${pdbId}-aligned-to-${queryNode
-                                                .getAncestry()
-                                                .get(0).title}.pdb`;
-                                        } else {
-                                            console.warn(
-                                                `Alignment failed for ${pdbId}, loading unaligned structure.`
-                                            );
-                                        }
-                                    }
-                                } else {
-                                    console.warn(
-                                        `Could not find query protein node for ${pdbId}, loading unaligned structure.`
-                                    );
-                                }
-                            }
-                            await this.addFileInfoToViewer({
-                                fileInfo,
-                                tag: this.pluginId,
-                            });
-                        } catch (error) {
-                            console.error(`Failed to load PDB ID ${pdbId}:`, error);
-                            messagesApi.popupMessage(
-                                "Load Error",
-                                `Could not load PDB ID ${pdbId}.`,
-                                PopupVariant.Warning,
-                                undefined,
-                                false,
-                                {}
-                            );
-                        }
-                    });
-                    await Promise.all(loadPromises);
-                }
-            } catch (error) {
-                messagesApi.popupError(
-                    "An unexpected error occurred while downloading structures."
-                );
-            } finally {
-                messagesApi.stopWaitSpinner(spinnerId);
+            await this._downloadAndAlignStructures(allJobOutputs, alignStructures);
+        }
+    }
+    /**
+     * Downloads and optionally aligns the structures from the search results.
+     *
+     * @param {any[]} allJobOutputs - The raw output from the job queue.
+     * @param {boolean} align - Whether to perform alignment.
+     */
+    private async _downloadAndAlignStructures(
+        allJobOutputs: any[],
+        align: boolean
+    ): Promise<void> {
+        const spinnerId = messagesApi.startWaitSpinner();
+        // Group PDBs by the reference they should be aligned to.
+        // Key: reference identifier (TreeNode.id or a PDB ID).
+        // Value: Set of mobile PDB IDs.
+        const alignmentGroups = new Map<string, Set<string>>();
+        // Store the query object (TreeNode or string) for each reference.
+        const referenceToQueryMap = new Map<string, TreeNode | string>();
+        for (const jobOutput of allJobOutputs) {
+            if (jobOutput.error || !jobOutput.results || jobOutput.results.length === 0) {
+                continue;
             }
+            const { query, results } = jobOutput;
+            const mobilePdbIds: string[] = results.map((item: any) => item.identifier);
+            let referenceId: string;
+            if (query instanceof TreeNode) {
+                referenceId = query.id as string;
+            } else {
+                // For FASTA, the reference is the top hit.
+                referenceId = mobilePdbIds[0];
+            }
+            if (!referenceToQueryMap.has(referenceId)) {
+                referenceToQueryMap.set(referenceId, query);
+            }
+            if (!alignmentGroups.has(referenceId)) {
+                alignmentGroups.set(referenceId, new Set<string>());
+            }
+            const mobileSet = alignmentGroups.get(referenceId)!;
+            mobilePdbIds.forEach((id) => mobileSet.add(id));
+        }
+        try {
+            for (const [referenceId, mobileIdSet] of alignmentGroups.entries()) {
+                const query = referenceToQueryMap.get(referenceId)!;
+                const isWorkspaceQuery = query instanceof TreeNode;
+                let referenceFileInfo: FileInfo | null = null;
+                let referenceTitle = "";
+                if (align) {
+                    if (isWorkspaceQuery) {
+                        const referenceNode = getMoleculesFromStore().filters.onlyId(referenceId);
+                        if (referenceNode) {
+                            referenceFileInfo = await referenceNode.toFileInfo("pdb", true);
+                            referenceTitle = referenceNode.getAncestry().get(0).title;
+                        }
+                    } else {
+                        referenceFileInfo = await loadPdbIdToFileInfo(referenceId);
+                        referenceTitle = referenceId;
+                        await this.addFileInfoToViewer({
+                            fileInfo: referenceFileInfo,
+                            tag: this.pluginId,
+                        });
+                    }
+                }
+                const mobileIds = Array.from(mobileIdSet);
+                for (const pdbId of mobileIds) {
+                    if (align && pdbId === referenceId) continue;
+                    try {
+                        let mobileFileInfo = await loadPdbIdToFileInfo(pdbId);
+                        if (align && referenceFileInfo) {
+                            const aligned = await alignFileInfos(referenceFileInfo, [
+                                mobileFileInfo,
+                            ]);
+                            if (aligned.length > 0) {
+                                mobileFileInfo = aligned[0];
+                                mobileFileInfo.name = `${pdbId}-aligned-to-${referenceTitle}.pdb`;
+                            } else {
+                                console.warn(`Alignment failed for ${pdbId}, loading unaligned structure.`);
+                            }
+                        }
+                        await this.addFileInfoToViewer({
+                            fileInfo: mobileFileInfo,
+                            tag: this.pluginId,
+                        });
+                    } catch (error) {
+                        console.error(`Failed to load or process PDB ID ${pdbId}:`, error);
+                    }
+                }
+            }
+        } catch (error) {
+            messagesApi.popupError(
+                "An unexpected error occurred while downloading and aligning structures."
+            );
+        } finally {
+            messagesApi.stopWaitSpinner(spinnerId);
         }
     }
     /**
@@ -410,53 +464,122 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest[]> {
         const pdb1xdn = "https://files.rcsb.org/view/1XDN.pdb";
-        const fastaText = `>my_protein
-MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG`;
-        return [
+        const pdb4wp4 = "https://files.rcsb.org/view/4WP4.pdb";
+        const fastaText1 = `>my_protein
+MQIFVKTLTGKTITLEVEPSDTIENVK\nAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG`;
+        const fastaText2 = `>MCHU - Calmodulin - Human, rabbit, bovine, rat, and chicken
+MADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTID
+FPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREA
+DIDGDGQVNYEEFVQMMTAK*`;
+        const rawSeq1 =
+            "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG";
+        const rawSeq2 =
+            "MADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREADIDGDGQVNYEEFVQMMTAK";
+        const tests: ITest[] = [
             // Test 1: Workspace Search and Download (with Alignment)
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, pdb1xdn),
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                    true,
+                    pdb1xdn,
+                    0
+                ),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1S68")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1S68-aligned-to-1XDN"),
             },
-            // Test 2: FASTA text search
+            // Test 2: FASTA text search with alignment
             {
+                // Failed: findsimilarproteins #2 #modal-findsimilarproteins #fastaText-findsimilarproteins-item not found after 50 seconds.
+
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 1),
                 pluginOpen: new TestCmdList()
-                    .setUserArg("inputType", "fasta", "findsimilarproteins")
-                    .setUserArg("fastaText", fastaText, "findsimilarproteins")
-                    .setUserArg("max_results", 3, "findsimilarproteins")
-                    .click("#alignStructures-findsimilarproteins-item"), // Should be disabled, but click to test
+                    .setUserArg("inputType", "Use FASTA text", this.pluginId)
+                    .setUserArg("fastaText", fastaText1, this.pluginId)
+                    .setUserArg("max_results", 3, this.pluginId),
                 afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "6T8L") // A known similar protein
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "6T8L"), // Should not be aligned
+                    .waitUntilRegex("#navigator", "1D3Z-aligned-to-1AAR")
+                    .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR"),
             },
-            // Test 3: Multiple FASTA sequences
+            // Test 3: FASTA text with just sequence, no header, without alignment
             {
                 pluginOpen: new TestCmdList()
-                    .setUserArg("inputType", "fasta", "findsimilarproteins")
-                    .setUserArg("fastaText", `${fastaText}\n>protein2\nPEPTIDE`, "findsimilarproteins")
-                    .setUserArg("max_results", 2, "findsimilarproteins"),
+                    // .setUserArg("inputType", "Use FASTA text", this.pluginId)
+                    .setUserArg("fastaText", rawSeq1, this.pluginId)
+                    .setUserArg("evalue_cutoff", 10, this.pluginId)
+                    .setUserArg("max_results", 2, this.pluginId)
+                    .click("#modal-findsimilarproteins #alignStructures-findsimilarproteins-item"),
                 afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "Query Protein")
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "6T8L"),
+                    .waitUntilRegex("#navigator", "1AAR") // Reference
+                    .waitUntilRegex("#navigator", '1CMX'), // Mobile
             },
-            // Test 4: FASTA text with just sequence, no header
+            // Test 4: Two proteins from workspace
             {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(true, pdb4wp4, 3)
+                    .loadExampleMolecule(true, pdb1xdn, 3),
                 pluginOpen: new TestCmdList()
-                    .setUserArg("inputType", "fasta", "findsimilarproteins")
-                    .setUserArg("fastaText", "PEPTIDE", "findsimilarproteins")
-                    .setUserArg("evalue_cutoff", 10, "findsimilarproteins")
-                    .setUserArg("max_results", 1, "findsimilarproteins"),
+                    .setUserArg("max_results", 2, this.pluginId),
                 afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "1PEO")
+                    .waitUntilRegex("#modal-tabledatapopup", "1HEV") // From 1XDN
+                    .waitUntilRegex("#modal-tabledatapopup", "1Q9B") // From 4WP4
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "1PEO"),
+                    .waitUntilRegex("#navigator", "1S68-aligned-to-1XDN")
+                    .waitUntilRegex("#navigator", "1Q9B-aligned-to-4WP4"),
+            },
+            // Test 5: Two full FASTA sequences
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(undefined, undefined, 4),
+                pluginOpen: new TestCmdList()
+                    .setUserArg("inputType", "Use FASTA text", this.pluginId)
+                    .setUserArg(
+                        "fastaText",
+                        `${fastaText1}\n${fastaText2}`,
+                        "findsimilarproteins"
+                    )
+                    .setUserArg("max_results", 2, this.pluginId),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From fastaText1
+                    .waitUntilRegex("#navigator", "1LVC-aligned-to-1IQ5"), // From fastaText2 (Calmodulin)
+            },
+            // Test 6: Two raw sequences
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(undefined, undefined, 5),
+                pluginOpen: new TestCmdList()
+                    .setUserArg("inputType", "Use FASTA text", this.pluginId)
+                    .setUserArg(
+                        "fastaText",
+                        `${rawSeq1}\n\n${rawSeq2}`,
+                        "findsimilarproteins"
+                    )
+                    .setUserArg("max_results", 2, this.pluginId),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From rawSeq1
+                    .waitUntilRegex("#navigator", "1LVC-aligned-to-1IQ5"), // From rawSeq2 (Calmodulin)
+            },
+            // Test 7: Open with no proteins, should default to FASTA and run
+            {
+                // No beforePluginOpens, so workspace is empty
+                pluginOpen: new TestCmdList()
+                    .setUserArg("fastaText", fastaText1, this.pluginId) // This will only work if fastaText is enabled
+                    .setUserArg("max_results", 1, this.pluginId),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "1AAR"),
             },
         ];
+        return tests;
     }
 }
 </script>
