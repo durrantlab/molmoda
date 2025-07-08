@@ -1,83 +1,42 @@
 <template>
-  <div
-    class="modal fade"
-    :id="getId"
-    tabindex="-1"
-    @keypress="onKeypress"
-    data-bs-backdrop="static"
-    ref="dialog"
-    aria-hidden="false"
-  >
+  <div class="modal fade" :id="getId" tabindex="-1" @keypress="onKeypress" data-bs-backdrop="static" ref="dialog"
+    aria-hidden="false">
     <div :class="'modal-dialog ' + modalWidthToUse" v-if="modelValue">
       <div class="modal-content">
         <div :class="headerClasses" ref="header">
           <h5 class="modal-title">{{ titleToUse }}</h5>
-          <button
-            v-if="cancelXBtn && !prohibitCancel"
-            type="button"
-            :class="'btn-close ' + (styling === 0 ? 'btn-close-white' : '')"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button v-if="cancelXBtn && !prohibitCancel" type="button"
+            :class="'btn-close ' + (styling === 0 ? 'btn-close-white' : '')" data-bs-dismiss="modal"
+            aria-label="Close"></button>
         </div>
         <div class="modal-body" style="overflow: hidden">
           <slot></slot>
         </div>
         <div class="modal-footer">
-          <button
-            v-if="cancelBtnTxt && !prohibitCancel"
-            type="button"
-            class="btn btn-secondary cancel-btn"
-            data-bs-dismiss="modal"
-            @click="cancelBtn"
-            :disabled="isClosing"
-          >
+          <button v-if="cancelBtnTxt && !prohibitCancel" type="button" class="btn btn-secondary cancel-btn"
+            data-bs-dismiss="modal" @click="cancelBtn" :disabled="isClosing">
             {{ cancelBtnTxt }}
           </button>
-          <button
-            v-if="actionBtnTxt"
-            type="button"
-            :disabled="!isActionBtnEnabled || isClosing"
-            :class="'btn ' + btn1Class + ' action-btn'"
-            @click="actionBtn"
-          >
+          <button v-if="actionBtnTxt" type="button" :disabled="!isActionBtnEnabled || isClosing"
+            :class="'btn ' + btn1Class + ' action-btn'" @click="actionBtn">
             {{ actionBtnTxt }}
           </button>
           <!-- :disabled="!isActionBtnEnabled" -->
-          <button
-            v-if="actionBtnTxt2"
-            type="button"
-            class="btn btn-primary action-btn2"
-            @click="otherActionBtn(2)"
-            :disabled="isClosing"
-          >
+          <button v-if="actionBtnTxt2" type="button" class="btn btn-primary action-btn2" @click="otherActionBtn(2)"
+            :disabled="isClosing">
             {{ actionBtnTxt2 }}
           </button>
-          <button
-            v-if="actionBtnTxt3"
-            type="button"
-            class="btn btn-primary action-btn2"
-            @click="otherActionBtn(3)"
-            :disabled="isClosing"
-          >
+          <button v-if="actionBtnTxt3" type="button" class="btn btn-primary action-btn2" @click="otherActionBtn(3)"
+            :disabled="isClosing">
             {{ actionBtnTxt3 }}
           </button>
-          <button
-            v-if="actionBtnTxt4"
-            type="button"
-            class="btn btn-primary action-btn2"
-            @click="otherActionBtn(4)"
-            :disabled="isClosing"
-          >
+          <button v-if="actionBtnTxt4" type="button" class="btn btn-primary action-btn2" @click="otherActionBtn(4)"
+            :disabled="isClosing">
             {{ actionBtnTxt4 }}
           </button>
         </div>
-        <div
-          v-if="footerTxt !== ''"
-          class="modal-footer alert alert-light fs-6 lh-sm"
-          style="display: inline-block"
-          v-html="footerTxt"
-        ></div>
+        <div v-if="footerTxt !== ''" class="modal-footer alert alert-light fs-6 lh-sm" style="display: inline-block"
+          v-html="footerTxt"></div>
         <!-- <small v-html="footerTxt" style="inline-block"></small> -->
       </div>
     </div>
@@ -140,7 +99,7 @@ export default class Popup extends Vue {
   // property. Use with caution. Should always restore to true quickly.
   isClosing = false;
   zIndex = 0;
-  
+
   /**
    * Gets the title to use on the modal.
    *
@@ -309,24 +268,31 @@ export default class Popup extends Vue {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     modalElem.addEventListener("shown.bs.modal", (_event) => {
       this.onModalShown();
+      // Find the first visible, non-disabled input, select, or textarea
+      // and focus it.
+      const firstFocusable = modalElem.querySelector<HTMLElement>(
+        'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled])'
+      );
+      if (firstFocusable) {
+        firstFocusable.focus();
+      }
     });
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     modalElem.addEventListener("show.bs.modal", (_event) => {
-   // Get and apply the next z-index as soon as the modal starts to show.
-   this.zIndex = getNextZIndex();
-   const dialog = this.$refs.dialog as HTMLElement;
-   dialog.style.zIndex = this.zIndex.toString();
-
-   // The backdrop is added to the DOM right after this event fires.
-   // A microtask or macrotask delay is needed to find it.
-   setTimeout(() => {
-  const backdrops = document.querySelectorAll<HTMLElement>(".modal-backdrop");
-  if (backdrops.length > 0) {
-    const myBackdrop = backdrops[backdrops.length - 1];
-    myBackdrop.style.zIndex = (this.zIndex - 5).toString();
-  }
-   }, 0);
+      // Get and apply the next z-index as soon as the modal starts to show.
+      this.zIndex = getNextZIndex();
+      const dialog = this.$refs.dialog as HTMLElement;
+      dialog.style.zIndex = this.zIndex.toString();
+      // The backdrop is added to the DOM right after this event fires.
+      // A microtask or macrotask delay is needed to find it.
+      setTimeout(() => {
+        const backdrops = document.querySelectorAll<HTMLElement>(".modal-backdrop");
+        if (backdrops.length > 0) {
+          const myBackdrop = backdrops[backdrops.length - 1];
+          myBackdrop.style.zIndex = (this.zIndex - 5).toString();
+        }
+      }, 0);
       if (this.onBeforeShown) {
         this.onBeforeShown();
       }
@@ -334,10 +300,10 @@ export default class Popup extends Vue {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     modalElem.addEventListener("hidden.bs.modal", (_event) => {
-   if (this.zIndex) {
-  releaseZIndex(this.zIndex);
-  this.zIndex = 0;
-   }
+      if (this.zIndex) {
+        releaseZIndex(this.zIndex);
+        this.zIndex = 0;
+      }
       this.$emit("update:modelValue", false);
 
       // Below fires regardless of how closed. In contrast, onDone fires if

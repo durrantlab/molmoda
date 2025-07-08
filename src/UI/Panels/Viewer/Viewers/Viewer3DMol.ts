@@ -30,7 +30,7 @@ import { waitForCondition } from "@/Core/Utils/MiscUtils";
  */
 export class Viewer3DMol extends ViewerParent {
     public _mol3dObj: any; // public to make debugging easier
-    private _zoomToModelsTimeout: any;
+    // private _zoomToModelsTimeout: any;
     // New properties for hybrid debounce
     private _renderCooldownTimer: number | null = null;
     private _renderTrailingEdgeTimer: number | null = null;

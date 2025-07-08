@@ -1,4 +1,3 @@
-import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 import { Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";
 
@@ -40,31 +39,8 @@ export class PopupMixin extends Vue {
             this.openToUse = newValue;
     
             this.$emit("update:modelValue", newValue);
-    
-            // Just opened. If we have user arguments, set focus to first onev after
-            // waiting a bit.
-            if (newValue && (this as any).userArgsFixed.length > 0) {
-                setTimeout(() => {
-                    // Note that (this as any) is ugly!
-                    const itemId =
-                        (this as any).userArgsFixed[0].id +
-                        "-" +
-                        (this as any).pluginId +
-                        "-item";
-    
-                    const firstInput = document.querySelector(
-                        "#" + itemId
-                    ) as HTMLInputElement;
-                    if (firstInput !== null) {
-                        firstInput.focus();
-                    }
-                }, delayForPopupOpenClose);
-            }
-
-            // NOTE: Leaving the component rendered. I would like to unrender
-            // it, but it causes problems when the plugin closes and then is
-            // followed by an immediate new open. TODO: Could try to debug this
-            // in the future.
+            // NOTE: The focus logic has been removed from here and moved to Popup.vue,
+            // where it is handled by the 'shown.bs.modal' event.
 
             // Wait some time before unrendering the inner plugin
             // if (!newValue) {
