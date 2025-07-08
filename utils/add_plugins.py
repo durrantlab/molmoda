@@ -44,31 +44,36 @@ for optional_plugin in optional_plugins:
 template1 += "    <!-- TEMPLATE1 END -->"
 # print(template1)
 
-template2 = "// TEMPLATE2 START\n"
-for core_plugin in core_plugins:
-    plugin_name = os.path.basename(core_plugin).replace(".vue", "").replace(".ts", "")
-    plugin_path = core_plugin.replace("../src/Plugins/", "./")
-    template2 += f'import {plugin_name} from "{plugin_path}";\n'
-template2 += "\n"
-for optional_plugin in optional_plugins:
-    plugin_name = (
-        os.path.basename(optional_plugin).replace(".vue", "").replace(".ts", "")
-    )
-    plugin_path = optional_plugin.replace("../src/Plugins/", "./")
-    template2 += f'import {plugin_name} from "{plugin_path}";\n'
-template2 += "// TEMPLATE2 END"
+# This section is now empty because imports are handled dynamically inside defineAsyncComponent.
+template2 = "// TEMPLATE2 START\n// TEMPLATE2 END"
+# template2 = "// TEMPLATE2 START\n"
+# for core_plugin in core_plugins:
+#     plugin_name = os.path.basename(core_plugin).replace(".vue", "").replace(".ts", "")
+#     plugin_path = core_plugin.replace("../src/Plugins/", "./")
+#     template2 += f'import {plugin_name} from "{plugin_path}";\n'
+# template2 += "\n"
+# for optional_plugin in optional_plugins:
+#     plugin_name = (
+#         os.path.basename(optional_plugin).replace(".vue", "").replace(".ts", "")
+#     )
+#     plugin_path = optional_plugin.replace("../src/Plugins/", "./")
+#     template2 += f'import {plugin_name} from "{plugin_path}";\n'
+# template2 += "// TEMPLATE2 END"
 
 template3 = "// TEMPLATE3 START\n"
 for core_plugin in core_plugins:
     plugin_name = os.path.basename(core_plugin).replace(".vue", "").replace(".ts", "")
-    template3 += f"    {plugin_name},\n"
+    # Use Webpack's alias '@' for the src directory to create a robust path
+    plugin_path = core_plugin.replace("../src/", "@/")
+    template3 += f'    {plugin_name}: defineAsyncComponent(() => import("{plugin_path}")),\n'
 template3 += "\n"
 for optional_plugin in optional_plugins:
     plugin_name = (
         os.path.basename(optional_plugin).replace(".vue", "").replace(".ts", "")
     )
-    template3 += f"    {plugin_name},\n"
-template3 += "    // TEMPLATE3 END\n"
+    plugin_path = optional_plugin.replace("../src/", "@/")
+    template3 += f'    {plugin_name}: defineAsyncComponent(() => import("{plugin_path}")),\n'
+template3 += " // TEMPLATE3 END"
 # print(template3)
 
 # Insert template1
@@ -96,4 +101,3 @@ while "\n\n\n" in content:
 # Write the modified content
 with open(all_plugins, "w") as file:
     file.write(content)
-

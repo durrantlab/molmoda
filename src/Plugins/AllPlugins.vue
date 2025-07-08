@@ -85,73 +85,6 @@ import { defineAsyncComponent } from "vue";
 import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
 // TEMPLATE2 START
-import ActivityFocusPlugin from "./Core/ActivityFocus/ActivityFocusPlugin.vue";
-import AddVizualizationPlugin from "./Core/AddVizualizationPlugin.vue";
-import ArchivedVersionsPlugin from "./Core/ArchivedVersionsPlugin.vue";
-import ClearSelectionPlugin from "./Core/EditBar/ClearSelectionPlugin.vue";
-import CloneMolPlugin from "./Core/EditBar/CloneMolPlugin.vue";
-import CollapseAllPlugin from "./Core/CollapseAllPlugin.vue";
-import CopyAsSmilesPlugin from "./Core/Clipboard/CopyAsSmilesPlugin.vue";
-import CopyPlugin from "./Core/Clipboard/CopyPlugin.vue";
-import DataWindowPlugin from "./Core/Window/DataWindowPlugin.vue";
-import DeleteMolPlugin from "./Core/EditBar/DeleteMolPlugin.vue";
-import DocumentationLinkPlugin from "./Core/DocumentationLinkPlugin.vue";
-import DownTreeNavPlugin from "./Core/UpDownTreeNav/DownTreeNavPlugin.vue";
-import DrawMoleculePlugin from "./Core/DrawMoleculePlugin.vue";
-import EditCompoundPlugin from "./Core/EditCompoundPlugin.vue";
-import ErrorReportingPlugin from "./Core/ErrorReporting/ErrorReportingPlugin.vue";
-import ExampleDataPlugin from "./Core/LocalMolLoadersSavers/ExampleDataPlugin.vue";
-import ExpandAllPlugin from "./Core/ExpandAllPlugin.vue";
-import FetcherPermissionPlugin from "./Core/FetcherPermissionPlugin.vue";
-import InformationWindowPlugin from "./Core/Window/InformationWindowPlugin.vue";
-import JobsWindowPlugin from "./Core/Window/JobsWindowPlugin.vue";
-import LoadAlphaFoldPlugin from "./Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue";
-import LoadPDBPlugin from "./Core/RemoteMolLoaders/LoadPDBPlugin.vue";
-import LoadPubChemPlugin from "./Core/RemoteMolLoaders/LoadPubChemPlugin.vue";
-import LogWindowPlugin from "./Core/Window/LogWindowPlugin.vue";
-import MergeMolsPlugin from "./Core/EditBar/MergeMolsPlugin.vue";
-import MolTextPlugin from "./Core/MolTextPlugin.vue";
-import MoveRegionsOnClickPlugin from "./Core/MoveRegionsOnClickPlugin.vue";
-import NavigatorWindowPlugin from "./Core/Window/NavigatorWindowPlugin.vue";
-import NewProjectPlugin from "./Core/LocalMolLoadersSavers/NewProjectPlugin.vue";
-import OpenMoleculesPlugin from "./Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue";
-import PastePlugin from "./Core/Clipboard/PastePlugin.vue";
-import QuitPlugin from "./Core/QuitPlugin.vue";
-import RedoPlugin from "./Core/UndoRedo/RedoPlugin.vue";
-import RenameMolPlugin from "./Core/EditBar/RenameMolPlugin.vue";
-import ResetLayoutPlugin from "./Core/Window/ResetLayoutPlugin.vue";
-import SaveMoleculesPlugin from "./Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue";
-import SelectAllPlugin from "./Core/SelectAllPlugin.vue";
-import SelectInvertPlugin from "./Core/SelectInvertPlugin.vue";
-import SettingsPlugin from "./Core/Settings/SettingsPlugin.vue";
-import SimpleMsgPlugin from "./Core/SimpleMsgPlugin.vue";
-import SimpleSVGPopupPlugin from "./Core/SimpleSVGPopupPlugin.vue";
-import SimpleTableDataPlugin from "./Core/SimpleTableDataPlugin.vue";
-import SimpleVideoPlugin from "./Core/SimpleVideoPlugin.vue";
-import StatCollectionPlugin from "./Core/StatCollection/StatCollectionPlugin.vue";
-import StylesWindowPlugin from "./Core/Window/StylesWindowPlugin.vue";
-import TemporarySharePlugin from "./Core/TemporaryShare/TemporarySharePlugin.vue";
-import ToggleVisiblePlugin from "./Core/EditBar/ToggleVisiblePlugin.vue";
-import UndoPlugin from "./Core/UndoRedo/UndoPlugin.vue";
-import UpTreeNavPlugin from "./Core/UpDownTreeNav/UpTreeNavPlugin.vue";
-import ViewerWindowPlugin from "./Core/Window/ViewerWindowPlugin.vue";
-import YesNoPlugin from "./Core/YesNoPlugin.vue";
-
-import AddRegionPlugin from "./Optional/AddRegionPlugin.vue";
-import AlignProteinsPlugin from "./Optional/Align/AlignProteinsPlugin.vue";
-import EvalScreenPlugin from "./Optional/EvalScreenPlugin.vue";
-import FPocketWebPlugin from "./Optional/FPocketWeb/FPocketWebPlugin.vue";
-import FindSimilarProteinsPlugin from "./Optional/FindSimilarProteins/FindSimilarProteinsPlugin.vue";
-import PoseViewPlugin from "./Optional/PoseViewPlugin.vue";
-import ProtonateCompoundsPlugin from "./Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue";
-import PubChemBioassaysPlugin from "./Optional/PubChem/PubChemBioassaysPlugin.vue";
-import PubChemFindSimilarPlugin from "./Optional/PubChem/PubChemFindSimilarPlugin.vue";
-import PubChemNamesPlugin from "./Optional/PubChem/PubChemNamesPlugin.vue";
-import PubChemPropsPlugin from "./Optional/PubChem/PubChemPropsPlugin.vue";
-import ReducePlugin from "./Optional/Reduce/ReducePlugin.vue";
-import SavePNGPlugin from "./Optional/Graphics/SavePNGPlugin.vue";
-import SaveVRMLPlugin from "./Optional/Graphics/SaveVRMLPlugin.vue";
-import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
 /**
  * Component where all plugins are placed.
@@ -161,74 +94,74 @@ import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
     AboutPlugin: defineAsyncComponent(() => import("@/Plugins/Core/AboutPlugin.vue")),
     HelpPlugin: defineAsyncComponent(() => import("@/Plugins/Core/HelpPlugin.vue")),
  // TEMPLATE3 START
-    ActivityFocusPlugin,
-    AddVizualizationPlugin,
-    ArchivedVersionsPlugin,
-    ClearSelectionPlugin,
-    CloneMolPlugin,
-    CollapseAllPlugin,
-    CopyAsSmilesPlugin,
-    CopyPlugin,
-    DataWindowPlugin,
-    DeleteMolPlugin,
-    DocumentationLinkPlugin,
-    DownTreeNavPlugin,
-    DrawMoleculePlugin,
-    EditCompoundPlugin,
-    ErrorReportingPlugin,
-    ExampleDataPlugin,
-    ExpandAllPlugin,
-    FetcherPermissionPlugin,
-    InformationWindowPlugin,
-    JobsWindowPlugin,
-    LoadAlphaFoldPlugin,
-    LoadPDBPlugin,
-    LoadPubChemPlugin,
-    LogWindowPlugin,
-    MergeMolsPlugin,
-    MolTextPlugin,
-    MoveRegionsOnClickPlugin,
-    NavigatorWindowPlugin,
-    NewProjectPlugin,
-    OpenMoleculesPlugin,
-    PastePlugin,
-    QuitPlugin,
-    RedoPlugin,
-    RenameMolPlugin,
-    ResetLayoutPlugin,
-    SaveMoleculesPlugin,
-    SelectAllPlugin,
-    SelectInvertPlugin,
-    SettingsPlugin,
-    SimpleMsgPlugin,
-    SimpleSVGPopupPlugin,
-    SimpleTableDataPlugin,
-    SimpleVideoPlugin,
-    StatCollectionPlugin,
-    StylesWindowPlugin,
-    TemporarySharePlugin,
-    ToggleVisiblePlugin,
-    UndoPlugin,
-    UpTreeNavPlugin,
-    ViewerWindowPlugin,
-    YesNoPlugin,
+    ActivityFocusPlugin: defineAsyncComponent(() => import("@/Plugins/Core/ActivityFocus/ActivityFocusPlugin.vue")),
+    AddVizualizationPlugin: defineAsyncComponent(() => import("@/Plugins/Core/AddVizualizationPlugin.vue")),
+    ArchivedVersionsPlugin: defineAsyncComponent(() => import("@/Plugins/Core/ArchivedVersionsPlugin.vue")),
+    ClearSelectionPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/ClearSelectionPlugin.vue")),
+    CloneMolPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/CloneMolPlugin.vue")),
+    CollapseAllPlugin: defineAsyncComponent(() => import("@/Plugins/Core/CollapseAllPlugin.vue")),
+    CopyAsSmilesPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Clipboard/CopyAsSmilesPlugin.vue")),
+    CopyPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Clipboard/CopyPlugin.vue")),
+    DataWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/DataWindowPlugin.vue")),
+    DeleteMolPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/DeleteMolPlugin.vue")),
+    DocumentationLinkPlugin: defineAsyncComponent(() => import("@/Plugins/Core/DocumentationLinkPlugin.vue")),
+    DownTreeNavPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UpDownTreeNav/DownTreeNavPlugin.vue")),
+    DrawMoleculePlugin: defineAsyncComponent(() => import("@/Plugins/Core/DrawMoleculePlugin.vue")),
+    EditCompoundPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditCompoundPlugin.vue")),
+    ErrorReportingPlugin: defineAsyncComponent(() => import("@/Plugins/Core/ErrorReporting/ErrorReportingPlugin.vue")),
+    ExampleDataPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/ExampleDataPlugin.vue")),
+    ExpandAllPlugin: defineAsyncComponent(() => import("@/Plugins/Core/ExpandAllPlugin.vue")),
+    FetcherPermissionPlugin: defineAsyncComponent(() => import("@/Plugins/Core/FetcherPermissionPlugin.vue")),
+    InformationWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/InformationWindowPlugin.vue")),
+    JobsWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/JobsWindowPlugin.vue")),
+    LoadAlphaFoldPlugin: defineAsyncComponent(() => import("@/Plugins/Core/RemoteMolLoaders/LoadAlphaFoldPlugin.vue")),
+    LoadPDBPlugin: defineAsyncComponent(() => import("@/Plugins/Core/RemoteMolLoaders/LoadPDBPlugin.vue")),
+    LoadPubChemPlugin: defineAsyncComponent(() => import("@/Plugins/Core/RemoteMolLoaders/LoadPubChemPlugin.vue")),
+    LogWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/LogWindowPlugin.vue")),
+    MergeMolsPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/MergeMolsPlugin.vue")),
+    MolTextPlugin: defineAsyncComponent(() => import("@/Plugins/Core/MolTextPlugin.vue")),
+    MoveRegionsOnClickPlugin: defineAsyncComponent(() => import("@/Plugins/Core/MoveRegionsOnClickPlugin.vue")),
+    NavigatorWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/NavigatorWindowPlugin.vue")),
+    NewProjectPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/NewProjectPlugin.vue")),
+    OpenMoleculesPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/OpenMoleculesPlugin.vue")),
+    PastePlugin: defineAsyncComponent(() => import("@/Plugins/Core/Clipboard/PastePlugin.vue")),
+    QuitPlugin: defineAsyncComponent(() => import("@/Plugins/Core/QuitPlugin.vue")),
+    RedoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UndoRedo/RedoPlugin.vue")),
+    RenameMolPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/RenameMolPlugin.vue")),
+    ResetLayoutPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/ResetLayoutPlugin.vue")),
+    SaveMoleculesPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue")),
+    SelectAllPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectAllPlugin.vue")),
+    SelectInvertPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectInvertPlugin.vue")),
+    SettingsPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Settings/SettingsPlugin.vue")),
+    SimpleMsgPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SimpleMsgPlugin.vue")),
+    SimpleSVGPopupPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SimpleSVGPopupPlugin.vue")),
+    SimpleTableDataPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SimpleTableDataPlugin.vue")),
+    SimpleVideoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SimpleVideoPlugin.vue")),
+    StatCollectionPlugin: defineAsyncComponent(() => import("@/Plugins/Core/StatCollection/StatCollectionPlugin.vue")),
+    StylesWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/StylesWindowPlugin.vue")),
+    TemporarySharePlugin: defineAsyncComponent(() => import("@/Plugins/Core/TemporaryShare/TemporarySharePlugin.vue")),
+    ToggleVisiblePlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/ToggleVisiblePlugin.vue")),
+    UndoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UndoRedo/UndoPlugin.vue")),
+    UpTreeNavPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UpDownTreeNav/UpTreeNavPlugin.vue")),
+    ViewerWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/ViewerWindowPlugin.vue")),
+    YesNoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/YesNoPlugin.vue")),
 
-    AddRegionPlugin,
-    AlignProteinsPlugin,
-    EvalScreenPlugin,
-    FPocketWebPlugin,
-    FindSimilarProteinsPlugin,
-    PoseViewPlugin,
-    ProtonateCompoundsPlugin,
-    PubChemBioassaysPlugin,
-    PubChemFindSimilarPlugin,
-    PubChemNamesPlugin,
-    PubChemPropsPlugin,
-    ReducePlugin,
-    SavePNGPlugin,
-    SaveVRMLPlugin,
-    WebinaPlugin,
-    // TEMPLATE3 END
+    AddRegionPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/AddRegionPlugin.vue")),
+    AlignProteinsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Align/AlignProteinsPlugin.vue")),
+    EvalScreenPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/EvalScreenPlugin.vue")),
+    FPocketWebPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/FPocketWeb/FPocketWebPlugin.vue")),
+    FindSimilarProteinsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/FindSimilarProteins/FindSimilarProteinsPlugin.vue")),
+    PoseViewPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PoseViewPlugin.vue")),
+    ProtonateCompoundsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue")),
+    PubChemBioassaysPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PubChem/PubChemBioassaysPlugin.vue")),
+    PubChemFindSimilarPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PubChem/PubChemFindSimilarPlugin.vue")),
+    PubChemNamesPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PubChem/PubChemNamesPlugin.vue")),
+    PubChemPropsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PubChem/PubChemPropsPlugin.vue")),
+    ReducePlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Reduce/ReducePlugin.vue")),
+    SavePNGPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Graphics/SavePNGPlugin.vue")),
+    SaveVRMLPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Graphics/SaveVRMLPlugin.vue")),
+    WebinaPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Webina/WebinaPlugin.vue")),
+ // TEMPLATE3 END
 
   },
 })
