@@ -49,7 +49,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import FormSelectRegion from "@/UI/Forms/FormSelectRegion/FormSelectRegion.vue";
 import { slugify } from "@/Core/Utils/StringUtils";
-
+import { getTreeVersion } from "@/TreeNodes/TreeCache";
 /**
  * DataPanel component
  */
@@ -61,11 +61,14 @@ import { slugify } from "@/Core/Utils/StringUtils";
 })
 export default class DataPanel extends Vue {
   public test = null;
-
   /** Track both selected and known sources */
   private selectedSourcesArr: string[] | null = null;
   private knownSources: Set<string> = new Set();
   private initialized = false;
+  private cachedMergedTableData: ITableData | null = null;
+  private cachedVersion = -1;
+  private cachedSelectedSources: string[] = [];
+
 
   /**
    * Get the selected data sources.
@@ -133,29 +136,39 @@ export default class DataPanel extends Vue {
    * @returns {ITableData | null}  The merged table data. Null if no data.
    */
   get mergedTableData(): ITableData | null {
-    if (this.allTableData.length === 0 || this.selectedSources.length === 0) { return null; }
-
+    const currentVersion = getTreeVersion();
+    const sortedSelected = [...this.selectedSources].sort();
+    if (
+      this.cachedMergedTableData !== null &&
+      this.cachedVersion === currentVersion &&
+      JSON.stringify(sortedSelected) ===
+      JSON.stringify(this.cachedSelectedSources)
+    ) {
+      return this.cachedMergedTableData;
+    }
+    if (this.allTableData.length === 0 || this.selectedSources.length === 0) {
+      this.cachedMergedTableData = null; // Cache null result
+      this.cachedVersion = currentVersion;
+      this.cachedSelectedSources = sortedSelected;
+      return null;
+    }
     // Filter the table data to only include selected sources
     const filteredTableData = this.allTableData.filter(([source]) =>
       this.selectedSources.includes(source)
     );
-
     // Initialize headers with Entry and id
     const headers = [
       { text: "Entry" },
       { text: "id", showColumnFunc: () => false },
     ];
-
     // Collect all unique entries (molecule paths + ids)
     const entries = new Set<string>();
-
     // First pass: collect all headers and entries
     filteredTableData.forEach(([source, tableData]) => {
       tableData.rows.forEach((row: { [key: string]: CellValue }) => {
         // const entry = (row.Entry as string) + "||>>" + row.id;
         const entry = JSON.stringify([(row.Entry as string), row.id]);
         entries.add(entry);
-
         // Add source-prefixed headers for all columns except Entry and id
         tableData.headers.forEach((header: IHeader) => {
           const headerText = header.text;
@@ -170,7 +183,6 @@ export default class DataPanel extends Vue {
         });
       });
     });
-
     // Build rows
     const rows: { [key: string]: CellValue }[] = Array.from(entries).map(
       (entry) => {
@@ -179,18 +191,17 @@ export default class DataPanel extends Vue {
           Entry: { val: entryName } as ICellValue,
           id: { val: id } as ICellValue,
         };
-
         // Initialize all cells with empty values
         headers.forEach((header) => {
           if (header.text !== "Entry" && header.text !== "id") {
             row[header.text] = { val: "" } as ICellValue;
           }
         });
-
         // Fill in the data
         filteredTableData.forEach(([source, tableData]) => {
           const sourceRow = tableData.rows.find(
-            (r: { [key: string]: CellValue }) => r.Entry === entryName && r.id === id // + "||>>" + r.id === entry
+            (r: { [key: string]: CellValue }) =>
+              r.Entry === entryName && r.id === id // + "||>>" + r.id === entry
           );
           if (sourceRow) {
             tableData.headers.forEach((header: IHeader) => {
@@ -207,24 +218,25 @@ export default class DataPanel extends Vue {
             });
           }
         });
-
         return row;
       }
     );
-
     // Sort rows by Entry
     rows.sort((a, b) => {
       const aEntry = (a.Entry as ICellValue).val as string;
       const bEntry = (b.Entry as ICellValue).val as string;
       return aEntry.localeCompare(bEntry);
     });
-
-    return {
+    const result = {
       headers,
       rows,
     };
+    // Update cache
+    this.cachedMergedTableData = result;
+    this.cachedVersion = currentVersion;
+    this.cachedSelectedSources = sortedSelected;
+    return result;
   }
-
   /**
    * Get the data for the table.
    *
