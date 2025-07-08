@@ -1,3 +1,5 @@
+import { memoize } from "lodash";
+
 interface IColorInfo {
     hex: string;
     name: string;
@@ -170,7 +172,7 @@ function _hexToRgb(hex: string): number[] | null {
 
 /**
  * Convert rgb to hex value.
- * 
+ *
  * @param  {number[]} rgb  RGB values
  * @returns {string}  Hex color value
  */
@@ -194,14 +196,12 @@ colorInfomation = colorInfomation.map((v: IColorInfo): IColorInfo => {
  * @param  {string} hex  Hex color value
  * @returns {string}  Color name
  */
-export function hexToColorName(hex: string): string {
+export const hexToColorName = memoize(function (hex: string): string {
     // First, get rgb
     const rgb = _hexToRgb(hex) as number[];
-
     // No go through colorInformation and calculate distance to rgb
     const distances = colorInfomation.map((v: IColorInfo): number => {
         const rgb2 = v.rgb as number[];
-
         // distance
         return Math.sqrt(
             Math.pow(rgb2[0] - rgb[0], 2) +
@@ -209,11 +209,10 @@ export function hexToColorName(hex: string): string {
                 Math.pow(rgb2[2] - rgb[2], 2)
         );
     });
-
     // Get index on min distance
     const minDistanceIndex = distances.indexOf(Math.min(...distances));
     return colorInfomation[minDistanceIndex].name;
-}
+});
 
 /**
  * Get the hex color value closest to a given color name
@@ -221,7 +220,7 @@ export function hexToColorName(hex: string): string {
  * @param  {string} name  Color name
  * @returns {string}  Hex color value
  */
-export function colorNameToHex(name: string): string {
+export const colorNameToHex = memoize(function (name: string): string {
     name = name.toUpperCase();
     const color = colorInfomation.find(
         (v: IColorInfo): boolean => v.name.toUpperCase() === name
@@ -230,16 +229,18 @@ export function colorNameToHex(name: string): string {
         return color.hex;
     }
     return "";
-}
+});
 
 /**
  * Get the color information for a given color
  *
  * @param  {string | number[]} color  Color name or hex color value or rgb
- *                                    values.
+ *         values.
  * @returns {IColorInfo}  Color information.
  */
-export function analyzeColor(color: string | number[]): IColorInfo {
+export const analyzeColor = memoize(function (
+    color: string | number[]
+): IColorInfo {
     const colorInfo = {
         hex: "",
         name: "",
@@ -268,7 +269,7 @@ export function analyzeColor(color: string | number[]): IColorInfo {
     }
 
     return colorInfo;
-}
+});
 
 /**
  * Get a hash from a string using FNV-1a algorithm. This is a simple hash
@@ -282,27 +283,27 @@ export function analyzeColor(color: string | number[]): IColorInfo {
 function _fnv1aHash(str: string) {
     let hash = 2166136261; // FNV-1a 32-bit offset basis
     for (let i = 0; i < str.length; i++) {
-      hash ^= str.charCodeAt(i);
-      hash = (hash * 16777619) >>> 0; // Prime multiplication and force 32-bit unsigned
+        hash ^= str.charCodeAt(i);
+        hash = (hash * 16777619) >>> 0; // Prime multiplication and force 32-bit unsigned
     }
     return hash;
-  }
-  
-  /**
-   * Convert a seed string to three normalized numbers. This function uses the
-   * FNV-1a hash to generate a consistent pseudo-random triplet of numbers
-   * between 0 and 1 from the input string.
-   *
-   * @param {string} seedStr  The seed string to convert.
-   * @returns {number[]}  An array of three normalized numbers.
-   */
-  function _stringToThreeNumbers(seedStr: string) {
+}
+
+/**
+ * Convert a seed string to three normalized numbers. This function uses the
+ * FNV-1a hash to generate a consistent pseudo-random triplet of numbers
+ * between 0 and 1 from the input string.
+ *
+ * @param {string} seedStr  The seed string to convert.
+ * @returns {number[]}  An array of three normalized numbers.
+ */
+function _stringToThreeNumbers(seedStr: string) {
     const hash = _fnv1aHash(seedStr); // Get the hash
-    const n1 = ((hash & 0xFFFFFF) / 0x1000000); // Extract lower 24 bits and normalize
-    const n2 = (((hash >> 8) & 0xFFFFFF) / 0x1000000);
-    const n3 = (((hash >> 16) & 0xFFFFFF) / 0x1000000);
+    const n1 = (hash & 0xffffff) / 0x1000000; // Extract lower 24 bits and normalize
+    const n2 = ((hash >> 8) & 0xffffff) / 0x1000000;
+    const n3 = ((hash >> 16) & 0xffffff) / 0x1000000;
     return [n1, n2, n3];
-  }
+}
 
 /**
  * Get a random pastel color as a hex value.

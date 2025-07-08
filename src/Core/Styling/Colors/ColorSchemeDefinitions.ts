@@ -1,12 +1,15 @@
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { BackBoneRepresentation, Representation } from "../SelAndStyleInterfaces";
+import {
+    BackBoneRepresentation,
+    Representation,
+} from "../SelAndStyleInterfaces";
 import { IColorScheme } from "./ColorInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import isEqual from "lodash.isequal";
 import { hexToColorName } from "./ColorUtils";
-
+import { memoize } from "lodash";
 interface IColorSchemeDefinition {
     name: string;
     description: string;
@@ -72,7 +75,6 @@ export const allColorSchemeDefinitions: IColorSchemeDefinition[] = [
     },
 ];
 
-
 /**
  * Adds a color to the style
  *
@@ -80,24 +82,27 @@ export const allColorSchemeDefinitions: IColorSchemeDefinition[] = [
  * @param {string}      color       The color to add.
  * @returns {IColorScheme}  The color style with the color added.
  */
-function _addColorToStyle(colorScheme: IColorScheme, color: string): IColorScheme {
-    let strColorScheme = JSON.stringify(colorScheme);
+const _addColorToStyle = memoize(
+    function (colorScheme: IColorScheme, color: string): IColorScheme {
+        let strColorScheme = JSON.stringify(colorScheme);
 
-    // Has #HEX?
-    if (strColorScheme.indexOf("#HEX") > -1) {
-        strColorScheme = strColorScheme.replace(/#HEX/g, color);
-    }
+        // Has #HEX?
+        if (strColorScheme.indexOf("#HEX") > -1) {
+            strColorScheme = strColorScheme.replace(/#HEX/g, color);
+        }
 
-    // Has #COLORNAME?
-    if (strColorScheme.indexOf("#COLORNAME") > -1) {
-        strColorScheme = strColorScheme.replace(
-            /#COLORNAME/g,
-            hexToColorName(color)
-        );
-    }
+        // Has #COLORNAME?
+        if (strColorScheme.indexOf("#COLORNAME") > -1) {
+            strColorScheme = strColorScheme.replace(
+                /#COLORNAME/g,
+                hexToColorName(color)
+            );
+        }
 
-    return JSON.parse(strColorScheme);
-}
+        return JSON.parse(strColorScheme);
+    },
+    (...args) => JSON.stringify(args)
+);
 
 /**
  * Converts a name to an index in colorSchemes (since colorSchemes is a list
@@ -106,14 +111,16 @@ function _addColorToStyle(colorScheme: IColorScheme, color: string): IColorSchem
  * @param {string} name  The name.
  * @returns {number} The index.
  */
-export function colorDefinitionNameToIndex(name: string): number {
+export const colorDefinitionNameToIndex = memoize(function (
+    name: string
+): number {
     if (name === "ByMolecule") {
         debugger;
     }
     return allColorSchemeDefinitions.findIndex(
         (colorSchemeDef) => colorSchemeDef.name === name
     );
-}
+});
 
 /**
  * Converts an index in the colorSchemes array to a name.
@@ -131,8 +138,13 @@ export function colorDefinitionIndexToName(index: number): string {
  * @param {IColorScheme} colorScheme  The style.
  * @returns {number} The index.
  */
-export function colorSchemeToDefinitionIndex(colorScheme: IColorScheme): number {
-    if (colorScheme.color !== undefined && colorScheme.color === "@byMolecule") {
+export function colorSchemeToDefinitionIndex(
+    colorScheme: IColorScheme
+): number {
+    if (
+        colorScheme.color !== undefined &&
+        colorScheme.color === "@byMolecule"
+    ) {
         return colorDefinitionNameToIndex("Molecule");
     }
 
@@ -149,11 +161,17 @@ export function colorSchemeToDefinitionIndex(colorScheme: IColorScheme): number 
         return colorDefinitionNameToIndex("ColorCarbons");
     }
 
-    if (colorScheme.colorscheme !== undefined && colorScheme.colorscheme === "ssJmol") {
+    if (
+        colorScheme.colorscheme !== undefined &&
+        colorScheme.colorscheme === "ssJmol"
+    ) {
         return colorDefinitionNameToIndex("SecondaryStructure");
     }
 
-    if (colorScheme.colorscheme !== undefined && colorScheme.colorscheme === "chain") {
+    if (
+        colorScheme.colorscheme !== undefined &&
+        colorScheme.colorscheme === "chain"
+    ) {
         return colorDefinitionNameToIndex("Chain");
     }
 
@@ -170,7 +188,10 @@ export function colorSchemeToDefinitionIndex(colorScheme: IColorScheme): number 
  * @param {string} color  The color to add to the style.
  * @returns {IColorScheme}  The color style.
  */
-export function colorDefinitionIndexToScheme(index: number, color: string): IColorScheme {
+export function colorDefinitionIndexToScheme(
+    index: number,
+    color: string
+): IColorScheme {
     let { colorScheme } = allColorSchemeDefinitions[index];
     colorScheme = _addColorToStyle(colorScheme, color);
     return colorScheme;
@@ -183,8 +204,12 @@ export function colorDefinitionIndexToScheme(index: number, color: string): ICol
  * @param {string} color  The color to add to the style.
  * @returns {IColorScheme}  The color style.
  */
-export function colorDefinitionNameToScheme(name: string, color: string): IColorScheme {
-    let { colorScheme: colorScheme } = allColorSchemeDefinitions[colorDefinitionNameToIndex(name)];
+export function colorDefinitionNameToScheme(
+    name: string,
+    color: string
+): IColorScheme {
+    let { colorScheme: colorScheme } =
+        allColorSchemeDefinitions[colorDefinitionNameToIndex(name)];
     colorScheme = _addColorToStyle(colorScheme, color);
     return colorScheme;
 }

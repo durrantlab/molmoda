@@ -1,6 +1,6 @@
 import { IFileParts } from "./FileUtils";
-
-const regexAcceptableChars = "\\w\\-."
+import { memoize } from "lodash";
+const regexAcceptableChars = "\\w\\-.";
 
 /**
  * Make sure a filename is valid by removing non-alphanumeric characters.
@@ -8,7 +8,7 @@ const regexAcceptableChars = "\\w\\-."
  * @param  {string} filename The filename to check.
  * @returns {string} The filename with all non-alphanumeric characters removed.
  */
- export function fileNameFilter(filename: string): string {
+export function fileNameFilter(filename: string): string {
     // Keep numbers and letters and period. Also - and _.
     // filename = filename.replace(/[^a-zA-Z\d.]/g, "");
     const re = new RegExp(`[^${regexAcceptableChars}]`, "g");
@@ -39,27 +39,26 @@ export function matchesFilename(filename: string): boolean {
  * @param  {string} filename The filename to get the parts of.
  * @returns {IFileParts} The basename and extension of the filename.
  */
-export function getFileNameParts(filename: string): IFileParts {
+export const getFileNameParts = memoize(function (
+    filename: string
+): IFileParts {
     if (filename.indexOf(".") === -1) {
         return {
             basename: filename,
             ext: "",
         };
     }
-
     // Split filename into parts
     const parts = filename.split(".");
-
     // If subsequent parts are all small, treat them as extensions. So
     // filename.pdb.txt, extension will be pdb.txt.
     let ext = parts.pop();
     while (parts.length > 1 && parts[parts.length - 1].length <= 3) {
         ext = parts.pop() + "." + ext;
     }
-
     // Return parts
     return {
         basename: parts.join("."),
         ext: ext,
     } as IFileParts;
-}
+});

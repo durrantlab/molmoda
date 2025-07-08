@@ -1,12 +1,6 @@
 <template>
-  <PluginComponent
-    v-model="open"
-    :infoPayload="infoPayload"
-    actionBtnTxt="Apply"
-    @onPopupDone="onPopupDone"
-    @onUserArgChanged="onUserArgChanged"
-    @onMolCountsChanged="onMolCountsChanged"
-  >
+  <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Apply" @onPopupDone="onPopupDone"
+    @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
     <template #afterForm>
       <div v-if="selectedTag" class="mt-3">
         <Alert type="info">{{ tagDescription(selectedTag) }}</Alert>
@@ -14,12 +8,13 @@
       <Alert type="warning">
         Changing the activity focus will restart {{ appName }}. Consider saving
         your work first using
-        <PluginPathLink plugin="savemolecules"></PluginPathLink> </Alert
-    ></template>
+        <PluginPathLink plugin="savemolecules"></PluginPathLink>
+      </Alert>
+    </template>
   </PluginComponent>
 </template>
-  
-  <script lang="ts">
+
+<script lang="ts">
 import { Options } from "vue-class-component";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -56,7 +51,7 @@ import { capitalize } from "@/Core/Utils/StringUtils";
   },
 })
 export default class ActivityFocusPlugin extends PluginParentClass {
-  menuPath ="View/[9] Activity/Activity Focus...";
+  menuPath = "View/[9] Activity/Activity Focus...";
   title = "Activity Focus";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
@@ -75,10 +70,10 @@ export default class ActivityFocusPlugin extends PluginParentClass {
       val: Tag.All,
       options: Object.values(Tag).map(
         (tag) =>
-          ({
-            val: tag,
-            description: capitalize(tag.replace("-", " ")),
-          } as IUserArgOption)
+        ({
+          val: tag,
+          description: capitalize(tag.replace("-", " ")),
+        } as IUserArgOption)
       ),
       description: "Select which activity you want to focus on.",
     } as IUserArgSelect,
@@ -164,10 +159,11 @@ export default class ActivityFocusPlugin extends PluginParentClass {
           Tag.Docking,
           this.pluginId
         ),
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
-          "#modal-statcollection",
-          "Allow Cookies?"
-        ),
+        afterPluginCloses: new TestCmdList()
+          .waitUntilRegex(
+            "#modal-statcollection",
+            "Allow Cookies?"
+          ),
       },
       {
         pluginOpen: new TestCmdList().setUserArg(
@@ -175,15 +171,15 @@ export default class ActivityFocusPlugin extends PluginParentClass {
           Tag.Visualization,
           this.pluginId
         ),
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
-          "#modal-statcollection",
-          "Allow Cookies?"
-        ),
+        afterPluginCloses: new TestCmdList()
+          .waitUntilRegex(
+            "#modal-statcollection",
+            "Allow Cookies?"
+          ),
       },
     ];
   }
 }
 </script>
-  
-  <style scoped lang="scss">
-</style>
+
+<style scoped lang="scss"></style>

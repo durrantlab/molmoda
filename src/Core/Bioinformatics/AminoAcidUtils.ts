@@ -2,7 +2,7 @@
 /**
  * Defines properties and utilities for amino acids.
  */
-
+import { memoize } from "lodash";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 import { IFileInfo } from "@/FileSystem/Types";
@@ -232,16 +232,16 @@ export const aminoAcidProperties: Record<string, AminoAcidProperty> = {
  * @param {string} threeLetterCode The three-letter code (e.g., "ALA", "mse").
  * @returns {string} The one-letter code (e.g., "A"), or "X" if not found or ambiguous.
  */
-export function threeLetterToPdbOneLetter(threeLetterCode: string): string {
+export const threeLetterToPdbOneLetter = memoize(function (
+    threeLetterCode: string
+): string {
     const upperCode = threeLetterCode.toUpperCase();
-
     // Direct match
     for (const key in aminoAcidProperties) {
         if (aminoAcidProperties[key].threeLetterCode === upperCode) {
             return aminoAcidProperties[key].oneLetterCode;
         }
     }
-
     // Handle common PDB variations by mapping to standard one-letter codes
     const pdbVariations: Record<string, string> = {
         MSE: "M", // Selenomethionine
@@ -255,13 +255,11 @@ export function threeLetterToPdbOneLetter(threeLetterCode: string): string {
         UNK: "X", // Unknown
         // Add more mappings as needed for specific PDB HETNAMs that should map to a standard AA
     };
-
     if (pdbVariations[upperCode]) {
         return pdbVariations[upperCode];
     }
-
     return "X"; // Default for unmapped or truly unknown residues
-}
+});
 
 /**
  * Converts a one-letter amino acid code to its three-letter code.
@@ -269,14 +267,16 @@ export function threeLetterToPdbOneLetter(threeLetterCode: string): string {
  * @param {string} oneLetterCode The one-letter code (e.g., "A").
  * @returns {string} The three-letter code (e.g., "ALA"), or "UNK" if not found.
  */
-export function oneLetterToThreeLetter(oneLetterCode: string): string {
+export const oneLetterToThreeLetter = memoize(function (
+    oneLetterCode: string
+): string {
     const upperCode = oneLetterCode.toUpperCase();
     // Use hasOwnProperty to prevent prototype pollution
     if (Object.prototype.hasOwnProperty.call(aminoAcidProperties, upperCode)) {
         return aminoAcidProperties[upperCode].threeLetterCode;
     }
     return "UNK";
-}
+});
 
 /**
  * Gets the AminoAcidProperty object for a given one-letter code.
@@ -284,7 +284,7 @@ export function oneLetterToThreeLetter(oneLetterCode: string): string {
  * @param {string} oneLetterCode The one-letter amino acid code.
  * @returns {AminoAcidProperty | undefined} The property object, or undefined if not found.
  */
-export function getAminoAcidProperty(
+export const getAminoAcidProperty = memoize(function (
     oneLetterCode: string
 ): AminoAcidProperty | undefined {
     const upperCode = oneLetterCode.toUpperCase();
@@ -293,7 +293,7 @@ export function getAminoAcidProperty(
         return aminoAcidProperties[upperCode];
     }
     return undefined;
-}
+});
 
 /**
  * Extracts an ordered sequence of residues from a TreeNode model.

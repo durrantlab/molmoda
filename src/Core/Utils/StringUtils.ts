@@ -1,3 +1,5 @@
+import { memoize } from "lodash";
+
 /**
  * Given text, create a text slug.
  *
@@ -5,16 +7,19 @@
  * @param  {boolean} [lowerCase=true] Whether to lowercase the slug.
  * @returns {string} The slugified text.
  */
-export function slugify(text: string, lowerCase = true): string {
-    if (lowerCase) {
-        text = text.toLowerCase();
-    }
-    return text
-        .trim()
-        .replace(/[:.]/g, "-")
-        .replace(/[^\w -]+/g, "")
-        .replace(/\s+/g, "-");
-}
+export const slugify = memoize(
+    function (text: string, lowerCase = true): string {
+        if (lowerCase) {
+            text = text.toLowerCase();
+        }
+        return text
+            .trim()
+            .replace(/[:.]/g, "-")
+            .replace(/[^\w -]+/g, "")
+            .replace(/\s+/g, "-");
+    },
+    (...args) => JSON.stringify(args)
+);
 
 /**
  * Capitalizes the first letter of a string.
@@ -42,7 +47,7 @@ export function lowerize(s: string): string {
  * @param  {string} s The string to capitalize.
  * @returns {string} The capitalized string.
  */
-export function capitalizeEachWord(s: string): string {
+export const capitalizeEachWord = memoize(function (s: string): string {
     if (!s) {
         return "";
     }
@@ -51,7 +56,7 @@ export function capitalizeEachWord(s: string): string {
         .split(/\s+/)
         .map((wrd) => capitalize(wrd));
     return wrds.join(" ");
-}
+});
 
 /**
  * A set of short English words that are typically not capitalized in a title,
@@ -89,7 +94,7 @@ const _shortWords = new Set([
  * @param {string} s The string to convert.
  * @returns {string} The title-cased string.
  */
-export function toTitleCase(s: string): string {
+export const toTitleCase = memoize(function (s: string): string {
     if (!s) {
         return "";
     }
@@ -106,7 +111,7 @@ export function toTitleCase(s: string): string {
         return lowerWord;
     });
     return titleCasedWords.join(" ");
-}
+});
 
 /**
  * Checks if a word contains a capital letter at an index greater than 0.
@@ -138,7 +143,7 @@ function _hasInternalCapital(word: string): boolean {
  * @param {string} s The string to convert.
  * @returns {string} The sentence-cased string.
  */
-export function toSentenceCase(s: string): string {
+export const toSentenceCase = memoize(function (s: string): string {
     if (!s) {
         return "";
     }
@@ -152,7 +157,7 @@ export function toSentenceCase(s: string): string {
         return _hasInternalCapital(word) ? word : word.toLowerCase();
     });
     return [firstWord, ...otherWords].join(" ");
-}
+});
 
 /**
  * Given a string, keep removing everything but letters and numbers from end of

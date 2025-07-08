@@ -2,7 +2,7 @@
 // of converting to OpenBabel or rdkit. These functions example direct
 // manipulation of SMILES string. Probably not as good as the Open Babel
 // implementations, so use sparingly.
-
+import { memoize } from "lodash";
 /**
  * Counts heavy atoms in a SMILES fragment, ignoring hydrogens
  * and handling two-letter elements correctly.
@@ -10,7 +10,9 @@
  * @param {string} smilesStr  Input SMILES string
  * @returns {number}  Number of heavy atoms
  */
-export function easyCountHeavyAtomsSmiles(smilesStr: string): number {
+export const easyCountHeavyAtomsSmiles = memoize(function (
+    smilesStr: string
+): number {
     let count = 0;
     let i = 0;
     while (i < smilesStr.length) {
@@ -46,7 +48,7 @@ export function easyCountHeavyAtomsSmiles(smilesStr: string): number {
         i++;
     }
     return count;
-}
+});
 
 /**
  * Takes a SMILES string that may contain multiple fragments (separated by
@@ -57,10 +59,10 @@ export function easyCountHeavyAtomsSmiles(smilesStr: string): number {
  * recommend using this function sparingly.
  *
  * @param {string} smilesStr  Input SMILES string that may contain multiple
- *                            fragments
+ *       fragments
  * @returns {string} SMILES string containing only the largest fragment
  */
-export function easyDesaltSMILES(smilesStr: string): string {
+export const easyDesaltSMILES = memoize(function (smilesStr: string): string {
     // If there's no period in the smilesStr, just return that string.
     if (!smilesStr.includes(".")) {
         return smilesStr;
@@ -82,7 +84,7 @@ export function easyDesaltSMILES(smilesStr: string): string {
     });
 
     return largestFragment;
-}
+});
 
 // export function testEasySmilesDesalt() {
 
@@ -122,7 +124,9 @@ export function easyDesaltSMILES(smilesStr: string): string {
  * @param {string} smilesStr Input SMILES string with potential charges
  * @returns {string} SMILES string with common charged atoms neutralized
  */
-export function easyNeutralizeSMILES(smilesStr: string): string {
+export const easyNeutralizeSMILES = memoize(function (
+    smilesStr: string
+): string {
     // Handle empty or null input
     if (!smilesStr) {
         return smilesStr;
@@ -194,14 +198,14 @@ export function easyNeutralizeSMILES(smilesStr: string): string {
         // Common anions
         { pattern: /\[OH-\]/g, replacement: "O" },
         { pattern: /\[SH-\]/g, replacement: "S" },
-        
+
         // Other issues
         { pattern: /\[c\]/g, replacement: "c" },
         { pattern: /\[n\]/g, replacement: "n" },
         { pattern: /\[o\]/g, replacement: "o" },
         { pattern: /\[s\]/g, replacement: "s" },
         { pattern: /\[p\]/g, replacement: "p" },
-        
+
         { pattern: /\[C\]/g, replacement: "C" },
         { pattern: /\[N\]/g, replacement: "N" },
         { pattern: /\[O\]/g, replacement: "O" },
@@ -231,4 +235,4 @@ export function easyNeutralizeSMILES(smilesStr: string): string {
     neutralized = neutralized.replace(/\.+/g, "."); // Multiple consecutive periods
 
     return neutralized;
-}
+});

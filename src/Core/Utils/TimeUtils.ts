@@ -1,3 +1,5 @@
+import { memoize } from "lodash";
+
 /**
  * Given to timestamps, produces a string that describes the time between the
  * two in seconds.
@@ -23,26 +25,20 @@ export function timeDiffDescription(
  * @param  {number} timestamp  The timestamp.
  * @returns {string}  A description of the time.
  */
-export function formatTimestamp(timestamp: number): string {
+export const formatTimestamp = memoize(function (timestamp: number): string {
     if (timestamp === 0) {
         return "";
     }
-
     // Format string like MM/DD HH:MM
     const date = new Date(timestamp);
-
     // Get month as 3-letter string
     const monthString = date.toLocaleString("default", { month: "short" });
-
     const day = date.getDate();
     const hour = date.getHours();
-
     // minutes are padded with 0s
     const minute = date.getMinutes().toString().padStart(2, "0");
-
     return `${monthString} ${day}, ${hour}:${minute}`;
-}
-
+});
 /**
  * Given a number of seconds, produces a string that describes the time.
  *
