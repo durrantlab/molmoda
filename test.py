@@ -244,14 +244,18 @@ def make_driver(browser):
         # options.add_argument("-headless")
 
         driver = webdriver.Firefox(options=options)
+        driver.maximize_window()
     elif browser == "firefox-headless":
         options = webdriver.FirefoxOptions()
         options.add_argument("-headless")
+        options.add_argument("--width=1920")
+        options.add_argument("--height=1080")
         driver = webdriver.Firefox(options=options)
     elif browser == "safari":
         # Note importance of disabling certain features in safari to make it
         # work: https://developer.apple.com/forums/thread/709225
         driver = webdriver.Safari()
+        driver.maximize_window()
         os.system("""osascript -e 'tell application "Safari" to activate'""")
     elif browser == "chrome":
         # NOTE: If this ever starts running really slow, you probably aren't
@@ -262,11 +266,15 @@ def make_driver(browser):
         # Java on mac can run in both arm64 and x86_64. This forces arm64, since
         # you test on a mac.
         options = webdriver.ChromeOptions()
+        options.add_argument("--start-maximized")
+        options.add_argument("--window-size=1920,1080")
         driver = make_chrome_driver(options)
     elif browser == "chrome-headless":
         options = webdriver.ChromeOptions()
         # Chrome works well in headless! Also, prevents stealing focus.
         options.add_argument("--headless=new")
+        options.add_argument("--start-maximized")
+        options.add_argument("--window-size=1920,1080")
         driver = make_chrome_driver(options)
     return driver
 

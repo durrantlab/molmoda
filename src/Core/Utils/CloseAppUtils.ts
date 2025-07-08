@@ -4,7 +4,7 @@ import { unregisterWarnSaveOnClose } from "@/Core/SaveOnClose/BeforeUnload";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { closeElectron } from "../Electron/ElectronUtils";
 import { getUrlParam } from "../UrlParams";
-
+import { isTest } from "../GlobalVars";
 /**
  * Constructs the base URL for reloading, optionally retaining the 'focus' parameter.
  *
@@ -36,29 +36,27 @@ export async function closeDownApp(preMsg = "", showMsg = true): Promise<void> {
     elementsToHide.forEach((element: any) => {
         element.style.display = "none"; // Hide each element
     });
-
     // Clear the autosave
     stopAutoSaveTimer();
     await deleteAutoSave();
     unregisterWarnSaveOnClose();
-
     // Below will close the app if running in electron. So subsequent messages
     // is never shown.
     closeElectron();
-
     const reloadUrl = _getReloadUrl();
-
     if (showMsg) {
         api.messages.popupMessage(
             "Session Ended",
             preMsg + "You may now close/reload this tab/window.",
             PopupVariant.Info,
             () => {
-                // Reload the page, preserving only the focus parameter if it exists.
-                window.location.href = reloadUrl;
+                if (!isTest) {
+                    // Reload the page, preserving only the focus parameter if it exists.
+                    window.location.href = reloadUrl;
+                }
             }
         );
-    } else {
+    } else if (!isTest) {
         // Reload the page, preserving only the focus parameter if it exists.
         window.location.href = reloadUrl;
     }

@@ -1,13 +1,7 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Clone"
-        @onPopupDone="onPopupDone"
-        :hideIfDisabled="true"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Clone" @onPopupDone="onPopupDone"
+        :hideIfDisabled="true" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
+    </PluginComponent>
 </template>
 
 <script lang="ts">
@@ -66,7 +60,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    
+
     logJob = false;
 
     /**
@@ -210,9 +204,11 @@ export default class CloneMolPlugin extends PluginParentClass {
                     .selectMoleculeInTree("Protein"),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#navigator", ":cloned")
+                    .wait(0.5)
 
                     // Also check clicking in title bar
                     .selectMoleculeInTree("Compounds")
+                    .wait(0.5)
                     .click('#navigator div[data-label="Compounds"] span.cloneextract')
                     .text("#newName-clonemol-item", "Compounds-clonned")
                     .pressPopupButton(".action-btn", this.pluginId)

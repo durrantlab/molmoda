@@ -105,6 +105,7 @@ export default class QuitPlugin extends PluginParentClass {
                 beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 2),
                 closePlugin: new TestCmdList().click("#modal-yesnomsg .action-btn2"),
                 afterPluginCloses: new TestCmdList()
+                    .wait(1.5)
                     .text("#modal-savemolecules #filename-savemolecules-item", "tmpfile")
                     .click("#modal-savemolecules .action-btn")
                     .waitUntilRegex("#modal-simplemsg", "You may now close")

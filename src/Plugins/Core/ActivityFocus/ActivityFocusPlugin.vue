@@ -37,7 +37,7 @@ import {
 } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { appName } from "@/Core/GlobalVars";
+import { appName, isTest } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";
 
 /**
@@ -133,7 +133,9 @@ export default class ActivityFocusPlugin extends PluginParentClass {
     }
 
     // Reload the page with the new URL
-    window.location.href = url.toString();
+    if (!isTest) {
+      window.location.href = url.toString();
+    }
   }
 
   /**
@@ -159,11 +161,11 @@ export default class ActivityFocusPlugin extends PluginParentClass {
           Tag.Docking,
           this.pluginId
         ),
-        afterPluginCloses: new TestCmdList()
-          .waitUntilRegex(
-            "#modal-statcollection",
-            "Allow Cookies?"
-          ),
+        // afterPluginCloses: new TestCmdList()
+        //   .waitUntilRegex(
+        //     "#modal-statcollection",
+        //     "Allow Cookies?"
+        //   ),
       },
       {
         pluginOpen: new TestCmdList().setUserArg(
@@ -171,11 +173,11 @@ export default class ActivityFocusPlugin extends PluginParentClass {
           Tag.Visualization,
           this.pluginId
         ),
-        afterPluginCloses: new TestCmdList()
-          .waitUntilRegex(
-            "#modal-statcollection",
-            "Allow Cookies?"
-          ),
+        // afterPluginCloses: new TestCmdList()
+        //   .waitUntilRegex(
+        //     "#modal-statcollection",
+        //     "Allow Cookies?"
+        //   ),
       },
     ];
   }

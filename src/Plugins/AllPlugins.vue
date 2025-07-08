@@ -4,10 +4,9 @@
 system uses these to autopopulate with plugins. -->
 <template>
   <div>
-    <AboutPlugin @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
-    <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
-
-    <!-- TEMPLATE1 START -->
+ <AboutPlugin @onPluginSetup="onPluginSetup" :softwareCreditsToShow="softwareCredits" :contributorCreditsToShow="contributorCredits"/>
+ <HelpPlugin @onPluginSetup="onPluginSetup" :loadedPlugins="loadedPlugins" />
+ <!-- TEMPLATE1 START -->
     <ActivityFocusPlugin @onPluginSetup="onPluginSetup"></ActivityFocusPlugin>
     <AddVizualizationPlugin @onPluginSetup="onPluginSetup"></AddVizualizationPlugin>
     <ArchivedVersionsPlugin @onPluginSetup="onPluginSetup"></ArchivedVersionsPlugin>
@@ -78,17 +77,13 @@ system uses these to autopopulate with plugins. -->
     <!-- TEMPLATE1 END -->
   </div>
 </template>
-
 <script lang="ts">
 import { Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import { Options } from "vue-class-component";
+import { defineAsyncComponent } from "vue";
 import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
-
-import AboutPlugin from "@/Plugins/Core/AboutPlugin.vue";
-import HelpPlugin from "@/Plugins/Core/HelpPlugin.vue";
-
 // TEMPLATE2 START
 import ActivityFocusPlugin from "./Core/ActivityFocus/ActivityFocusPlugin.vue";
 import AddVizualizationPlugin from "./Core/AddVizualizationPlugin.vue";
@@ -158,16 +153,14 @@ import SavePNGPlugin from "./Optional/Graphics/SavePNGPlugin.vue";
 import SaveVRMLPlugin from "./Optional/Graphics/SaveVRMLPlugin.vue";
 import WebinaPlugin from "./Optional/Webina/WebinaPlugin.vue";
 // TEMPLATE2 END
-
 /**
  * Component where all plugins are placed.
  */
 @Options({
   components: {
-    AboutPlugin,
-    HelpPlugin,
-
-    // TEMPLATE3 START
+    AboutPlugin: defineAsyncComponent(() => import("@/Plugins/Core/AboutPlugin.vue")),
+    HelpPlugin: defineAsyncComponent(() => import("@/Plugins/Core/HelpPlugin.vue")),
+ // TEMPLATE3 START
     ActivityFocusPlugin,
     AddVizualizationPlugin,
     ArchivedVersionsPlugin,
@@ -243,18 +236,16 @@ export default class AllPlugins extends Vue {
   @Prop({ required: true }) softwareCredits!: ISoftwareCredit[];
   @Prop({ required: true }) contributorCredits!: IContributorCredit[];
   @Prop({ required: true }) loadedPlugins!: PluginParentClass[];
-
   /**
    * Runs when the plugin is setup.
-   * 
+   *
    * @param {IPluginSetupInfo} pluginSetupInfo  The plugin-setup parameters.
    */
   onPluginSetup(pluginSetupInfo: IPluginSetupInfo) {
-    // Relay up the chain (from individual plugins to app).
-    this.$emit("onPluginSetup", pluginSetupInfo);
+ // Relay up the chain (from individual plugins to app).
+ this.$emit("onPluginSetup", pluginSetupInfo);
   }
 }
 </script>
-
 <style scoped lang="scss">
 </style>

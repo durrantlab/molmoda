@@ -1,6 +1,6 @@
 {
     "name": "MolModa",
-    "version": "2025.7.7",
+    "version": "2025.7.8",
     "private": false,
     "scripts": {
         "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",
@@ -61,7 +61,7 @@
         "@types/file-saver": "^2.0.5",
         "@types/jest": "^29.5.14",
         "@types/jquery": "^3.5.14",
-        "@types/lodash": "^4.17.15",
+        "@types/lodash": "^4.14.180",
         "@types/qrcode": "^1.5.5",
         "@types/sortablejs": "^1.13.0",
         "@typescript-eslint/eslint-plugin": "^5.4.0",
