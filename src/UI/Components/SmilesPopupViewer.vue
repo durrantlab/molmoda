@@ -8,7 +8,7 @@
             <Mol2DView v-if="isIntersecting && smilesToUse" :smiles="smilesToUse" :maxHeight="maxHeight"
                 :drawingWidth="measuredContainerWidth > 0 ? measuredContainerWidth : undefined" :minHeight="30"
                 @click="onClick" />
-            <!-- 
+            <!--
                 Optional: Add a placeholder div that has a minimum height,
                 so the layout doesn't jump when the image loads.
                 This placeholder will be observed by IntersectionObserver.
@@ -53,7 +53,7 @@ export default class SmilesPopupViewer extends Vue {
     @Prop({ default: false }) inPopup!: boolean; // If this instance itself is already in a popup
 
     private smilesPopupViewerContainer: HTMLDivElement | undefined = undefined;
-    private resizeInterval: any = undefined;
+    private resizeObserver: ResizeObserver | null = null;
     private intersectionObserver: IntersectionObserver | null = null;
 
     // Reactive properties
@@ -175,13 +175,28 @@ export default class SmilesPopupViewer extends Vue {
     }
 
     /**
+     * Sets up a ResizeObserver to handle changes in the size of the root container.
+     */
+    private setupResizeObserver(): void {
+        if (!this.smilesPopupViewerContainer) return;
+        this.resizeObserver = new ResizeObserver((entries) => {
+            if (entries && entries.length > 0) {
+                this.updateMeasuredContainerWidth();
+            }
+        });
+        this.resizeObserver.observe(this.smilesPopupViewerContainer);
+    }
+    /**
      * Lifecycle hook called when the component is unmounted.
      * Clears the resize interval and disconnects the IntersectionObserver.
      */
     unmounted() {
-        if (this.resizeInterval) {
-            clearInterval(this.resizeInterval);
-            this.resizeInterval = null;
+        if (this.resizeObserver) {
+            if (this.smilesPopupViewerContainer) {
+                this.resizeObserver.unobserve(this.smilesPopupViewerContainer);
+            }
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
         }
         if (this.intersectionObserver) {
             this.intersectionObserver.disconnect();
@@ -206,13 +221,8 @@ export default class SmilesPopupViewer extends Vue {
                 // if it were to get SMILES later and not be observed. Or simply, do nothing.
                 // For now, if no smiles, it won't render Mol2DView anyway.
             }
+            this.setupResizeObserver();
         });
-
-        // Periodically check for width changes. A ResizeObserver on smilesPopupViewerContainer
-        // would be more efficient if this becomes a performance concern.
-        this.resizeInterval = setInterval(() => {
-            this.updateMeasuredContainerWidth();
-        }, 500);
     }
 }
 </script>
