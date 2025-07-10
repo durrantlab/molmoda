@@ -11,7 +11,7 @@ import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
 import { replaceAllCustomStyles } from "@/Core/Styling/StyleManager";
 import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 import { layoutApi } from "@/Api/Layout";
-
+import { sanitizeHtml } from "@/Core/Security/Sanitize";
 export const molmodaStateKeysToRetain = [
     "molecules",
     "log",
@@ -34,9 +34,20 @@ export async function parseUsingMolModa(
     // Update vueX store
     for (const key of molmodaStateKeysToRetain) {
         let viewer: ViewerParent;
+
+        let sanitizedLog: any = null;
+        if (key === "log") {
+            sanitizedLog = (stateFromJson[key] as ILog[]).map(async (logEntry) => ({
+                ...logEntry,
+                message: await sanitizeHtml(logEntry.message),
+                parameters: await sanitizeHtml(logEntry.parameters),
+            }));
+            sanitizedLog = await Promise.all(sanitizedLog);
+        }
+
         switch (key) {
             case "log":
-                pushToStoreList(key, stateFromJson[key]);
+                pushToStoreList(key, sanitizedLog);
                 break;
             case "molecules":
                 (stateFromJson[key] as TreeNodeList).addToMainTree(
@@ -133,14 +144,29 @@ function fixLog() {
  * @param  {string} jsonStr  The json string.
  * @returns {Promise<any>} A promise that resolves the state object.
  */
-function jsonStrToState(jsonStr: string): Promise<any> {
+async function jsonStrToState(jsonStr: string): Promise<any> {
     // Viewer needs to reload everything, so set viewierDirty to true in all
     // cases. This is a little hackish, but easier than recursing I think.
     jsonStr = jsonStr.replace(/"viewerDirty": *false/g, '"viewerDirty":true');
-
     // Now convert it to an object.
     const obj = JSON.parse(jsonStr);
-
+    // Recursive sanitization of titles within the object
+    async function sanitizeTitles(currentObj: any) {
+        if (!currentObj || typeof currentObj !== "object") return;
+        if (Array.isArray(currentObj)) {
+            currentObj.forEach(sanitizeTitles);
+        } else {
+            if (typeof currentObj.title === "string") {
+                currentObj.title = await sanitizeHtml(currentObj.title);
+            }
+            if (currentObj.nodes) {
+                await sanitizeTitles(currentObj.nodes);
+            }
+        }
+    }
+    if (obj.molecules) {
+        await sanitizeTitles(obj.molecules);
+    }
     return treeNodeListDeserialize(obj.molecules as ITreeNode[])
         .then((mols: TreeNodeList) => {
             obj.molecules = mols;

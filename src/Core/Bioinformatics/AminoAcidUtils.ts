@@ -353,6 +353,14 @@ export async function getOrderedResidueSequenceFromModel(
  *       sequence]`.
  */
 export function convertFastaToSeqences(text: string): [string, string][] {
+    const MAX_FASTA_SIZE_MB = 10;
+    if (text.length > MAX_FASTA_SIZE_MB * 1024 * 1024) {
+        console.error(
+            `FASTA input exceeds maximum size of ${MAX_FASTA_SIZE_MB} MB.`
+        );
+        // Or throw new Error(...)
+        return [];
+    }
     if (!text.includes(">")) {
         // Fallback for non-FASTA format: sequences separated by blank lines
         const lines = text.split(/\r?\n/);
@@ -375,7 +383,6 @@ export function convertFastaToSeqences(text: string): [string, string][] {
         }
         return sequences.map((seq) => ["", seq]);
     }
-
     // Standard FASTA parsing
     const results: [string, string][] = [];
     const sequenceBlocks = text.split(">").slice(1);

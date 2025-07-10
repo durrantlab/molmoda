@@ -1,12 +1,13 @@
 <template>
     <div class="image-viewer-container">
-        <div v-if="sourceType === 'svg'" class="svg-wrapper" ref="svgElementRef" v-html="source" :style="viewerStyle">
+        <div v-if="sourceType === 'svg'" class="svg-wrapper" ref="svgElementRef" v-html="sanitizedSvg"
+            :style="viewerStyle">
         </div>
         <img v-else-if="sourceType === 'png-datauri' || sourceType === 'png-url'" :src="source" ref="pngElementRef"
             alt="Image" class="png-image" :style="viewerStyle" @load="adjustImageDimensions" @error="onImageError" />
         <!-- <div v-else class="invalid-source p-1 text-center"> -->
-            <!-- <Alert type="danger" class="p-0 m-0">Invalid image source or type provided.</Alert> -->
-            <!-- <p>Invalid image source or type provided.</p> -->
+        <!-- <Alert type="danger" class="p-0 m-0">Invalid image source or type provided.</Alert> -->
+        <!-- <p>Invalid image source or type provided.</p> -->
         <!-- </div> -->
 
         <!-- Download and copy buttons -->
@@ -38,7 +39,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
 import Alert from "@/UI/Layout/Alert.vue";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-
+import { loadDOMPurify, sanitizeSvg } from "@/Core/Security/Sanitize";
 type SourceType = "svg" | "png-datauri" | "png-url" | "unknown";
 
 /**
@@ -108,6 +109,17 @@ export default class ImageViewer extends Vue {
     }
 
     /**
+     * Gets the sanitized SVG content.
+     *
+     * @returns {string} The sanitized SVG string.
+     */
+    get sanitizedSvg(): string {
+        if (this.sourceType === "svg") {
+            return sanitizeSvg(this.source);
+        }
+        return "";
+    }
+    /**
      * Lifecycle hook called when the component is created.
      */
     created() {
@@ -118,6 +130,9 @@ export default class ImageViewer extends Vue {
      * Lifecycle hook called when the component is mounted.
      */
     mounted() {
+        // So you can sanitize SVG in a bit...
+        loadDOMPurify();
+
         if (this.sourceType === 'svg') {
             this.$nextTick(() => {
                 this.adjustSvgDimensions();

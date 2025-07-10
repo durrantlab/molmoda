@@ -47,7 +47,6 @@ import {
   ICmpdNonCmpdFileInfos,
   IMolsToConsider,
 } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
-import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";

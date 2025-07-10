@@ -310,7 +310,8 @@ export const dynamicImports = {
             name: "Reduce",
             url: "https://github.com/rlabduke/reduce",
             license: Licenses.CUSTOM,
-            licenseUrl: "https://github.com/rlabduke/reduce/blob/master/LICENSE.txt",
+            licenseUrl:
+                "https://github.com/rlabduke/reduce/blob/master/LICENSE.txt",
             citations: [
                 {
                     title: "Asparagine and glutamine: using hydrogen atom contacts in the choice of side-chain amide orientation",
@@ -340,11 +341,17 @@ export const dynamicImports = {
             name: "US-align",
             url: "https://github.com/pylelab/USalign",
             license: Licenses.CUSTOM,
-            licenseUrl: "https://github.com/pylelab/USalign/blob/master/LICENSE",
+            licenseUrl:
+                "https://github.com/pylelab/USalign/blob/master/LICENSE",
             citations: [
                 {
                     title: "US-align: universal structure alignments of proteins, nucleic acids, and macromolecular complexes",
-                    authors: ["Zhang, Chengxin", "Shine, Morgan", "Pyle, Anna Marie", "Zhang, Yang"],
+                    authors: [
+                        "Zhang, Chengxin",
+                        "Shine, Morgan",
+                        "Pyle, Anna Marie",
+                        "Zhang, Yang",
+                    ],
                     journal: "Nature Methods",
                     year: 2022,
                     volume: 19,
@@ -725,6 +732,27 @@ export const dynamicImports = {
                 /* webpackChunkName: "dexie" */
                 /* webpackMode: "lazy" */
                 "dexie"
+            ).then((mod: any) => {
+                return mod.default;
+            });
+        },
+    },
+    dompurify: {
+        credit: {
+            name: "DOMPurify",
+            url: "https://github.com/cure53/DOMPurify",
+            license: Licenses.APACHE2,
+        },
+        /**
+         * Gets the DOMPurify module.
+         *
+         * @returns {Promise<any>} A promise that resolves to the DOMPurify module.
+         */
+        get module(): Promise<any> {
+            return import(
+                /* webpackChunkName: "dompurify" */
+                /* webpackMode: "lazy" */
+                "dompurify"
             ).then((mod: any) => {
                 return mod.default;
             });
