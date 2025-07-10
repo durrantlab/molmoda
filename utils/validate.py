@@ -197,6 +197,9 @@ for ts_file in ts_files:
     # The string "LAST_NAME" must not appear anywhere.
     if "LAST_NAME" in content:
         add_error(ts_file, 'The string "LAST_NAME" must not appear anywhere in any file.')
+    
+    if "SOME_KEY" in content:
+        add_error(ts_file, 'The string "SOME_KEY" must not appear anywhere in any file.')
 
     # The string "No changes" must not appear anywhere.
     if "No changes" in content:

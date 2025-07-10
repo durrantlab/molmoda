@@ -1,5 +1,5 @@
 <template>
-    <div class="tree-view-wrapper" ref="scroller" @scroll.passive="handleScroll">
+    <div class="tree-view-wrapper" ref="scroller" @scroll.passive="handleScroll" @click.self="clearSelection">
         <FilterInput v-if="allTreeDataFlattened.length > 0 && depth === 0" :list="allTreeDataFlattened"
             :extractTextToFilterFunc="extractTextToFilterFunc" @onFilter="onFilter" mb="1" v-model="filterStr">
         </FilterInput>
@@ -37,7 +37,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";
-
+import * as api from "@/Api";
 /**
  * TreeView component
  */
@@ -61,6 +61,15 @@ export default class TreeView extends Vue {
     scrollTop = 0;
     containerHeight = 0;
     resizeObserver: ResizeObserver | null = null;
+
+    /**
+        * Clears any selected molecules. This is called when the user clicks on the
+        * background of the tree view.
+        */
+    clearSelection() {
+        api.plugins.runPlugin("clearselection");
+    }
+
     /**
      * Get the style for a fixed-width element.
      *

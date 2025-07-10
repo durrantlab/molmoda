@@ -19,6 +19,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import PluginComponent from "../../Parents/PluginComponent/PluginComponent.vue";
 import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import { validateShareCode } from "./TemporaryShareUtils";
+import { loadDOMPurify } from "@/Core/Security/Sanitize";
 
 /**
  * TemporarySharePlugin allows users to temporarily share their session via a generated link.
@@ -55,7 +56,9 @@ export default class TemporarySharePlugin extends PluginParentClass {
      * It dynamically adds credits for the QR code library.
      */
     async onMounted() {
-        super.onMounted();
+        // Load DOMPurify for sanitizing SVG content
+        await loadDOMPurify();
+
         const qrCredit = (await dynamicImports.qrcode.credit) as ISoftwareCredit;
         if (qrCredit && !this.softwareCredits.some(c => c.name === qrCredit.name)) {
             this.softwareCredits.push(qrCredit);

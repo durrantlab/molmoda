@@ -22,6 +22,7 @@ import {
   IUserArgMoleculeInputParams,
   IUserArgRange,
   IUserArgAlert,
+  IUserArgNumber,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import {
@@ -40,12 +41,8 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestCmd";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import {
-  SelectedType,
-  TreeNodeType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
@@ -150,20 +147,17 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
     } as IUserArgRange,
     {
       id: "maxresults",
-      // type: UserArgType.Number,
+      type: UserArgType.Number,
       label: "Maximum results",
       description: "Maximum number of compounds to retrieve from PubChem.",
       val: 100,
-      min: 1,
-      max: 1000,
-      step: 1,
       enabled: true,
-      // validateFunc: (val: number) => val > 0 && val <= 1000,
+      validateFunc: (val: number) => val > 0 && val <= 1000,
       warningFunc: (val: number) => {
         if (val > 100) return "Large result sets may take longer to process.";
         return "";
       },
-    } as IUserArgRange,
+    } as IUserArgNumber,
     // Add the 3D generation argument here
     getGen3DUserArg(
       "Generate 3D coordinates",

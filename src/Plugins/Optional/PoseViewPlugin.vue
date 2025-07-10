@@ -59,6 +59,7 @@ import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/Conver
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FileInfo } from "@/FileSystem/FileInfo"; // Added import
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser"; // Added import
+import { loadDOMPurify } from "@/Core/Security/Sanitize";
 
 const PROXY_URL =
   "https://molmoda.org/poseview-proxy.php";
@@ -389,6 +390,11 @@ export default class PoseViewPlugin extends PluginParentClass {
         .waitUntilRegex("#modal-simplesvgpopup", "Diagram generated using")
         .click("#modal-simplesvgpopup .cancel-btn"),
     };
+  }
+
+  async onMounted(): Promise<void> {
+    // Load DOMPurify for sanitizing SVG content
+    loadDOMPurify();
   }
 }
 </script>
