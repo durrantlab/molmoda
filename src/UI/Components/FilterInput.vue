@@ -1,19 +1,11 @@
 <template>
     <div :class="'input-group input-group-sm mb-' + mb">
-        <span class="input-group-text" id="basic-addon1">
-            <Icon
-                style="color: #212529;"
-                :icon="['fas', 'magnifying-glass']"
-            />
+        <span class="input-group-text" id="basic-addon1" @click="onIconClick" :style="iconStyle">
+            <Icon v-if="modelValue === ''" style="color: #212529" :icon="['fas', 'magnifying-glass']" />
+            <Icon v-else style="color: #212529" :icon="['fas', 'xmark']" />
         </span>
-
-        <input
-            type="text"
-            class="form-control"
-            :value="modelValue"
-            @input="$emit('update:modelValue', $event.target.value)"
-            @keydown="onKeypress"
-        />
+        <input type="text" class="form-control" :value="modelValue"
+            @input="$emit('update:modelValue', $event.target.value)" @keydown="onKeypress" />
     </div>
 </template>
 
@@ -31,7 +23,7 @@ import Icon from "./Icon.vue";
 @Options({
     components: {
         FormElementDescription,
-        Icon
+        Icon,
     },
 })
 export default class FilterInput extends Vue {
@@ -40,6 +32,30 @@ export default class FilterInput extends Vue {
     @Prop({ default: "3" }) mb!: string;
     @Prop({ required: true }) modelValue!: string; // filterStr
     // @Prop({ default: "placeholder" }) placeHolder!: string;
+
+    /**
+     * Gets the style for the icon container, adding a pointer cursor if
+     * clickable.
+     *
+     * @returns {string}  The style object.
+     */
+    get iconStyle(): string {
+        let style = "width: 32px; margin: auto; display: inline-block;";
+        if (this.modelValue !== "") {
+            style += "cursor: pointer;";
+        }
+        return style
+    }
+
+    /**
+     * Handles clicks on the icon container. If the filter has text, it clears it.
+     */
+    onIconClick() {
+        if (this.modelValue !== "") {
+            this.$emit("update:modelValue", "");
+            // The onFilter method will be triggered by the watcher on modelValue
+        }
+    }
 
     /**
      * When the filter string changes, trigger onFilter.
