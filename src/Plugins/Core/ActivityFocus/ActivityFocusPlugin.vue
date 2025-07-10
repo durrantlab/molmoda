@@ -39,6 +39,7 @@ import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName, isTest } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";
+import { reloadPage } from "@/Core/Utils/CloseAppUtils";
 
 /**
  * ActivityFocusPlugin
@@ -133,9 +134,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
     }
 
     // Reload the page with the new URL
-    if (!isTest) {
-      window.location.href = url.toString();
-    }
+    reloadPage(url.toString());
   }
 
   /**

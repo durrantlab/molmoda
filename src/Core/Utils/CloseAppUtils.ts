@@ -6,6 +6,16 @@ import { closeElectron } from "../Electron/ElectronUtils";
 import { getUrlParam } from "../UrlParams";
 import { isTest } from "../GlobalVars";
 /**
+ * Reloads the page to the specified URL, but only if not in a test environment.
+ *
+ * @param {string | URL} url The URL to navigate to.
+ */
+export function reloadPage(url: string | URL): void {
+    if (!isTest) {
+        window.location.href = url.toString();
+    }
+}
+/**
  * Constructs the base URL for reloading, optionally retaining the 'focus' parameter.
  *
  * @returns {string} The URL to navigate to.
@@ -50,14 +60,12 @@ export async function closeDownApp(preMsg = "", showMsg = true): Promise<void> {
             preMsg + "You may now close/reload this tab/window.",
             PopupVariant.Info,
             () => {
-                if (!isTest) {
-                    // Reload the page, preserving only the focus parameter if it exists.
-                    window.location.href = reloadUrl;
-                }
+                // Reload the page, preserving only the focus parameter if it exists.
+                reloadPage(reloadUrl);
             }
         );
-    } else if (!isTest) {
+    } else {
         // Reload the page, preserving only the focus parameter if it exists.
-        window.location.href = reloadUrl;
+        reloadPage(reloadUrl);
     }
 }

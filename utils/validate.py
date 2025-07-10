@@ -224,6 +224,12 @@ for ts_file in ts_files:
     if 'href="#"' in content or 'href= "#"' in content:
         add_error(ts_file, 'No <a> should have `href="#"`. Remove it and use `class="link-primary"` if needed.')
 
+    if "CloseAppUtils.ts" not in ts_file and ('window.location.href =' in content or 'window.location.href=' in content):
+        add_error(
+            ts_file,
+            'No code should set `window.location.href = ...`. Use reloadPage instead.',
+        )
+
     # if ".catch(" in content, there must be a "throw" within the next few
     # lines. Use regex.
     if ".catch(" in content:
