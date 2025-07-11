@@ -1,15 +1,7 @@
 <template>
-  <PluginComponent
-    v-model="open"
-    :infoPayload="infoPayload"
-    actionBtnTxt="Save"
-    :intro="introToUse"
-    @onPopupDone="onPopupDone"
-    :prohibitCancel="appClosing"
-    :hideIfDisabled="true"
-    @onUserArgChanged="onUserArgChanged"
-    @onMolCountsChanged="onMolCountsChanged"
-  >
+  <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Save" :intro="introToUse"
+    @onPopupDone="onPopupDone" :prohibitCancel="appClosing" :hideIfDisabled="true" @onUserArgChanged="onUserArgChanged"
+    @onMolCountsChanged="onMolCountsChanged">
   </PluginComponent>
 </template>
 
@@ -203,7 +195,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    */
   async onBeforePopupOpen(payload?: boolean) {
     if (payload === undefined) {
-        payload = false;
+      payload = false;
     }
     this.appClosing = payload;
 
@@ -213,6 +205,13 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     this.setUserArg("saveSelected", true);
     this.setUserArg("saveHiddenAndUnselected", false);
     this.setUserArg("separateCompounds", true);
+
+    const projectTitle = this.$store.state.projectTitle;
+    if (projectTitle) {
+      this.setUserArg("filename", projectTitle);
+    } else {
+      this.setUserArg("filename", ""); // Ensure it's blank if no title
+    }
 
     payload = undefined;
   }

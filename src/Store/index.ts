@@ -13,6 +13,7 @@ import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
 import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
 import { incrementTreeVersion } from "@/TreeNodes/TreeCache";
+import { appName } from "@/Core/GlobalVars";
 
 const _commonMutations = {
     /**
@@ -36,12 +37,12 @@ const _commonMutations = {
      * @param {NameValPair} payload  The name and value to push to the list.
      */
     pushToList(state: any, payload: NameValPair) {
-  // If the list is molecules, use the dedicated mutation which handles reactivity.
-  if (payload.name === "molecules") {
+        // If the list is molecules, use the dedicated mutation which handles reactivity.
+        if (payload.name === "molecules") {
             (this as any).commit("pushToMolecules", payload.val);
             return;
         }
-  // Generic list push for other state arrays like 'log'.
+        // Generic list push for other state arrays like 'log'.
         if (Array.isArray(payload.val)) {
             state[payload.name].push(...payload.val);
         } else {
@@ -133,6 +134,7 @@ export function setupVueXStore(): Store<any> {
             log: [] as ILog[],
             goldenLayout: undefined,
             viewerVantagePoint: undefined,
+            projectTitle: "",
             updateZoom: true,
             molViewer: "3dmol",
             undoStack: [newTreeNodeList([])],
@@ -170,7 +172,13 @@ export function setupVueXStore(): Store<any> {
     };
 
     store = createStore(storeVars);
-
+    store.watch(
+        (state: any) => state.projectTitle,
+        (newTitle: string) => {
+            document.title = newTitle ? `${newTitle} - ${appName}` : appName;
+        },
+        { immediate: true }
+    );
     store.watch(
         // When the returned result changes...
         function (state: any) {

@@ -17,6 +17,7 @@ export const molmodaStateKeysToRetain = [
     "log",
     "goldenLayout",
     "viewerVantagePoint",
+    "projectTitle",
 ];
 
 /**
@@ -37,11 +38,13 @@ export async function parseUsingMolModa(
 
         let sanitizedLog: any = null;
         if (key === "log") {
-            sanitizedLog = (stateFromJson[key] as ILog[]).map(async (logEntry) => ({
-                ...logEntry,
-                message: await sanitizeHtml(logEntry.message),
-                parameters: await sanitizeHtml(logEntry.parameters),
-            }));
+            sanitizedLog = (stateFromJson[key] as ILog[]).map(
+                async (logEntry) => ({
+                    ...logEntry,
+                    message: await sanitizeHtml(logEntry.message),
+                    parameters: await sanitizeHtml(logEntry.parameters),
+                })
+            );
             sanitizedLog = await Promise.all(sanitizedLog);
         }
 
@@ -85,6 +88,9 @@ export async function parseUsingMolModa(
                     return viewer._mol3dObj !== undefined;
                 });
                 viewer.setView(stateFromJson[key]);
+                break;
+            case "projectTitle":
+                setStoreVar("projectTitle", stateFromJson[key] || "");
                 break;
         }
     }

@@ -5,6 +5,7 @@ import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModel
 import {
     getMoleculesFromStore,
     pushToStoreList,
+    setStoreVar,
 } from "@/Store/StoreExternalAccess";
 import type { GLModel } from "@/UI/Panels/Viewer/GLModelType";
 import {
@@ -837,6 +838,14 @@ export class TreeNode {
             }`;
         }
         pushToStoreList("molecules", this);
+        if (store.state.projectTitle === "") {
+            const topAncestor = this.getAncestry(getMoleculesFromStore()).get(
+                0
+            );
+            if (topAncestor && topAncestor.title) {
+                setStoreVar("projectTitle", topAncestor.title);
+            }
+        }
         // If you add new molecules to the tree, focus on everything.
         const viewer = await api.visualization.viewer;
 

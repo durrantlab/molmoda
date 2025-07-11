@@ -41,6 +41,7 @@ system uses these to autopopulate with plugins. -->
     <QuitPlugin @onPluginSetup="onPluginSetup"></QuitPlugin>
     <RedoPlugin @onPluginSetup="onPluginSetup"></RedoPlugin>
     <RenameMolPlugin @onPluginSetup="onPluginSetup"></RenameMolPlugin>
+    <RenameProjectPlugin @onPluginSetup="onPluginSetup"></RenameProjectPlugin>
     <ResetLayoutPlugin @onPluginSetup="onPluginSetup"></ResetLayoutPlugin>
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
@@ -128,6 +129,7 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
     QuitPlugin: defineAsyncComponent(() => import("@/Plugins/Core/QuitPlugin.vue")),
     RedoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UndoRedo/RedoPlugin.vue")),
     RenameMolPlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/RenameMolPlugin.vue")),
+    RenameProjectPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/RenameProjectPlugin.vue")),
     ResetLayoutPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/ResetLayoutPlugin.vue")),
     SaveMoleculesPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue")),
     SelectAllPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectAllPlugin.vue")),
