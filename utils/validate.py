@@ -230,6 +230,12 @@ for ts_file in ts_files:
             'No code should set `window.location.href = ...`. Use reloadPage instead.',
         )
 
+    if "workspace" in content.lower():
+        add_error(
+            ts_file,
+            'The word "workspace" should not be used. Use "project" instead.',
+        )
+
     # if ".catch(" in content, there must be a "throw" within the next few
     # lines. Use regex.
     if ".catch(" in content:

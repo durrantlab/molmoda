@@ -76,7 +76,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     pluginId = "findsimilarproteins";
     intro = "Find proteins with similar sequences using the RCSB PDB sequence search.";
     details =
-        "This tool uses US-align to perform structural alignment. Aligned structures will be added to the workspace.";
+        "This tool uses US-align to perform structural alignment. Aligned structures will be added to the project.";
     tags = [Tag.Modeling];
     isActionBtnEnabled = false;
     userArgDefaults: UserArg[] = [
@@ -84,11 +84,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             id: "inputType",
             type: UserArgType.Select,
             label: "Query source",
-            val: "workspace",
+            val: "project",
             description:
-                "Choose whether to use proteins from the workspace or to provide FASTA text.",
+                "Choose whether to use proteins from the project or to provide FASTA text.",
             options: [
-                { description: "Use proteins from workspace", val: "workspace" },
+                { description: "Use proteins from project", val: "project" },
                 { description: "Use FASTA text", val: "fasta" },
             ],
         } as IUserArgSelect,
@@ -145,7 +145,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             id: "downloadStructures",
             type: UserArgType.Checkbox,
             label: "Download structures",
-            description: "Download all protein structures into the workspace.",
+            description: "Download all protein structures into the project.",
             val: true,
         } as IUserArgCheckbox,
         {
@@ -169,7 +169,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Called before the popup opens. Sets the initial state of the form based
-     * on whether proteins are present in the workspace.
+     * on whether proteins are present in the project.
      */
     async onBeforePopupOpen() {
         const allMolecules = getMoleculesFromStore();
@@ -181,7 +181,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         if (!hasProteins) {
             this.setUserArg("inputType", "fasta");
         } else {
-            this.setUserArg("inputType", "workspace");
+            this.setUserArg("inputType", "project");
         }
         // Trigger onUserArgChange to update the visibility of other fields
         this.onUserArgChange();
@@ -191,12 +191,12 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      */
     onUserArgChange() {
         const inputType = this.getUserArg("inputType");
-        const isWorkspace = inputType === "workspace";
+        const isProject = inputType === "project";
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
-        this.setUserArgEnabled("protein_to_query", isWorkspace);
-        this.setUserArgEnabled("fastaText", !isWorkspace);
+        this.setUserArgEnabled("protein_to_query", isProject);
+        this.setUserArgEnabled("fastaText", !isProject);
         this.setUserArgEnabled("alignStructures", downloadStructures);
-        if (isWorkspace) {
+        if (isProject) {
             const moleculeInput: MoleculeInput = this.getUserArg("protein_to_query");
             if (!moleculeInput || !moleculeInput.molsToConsider) {
                 this.isActionBtnEnabled = false;
@@ -228,7 +228,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const maxResults = this.getUserArg("max_results");
         const inputType = this.getUserArg("inputType");
         const payloads: any[] = [];
-        if (inputType === "workspace") {
+        if (inputType === "project") {
             const proteinFileInfos: FileInfo[] = this.getUserArg("protein_to_query");
             if (proteinFileInfos.length === 0) {
                 messagesApi.popupError("No proteins selected to query.");
@@ -396,11 +396,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         try {
             for (const [referenceId, mobileIdSet] of alignmentGroups.entries()) {
                 const query = referenceToQueryMap.get(referenceId)!;
-                const isWorkspaceQuery = query instanceof TreeNode;
+                const isProjectQuery = query instanceof TreeNode;
                 let referenceFileInfo: FileInfo | null = null;
                 let referenceTitle = "";
                 if (align) {
-                    if (isWorkspaceQuery) {
+                    if (isProjectQuery) {
                         const referenceNode = getMoleculesFromStore().filters.onlyId(referenceId);
                         if (referenceNode) {
                             referenceFileInfo = await referenceNode.toFileInfo("pdb", true);
@@ -476,7 +476,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
         const rawSeq2 =
             "MADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREADIDGDGQVNYEEFVQMMTAK";
         const tests: ITest[] = [
-            // Test 1: Workspace Search and Download (with Alignment)
+            // Test 1: Project Search and Download (with Alignment)
             {
                 beforePluginOpens: new TestCmdList().loadExampleMolecule(
                     true,
@@ -517,7 +517,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1AAR") // Reference
                     .waitUntilRegex("#navigator", '1CMX'), // Mobile
             },
-            // Test 4: Two proteins from workspace
+            // Test 4: Two proteins from project
             {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleMolecule(true, pdb4wp4, 3)
@@ -569,7 +569,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
             // Test 7: Open with no proteins, should default to FASTA and run
             {
-                // No beforePluginOpens, so workspace is empty
+                // No beforePluginOpens, so project is empty
                 pluginOpen: new TestCmdList()
                     .setUserArg("fastaText", fastaText1, this.pluginId) // This will only work if fastaText is enabled
                     .setUserArg("max_results", 1, this.pluginId),

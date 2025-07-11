@@ -92,7 +92,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
   tags = [Tag.LeadOptimization];
   intro = "Build a compound library of chemically similar analogs by searching the PubChem database.";
   details =
-    "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your workspace.";
+    "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your project.";
 
   userArgDefaults: UserArg[] = [
     {
@@ -214,7 +214,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
         "Some Query Compounds Not Used",
         `<p>You requested only ${maxResults} PubChem compound${maxResults === 1 ? "" : "s"
         } but chose ${numCompounds} query compound${maxResults === 1 ? "" : "s"
-        } from your workspace. Some query compounds will not be used in the search.</p>`,
+        } from your project. Some query compounds will not be used in the search.</p>`,
         PopupVariant.Warning
       );
     }

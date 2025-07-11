@@ -121,7 +121,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
         } as IUserArgAlert,
     ];
     
-    intro = `Append example data to the current workspace.`;
+    intro = `Append example data to the current project.`;
     details = `Useful for exploring and testing the ${appName} interface.`;
 
     /**

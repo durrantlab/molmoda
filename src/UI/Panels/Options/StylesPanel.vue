@@ -10,7 +10,7 @@
             <div v-if="visibleTreeNodes.length === 0" class="pb-0">
                 <p class="mb-0" style="font-size: 14px">
                     <span v-if="treeNodesWithModel.length === 0">
-                        The workspace contains no molecules.
+                        The project contains no molecules.
                     </span>
                     <span v-else>No molecules are currently visible.</span>
                 </p>
@@ -28,7 +28,7 @@
             <Section title="Region" class="pb-2">
                 <p style="font-size: 14px">
                     <span v-if="treeNodesWithRegions.length === 0">
-                        The workspace contains no regions.
+                        The project contains no regions.
                     </span>
                     <span v-else-if="numselectedRegions === 0">
                         No region selected (clicked) in the Navigator panel

@@ -50,7 +50,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
     intro =
         "Align multiple protein structures to a reference (template) structure.";
     details =
-        "This tool uses US-align to perform structural alignment. Aligned structures will be added to the workspace.";
+        "This tool uses US-align to perform structural alignment. Aligned structures will be added to the project.";
     tags = [Tag.Modeling];
     isActionBtnEnabled = false;
     userArgDefaults: UserArg[] = [
@@ -168,7 +168,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 refFileInfo,
                 mobileFileInfosToAlign
             );
-            // 1. Clone the reference protein and add it to the workspace.
+            // 1. Clone the reference protein and add it to the project.
             const clonedRefList = await cloneMolsWithAncestry(
                 new TreeNodeList([referenceNode]),
                 true

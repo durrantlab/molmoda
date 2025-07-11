@@ -80,7 +80,7 @@
         ></FormElementDescription>
         <!-- <FormElementDescription
             v-if="regionsInTree === undefined"
-            description="No sphere or box regions in workspace. Please define a box center and dimensions below."
+            description="No sphere or box regions in project. Please define a box center and dimensions below."
         ></FormElementDescription> -->
     </span>
 </template>
