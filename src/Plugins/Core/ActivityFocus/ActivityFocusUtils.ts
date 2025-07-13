@@ -9,7 +9,7 @@ export enum Tag {
     LeadOptimization = "lead-optimization",
 }
 
-export const tagShortDescriptions: { [key in Tag]: string } = {
+const tagShortDescriptions: { [key in Tag]: string } = {
     [Tag.All]: "Access all available tools and features.",
     [Tag.Docking]: "Focus on computational prediction of protein-ligand interactions.",
     [Tag.Visualization]: "Focus on visual exploration of molecular structures.",
@@ -18,7 +18,7 @@ export const tagShortDescriptions: { [key in Tag]: string } = {
     [Tag.LeadOptimization]: "Focus on the iterative process of improving the binding affinities of compounds (ligands).."
 };
 
-export const tagLongDescriptions: { [key in Tag]: string } = {
+const tagLongDescriptions: { [key in Tag]: string } = {
     [Tag.All]: "Recommended for users who need the full range of capabilities or who are performing multiple types of tasks.",
     [Tag.Docking]: "Ideal for researchers studying how small molecules bind to protein targets.",
     [Tag.Visualization]: "Perfect for examining structural details and creating high-quality molecular visualizations for publications or presentations.",

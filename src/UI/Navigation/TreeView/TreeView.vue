@@ -63,9 +63,9 @@ export default class TreeView extends Vue {
     resizeObserver: ResizeObserver | null = null;
 
     /**
-        * Clears any selected molecules. This is called when the user clicks on the
-        * background of the tree view.
-        */
+     * Clears any selected molecules. This is called when the user clicks on the
+     * background of the tree view.
+     */
     clearSelection() {
         api.plugins.runPlugin("clearselection");
     }

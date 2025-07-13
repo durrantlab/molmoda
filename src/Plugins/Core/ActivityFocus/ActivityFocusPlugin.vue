@@ -37,7 +37,7 @@ import {
 } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ITest } from "@/Testing/TestCmd";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { appName, isTest } from "@/Core/GlobalVars";
+import { appName } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";
 import { reloadPage } from "@/Core/Utils/CloseAppUtils";
 

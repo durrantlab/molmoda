@@ -21,8 +21,11 @@ function isTextSelected(): boolean {
     return selection.toString().length > 0;
 }
 
-// Detect click anywhere, but only once. Don't start listening for shift and
-// control until then.
+/**
+ * Initial click handler to set up hotkeys. Detect click anywhere, but only
+ * once. Don't start listening for shift and control until then. I think this is
+ * to avoid issues with hotkeys being registered before the document is ready.
+ */
 function onInitialClick() {
     hotkeyslibPromise()
         .then((hotkeys) => {
@@ -45,11 +48,15 @@ function onInitialClick() {
             throw err;
         });
 }
-// If user unfocuses this tab, clear shift/control hotkeys.
+
+/**
+ * If user unfocuses this tab, clear shift/control hotkeys.
+ */
 function onWindowBlur() {
     shiftKeyDown = false;
     controlKeyDown = false;
 }
+
 /**
  * Sets up global event listeners for hotkey state management.
  * Should be called once when the application starts.

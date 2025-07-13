@@ -1,4 +1,3 @@
-import * as PluginToTest from "@/Testing/PluginToTest";
 import { openSavePluginIfStoreDirty } from "./DirtyStore";
 import { isTest } from "@/Core/GlobalVars";
 

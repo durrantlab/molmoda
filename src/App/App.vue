@@ -189,11 +189,14 @@ export default class App extends Vue {
         compileErrorsArray.push(compileErrors[i]);
       }
 
-      api.messages.popupError(
-        "<p>The following compile errors were found:</p><ul><li>" +
-        compileErrorsArray.join("</li><li>") +
-        "</li></ul>"
-      );
+      // Wait a second before showing the error for the plugin to be ready
+      setTimeout(() => {
+        api.messages.popupError(
+          "<p>The following compile errors were found:</p><ul><li>" +
+          compileErrorsArray.join("</li><li>") +
+          "</li></ul>"
+        );
+      }, 1000); 
     }
 
     checkIfUrlOpen();

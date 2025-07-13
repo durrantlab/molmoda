@@ -1,7 +1,6 @@
 import { dynamicImports } from "./DynamicImports";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import * as api from "@/Api/";
-import { isTest } from "./GlobalVars";
 
 let _db: any = undefined;
 

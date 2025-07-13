@@ -33,6 +33,14 @@ async function alignPdbContents(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const usalign = await USalignModule({
+        /**
+         * locateFile function to specify the path for the USalign WASM file.
+         * This is necessary for the Emscripten module to locate the WASM file
+         * correctly when running in a web worker.
+         *
+         * @param {string} path The path to the file.
+         * @returns {string} The full path to the file.
+         */
         locateFile(path: string): string {
             // The path for locateFile should be relative to where the main USalign.js script is.
             return `${basePath}js/USalign/${path}`;

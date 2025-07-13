@@ -107,8 +107,11 @@ export default class EditCompoundPlugin extends PluginParentClass {
             {
                 beforePluginOpens: new TestCmdList()
                     .loadExampleMolecule(true)
-                    .selectMoleculeInTree("Compounds"),
-                pluginOpen: new TestCmdList().wait(2).text("#draw-smiles", "OOOO"),
+                    .selectMoleculeInTree("Compounds")
+                    .waitUntilRegex("#navigator", "TOU"),
+
+                // Wait for plugin to open (slower on beta, play it safe with 15 seconds)
+                pluginOpen: new TestCmdList().wait(15).text("#draw-smiles", "OOOO"),
                 closePlugin: new TestCmdList().click("#modal-drawmoleculeplugin .action-btn"),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#navigator", "TOU:101:edited")

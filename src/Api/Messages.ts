@@ -20,8 +20,7 @@ import {
     addToast,
     clearAllToasts,
 } from "@/UI/MessageAlerts/Toasts/ToastManager";
-import { toSentenceCase, toTitleCase } from "@/Core/Utils/StringUtils";
-import { appName, isTest } from "@/Core/GlobalVars";
+import { appName } from "@/Core/GlobalVars";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.

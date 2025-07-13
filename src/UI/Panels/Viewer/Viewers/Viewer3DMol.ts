@@ -476,6 +476,14 @@ export class Viewer3DMol extends ViewerParent {
         return Promise.resolve();
     }
 
+    /**
+     * Get the molecules for zooming. This is used to zoom in on a set of
+     * models. It filters out any models that are not molecules (i.e., those
+     * that do not have a `selectedAtoms` method).
+     *
+     * @param {string[]} ids  The ids of the models to get.
+     * @returns {GLModel[]}  The models that can be zoomed in on.
+     */
     private _getMolsForZooming(ids: string[]): GLModel[] {
         let models = ids.map((id) => this.lookup(id));
         models = models.filter((model) => model !== undefined);

@@ -40,7 +40,8 @@ export async function showSystemNotification(title: string, body: string) {
         show();
     }
 }
-function toSenteceCase(title: string): string {
-    throw new Error("Function not implemented.");
-}
+
+// function toSenteceCase(title: string): string {
+//     throw new Error("Function not implemented.");
+// }
 

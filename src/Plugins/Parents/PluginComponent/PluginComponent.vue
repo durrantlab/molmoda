@@ -167,6 +167,13 @@ export default class PluginComponent extends mixins(PopupMixin) {
         this.$emit("onMolCountsChanged", val);
     }
 
+    /**
+     * Runs when the raw value of a user argument changes. emits the
+     * onRawValChange event.
+     *
+     * @param {string} id  The ID of the user argument.
+     * @param {string} val  The new value for the user argument.
+     */
     onRawValChange(id: string, val: string) {
         this.$emit("onRawValChange", id, val);
     }

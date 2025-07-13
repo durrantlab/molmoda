@@ -40,7 +40,6 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import { citationsTxt } from "../Citations";
-import { appName } from "@/Core/GlobalVars";
 import { Tag, matchesTag } from "./ActivityFocus/ActivityFocusUtils";
 
 /** HelpPlugin */

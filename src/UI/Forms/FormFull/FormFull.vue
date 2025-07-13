@@ -104,7 +104,6 @@ import {
   IUserArgOption,
   IUserArgRange,
   IUserArgSelect,
-  IUserArgListSelect,
 } from "./FormFullInterfaces";
 import Accordian from "@/UI/Layout/Accordian/Accordian.vue";
 import AccordianItem from "@/UI/Layout/Accordian/AccordianItem.vue";
@@ -355,6 +354,12 @@ export default class FormFull extends Vue {
     this.$emit("onMolCountsChanged", val);
   }
 
+  /**
+   * Called when the raw value of a user argument changes.
+   * 
+   * @param {string} id  The ID of the user argument.
+   * @param {string} val  The new value for the user argument.
+   */
   onRawValChange(id: string, val: string): void {
     // Emit the raw string value for FormListSelect
     this.$emit("onRawValChange", id, val);

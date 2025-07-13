@@ -2,6 +2,7 @@
 import { isStatCollectionEnabled } from "@/Plugins/Core/StatCollection/StatUtils";
 import { fetcher, ResponseType } from "./Fetcher";
 import * as GlobalVars from "@/Core/GlobalVars";
+import _ from "lodash";
 
 // declare global {
 //     interface Window {
@@ -54,6 +55,48 @@ async function injectGoogleAnalyticsScriptIfNeeded() {
 }
 
 /**
+ * Logs an event internally.
+ *
+ * @param  {string} eventName   The event name.
+ * @param  {string} eventAction The event action.
+ */
+function _logInternal(eventName: string, eventAction: string) {
+    const formData = new FormData();
+    formData.append("e", `${eventName}-${eventAction}`);
+    formData.append("beta", (GlobalVars.isBeta || GlobalVars.isLocalHost) ? "1" : "0");
+    fetcher("https://molmoda.org/e.php", {
+        responseType: ResponseType.TEXT,
+        formPostData: formData,
+        cacheBust: true,
+    });
+}
+
+/**
+ * Logs an event to Google Analytics. This function is asynchronous and will
+ * inject the Google Analytics script if it hasn't been injected already.
+ *
+ * @param  {string} eventName   The event name.
+ * @param  {string} eventAction The event action.
+ * @param  {string} gaEventData The event data to log.
+ */
+async function _logGoogleAnalytics(
+    eventName: string,
+    eventAction: string,
+    gaEventData: string
+) {
+    await injectGoogleAnalyticsScriptIfNeeded();
+
+    if (
+        typeof window !== "undefined" &&
+        typeof (window as any).gtag === "function"
+    ) {
+        console.log(gaEventData);
+        const eventActionToUse = `${eventName}-${eventAction}`;
+        (window as any).gtag("event", eventActionToUse);
+    }
+}
+
+/**
  * Logs an event to Google Analytics.
  *
  * @param  {string} eventName                    The event name.
@@ -67,6 +110,10 @@ export async function logEvent(
     eventAction: string // e.g., "jobSubmitted"
     // eventOptions?: Record<string, any>
 ) {
+    // Always log IP internally for record keeping. It is anonymized client
+    // side, with minimal information stored. I believe it is compliant.
+    _logInternal(eventName, eventAction);
+
     // If running from localhost, do a console log instead.
     const url = window.location.href;
     const gaEventData = `GA Event: ${eventName} - ${eventAction}`;
@@ -91,20 +138,6 @@ export async function logEvent(
         }
     }
 
-    // Always log IP internally for record keeping. It is anonymized client
-    // side, with minimal information stored. I believe it is compliant.
-    const formData = new FormData();
-    formData.append("e", `${eventName}-${eventAction}`);
-    await fetcher(
-        "https://molmoda.org/e.php",
-        {
-            responseType: ResponseType.TEXT,
-            formPostData: formData,
-            cacheBust: true,
-        }
-    );
-    debugger;
-
     // Cookies.get("statcollection") is a cookie that is set when the user
     // accepts the cookie policy If the cookie is set, we load the google
     // analytics script This is done to comply with the GDPR
@@ -115,14 +148,5 @@ export async function logEvent(
         return;
     }
 
-    await injectGoogleAnalyticsScriptIfNeeded();
-
-    if (
-        typeof window !== "undefined" &&
-        typeof (window as any).gtag === "function"
-    ) {
-        console.log(gaEventData);
-        const eventActionToUse = `${eventName}-${eventAction}`;
-        (window as any).gtag("event", eventActionToUse);
-    }
+    _logGoogleAnalytics(eventName, eventAction, gaEventData);
 }

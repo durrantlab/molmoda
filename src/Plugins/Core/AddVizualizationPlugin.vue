@@ -47,7 +47,6 @@ import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
-import { FailingTest } from "@/Testing/FailingTest";
 import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/TreeUtils";
 import { Watch } from "vue-property-decorator";
 // import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
@@ -544,6 +543,12 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     return Promise.resolve();
   }
 
+  /**
+   * Called when the user changes the raw value of a user argument.
+   *
+   * @param {string} id The ID of the user argument.
+   * @param {string} val The new value for the user argument.
+   */
   onRawValChange(id: "selectionResidueNames" | "selectionResidueIds", val: string) {
     this.rawVals[id] = val;
   }

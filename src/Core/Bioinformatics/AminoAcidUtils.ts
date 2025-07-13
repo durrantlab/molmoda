@@ -22,7 +22,7 @@ const UNKNOWN_COLOR = "#BEBEBE"; // Light grey for X, UNK
 const AMBIGUOUS_ACIDIC_POLAR_COLOR = "#FA8072"; // Salmon (for B, Z - can be acidic or polar)
 const AMBIGUOUS_HYDROPHOBIC_COLOR = "#A0D2A0"; // Lighter green (for J)
 
-export interface AminoAcidProperty {
+interface AminoAcidProperty {
     oneLetterCode: string;
     threeLetterCode: string;
     name: string;
@@ -41,7 +41,7 @@ export interface ResidueInfo {
     atomIndex?: number; // Optional: 0-based index of the first atom of this residue in the full atom list
 }
 
-export const aminoAcidProperties: Record<string, AminoAcidProperty> = {
+const aminoAcidProperties: Record<string, AminoAcidProperty> = {
     // Hydrophobic (Aliphatic)
     A: {
         oneLetterCode: "A",
@@ -232,7 +232,7 @@ export const aminoAcidProperties: Record<string, AminoAcidProperty> = {
  * @param {string} threeLetterCode The three-letter code (e.g., "ALA", "mse").
  * @returns {string} The one-letter code (e.g., "A"), or "X" if not found or ambiguous.
  */
-export const threeLetterToPdbOneLetter = memoize(function (
+const threeLetterToPdbOneLetter = memoize(function (
     threeLetterCode: string
 ): string {
     const upperCode = threeLetterCode.toUpperCase();
@@ -267,16 +267,16 @@ export const threeLetterToPdbOneLetter = memoize(function (
  * @param {string} oneLetterCode The one-letter code (e.g., "A").
  * @returns {string} The three-letter code (e.g., "ALA"), or "UNK" if not found.
  */
-export const oneLetterToThreeLetter = memoize(function (
-    oneLetterCode: string
-): string {
-    const upperCode = oneLetterCode.toUpperCase();
-    // Use hasOwnProperty to prevent prototype pollution
-    if (Object.prototype.hasOwnProperty.call(aminoAcidProperties, upperCode)) {
-        return aminoAcidProperties[upperCode].threeLetterCode;
-    }
-    return "UNK";
-});
+// const oneLetterToThreeLetter = memoize(function (
+//     oneLetterCode: string
+// ): string {
+//     const upperCode = oneLetterCode.toUpperCase();
+//     // Use hasOwnProperty to prevent prototype pollution
+//     if (Object.prototype.hasOwnProperty.call(aminoAcidProperties, upperCode)) {
+//         return aminoAcidProperties[upperCode].threeLetterCode;
+//     }
+//     return "UNK";
+// });
 
 /**
  * Gets the AminoAcidProperty object for a given one-letter code.

@@ -392,6 +392,11 @@ export default class PoseViewPlugin extends PluginParentClass {
     };
   }
 
+  /**
+   * Called when the popup is opened.
+   * 
+   * @returns {Promise<void>} Resolves when the popup is opened.
+   */
   async onMounted(): Promise<void> {
     // Load DOMPurify for sanitizing SVG content
     loadDOMPurify();

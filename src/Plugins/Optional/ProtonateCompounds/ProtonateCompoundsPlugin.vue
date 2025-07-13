@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onPopupDone="onPopupDone"
-        actionBtnTxt="Protonate"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Protonate"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
         <!-- <template #afterForm>
             <Alert type="info"
                 >Once calculated, the molecular properties will appear in the
@@ -42,11 +36,7 @@ import {
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import {
-    SelectedType,
-    TreeNodeType,
-} from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
@@ -174,7 +164,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         let treeNodes = (await Promise.all(
             treeNodePromises
         )) as (void | TreeNode)[];
- treeNodes = treeNodes.map((n) => {
+        treeNodes = treeNodes.map((n) => {
             if (n === undefined) {
                 return undefined;
             }
@@ -183,8 +173,8 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                 n = n.nodes.terminals.get(0);
             }
             n.type = TreeNodeType.Compound;
-   const compound = compounds.find((c) => c.auxData === n?.title);
-   if (compound && compound.treeNode !== undefined) {
+            const compound = compounds.find((c) => c.auxData === n?.title);
+            if (compound && compound.treeNode !== undefined) {
                 n.title = compound.treeNode.title;
             }
             return n;

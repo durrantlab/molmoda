@@ -25,6 +25,7 @@ export function incrementTreeVersion(): void {
 
 /**
  * Gets the current global tree version.
+ * 
  * @returns {number} The current version.
  */
 export function getTreeVersion(): number {

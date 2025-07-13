@@ -439,6 +439,10 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
           true,
           undefined,
           "aspirin"
+        ).waitUntilRegex(
+          // Wait for aspirin to load
+          "#navigator",
+          "aspirin"
         ),
         pluginOpen: new TestCmdList()
           .setUserArg("similarity", 90, this.pluginId)
@@ -455,6 +459,10 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
           true,
           undefined,
           "aspirin"
+        ).waitUntilRegex(
+          // Wait for aspirin to load
+          "#navigator",
+          "aspirin"
         ),
         pluginOpen: new TestCmdList()
           .setUserArg("searchmode", "Larger Compounds (Superstructures)", this.pluginId)
@@ -470,6 +478,10 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
           "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
           true,
           undefined,
+          "aspirin"
+        ).waitUntilRegex(
+          // Wait for aspirin to load
+          "#navigator",
           "aspirin"
         ),
         pluginOpen: new TestCmdList()

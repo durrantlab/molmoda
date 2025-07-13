@@ -90,6 +90,11 @@ export default class Mol2DView extends Vue {
     private lastValidSvgWidth = 0;
     private lastValidSvgHeight = 0;
 
+    /**
+     * Called when the ImageViewer component detects a valid image.
+     * 
+     * @param {boolean} isValid  Whether the image is valid.
+     */
     onValidImageDetect(isValid: boolean) {
         this.$emit("onValidImageDetect", isValid);
     }

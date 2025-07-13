@@ -23,7 +23,6 @@ import {
   matchesFilename,
 } from "@/FileSystem/FilenameManipulation";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";

@@ -170,6 +170,12 @@ export default class MolTextPlugin extends PluginParentClass {
 
     smilesImgValid = false;
 
+    /**
+     * Called when the Mol2DView component detects whether the SMILES is valid.
+     * This is used to enable/disable the action button.
+     *
+     * @param {boolean} isValid  Whether the SMILES is valid.
+     */
     onValidImageDetect(isValid: boolean) {
         this.smilesImgValid = isValid;
     }

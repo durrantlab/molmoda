@@ -20,8 +20,7 @@ import {
   UserArg,
   UserArgType,
   IUserArgSelect,
-  IUserArgColor,
-  IUserArgOption,
+  IUserArgColor
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ISelAndStyle, Representation } from "@/Core/Styling/SelAndStyleInterfaces";
 import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces";

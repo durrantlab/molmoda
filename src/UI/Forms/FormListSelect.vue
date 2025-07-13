@@ -284,7 +284,8 @@ export default class FormListSelect extends Vue {
     }
 
     /**
-  * Updates the warning message based on the `isInputValid` state and `warningFunc` prop.
+     * Updates the warning message based on the `isInputValid` state and
+     * `warningFunc` prop.
      */
     private updateWarning(): void {
         if (!this.isInputValid) {

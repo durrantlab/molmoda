@@ -7,7 +7,7 @@ import { TestCmdList } from "./TestCmdList";
  * @param {string} [message="TODO: Implement this test"] - Optional message to indicate why the test is failing
  * @returns {ITest} A test configuration that will always fail
  */
-export function createFailingTest(message = "TODO: Implement this test"): ITest {
+function createFailingTest(message = "TODO: Implement this test"): ITest {
     return {
         pluginOpen: new TestCmdList(),
         afterPluginCloses: new TestCmdList()

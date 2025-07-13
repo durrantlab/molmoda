@@ -156,9 +156,17 @@ async function jsonStrToState(jsonStr: string): Promise<any> {
     jsonStr = jsonStr.replace(/"viewerDirty": *false/g, '"viewerDirty":true');
     // Now convert it to an object.
     const obj = JSON.parse(jsonStr);
-    // Recursive sanitization of titles within the object
-    async function sanitizeTitles(currentObj: any) {
-        if (!currentObj || typeof currentObj !== "object") return;
+
+    /**
+     * Recursively sanitizes titles in the object.
+     *
+     * @param {any} currentObj  The current object to sanitize.
+     * @returns {Promise<void>}  A promise that resolves when the sanitization is complete
+     */
+    const sanitizeTitles = async function (currentObj: any) {
+        if (!currentObj || typeof currentObj !== "object") {
+            return;
+        }
         if (Array.isArray(currentObj)) {
             currentObj.forEach(sanitizeTitles);
         } else {
@@ -169,7 +177,7 @@ async function jsonStrToState(jsonStr: string): Promise<any> {
                 await sanitizeTitles(currentObj.nodes);
             }
         }
-    }
+    };
     if (obj.molecules) {
         await sanitizeTitles(obj.molecules);
     }
