@@ -359,7 +359,7 @@ export default class GoldLayout extends Vue {
 
         if (isMobile) {
             try {
-                config = await fetcher("mobile-layout.json", { responseType: ResponseType.JSON });
+                config = await fetcher("mobile-layout.json", { responseType: ResponseType.JSON, cacheBust: true });
                 this.defaultLayoutConfig = config;
             } catch (error) {
                 console.error("Failed to fetch mobile layout, using default desktop layout as fallback.", error);

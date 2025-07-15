@@ -12,6 +12,7 @@ import { replaceAllCustomStyles } from "@/Core/Styling/StyleManager";
 import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 import { layoutApi } from "@/Api/Layout";
 import { sanitizeHtml } from "@/Core/Security/Sanitize";
+import { isMobile } from "@/Core/GlobalVars";
 export const molmodaStateKeysToRetain = [
     "molecules",
     "log",
@@ -61,6 +62,9 @@ export async function parseUsingMolModa(
                 );
                 break;
             case "goldenLayout":
+                if (isMobile) {
+                    break;
+                }
                 if (stateFromJson[key]) {
                     setStoreVar("goldenLayout", stateFromJson[key]);
                     if (goldenLayout) {

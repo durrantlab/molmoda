@@ -55,57 +55,6 @@
                         "componentState": {
                             "domID": "information"
                         }
-                    },
-                    {
-                        "type": "component",
-                        "content": [],
-                        "width": 50,
-                        "minWidth": 0,
-                        "height": 50,
-                        "minHeight": 0,
-                        "id": "",
-                        "maximised": false,
-                        "isClosable": true,
-                        "reorderEnabled": true,
-                        "title": "Jobs",
-                        "componentType": "component",
-                        "componentState": {
-                            "domID": "jobs"
-                        }
-                    },
-                    {
-                        "type": "component",
-                        "content": [],
-                        "width": 50,
-                        "minWidth": 0,
-                        "height": 50,
-                        "minHeight": 0,
-                        "id": "",
-                        "maximised": false,
-                        "isClosable": true,
-                        "reorderEnabled": true,
-                        "title": "Data",
-                        "componentType": "component",
-                        "componentState": {
-                            "domID": "data"
-                        }
-                    },
-                    {
-                        "type": "component",
-                        "content": [],
-                        "width": 50,
-                        "minWidth": 0,
-                        "height": 50,
-                        "minHeight": 0,
-                        "id": "",
-                        "maximised": false,
-                        "isClosable": true,
-                        "reorderEnabled": true,
-                        "title": "Log",
-                        "componentType": "component",
-                        "componentState": {
-                            "domID": "log"
-                        }
                     }
                 ],
                 "width": 50,
@@ -135,6 +84,57 @@
                         "componentType": "component",
                         "componentState": {
                             "domID": "navigator"
+                        }
+                    },
+                    {
+                        "type": "component",
+                        "content": [],
+                        "width": 50,
+                        "minWidth": 0,
+                        "height": 50,
+                        "minHeight": 0,
+                        "id": "",
+                        "maximised": false,
+                        "isClosable": true,
+                        "reorderEnabled": true,
+                        "title": "Jobs",
+                        "componentType": "component",
+                        "componentState": {
+                            "domID": "jobs"
+                        }
+                    },
+                    {
+                        "type": "component",
+                        "content": [],
+                        "width": 50,
+                        "minWidth": 0,
+                        "height": 50,
+                        "minHeight": 0,
+                        "id": "",
+                        "maximised": false,
+                        "isClosable": true,
+                        "reorderEnabled": true,
+                        "title": "Log",
+                        "componentType": "component",
+                        "componentState": {
+                            "domID": "log"
+                        }
+                    },
+                    {
+                        "type": "component",
+                        "content": [],
+                        "width": 50,
+                        "minWidth": 0,
+                        "height": 50,
+                        "minHeight": 0,
+                        "id": "",
+                        "maximised": false,
+                        "isClosable": true,
+                        "reorderEnabled": true,
+                        "title": "Data",
+                        "componentType": "component",
+                        "componentState": {
+                            "domID": "data"
                         }
                     }
                 ],
