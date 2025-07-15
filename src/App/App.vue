@@ -301,4 +301,18 @@ body.waiting * {
 a {
   cursor: pointer;
 }
+
+// Remove Tap Highlight Color: Mobile browsers often show a semi-transparent
+// gray or blue highlight when a user taps on a link or clickable element. You
+// can disable this for a cleaner look.
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Improve Scrolling Feel: On iOS, you can enable momentum-based scrolling
+// (where the content continues to scroll for a moment after you lift your
+// finger), which feels much more native.
+.tree-view-wrapper, .log-container { /* And any other scrollable containers */
+  -webkit-overflow-scrolling: touch;
+}
 </style>

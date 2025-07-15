@@ -24,8 +24,16 @@ try {
 }
 export const isBeta = _isBeta;
 
+// Detect if running on a mobile device.
+export const isMobile =
+    typeof window !== "undefined"
+        ? window.matchMedia("(max-width: 767px)").matches
+        : false;
+
 // These can also be defined via the url parameters (for making task-specific modes).
-export const appName = simpleSanitizeHTML(getUrlParam("name", "MolModa")) as string;
+export const appName = simpleSanitizeHTML(
+    getUrlParam("name", "MolModa")
+) as string;
 // Define appVersion, adding ".beta" suffix if on localhost or beta site, but not in test mode.
 let versionString = getUrlParam("version", compileTimeInfo.version) as string;
 if (!isTest && (isLocalHost || isBeta)) {

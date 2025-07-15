@@ -2,6 +2,7 @@ import { localStorageSetItem } from "@/Core/LocalStorage";
 import { setStoreVar } from "@/Store/StoreExternalAccess";
 import { GoldenLayout, Stack, Tab } from "golden-layout";
 import { layoutApi } from "@/Api/Layout";
+import { isMobile } from "@/Core/GlobalVars";
 export let goldenLayout: GoldenLayout;
 
 /**
@@ -36,8 +37,8 @@ export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
     goldenLayout.on("stateChanged", function () {
         const state = goldenLayout.saveLayout();
         setStoreVar("goldenLayout", state);
-        // Only save to local storage if a session layout is NOT active.
-        if (!layoutApi.isSessionLayoutActive()) {
+        // Only save to local storage if a session layout is NOT active and not on mobile.
+        if (!isMobile && !layoutApi.isSessionLayoutActive()) {
             localStorageSetItem("goldenLayoutState", state, undefined, false);
         }
     });

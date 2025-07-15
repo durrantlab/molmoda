@@ -122,7 +122,7 @@ import QueuePanel from "@/UI/Panels/Queue/QueuePanel.vue";
 import { goldenLayout, makeGoldenLayout } from "./GoldenLayoutCommon";
 import ViewerPanel from "@/UI/Panels/Viewer/ViewerPanel.vue";
 import DataPanel from "@/UI/Panels/Data/DataPanel.vue";
-import { appName, appVersion, appDescription, logoPath } from "@/Core/GlobalVars";
+import { appName, appVersion, appDescription, logoPath, isMobile } from "@/Core/GlobalVars";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import { getActivityFocusMode, getActvityFocusModeDescription } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { capitalize, lowerize } from "@/Core/Utils/StringUtils";
@@ -355,18 +355,37 @@ export default class GoldLayout extends Vue {
     /** mounted function */
     async mounted() {
         let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
-        // First, generate and store the default layout from the template
-        this.defaultLayoutConfig = {
-            settings: {
-                showPopoutIcon: false,
-                // showCloseIcon: false
-            },
-            content: this._convertDOMToData(dataDOM),
-        };
-        // Register the reset function
+        let config: any;
+
+        if (isMobile) {
+            try {
+                config = await fetcher("mobile-layout.json", { responseType: ResponseType.JSON });
+                this.defaultLayoutConfig = config;
+            } catch (error) {
+                console.error("Failed to fetch mobile layout, using default desktop layout as fallback.", error);
+                // Fallback to desktop layout if mobile config fails to load
+                this.defaultLayoutConfig = {
+                    settings: { showPopoutIcon: false },
+                    content: this._convertDOMToData(dataDOM),
+                };
+                config = this.defaultLayoutConfig;
+            }
+        } else {
+            // Desktop layout logic
+            this.defaultLayoutConfig = {
+                settings: {
+                    showPopoutIcon: false,
+                    // showCloseIcon: false
+                },
+                content: this._convertDOMToData(dataDOM),
+            };
+            const savedLayout = await localStorageGetItem("goldenLayoutState");
+            config = savedLayout ? savedLayout : this.defaultLayoutConfig;
+        }
+
+        // This is now common for both mobile and desktop
         registerResetLayoutFunc(this.resetLayout.bind(this));
-        const savedLayout = await localStorageGetItem("goldenLayoutState");
-        const config = savedLayout ? savedLayout : this.defaultLayoutConfig;
+
         this._setupGoldenLayout(dataDOM, config);
         // It is now safe to remove dataDOM as its contents have been cached or moved.
         dataDOM.remove();

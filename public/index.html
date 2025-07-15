@@ -4,7 +4,17 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <!-- <meta name="viewport" content="width=device-width,initial-scale=1.0"> -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- For iOS Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- For Android Chrome -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#ffffff"> <!-- Or your app's primary color -->
+
   <meta name="description"
     content="MolModa is a browser-based suite for computer-aided drug discovery, brought to you by the Durrant Lab. It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.">
   <link rel="icon" href="<%= BASE_URL %>favicon.ico">

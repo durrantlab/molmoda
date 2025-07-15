@@ -70,7 +70,7 @@ export async function fetcher(
         urlUpper.slice(0, 7) === "HTTP://" ||
         urlUpper.slice(0, 8) === "HTTPS://";
     const isExternal =
-        startsWithHttp && !url.startsWith(window.location.origin);
+        startsWithHttp && !url.startsWith(window.location.origin) && url.indexOf(appName.toLowerCase() + ".") === -1;
     const allowExternalWebAccess = (await getSetting(
         "allowExternalWebAccess"
     )) as boolean;
