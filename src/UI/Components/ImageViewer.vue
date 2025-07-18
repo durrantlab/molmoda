@@ -39,7 +39,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
 import Alert from "@/UI/Layout/Alert.vue";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-import { loadDOMPurify, sanitizeSvg } from "@/Core/Security/Sanitize";
+import { sanitizeSvg } from "@/Core/Security/Sanitize";
 type SourceType = "svg" | "png-datauri" | "png-url" | "unknown";
 
 /**
@@ -70,6 +70,8 @@ export default class ImageViewer extends Vue {
     internalSourceType: SourceType = "unknown";
     imageWidth: number | null = null;
     imageHeight: number | null = null;
+
+    sanitizedSvg = "";
 
     /**
      * Gets the computed style for the viewer element.
@@ -109,17 +111,6 @@ export default class ImageViewer extends Vue {
     }
 
     /**
-     * Gets the sanitized SVG content.
-     *
-     * @returns {string} The sanitized SVG string.
-     */
-    get sanitizedSvg(): string {
-        if (this.sourceType === "svg") {
-            return sanitizeSvg(this.source);
-        }
-        return "";
-    }
-    /**
      * Lifecycle hook called when the component is created.
      */
     created() {
@@ -130,9 +121,6 @@ export default class ImageViewer extends Vue {
      * Lifecycle hook called when the component is mounted.
      */
     mounted() {
-        // So you can sanitize SVG in a bit...
-        loadDOMPurify();
-
         if (this.sourceType === 'svg') {
             this.$nextTick(() => {
                 this.adjustSvgDimensions();
@@ -146,9 +134,13 @@ export default class ImageViewer extends Vue {
      * @param {string} newSource - The new source string.
      */
     @Watch("source")
-    onSourceChanged(newSource: string): void {
+    async onSourceChanged(newSource: string): Promise<void> {
         this.determineSourceTypeAndEmit();
         if (this.internalSourceType === 'svg') {
+            // Update SVG content sanitization. It is async, so can't just get
+            // it directly from vue component.
+            this.sanitizedSvg = await sanitizeSvg(this.source);
+
             this.$nextTick(() => {
                 this.adjustSvgDimensions();
             });

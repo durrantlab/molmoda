@@ -1,6 +1,6 @@
 import compileTimeInfo from "../last_updated.json";
 import { getUrlParam } from "./UrlParams";
-import { simpleSanitizeHTML } from "./Security/Sanitize";
+import { sanitizeHtml } from "./Security/Sanitize";
 // Putting isTest here to avoid circular dependencies with other modules
 export const isTest = getUrlParam("test") !== null;
 
@@ -30,35 +30,11 @@ export const isMobile =
         ? window.matchMedia("(max-width: 767px)").matches
         : false;
 
-// These can also be defined via the url parameters (for making task-specific modes).
-export const appName = simpleSanitizeHTML(
-    getUrlParam("name", "MolModa")
-) as string;
 // Define appVersion, adding ".beta" suffix if on localhost or beta site, but not in test mode.
 let versionString = getUrlParam("version", compileTimeInfo.version) as string;
 if (!isTest && (isLocalHost || isBeta)) {
     versionString += ".beta";
 }
-export const appVersion = versionString;
-const appShortDesc = simpleSanitizeHTML(
-    getUrlParam("description", "a browser-based drug-discovery suite")
-) as string;
-export const appDetails = simpleSanitizeHTML(
-    getUrlParam(
-        "details",
-        `It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.`
-    )
-) as string;
-export const logoPath = getUrlParam(
-    "logo",
-    "img/icons/android-chrome-192x192.png"
-) as string;
-export const appIntro = `${appName} ${appVersion} is ${appShortDesc}, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>.`;
-export const appDescription = `${appIntro} ${appDetails}`;
-
-export const appCompileTime = compileTimeInfo.date;
-console.log(appName + " " + appVersion + ".");
-console.log("Last compiled: " + appCompileTime);
 
 // Though it is hackish, occasionally I just wait for the popup to open before
 // doing anything. Good to define a single global constant that determines this
@@ -68,3 +44,46 @@ export const delayForPopupOpenClose = 1000;
 // Delay to wait after keypress before reacting. This is to prevent the app from
 // reacting to every keypress, which would be slow.
 export const formInputDelayUpdate = 500;
+
+export let appName = "MolModa";
+export const appVersion = versionString;
+export let appShortDesc = "a browser-based drug-discovery suite";
+export let appDetails = "It runs computational-chemistry calculations on your local computer, without requiring extensive remote resources.";
+export let appIntro = "";  // Set in setupGlobalVars
+export let appDescription = "";  // Set in setupGlobalVars
+export const appCompileTime = compileTimeInfo.date;
+
+export let logoPath = "img/icons/android-chrome-192x192.png";
+
+export async function setupGlobalVars(): Promise<void> {
+    const name = getUrlParam("name", null);
+    if (name) {
+        // It's given as a url parameter. Need to sanitize and override default (MolModa).
+        appName = await sanitizeHtml(name) as string;
+    } 
+
+    const description = getUrlParam("description", null);
+    if (description) {
+        // It's given as a url parameter. Need to sanitize and override default.
+        appShortDesc = await sanitizeHtml(description) as string;
+    }
+
+    const details = getUrlParam("details", null);
+    if (details) {
+        // It's given as a url parameter. Need to sanitize and override default.
+        appDetails = await sanitizeHtml(details) as string;
+    }
+
+    const logo = getUrlParam("logo", null);
+    if (logo) {
+        // It's given as a url parameter. Need to sanitize and override default.
+        logoPath = await sanitizeHtml(logo) as string;
+    }
+
+    appIntro = `${appName} ${appVersion} is ${appShortDesc}, brought to you by the <a href="http://durrantlab.com/" target="_blank">Durrant Lab</a>.`;
+    appDescription = `${appIntro} ${appDetails}`;
+
+    console.log(appName + " " + appVersion + ".");
+    console.log("Last compiled: " + appCompileTime);
+}
+

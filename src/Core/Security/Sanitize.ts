@@ -4,7 +4,7 @@ let DOMPurify: any = null;
 /**
  * Loads the DOMPurify library dynamically. This must be called once at application startup.
  */
-export async function loadDOMPurify(): Promise<void> {
+async function loadDOMPurify(): Promise<void> {
     if (DOMPurify === null) {
         DOMPurify = await dynamicImports.dompurify.module;
     }
@@ -69,7 +69,7 @@ export async function sanitizeHtml(
  * @param {string} unsafeSvg The potentially unsafe SVG string.
  * @returns {string} The sanitized SVG string.
  */
-export function sanitizeSvg(unsafeSvg: string): string {
+export async function sanitizeSvg(unsafeSvg: string): Promise<string> {
     // NOTE: To use this function, you must call loadDOMPurify() separately.
     // That's because this function is called from a getter and so cannot be
     // async.
@@ -77,10 +77,7 @@ export function sanitizeSvg(unsafeSvg: string): string {
         return "";
     }
     if (DOMPurify === null) {
-        console.error(
-            "DOMPurify is not loaded. Ensure loadDOMPurify() is called before running sanitizeSvg."
-        );
-        return unsafeSvg; // Return unsafe string as a fallback
+        await loadDOMPurify();
     }
     return DOMPurify.sanitize(unsafeSvg, {
         USE_PROFILES: { svg: true },
@@ -108,12 +105,12 @@ export function sanitizeSvg(unsafeSvg: string): string {
  * @param {string | null} html The HTML string to sanitize.
  * @returns {string | null} The sanitized HTML string, or null if input is null.
  */
-export function simpleSanitizeHTML(html: string | null): string | null {
-    if (html === null) {
-        return null;
-    }
+// export function simpleSanitizeHTML(html: string | null): string | null {
+//     if (html === null) {
+//         return null;
+//     }
 
-    // Keep only letters, numbers, spaces, and basic punctuation. Nothing else.
-    // eslint-disable-next-line regexp/no-obscure-range
-    return html.replace(/[^a-zA-Z\d\s\-.,;:!?"-()]/g, "").trim();
-}
+//     // Keep only letters, numbers, spaces, and basic punctuation. Nothing else.
+//     // eslint-disable-next-line regexp/no-obscure-range
+//     return html.replace(/[^a-zA-Z\d\s\-.,;:!?"-()]/g, "").trim();
+// }

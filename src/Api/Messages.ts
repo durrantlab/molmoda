@@ -21,6 +21,7 @@ import {
     clearAllToasts,
 } from "@/UI/MessageAlerts/Toasts/ToastManager";
 import { appName } from "@/Core/GlobalVars";
+import { sanitizeHtml } from "@/Core/Security/Sanitize";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
@@ -40,27 +41,31 @@ export const messagesApi = {
      *                                                      instead of a modal,
      *                                                      with given options.
      */
-    popupMessage: function (
+    popupMessage: async function (
         title: string,
         message = "",
         variant = PopupVariant.Info,
         callBack: any = undefined,
         neverClose = false,
         toastParams?: IToastOptions
-    ) {
+    ): Promise<void> {
+        // Sanitize title and message to prevent XSS attacks.
+        const sanitizedTitle = await sanitizeHtml(title);
+        const sanitizedMessage = await sanitizeHtml(message);
+
         if (toastParams) {
             if (neverClose) {
                 toastParams.duration = 0; // Never autohides
                 toastParams.showCloseBtn = false; // No close button
             }
-            addToast(title, message, variant, callBack, toastParams);
+            addToast(sanitizedTitle, sanitizedMessage, variant, callBack, toastParams);
             return;
         }
 
         // If popup already open, do not open another one.
         pluginsApi.runPlugin("simplemsg", {
-            title,
-            message,
+            title: sanitizedTitle,
+            message: sanitizedMessage,
             variant,
             neverClose,
             callBack,
@@ -148,17 +153,19 @@ export const messagesApi = {
      * @param  {number}       [precision=3]  The number of decimal places to
      *                                       display.
      */
-    popupTableData: function (
+    popupTableData: async function(
         title: string,
         message: string,
         tableData: ITableData,
         caption: string,
         precision = 3
-    ) {
+    ): Promise<void> {
+        const sanitizedTitle = await sanitizeHtml(title);
+        const sanitizedMessage = await sanitizeHtml(message);
         // If popup already open, do not open another one.
         pluginsApi.runPlugin("tabledatapopup", {
-            title,
-            message,
+            title: sanitizedTitle,
+            message: sanitizedMessage,
             tableData,
             caption,
             precision,

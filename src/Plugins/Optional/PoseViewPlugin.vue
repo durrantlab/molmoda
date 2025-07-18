@@ -59,7 +59,7 @@ import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/Conver
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FileInfo } from "@/FileSystem/FileInfo"; // Added import
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser"; // Added import
-import { loadDOMPurify } from "@/Core/Security/Sanitize";
+import { sanitizeSvg } from "@/Core/Security/Sanitize";
 
 const PROXY_URL =
   "https://molmoda.org/poseview-proxy.php";
@@ -336,6 +336,8 @@ export default class PoseViewPlugin extends PluginParentClass {
         ""
       );
 
+      // Sanitize the svg
+      poseviewSvg = await sanitizeSvg(poseviewSvg);
 
       // Create a wrapper for the SVG and add the legend/info below it
       const wrapperHtml = `
@@ -397,10 +399,10 @@ export default class PoseViewPlugin extends PluginParentClass {
    * 
    * @returns {Promise<void>} Resolves when the popup is opened.
    */
-  async onMounted(): Promise<void> {
-    // Load DOMPurify for sanitizing SVG content
-    loadDOMPurify();
-  }
+  // async onMounted(): Promise<void> {
+  //   // Load DOMPurify for sanitizing SVG content
+  //   loadDOMPurify();
+  // }
 }
 </script>
 

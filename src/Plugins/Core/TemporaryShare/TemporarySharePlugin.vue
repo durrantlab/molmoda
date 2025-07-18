@@ -19,7 +19,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import PluginComponent from "../../Parents/PluginComponent/PluginComponent.vue";
 import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import { validateShareCode } from "./TemporaryShareUtils";
-import { loadDOMPurify } from "@/Core/Security/Sanitize";
+import { sanitizeSvg } from "@/Core/Security/Sanitize";
 
 /**
  * TemporarySharePlugin allows users to temporarily share their session via a generated link.
@@ -56,9 +56,6 @@ export default class TemporarySharePlugin extends PluginParentClass {
      * It dynamically adds credits for the QR code library.
      */
     async onMounted() {
-        // Load DOMPurify for sanitizing SVG content
-        await loadDOMPurify();
-
         const qrCredit = (await dynamicImports.qrcode.credit) as ISoftwareCredit;
         if (qrCredit && !this.softwareCredits.some(c => c.name === qrCredit.name)) {
             this.softwareCredits.push(qrCredit);
@@ -73,6 +70,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
      */
     async runJobInBrowser(): Promise<void> {
         const spinnerId = api.messages.startWaitSpinner();
+        
         try {
             const jsonStr = stateToJsonStr(store.state);
             const sessionFileInfo = new FileInfo({
@@ -106,7 +104,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
                 trimmedCode
             )}`;
             const qrcode = await dynamicImports.qrcode.module;
-            const qrCodeSvg = await qrcode.toString(shareUrl, {
+            let qrCodeSvg = await qrcode.toString(shareUrl, {
                 type: "svg",
                 margin: 1,
                 color: {
@@ -114,6 +112,9 @@ export default class TemporarySharePlugin extends PluginParentClass {
                     light: "#FFFFFF",
                 },
             });
+
+            // Validate the SVG content
+            qrCodeSvg = await sanitizeSvg(qrCodeSvg);
 
             const message = `
           <div style="text-align:center;"><a href="${shareUrl}" target="_blank" rel="noopener noreferrer">${shareUrl}</a></div>

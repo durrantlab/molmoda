@@ -24,6 +24,7 @@ import { logEvent } from "./Core/Analytics";
 // import * as api from "@/Api";
 // import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { setupGlobalKeyListeners } from "./Core/HotKeys";
+import { setupGlobalVars } from "./Core/GlobalVars";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
@@ -81,6 +82,7 @@ import { setupGlobalKeyListeners } from "./Core/HotKeys";
  * The main function.
  */
 async function main() {
+    await setupGlobalVars();
     errorReportingSetup();
     loadFontAwesomeFonts();
     setupTests();
