@@ -200,7 +200,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             // First test cloning
             {
                 beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(true)
+                    .loadExampleMolecule(true, undefined, 0)
                     .selectMoleculeInTree("Protein"),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#navigator", ":cloned")
@@ -214,6 +214,28 @@ export default class CloneMolPlugin extends PluginParentClass {
                     .pressPopupButton(".action-btn", this.pluginId)
                     .wait(2)
                     .waitUntilRegex("#navigator", "Compounds-clonned"),
+            },
+            // --- New Tests ---
+            // Test 2: Attempt to clone with no selection
+            {
+                beforePluginOpens: new TestCmdList().loadExampleMolecule(undefined, undefined, 1),
+                // No selection is made, checkPluginAllowed should fail.
+                // The test framework should automatically catch the error message from checkPluginAllowed.
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "First select one"
+                ),
+            },
+            // Test 3: Attempt to clone with multiple selections
+            {
+                beforePluginOpens: new TestCmdList()
+                    .loadExampleMolecule(true, undefined, 2)
+                    .selectMoleculeInTree("Protein")
+                    .selectMoleculeInTree("Compounds", true), // shift-click to select a second
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "First select one"
+                ),
             },
         ];
     }

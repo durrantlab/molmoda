@@ -596,6 +596,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       });
     });
 
+    
+
     return tests;
   }
 

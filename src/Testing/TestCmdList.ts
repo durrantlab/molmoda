@@ -17,7 +17,8 @@ import * as api from "@/Api";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
 import { openRemoteFile } from "@/FileSystem/UrlOpen";
 import { getUrlParam } from "@/Core/UrlParams";
-
+import * as StyleManager from "@/Core/Styling/StyleManager";
+import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 const examplesLoaded: string[] = [];
 
 /**
@@ -104,6 +105,42 @@ export class TestCmdList {
      */
     public get cmds(): ITestCommand[] {
         return this.tests.map((test: _TestCmdParent) => test.cmd);
+    }
+
+    /**
+     * Adds a custom style programmatically for test setup.
+     *
+     * @param {string} styleName The name of the style.
+     * @param {ISelAndStyle} styleDefinition The style definition.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public addCustomStyle(
+        styleName: string,
+        styleDefinition: ISelAndStyle
+    ): TestCmdList {
+        StyleManager.addCustomStyle(styleName, styleDefinition, true); // Overwrite for test predictability
+        return this;
+    }
+    /**
+     * Opens a plugin programmatically by its ID.
+     *
+     * @param {string} pluginId The ID of the plugin to open.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public openPlugin(pluginId: string): TestCmdList {
+        api.plugins.runPlugin(pluginId);
+        return this;
+    }
+    /**
+     * Opens a plugin with a specific payload. This bypasses the menu system.
+     *
+     * @param {string} pluginId The ID of the plugin to open.
+     * @param {any} payload The payload to pass to the plugin's onPluginStart method.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public openPluginWithPayload(pluginId: string, payload: any): TestCmdList {
+        api.plugins.runPlugin(pluginId, payload);
+        return this;
     }
 
     /**

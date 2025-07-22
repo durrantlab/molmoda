@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -40,7 +36,7 @@ export default class EditCompoundPlugin extends PluginParentClass {
     pluginId = "editcompound";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     // hotkey = "z";
     intro = "Edit a compound.";
@@ -115,7 +111,7 @@ export default class EditCompoundPlugin extends PluginParentClass {
                 closePlugin: new TestCmdList().click("#modal-drawmoleculeplugin .action-btn"),
                 afterPluginCloses: new TestCmdList()
                     .waitUntilRegex("#navigator", "TOU:101:edited")
-            },
+            }
         ];
     }
 }
