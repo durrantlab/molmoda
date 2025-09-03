@@ -230,7 +230,19 @@ class el:
 def make_chrome_driver(options):
     service = Service(executable_path='utils/chromedriver_wrapper.sh')
     options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
-    return webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=service, options=options)
+    
+    # Check if the root_url is a localhost URL.
+    if "localhost" in root_url or "127.0.0.1" in root_url:
+        # Enable the Network domain of the Chrome DevTools Protocol.
+        driver.execute_cdp_cmd('Network.enable', {})
+        
+        # Set the Origin header for all subsequent requests in this session.
+        # This makes headless requests appear as if they are coming from a
+        # regular browser session on localhost.
+        driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {'headers': {'Origin': root_url}})
+        
+    return driver
 
 
 def make_driver(browser):
@@ -246,6 +258,7 @@ def make_driver(browser):
         driver = webdriver.Firefox(options=options)
         driver.maximize_window()
     elif browser == "firefox-headless":
+        input("Could get an error here (untested). Involving e.php. If so, it's because firefox-headless doesn't send the Origin header with 'localhost' in it...")
         options = webdriver.FirefoxOptions()
         options.add_argument("-headless")
         options.add_argument("--width=1920")

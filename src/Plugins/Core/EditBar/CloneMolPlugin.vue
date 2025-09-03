@@ -215,16 +215,20 @@ export default class CloneMolPlugin extends PluginParentClass {
                     .wait(2)
                     .waitUntilRegex("#navigator", "Compounds-clonned"),
             },
-            // --- New Tests ---
             // Test 2: Attempt to clone with no selection
             {
                 beforePluginOpens: new TestCmdList().loadExampleMolecule(undefined, undefined, 1),
                 // No selection is made, checkPluginAllowed should fail.
-                // The test framework should automatically catch the error message from checkPluginAllowed.
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#modal-simplemsg",
-                    "First select one"
-                ),
+                // This test is expected to fail at the checkPluginAllowed stage, so it won't open its own popup.
+                // We provide an empty closePlugin to override the default, which would fail.
+                closePlugin: new TestCmdList(),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex(
+                        "#modal-simplemsg",
+                        "First select one"
+                    )
+                    // Also need to close the simple message popup to continue.
+                    .click("#modal-simplemsg .cancel-btn"),
             },
             // Test 3: Attempt to clone with multiple selections
             {
@@ -232,13 +236,18 @@ export default class CloneMolPlugin extends PluginParentClass {
                     .loadExampleMolecule(true, undefined, 2)
                     .selectMoleculeInTree("Protein")
                     .selectMoleculeInTree("Compounds", true), // shift-click to select a second
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#modal-simplemsg",
-                    "First select one"
-                ),
+                // This test is also expected to fail at the checkPluginAllowed stage.
+                closePlugin: new TestCmdList(),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex(
+                        "#modal-simplemsg",
+                        "First select one"
+                    )
+                    // Also need to close the simple message popup to continue.
+                    .click("#modal-simplemsg .cancel-btn"),
             },
-        ];
-    }
+    ];
+        }
 }
 </script>
 

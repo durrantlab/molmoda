@@ -1,4 +1,3 @@
-import { prop } from "vue-class-component";
 import { dynamicImports } from "../../../Core/DynamicImports";
 import { RateLimitedFetcherQueue, ResponseType } from "../../../Core/Fetcher";
 import {
@@ -441,7 +440,8 @@ async function _getCompoundDataGivenCIDs(
     const defaultPropsToTry = [
         "CanonicalSMILES",
         "IsomericSMILES",
-        "SMILES"
+        "SMILES",
+        "ConnectivitySMILES",
     ];
 
     let propsToTry = defaultPropsToTry.slice();
@@ -454,7 +454,7 @@ async function _getCompoundDataGivenCIDs(
 
         for (propToTry of propsToTry) {
             try {
-                const propUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${batchCIDs}/property/${propToTry}/JSON`
+                const propUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${batchCIDs}/property/${propToTry}/JSON`;
                 propData = await pubChemQueue.enqueue(propUrl);
                 break;
             } catch {
@@ -471,12 +471,17 @@ async function _getCompoundDataGivenCIDs(
         try {
             const propertiesList = propData?.PropertyTable?.Properties ?? [];
             for (const prop of propertiesList) {
+                const smilesValue =
+                    prop.CanonicalSMILES ||
+                    prop.IsomericSMILES ||
+                    prop.SMILES ||
+                    prop.ConnectivitySMILES;
                 // Desalt the smiles string. Using easyDesaltSMILES because it is fast,
                 // though not as rigorous as converting to OpenBabel.
                 compoundData.push({
                     CID: prop.CID,
                     // SMILES: easyDesaltSMILES(prop.CanonicalSMILES) ?? "N/A",
-                    SMILES: easyDesaltSMILES(prop[propToTry]) ?? "N/A",
+                    SMILES: easyDesaltSMILES(smilesValue) ?? "N/A",
                     sortMetric: 0,
                 });
             }
