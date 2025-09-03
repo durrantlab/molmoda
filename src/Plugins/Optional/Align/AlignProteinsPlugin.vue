@@ -137,8 +137,10 @@ export default class AlignProteinsPlugin extends PluginParentClass {
         };
         try {
             const refId = getArgValue("referenceMolecule") as string;
-            const mobileInfos = getArgValue("mobileMolecules") as FileInfo[];
-            if (!refId || !mobileInfos) {
+            const mobileInfosFromInput = getArgValue(
+                "mobileMolecules"
+            ) as FileInfo[];
+            if (!refId || !mobileInfosFromInput) {
                 throw new Error("Missing reference or mobile molecules.");
             }
             const allMolecules = getMoleculesFromStore();
@@ -152,11 +154,29 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                     `Could not convert reference protein ${referenceNode.title} to PDB format.`
                 );
             }
-            // Filter out the reference molecule from the list of mobile molecules.
-            const mobileFileInfosToAlign = mobileInfos.filter((fi) => {
-                if (!fi.treeNode) return true; // should not happen, but as a safeguard.
-                return fi.treeNode.getAncestry(allMolecules).get(0).id !== refId;
+            // Get unique top-level nodes from the FileInfos of the mobile molecules.
+            const mobileTopLevelNodes = new Map<string, TreeNode>();
+            mobileInfosFromInput.forEach((fi) => {
+                if (fi.treeNode) {
+                    const topLevelNode = fi.treeNode.getAncestry(allMolecules).get(0);
+                    if (topLevelNode.id) {
+                        mobileTopLevelNodes.set(topLevelNode.id, topLevelNode);
+                    }
+                }
             });
+            // Convert each unique top-level node to a FileInfo with all descendants.
+            const mobileFileInfosToAlignPromises = Array.from(
+                mobileTopLevelNodes.values()
+            )
+                .filter((node) => node.id !== refId)
+                .map(async (node) => {
+                    const fileInfo = await node.toFileInfo("pdb", true);
+                    fileInfo.treeNode = node; // Attach top-level node for context
+                    return fileInfo;
+                });
+            const mobileFileInfosToAlign = await Promise.all(
+                mobileFileInfosToAlignPromises
+            );
             if (mobileFileInfosToAlign.length === 0) {
                 messagesApi.popupError(
                     "No proteins to align. Ensure you have selected proteins to align that are different from the reference."
@@ -187,8 +207,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                     );
                     continue;
                 }
-                const originalTopLevelNode =
-                    newFileInfo.treeNode.getAncestry(allMolecules).get(0);
+                const originalTopLevelNode = newFileInfo.treeNode;
                 const loadedNodeContainer = await TreeNode.loadFromFileInfo({
                     fileInfo: newFileInfo,
                     tag: this.pluginId,
