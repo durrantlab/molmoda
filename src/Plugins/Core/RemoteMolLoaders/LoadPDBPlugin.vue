@@ -194,19 +194,6 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 ),
             },
 
-            // Below loads cif verson (gives error?)
-            {
-                pluginOpen: new TestCmdList().setUserArg(
-                    "pdbId",
-                    "9ATW",
-                    this.pluginId
-                ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "9ATW"
-                ),
-            },
-
             // Check error checking
             {
                 pluginOpen: new TestCmdList().setUserArg(

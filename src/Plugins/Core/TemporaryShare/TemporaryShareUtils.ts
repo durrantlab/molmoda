@@ -3,6 +3,24 @@
  * share temporary data or configurations. The codes are expected to follow a
  * specific format: "share-WORD1-WORD2-number".
  */
+let sessionShareCode: string | null = null;
+/**
+ * Gets the share code for the current session.
+ *
+ * @returns {string | null} The session share code, or null if not set.
+ */
+export function getSessionShareCode(): string | null {
+    return sessionShareCode;
+}
+
+/**
+ * Sets the share code for the current session.
+ *
+ * @param {string} code The share code to set for the session.
+ */
+export function setSessionShareCode(code: string): void {
+    sessionShareCode = code;
+}
 
 /**
  * Validates a share code to ensure it follows the expected format. The code

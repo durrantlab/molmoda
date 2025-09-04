@@ -18,7 +18,11 @@ import { PluginParentClass } from "../../Parents/PluginParentClass/PluginParentC
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import PluginComponent from "../../Parents/PluginComponent/PluginComponent.vue";
 import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
-import { validateShareCode } from "./TemporaryShareUtils";
+import {
+    validateShareCode,
+    getSessionShareCode,
+    setSessionShareCode,
+} from "./TemporaryShareUtils";
 import { sanitizeSvg } from "@/Core/Security/Sanitize";
 
 /**
@@ -70,20 +74,20 @@ export default class TemporarySharePlugin extends PluginParentClass {
      */
     async runJobInBrowser(): Promise<void> {
         const spinnerId = api.messages.startWaitSpinner();
-
         try {
             const jsonStr = stateToJsonStr(store.state);
             const sessionFileInfo = new FileInfo({
                 name: "molmoda_file.json",
                 contents: jsonStr,
             });
-
             const zipBlob = await api.fs.createZipBlob([sessionFileInfo]);
-
             const formData = new FormData();
             formData.append("molmoda_file", zipBlob, "session.molmoda");
-
-            const shareCode = await fetcher(
+            const existingShareCode = getSessionShareCode();
+            if (existingShareCode) {
+                formData.append("share_code", existingShareCode);
+            }
+            const shareCodeFromServer = await fetcher(
                 "https://molmoda.org/share_temp.php",
                 {
                     responseType: ResponseType.TEXT,
@@ -91,17 +95,27 @@ export default class TemporarySharePlugin extends PluginParentClass {
                     cacheBust: true,
                 }
             );
-
             // Basic validation of the received code
-            if (!validateShareCode(shareCode)) {
+            if (!validateShareCode(shareCodeFromServer)) {
                 throw new Error("Invalid share code received from the server.");
             }
 
-            const trimmedCode = shareCode.trim();
-            // Construct the URL with the share code
+            const trimmedCodeFromServer = shareCodeFromServer.trim();
+            let codeToUseForUrl: string;
+
+            if (existingShareCode) {
+                // If we already have a code for this session, keep using it for the URL.
+                codeToUseForUrl = existingShareCode;
+            } else {
+                // This is the first share, so use the new code from the server and save it.
+                setSessionShareCode(trimmedCodeFromServer);
+                codeToUseForUrl = trimmedCodeFromServer;
+            }
+
+            // Construct the URL with the consistent share code for the session
             const currentOrigin = window.location.origin + window.location.pathname;
             const shareUrl = `${currentOrigin}?code=${encodeURIComponent(
-                trimmedCode
+                codeToUseForUrl
             )}`;
             const qrcode = await dynamicImports.qrcode.module;
             let qrCodeSvg = await qrcode.toString(shareUrl, {
@@ -112,18 +126,14 @@ export default class TemporarySharePlugin extends PluginParentClass {
                     light: "#FFFFFF",
                 },
             });
-
             // Validate the SVG content
             qrCodeSvg = await sanitizeSvg(qrCodeSvg);
-
             const message = `
-          <div style="text-align:center;"><a href="${shareUrl}" target="_blank" rel="noopener noreferrer">${shareUrl}</a></div>
-          `;
-
-            const alertMessage = "Your session has been temporarily shared. Use the link or QR code to access it on another device. This link will expire shortly.";
-
+    <div style="text-align:center;"><a href="${shareUrl}" target="_blank" rel="noopener noreferrer">${shareUrl}</a></div>
+    `;
+            const alertMessage =
+                "Your session has been temporarily shared. Use the link or QR code to access it on another device. This link will expire shortly.";
             const maxHeight = window.innerHeight * 0.6;
-
             api.plugins.runPlugin("simplesvgpopup", {
                 title: "Temporary Share Link",
                 svgContents: qrCodeSvg,
@@ -131,7 +141,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
                 alertMessage: alertMessage,
                 filenameBase: "session-qr",
                 showDownloadButtons: false,
-                maxHeight: maxHeight
+                maxHeight: maxHeight,
             });
         } catch (error: any) {
             api.messages.popupError(
