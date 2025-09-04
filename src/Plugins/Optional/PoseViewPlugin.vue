@@ -12,7 +12,6 @@
             Navigator panel if necessary.
           </span>
         </Alert>
-
         <Alert v-else-if="numProteins > 1" type="warning" extraClasses="mt-4">
           You have chosen {{ numProteins }} proteins. To calculate
           protein/ligand interactions, these proteins will be merged and
@@ -25,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
+import { Options, Vue } from "vue-class-component";
 import {
   IContributorCredit,
   ISoftwareCredit,
@@ -273,36 +272,28 @@ export default class PoseViewPlugin extends PluginParentClass {
       const filePairs = this.getUserArg(
         "makemolinputparams"
       ) as IProtCmpdTreeNodePair[];
-
       if (filePairs.length === 0 || !filePairs[0].prot || !filePairs[0].cmpd) {
         api.messages.popupError(
           "Could not generate PoseView diagram! Did you select at least one compound and one protein?"
         );
         return;
       }
-
       // Collect all the protein tree nodes to convert into a single (merged) PDB file.
       const filePair = filePairs[0];
       const proteinTreeNodes = filePairs
         .map((pair) => pair.prot.treeNode as TreeNode)
         .filter((node) => node !== undefined);
-
       const proteinTreeNodeList = new TreeNodeList(proteinTreeNodes);
-
       // [0] because only 1 (merged)
       const pdbString = _convertTreeNodeListToPDB(proteinTreeNodeList, true)[0];
-
       // For ligand consider only the first filePair (there should be ligand
       // only, so they should all be the same)
       const sdfString = filePair.cmpd.contents;
-
       // Proximity check logic
       const proteinTempFileInfo = new FileInfo({ name: "protein_merged_for_check.pdb", contents: pdbString });
       const ligandTempFileInfo = new FileInfo({ name: "ligand_for_check.sdf", contents: sdfString });
-
       const proteinParser = makeEasyParser(proteinTempFileInfo);
       const ligandParser = makeEasyParser(ligandTempFileInfo);
-
       const DISTANCE_THRESHOLD = 10; // Angstroms
       if (!proteinParser.isWithinDistance(ligandParser, DISTANCE_THRESHOLD, 5, 5)) {
         api.messages.popupError(
@@ -310,8 +301,6 @@ export default class PoseViewPlugin extends PluginParentClass {
         );
         return;
       }
-
-
       // Get paths
       const proteinPath = filePair.prot.treeNode?.descriptions.pathName(
         ">",
@@ -321,7 +310,6 @@ export default class PoseViewPlugin extends PluginParentClass {
         ">",
         80
       );
-
       let poseviewSvg = await this.generatePoseView(
         pdbString,
         sdfString,
@@ -329,52 +317,38 @@ export default class PoseViewPlugin extends PluginParentClass {
           this.updateProgressInQueueStore(progress);
         }
       );
-
       // To make it responsive.
       poseviewSvg = poseviewSvg.replace(
         /\s+width="\d+pt"\s+height="\d+pt"/g,
         ""
       );
-
       // Sanitize the svg
       poseviewSvg = await sanitizeSvg(poseviewSvg);
-
-      // Create a wrapper for the SVG and add the legend/info below it
-      const wrapperHtml = `
-        <div style="display: flex; flex-direction: column; width: 100%; align-items: center;">
-          <!-- SVG Diagram Area -->
-          <div style="position: relative; width: 100%; max-width: 850px; /* Optional: constrain max SVG width */">
-        ${poseviewSvg}
-        </div>
-
-          <!-- Legend and Info Area Below SVG -->
-          <div style="width: 100%; margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-top: 1px solid #ddd; box-sizing: border-box;">
-            <!-- Legend Image (Centered) -->
-            <div style="text-align: center; margin-bottom: 10px;">
-              <img src="./poseview-legend.png" style="max-width: 100%; height: auto; display: inline-block;" alt="PoseView Legend" />
-            </div>
-
-            <!-- Text Description (Centered) -->
-            <div style="font-size: 14px; text-align: center;">
-                2D interaction diagram showing protein-ligand interactions for:<br>
-                <strong>Protein:</strong> ${proteinPath || 'Unknown'}<br>
-                <strong>Compound:</strong> ${compoundPath || 'Unknown'}
-            </div>
-          </div>
-      </div>
-    `;
-
+      const messageHtml = `
+ <div style="width: 100%; margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-top: 1px solid #ddd; box-sizing: border-box;">
+   <!-- Legend Image (Centered) -->
+   <div style="text-align: center; margin-bottom: 10px;">
+  <img src="./poseview-legend.png" style="max-width: 100%; height: auto; display: inline-block;" alt="PoseView Legend" />
+   </div>
+   <!-- Text Description (Centered) -->
+   <div style="font-size: 14px; text-align: center;">
+    2D interaction diagram showing protein-ligand interactions for:<br>
+    <strong>Protein:</strong> ${proteinPath || 'Unknown'}<br>
+    <strong>Compound:</strong> ${compoundPath || 'Unknown'}
+   </div>
+ </div>
+ <p class="mt-2">Diagram generated using <a href="https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html" target="_blank">PoseView</a>.</p>
+   `;
       api.plugins.runPlugin("simplesvgpopup", {
-        svgContents: wrapperHtml,
+        svgContents: poseviewSvg,
         title: "2D Interaction Diagram",
-        message: `Diagram generated using <a href="https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html" target="_blank">PoseView</a>.`,
+        message: messageHtml,
       });
     } catch (error: any) {
       api.messages.popupError(
         `Failed to generate PoseView interaction diagram: ${error.message}`
       );
     }
-
     return Promise.resolve();
   }
 

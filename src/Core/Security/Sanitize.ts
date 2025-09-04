@@ -81,6 +81,8 @@ export async function sanitizeSvg(unsafeSvg: string): Promise<string> {
     }
     return DOMPurify.sanitize(unsafeSvg, {
         USE_PROFILES: { svg: true },
+        ADD_TAGS: ["use", "symbol", "defs"], // Explicitly allow tags for text rendering
+        ADD_ATTR: ["xlink:href"], // Explicitly allow xlink:href for <use> tags
         // Remove any remaining script-related content
         FORBID_TAGS: ["script", "object", "embed", "foreignObject"],
         FORBID_ATTR: [

@@ -111,13 +111,6 @@ export default class ImageViewer extends Vue {
     }
 
     /**
-     * Lifecycle hook called when the component is created.
-     */
-    created() {
-        this.determineSourceTypeAndEmit();
-    }
-
-    /**
      * Lifecycle hook called when the component is mounted.
      */
     mounted() {
@@ -133,14 +126,11 @@ export default class ImageViewer extends Vue {
      * 
      * @param {string} newSource - The new source string.
      */
-    @Watch("source")
+    @Watch("source", { immediate: true })
     async onSourceChanged(newSource: string): Promise<void> {
         this.determineSourceTypeAndEmit();
-        if (this.internalSourceType === 'svg') {
-            // Update SVG content sanitization. It is async, so can't just get
-            // it directly from vue component.
+        if (this.internalSourceType === "svg") {
             this.sanitizedSvg = await sanitizeSvg(this.source);
-
             this.$nextTick(() => {
                 this.adjustSvgDimensions();
             });

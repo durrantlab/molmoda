@@ -1,19 +1,19 @@
 <template>
   <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
-    @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
-    modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
-    <ImageViewer v-if="svgContents !== ''" :source="svgContents" :filenameBase="filenameBaseToUse"
-      :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight" />
-    <!-- :maxHeight="500"  -->
-    <p v-if="message !== ''" class="mt-2" v-html="message"></p>
-    <Alert v-if="alertMessage !== ''" type="info" extraClasses="mt-2">
-      {{ alertMessage }}
-    </Alert>
+ @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
+ modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
+ <ImageViewer v-if="svgContents !== ''" :source="svgContents" :filenameBase="filenameBaseToUse"
+   :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight" />
+ <!-- :maxHeight="500"  -->
+ <div v-if="message !== ''" class="mt-2" v-html="message"></div>
+ <Alert v-if="alertMessage !== ''" type="info" extraClasses="mt-2">
+   {{ alertMessage }}
+ </Alert>
   </PluginComponent>
 </template>
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
-import { Options } from "vue-class-component";
+import { Options, Vue } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleSvg,
