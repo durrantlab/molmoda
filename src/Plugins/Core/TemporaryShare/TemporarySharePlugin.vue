@@ -70,7 +70,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
      */
     async runJobInBrowser(): Promise<void> {
         const spinnerId = api.messages.startWaitSpinner();
-        
+
         try {
             const jsonStr = stateToJsonStr(store.state);
             const sessionFileInfo = new FileInfo({
@@ -119,7 +119,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
             const message = `
           <div style="text-align:center;"><a href="${shareUrl}" target="_blank" rel="noopener noreferrer">${shareUrl}</a></div>
           `;
-            
+
             const alertMessage = "Your session has been temporarily shared. Use the link or QR code to access it on another device. This link will expire shortly.";
 
             const maxHeight = window.innerHeight * 0.6;
@@ -153,7 +153,9 @@ export default class TemporarySharePlugin extends PluginParentClass {
             afterPluginCloses: new TestCmdList().waitUntilRegex(
                 "#modal-simplesvgpopup",
                 "Your session has been temporarily shared"
-            ),
+            )
+                .waitUntilRegex("#modal-simplesvgpopup .svg-wrapper", "<svg")
+                .click("#modal-simplesvgpopup .cancel-btn"),
         };
     }
 }

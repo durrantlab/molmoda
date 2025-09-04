@@ -4,12 +4,12 @@
         @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
             <div :class="smilesImgValid ? '' : 'hide-smiles-vis'">
-            <div v-if="getUserArg('format') === 'smi' && currentSmilesForPreview.trim() !== ''"
-                class="mt-3 border p-2 text-center" style="max-height: 300px; overflow-y: auto;">
-                <Mol2DView @onValidImageDetect="onValidImageDetect" :smiles="currentSmilesForPreview" :maxHeight="280"
-                    :minHeight="50" :showDownloadButtons="true" />
+                <div v-if="getUserArg('format') === 'smi' && currentSmilesForPreview.trim() !== ''"
+                    class="mt-3 border p-2 text-center" style="max-height: 300px; overflow-y: auto;">
+                    <Mol2DView @onValidImageDetect="onValidImageDetect" :smiles="currentSmilesForPreview"
+                        :maxHeight="280" :minHeight="50" :showDownloadButtons="true" />
+                </div>
             </div>
-        </div>
         </template>
     </PluginComponent>
 </template>
@@ -291,33 +291,46 @@ export default class MolTextPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {
-        const promises = [
-            fetcher("testmols/example.can"),
-            fetcher("testmols/example.sdf"),
-            fetcher("testmols/example.pdb"),
-            fetcher("testmols/example.mol2"),
-            fetcher("testmols/example_mult.can"),
-            fetcher("testmols/example_mult.sdf"),
-            fetcher("testmols/example_mult.pdb"),
-            fetcher("testmols/example_mult.mol2"),
+        const urls = [
+            "testmols/example.can",
+            "testmols/example.sdf",
+            "testmols/example.pdb",
+            "testmols/example.mol2",
+            "testmols/example_mult.can",
+            "testmols/example_mult.sdf",
+            "testmols/example_mult.pdb",
+            "testmols/example_mult.mol2",
         ];
-
+        const promises = urls.map((url) => fetcher(url));
         const txts = await Promise.all(promises);
-
         const tests = txts.map((txt: string) => {
+            const fileInfo = new FileInfo({
+                name: "tmp.smi",
+                contents: txt,
+            });
+            const guessedFormat = fileInfo.guessFormat();
+            let pluginOpen = new TestCmdList().setUserArg(
+                "molTextArea",
+                txt,
+                this.pluginId
+            );
+            if (
+                guessedFormat &&
+                (guessedFormat.primaryExt === "smi" ||
+                    guessedFormat.primaryExt === "can")
+            ) {
+                pluginOpen = pluginOpen
+                    .wait(2) // wait for rdkit to render
+                    .waitUntilRegex("#modal-moltextplugin .svg-wrapper", "<svg");
+            }
             return {
-                pluginOpen: new TestCmdList().setUserArg(
-                    "molTextArea",
-                    txt,
-                    this.pluginId
-                ),
+                pluginOpen,
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "PastedMol"
                 ),
             };
         });
-
         // Final test to verify error catching
         tests.push({
             pluginOpen: new TestCmdList().setUserArg(
@@ -330,7 +343,6 @@ export default class MolTextPlugin extends PluginParentClass {
                 "File contained no valid"
             ),
         });
-
         return tests;
     }
 }

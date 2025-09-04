@@ -164,7 +164,8 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
         return {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule()
-                .selectMoleculeInTree("Compounds"),
+                .selectMoleculeInTree("Compounds")
+                .waitUntilRegex("#information .svg-wrapper", "<svg"),
             closePlugin: new TestCmdList().pressPopupButton(
                 ".action-btn",
                 this.pluginId

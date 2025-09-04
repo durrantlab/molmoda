@@ -363,7 +363,11 @@ export default class PoseViewPlugin extends PluginParentClass {
         .loadExampleMolecule()
         .selectMoleculeInTree("Protein"),
       afterPluginCloses: new TestCmdList()
-        .waitUntilRegex("#modal-simplesvgpopup", "Diagram generated using")
+        .waitUntilRegex(
+          "#modal-simplesvgpopup",
+          "Diagram generated using"
+        )
+        .waitUntilRegex("#modal-simplesvgpopup .svg-wrapper", "<svg")
         .click("#modal-simplesvgpopup .cancel-btn"),
     };
   }
