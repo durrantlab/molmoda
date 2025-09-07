@@ -160,8 +160,9 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    async getTests(): Promise<ITest> {
-        return {
+    async getTests(): Promise<ITest[]> {
+        // name: "Happy Path - Compound Selected",
+        const happyPath: ITest = {
             beforePluginOpens: new TestCmdList()
                 .loadExampleMolecule()
                 .selectMoleculeInTree("Compounds")
@@ -172,6 +173,20 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
             ),
             afterPluginCloses: new TestCmdList(),
         };
+        // name: "Error - No Compound Selected",
+        const noSelectionPath: ITest = {
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+            // The checkPluginAllowed method will fail, preventing the plugin's popup from opening.
+            // An error modal will be shown instead.
+            closePlugin: new TestCmdList(),
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex(
+                    "#modal-simplemsg",
+                    "No compounds are currently selected"
+                )
+                .click("#modal-simplemsg .cancel-btn"), // Close the error modal.
+        };
+        return [happyPath, noSelectionPath];
     }
 }
 </script>

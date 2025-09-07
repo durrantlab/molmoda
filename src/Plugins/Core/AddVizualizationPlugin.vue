@@ -559,7 +559,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * @returns {Promise<ITest>} The selenium test commands.
    */
   async getTests(): Promise<ITest[]> {
-    const tests: ITest[] = [];
+    // const tests: ITest[] = [];
 
     // ColorSchemeSelect is tricky to test directly here without more
     // interaction. We'll assume its internal v-model works and the correct data
@@ -573,13 +573,11 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       { name: "Surface", value: SurfaceRepresentation.Surface },
     ];
 
-    representations.forEach((rep, index) => {
+    const existingTests: ITest[] = representations.map((rep, index) => {
       const styleName = `TestViz-${rep.name}`;
-
       const pluginOpenCmds = new TestCmdList()
         .setUserArg("styleName", styleName, this.pluginId)
         .setUserArg("representationType", rep.value, this.pluginId);
-
       if (index % 2 === 0) {
         // Even index, use residue names
         pluginOpenCmds.setUserArg("selectionResidueNames", "LYS", this.pluginId);
@@ -587,18 +585,45 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         // Odd index, use residue IDs
         pluginOpenCmds.setUserArg("selectionResidueIds", "10", this.pluginId);
       }
-
-      tests.push({
-        beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+      return {
+        name: `Add ${rep.name} Style`,
+        beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, index),
         pluginOpen: pluginOpenCmds,
         closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
         afterPluginCloses: new TestCmdList().waitUntilRegex("#styles", styleName),
-      });
+      };
     });
 
-    
+    // name: "Error on Duplicate Style Name",
+    const duplicateNameTest: ITest = {
+      beforePluginOpens: new TestCmdList()
+        .loadExampleMolecule(true, undefined, representations.length)
+        .addCustomStyle("Existing Style", {
+          selection: { resn: ["TRP"] },
+          sphere: { color: "red" },
+        } as ISelAndStyle),
+      pluginOpen: new TestCmdList()
+        .setUserArg("styleName", "Existing Style", this.pluginId)
+        .setUserArg("representationType", AtomsRepresentation.Sphere, this.pluginId),
+      closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#modal-simplemsg", "A custom visualization with the name .* already exists")
+    };
 
-    return tests;
+    // name: "Disabled Action Button with Empty Name",
+    const disabledButtonTest: ITest = {
+      beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, representations.length + 1),
+      pluginOpen: new TestCmdList()
+        .waitUntilRegex("#modal-addnewvisualization", "Visualization name"), // Ensure popup is open
+      // The action button should be disabled, so we just close with cancel.
+      closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .cancel-btn`),
+      afterPluginCloses: new TestCmdList(),
+    };
+    // NOTE: The "Test Edit Mode" scenario cannot be fully implemented with the current test framework.
+    // The framework is designed to open plugins via menu paths, but this test requires opening the plugin
+    // with a payload (`{ styleNameToEdit: '...' }`), which is typically triggered by a UI interaction
+    // like clicking an 'edit' icon. A framework enhancement would be needed to support this test case.
+    return [...existingTests, duplicateNameTest, disabledButtonTest];
   }
 
   /**

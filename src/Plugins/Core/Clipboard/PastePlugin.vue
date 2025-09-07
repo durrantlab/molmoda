@@ -1,11 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Paste"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged" actionBtnTxt="Paste"
+        @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
             <div class="mt-3">
                 <Alert type="info">{{ formatMsg }}</Alert>
@@ -41,6 +36,7 @@ import {
     getGen3DUserArg,
     WhichMolsGen3D,
     IGen3DOptions,
+    Gen3DLevel,
 } from "@/FileSystem/OpenBabel/OpenBabel";
 
 /** PastePlugin */
@@ -57,7 +53,7 @@ export default class PastePlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "pasteclipboard";
     tags = [Tag.All];
-    
+
     // noPopup = true;
     userArgDefaults: UserArg[] = [
         {
@@ -78,12 +74,12 @@ export default class PastePlugin extends PluginParentClass {
         } as IUserArgText,
         getDesaltUserArg(),
         getGen3DUserArg(
-            "Generate 3D coordinates", 
+            "Generate 3D coordinates",
             "For molecules without 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored.",
             false
         )
     ];
-    
+
     logJob = false;
     intro = "Paste a molecule from the clipboard.";
     formatMsg = "";
@@ -141,6 +137,7 @@ export default class PastePlugin extends PluginParentClass {
             else if (index === "7")
                 txt = await fetcher("testmols/example_mult.mol2");
             else if (index === "8") txt = "C##moose";
+            else txt = "C1CCCCC1.N cyclohexane"; // 9, 10
         }
 
         const fileInfo = new FileInfo({
@@ -157,7 +154,7 @@ export default class PastePlugin extends PluginParentClass {
         }
 
         fileInfo.assignExtByContents();
-    
+
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
             level: this.getUserArg("gen3D"),
@@ -168,7 +165,7 @@ export default class PastePlugin extends PluginParentClass {
             tag: this.pluginId,
             desalt: this.getUserArg("desalt"),
             defaultTitle: this.getUserArg("pastedMolName"),
-   gen3D: gen3DParams,
+            gen3D: gen3DParams,
         });
 
         if (node === undefined) {
@@ -230,25 +227,36 @@ export default class PastePlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        // See paste function where actual molecules are loaded. Just need five tests.
-        const test = {
-            pluginOpen: new TestCmdList().setUserArg(
-                "pastedMolName",
-                "my_molz",
-                this.pluginId
-            ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
-                "#navigator",
-                "my_molz"
-            ),
-        };
-        const tests = [test, test, test, test, test, test, test, test];
-
-        // Final test to detect error catching
+        // See paste function where actual molecules are loaded.
+        const tests: ITest[] = [];
+        const testData = [
+            "testmols/example.can",
+            "testmols/example.sdf",
+            "testmols/example.pdb",
+            "testmols/example.mol2",
+            "testmols/example_mult.can",
+            "testmols/example_mult.sdf",
+            "testmols/example_mult.pdb",
+            "testmols/example_mult.sdf",
+        ];
+        testData.forEach((molFile, i) => {
+            tests.push({
+                pluginOpen: new TestCmdList().setUserArg(
+                    "pastedMolName",
+                    `my_mol_${i}`,
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    `my_mol_${i}`
+                ),
+            });
+        });
+        // Test to detect error catching for invalid SMILES
         tests.push({
             pluginOpen: new TestCmdList().setUserArg(
                 "pastedMolName",
-                "my_molz",
+                "my_mol_err",
                 this.pluginId
             ),
             afterPluginCloses: new TestCmdList().waitUntilRegex(
@@ -256,7 +264,26 @@ export default class PastePlugin extends PluginParentClass {
                 "File contained no valid"
             ),
         });
-
+        // Test for desalting functionality
+        tests.push({
+            pluginOpen: new TestCmdList()
+                .setUserArg("pastedMolName", "desalted_mol", this.pluginId)
+                .click("#desalt-pasteclipboard-item"), // Enable desalting
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                "desalted_mol"
+            ),
+        });
+        // Test for 3D coordinate generation
+        tests.push({
+            pluginOpen: new TestCmdList()
+                .setUserArg("pastedMolName", "3d_mol", this.pluginId)
+                .setUserArg("gen3D", Gen3DLevel.Fastest, this.pluginId),
+            afterPluginCloses: new TestCmdList().waitUntilRegex(
+                "#navigator",
+                "3d_mol"
+            ),
+        });
         return tests;
     }
 }

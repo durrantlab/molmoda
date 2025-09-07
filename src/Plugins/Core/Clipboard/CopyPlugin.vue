@@ -223,17 +223,71 @@ export default class CopyPlugin extends PluginParentClass {
      * @document
      * @returns {ITest}  The selenium test commands.
      */
-    async getTests(): Promise<ITest> {
-        return {
+    async getTests(): Promise<ITest[]> {
+        // name: "Protein Only Selection",
+        const proteinOnly: ITest = {
             beforePluginOpens: new TestCmdList()
-                .loadExampleMolecule()
+                .loadExampleMolecule(true, undefined, 0)
                 .selectMoleculeInTree("Protein"),
+            pluginOpen: new TestCmdList().waitUntilRegex(
+                `#modal-${this.pluginId}`,
+                "copied as PDB text"
+            ),
             closePlugin: new TestCmdList().pressPopupButton(
                 ".action-btn",
                 this.pluginId
             ),
             afterPluginCloses: new TestCmdList(),
         };
+        // name: "Compound Only Selection",
+        const compoundOnly: ITest = {
+            beforePluginOpens: new TestCmdList()
+                .loadExampleMolecule(true, undefined, 1)
+                .selectMoleculeInTree("Compounds"),
+            pluginOpen: new TestCmdList().waitUntilRegex(
+                `#modal-${this.pluginId}`,
+                "copied as MOL2 text"
+            ),
+            closePlugin: new TestCmdList().pressPopupButton(
+                ".action-btn",
+                this.pluginId
+            ),
+            afterPluginCloses: new TestCmdList(),
+        };
+        // name: "Mixed Protein and Compound Selection",
+        const mixedSelection: ITest = {
+            beforePluginOpens: new TestCmdList()
+                .loadExampleMolecule(true, undefined, 2)
+                .selectMoleculeInTree("Protein")
+                .selectMoleculeInTree("Compounds", true), // shift-click
+            pluginOpen: new TestCmdList().waitUntilRegex(
+                `#modal-${this.pluginId}`,
+                "copied as PDB text"
+            ),
+            closePlugin: new TestCmdList().pressPopupButton(
+                ".action-btn",
+                this.pluginId
+            ),
+            afterPluginCloses: new TestCmdList(),
+        };
+        // name: "No Selection",
+        const noSelection: ITest = {
+            beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                true,
+                undefined,
+                3
+            ),
+            // This test is expected to fail at the checkPluginAllowed stage,
+            // so it won't open its own popup.
+            closePlugin: new TestCmdList(),
+            afterPluginCloses: new TestCmdList()
+                .waitUntilRegex(
+                    "#modal-simplemsg",
+                    "No molecules are currently selected"
+                )
+                .click("#modal-simplemsg .cancel-btn"), // Close the error modal
+        };
+        return [proteinOnly, compoundOnly, mixedSelection, noSelection];
     }
 }
 </script>
