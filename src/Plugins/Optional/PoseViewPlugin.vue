@@ -58,8 +58,7 @@ import { _convertTreeNodeListToPDB } from "@/FileSystem/LoadSaveMolModels/Conver
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { FileInfo } from "@/FileSystem/FileInfo"; // Added import
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser"; // Added import
-import { sanitizeSvg } from "@/Core/Security/Sanitize";
-
+import { sanitizeSvg, sanitizeHtml } from "@/Core/Security/Sanitize";
 const PROXY_URL =
   "https://molmoda.org/poseview-proxy.php";
 
@@ -324,6 +323,8 @@ export default class PoseViewPlugin extends PluginParentClass {
       );
       // Sanitize the svg
       poseviewSvg = await sanitizeSvg(poseviewSvg);
+      const sanitizedProteinPath = await sanitizeHtml(proteinPath || "Unknown");
+      const sanitizedCompoundPath = await sanitizeHtml(compoundPath || "Unknown");
       const messageHtml = `
  <div style="width: 100%; margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-top: 1px solid #ddd; box-sizing: border-box;">
    <!-- Legend Image (Centered) -->
@@ -332,9 +333,9 @@ export default class PoseViewPlugin extends PluginParentClass {
    </div>
    <!-- Text Description (Centered) -->
    <div style="font-size: 14px; text-align: center;">
-    2D interaction diagram showing protein-ligand interactions for:<br>
-    <strong>Protein:</strong> ${proteinPath || 'Unknown'}<br>
-    <strong>Compound:</strong> ${compoundPath || 'Unknown'}
+ 2D interaction diagram showing protein-ligand interactions for:<br>
+ <strong>Protein:</strong> ${sanitizedProteinPath}<br>
+ <strong>Compound:</strong> ${sanitizedCompoundPath}
    </div>
  </div>
  <p class="mt-2">Diagram generated using <a href="https://www.zbh.uni-hamburg.de/en/forschung/amd/server/poseview.html" target="_blank">PoseView</a>.</p>
@@ -355,10 +356,10 @@ export default class PoseViewPlugin extends PluginParentClass {
   /**
    * Get the tests for the plugin.
    *
-   * @returns {Promise<ITest>} The tests.
+   * @returns {Promise<ITest[]>} The tests.
    */
-  async getTests(): Promise<ITest> {
-    return {
+  async getTests(): Promise<ITest[]> {
+    const defaultTest: ITest = {
       beforePluginOpens: new TestCmdList()
         .loadExampleMolecule()
         .selectMoleculeInTree("Protein"),
@@ -370,8 +371,49 @@ export default class PoseViewPlugin extends PluginParentClass {
         .waitUntilRegex("#modal-simplesvgpopup .svg-wrapper", "<svg")
         .click("#modal-simplesvgpopup .cancel-btn"),
     };
-  }
+    const xssPayloadProtein =
+      "<b onclick=alert('protein-xss')>XSS Protein</b>";
+    const xssPayloadCompound =
+      "<i onmouseover=alert('compound-xss')>XSS Compound</i>";
 
+    // name: "XSS Sanitization Test",
+    const xssTest: ITest = {
+      beforePluginOpens: new TestCmdList()
+        .loadExampleMolecule()
+        // Rename the protein
+        .selectMoleculeInTree("Protein")
+        .click('#navigator div[data-label="Protein"] span.rename')
+        .text("#newName-renamemol-item", xssPayloadProtein)
+        .pressPopupButton(".action-btn", "renamemol")
+        .waitUntilRegex("#navigator", "XSS Protein") // Wait for rename to appear
+        // Rename the compound
+        .selectMoleculeInTree("Compounds")
+        .click('#navigator div[data-label="Compounds"] span.rename')
+        .text("#newName-renamemol-item", xssPayloadCompound)
+        .pressPopupButton(".action-btn", "renamemol")
+        .waitUntilRegex("#navigator", "XSS Compound"), // Wait for rename to appear
+      // The plugin will find the visible molecules, no need to re-select
+      // them with their tricky names.
+      pluginOpen: new TestCmdList()
+        // Inside the plugin, the MoleculeInput will automatically pick up the visible renamed nodes.
+        // The action button should be enabled.
+        .waitUntilRegex(
+          "#modal-poseview .action-btn:not(:disabled)",
+          "Generate"
+        ),
+      closePlugin: new TestCmdList().click("#modal-poseview .action-btn"),
+      afterPluginCloses: new TestCmdList()
+        .waitUntilRegex("#modal-simplesvgpopup", "2D Interaction Diagram")
+        // Check that the safe HTML tags are present
+        .waitUntilRegex("#modal-simplesvgpopup", "<b>XSS Prt</b>")
+        .waitUntilRegex("#modal-simplesvgpopup", "<i>XSS Cmpd</i>")
+        // Check that the malicious event handlers are NOT present
+        .waitUntilNotRegex("#modal-simplesvgpopup", "onclick")
+        .waitUntilNotRegex("#modal-simplesvgpopup", "onmouseover")
+        .click("#modal-simplesvgpopup .cancel-btn"),
+    };
+    return [defaultTest, xssTest];
+  }
   /**
    * Called when the popup is opened.
    * 
