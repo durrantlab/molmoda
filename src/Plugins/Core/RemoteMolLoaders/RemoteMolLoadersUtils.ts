@@ -15,33 +15,31 @@ export async function loadPdbIdToFileInfo(
     validateUrl = true
 ): Promise<FileInfo> {
     pdbId = pdbId.trim();
-    let url = "";
-    let fileInfo: FileInfo | undefined;
-    try {
-        url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.pdb`;
-        fileInfo = await loadRemoteToFileInfo(url, validateUrl);
-    } catch (err) {
-        fileInfo = undefined;
-    }
-
-    if (fileInfo === undefined) {
+    const pdbIdUpper = pdbId.toUpperCase();
+    const pdbIdLower = pdbId.toLowerCase();
+    const urlsToTry = [
+        // RCSB PDB format
+        `https://files.rcsb.org/view/${pdbIdUpper}.pdb`,
+        // RCSB CIF format
+        `https://files.rcsb.org/view/${pdbIdUpper}.cif`,
+        // PDBe PDB format
+        `https://www.ebi.ac.uk/pdbe/entry-files/download/pdb${pdbIdLower}.ent`,
+        // PDBe CIF format
+        `https://www.ebi.ac.uk/pdbe/entry-files/download/${pdbIdLower}_updated.cif`,
+    ];
+    for (const url of urlsToTry) {
         try {
-            // If it fails, try the CIF format.
-            url = `https://files.rcsb.org/view/${pdbId.toUpperCase()}.cif`;
-            fileInfo = await loadRemoteToFileInfo(url, validateUrl);
-        } catch (err2) {
-            // If it fails, throw an error.
-            throw new Error(
-                `Could not load the PDB ID "${pdbId}". Please check the ID and try again.`
-            );
+            // If successful, return the file info immediately
+            return await loadRemoteToFileInfo(url, validateUrl);
+        } catch (error) {
+            // Log the failure and continue to the next URL
+            console.log(`Failed to load from ${url}, trying next source.`);
         }
     }
-    if (fileInfo === undefined) {
-        throw new Error(
-            `Could not load the PDB ID "${pdbId}". Please check the ID and try again.`
-        );
-    }
-    return fileInfo;
+    // If all URLs fail, throw an error
+    throw new Error(
+        `Could not load the PDB ID "${pdbId}". Please check the ID and try again.`
+    );
 }
 
 /**
