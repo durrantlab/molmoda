@@ -35,7 +35,7 @@ import {
   getActvityFocusModeDescription,
   Tag,
 } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";

@@ -48,7 +48,7 @@ import {
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { Watch } from "vue-property-decorator";
 import * as api from "@/Api";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";

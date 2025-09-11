@@ -1,5 +1,5 @@
-import { ITest } from "./TestCmd";
 import { TestCmdList } from "./TestCmdList";
+import { ITest } from "./TestInterfaces";
 
 /**
  * Creates a test that will always fail. Useful as a placeholder during development.

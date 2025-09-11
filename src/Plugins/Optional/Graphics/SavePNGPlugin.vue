@@ -19,7 +19,7 @@ import {
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import {
     fileNameFilter,
     matchesFilename,

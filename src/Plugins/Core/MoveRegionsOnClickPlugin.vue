@@ -32,7 +32,7 @@ import { IRegion } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import * as api from "@/Api";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 

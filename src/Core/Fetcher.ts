@@ -38,6 +38,19 @@ async function _introduceRandomDelayForTesting(): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
+export const failingUrlSubstrings: Set<string> = new Set();
+
+/**
+ * Adds a URL substring to the set of URLs that should fail during tests.
+ *
+ * @param {string} substring The substring to match in URLs.
+ */
+export function addFailingUrlSubstring(substring: string) {
+    if (isTest) {
+        failingUrlSubstrings.add(substring);
+    }
+}
+
 /**
  * Fetch a file from a remote URL.
  *
@@ -49,6 +62,12 @@ export async function fetcher(
     url: string,
     options?: IFetcherOptions
 ): Promise<any> {
+    if (isTest && Array.from(failingUrlSubstrings).some(substring => url.includes(substring))) {
+        const msg = `Fetcher (testing): Simulating failure for URL: ${url}`;
+        console.warn(msg);
+        throw new Error("Simulated 404 Not Found");
+    }
+
     // If options not specified, figure out what it should be based on the URL.
     if (options === undefined) {
         // if url ends in json, set responseType to JSON

@@ -4,28 +4,30 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { loadRemoteToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import {
-    ITestCommand,
-    _TestClick,
-    _TestCmdParent,
-    _TestText,
-    _TestUpload,
-    _TestWait,
-    _TestWaitUntilNotRegex,
-    _TestWaitUntilRegex,
-} from "./TestCmd";
+    TestClick,
+    TestCmdParent,
+    TestText,
+    TestUpload,
+    TestWait,
+    TestWaitUntilNotRegex,
+    TestWaitUntilRegex,
+} from "./TestCommands";
 import * as api from "@/Api";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
 import { openRemoteFile } from "@/FileSystem/UrlOpen";
 import { getUrlParam } from "@/Core/UrlParams";
 import * as StyleManager from "@/Core/Styling/StyleManager";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { addFailingUrlSubstring } from "@/Core/Fetcher";
+import { ITestCommand } from "./TestInterfaces";
+
 const examplesLoaded: string[] = [];
 
 /**
  * A container for test commmands, with added functions for common tasks.
  */
 export class TestCmdList {
-    private tests: _TestCmdParent[] = [];
+    private tests: TestCmdParent[] = [];
 
     /**
      * Click a button as if the user had clicked it.
@@ -35,7 +37,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public click(selector: string, shiftPressed = false): TestCmdList {
-        this.tests.push(new _TestClick(selector, shiftPressed));
+        this.tests.push(new TestClick(selector, shiftPressed));
         return this;
     }
 
@@ -46,7 +48,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public wait(durationInSecs = 1): TestCmdList {
-        this.tests.push(new _TestWait(durationInSecs));
+        this.tests.push(new TestWait(durationInSecs));
         return this;
     }
 
@@ -58,7 +60,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public text(selector: string, text: string): TestCmdList {
-        this.tests.push(new _TestText(selector, text));
+        this.tests.push(new TestText(selector, text));
         return this;
     }
 
@@ -70,7 +72,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public waitUntilRegex(selector: string, regex: string): TestCmdList {
-        this.tests.push(new _TestWaitUntilRegex(selector, regex));
+        this.tests.push(new TestWaitUntilRegex(selector, regex));
         return this;
     }
 
@@ -82,7 +84,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public waitUntilNotRegex(selector: string, regex: string): TestCmdList {
-        this.tests.push(new _TestWaitUntilNotRegex(selector, regex));
+        this.tests.push(new TestWaitUntilNotRegex(selector, regex));
         return this;
     }
 
@@ -94,7 +96,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public upload(selector: string, filePath: string): TestCmdList {
-        this.tests.push(new _TestUpload(selector, filePath));
+        this.tests.push(new TestUpload(selector, filePath));
         return this;
     }
 
@@ -104,7 +106,7 @@ export class TestCmdList {
      * @returns {ITestCommand[]} The list of test commands.
      */
     public get cmds(): ITestCommand[] {
-        return this.tests.map((test: _TestCmdParent) => test.cmd);
+        return this.tests.map((test: TestCmdParent) => test.cmd);
     }
 
     /**
@@ -140,6 +142,18 @@ export class TestCmdList {
      */
     public openPluginWithPayload(pluginId: string, payload: any): TestCmdList {
         api.plugins.runPlugin(pluginId, payload);
+        return this;
+    }
+
+    /**
+     * Simulates a failure for any URL containing the given substring.
+     * This is executed immediately during test setup on the client.
+     *
+     * @param {string} substring The substring to match in the URL.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public failUrl(substring: string): TestCmdList {
+        addFailingUrlSubstring(substring);
         return this;
     }
 

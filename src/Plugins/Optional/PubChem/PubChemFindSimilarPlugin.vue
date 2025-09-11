@@ -38,7 +38,7 @@ import {
   IGen3DOptions, // Import the type
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";

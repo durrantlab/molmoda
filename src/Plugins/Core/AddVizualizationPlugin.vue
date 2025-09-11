@@ -41,7 +41,7 @@ import * as StyleManager from "@/Core/Styling/StyleManager";
 import ColorSchemeSelect from "@/UI/Panels/Options/Styles/ColorSchemeSelect.vue";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";

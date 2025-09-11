@@ -44,7 +44,7 @@ import {
 } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import * as api from "@/Api";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import {
   checkCompoundLoaded,

@@ -24,7 +24,7 @@ import {
     UserArg,
     UserArgType,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { filesToFileInfos } from "@/FileSystem/FileUtils";

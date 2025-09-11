@@ -17,7 +17,7 @@ import {
   IUserArgText,
   IUserArgCheckbox,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import {
   fileNameFilter,
   matchesFilename,

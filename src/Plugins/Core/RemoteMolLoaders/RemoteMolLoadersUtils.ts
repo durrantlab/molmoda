@@ -29,8 +29,12 @@ export async function loadPdbIdToFileInfo(
     ];
     for (const url of urlsToTry) {
         try {
+            const fileInfo = await loadRemoteToFileInfo(url, validateUrl);
+            // Correct the filename to use the original PDB ID casing, preserving the extension.
+            const downloadedExtension = url.split(".").pop() || "pdb";
+            fileInfo.name = `${pdbIdUpper}.${downloadedExtension}`;
             // If successful, return the file info immediately
-            return await loadRemoteToFileInfo(url, validateUrl);
+            return fileInfo;
         } catch (error) {
             // Log the failure and continue to the next URL
             console.log(`Failed to load from ${url}, trying next source.`);

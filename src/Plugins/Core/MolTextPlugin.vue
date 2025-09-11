@@ -34,7 +34,7 @@ import {
     UserArgType,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";

@@ -19,7 +19,7 @@ import {
   IUserArgText,
   IUserArgOption,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import {
   getFormatDescriptions,
   getFormatInfoGivenType,

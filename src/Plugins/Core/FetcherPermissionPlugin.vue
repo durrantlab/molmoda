@@ -38,12 +38,13 @@ import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest, _TestClick, _TestWait } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { appName } from "@/Core/GlobalVars";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { TestClick, TestWait } from "@/Testing/TestCommands";
 // import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 
 /**
@@ -156,9 +157,9 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
             });
         }, 5000);
 
-        new _TestClick("#modal-fetcherpermission .action-btn").addToCmdList();
-        new _TestWait(5).addToCmdList();
-        new _TestClick("#modal-fetcherpermission .action-btn2").addToCmdList();
+        new TestClick("#modal-fetcherpermission .action-btn").addToCmdList();
+        new TestWait(5).addToCmdList();
+        new TestClick("#modal-fetcherpermission .action-btn2").addToCmdList();
 
         return [];
     }

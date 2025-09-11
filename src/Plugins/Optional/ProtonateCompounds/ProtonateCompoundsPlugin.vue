@@ -28,7 +28,7 @@ import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import {
     IGen3DOptions,
     WhichMolsGen3D,

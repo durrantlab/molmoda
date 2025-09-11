@@ -55,7 +55,7 @@ import { appName, appCompileTime, appIntro, appDetails, logoPath } from "@/Core/
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { detectPlatform, HostOs } from "@/Core/HostOs";

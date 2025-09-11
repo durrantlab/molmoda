@@ -22,7 +22,7 @@ import {
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { FailingTest } from "@/Testing/FailingTest";
 // import * as api from "@/Api"; // No longer needed for download if ImageViewer handles it

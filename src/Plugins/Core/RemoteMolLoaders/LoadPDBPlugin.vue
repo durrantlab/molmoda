@@ -14,7 +14,7 @@ import * as api from "@/Api";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
@@ -204,6 +204,25 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 afterPluginCloses: new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
                     "Could not load"
+                ),
+            },
+            {
+                name: "Fallback to PDBe when RCSB fails (PDB)",
+                beforePluginOpens: new TestCmdList().failUrl("rcsb.org"),
+                pluginOpen: new TestCmdList().setUserArg("pdbId", "1XDN", this.pluginId),
+                afterPluginCloses: new TestCmdList()
+                    .waitUntilRegex("#navigator", "1XDN"),
+            },
+            {
+                name: "Fallback to PDBe when RCSB fails (CIF)",
+                pluginOpen: new TestCmdList().setUserArg(
+                    "pdbId",
+                    "7VBA",
+                    this.pluginId
+                ),
+                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "7VBA"
                 ),
             },
         ];

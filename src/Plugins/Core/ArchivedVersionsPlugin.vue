@@ -31,7 +31,7 @@ import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClas
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { appName } from "@/Core/GlobalVars";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import versionsData from "@/../archive/index.json"; // Import the JSON data

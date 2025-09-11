@@ -122,7 +122,7 @@ import {
     ISoftwareCredit,
     IContributorCredit,
 } from "@/Plugins/PluginInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import {
     IUserArgCheckbox,
     IUserArgText,

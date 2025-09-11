@@ -7,7 +7,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { localStorageRemoveItem } from "@/Core/LocalStorage";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { layoutApi } from "@/Api/Layout";

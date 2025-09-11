@@ -10,7 +10,7 @@ import {
 } from "../../PluginInterfaces";
 import * as api from "@/Api";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
-import { ITest, createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { HooksMixin } from "./Mixins/HooksMixin";
 import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
@@ -36,6 +36,7 @@ import { removeTerminalPunctuation } from "@/Core/Utils/StringUtils";
 import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
+import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;

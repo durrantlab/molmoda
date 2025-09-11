@@ -16,7 +16,7 @@
   import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
   import { setStoreVar } from "@/Store/StoreExternalAccess";
   import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-  import { ITest } from "@/Testing/TestCmd";
+  import { ITest } from "@/Testing/TestInterfaces";
   import { TestCmdList } from "@/Testing/TestCmdList";
   
   /**

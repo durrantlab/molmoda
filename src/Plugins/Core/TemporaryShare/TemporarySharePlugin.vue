@@ -10,7 +10,7 @@ import { fetcher, ResponseType } from "@/Core/Fetcher";
 import { dynamicImports } from "@/Core/DynamicImports";
 import * as api from "@/Api";
 import { store } from "@/Store";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";

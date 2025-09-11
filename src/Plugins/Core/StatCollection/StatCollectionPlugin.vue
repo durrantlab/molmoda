@@ -80,7 +80,7 @@ import {
     IContributorCredit,
 } from "@/Plugins/PluginInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { isTest } from "@/Core/GlobalVars";
 import { appName } from "@/Core/GlobalVars";
 import * as api from "@/Api";

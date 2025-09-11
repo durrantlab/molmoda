@@ -15,7 +15,7 @@ import { addToUndoStackAfterUserInaction, undo } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";

@@ -21,7 +21,7 @@ import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getDefaultNodeToActOn, setNodesToActOn } from "./EditBarUtils";
 import { checkOneMolSelected } from "../../CheckUseAllowedUtils";
-import { ITest } from "@/Testing/TestCmd";
+import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
