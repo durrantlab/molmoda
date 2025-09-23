@@ -7,7 +7,8 @@
         "build": "cd utils && ./before_compile.sh && cd .. && vue-cli-service --progress --verbose build && cd utils && ./after_compile.sh && cd ..",
         "lint": "vue-cli-service lint",
         "docs": "vue-cli-service build --mode docs; jsdoc dist/js/app.js",
-        "docs2": "jsdoc -r -c jsdoc.json src/"
+        "docs2": "jsdoc -r -c jsdoc.json src/",
+        "test": "jest"
     },
     "dependencies": {
         "@babel/polyfill": "^7.11.5",
@@ -59,6 +60,7 @@
     "devDependencies": {
         "@babel/core": "^7.26.10",
         "@babel/plugin-transform-private-methods": "^7.25.9",
+        "@babel/preset-env": "^7.28.3",
         "@types/file-saver": "^2.0.5",
         "@types/jest": "^29.5.14",
         "@types/jquery": "^3.5.14",
@@ -97,7 +99,7 @@
         "sass-loader": "^12.6.0",
         "style-loader": "^3.3.1",
         "thread-loader": "^3.0.4",
-        "ts-jest": "^29.2.6",
+        "ts-jest": "^29.4.4",
         "ts-unused-exports": "^10.0.0",
         "typescript": "~4.5.5",
         "vue-cli-plugin-webpack-bundle-analyzer": "^4.0.0"

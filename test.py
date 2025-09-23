@@ -624,3 +624,6 @@ if failed_tests:
 # input("Done. Press Enter to end all tests...")
 
 # driver.quit()
+
+# Also run all jest tests
+os.system("node_modules/.bin/jest")

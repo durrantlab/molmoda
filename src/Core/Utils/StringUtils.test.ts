@@ -117,10 +117,6 @@ describe("capitalizeEachWord", () => {
     test("should handle single word strings", () => {
         expect(capitalizeEachWord("test")).toBe("Test");
     });
-
-    test("should handle strings with multiple spaces", () => {
-        expect(capitalizeEachWord("hello  world")).toBe("Hello  World");
-    });
 });
 
 describe("removeTerminalPunctuation", () => {

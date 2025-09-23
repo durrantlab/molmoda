@@ -232,7 +232,7 @@ const aminoAcidProperties: Record<string, AminoAcidProperty> = {
  * @param {string} threeLetterCode The three-letter code (e.g., "ALA", "mse").
  * @returns {string} The one-letter code (e.g., "A"), or "X" if not found or ambiguous.
  */
-const threeLetterToPdbOneLetter = memoize(function (
+export const threeLetterToPdbOneLetter = memoize(function (
     threeLetterCode: string
 ): string {
     const upperCode = threeLetterCode.toUpperCase();
@@ -362,24 +362,15 @@ export function convertFastaToSeqences(text: string): [string, string][] {
         return [];
     }
     if (!text.includes(">")) {
-        // Fallback for non-FASTA format: sequences separated by blank lines
+        // Fallback for non-FASTA format: sequences are any non-empty lines,
+        // separated by one or more empty lines.
         const lines = text.split(/\r?\n/);
         const sequences: string[] = [];
-        let currentSequence = "";
         for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine === "") {
-                if (currentSequence !== "") {
-                    sequences.push(currentSequence);
-                    currentSequence = "";
-                }
-            } else {
-                currentSequence += trimmedLine;
+            const trimmedLine = line.trim().replace("*", "");
+            if (trimmedLine !== "") {
+                sequences.push(trimmedLine);
             }
-        }
-        currentSequence = currentSequence.replace("*", ""); // Remove any stop codon asterisk
-        if (currentSequence !== "") {
-            sequences.push(currentSequence);
         }
         return sequences.map((seq) => ["", seq]);
     }

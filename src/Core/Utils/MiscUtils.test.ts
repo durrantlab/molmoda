@@ -82,15 +82,14 @@ describe("waitForCondition", () => {
 
         const promise = waitForCondition(conditionFunc, customFrequency);
 
-        // First check
-        jest.advanceTimersByTime(customFrequency);
+        // First check (synchronous, immediate call inside waitForCondition)
         expect(conditionFunc).toHaveBeenCalledTimes(1);
 
-        // Second check
+        // Second check (after first timer tick)
         jest.advanceTimersByTime(customFrequency);
         expect(conditionFunc).toHaveBeenCalledTimes(2);
 
-        // Third check (condition becomes true)
+        // Third check (after second timer tick, condition becomes true)
         jest.advanceTimersByTime(customFrequency);
 
         // Run all remaining timers to ensure completion
@@ -112,11 +111,16 @@ describe("waitForCondition", () => {
 
         waitForCondition(conditionFunc);
 
-        jest.advanceTimersByTime(99);
-        expect(conditionFunc).toHaveBeenCalledTimes(0);
-
-        jest.advanceTimersByTime(1);
+        // The initial synchronous check has already happened.
         expect(conditionFunc).toHaveBeenCalledTimes(1);
+
+        // Advance past the first 99ms, it should not have been called again.
+        jest.advanceTimersByTime(99);
+        expect(conditionFunc).toHaveBeenCalledTimes(1);
+
+        // Advance 1 more ms to trigger the setInterval.
+        jest.advanceTimersByTime(1);
+        expect(conditionFunc).toHaveBeenCalledTimes(2);
     });
 
     test("should resolve immediately if condition is initially true", async () => {

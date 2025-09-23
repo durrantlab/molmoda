@@ -42,6 +42,15 @@ export function matchesFilename(filename: string): boolean {
 export const getFileNameParts = memoize(function (
     filename: string
 ): IFileParts {
+    // Handle dotfiles (e.g., .bashrc) where the dot is at the beginning
+    // and there are no other dots.
+    if (filename.startsWith('.') && filename.lastIndexOf('.') === 0) {
+        return {
+            basename: filename,
+            ext: "",
+        };
+    }
+
     if (filename.indexOf(".") === -1) {
         return {
             basename: filename,
