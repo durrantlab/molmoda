@@ -106,10 +106,10 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein"), // Select a molecule to toggle
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     // It starts visible (fa-eye), after toggle it should be invisible (fa-eye-slash)
                     .waitUntilRegex(
                         '#navigator div[data-label="Protein"]',

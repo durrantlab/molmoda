@@ -82,7 +82,7 @@ export default class SelectInvertPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
         };
     }
 }

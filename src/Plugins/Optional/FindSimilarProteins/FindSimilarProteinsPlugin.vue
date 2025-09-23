@@ -370,6 +370,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const alignmentGroups = new Map<string, Set<string>>();
         // Store the query object (TreeNode or string) for each reference.
         const referenceToQueryMap = new Map<string, TreeNode | string>();
+
         for (const jobOutput of allJobOutputs) {
             if (jobOutput.error || !jobOutput.results || jobOutput.results.length === 0) {
                 continue;
@@ -389,12 +390,20 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             if (!alignmentGroups.has(referenceId)) {
                 alignmentGroups.set(referenceId, new Set<string>());
             }
-            const mobileSet = alignmentGroups.get(referenceId)!;
-            mobilePdbIds.forEach((id) => mobileSet.add(id));
+            const mobileSet = alignmentGroups.get(referenceId);
+            if (mobileSet) {
+                mobilePdbIds.forEach((id) => mobileSet.add(id));
+            }
         }
+
         try {
             for (const [referenceId, mobileIdSet] of alignmentGroups.entries()) {
-                const query = referenceToQueryMap.get(referenceId)!;
+                const query = referenceToQueryMap.get(referenceId);
+                if (!query) {
+                    console.warn(`No query found for reference ID: ${referenceId}`);
+                    continue;
+                }
+                
                 const isProjectQuery = query instanceof TreeNode;
                 let referenceFileInfo: FileInfo | null = null;
                 let referenceTitle = "";
@@ -462,8 +471,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      * @returns {Promise<ITest[]>} The test configuration.
      */
     async getTests(): Promise<ITest[]> {
-        const pdb1xdn = "https://files.rcsb.org/view/1XDN.pdb";
-        const pdb4wp4 = "https://files.rcsb.org/view/4WP4.pdb";
+        // const pdb1xdn = "https://files.rcsb.org/view/1XDN.pdb";
+        // const pdb4wp4 = "https://files.rcsb.org/view/4WP4.pdb";
         const fastaText1 = `>my_protein
 MQIFVKTLTGKTITLEVEPSDTIENVK\nAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG`;
         const fastaText2 = `>MCHU - Calmodulin - Human, rabbit, bovine, rat, and chicken
@@ -477,12 +486,8 @@ DIDGDGQVNYEEFVQMMTAK*`;
         const tests: ITest[] = [
             // Test 1: Project Search and Download (with Alignment)
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(
-                    true,
-                    pdb1xdn,
-                    0
-                ),
-                afterPluginCloses: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1S68")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1S68-aligned-to-1XDN"),
@@ -491,12 +496,12 @@ DIDGDGQVNYEEFVQMMTAK*`;
             {
                 // Failed: findsimilarproteins #2 #modal-findsimilarproteins #fastaText-findsimilarproteins-item not found after 50 seconds.
 
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 1),
-                pluginOpen: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                pluginOpen: () => new TestCmdList()
                     .setUserArg("inputType", "Use FASTA text", this.pluginId)
                     .setUserArg("fastaText", fastaText1, this.pluginId)
                     .setUserArg("max_results", 3, this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1D3Z-aligned-to-1AAR")
@@ -504,13 +509,13 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
             // Test 3: FASTA text with just sequence, no header, without alignment
             {
-                pluginOpen: new TestCmdList()
+                pluginOpen: () => new TestCmdList()
                     // .setUserArg("inputType", "Use FASTA text", this.pluginId)
                     .setUserArg("fastaText", rawSeq1, this.pluginId)
                     .setUserArg("evalue_cutoff", 10, this.pluginId)
                     .setUserArg("max_results", 2, this.pluginId)
                     .click("#modal-findsimilarproteins #alignStructures-findsimilarproteins-item"),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1AAR") // Reference
@@ -518,12 +523,12 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
             // Test 4: Two proteins from project
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(true, pdb4wp4, 3)
-                    .loadExampleMolecule(true, pdb1xdn, 3),
-                pluginOpen: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
+                    .loadExampleMolecule(true)
+                    .loadExampleMolecule(true),
+                pluginOpen: () => new TestCmdList()
                     .setUserArg("max_results", 2, this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1HEV") // From 1XDN
                     .waitUntilRegex("#modal-tabledatapopup", "1Q9B") // From 4WP4
                     .click("#modal-tabledatapopup .cancel-btn")
@@ -532,9 +537,9 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
             // Test 5: Two full FASTA sequences
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(undefined, undefined, 4),
-                pluginOpen: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
+                    .loadExampleMolecule(),
+                pluginOpen: () => new TestCmdList()
                     .setUserArg("inputType", "Use FASTA text", this.pluginId)
                     .setUserArg(
                         "fastaText",
@@ -542,7 +547,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                         "findsimilarproteins"
                     )
                     .setUserArg("max_results", 2, this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From fastaText1
@@ -550,9 +555,9 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
             // Test 6: Two raw sequences
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(undefined, undefined, 5),
-                pluginOpen: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
+                    .loadExampleMolecule(undefined),
+                pluginOpen: () => new TestCmdList()
                     .setUserArg("inputType", "Use FASTA text", this.pluginId)
                     .setUserArg(
                         "fastaText",
@@ -560,7 +565,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                         "findsimilarproteins"
                     )
                     .setUserArg("max_results", 2, this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From rawSeq1
@@ -569,10 +574,10 @@ DIDGDGQVNYEEFVQMMTAK*`;
             // Test 7: Open with no proteins, should default to FASTA and run
             {
                 // No beforePluginOpens, so project is empty
-                pluginOpen: new TestCmdList()
+                pluginOpen: () => new TestCmdList()
                     .setUserArg("fastaText", fastaText1, this.pluginId) // This will only work if fastaText is enabled
                     .setUserArg("max_results", 1, this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1AAR"),

@@ -83,11 +83,11 @@ export default class ClearSelectionPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList()
+            beforePluginOpens: () => new TestCmdList()
                 .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein")
                 .waitUntilRegex('#navigator div[data-label="Protein"]', "selected"), // Verify it IS selected first
-            afterPluginCloses: new TestCmdList().waitUntilNotRegex(
+            afterPluginCloses: () => new TestCmdList().waitUntilNotRegex(
                 '#navigator div[data-label="Protein"]',
                 "title selected"
             ), // Verify it's NOT selected after

@@ -644,18 +644,18 @@ export default class EvalScreenPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(
                     true,
                     "./TGFR1_docked.molmoda"
                 ),
-                pluginOpen: new TestCmdList().waitUntilRegex(
+                pluginOpen: () => new TestCmdList().waitUntilRegex(
                     "#modal-evalscreen",
                     "0.871"
                 ),
-                closePlugin: new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                closePlugin: () => new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
+                afterPluginCloses: () => new TestCmdList()
 
-                // afterPluginCloses: new TestCmdList().waitUntilRegex(
+                // afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 //     "#modal-simplemsg",
                 //     "No compounds found"
                 // ),

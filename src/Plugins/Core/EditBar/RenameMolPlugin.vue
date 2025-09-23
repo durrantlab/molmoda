@@ -112,15 +112,15 @@ export default class RenameMolPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList()
+            beforePluginOpens: () => new TestCmdList()
                 .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein"),
-            pluginOpen: new TestCmdList().setUserArg(
+            pluginOpen: () => new TestCmdList().setUserArg(
                 "newName",
                 "Protein2",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList()
+            afterPluginCloses: () => new TestCmdList()
                 .waitUntilRegex("#navigator", "Protein2")
 
                 // Also check clicking in title bar

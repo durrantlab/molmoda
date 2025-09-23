@@ -15,7 +15,6 @@ import {
 import * as api from "@/Api";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
 import { openRemoteFile } from "@/FileSystem/UrlOpen";
-import { getUrlParam } from "@/Core/UrlParams";
 import * as StyleManager from "@/Core/Styling/StyleManager";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { addFailingUrlSubstring } from "@/Core/Fetcher";
@@ -166,32 +165,17 @@ export class TestCmdList {
      *                                                molecule.
      * @param {string}  [url="4WP4.pdb"]              The URL of the molecule to
      *                                                load.
-     * @param {number}  [testIdx]                     The index of the test.
-     *                                                Will not load file if
-     *                                                doesn't match. Note that
-     *                                                testIdx is 0-indexed.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public loadExampleMolecule(
         expandInMoleculeTree = false,
-        url = "4WP4.pdb",
-        testIdx?: number
+        url = "4WP4.pdb"
     ): TestCmdList {
         if (examplesLoaded.indexOf(url) !== -1) {
             // Already loaded
             return this;
         }
-
-        if (testIdx !== undefined) {
-            const testIdxFrmURL = parseInt(getUrlParam("index") as string);
-            if (testIdxFrmURL !== testIdx) {
-                return this;
-                // Not the right test.
-            }
-        }
-
         examplesLoaded.push(url);
-
         // If its biotite, load it differently
         // If url ends in .molmoda
         if (url.endsWith(".molmoda")) {
@@ -218,7 +202,6 @@ export class TestCmdList {
                     // throw err;
                 });
         }
-
         this.waitUntilRegex("#styles", "Protein");
         if (expandInMoleculeTree) {
             // this.expandMoleculesTree("4WP4");
@@ -232,38 +215,23 @@ export class TestCmdList {
      * @param {string}  smilesString          The SMILES string of the molecule to load
      * @param {boolean} [expandInMoleculeTree=false]  Whether to expand the molecule tree
      *                                               to show the molecule
-     * @param {number}  [testIdx]            The index of the test. Will not load
-     *                                      molecule if doesn't match. Note that
-     *                                      testIdx is 0-indexed.
      * @param {string}  [name="molecule.smi"]  The name of the file to load.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public loadSMILESMolecule(
         smilesString: string,
         expandInMoleculeTree = false,
-        testIdx?: number,
         name = "molecule"
     ): TestCmdList {
         if (examplesLoaded.indexOf(smilesString) !== -1) {
             // Already loaded
             return this;
         }
-
-        if (testIdx !== undefined) {
-            const testIdxFrmURL = parseInt(getUrlParam("index") as string);
-            if (testIdxFrmURL !== testIdx) {
-                return this;
-                // Not the right test.
-            }
-        }
-
         examplesLoaded.push(smilesString);
-
         const fileInfo = new FileInfo({
             name: `${name}.smi`,
             contents: smilesString,
         });
-
         getMoleculesFromStore()
             .loadFromFileInfo({
                 fileInfo,
@@ -280,7 +248,6 @@ export class TestCmdList {
             .catch((err: string) => {
                 throw err;
             });
-
         this.waitUntilRegex("#styles", "Compound");
         if (expandInMoleculeTree) {
             // Similar to original function, left commented out

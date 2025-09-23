@@ -2,6 +2,7 @@ import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import * as PluginToTest from "./PluginToTest";
 import { TestCmdList } from "./TestCmdList";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { store } from "@/Store";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { ITest, ITestCommand, TestCommand } from "./TestInterfaces";
 import {
@@ -189,59 +190,59 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
     if (!Array.isArray(tests)) {
         tests = [tests];
     }
-    // Convert the values of each test to cmds.
-    const convertedTests: IConvertedTest[] = [];
-    for (const test of tests) {
-        const convertedTest: IConvertedTest = {};
-        for (const key in test) {
-            const testStep = test[key as keyof ITest];
-            if (testStep instanceof TestCmdList) {
-                convertedTest[key] = testStep.cmds;
-            }
-        }
-        convertedTests.push(convertedTest);
-    }
-    addTestDefaults(convertedTests, plugin); // Defined in each plugin
+
     // If there is more than one test but pluginTestIndex is undefined, send
     // back command to add tests.
     if (
-        convertedTests.length > 1 &&
+        tests.length > 1 &&
         PluginToTest.pluginTestIndex === undefined
     ) {
-        plugin.$store.commit("setVar", {
+        store.commit("setVar", {
             name: "cmds",
             val: JSON.stringify([
-                // TODO: Needs to be a class?
                 {
                     cmd: TestCommand.AddTests,
-                    data: convertedTests.length,
+                    data: tests.length,
                 },
             ]),
             module: "test",
         });
         return;
     }
+
+    // It is this test that should be tested.
+    const testToRun = tests[PluginToTest.pluginTestIndex || 0];
+
+    // Convert the values of the chosen test to cmds by executing the functions.
+    const convertedTest: IConvertedTest = {};
+    for (const key in testToRun) {
+        const testStepFunc = testToRun[key as keyof ITest];
+        if (typeof testStepFunc === "function") {
+            const testCmdListInstance = testStepFunc(); // Execute the function
+            if (testCmdListInstance instanceof TestCmdList) {
+                convertedTest[key] = testCmdListInstance.cmds;
+            }
+        }
+    }
+
+    const convertedTests = [convertedTest];
+    addTestDefaults(convertedTests, plugin); // Defined in each plugin
+
     // If the plugin is not menu accessible, can't test it. Just pass it.
     // Example: moveregionsonclick
     if (plugin.menuPath === null) {
         addTestsToCmdList([]);
-        // plugin.$store.commit("setVar", {
-        //  name: "cmds",
-        //  val: JSON.stringify([]),
-        //  module: "test",
-        // });
         return;
     }
-    // It is this test that should be tested (not just reporting that there are
-    // tests, but an actual test).
-    const convertedTest = convertedTests[PluginToTest.pluginTestIndex || 0];
+
+    const finalTestCommands = convertedTests[0];
     const cmds = [
-        ...(convertedTest.beforePluginOpens as ITestCommand[]), // Defined in each plugin
+        ...(finalTestCommands.beforePluginOpens as ITestCommand[]),
         ..._openPluginCmds(plugin),
-        ...(convertedTest.pluginOpen as ITestCommand[]), // Defined in each plugin
+        ...(finalTestCommands.pluginOpen as ITestCommand[]),
         new TestWait(1).cmd,
-        ...(convertedTest.closePlugin as ITestCommand[]), // Defined in each plugin
-        ...(convertedTest.afterPluginCloses as ITestCommand[]), // Defined in each plugin
+        ...(finalTestCommands.closePlugin as ITestCommand[]),
+        ...(finalTestCommands.afterPluginCloses as ITestCommand[]),
         new TestWait(0.5).cmd,
     ] as ITestCommand[];
     addTestsToCmdList(cmds);

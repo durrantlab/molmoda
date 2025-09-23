@@ -233,11 +233,11 @@ export default class AlignProteinsPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(true, "https://files.rcsb.org/view/1XDN.pdb")
                     .loadExampleMolecule(true, "https://files.rcsb.org/view/1S68.pdb"),
-                pluginOpen: new TestCmdList().wait(2), // wait for UI to settle
-                afterPluginCloses: new TestCmdList()
+                pluginOpen: () => new TestCmdList().wait(2), // wait for UI to settle
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "1XDN-aligned")
                     .waitUntilRegex("#navigator", "1S68-aligned"),
             },

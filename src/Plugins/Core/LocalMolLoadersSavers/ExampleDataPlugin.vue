@@ -207,7 +207,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
         return [
             // First test without saving first
             {
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds"
                 ),

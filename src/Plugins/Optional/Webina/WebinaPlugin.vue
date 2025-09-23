@@ -837,87 +837,61 @@ export default class WebinaPlugin extends PluginParentClass {
         return [
             // Test just standard docking
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(
-                    undefined,
-                    undefined,
-                    0
-                ),
-                pluginOpen: webinaPluginOpenFactory(),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "4WP4:docking"
-                ),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+                pluginOpen: () => webinaPluginOpenFactory(),
+                afterPluginCloses: () =>
+                    new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
             // Test score in place
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(
-                    undefined,
-                    undefined,
-                    1
-                ),
-                pluginOpen: webinaPluginOpenFactory().click(
-                    "#score_only-webina-item"
-                ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "4WP4:docking"
-                ),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+                pluginOpen: () =>
+                    webinaPluginOpenFactory().click("#score_only-webina-item"),
+                afterPluginCloses: () =>
+                    new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
-
             // Test keep all poses
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(
-                    undefined,
-                    undefined,
-                    2
-                ),
-                pluginOpen: webinaPluginOpenFactory().click(
-                    "#keep_only_best-webina-item"
-                ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "4WP4:docking"
-                ),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+                pluginOpen: () =>
+                    webinaPluginOpenFactory().click("#keep_only_best-webina-item"),
+                afterPluginCloses: () =>
+                    new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
-
             // Test bad ligands
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(false, "testmols/bad_ligs.can", 3)
-                    .wait(5)
-                    .loadExampleMolecule(undefined, undefined, 3),
-                pluginOpen: webinaPluginOpenFactory(),
-                afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#modal-errorreporting", "Could not dock")
-                    .waitUntilRegex("#navigator", "frame3:bad_ligs:testdock"),
+                beforePluginOpens: () =>
+                    new TestCmdList()
+                        .loadExampleMolecule(false, "testmols/bad_ligs.can")
+                        .wait(5)
+                        .loadExampleMolecule(),
+                pluginOpen: () => webinaPluginOpenFactory(),
+                afterPluginCloses: () =>
+                    new TestCmdList()
+                        .waitUntilRegex("#modal-errorreporting", "Could not dock")
+                        .waitUntilRegex("#navigator", "frame3:bad_ligs:testdock"),
             },
-
             // Test out ligands that have too many bonds.
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(false, "testmols/long_compound.can", 4)
-                    .wait(5)
-                    .loadExampleMolecule(undefined, undefined, 4),
-                pluginOpen: webinaPluginOpenFactory(),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#modal-simplemsg",
-                    "Will not dock compound"
-                ),
+                beforePluginOpens: () =>
+                    new TestCmdList()
+                        .loadExampleMolecule(false, "testmols/long_compound.can")
+                        .wait(5)
+                        .loadExampleMolecule(),
+                pluginOpen: () => webinaPluginOpenFactory(),
+                afterPluginCloses: () =>
+                    new TestCmdList().waitUntilRegex(
+                        "#modal-simplemsg",
+                        "Will not dock compound"
+                    ),
             },
-
             // Test just standard docking, but with a very large docking box
             // (blind docking) to stress the memory.
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(
-                    undefined,
-                    undefined,
-                    5
-                ),
-                pluginOpen: webinaPluginOpenFactory(50),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "4WP4:docking"
-                ),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+                pluginOpen: () => webinaPluginOpenFactory(50),
+                afterPluginCloses: () =>
+                    new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
         ];
     }

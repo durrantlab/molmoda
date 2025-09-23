@@ -158,12 +158,12 @@ export default class LoadPDBPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "pdbId",
                     "1XDN",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "1XDN"
                 ),
@@ -171,24 +171,24 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
             // Make sure you can load two at a time
             {
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "pdbId",
                     "1XDN 2HU4",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "1XDN")
                     .waitUntilRegex("#navigator", "2HU4"),
             },
 
             // Below loads cif verson
             {
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "pdbId",
                     "7VBA",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "7VBA"
                 ),
@@ -196,31 +196,31 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
             // Check error checking
             {
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "pdbId",
                     "9999",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
                     "Could not load"
                 ),
             },
             {
                 name: "Fallback to PDBe when RCSB fails (PDB)",
-                beforePluginOpens: new TestCmdList().failUrl("rcsb.org"),
-                pluginOpen: new TestCmdList().setUserArg("pdbId", "1XDN", this.pluginId),
-                afterPluginCloses: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList().failUrl("rcsb.org"),
+                pluginOpen: () => new TestCmdList().setUserArg("pdbId", "1XDN", this.pluginId),
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "1XDN"),
             },
             {
                 name: "Fallback to PDBe when RCSB fails (CIF)",
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "pdbId",
                     "7VBA",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "7VBA"
                 ),

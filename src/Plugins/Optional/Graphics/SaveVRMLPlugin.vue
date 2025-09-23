@@ -229,25 +229,25 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   async getTests(): Promise<ITest[]> {
     return [
       {
-        beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-        pluginOpen: new TestCmdList().setUserArg(
+        beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+        pluginOpen: () => new TestCmdList().setUserArg(
           "filename",
           "test",
           this.pluginId
         ),
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
+        afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#log",
           "Job savevrml.*? ended"
         ),
       },
       {
-        beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-        pluginOpen: new TestCmdList().setUserArg(
+        beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+        pluginOpen: () => new TestCmdList().setUserArg(
           "filename",
           "test.with.dots",
           this.pluginId
         ),
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
+        afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#log",
           "Job savevrml.*? ended"
         ),

@@ -296,7 +296,7 @@ export default class SettingsPlugin extends PluginParentClass {
         return [
             // Test without cookies enabled
             {
-                closePlugin: new TestCmdList()
+                closePlugin: () => new TestCmdList()
                     .click("#modal-settings .btn-primary")
                     .waitUntilRegex(
                         "#modal-simplemsg",
@@ -305,18 +305,18 @@ export default class SettingsPlugin extends PluginParentClass {
             },
             // Test with cookies enabled
             {
-                pluginOpen: new TestCmdList().click(
+                pluginOpen: () => new TestCmdList().click(
                     "#allowCookies-settings-item"
                 ),
-                closePlugin: new TestCmdList()
+                closePlugin: () => new TestCmdList()
                     .click("#modal-settings .action-btn")
             },
             // Cookies enabled and load defaults
             {
-                pluginOpen: new TestCmdList().click(
+                pluginOpen: () => new TestCmdList().click(
                     "#allowCookies-settings-item"
                 ),
-                closePlugin: new TestCmdList()
+                closePlugin: () => new TestCmdList()
                     .click("#modal-settings .action-btn2")
                     .wait(5)
                     .click("#modal-settings .action-btn")

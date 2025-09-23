@@ -151,12 +151,12 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "uniprot",
                     "P86927",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "P86927"
                 ),
@@ -167,12 +167,12 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
 
             // Below tests errors
             {
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "uniprot",
                     "P11111",
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
                     "Could not load"
                 ),

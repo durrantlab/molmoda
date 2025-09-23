@@ -199,10 +199,10 @@ export default class CloneMolPlugin extends PluginParentClass {
         return [
             // First test cloning
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(true, undefined, 0)
+                beforePluginOpens: () => new TestCmdList()
+                    .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein"),
-                afterPluginCloses: new TestCmdList()
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", ":cloned")
                     .wait(0.5)
 
@@ -217,12 +217,12 @@ export default class CloneMolPlugin extends PluginParentClass {
             },
             // Test 2: Attempt to clone with no selection
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(undefined, undefined, 1),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
                 // No selection is made, checkPluginAllowed should fail.
                 // This test is expected to fail at the checkPluginAllowed stage, so it won't open its own popup.
                 // We provide an empty closePlugin to override the default, which would fail.
-                closePlugin: new TestCmdList(),
-                afterPluginCloses: new TestCmdList()
+                closePlugin: () => new TestCmdList(),
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex(
                         "#modal-simplemsg",
                         "First select one"
@@ -232,13 +232,13 @@ export default class CloneMolPlugin extends PluginParentClass {
             },
             // Test 3: Attempt to clone with multiple selections
             {
-                beforePluginOpens: new TestCmdList()
-                    .loadExampleMolecule(true, undefined, 2)
+                beforePluginOpens: () => new TestCmdList()
+                    .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein")
                     .selectMoleculeInTree("Compounds", true), // shift-click to select a second
                 // This test is also expected to fail at the checkPluginAllowed stage.
-                closePlugin: new TestCmdList(),
-                afterPluginCloses: new TestCmdList()
+                closePlugin: () => new TestCmdList(),
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex(
                         "#modal-simplemsg",
                         "First select one"

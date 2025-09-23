@@ -86,10 +86,10 @@ export default class UpTreeNavPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList()
+            beforePluginOpens: () => new TestCmdList()
                 .loadExampleMolecule(true)
                 .selectMoleculeInTree("Compounds"),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
                 'class=.title selected.[^>]+?data-label=.Protein.'
             ),

@@ -183,11 +183,11 @@ export default class MergeMolsPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein")
                     .selectMoleculeInTree("Compounds", true),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     ".merged"
                 ),

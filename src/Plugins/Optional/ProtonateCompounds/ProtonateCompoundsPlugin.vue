@@ -231,15 +231,15 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"
                 ),
             },
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
-                pluginOpen: new TestCmdList().setUserArg(
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "gen3D",
                     "medium",
                     this.pluginId
@@ -247,7 +247,7 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                 // .click(
                 //     "#regen3DCoords-protonatecomps-item"
                 // ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"
                 ),

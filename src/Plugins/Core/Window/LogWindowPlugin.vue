@@ -68,7 +68,7 @@ export default class LogWindowPlugin extends PluginParentClass {
 
         return [];
         // {
-        //     afterPluginCloses: new TestCmdList().wait(3),
+        //     afterPluginCloses: () => new TestCmdList().wait(3),
         // };
     }
 }

@@ -84,13 +84,13 @@
      */
     async getTests(): Promise<ITest> {
    return {
-     beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-     pluginOpen: new TestCmdList().setUserArg(
+     beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+     pluginOpen: () => new TestCmdList().setUserArg(
     "newProjectTitle",
     "My New Project Name",
     this.pluginId
      ),
-     afterPluginCloses: new TestCmdList(), // Vuex store change will be tested by tab title change which is not easy to check here.
+     afterPluginCloses: () => new TestCmdList(), // Vuex store change will be tested by tab title change which is not easy to check here.
    };
     }
   }

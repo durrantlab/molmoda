@@ -101,15 +101,15 @@ export default class EditCompoundPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                beforePluginOpens: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(true)
                     .selectMoleculeInTree("Compounds")
                     .waitUntilRegex("#navigator", "TOU"),
 
                 // Wait for plugin to open (slower on beta, play it safe with 15 seconds)
-                pluginOpen: new TestCmdList().wait(15).text("#draw-smiles", "OOOO"),
-                closePlugin: new TestCmdList().click("#modal-drawmoleculeplugin .action-btn"),
-                afterPluginCloses: new TestCmdList()
+                pluginOpen: () => new TestCmdList().wait(15).text("#draw-smiles", "OOOO"),
+                closePlugin: () => new TestCmdList().click("#modal-drawmoleculeplugin .action-btn"),
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "TOU:101:edited")
             }
         ];

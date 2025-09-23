@@ -124,20 +124,20 @@ export default class NewProjectPlugin extends PluginParentClass {
         return [
             // First test without saving first
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-                afterPluginCloses: new TestCmdList(),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+                afterPluginCloses: () => new TestCmdList(),
             },
 
             // Test with saving first (secondary button)
             // {
-            //     beforePluginOpens: new TestCmdList().waitUntilRegex(
+            //     beforePluginOpens: () => new TestCmdList().waitUntilRegex(
             //         "#styles",
             //         "Protein"
             //     ),
-            //     closePlugin: new TestCmdList()
+            //     closePlugin: () => new TestCmdList()
             //         .click("#modal-newproject .action-btn2")
             //         .wait(3),
-            //     afterPluginCloses: new TestCmdList()
+            //     afterPluginCloses: () => new TestCmdList()
             //         .text(
             //             "#modal-savemolecules #filename-savemolecules-item",
             //             "test"

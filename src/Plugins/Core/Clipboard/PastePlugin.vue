@@ -241,12 +241,12 @@ export default class PastePlugin extends PluginParentClass {
         ];
         testData.forEach((molFile, i) => {
             tests.push({
-                pluginOpen: new TestCmdList().setUserArg(
+                pluginOpen: () => new TestCmdList().setUserArg(
                     "pastedMolName",
                     `my_mol_${i}`,
                     this.pluginId
                 ),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     `my_mol_${i}`
                 ),
@@ -254,32 +254,32 @@ export default class PastePlugin extends PluginParentClass {
         });
         // Test to detect error catching for invalid SMILES
         tests.push({
-            pluginOpen: new TestCmdList().setUserArg(
+            pluginOpen: () => new TestCmdList().setUserArg(
                 "pastedMolName",
                 "my_mol_err",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#modal-simplemsg",
                 "File contained no valid"
             ),
         });
         // Test for desalting functionality
         tests.push({
-            pluginOpen: new TestCmdList()
+            pluginOpen: () => new TestCmdList()
                 .setUserArg("pastedMolName", "desalted_mol", this.pluginId)
                 .click("#desalt-pasteclipboard-item"), // Enable desalting
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "desalted_mol"
             ),
         });
         // Test for 3D coordinate generation
         tests.push({
-            pluginOpen: new TestCmdList()
+            pluginOpen: () => new TestCmdList()
                 .setUserArg("pastedMolName", "3d_mol", this.pluginId)
                 .setUserArg("gen3D", Gen3DLevel.Fastest, this.pluginId),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "3d_mol"
             ),

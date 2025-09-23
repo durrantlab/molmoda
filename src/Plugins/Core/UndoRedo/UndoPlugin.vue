@@ -95,9 +95,9 @@ export default class UndoPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
             // pluginOpen: [this.testSetUserArg("filename", "test")],
-            // afterPluginCloses: new TestCmdList()
+            // afterPluginCloses: () => new TestCmdList()
             //   .wait(3)
         };
     }

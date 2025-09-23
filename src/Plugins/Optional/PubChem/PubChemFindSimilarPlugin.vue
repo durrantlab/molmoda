@@ -434,61 +434,58 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
   async getTests(): Promise<ITest[]> {
     return [
       {
-        beforePluginOpens: new TestCmdList().loadSMILESMolecule(
+        beforePluginOpens: () => new TestCmdList().loadSMILESMolecule(
           "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
           true,
-          undefined,
           "aspirin"
         ).waitUntilRegex(
           // Wait for aspirin to load
           "#navigator",
           "aspirin"
         ),
-        pluginOpen: new TestCmdList()
+        pluginOpen: () => new TestCmdList()
           .setUserArg("similarity", 90, this.pluginId)
           .setUserArg("maxresults", 10, this.pluginId)
           .setUserArg("gen3D", Gen3DLevel.Fastest, this.pluginId), // Test fastest 3D gen
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
+        afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#navigator",
           "similar_"
         ),
       },
       {
-        beforePluginOpens: new TestCmdList().loadSMILESMolecule(
+        beforePluginOpens: () => new TestCmdList().loadSMILESMolecule(
           "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
           true,
-          undefined,
           "aspirin"
         ).waitUntilRegex(
           // Wait for aspirin to load
           "#navigator",
           "aspirin"
         ),
-        pluginOpen: new TestCmdList()
+        pluginOpen: () => new TestCmdList()
           .setUserArg("searchmode", "Larger Compounds (Superstructures)", this.pluginId)
           .setUserArg("maxresults", 10, this.pluginId)
           .setUserArg("gen3D", Gen3DLevel.None, this.pluginId), // Test no 3D gen
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
+        afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#navigator",
           "contains_"
         ),
       },
       {
-        beforePluginOpens: new TestCmdList().loadSMILESMolecule(
+        beforePluginOpens: () => new TestCmdList().loadSMILESMolecule(
           "CC(=O)OC1=CC=CC=C1C(=O)O", // aspirin
           true,
-          undefined,
           "aspirin"
         ).waitUntilRegex(
           // Wait for aspirin to load
           "#navigator",
           "aspirin"
         ),
-        pluginOpen: new TestCmdList()
+        pluginOpen: () => new TestCmdList()
           .setUserArg("searchmode", "Smaller Compounds (Substructures)", this.pluginId)
           .setUserArg("maxresults", 10, this.pluginId)
           .setUserArg("gen3D", Gen3DLevel.Best, this.pluginId), // Test best 3D gen
-        afterPluginCloses: new TestCmdList().waitUntilRegex(
+        afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#navigator",
           "contained_in_"
         ),

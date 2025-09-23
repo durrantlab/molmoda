@@ -587,37 +587,39 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       }
       return {
         name: `Add ${rep.name} Style`,
-        beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, index),
-        pluginOpen: pluginOpenCmds,
-        closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
-        afterPluginCloses: new TestCmdList().waitUntilRegex("#styles", styleName),
+        beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+        pluginOpen: () => pluginOpenCmds,
+        closePlugin: () =>
+          new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
+        afterPluginCloses: () =>
+          new TestCmdList().waitUntilRegex("#styles", styleName),
       };
     });
 
     // name: "Error on Duplicate Style Name",
     const duplicateNameTest: ITest = {
-      beforePluginOpens: new TestCmdList()
-        .loadExampleMolecule(true, undefined, representations.length)
+      beforePluginOpens: () => new TestCmdList()
+        .loadExampleMolecule(true)
         .addCustomStyle("Existing Style", {
           selection: { resn: ["TRP"] },
           sphere: { color: "red" },
         } as ISelAndStyle),
-      pluginOpen: new TestCmdList()
+      pluginOpen: () => new TestCmdList()
         .setUserArg("styleName", "Existing Style", this.pluginId)
         .setUserArg("representationType", AtomsRepresentation.Sphere, this.pluginId),
-      closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
-      afterPluginCloses: new TestCmdList()
+      closePlugin: () => new TestCmdList().click(`#modal-${this.pluginId} .action-btn`),
+      afterPluginCloses: () => new TestCmdList()
         .waitUntilRegex("#modal-simplemsg", "A custom visualization with the name .* already exists")
     };
 
     // name: "Disabled Action Button with Empty Name",
     const disabledButtonTest: ITest = {
-      beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, representations.length + 1),
-      pluginOpen: new TestCmdList()
+      beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+      pluginOpen: () => new TestCmdList()
         .waitUntilRegex("#modal-addnewvisualization", "Visualization name"), // Ensure popup is open
       // The action button should be disabled, so we just close with cancel.
-      closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .cancel-btn`),
-      afterPluginCloses: new TestCmdList(),
+      closePlugin: () => new TestCmdList().click(`#modal-${this.pluginId} .cancel-btn`),
+      afterPluginCloses: () => new TestCmdList(),
     };
     // NOTE: The "Test Edit Mode" scenario cannot be fully implemented with the current test framework.
     // The framework is designed to open plugins via menu paths, but this test requires opening the plugin

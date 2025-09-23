@@ -184,7 +184,7 @@ export default class AboutPlugin extends PluginParentClass {
    */
   async getTests(): Promise<ITest> {
     return {
-      closePlugin: new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
+      closePlugin: () => new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
     };
   }
 }

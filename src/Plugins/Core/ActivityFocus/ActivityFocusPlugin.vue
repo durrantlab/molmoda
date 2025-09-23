@@ -155,24 +155,24 @@ export default class ActivityFocusPlugin extends PluginParentClass {
     return [
       // Test selecting different modes
       {
-        pluginOpen: new TestCmdList().setUserArg(
+        pluginOpen: () => new TestCmdList().setUserArg(
           "selectedMode",
           Tag.Docking,
           this.pluginId
         ),
-        // afterPluginCloses: new TestCmdList()
+        // afterPluginCloses: () => new TestCmdList()
         //   .waitUntilRegex(
         //     "#modal-statcollection",
         //     "Allow Cookies?"
         //   ),
       },
       {
-        pluginOpen: new TestCmdList().setUserArg(
+        pluginOpen: () => new TestCmdList().setUserArg(
           "selectedMode",
           Tag.Visualization,
           this.pluginId
         ),
-        // afterPluginCloses: new TestCmdList()
+        // afterPluginCloses: () => new TestCmdList()
         //   .waitUntilRegex(
         //     "#modal-statcollection",
         //     "Allow Cookies?"

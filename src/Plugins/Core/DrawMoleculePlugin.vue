@@ -404,8 +404,8 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            // pluginOpen: new TestCmdList().wait(2).waitUntilRegex("#draw-smiles-wrapper", "C"),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            // pluginOpen: () => new TestCmdList().wait(2).waitUntilRegex("#draw-smiles-wrapper", "C"),
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "DrawMolecule"
             ),

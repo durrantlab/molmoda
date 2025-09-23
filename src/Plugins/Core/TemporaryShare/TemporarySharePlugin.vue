@@ -159,8 +159,8 @@ export default class TemporarySharePlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#modal-simplesvgpopup",
                 "Your session has been temporarily shared"
             )

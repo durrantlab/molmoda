@@ -131,12 +131,12 @@ export default class ArchivedVersionsPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            pluginOpen: new TestCmdList().waitUntilRegex(
+            pluginOpen: () => new TestCmdList().waitUntilRegex(
                 `#modal-${this.pluginId}`,
                 "Beta Version" // Check if the beta version link text is present
             ),
-            closePlugin: new TestCmdList().click(`#modal-${this.pluginId} .cancel-btn`),
-            afterPluginCloses: new TestCmdList(),
+            closePlugin: () => new TestCmdList().click(`#modal-${this.pluginId} .cancel-btn`),
+            afterPluginCloses: () => new TestCmdList(),
         };
     }
 }

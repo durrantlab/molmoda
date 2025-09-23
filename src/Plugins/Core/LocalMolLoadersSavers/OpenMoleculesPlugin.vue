@@ -332,31 +332,34 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
             const substrng = fileToTest[1] as string;
-            let pluginOpen = new TestCmdList().setUserArg(
-                "formFile",
-                "file://./src/Testing/mols/" + name,
-                this.pluginId
-            );
+            let pluginOpen = () =>
+                new TestCmdList().setUserArg(
+                    "formFile",
+                    "file://./src/Testing/mols/" + name,
+                    this.pluginId
+                );
             if (idx % 2 === 0) {
-                pluginOpen = pluginOpen.click("#hideOnLoad-openmolecules-item");
+                pluginOpen = () =>
+                    pluginOpen().click("#hideOnLoad-openmolecules-item");
             }
             return {
                 pluginOpen: pluginOpen,
-                afterPluginCloses: new TestCmdList()
-                    .waitUntilRegex("#styles", "Atoms")
-                    // .expandMoleculesTree(titles)
-                    .waitUntilRegex("#navigator", substrng),
+                afterPluginCloses: () =>
+                    new TestCmdList()
+                        .waitUntilRegex("#styles", "Atoms")
+                        // .expandMoleculesTree(titles)
+                        .waitUntilRegex("#navigator", substrng),
             };
         });
 
         // Final test to verify error catching.
         tests.push({
-            pluginOpen: new TestCmdList().setUserArg(
+            pluginOpen: () => new TestCmdList().setUserArg(
                 "formFile",
                 "file://./src/Testing/mols/nonsense_format.can",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#modal-simplemsg",
                 "File contained no valid"
             ),

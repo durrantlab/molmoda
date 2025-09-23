@@ -9,8 +9,8 @@ import { ITest } from "./TestInterfaces";
  */
 function createFailingTest(message = "TODO: Implement this test"): ITest {
     return {
-        pluginOpen: new TestCmdList(),
-        afterPluginCloses: new TestCmdList()
+        pluginOpen: () => new TestCmdList(),
+        afterPluginCloses: () => new TestCmdList()
             .waitUntilRegex("#non-existent-element", message)
     };
 }

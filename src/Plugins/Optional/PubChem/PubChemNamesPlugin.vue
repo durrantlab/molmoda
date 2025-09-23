@@ -168,7 +168,7 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
    */
   async getTests(): Promise<ITest> {
     return {
-      beforePluginOpens: new TestCmdList()
+      beforePluginOpens: () => new TestCmdList()
         .loadSMILESMolecule(
           // Below is not in pubchem as of 12/28/2024
           "FCCCC#CC1=CC(=CC(=C1)C#CC2=CC(=C(C=C2C#CC(C)(C)C)C3OCCO3)C#CC(C)(C)C)C#CCCC",
@@ -178,10 +178,9 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
         .loadSMILESMolecule(
           "CC(=O)OC1=CC=CC=C1C(=O)O",
           true,
-          undefined,
           "molecule2"
         ),
-      afterPluginCloses: new TestCmdList()
+      afterPluginCloses: () => new TestCmdList()
         .waitUntilRegex("#modal-tabledatapopup", "aspirin")
         .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
     };

@@ -298,8 +298,8 @@ export default class AddRegionPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
                 "region"
             ),

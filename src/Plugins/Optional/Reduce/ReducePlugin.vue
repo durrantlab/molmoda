@@ -227,8 +227,8 @@ export default class ReducePlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(),
-            afterPluginCloses: new TestCmdList().waitUntilRegex(
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
                 ":protonated"
             ),

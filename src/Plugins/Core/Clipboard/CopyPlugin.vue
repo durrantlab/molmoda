@@ -226,61 +226,57 @@ export default class CopyPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         // name: "Protein Only Selection",
         const proteinOnly: ITest = {
-            beforePluginOpens: new TestCmdList()
-                .loadExampleMolecule(true, undefined, 0)
+            beforePluginOpens: () => new TestCmdList()
+                .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein"),
-            pluginOpen: new TestCmdList().waitUntilRegex(
+            pluginOpen: () => new TestCmdList().waitUntilRegex(
                 `#modal-${this.pluginId}`,
                 "copied as PDB text"
             ),
-            closePlugin: new TestCmdList().pressPopupButton(
+            closePlugin: () => new TestCmdList().pressPopupButton(
                 ".action-btn",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList(),
+            afterPluginCloses: () => new TestCmdList(),
         };
         // name: "Compound Only Selection",
         const compoundOnly: ITest = {
-            beforePluginOpens: new TestCmdList()
-                .loadExampleMolecule(true, undefined, 1)
+            beforePluginOpens: () => new TestCmdList()
+                .loadExampleMolecule(true)
                 .selectMoleculeInTree("Compounds"),
-            pluginOpen: new TestCmdList().waitUntilRegex(
+            pluginOpen: () => new TestCmdList().waitUntilRegex(
                 `#modal-${this.pluginId}`,
                 "copied as MOL2 text"
             ),
-            closePlugin: new TestCmdList().pressPopupButton(
+            closePlugin: () => new TestCmdList().pressPopupButton(
                 ".action-btn",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList(),
+            afterPluginCloses: () => new TestCmdList(),
         };
         // name: "Mixed Protein and Compound Selection",
         const mixedSelection: ITest = {
-            beforePluginOpens: new TestCmdList()
-                .loadExampleMolecule(true, undefined, 2)
+            beforePluginOpens: () => new TestCmdList()
+                .loadExampleMolecule(true)
                 .selectMoleculeInTree("Protein")
                 .selectMoleculeInTree("Compounds", true), // shift-click
-            pluginOpen: new TestCmdList().waitUntilRegex(
+            pluginOpen: () => new TestCmdList().waitUntilRegex(
                 `#modal-${this.pluginId}`,
                 "copied as PDB text"
             ),
-            closePlugin: new TestCmdList().pressPopupButton(
+            closePlugin: () => new TestCmdList().pressPopupButton(
                 ".action-btn",
                 this.pluginId
             ),
-            afterPluginCloses: new TestCmdList(),
+            afterPluginCloses: () => new TestCmdList(),
         };
         // name: "No Selection",
         const noSelection: ITest = {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(
-                true,
-                undefined,
-                3
-            ),
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
             // This test is expected to fail at the checkPluginAllowed stage,
             // so it won't open its own popup.
-            closePlugin: new TestCmdList(),
-            afterPluginCloses: new TestCmdList()
+            closePlugin: () => new TestCmdList(),
+            afterPluginCloses: () => new TestCmdList()
                 .waitUntilRegex(
                     "#modal-simplemsg",
                     "No molecules are currently selected"

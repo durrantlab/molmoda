@@ -237,10 +237,10 @@ def make_chrome_driver(options):
         # Enable the Network domain of the Chrome DevTools Protocol.
         driver.execute_cdp_cmd('Network.enable', {})
         
-        # Set the Origin header for all subsequent requests in this session.
-        # This makes headless requests appear as if they are coming from a
-        # regular browser session on localhost.
-        driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {'headers': {'Origin': root_url}})
+        # Setting a blanket Origin header can cause CORS issues with external sites.
+        # Modern browsers treat localhost as a secure context, so this override is often
+        # not necessary and can be detrimental for tests involving multiple origins.
+        # driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {'headers': {'Origin': root_url}})
         
     return driver
 
@@ -288,6 +288,8 @@ def make_driver(browser):
         options.add_argument("--headless=new")
         options.add_argument("--start-maximized")
         options.add_argument("--window-size=1920,1080")
+        # Set a common user agent to make the headless browser appear more like a standard browser.
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         driver = make_chrome_driver(options)
     return driver
 

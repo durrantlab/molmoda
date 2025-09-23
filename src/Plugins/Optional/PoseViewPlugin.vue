@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Options } from "vue-class-component";
 import {
   IContributorCredit,
   ISoftwareCredit,
@@ -360,10 +360,10 @@ export default class PoseViewPlugin extends PluginParentClass {
    */
   async getTests(): Promise<ITest[]> {
     const defaultTest: ITest = {
-      beforePluginOpens: new TestCmdList()
+      beforePluginOpens: () => new TestCmdList()
         .loadExampleMolecule()
         .selectMoleculeInTree("Protein"),
-      afterPluginCloses: new TestCmdList()
+      afterPluginCloses: () => new TestCmdList()
         .waitUntilRegex(
           "#modal-simplesvgpopup",
           "Diagram generated using"
@@ -378,7 +378,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
     // name: "XSS Sanitization Test",
     const xssTest: ITest = {
-      beforePluginOpens: new TestCmdList()
+      beforePluginOpens: () => new TestCmdList()
         .loadExampleMolecule()
         // Rename the protein
         .selectMoleculeInTree("Protein")
@@ -394,15 +394,15 @@ export default class PoseViewPlugin extends PluginParentClass {
         .waitUntilRegex("#navigator", "XSS Compound"), // Wait for rename to appear
       // The plugin will find the visible molecules, no need to re-select
       // them with their tricky names.
-      pluginOpen: new TestCmdList()
+      pluginOpen: () => new TestCmdList()
         // Inside the plugin, the MoleculeInput will automatically pick up the visible renamed nodes.
         // The action button should be enabled.
         .waitUntilRegex(
           "#modal-poseview .action-btn:not(:disabled)",
           "Generate"
         ),
-      closePlugin: new TestCmdList().click("#modal-poseview .action-btn"),
-      afterPluginCloses: new TestCmdList()
+      closePlugin: () => new TestCmdList().click("#modal-poseview .action-btn"),
+      afterPluginCloses: () => new TestCmdList()
         .waitUntilRegex("#modal-simplesvgpopup", "2D Interaction Diagram")
         // Check that the safe HTML tags are present
         .waitUntilRegex("#modal-simplesvgpopup", "<b>XSS Prt</b>")

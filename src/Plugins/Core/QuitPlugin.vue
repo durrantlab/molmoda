@@ -89,22 +89,22 @@ export default class QuitPlugin extends PluginParentClass {
         return [
             // Test cancel button
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 0),
-                closePlugin: new TestCmdList().click("#modal-yesnomsg .cancel-btn")
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                closePlugin: () => new TestCmdList().click("#modal-yesnomsg .cancel-btn")
             },
             // Test don't save button
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 1),
-                closePlugin: new TestCmdList().click("#modal-yesnomsg .action-btn"),
-                afterPluginCloses: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                closePlugin: () => new TestCmdList().click("#modal-yesnomsg .action-btn"),
+                afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-simplemsg", "You may now close")
                 //new TestCmdList().click("#modal-statcollection .action-btn") // .click("#modal-simplemsg .cancel-btn")
             },
             // Test the save button
             {
-                beforePluginOpens: new TestCmdList().loadExampleMolecule(true, undefined, 2),
-                closePlugin: new TestCmdList().click("#modal-yesnomsg .action-btn2"),
-                afterPluginCloses: new TestCmdList()
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                closePlugin: () => new TestCmdList().click("#modal-yesnomsg .action-btn2"),
+                afterPluginCloses: () => new TestCmdList()
                     .wait(1.5)
                     .text("#modal-savemolecules #filename-savemolecules-item", "tmpfile")
                     .click("#modal-savemolecules .action-btn")
@@ -113,9 +113,9 @@ export default class QuitPlugin extends PluginParentClass {
             },
             // Test on empty project
             {
-                closePlugin: new TestCmdList().waitUntilRegex("#modal-simplemsg", "You may now close")
+                closePlugin: () => new TestCmdList().waitUntilRegex("#modal-simplemsg", "You may now close")
                 // .click("#modal-simplemsg .cancel-btn") // .click("#modal-yesnomsg .action-btn2"),
-                // afterPluginCloses: new TestCmdList()
+                // afterPluginCloses: () => new TestCmdList()
                 //     .click("#modal-simplemsg .cancel-btn")
             },
 

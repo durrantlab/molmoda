@@ -351,23 +351,23 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     async getTests(): Promise<ITest[]> {
         return [
             {
-                pluginOpen: new TestCmdList()
+                pluginOpen: () => new TestCmdList()
                     .text("#modal-loadpubchem #formMolName", "Aspirin")
                     // TODO: Below could wait until value populated. Hoping it will take
                     // less than 3 secs is hackish.
                     .wait(5),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "aspirin-"
                 ),
             },
             {
-                pluginOpen: new TestCmdList()
+                pluginOpen: () => new TestCmdList()
                     .text("#modal-loadpubchem #cid", "18781742")
                     // TODO: Below could wait until value populated. Hoping it will take
                     // less than 3 secs is hackish.
                     .wait(5),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "CID18781742"
                 ),
@@ -375,10 +375,10 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
             // Below to verify error catching. Not a valid CID.
             {
-                pluginOpen: new TestCmdList()
+                pluginOpen: () => new TestCmdList()
                     .text("#modal-loadpubchem #cid", "999912354323")
                     .wait(5),
-                afterPluginCloses: new TestCmdList().waitUntilRegex(
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
                     "Could not load"
                 ),

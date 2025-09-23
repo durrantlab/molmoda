@@ -55,6 +55,15 @@ export const appCompileTime = compileTimeInfo.date;
 
 export let logoPath = "img/icons/android-chrome-192x192.png";
 
+/** 
+ * Sets up global variables like appName, appVersion, appDescription,
+ * logoPath, etc. based on URL parameters and sanitizes them.
+ * 
+ * This function should be called once during application initialization.
+ * 
+ * @returns {Promise<void>} A promise that resolves when the global variables
+ *     have been set up.
+ */
 export async function setupGlobalVars(): Promise<void> {
     const name = getUrlParam("name", null);
     if (name) {

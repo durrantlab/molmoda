@@ -80,7 +80,7 @@ export default class ExpandAllPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
         };
     }
 }

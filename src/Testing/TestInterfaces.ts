@@ -20,13 +20,13 @@ export interface ITestCommand {
 export interface ITest {
     name?: string;
     // Run before the popup opens (and before menu clicking).
-    beforePluginOpens?: TestCmdList;
+    beforePluginOpens?: () => TestCmdList;
     // Populate the user arguments. Do not include the command to click the
     // plugin action button.
-    pluginOpen?: TestCmdList;
+    pluginOpen?: () => TestCmdList;
     // Clicks the popup button to close the plugin. Set to [] explicitly for
     // those rare plugins that have no popups.
-    closePlugin?: TestCmdList;
+    closePlugin?: () => TestCmdList;
     // Run after the plugin popup is closed, and the job is running.
-    afterPluginCloses?: TestCmdList;
+    afterPluginCloses?: () => TestCmdList;
 }

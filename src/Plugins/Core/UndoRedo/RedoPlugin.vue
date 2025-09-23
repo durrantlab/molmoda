@@ -82,12 +82,12 @@ export default class RedoPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: new TestCmdList()
+            beforePluginOpens: () => new TestCmdList()
                 .loadExampleMolecule()
                 .click("#menu1-edit")
                 .click("#menu-plugin-undo")
                 .wait(3),
-            // afterPluginCloses: new TestCmdList().wait(3),
+            // afterPluginCloses: () => new TestCmdList().wait(3),
         };
     }
 }
