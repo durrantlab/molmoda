@@ -12,11 +12,15 @@ interface ISDFBond {
 /**
  * A parser for SDF (Structure-Data File) files.
  * Parses atom and bond information from the first molecule in an SDF string.
+ * Supports both V2000 and V3000 formats.
  */
 export class EasyParserSDF extends EasyParserParent {
     private _parsedBonds: ISDFBond[] = [];
-    private _atomOriginalIndexMap: Map<number, number> = new Map();
-
+    // Maps 0-based index in this._atoms to original 1-based index from SDF
+    private _atomOrderToSdfIndex: Map<number, number> = new Map();
+    // Maps original 1-based SDF index to 0-based index in this._atoms
+    private _sdfIndexToAtomOrder: Map<number, number> = new Map();
+    private isV3000 = false;
     /**
      * Load the source.
      *
@@ -27,15 +31,92 @@ export class EasyParserSDF extends EasyParserParent {
         if (!this._parsedBonds) {
             this._parsedBonds = [];
         }
-        if (!this._atomOriginalIndexMap) {
-            this._atomOriginalIndexMap = new Map();
+        if (!this._atomOrderToSdfIndex) {
+            this._atomOrderToSdfIndex = new Map();
         }
-        
+        if (!this._sdfIndexToAtomOrder) {
+            this._sdfIndexToAtomOrder = new Map();
+        }
         const lines = (src as IFileInfo).contents.split(/\r?\n/);
         this._atoms = [];
         this._parsedBonds = [];
-        this._atomOriginalIndexMap.clear();
-
+        this._atomOrderToSdfIndex.clear();
+        this._sdfIndexToAtomOrder.clear();
+        this.isV3000 = lines.some((line: string) => line.includes("V3000"));
+        if (this.isV3000) {
+            this._parseV3000(lines);
+        } else {
+            this._parseV2000(lines);
+        }
+    }
+    /**
+        * Parses a V3000 formatted SDF file from an array of lines.
+        *
+        * @param {string[]} lines The lines of the SDF file.
+        * @private
+        */
+    private _parseV3000(lines: string[]): void {
+        let inAtomBlock = false;
+        let inBondBlock = false;
+        let atomOrder = 0;
+        for (const line of lines) {
+            if (line.startsWith("M  V30 END ATOM")) {
+                inAtomBlock = false;
+                continue;
+            }
+            if (line.startsWith("M  V30 END BOND")) {
+                inBondBlock = false;
+                continue;
+            }
+            if (inAtomBlock) {
+                this._atoms.push(line);
+                // V3000 atom lines start with "M  V30 <index> ..."
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 4) {
+                    const sdfIndex = parseInt(parts[2], 10);
+                    if (!isNaN(sdfIndex)) {
+                        this._atomOrderToSdfIndex.set(atomOrder, sdfIndex);
+                        this._sdfIndexToAtomOrder.set(sdfIndex, atomOrder);
+                        atomOrder++;
+                    }
+                }
+            } else if (inBondBlock) {
+                // V3000 bond lines: M  V30 <idx> <type> <atom1> <atom2>
+                const parts = line.trim().split(/\s+/);
+                if (parts.length >= 6) {
+                    const bondType = parseInt(parts[3], 10);
+                    const sdfAtomIdx1 = parseInt(parts[4], 10);
+                    const sdfAtomIdx2 = parseInt(parts[5], 10);
+                    const atomOrderIdx1 = this._sdfIndexToAtomOrder.get(sdfAtomIdx1);
+                    const atomOrderIdx2 = this._sdfIndexToAtomOrder.get(sdfAtomIdx2);
+                    if (
+                        atomOrderIdx1 !== undefined &&
+                        atomOrderIdx2 !== undefined &&
+                        !isNaN(bondType)
+                    ) {
+                        this._parsedBonds.push({
+                            atomIndex1: atomOrderIdx1,
+                            atomIndex2: atomOrderIdx2,
+                            bondType: bondType,
+                        });
+                    }
+                }
+            }
+            if (line.startsWith("M  V30 BEGIN ATOM")) {
+                inAtomBlock = true;
+            }
+            if (line.startsWith("M  V30 BEGIN BOND")) {
+                inBondBlock = true;
+            }
+        }
+    }
+    /**
+        * Parses a V2000 formatted SDF file from an array of lines.
+        *
+        * @param {string[]} lines The lines of the SDF file.
+        * @private
+        */
+    private _parseV2000(lines: string[]): void {
         let atomCount = 0;
         let bondCount = 0;
         let countsLineIndex = -1;
@@ -106,8 +187,7 @@ export class EasyParserSDF extends EasyParserParent {
             const atomLineIndex = atomBlockStartIndex + i;
             if (atomLineIndex < lines.length) {
                 currentAtomBlockLines.push(lines[atomLineIndex]);
-                // Map the 0-indexed position in our _atoms array to the original 1-based SDF atom index
-                this._atomOriginalIndexMap.set(i, i + 1);
+                this._atomOrderToSdfIndex.set(i, i + 1);
             } else {
                 // console.warn("SDF parsing: Atom count in counts line exceeds available lines in file.");
                 break;
@@ -121,10 +201,8 @@ export class EasyParserSDF extends EasyParserParent {
             const bondLineIndex = bondBlockStartIndex + i;
             if (bondLineIndex < lines.length) {
                 const line = lines[bondLineIndex];
-                // SDF bond line: aaabbbttt... (atom1_idx, atom2_idx, bond_type)
-                // Atom indices are 1-based in SDF format.
-                const atomIdx1 = parseInt(line.substring(0, 3).trim(), 10) - 1; // Convert to 0-indexed
-                const atomIdx2 = parseInt(line.substring(3, 6).trim(), 10) - 1; // Convert to 0-indexed
+                const atomIdx1 = parseInt(line.substring(0, 3).trim(), 10) - 1;
+                const atomIdx2 = parseInt(line.substring(3, 6).trim(), 10) - 1;
                 const bondType = parseInt(line.substring(6, 9).trim(), 10);
                 if (!isNaN(atomIdx1) && !isNaN(atomIdx2) && !isNaN(bondType)) {
                     this._parsedBonds.push({
@@ -152,6 +230,81 @@ export class EasyParserSDF extends EasyParserParent {
      * fails.
      */
     _parseAtomStr(
+        atomStr: string,
+        atomParserIndex?: number
+    ): IAtom | undefined {
+        if (this.isV3000) {
+            return this._parseV3000AtomStr(atomStr, atomParserIndex);
+        } else {
+            return this._parseV2000AtomStr(atomStr, atomParserIndex);
+        }
+    }
+    /**
+        * Parses a V3000 atom line string into an IAtom object.
+        *
+        * @param {string} atomStr The V3000 atom line string.
+        * @param {number} [atomParserIndex] The 0-based index of this atom.
+        * @returns {IAtom | undefined} The parsed atom.
+        * @private
+        */
+    private _parseV3000AtomStr(
+        atomStr: string,
+        atomParserIndex?: number
+    ): IAtom | undefined {
+        // M  V30 1 C 2.3 4.5 6.7 0 CHG=1
+        const parts = atomStr.trim().split(/\s+/);
+        if (parts.length < 7) return undefined;
+        const sdfIndex = parseInt(parts[2], 10);
+        const elem = parts[3];
+        const x = parseFloat(parts[4]);
+        const y = parseFloat(parts[5]);
+        const z = parseFloat(parts[6]);
+        let charge = 0;
+        for (let i = 7; i < parts.length; i++) {
+            if (parts[i].startsWith("CHG=")) {
+                charge = parseInt(parts[i].substring(4), 10);
+                break;
+            }
+        }
+        if (isNaN(x) || isNaN(y) || isNaN(z)) return undefined;
+        const bonds: number[] = [];
+        const bondOrder: number[] = [];
+        if (atomParserIndex !== undefined) {
+            this._parsedBonds.forEach((bond) => {
+                if (bond.atomIndex1 === atomParserIndex) {
+                    bonds.push(bond.atomIndex2);
+                    bondOrder.push(bond.bondType);
+                } else if (bond.atomIndex2 === atomParserIndex) {
+                    bonds.push(bond.atomIndex1);
+                    bondOrder.push(bond.bondType);
+                }
+            });
+        }
+        return {
+            x,
+            y,
+            z,
+            elem,
+            serial: sdfIndex,
+            atom: elem,
+            resn: "UNL",
+            chain: "A",
+            resi: 1,
+            altLoc: " ",
+            b: charge,
+            bonds,
+            bondOrder,
+        };
+    }
+    /**
+        * Parses a V2000 atom line string into an IAtom object.
+        *
+        * @param {string} atomStr The V2000 atom line string.
+        * @param {number} [atomParserIndex] The 0-based index of this atom.
+        * @returns {IAtom | undefined} The parsed atom.
+        * @private
+        */
+    private _parseV2000AtomStr(
         atomStr: string,
         atomParserIndex?: number
     ): IAtom | undefined {
@@ -226,8 +379,7 @@ export class EasyParserSDF extends EasyParserParent {
         });
 
         const originalSdfAtomNumber =
-            this._atomOriginalIndexMap.get(atomParserIndex);
-
+            this._atomOrderToSdfIndex.get(atomParserIndex);
         return {
             x,
             y,
