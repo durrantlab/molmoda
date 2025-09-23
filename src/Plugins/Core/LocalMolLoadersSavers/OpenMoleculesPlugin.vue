@@ -1,21 +1,9 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        cancelBtnTxt="Cancel"
-        actionBtnTxt="Open"
-        @onPopupDone="onPopupDone"
-        :isActionBtnEnabled="filesToLoad.length > 0"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
-        <FormFile
-            ref="formFile"
-            :multiple="true"
-            @onFilesLoaded="onFilesLoaded"
-            :accept="accept"
-            id="formFile-openmolecules-item"
-        />
+    <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Cancel" actionBtnTxt="Open"
+        @onPopupDone="onPopupDone" :isActionBtnEnabled="filesToLoad.length > 0" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged">
+        <FormFile ref="formFile" :multiple="true" @onFilesLoaded="onFilesLoaded" :accept="accept"
+            id="formFile-openmolecules-item" />
         <!-- :isZip="true" -->
     </PluginComponent>
 </template>
@@ -86,7 +74,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             "If your file lacks 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored. Try different methods only if your imported molecules have incorrect geometries."
         ),
     ];
-    
+
     accept = fileTypesAccepts;
     hotkey = "o";
     skipLongRunningJobMsg = true;
@@ -159,42 +147,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     }
 
     /**
-     * Checks if the SDF or MOL2 file is flat.
-     *
-     * @param {IFormatInfo} frmt      The format information.
-     * @param {FileInfo}    fileInfo  The file information.
-     * @returns {boolean}  True if the file is flat, false otherwise.
-     */
-    isFlatSdfOrMol2(frmt: IFormatInfo, fileInfo: FileInfo): boolean {
-        try {
-            const parser = makeEasyParser(fileInfo);
-            if (parser.length === 0) {
-                return false; // No atoms, can't be flat.
-            }
-            const atoms = parser.atoms;
-            if (atoms.length === 0) {
-                return false;
-            }
-            // Collect all coordinates. It's safe to assume parsers provide x, y, z as numbers.
-            // They might be NaN if parsing fails for a coordinate, which is fine.
-            const xCoords = atoms.map((a) => a.x);
-            const yCoords = atoms.map((a) => a.y);
-            const zCoords = atoms.map((a) => a.z);
-            // A file is flat if one of the coordinate axes is all zeros (or undefined/NaN for all atoms).
-            // The .every check handles undefined and NaN correctly, as they are not equal to 0.
-            const allXZero = xCoords.every((c) => c === 0);
-            const allYZero = yCoords.every((c) => c === 0);
-            const allZZero = zCoords.every((c) => c === 0);
-            return allXZero || allYZero || allZZero;
-        } catch (error) {
-            console.warn(
-                "Could not parse molecule to check for 2D coordinates, assuming 3D.",
-                error
-            );
-            return false;
-        }
-    }
-    /**
      * Every plugin runs some job. This is the function that does the job running.
      *
      * @param {FileInfo} fileInfo  Information about the molecules to save.
@@ -215,13 +167,21 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         const typ = getFileType(fileInfo);
         if (typ !== undefined) {
             const frmt = getFormatInfoGivenType(typ);
-            // eslint-disable-next-line sonarjs/no-collapsible-if
-            if (
-                frmt !== undefined &&
-                ["sdf", "mol2"].includes(frmt.primaryExt) &&
-                this.isFlatSdfOrMol2(frmt, fileInfo)
-            ) {
-                gen3DParams.whichMols = WhichMolsGen3D.All;
+            // If a format is not explicitly 2D (like SMILES) but this particular
+            // file instance appears to be flat (e.g., a 2D SDF), we should
+            // force 3D coordinate generation.
+            if (frmt && !frmt.lacks3D) {
+                try {
+                    const parser = makeEasyParser(fileInfo);
+                    if (parser.isFlat()) {
+                        gen3DParams.whichMols = WhichMolsGen3D.All;
+                    }
+                } catch (error) {
+                    console.warn(
+                        `Could not parse ${fileInfo.name} to check if flat, proceeding with default 3D generation settings.`,
+                        error
+                    );
+                }
             }
         }
 

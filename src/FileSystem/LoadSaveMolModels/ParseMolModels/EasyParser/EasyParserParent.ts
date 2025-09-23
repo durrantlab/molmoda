@@ -231,6 +231,36 @@ export abstract class EasyParserParent {
     }
 
     /**
+     * Checks if the molecule is "flat", meaning all its atoms lie on one of the
+     * cardinal planes (XY, XZ, or YZ). This is determined by checking if all atoms
+     * have a Z, Y, or X coordinate of 0, respectively. This is a common
+     * characteristic of 2D structure representations.
+     *
+     * @returns {boolean} True if the molecule is flat, false otherwise. Returns
+     *          false if there are no atoms.
+     */
+    public isFlat(): boolean {
+        if (this.length === 0) {
+            return false;
+        }
+        const atoms = this.atoms; // This ensures all atoms are parsed
+        if (atoms.length === 0) {
+            return false;
+        }
+        // Collect all coordinates. It's safe to assume parsers provide x, y, z as numbers.
+        // They might be undefined/NaN if parsing fails for a coordinate, which is fine.
+        const xCoords = atoms.map((a) => a.x);
+        const yCoords = atoms.map((a) => a.y);
+        const zCoords = atoms.map((a) => a.z);
+        // A file is flat if one of the coordinate axes is all zeros (or undefined/NaN for all atoms).
+        // The .every check handles undefined and NaN correctly, as they are not equal to 0.
+        const allXZero = xCoords.every((c) => c === 0);
+        const allYZero = yCoords.every((c) => c === 0);
+        const allZZero = zCoords.every((c) => c === 0);
+        return allXZero || allYZero || allZZero;
+    }
+
+    /**
      * Checks if any atom in this parser is within a specified distance of any atom
      * in another parser, optionally using strides to speed up the check.
      * Optimized with bounding box check and early exit for distance components.
