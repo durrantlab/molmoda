@@ -178,7 +178,6 @@ export function _parseMoleculeFile(
             // }
 
             if (params.addToTree) {
-                debugger
                 mergedTreeNodeList.addToMainTree(params.tag);
             }
 

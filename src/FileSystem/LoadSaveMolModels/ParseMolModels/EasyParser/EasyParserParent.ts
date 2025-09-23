@@ -24,12 +24,15 @@ interface IBounds {
  */
 export abstract class EasyParserParent {
     /**
-     * Create a new EasyParserParent.
+     * Create a new EasyParserParent. Set it to undefined if you want to call
+     * _load elsewhere (e.g., in subclass constructor; see EasyParserSDF).
      *
      * @param {IFileInfo | GLModel | IAtom[]} src The source to parse.
      */
-    constructor(src: IFileInfo | GLModel | IAtom[]) {
-        this._load(src);
+    constructor(src: IFileInfo | GLModel | IAtom[] | undefined) {
+        if (src !== undefined) {
+            this._load(src);
+        }
     }
     protected _atoms: (string | IAtom)[] = [];
 

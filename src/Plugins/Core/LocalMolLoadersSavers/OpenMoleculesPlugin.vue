@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
+import { Options, Vue } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -51,7 +51,7 @@ import {
     getFormatInfoGivenType,
 } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-
+import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 /**
  * OpenMoleculesPlugin
  */
@@ -166,88 +166,34 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * @returns {boolean}  True if the file is flat, false otherwise.
      */
     isFlatSdfOrMol2(frmt: IFormatInfo, fileInfo: FileInfo): boolean {
-        // It's an sdf or mol2 file (already checked).
-        const lines = fileInfo.contents.split("\n");
-
-        // Initialize arrays to store the x, y, and z coordinates
-        const xCoords: number[] = [];
-        const yCoords: number[] = [];
-        const zCoords: number[] = [];
-
-        if (frmt.primaryExt === "sdf") {
-            // Loop through the lines where coordinates are expected
-            for (let line of lines.slice(4)) {
-                // Coordinates start from the 5th line in SDF format. Stop at
-                // the end of the molecule specification
-                if (line.trim() === "$$$$") break;
-
-                // If no period is found, we're no longer in the coordinates
-                // section
-                if (!line.includes(".")) break;
-
-                line = line.trim();
-                while (line.includes("  ")) {
-                    line = line.replace("  ", " ");
-                }
-                const parts = line.split(/\s+/);
-
-                try {
-                    // Append the x, y, and z coordinates to their respective arrays
-                    xCoords.push(parseFloat(parts[0]));
-                    yCoords.push(parseFloat(parts[1]));
-                    zCoords.push(parseFloat(parts[2]));
-                } catch (error) {
-                    // If conversion to float fails or parts are not as
-                    // expected, we're no longer in the coordinates section
-                    break;
-                }
+        try {
+            const parser = makeEasyParser(fileInfo);
+            if (parser.length === 0) {
+                return false; // No atoms, can't be flat.
             }
-        } else if (frmt.primaryExt === "mol2") {
-            let inAtomSection = false;
-
-            // Loop through the lines to find the ATOM section
-            for (let line of lines) {
-                line = line.trim();
-
-                // Check for the start of the ATOM section
-                if (line === "@<TRIPOS>ATOM") {
-                    inAtomSection = true;
-                    continue;
-                }
-
-                // Check for the end of the ATOM section, which is the start of the BOND section
-                if (line === "@<TRIPOS>BOND") break;
-
-                // Process lines within the ATOM section
-                if (inAtomSection) {
-                    // Simplify spaces to ensure consistent splitting
-                    while (line.includes("  ")) {
-                        line = line.replace("  ", " ");
-                    }
-
-                    const parts = line.split(/\s+/);
-
-                    try {
-                        // Append the x, y, and z coordinates to their respective arrays
-                        xCoords.push(parseFloat(parts[2])); // x-coordinate is the 3rd column in ATOM section
-                        yCoords.push(parseFloat(parts[3])); // y-coordinate is the 4th column in ATOM section
-                        zCoords.push(parseFloat(parts[4])); // z-coordinate is the 5th column in ATOM section
-                    } catch (error) {
-                        // If conversion to float fails or parts are not as expected, skip this line
-                        continue;
-                    }
-                }
+            const atoms = parser.atoms;
+            if (atoms.length === 0) {
+                return false;
             }
+            // Collect all coordinates. It's safe to assume parsers provide x, y, z as numbers.
+            // They might be NaN if parsing fails for a coordinate, which is fine.
+            const xCoords = atoms.map((a) => a.x);
+            const yCoords = atoms.map((a) => a.y);
+            const zCoords = atoms.map((a) => a.z);
+            // A file is flat if one of the coordinate axes is all zeros (or undefined/NaN for all atoms).
+            // The .every check handles undefined and NaN correctly, as they are not equal to 0.
+            const allXZero = xCoords.every((c) => c === 0);
+            const allYZero = yCoords.every((c) => c === 0);
+            const allZZero = zCoords.every((c) => c === 0);
+            return allXZero || allYZero || allZZero;
+        } catch (error) {
+            console.warn(
+                "Could not parse molecule to check for 2D coordinates, assuming 3D.",
+                error
+            );
+            return false;
         }
-
-        // Check if all coordinates in any of the arrays are 0
-        const allXZero = xCoords.every((x) => x === 0);
-        const allYZero = yCoords.every((y) => y === 0);
-        const allZZero = zCoords.every((z) => z === 0);
-
-        return allXZero || allYZero || allZZero;
     }
-
     /**
      * Every plugin runs some job. This is the function that does the job running.
      *
