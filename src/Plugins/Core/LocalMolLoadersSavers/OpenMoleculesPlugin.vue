@@ -238,18 +238,16 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
             const substrng = fileToTest[1] as string;
-            let pluginOpen = () =>
-                new TestCmdList().setUserArg(
-                    "formFile",
-                    "file://./src/Testing/mols/" + name,
-                    this.pluginId
-                );
+            const pluginOpenCmdList = new TestCmdList().setUserArg(
+                "formFile",
+                "file://./src/Testing/mols/" + name,
+                this.pluginId
+            );
             if (idx % 2 === 0) {
-                pluginOpen = () =>
-                    pluginOpen().click("#hideOnLoad-openmolecules-item");
+                pluginOpenCmdList.click("#hideOnLoad-openmolecules-item");
             }
             return {
-                pluginOpen: pluginOpen,
+                pluginOpen: () => pluginOpenCmdList,
                 afterPluginCloses: () =>
                     new TestCmdList()
                         .waitUntilRegex("#styles", "Atoms")
@@ -257,7 +255,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                         .waitUntilRegex("#navigator", substrng),
             };
         });
-
         // Final test to verify error catching.
         tests.push({
             pluginOpen: () => new TestCmdList().setUserArg(
