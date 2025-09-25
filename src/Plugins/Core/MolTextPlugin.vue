@@ -309,20 +309,22 @@ export default class MolTextPlugin extends PluginParentClass {
                 contents: txt,
             });
             const guessedFormat = fileInfo.guessFormat();
-            let pluginOpen = () =>
-                new TestCmdList().setUserArg("molTextArea", txt, this.pluginId);
+            const pluginOpenCmds = new TestCmdList().setUserArg(
+                "molTextArea",
+                txt,
+                this.pluginId
+            );
             if (
                 guessedFormat &&
                 (guessedFormat.primaryExt === "smi" ||
                     guessedFormat.primaryExt === "can")
             ) {
-                pluginOpen = () =>
-                    pluginOpen()
-                        .wait(2) // wait for rdkit to render
-                        .waitUntilRegex("#modal-moltextplugin .svg-wrapper", "<svg");
+                pluginOpenCmds
+                    .wait(2) // wait for rdkit to render
+                    .waitUntilRegex("#modal-moltextplugin .svg-wrapper", "<svg");
             }
             return {
-                pluginOpen,
+                pluginOpen: () => pluginOpenCmds,
                 afterPluginCloses: () =>
                     new TestCmdList().waitUntilRegex("#navigator", "PastedMol"),
             };

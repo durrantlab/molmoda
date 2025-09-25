@@ -143,6 +143,7 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
      * Runs when the popup closes via done button. Here, does nothing.
      */
     onPopupDone() {
+        this.copy();
         this.submitJobs([]);
     }
 

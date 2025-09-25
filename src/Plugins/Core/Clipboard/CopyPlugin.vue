@@ -1,6 +1,6 @@
 <template>
     <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged" actionBtnTxt="Copy"
-        @onMolCountsChanged="onMolCountsChanged">
+        @onMolCountsChanged="onMolCountsChanged" @onPopupDone="onPopupDone">
         <Alert type="info">{{ formatMsg }}</Alert>
         <Alert type="warning">
             To save your molecules in other formats, consider
@@ -206,6 +206,7 @@ export default class CopyPlugin extends PluginParentClass {
      * Runs when the popup closes via done button. Here, does nothing.
      */
     onPopupDone() {
+        this.copy();
         this.submitJobs([]);
     }
 

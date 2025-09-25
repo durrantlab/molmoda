@@ -352,10 +352,8 @@ def run_test(plugin_id_tuple):
     
     try:
         plugin_name, plugin_idx = plugin_id_tuple
-        # MODIFICATION START: Added more informative logging at the start of the test.
         test_lbl = f"{plugin_name}{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
-        print(f"Starting test: {test_lbl}...")
-        # MODIFICATION END
+        # print(f"Starting test: {test_lbl}...")
         url = f"{root_url}/?test={plugin_name}"
         if plugin_idx is not None:
             url += f"&index={str(plugin_idx)}"
@@ -548,10 +546,8 @@ for browser_to_use in browsers_to_use:
 
                         # Is result a list?
                         if isinstance(result, list):
-                            # MODIFICATION START: Insert new tests at the beginning of the list to run next
                             plugin_ids_per_browser = result + plugin_ids_per_browser
-                            # MODIFICATION END
-                            print(f"Added tests: {json.dumps(result)}")
+                            # print(f"Added tests: {json.dumps(result)}")
                             continue
 
                         # Not a list, so do nothing.

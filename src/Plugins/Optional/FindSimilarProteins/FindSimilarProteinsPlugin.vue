@@ -471,8 +471,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      * @returns {Promise<ITest[]>} The test configuration.
      */
     async getTests(): Promise<ITest[]> {
-        // const pdb1xdn = "https://files.rcsb.org/view/1XDN.pdb";
-        // const pdb4wp4 = "https://files.rcsb.org/view/4WP4.pdb";
+        const pdb1xdn = "https://files.rcsb.org/view/1XDN.pdb";
+        const pdb4wp4 = "https://files.rcsb.org/view/4WP4.pdb";
         const fastaText1 = `>my_protein
 MQIFVKTLTGKTITLEVEPSDTIENVK\nAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG`;
         const fastaText2 = `>MCHU - Calmodulin - Human, rabbit, bovine, rat, and chicken
@@ -486,7 +486,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
         const tests: ITest[] = [
             // Test 1: Project Search and Download (with Alignment)
             {
-                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, pdb1xdn),
                 afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#modal-tabledatapopup", "1S68")
                     .click("#modal-tabledatapopup .cancel-btn")

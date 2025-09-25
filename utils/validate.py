@@ -180,11 +180,18 @@ def validate_plugin(ts_file, content): # Added content as a parameter
         )
 
 
+def is_test_file(filepath):
+    """Check if a file is a test file that should be skipped."""
+    return filepath.endswith('.test.ts')
+
 
 # Get a list of all the ts files in the ../src/ directory
 ts_files = glob.glob("../src/**/*.ts", recursive=True) + glob.glob(
     "../src/**/*.vue", recursive=True
 )
+
+# Filter out test files
+ts_files = [f for f in ts_files if not is_test_file(f)]
 
 errors = []
 

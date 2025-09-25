@@ -43,19 +43,31 @@ export function errorReportingSetup() {
         // rethrow the error (not necessary)
         // throw error;
     };
-
-    /**
-     * Catch unhandled promise rejections.
-     *
-     * @param {PromiseRejectionEvent} event  The event.
-     */
-    window.onunhandledrejection = function (event: PromiseRejectionEvent) {
-        sendErrorToServer({
-            message: event.reason.message,
-            errorStack: event.reason.stack,
-        });
-    };
 }
+
+/**
+ * Catch unhandled promise rejections.
+ *
+ * @param {PromiseRejectionEvent} event  The event.
+ */
+window.onunhandledrejection = function (event: PromiseRejectionEvent) {
+    let message = "An unknown promise rejection occurred.";
+    let stack = "";
+
+    if (event.reason) {
+        if (event.reason instanceof Error) {
+            message = event.reason.message;
+            stack = event.reason.stack || "";
+        } else {
+            message = String(event.reason);
+        }
+    }
+
+    sendErrorToServer({
+        message: message,
+        errorStack: stack,
+    });
+};
 
 let tmpErrorMsg = "";
 

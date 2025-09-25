@@ -1,6 +1,6 @@
 <template>
     <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged" actionBtnTxt="Paste"
-        @onMolCountsChanged="onMolCountsChanged">
+        @onMolCountsChanged="onMolCountsChanged" @onPopupDone="onPopupDone">
         <template #afterForm>
             <div class="mt-3">
                 <Alert type="info">{{ formatMsg }}</Alert>
@@ -141,7 +141,7 @@ export default class PastePlugin extends PluginParentClass {
         }
 
         const fileInfo = new FileInfo({
-            name: "",
+            name: "pasted_mol",
             contents: txt,
         });
 
@@ -159,56 +159,39 @@ export default class PastePlugin extends PluginParentClass {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
             level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
-
-        const node = await TreeNode.loadFromFileInfo({
-            fileInfo,
-            tag: this.pluginId,
-            desalt: this.getUserArg("desalt"),
-            defaultTitle: this.getUserArg("pastedMolName"),
-            gen3D: gen3DParams,
-        });
-
-        if (node === undefined) {
-            return;
+        try {
+            const node = await TreeNode.loadFromFileInfo({
+                fileInfo,
+                tag: this.pluginId,
+                desalt: this.getUserArg("desalt"),
+                defaultTitle: this.getUserArg("pastedMolName"),
+                gen3D: gen3DParams,
+            });
+            if (node === undefined) {
+                return;
+            }
+            node.title = this.getUserArg("pastedMolName");
+            node.addToMainTree(this.pluginId);
+        } catch (error) {
+            console.error("Error during paste operation:", error);
+            // Error messages to the user are likely handled within the `loadFromFileInfo` call chain.
         }
-        node.title = this.getUserArg("pastedMolName");
-
-        node.addToMainTree(this.pluginId);
     }
 
     /**
      * Runs after the popup opens. Good for setting focus in text elements.
      */
     onPopupOpen() {
-        // Add click event listener to button with selection sel. Doing this
-        // because it must happen immediately.
-        document
-            .querySelector(`#modal-${this.pluginId} .action-btn`)
-            ?.addEventListener("click", (e) => {
-                this.paste();
-                e.target?.removeEventListener("click", () => {
-                    return;
-                });
-            });
-
-        // Similarly, as soon as enter pressed, paste. (Can't use existing
-        // system because it must happen immediately.
-        document
-            .querySelector(`#modal-${this.pluginId}`)
-            ?.addEventListener("keydown", (e: any) => {
-                if (e.key === "Enter") {
-                    this.paste();
-                    e.currentTarget.removeEventListener("keydown", () => {
-                        return;
-                    });
-                }
-            });
+        // The custom event listeners have been removed.
+        // The action button is handled by `onPopupDone`.
+        // The enter key is handled by the `submitOnEnter` prop on the `Popup` component.
     }
 
     /**
      * Runs when the popup closes via done button. Here, does nothing.
      */
     onPopupDone() {
+        this.paste();
         this.submitJobs([]);
     }
 

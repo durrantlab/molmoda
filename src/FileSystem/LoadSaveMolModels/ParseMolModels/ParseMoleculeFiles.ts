@@ -65,7 +65,9 @@ export function _parseMoleculeFile(
 
     const formatInfo = params.fileInfo.getFormatInfo();
     if (formatInfo === undefined) {
-        return Promise.reject();
+        const errorMessage = `Could not determine file format for "${params.fileInfo.name}".`;
+        api.messages.popupError(errorMessage);
+        return Promise.reject(new Error(errorMessage));
     }
 
     // Adjust desalt perameter if needed
