@@ -312,6 +312,9 @@ def do_logs_have_errors(driver, browser):
         and "status code 404" not in l["message"] 
         and "status of 400" not in l["message"]
         and "404 (Not Found)" not in l["message"]
+        # Very annoying that www.ebi.ac.uk throws CORS errors instead of 404...
+        and not ("https://www.ebi.ac.uk/" in l["message"] and "blocked by CORS policy" in l["message"])
+        and not ("https://www.ebi.ac.uk/" in l["message"] and "Failed to load resource" in l["message"])
     ]
 
     if not logs_to_keep:
@@ -622,4 +625,5 @@ if failed_tests:
 # driver.quit()
 
 # Also run all jest tests
+input("Press Enter to run all jest unit tests...")
 os.system("node_modules/.bin/jest")

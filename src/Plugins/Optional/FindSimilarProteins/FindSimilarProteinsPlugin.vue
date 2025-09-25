@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
+import { Options, Vue } from "vue-class-component";
 import {
     IContributorCredit,
     ISoftwareCredit,
@@ -15,6 +15,7 @@ import {
 import {
     UserArg,
     UserArgType,
+    IUserArgSelectMolecule,
     IUserArgMoleculeInputParams,
     IUserArgNumber,
     IUserArgRange,
@@ -24,15 +25,19 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { checkMultipleTopLevelProteinsLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { MoleculeTypeFilter } from "@/UI/Forms/FormSelectMolecule/FormSelectMoleculeInterfaces";
+import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { convertFastaToSeqences } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
@@ -369,7 +374,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         // Value: Set of mobile PDB IDs.
         const alignmentGroups = new Map<string, Set<string>>();
         // Store the query object (TreeNode or string) for each reference.
-        const referenceToQueryMap = new Map<string, TreeNode | string>();
+        const referenceToQueryMap = new Map<string, (TreeNode | string)[]>();
 
         for (const jobOutput of allJobOutputs) {
             if (jobOutput.error || !jobOutput.results || jobOutput.results.length === 0) {
@@ -382,11 +387,21 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 referenceId = query.id as string;
             } else {
                 // For FASTA, the reference is the top hit.
-                referenceId = mobilePdbIds[0];
+                if (mobilePdbIds.length > 0) {
+                    referenceId = mobilePdbIds[0];
+                } else {
+                    // This case should be caught earlier, but as a safeguard:
+                    console.warn(
+                        "Job output has no results, cannot determine reference ID for FASTA query:",
+                        query
+                    );
+                    continue;
+                }
             }
             if (!referenceToQueryMap.has(referenceId)) {
-                referenceToQueryMap.set(referenceId, query);
+                referenceToQueryMap.set(referenceId, []);
             }
+            referenceToQueryMap.get(referenceId)!.push(query);
             if (!alignmentGroups.has(referenceId)) {
                 alignmentGroups.set(referenceId, new Set<string>());
             }
@@ -398,12 +413,12 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
         try {
             for (const [referenceId, mobileIdSet] of alignmentGroups.entries()) {
-                const query = referenceToQueryMap.get(referenceId);
-                if (!query) {
+                const queries = referenceToQueryMap.get(referenceId);
+                if (!queries || queries.length === 0) {
                     console.warn(`No query found for reference ID: ${referenceId}`);
                     continue;
                 }
-                
+                const query = queries[0];
                 const isProjectQuery = query instanceof TreeNode;
                 let referenceFileInfo: FileInfo | null = null;
                 let referenceTitle = "";
@@ -524,8 +539,8 @@ DIDGDGQVNYEEFVQMMTAK*`;
             // Test 4: Two proteins from project
             {
                 beforePluginOpens: () => new TestCmdList()
-                    .loadExampleMolecule(true)
-                    .loadExampleMolecule(true),
+                    .loadExampleMolecule(true, pdb1xdn)
+                    .loadExampleMolecule(true, pdb4wp4),
                 pluginOpen: () => new TestCmdList()
                     .setUserArg("max_results", 2, this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
