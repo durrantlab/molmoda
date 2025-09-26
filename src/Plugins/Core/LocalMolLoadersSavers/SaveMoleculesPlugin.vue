@@ -477,8 +477,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     const jobs = [molModaJob];
 
     let idx = 0;
-
-    for (let toConsider of [
+    for (const toConsider of [
       // visible, selected, hiddenAndUnselected checkboxes
       [true, false, false],
       [false, true, false],
@@ -495,37 +494,33 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
       idx++;
 
-      let pluginOpen = () => new TestCmdList()
+      const pluginOpenCmdList = new TestCmdList()
         .setUserArg("filename", "test", this.pluginId)
         // .setUserArg("useMolModaFormat", false, this.pluginId)
         .click("#modal-savemolecules #useMolModaFormat-savemolecules-item");
 
       if (visible === false) {
         // True by default, so must click
-        pluginOpen = () =>
-          pluginOpen().click(
-            "#modal-savemolecules #saveVisible-savemolecules-item"
-          );
+        pluginOpenCmdList.click(
+          "#modal-savemolecules #saveVisible-savemolecules-item"
+        );
       }
       if (selected === false) {
         // True by default, so must click
-        pluginOpen = () =>
-          pluginOpen().click(
-            "#modal-savemolecules #saveSelected-savemolecules-item"
-          );
+        pluginOpenCmdList.click(
+          "#modal-savemolecules #saveSelected-savemolecules-item"
+        );
       }
       if (hiddenAndUnselected === true) {
         // False by default, so must click
-        pluginOpen = () =>
-          pluginOpen().click(
-            "#modal-savemolecules #saveHiddenAndUnselected-savemolecules-item"
-          );
+        pluginOpenCmdList.click(
+          "#modal-savemolecules #saveHiddenAndUnselected-savemolecules-item"
+        );
       }
       if (idx % 2 === 0) {
-        pluginOpen = () =>
-          pluginOpen().click(
-            "#modal-savemolecules #separateCompounds-savemolecules-item"
-          );
+        pluginOpenCmdList.click(
+          "#modal-savemolecules #separateCompounds-savemolecules-item"
+        );
       }
       // Note that the PDB and MOL2 formats (defaults) require OpenBabel and
       // non-OpenBabel, respectively. So already good testing without varying
@@ -533,7 +528,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
       jobs.push({
         ...molModaJob,
-        pluginOpen: pluginOpen,
+        pluginOpen: () => pluginOpenCmdList,
       });
     }
 
