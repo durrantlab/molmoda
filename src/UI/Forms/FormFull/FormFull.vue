@@ -36,7 +36,7 @@
           :step="getRangeMinMaxStep(formElem).step" @onChange="onDataUpdated" :id="itemId(formElem)"
           :disabled="disabled(formElem)" :description="makeGeneric(formElem).description"
           :delayBetweenChangesDetected="0" :warningFunc="makeGeneric(formElem).warningFunc" />
-        <FormTextArea v-else-if="formElem.type === FormElementType.TextArea" v-model.number="makeGeneric(formElem).val"
+        <FormTextArea v-else-if="formElem.type === FormElementType.TextArea" v-model="makeGeneric(formElem).val"
           @onChange="onDataUpdated" :id="itemId(formElem)" :disabled="disabled(formElem)"
           :description="makeGeneric(formElem).description" :delayBetweenChangesDetected="0"
           :placeHolder="getPlaceHolder(formElem)"></FormTextArea>
