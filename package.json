@@ -1,6 +1,6 @@
 {
     "name": "MolModa",
-    "version": "2025.9.23",
+    "version": "2025.9.25",
     "private": false,
     "scripts": {
         "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",
@@ -71,10 +71,10 @@
         "@types/sortablejs": "^1.13.0",
         "@typescript-eslint/eslint-plugin": "^5.4.0",
         "@typescript-eslint/parser": "^5.4.0",
-        "@vue/cli-plugin-babel": "~5.0.0",
-        "@vue/cli-plugin-eslint": "~5.0.0",
-        "@vue/cli-plugin-pwa": "~5.0.0",
-        "@vue/cli-plugin-typescript": "~5.0.0",
+        "@vue/cli-plugin-babel": "^5.0.9",
+        "@vue/cli-plugin-eslint": "^5.0.9",
+        "@vue/cli-plugin-pwa": "^5.0.9",
+        "@vue/cli-plugin-typescript": "^5.0.9",
         "@vue/cli-plugin-vuex": "~5.0.0",
         "@vue/cli-service": "~5.0.0",
         "@vue/eslint-config-typescript": "^9.1.0",
