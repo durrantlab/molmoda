@@ -36,6 +36,7 @@
         "detect-os": "^1.2.1",
         "dexie": "^4.0.4",
         "dompurify": "^3.2.6",
+        "driver.js": "^1.3.6",
         "file-saver": "^2.0.5",
         "golden-layout": "2.5.0",
         "hotkeys-js": "^3.10.0",
