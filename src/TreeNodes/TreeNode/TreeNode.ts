@@ -1,6 +1,5 @@
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import {
     getMoleculesFromStore,
@@ -22,7 +21,7 @@ import { newTreeNodeList, setupMakerFuncs } from "../TreeNodeMakers";
 import { TreeNodeAncestry } from "./_Ancestry";
 import { TreeNodeDescriptions } from "./_Descriptions";
 import { store } from "@/Store";
-import * as api from "@/Api";
+import { visualizationApi } from "@/Api/Visualization";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
@@ -31,6 +30,7 @@ import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Core/GlobalVars";
+import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
     // Properties common to both non-terminal and terminal nodes.
@@ -847,8 +847,7 @@ export class TreeNode {
             }
         }
         // If you add new molecules to the tree, focus on everything.
-        const viewer = await api.visualization.viewer;
-
+  const viewer = await visualizationApi.viewer;
         // Set the style according to the current user specs.
         updateStylesInViewer();
 

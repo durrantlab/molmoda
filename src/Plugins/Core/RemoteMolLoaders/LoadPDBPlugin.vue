@@ -130,20 +130,22 @@ export default class LoadPDBPlugin extends PluginParentClass {
         pdbIdList = pdbIdList.filter((v, i, a) => a.indexOf(v) === i);
 
         for (const pdbId of pdbIdList) {
+            const spinnerId = api.messages.startWaitSpinner();
             try {
-                const fileInfo = await loadPdbIdToFileInfo(pdbId)
+                const fileInfo = await loadPdbIdToFileInfo(pdbId);
                 await this.addFileInfoToViewer({
                     fileInfo,
                     tag: this.pluginId,
                 });
             } catch (err: any) {
                 // Failed a second time! Probably not a valid PDB.
-
                 api.messages.popupError(
                     "Could not load PDB ID " +
                     pdbId +
                     ". Are you sure this ID is valid?"
                 );
+            } finally {
+                api.messages.stopWaitSpinner(spinnerId);
             }
         }
     }

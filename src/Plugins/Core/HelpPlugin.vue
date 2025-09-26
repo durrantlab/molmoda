@@ -11,7 +11,12 @@
                 <p class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent">
                     <!-- <small v-html="menuPathToUse(plugin.menuPath)"></small> -->
                     <small>
-                        Menu: <PluginPathLink :plugin="plugin"></PluginPathLink></small>
+                        Menu: <PluginPathLink :plugin="plugin"></PluginPathLink>
+                        <button v-if="hasTests(plugin)" @click="startTour(plugin)"
+                            class="btn btn-sm btn-outline-primary py-0 px-1 ms-2" style="font-size: 0.7em;">
+                            Start Tour
+                        </button>
+                    </small>
                 </p>
 
                 <p v-if="creditsToShow(plugin) !== ''" class="ms-2 mb-0 alert alert-light lh-1 p-0 inverse-indent">
@@ -41,6 +46,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import { citationsTxt } from "../Citations";
 import { Tag, matchesTag } from "./ActivityFocus/ActivityFocusUtils";
+import * as api from "@/Api";
 
 /** HelpPlugin */
 @Options({
@@ -71,6 +77,50 @@ export default class HelpPlugin extends PluginParentClass {
     tags = [Tag.All];
 
     filteredPlugins: PluginParentClass[] | null = null;
+
+    /**
+     * Checks if a plugin has any tests defined.
+     *
+     * @param {PluginParentClass} plugin The plugin to check.
+     * @returns {boolean} True if the plugin has tests.
+     */
+    hasTests(plugin: PluginParentClass): boolean {
+        const excludedPlugins = [
+            'help',
+            'about',
+            'archivedversions',
+            'documentationlink',
+            'errorreporting',
+            'statcollection',
+            'fetcherpermission',
+            'datawindow',
+            'informationwindow',
+            'jobswindow',
+            'logwindow',
+            'navigatorwindow',
+            'resetlayout',
+            'styleswindow',
+            'viewerwindow',
+            'simplemsg',
+            'simplesvgpopup',
+            'simpletabledata',
+            'simplevideo',
+            'yesno'
+        ];
+        return !excludedPlugins.includes(plugin.pluginId);
+    }
+
+    /**
+ * Starts a tour for the given plugin.
+ *
+ * @param {PluginParentClass} plugin The plugin for which to start a tour.
+ */
+    startTour(plugin: PluginParentClass) {
+        this.closePopup();
+        setTimeout(() => {
+            api.tour.startTour(plugin);
+        }, 300); // Delay to allow the help popup to close
+    }
 
     /**
      * Gets the text to use for filtering the plugins.

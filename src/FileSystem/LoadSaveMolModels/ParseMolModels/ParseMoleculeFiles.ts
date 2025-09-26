@@ -1,7 +1,6 @@
 // You can load some molecule files using 3Dmol.js directly, without requiring
 // any conversion. See https://3dmol.csb.pitt.edu/doc/types.html#FileFormats
-
-import * as api from "@/Api";
+import { messagesApi } from "@/Api/Messages";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseUsing3DMolJs } from "./_ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
@@ -60,13 +59,11 @@ export function _parseMoleculeFile(
     params: ILoadMolParams
 ): Promise<void | TreeNodeList> {
     params = addDefaultLoadMolParams(params);
-
-    const spinnerId = api.messages.startWaitSpinner();
-
+    const spinnerId = messagesApi.startWaitSpinner();
     const formatInfo = params.fileInfo.getFormatInfo();
     if (formatInfo === undefined) {
         const errorMessage = `Could not determine file format for "${params.fileInfo.name}".`;
-        api.messages.popupError(errorMessage);
+        messagesApi.popupError(errorMessage);
         return Promise.reject(new Error(errorMessage));
     }
 
@@ -89,7 +86,7 @@ export function _parseMoleculeFile(
     // promise instead of returning immediately.
     let promise: Promise<TreeNodeList>;
 
-    let {loader} = formatInfo;
+    let { loader } = formatInfo;
 
     // Here we must deal with a difficult situation. If would be MUCH faster to
     // load MOL2 files using Mol3D, not OpenBabel. But MOL2 uses OpenBabel by
@@ -115,7 +112,7 @@ export function _parseMoleculeFile(
         }
         case MolLoader.MolModaFormat: {
             return parseUsingMolModa(params.fileInfo).then((payload: any) => {
-                api.messages.stopWaitSpinner(spinnerId);
+                messagesApi.stopWaitSpinner(spinnerId);
                 return payload;
             });
         }
@@ -154,7 +151,7 @@ export function _parseMoleculeFile(
 
                     msg += `<p>File contents:</p><code><textarea disabled class="form-control" rows="3">${params.fileInfo.contents}</textarea>`;
                 }
-                api.messages.popupError(msg);
+                messagesApi.popupError(msg);
                 return treeNodeList;
             }
 
@@ -182,13 +179,11 @@ export function _parseMoleculeFile(
             if (params.addToTree) {
                 mergedTreeNodeList.addToMainTree(params.tag);
             }
-
-            api.messages.stopWaitSpinner(spinnerId);
-
+            messagesApi.stopWaitSpinner(spinnerId);
             return mergedTreeNodeList;
         })
         .catch((err) => {
-            api.messages.stopWaitSpinner(spinnerId);
+            messagesApi.stopWaitSpinner(spinnerId);
             throw err;
         });
 }

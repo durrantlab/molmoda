@@ -1,6 +1,7 @@
 import { dynamicImports } from "./DynamicImports";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-import * as api from "@/Api/";
+import { messagesApi } from "@/Api/Messages";
+import { pluginsApi } from "@/Api/Plugins";
 
 let _db: any = undefined;
 
@@ -53,14 +54,10 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
         const now = new Date().getTime();
         if (showWarning && now - lastCookieMsgTime > 1000) {
             lastCookieMsgTime = now;
-
-            api.messages.popupMessage(
-                "Cookies Disallowed!", // Just call it a cookie.
-                "Your settings will be lost when you reload this page because you have disallowed cookies. Consider enabling cookies for a better user experience in the future.",
-                PopupVariant.Warning,
-                () => {
-                    api.plugins.runPlugin("statcollection");
-                }
+            // This popup was causing a circular dependency. Replaced with a console warning.
+            // The user will be prompted to enable cookies by the StatCollectionPlugin anyway.
+            console.warn(
+                "Cookies Disallowed! Your settings will be lost when you reload this page. Consider enabling cookies via Help > Plugin Info > StatCollection."
             );
         }
     }
@@ -113,7 +110,7 @@ export async function localStorageGetItem(
 
     // If not found, return null.
     if (result === undefined) {
-        return (defaultVal !== undefined) ? defaultVal : null;
+        return defaultVal !== undefined ? defaultVal : null;
     }
 
     // Check if expired (timestamp)
@@ -123,7 +120,7 @@ export async function localStorageGetItem(
     ) {
         // Value exists, but it has expired.
         await localStorageRemoveItem(key);
-        return (defaultVal !== undefined) ? defaultVal : null;
+        return defaultVal !== undefined ? defaultVal : null;
     }
 
     return result.value;
@@ -147,14 +144,15 @@ export async function localStorageSetItem(
     let valueToStore = value;
     // Sanitize non-null objects to prevent DataCloneError with IndexedDB.
     // This ensures that complex objects like GoldenLayout state are storable.
-    if (value !== null && typeof value === 'object') {
+    if (value !== null && typeof value === "object") {
         valueToStore = JSON.parse(JSON.stringify(value));
     }
 
     // Need to make special exception when key is statcollection. In this case,
     // if the value is true, you can set even if cookiesAllowed returned false.
     // Because this is what makes cookiesAllowed return true.
-    const enablingCookiesAllowed = key === "statcollection" && valueToStore === true;
+    const enablingCookiesAllowed =
+        key === "statcollection" && valueToStore === true;
     // You cannot save settings if the user has not consented to cookies.
     if (!enablingCookiesAllowed && !(await cookiesAllowed(showWarning))) {
         // If saving cookies not allowed, set the item to memoryStorage.

@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Load"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Load" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -96,7 +90,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
         } as IUserArgText,
     ];
 
-    
+
 
     /**
      * Runs when the user presses the action button and the popup closes.
@@ -112,35 +106,33 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * @param {string} uniprot  The requested uniprot id.
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    runJobInBrowser(uniprot: string): Promise<void> {
+    async runJobInBrowser(uniprot: string): Promise<void> {
         const errorMsg =
             "Could not load AlphaFold model with UniProt ID " +
             uniprot +
             ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?";
-        return loadRemoteToFileInfo(
-            `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
-        )
-            .then((fileInfo: FileInfo) => {
-                let pdbUrl = (JSON.parse(fileInfo.contents)[0] as any)["pdbUrl"]; // TODO: When would there be more than one entry?
-                if (pdbUrl) {
-                    // Load the PDB file.
-                    return loadRemoteToFileInfo(pdbUrl);
-                }
-                // Throw error
-                throw new Error("No PDB file found.");
-            })
-            .then((fileInfo: FileInfo): any => {
-                return this.addFileInfoToViewer({
-                    fileInfo,
+        const spinnerId = api.messages.startWaitSpinner();
+        try {
+            const fileInfo = await loadRemoteToFileInfo(
+                `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
+            );
+            const pdbUrl = (JSON.parse(fileInfo.contents)[0] as any)["pdbUrl"];
+            if (pdbUrl) {
+                const pdbFileInfo = await loadRemoteToFileInfo(pdbUrl);
+                await this.addFileInfoToViewer({
+                    fileInfo: pdbFileInfo,
                     tag: this.pluginId,
                 });
-            })
-            .catch((err: string) => {
-                api.messages.popupError(errorMsg);
-                throw err;
-            });
+            } else {
+                throw new Error("No PDB file found.");
+            }
+        } catch (err: any) {
+            api.messages.popupError(errorMsg);
+            throw err;
+        } finally {
+            api.messages.stopWaitSpinner(spinnerId);
+        }
     }
-
     /**
      * Gets the test commands for the plugin. For advanced use.
      *
@@ -181,5 +173,9 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     }
 }
 </script>
-
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.inverse-indent {
+    text-indent: -1em;
+    padding-left: 1em;
+}
+</style>

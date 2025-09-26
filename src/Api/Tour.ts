@@ -1,0 +1,14 @@
+import { tourManager } from "@/Core/Tours/TourManager";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+
+export const tourApi = {
+    /**
+     * Starts a tour for a given plugin.
+     *
+     * @param {PluginParentClass} plugin The plugin to start the tour for.
+     * @param {number} [testIndex=0] The index of the test to use for the tour.
+     */
+    startTour(plugin: PluginParentClass, testIndex = 0) {
+        tourManager.startTour(plugin, testIndex);
+    },
+};

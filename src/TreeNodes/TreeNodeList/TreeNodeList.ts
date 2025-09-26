@@ -1,6 +1,5 @@
 import { messagesApi } from "@/Api/Messages";
 import type { FileInfo } from "@/FileSystem/FileInfo";
-import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
@@ -12,6 +11,7 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 
 /**
  * TreeNodeList class

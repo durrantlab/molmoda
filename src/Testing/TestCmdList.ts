@@ -12,13 +12,15 @@ import {
     TestWaitUntilNotRegex,
     TestWaitUntilRegex,
 } from "./TestCommands";
-import * as api from "@/Api";
+import { pluginsApi } from "@/Api/Plugins";
+import { messagesApi } from "@/Api/Messages";
 import { expandAndShowAllMolsInTree } from "./SetupTests";
 import { openRemoteFile } from "@/FileSystem/UrlOpen";
 import * as StyleManager from "@/Core/Styling/StyleManager";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { addFailingUrlSubstring } from "@/Core/Fetcher";
 import { ITestCommand } from "./TestInterfaces";
+import { visualizationApi } from "@/Api/Visualization";
 
 const examplesLoaded: string[] = [];
 
@@ -129,7 +131,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public openPlugin(pluginId: string): TestCmdList {
-        api.plugins.runPlugin(pluginId);
+        pluginsApi.runPlugin(pluginId);
         return this;
     }
     /**
@@ -140,7 +142,7 @@ export class TestCmdList {
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public openPluginWithPayload(pluginId: string, payload: any): TestCmdList {
-        api.plugins.runPlugin(pluginId, payload);
+        pluginsApi.runPlugin(pluginId, payload);
         return this;
     }
 
@@ -180,9 +182,10 @@ export class TestCmdList {
         // If url ends in .molmoda
         if (url.endsWith(".molmoda")) {
             // Load the file
-            openRemoteFile(url);
+            void openRemoteFile(url);
         } else {
-            loadRemoteToFileInfo(url, false)
+            const spinnerId = messagesApi.startWaitSpinner();
+            void loadRemoteToFileInfo(url, false)
                 .then((fileInfo: FileInfo) => {
                     return getMoleculesFromStore().loadFromFileInfo({
                         fileInfo,
@@ -191,15 +194,18 @@ export class TestCmdList {
                 })
                 .then(() => {
                     expandAndShowAllMolsInTree();
-                    return api.visualization.viewer;
+                    return visualizationApi.viewer;
                 })
                 .then((v) => {
                     v.zoomOnFocused();
                     return;
                 })
                 .catch((err: string) => {
-                    api.messages.popupError(err);
-                    // throw err;
+                    messagesApi.popupError(err);
+                    return;
+                })
+                .finally(() => {
+                    messagesApi.stopWaitSpinner(spinnerId);
                 });
         }
         this.waitUntilRegex("#styles", "Protein");
@@ -232,21 +238,22 @@ export class TestCmdList {
             name: `${name}.smi`,
             contents: smilesString,
         });
-        getMoleculesFromStore()
+        void getMoleculesFromStore()
             .loadFromFileInfo({
                 fileInfo,
                 tag: null,
             })
             .then(() => {
                 expandAndShowAllMolsInTree();
-                return api.visualization.viewer;
+                return visualizationApi.viewer;
             })
             .then((v) => {
                 v.zoomOnFocused();
                 return;
             })
             .catch((err: string) => {
-                throw err;
+                messagesApi.popupError(err);
+                return;
             });
         this.waitUntilRegex("#styles", "Compound");
         if (expandInMoleculeTree) {

@@ -1,4 +1,4 @@
-import * as api from "@/Api/";
+import { pluginsApi } from "@/Api/Plugins";
 
 export let storeIsDirty = false;
 
@@ -21,7 +21,7 @@ export function openSavePluginIfStoreDirty(preventCloseSaveModal = true) {
     if (storeIsDirty) {
         setTimeout(() => {
             // The true means the app is closing.
-            api.plugins.runPlugin("savemolecules", preventCloseSaveModal);
+            pluginsApi.runPlugin("savemolecules", preventCloseSaveModal);
         }, 0);
     }
 }

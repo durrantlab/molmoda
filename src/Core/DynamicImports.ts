@@ -58,6 +58,38 @@ function addToHeader(
 }
 
 export const dynamicImports = {
+    driverJs: {
+        credit: {
+            name: "driver.js",
+            url: "https://github.com/kamranahmedse/driver.js",
+            license: Licenses.MIT,
+        },
+        /**
+         * Gets the module.
+         *
+         * @returns {Promise<any>} A promise that resolves to the module.
+         */
+        get module(): Promise<any> {
+            // const jsImport = 
+            return import(
+                /* webpackChunkName: "driver" */
+                /* webpackMode: "lazy" */
+                "driver.js"
+            ).then((mod) => {
+                return mod.driver;
+            });
+            // const cssImport = import(
+            //     /* webpackChunkName: "driver-css" */
+            //     /* webpackMode: "lazy" */
+            //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            //     // @ts-ignore
+            //     "driver.js/dist/driver.css"
+            // );
+            // return Promise.all([jsImport, cssImport]).then((mods) => {
+            //     return mods[0];
+            // });
+        },
+    } as IDynamicImport,
     jsZip: {
         credit: {
             name: "JSZip",
@@ -566,11 +598,11 @@ export const dynamicImports = {
                 });
         },
     },
- exceljs: {
+    exceljs: {
         credit: {
-   name: "ExcelJS",
-   url: "https://github.com/exceljs/exceljs",
-   license: Licenses.MIT,
+            name: "ExcelJS",
+            url: "https://github.com/exceljs/exceljs",
+            license: Licenses.MIT,
         },
         /**
          * Gets the module.
@@ -579,11 +611,11 @@ export const dynamicImports = {
          */
         get module(): Promise<any> {
             return import(
-    /* webpackChunkName: "exceljs" */
+                /* webpackChunkName: "exceljs" */
                 /* webpackMode: "lazy" */
-    "exceljs"
-   ).then((exceljs) => {
-    return exceljs;
+                "exceljs"
+            ).then((exceljs) => {
+                return exceljs;
             });
         },
     },

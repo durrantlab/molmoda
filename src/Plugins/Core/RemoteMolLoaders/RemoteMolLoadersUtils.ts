@@ -58,7 +58,6 @@ export function loadRemoteToFileInfo(
     url: string,
     validateUrl = true
 ): Promise<FileInfo> {
-    const spinnerId = api.messages.startWaitSpinner();
     return new Promise((resolve, reject) => {
         const urlUpper = url.toUpperCase();
         if (
@@ -66,16 +65,13 @@ export function loadRemoteToFileInfo(
             urlUpper.slice(0, 7) !== "HTTP://" &&
             urlUpper.slice(0, 8) !== "HTTPS://"
         ) {
-            api.messages.stopWaitSpinner(spinnerId);
             reject(`The URL should start with http:// or https://.`);
             return;
         }
 
-        try {
             fetcher(url)
                 .then((txt) => {
                     const flnm = url.split("/").pop() as string;
-                    api.messages.stopWaitSpinner(spinnerId);
                     return resolve(
                         new FileInfo({
                             name: flnm,
@@ -84,22 +80,7 @@ export function loadRemoteToFileInfo(
                     );
                 })
                 .catch((err) => {
-                    api.messages.stopWaitSpinner(spinnerId);
-                    reject(err);
-                    // reject(`Could not load the URL ${url}: ` + err.message);
-                    // api.messages.waitSpinner(false);
-                });
-        } catch (err) {
-            api.messages.stopWaitSpinner(spinnerId);
             reject(err);
-        }
-
-        // })
-        // .catch((err) => {
-        //     api.messages.stopWaitSpinner(spinnerId);
-        //     reject(err);
-        //     // reject(`Could not load the URL ${url}: ` + err.message);
-        //     // api.messages.waitSpinner(false);
-        // });
+    });
     });
 }
