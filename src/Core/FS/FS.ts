@@ -298,14 +298,48 @@ export function saveData(
             })
         );
     } else {
-        dynamicImports.sheetsjs.module
-            .then((sheetsjs) => {
-                const wb = sheetsjs.utils.book_new();
-                const ws = sheetsjs.utils.json_to_sheet(data.rows, {
-                    header: data.headers,
-                });
-                sheetsjs.utils.book_append_sheet(wb, ws, "Sheet1");
-                sheetsjs.writeFile(wb, filename);
+        Promise.all([
+            dynamicImports.exceljs.module,
+            dynamicImports.fileSaver.module,
+        ])
+            .then(async ([ExcelJS, fileSaver]) => {
+                const workbook = new ExcelJS.Workbook();
+                const worksheet = workbook.addWorksheet("Sheet1");
+
+                worksheet.columns = data.headers.map((header) => ({
+                    header: header,
+                    key: header,
+                }));
+
+                worksheet.addRows(data.rows);
+
+                const fileExtension = filename.split(".").pop()?.toLowerCase();
+                let buffer: ArrayBuffer;
+                let blobType: string;
+
+                if (fileExtension === "xlsx") {
+                    buffer = await workbook.xlsx.writeBuffer();
+                    blobType =
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                } else if (fileExtension === "csv") {
+                    buffer = await workbook.csv.writeBuffer();
+                    blobType = "text/csv;charset=utf-8;";
+                } else {
+                    // Fallback for when format is passed but not in filename
+                    if (format === DataFormat.XLSX) {
+                        buffer = await workbook.xlsx.writeBuffer();
+                        blobType =
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    } else if (format === DataFormat.CSV) {
+                        buffer = await workbook.csv.writeBuffer();
+                        blobType = "text/csv;charset=utf-8;";
+                    } else {
+                        console.error("Unsupported format for saving:", format);
+                        return;
+                    }
+                }
+                const blob = new Blob([buffer], { type: blobType });
+                fileSaver.saveAs(blob, filename);
                 return;
             })
             .catch((err: any) => {

@@ -566,11 +566,11 @@ export const dynamicImports = {
                 });
         },
     },
-    sheetsjs: {
+ exceljs: {
         credit: {
-            name: "SheetJS Community Edition",
-            url: "https://git.sheetjs.com/sheetjs/sheetjs",
-            license: Licenses.APACHE2,
+   name: "ExcelJS",
+   url: "https://github.com/exceljs/exceljs",
+   license: Licenses.MIT,
         },
         /**
          * Gets the module.
@@ -579,11 +579,11 @@ export const dynamicImports = {
          */
         get module(): Promise<any> {
             return import(
-                /* webpackChunkName: "sheetsjs" */
+    /* webpackChunkName: "exceljs" */
                 /* webpackMode: "lazy" */
-                "xlsx"
-            ).then((sheetsjs) => {
-                return sheetsjs;
+    "exceljs"
+   ).then((exceljs) => {
+    return exceljs;
             });
         },
     },
