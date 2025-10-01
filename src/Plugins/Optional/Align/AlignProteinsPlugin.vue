@@ -236,7 +236,8 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(true, "https://files.rcsb.org/view/1XDN.pdb")
                     .loadExampleMolecule(true, "https://files.rcsb.org/view/1S68.pdb"),
-                pluginOpen: () => new TestCmdList().wait(2), // wait for UI to settle
+                pluginOpen: () => new TestCmdList()
+                    .setUserArg("referenceMolecule", "1XDN", this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "1XDN-aligned")
                     .waitUntilRegex("#navigator", "1S68-aligned"),

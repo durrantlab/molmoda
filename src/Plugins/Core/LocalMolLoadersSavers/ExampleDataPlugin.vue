@@ -1,14 +1,7 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        cancelBtnTxt="Cancel"
-        actionBtnTxt="Append Example Data"
-        @onPopupDone="onPopupDone"
-        :isActionBtnEnabled="true"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Cancel" actionBtnTxt="Append Example Data"
+        @onPopupDone="onPopupDone" :isActionBtnEnabled="true" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged">
     </PluginComponent>
 </template>
 
@@ -120,7 +113,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
             alertType: "info",
         } as IUserArgAlert,
     ];
-    
+
     intro = `Append example data to the current project.`;
     details = `Useful for exploring and testing the ${appName} interface.`;
 
@@ -207,9 +200,10 @@ export default class ExampleDataPlugin extends PluginParentClass {
         return [
             // First test without saving first
             {
+                pluginOpen: () => new TestCmdList().setUserArg("which_example_data", "1INW_pocket.molmoda", this.pluginId),
                 afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
-                    "Compounds"
+                    "Pockets:1INW"
                 ),
             },
         ];

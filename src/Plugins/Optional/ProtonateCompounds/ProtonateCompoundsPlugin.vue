@@ -30,6 +30,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { ITest } from "@/Testing/TestInterfaces";
 import {
+    Gen3DLevel,
     IGen3DOptions,
     WhichMolsGen3D,
     convertFileInfosOpenBabel,
@@ -232,6 +233,9 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         return [
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+                pluginOpen: () => new TestCmdList()
+                    .setUserArg("pH", 5.0, this.pluginId)
+                    .setUserArg("gen3D", Gen3DLevel.Fast, this.pluginId),
                 afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "Compounds:protonated"

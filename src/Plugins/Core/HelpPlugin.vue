@@ -275,12 +275,6 @@ export default class HelpPlugin extends PluginParentClass {
      * @returns {ITest}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const basicTest: ITest = {
-            closePlugin: () => new TestCmdList().pressPopupButton(
-                ".cancel-btn",
-                this.pluginId
-            ),
-        };
         const filterTest: ITest = {
             pluginOpen: () => new TestCmdList()
                 .waitUntilRegex(`#modal-${this.pluginId}`, "About") // Wait for "About" to be visible
@@ -291,7 +285,13 @@ export default class HelpPlugin extends PluginParentClass {
                 this.pluginId
             ),
         };
-        return [basicTest, filterTest];
+        const basicTest: ITest = {
+            closePlugin: () => new TestCmdList().pressPopupButton(
+                ".cancel-btn",
+                this.pluginId
+            ),
+        };
+        return [filterTest, basicTest];
     }
 }
 </script>

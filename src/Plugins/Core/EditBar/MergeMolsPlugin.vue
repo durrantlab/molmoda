@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Merge"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Merge" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -66,7 +60,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
     ];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    
+
     logJob = false;
     tags = [Tag.All];
 
@@ -187,9 +181,10 @@ export default class MergeMolsPlugin extends PluginParentClass {
                     .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein")
                     .selectMoleculeInTree("Compounds", true),
+                pluginOpen: () => new TestCmdList().setUserArg("newName", "My-Merged-Molecule", this.pluginId),
                 afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
-                    ".merged"
+                    "My-Merged-Molecule"
                 ),
             },
         ];

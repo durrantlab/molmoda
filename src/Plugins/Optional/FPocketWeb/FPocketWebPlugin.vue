@@ -542,14 +542,6 @@ export default class FPocketWebPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest[]> {
         return [
-            // without pseudo atoms
-            {
-                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
-                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "Pocket1Box"
-                ),
-            },
             // Including pseudo atoms
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
@@ -559,6 +551,14 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
                     "PocketPseudoAtoms1"
+                ),
+            },
+            // without pseudo atoms
+            {
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "Pocket1Box"
                 ),
             },
         ];

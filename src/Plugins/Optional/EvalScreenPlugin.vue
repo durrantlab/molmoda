@@ -648,17 +648,14 @@ export default class EvalScreenPlugin extends PluginParentClass {
                     true,
                     "./TGFR1_docked.molmoda"
                 ),
-                pluginOpen: () => new TestCmdList().waitUntilRegex(
-                    "#modal-evalscreen",
-                    "0.871"
-                ),
-                closePlugin: () => new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
-                afterPluginCloses: () => new TestCmdList()
-
-                // afterPluginCloses: () => new TestCmdList().waitUntilRegex(
-                //     "#modal-simplemsg",
-                //     "No compounds found"
-                // ),
+    pluginOpen: () =>
+     new TestCmdList()
+      .setUserArg("activesLabel", "active", this.pluginId)
+      .setUserArg("otherLabel", "other", this.pluginId)
+      .waitUntilRegex("#modal-evalscreen", "0.871"),
+    closePlugin: () =>
+     new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
+    afterPluginCloses: () => new TestCmdList(),
             },
         ];
     }

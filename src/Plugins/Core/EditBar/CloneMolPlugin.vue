@@ -202,8 +202,9 @@ export default class CloneMolPlugin extends PluginParentClass {
                 beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein"),
+                pluginOpen: () => new TestCmdList().setUserArg("newName", "Cloned Protein", this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
-                    .waitUntilRegex("#navigator", ":cloned")
+                    .waitUntilRegex("#navigator", "Cloned Protein")
                     .wait(0.5)
 
                     // Also check clicking in title bar
@@ -246,8 +247,8 @@ export default class CloneMolPlugin extends PluginParentClass {
                     // Also need to close the simple message popup to continue.
                     .click("#modal-simplemsg .cancel-btn"),
             },
-    ];
-        }
+        ];
+    }
 }
 </script>
 

@@ -54,11 +54,21 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
         const now = new Date().getTime();
         if (showWarning && now - lastCookieMsgTime > 1000) {
             lastCookieMsgTime = now;
+
+            messagesApi.popupMessage(
+                "Cookies Disallowed!", // Just call it a cookie.
+                "Your settings will be lost when you reload this page because you have disallowed cookies. Consider enabling cookies for a better user experience in the future.",
+                PopupVariant.Warning,
+                () => {
+                    pluginsApi.runPlugin("statcollection");
+                }
+            );
+
             // This popup was causing a circular dependency. Replaced with a console warning.
             // The user will be prompted to enable cookies by the StatCollectionPlugin anyway.
-            console.warn(
-                "Cookies Disallowed! Your settings will be lost when you reload this page. Consider enabling cookies via Help > Plugin Info > StatCollection."
-            );
+            // console.warn(
+            //     "Cookies Disallowed! Your settings will be lost when you reload this page. Consider enabling cookies via Help > Plugin Info > StatCollection."
+            // );
         }
     }
 
