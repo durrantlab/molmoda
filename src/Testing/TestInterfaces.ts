@@ -9,6 +9,7 @@ export enum TestCommand {
     Upload = "upload",
     AddTests = "addTests", // TODO: Not a class yet
     CheckBox = "checkBox", // TODO: Not a class yet
+    TourNote = "tourNote",
 }
 
 export interface ITestCommand {

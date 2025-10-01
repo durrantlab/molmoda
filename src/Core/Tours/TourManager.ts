@@ -38,7 +38,10 @@ class TourManager {
                 this.isRunning = false;
                 this.driver = null; // Reset for next tour
             },
-            onPopoverRender: (popover: PopoverDOM) => {
+            onPopoverRender: (
+                popover: PopoverDOM,
+                { state }: { state: any }
+            ) => {
                 // This hook runs every time a popover is shown.
                 // 'popover' is the PopoverDOM object with references to the elements.
 
@@ -71,7 +74,7 @@ class TourManager {
                     popover.footer.classList.add(
                         "card-footer",
                         "d-flex",
-                        "justify-content-between",
+                        "justify-content-end", // Align buttons to the right
                         "align-items-center",
                         "py-2",
                         "px-3"
@@ -80,11 +83,8 @@ class TourManager {
                 }
 
                 if (popover.previousButton) {
-                    popover.previousButton.classList.add(
-                        "btn",
-                        "btn-sm",
-                        "btn-outline-secondary"
-                    );
+                    // Always hide the "Previous" button as requested.
+                    popover.previousButton.style.display = "none";
                 }
 
                 if (popover.nextButton) {
@@ -94,8 +94,14 @@ class TourManager {
                         "btn-primary",
                         "ms-1"
                     );
+                    // Show "Next" button only for steps that do not auto-advance.
+                    // Auto-advancing steps are identified by having an `onHighlightStarted` handler.
+                    if (state.activeStep?.onHighlightStarted) {
+                        popover.nextButton.style.display = "none";
+                    } else {
+                        popover.nextButton.style.display = "inline-block";
+                    }
                 }
-
                 if (popover.closeButton) {
                     popover.closeButton.innerHTML = ""; // Remove default text
                     popover.closeButton.classList.add(
@@ -109,6 +115,7 @@ class TourManager {
             },
         });
     }
+
     /**
      * Starts a tour for a given plugin.
      *
@@ -319,10 +326,17 @@ class TourManager {
                             });
                     },
                 };
+            case TestCommand.TourNote:
+                popover.description = command.data as string;
+                return {
+                    element: command.selector,
+                    popover,
+                };
             default:
                 // Other commands like Wait are not interactive and can be skipped in a user tour.
                 return null;
         }
     }
 }
+
 export const tourManager = new TourManager();

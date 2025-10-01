@@ -237,7 +237,7 @@ export class TestUpload extends TestCmdParent {
         }
         this.filePath = filePath;
     }
-
+    
     /**
      * Generates the command to upload the specified file to the specified
      * selector.
@@ -250,6 +250,41 @@ export class TestUpload extends TestCmdParent {
             selector: this.selector,
             cmd: TestCommand.Upload,
             data: this.filePath,
+        };
+    }
+}
+
+/**
+ * A class to generate the command for displaying a note during a tour. Should
+ * only be called from class TestCmdList.
+ */
+export class TestTourNote extends TestCmdParent {
+    private selector: string;
+    private message: string;
+
+    /**
+     * Creates an instance of TestTourNote.
+     *
+     * @param {string} selector  The selector for the element to associate the
+     *           note with.
+     * @param {string} message   The message to display in the note.
+     */
+    constructor(selector: string, message: string) {
+        super();
+        this.selector = selector;
+        this.message = message;
+    }
+
+    /**
+     * Generates the command to display the tour note.
+     *
+     * @returns {ITestCommand}  The command.
+     */
+    get cmd(): ITestCommand {
+        return {
+            selector: this.selector,
+            cmd: TestCommand.TourNote,
+            data: this.message,
         };
     }
 }

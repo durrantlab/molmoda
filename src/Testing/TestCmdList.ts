@@ -11,6 +11,8 @@ import {
     TestWait,
     TestWaitUntilNotRegex,
     TestWaitUntilRegex,
+    addTestsToCmdList,
+    TestTourNote,
 } from "./TestCommands";
 import { pluginsApi } from "@/Api/Plugins";
 import { messagesApi } from "@/Api/Messages";
@@ -102,6 +104,19 @@ export class TestCmdList {
     }
 
     /**
+     * Adds a note to be displayed during an interactive tour. This has no effect
+     * on automated tests.
+     *
+     * @param {string} message The message to display.
+     * @param {string} selector The CSS selector for the element to associate the note with.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public tourNote(message: string, selector: string): TestCmdList {
+        this.tests.push(new TestTourNote(selector, message));
+        return this;
+    }
+
+    /**
      * Returns the list of test commands.
      *
      * @returns {ITestCommand[]} The list of test commands.
@@ -124,6 +139,7 @@ export class TestCmdList {
         StyleManager.addCustomStyle(styleName, styleDefinition, true); // Overwrite for test predictability
         return this;
     }
+
     /**
      * Opens a plugin programmatically by its ID.
      *
@@ -134,6 +150,7 @@ export class TestCmdList {
         pluginsApi.runPlugin(pluginId);
         return this;
     }
+
     /**
      * Opens a plugin with a specific payload. This bypasses the menu system.
      *
