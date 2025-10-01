@@ -12,6 +12,7 @@ import { PopoverDOM } from "driver.js";
 class TourManager {
     private driver: any = null;
     private isRunning = false;
+
     /**
      * Initializes the TourManager, loading driver.js and configuring it to
      * dynamically apply Bootstrap 5 classes to the popovers.
@@ -205,7 +206,6 @@ class TourManager {
             title: plugin.title,
             description: "",
         };
-
         switch (command.cmd) {
             case TestCommand.Click:
                 popover.description = "Please click here to continue.";
@@ -213,6 +213,13 @@ class TourManager {
                     element: command.selector,
                     popover,
                     onHighlightStarted: (element: HTMLElement) => {
+                        if (!element) {
+                            console.error(
+                                `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                            );
+                            this.driver.moveNext();
+                            return;
+                        }
                         const oneTimeClickListener = () => {
                             element.removeEventListener(
                                 "click",
@@ -232,7 +239,14 @@ class TourManager {
                     return {
                         element: command.selector,
                         popover,
-                        onHighlighted: () => {
+                        onHighlighted: (element: HTMLElement) => {
+                            if (!element) {
+                                console.error(
+                                    `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                                );
+                                this.driver.moveNext();
+                                return;
+                            }
                             setTimeout(() => this.driver.moveNext(), 3000);
                         },
                     };
@@ -241,6 +255,13 @@ class TourManager {
                     element: command.selector,
                     popover,
                     onHighlightStarted: (element: HTMLInputElement) => {
+                        if (!element) {
+                            console.error(
+                                `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                            );
+                            this.driver.moveNext();
+                            return;
+                        }
                         const oneTimeInputListener = () => {
                             if (element.value === command.data) {
                                 element.removeEventListener(
@@ -277,6 +298,7 @@ class TourManager {
                                 return null;
                             })
                             .catch((err) => {
+                                throw err;
                                 console.error(
                                     "TourManager: Error in waitForCondition:",
                                     err

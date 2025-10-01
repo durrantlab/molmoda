@@ -202,6 +202,7 @@ export class TestCmdList {
                 })
                 .catch((err: string) => {
                     messagesApi.popupError(err);
+                    // throw err;
                     return;
                 })
                 .finally(() => {
@@ -253,6 +254,7 @@ export class TestCmdList {
             })
             .catch((err: string) => {
                 messagesApi.popupError(err);
+                // throw err;
                 return;
             });
         this.waitUntilRegex("#styles", "Compound");
