@@ -4,6 +4,7 @@ import { ITest, ITestCommand, TestCommand } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { waitForCondition } from "../Utils/MiscUtils";
 import { PopoverDOM } from "driver.js";
+import { openPluginCmds } from "@/Testing/TestCmd";
 
 /**
  * Manages the creation and execution of interactive tours using driver.js,
@@ -166,16 +167,10 @@ class TourManager {
         plugin: PluginParentClass
     ): Promise<any[]> {
         const steps: any[] = [];
-        const commandLists = [
-            test.beforePluginOpens,
-            test.pluginOpen,
-            test.closePlugin,
-            test.afterPluginCloses,
-        ];
-
-        for (const commandListFunc of commandLists) {
-            if (typeof commandListFunc !== "function") continue;
-
+        const processCommandList = (
+            commandListFunc: (() => TestCmdList) | undefined
+        ) => {
+            if (typeof commandListFunc !== "function") return;
             const testCmdList = commandListFunc();
             if (testCmdList instanceof TestCmdList) {
                 for (const command of testCmdList.cmds) {
@@ -185,7 +180,25 @@ class TourManager {
                     }
                 }
             }
+        };
+
+        processCommandList(test.beforePluginOpens);
+
+        // Add commands to open the plugin from the menu
+        const openCmds = openPluginCmds(plugin);
+        for (const command of openCmds) {
+            const step = this._commandToDriverStep(command, plugin);
+            if (step) {
+                if (step.popover) {
+                    step.popover.description = `Please click here to continue the tour.`;
+                }
+                steps.push(step);
+            }
         }
+
+        processCommandList(test.pluginOpen);
+        processCommandList(test.closePlugin);
+        processCommandList(test.afterPluginCloses);
 
         return steps;
     }

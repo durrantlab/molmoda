@@ -1,13 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onPopupDone="onPopupDone"
-        actionBtnTxt="Add Region"
-        :hideIfDisabled="true"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Add Region"
+        :hideIfDisabled="true" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
     </PluginComponent>
 </template>
 
@@ -144,7 +137,7 @@ export default class AddRegionPlugin extends PluginParentClass {
      * Runs before the popup opens. Starts importing the modules needed for the
      * plugin.
      */
-     async onBeforePopupOpen() {
+    async onBeforePopupOpen() {
         // You're probably going to need open babel and rdkitjs
         // dynamicImports.rdkitjs.module;
         // dynamicImports.openbabeljs.module;
@@ -299,10 +292,22 @@ export default class AddRegionPlugin extends PluginParentClass {
     async getTests(): Promise<ITest> {
         return {
             beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
-            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
-                "#navigator",
-                "region"
-            ),
+            pluginOpen: () =>
+                new TestCmdList()
+                    .setUserArg("regionName", "Binding Site", this.pluginId)
+                    // .setUserArg("regionType", "box", this.pluginId)
+                    .text(`#x-dimensions-addregion-item`, "15")
+                    .text(`#y-dimensions-addregion-item`, "15")
+                    .text(`#z-dimensions-addregion-item`, "15")
+                    .text(`#x-center-addregion-item`, "10")
+                    .text(`#y-center-addregion-item`, "10")
+                    .text(`#z-center-addregion-item`, "10")
+                    // .text(`#color-addregion-item`, "#ff0000") // Red
+                    .text(`#opacity-addregion-item`, "0.5"),
+            closePlugin: () =>
+                new TestCmdList().pressPopupButton(".action-btn", this.pluginId),
+            afterPluginCloses: () =>
+                new TestCmdList().waitUntilRegex("#navigator", "Binding Site"),
         };
     }
 }

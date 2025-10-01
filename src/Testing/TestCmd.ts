@@ -21,7 +21,7 @@ type IConvertedTest = { [key: string]: ITestCommand[] };
  * @param  {any} plugin  The plugin to test.
  * @returns {ITestCommand[]}  The commands to open the plugin.
  */
-function _openPluginCmds(plugin: any): ITestCommand[] {
+export function openPluginCmds(plugin: any): ITestCommand[] {
     // Get menu clicks
     const menuData = processMenuPath(plugin.menuPath) as IMenuPathInfo[];
     if (menuData === null || menuData === undefined) {
@@ -64,7 +64,7 @@ function _openPluginCmds(plugin: any): ITestCommand[] {
 }
 
 /**
- * If running selenium tests, this function will add any unspecified (default)
+ * If running a selenium test, this function will add any unspecified (default)
  * test commands. Occurs in place.
  *
  * @param  {IConvertedTest[]} convertedTests  The tests to add defaults to.
@@ -193,10 +193,7 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
 
     // If there is more than one test but pluginTestIndex is undefined, send
     // back command to add tests.
-    if (
-        tests.length > 1 &&
-        PluginToTest.pluginTestIndex === undefined
-    ) {
+ if (tests.length > 1 && PluginToTest.pluginTestIndex === undefined) {
         store.commit("setVar", {
             name: "cmds",
             val: JSON.stringify([
@@ -238,7 +235,7 @@ export async function createTestCmdsIfTestSpecified(plugin: any) {
     const finalTestCommands = convertedTests[0];
     const cmds = [
         ...(finalTestCommands.beforePluginOpens as ITestCommand[]),
-        ..._openPluginCmds(plugin),
+  ...openPluginCmds(plugin),
         ...(finalTestCommands.pluginOpen as ITestCommand[]),
         new TestWait(1).cmd,
         ...(finalTestCommands.closePlugin as ITestCommand[]),
