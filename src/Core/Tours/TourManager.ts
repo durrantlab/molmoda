@@ -48,70 +48,85 @@ class TourManager {
                 const popoverEl = popover.wrapper?.closest(".driver-popover");
                 if (!popoverEl) return;
 
-                // Apply Bootstrap card styling and adjust padding
-                popoverEl.classList.add("card", "shadow-lg", "p-0");
+                // Wrap in timeout because otherwise some classes get overwritten by
+                // driver.js after this hook runs.
+                setTimeout(() => {
+                    // Apply Bootstrap card styling and adjust padding
+                    popoverEl.classList.add("card", "shadow-lg", "p-0");
 
-                if (popover.title) {
-                    popover.title.classList.add(
-                        "card-header",
-                        "py-2",
-                        "px-3",
-                        "h5",
-                        "m-0",
-                        "d-flex",
-                        "justify-content-between",
-                        "align-items-center",
-                        "bg-primary",
-                        "text-white"
-                    );
-                }
-
-                if (popover.description) {
-                    popover.description.classList.add("card-body", "p-3");
-                }
-
-                if (popover.footer) {
-                    popover.footer.classList.add(
-                        "card-footer",
-                        "d-flex",
-                        "justify-content-end", // Align buttons to the right
-                        "align-items-center",
-                        "py-2",
-                        "px-3"
-                    );
-                    popover.footer.classList.remove("driver-popover-footer");
-                }
-
-                if (popover.previousButton) {
-                    // Always hide the "Previous" button as requested.
-                    popover.previousButton.style.display = "none";
-                }
-
-                if (popover.nextButton) {
-                    popover.nextButton.classList.add(
-                        "btn",
-                        "btn-sm",
-                        "btn-primary",
-                        "ms-1"
-                    );
-                    // Show "Next" button only for steps that do not auto-advance.
-                    // Auto-advancing steps are identified by having an `onHighlightStarted` handler.
-                    if (state.activeStep?.onHighlightStarted) {
-                        popover.nextButton.style.display = "none";
-                    } else {
-                        popover.nextButton.style.display = "inline-block";
-                    }
-                }
-                if (popover.closeButton) {
-                    popover.closeButton.innerHTML = ""; // Remove default text
-                    popover.closeButton.classList.add(
-                        "btn-close",
-                        "btn-close-white"
-                    );
                     if (popover.title) {
-                        popover.title.appendChild(popover.closeButton);
+                        popover.title.classList.add(
+                            "card-header",
+                            "py-2",
+                            // "px-3",
+                            "ps-3", "pe-2",
+                            "h5",
+                            "m-0",
+                            "d-flex",
+                            "justify-content-between",
+                            "align-items-center",
+                            "bg-primary",
+                            "text-white"
+                        );
                     }
-                }
+
+                    if (popover.arrow) {
+                        // driver.js seems to overwrite the arrow's classes/styles after this
+                        // hook. Using a setTimeout defers our class addition until after
+                        // driver.js has finished its synchronous rendering, ensuring our
+                        // class is applied last.
+                        popover.arrow?.classList.add("border-primary");
+                    }
+
+                    if (popover.description) {
+                        popover.description.classList.add("card-body", "p-3");
+                    }
+
+                    if (popover.footer) {
+                        popover.footer.classList.add(
+                            "card-footer",
+                            "d-flex",
+                            "justify-content-end", // Align buttons to the right
+                            "align-items-center",
+                            "py-2",
+                            "px-3"
+                        );
+                        popover.footer.classList.remove(
+                            "driver-popover-footer"
+                        );
+                    }
+
+                    if (popover.previousButton) {
+                        // Always hide the "Previous" button as requested.
+                        popover.previousButton.style.display = "none";
+                    }
+
+                    if (popover.nextButton) {
+                        popover.nextButton.classList.add(
+                            "btn",
+                            "btn-sm",
+                            "btn-primary",
+                            "ms-1"
+                        );
+                        // Show "Next" button only for steps that do not auto-advance.
+                        // Auto-advancing steps are identified by having an `onHighlightStarted` handler.
+                        if (state.activeStep?.onHighlightStarted) {
+                            popover.nextButton.style.display = "none";
+                        } else {
+                            popover.nextButton.style.display = "inline-block";
+                        }
+                    }
+                    if (popover.closeButton) {
+                        popover.closeButton.innerHTML = ""; // Remove default text
+                        popover.closeButton.classList.add(
+                            "btn-close",
+                            "btn-close-white"
+                        );
+                        if (popover.title) {
+                            popover.title.appendChild(popover.closeButton);
+                        }
+                    }
+                }, 0);
             },
         });
     }

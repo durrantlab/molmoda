@@ -49,9 +49,9 @@
     position: relative;
     /* line-height: 1.5; */
     /* zoom: 1; */
-    margin: 0;
+    /* margin: 0; */
 }
-.driver-popover-close-btn {
+/* .driver-popover-close-btn {
     all: unset;
     position: absolute;
     top: 0;
@@ -59,8 +59,8 @@
     width: 32px;
     height: 28px;
     cursor: pointer;
-    /* font-size: 18px; */
-    /* font-weight: 500; */
+    font-size: 18px;
+    font-weight: 500;
     color: #d2d2d2;
     z-index: 1;
     text-align: center;
@@ -70,7 +70,7 @@
 .driver-popover-close-btn:hover,
 .driver-popover-close-btn:focus {
     color: #2d2d2d;
-}
+} */
 .driver-popover-title[style*="block"] + .driver-popover-description {
     /* margin-top: 5px; */
 }
@@ -145,27 +145,27 @@
 }
 .driver-popover-arrow-side-left {
     left: 100%;
-    /* border-right-color: transparent; */
-    /* border-bottom-color: transparent; */
-    /* border-top-color: transparent; */
+    border-right-color: transparent !important;
+    border-bottom-color: transparent !important;
+    border-top-color: transparent !important;
 }
 .driver-popover-arrow-side-right {
     right: 100%;
-    /* border-left-color: transparent; */
-    /* border-bottom-color: transparent; */
-    /* border-top-color: transparent; */
+    border-left-color: transparent !important;
+    border-bottom-color: transparent !important;
+    border-top-color: transparent !important;
 }
 .driver-popover-arrow-side-top {
     top: 100%;
-    /* border-right-color: transparent; */
-    /* border-bottom-color: transparent; */
-    /* border-left-color: transparent; */
+    border-right-color: transparent !important;
+    border-bottom-color: transparent !important;
+    border-left-color: transparent !important;
 }
 .driver-popover-arrow-side-bottom {
     bottom: 100%;
-    /* border-left-color: transparent; */
-    /* border-top-color: transparent; */
-    /* border-right-color: transparent; */
+    border-left-color: transparent !important;
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
 }
 .driver-popover-arrow-side-center {
     display: none;
