@@ -8,6 +8,8 @@ import { openPluginCmds } from "@/Testing/TestCmd";
 import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import { UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
+const FOCUS_DELAY = 300; // ms
+
 /**
  * Manages the creation and execution of interactive tours using driver.js,
  * powered by the plugin testing infrastructure.
@@ -19,6 +21,7 @@ class TourManager {
 
     /**
      * Injects the driver.js CSS file into the document head.
+     * 
      * @private
      */
     private _injectDriverCss(): void {
@@ -29,27 +32,114 @@ class TourManager {
         document.head.appendChild(cssLink);
     }
     /**
-     * Initializes the TourManager, loading driver.js and configuring it to
-     * dynamically apply Bootstrap 5 classes to the popovers.
-     *
-     * @return {Promise<void>} A promise that resolves when driver.js is loaded.
+     * Handles the rendering of the popover by applying Bootstrap classes.
+     * 
+     * @param {PopoverDOM} popover - The popover DOM object from driver.js.
+     * @param {any} state - The current state of the tour step.
+     * @private
      */
-    private async initializeDriver(): Promise<void> {
-        if (this.driver) {
-            return;
+    private _handlePopoverRender(
+        popover: PopoverDOM,
+        { state }: { state: any }
+    ): void {
+        // If it's a custom wait step, handle auto-advance here.
+        if (state.activeStep.isWaitStep) {
+            setTimeout(() => {
+                waitForCondition(state.activeStep.waitCondition)
+                    .then(() => {
+                        if (
+                            this.driver &&
+                            this.driver.getActiveStep() === state.activeStep
+                        ) {
+                            this.driver.moveNext();
+                        }
+                        return null;
+                    })
+                    .catch((err: any) => {
+                        console.error(
+                            "TourManager: Error in waitForCondition:",
+                            err
+                        );
+                    });
+            }, 0);
         }
-        const driverJsModule = await dynamicImports.driverJs.module;
-        // I struggled to get this to work via import in DynamicImports, so just
-        // load the CSS directly here.
-        const cssLink = document.createElement("link");
-        cssLink.rel = "stylesheet";
-        cssLink.type = "text/css";
-        cssLink.href = "js/driverjs/driver.css";
-        document.head.appendChild(cssLink);
-        this.driver = driverJsModule({
-            showProgress: true,
-            overlayOpacity: 0.0, // Make overlay less intrusive
-            popoverOffset: 0, // Reduce space between popover and element
+
+        const popoverEl = popover.wrapper?.closest(".driver-popover");
+        if (!popoverEl) return;
+
+        setTimeout(() => {
+            popoverEl.classList.add("card", "shadow-lg", "p-0");
+            if (popover.title) {
+                popover.title.classList.add(
+                    "card-header",
+                    "py-2",
+                    "ps-3",
+                    "pe-2",
+                    "h5",
+                    "m-0",
+                    "d-flex",
+                    "justify-content-between",
+                    "align-items-center",
+                    "bg-primary",
+                    "text-white"
+                );
+            }
+            if (popover.arrow) {
+                popover.arrow?.classList.add("border-primary");
+            }
+            if (popover.description) {
+                popover.description.classList.add("card-body", "p-3");
+            }
+            if (popover.footer) {
+                popover.footer.classList.add(
+                    "card-footer",
+                    "d-flex",
+                    "justify-content-end",
+                    "align-items-center",
+                    "py-2",
+                    "px-3"
+                );
+                popover.footer.classList.remove("driver-popover-footer");
+            }
+            if (popover.previousButton) {
+                popover.previousButton.style.display = "none";
+            }
+            if (popover.nextButton) {
+                popover.nextButton.classList.add(
+                    "btn",
+                    "btn-sm",
+                    "btn-primary",
+                    "ms-1"
+                );
+                if (
+                    state.activeStep?.onHighlightStarted ||
+                    state.activeStep?.isWaitStep
+                ) {
+                    popover.nextButton.style.display = "none";
+                } else {
+                    popover.nextButton.style.display = "inline-block";
+                }
+            }
+            if (popover.closeButton) {
+                popover.closeButton.innerHTML = "";
+                popover.closeButton.classList.add(
+                    "btn-close",
+                    "btn-close-white"
+                );
+                if (popover.title) {
+                    popover.title.appendChild(popover.closeButton);
+                }
+            }
+        }, 0);
+    }
+
+    /**
+     * Configures and returns the hooks for the driver.js instance.
+     * @returns {object} An object containing all the lifecycle hooks for driver.js.
+     * @private
+     */
+    private _configureDriverHooks(): object {
+        return {
             onHighlightStarted: (element: HTMLElement) => {
                 if (element) {
                     element.style.setProperty("outline", "3px solid #0d6efd");
@@ -84,120 +174,26 @@ class TourManager {
                 popover: PopoverDOM,
                 { state }: { state: any }
             ) => {
-                // If it's a custom wait step, handle auto-advance here.
-                if (state.activeStep.isWaitStep) {
-                    setTimeout(() => {
-                        waitForCondition(state.activeStep.waitCondition)
-                            .then(() => {
-                                if (
-                                    this.driver &&
-                                    this.driver.getActiveStep() ===
-                                        state.activeStep
-                                ) {
-                                    this.driver.moveNext();
-                                }
-                                return null;
-                            })
-                            .catch((err: any) => {
-                                console.error(
-                                    "TourManager: Error in waitForCondition:",
-                                    err
-                                );
-                            });
-                    }, 0);
-                }
-
-                // This hook runs every time a popover is shown.
-                // 'popover' is the PopoverDOM object with references to the elements.
-
-                const popoverEl = popover.wrapper?.closest(".driver-popover");
-                if (!popoverEl) return;
-
-                // Wrap in timeout because otherwise some classes get overwritten by
-                // driver.js after this hook runs.
-                setTimeout(() => {
-                    // Apply Bootstrap card styling and adjust padding
-                    popoverEl.classList.add("card", "shadow-lg", "p-0");
-
-                    if (popover.title) {
-                        popover.title.classList.add(
-                            "card-header",
-                            "py-2",
-                            // "px-3",
-                            "ps-3",
-                            "pe-2",
-                            "h5",
-                            "m-0",
-                            "d-flex",
-                            "justify-content-between",
-                            "align-items-center",
-                            "bg-primary",
-                            "text-white"
-                        );
-                    }
-
-                    if (popover.arrow) {
-                        // driver.js seems to overwrite the arrow's classes/styles after this
-                        // hook. Using a setTimeout defers our class addition until after
-                        // driver.js has finished its synchronous rendering, ensuring our
-                        // class is applied last.
-                        popover.arrow?.classList.add("border-primary");
-                    }
-
-                    if (popover.description) {
-                        popover.description.classList.add("card-body", "p-3");
-                    }
-
-                    if (popover.footer) {
-                        popover.footer.classList.add(
-                            "card-footer",
-                            "d-flex",
-                            "justify-content-end", // Align buttons to the right
-                            "align-items-center",
-                            "py-2",
-                            "px-3"
-                        );
-                        popover.footer.classList.remove(
-                            "driver-popover-footer"
-                        );
-                    }
-
-                    if (popover.previousButton) {
-                        // Always hide the "Previous" button as requested.
-                        popover.previousButton.style.display = "none";
-                    }
-
-                    if (popover.nextButton) {
-                        popover.nextButton.classList.add(
-                            "btn",
-                            "btn-sm",
-                            "btn-primary",
-                            "ms-1"
-                        );
-                        // Show "Next" button only for steps that do not auto-advance.
-                        // Auto-advancing steps are interactive ones with `onHighlightStarted`,
-                        // or our custom `isWaitStep`.
-                        if (
-                            state.activeStep?.onHighlightStarted ||
-                            state.activeStep?.isWaitStep
-                        ) {
-                            popover.nextButton.style.display = "none";
-                        } else {
-                            popover.nextButton.style.display = "inline-block";
-                        }
-                    }
-                    if (popover.closeButton) {
-                        popover.closeButton.innerHTML = ""; // Remove default text
-                        popover.closeButton.classList.add(
-                            "btn-close",
-                            "btn-close-white"
-                        );
-                        if (popover.title) {
-                            popover.title.appendChild(popover.closeButton);
-                        }
-                    }
-                }, 0);
+                this._handlePopoverRender(popover, { state });
             },
+        };
+    }
+
+    /**
+     * Initializes the TourManager, loading driver.js and configuring it.
+     * @return {Promise<void>} A promise that resolves when driver.js is loaded.
+     */
+    private async initializeDriver(): Promise<void> {
+        if (this.driver) {
+            return;
+        }
+        const driverJsModule = await dynamicImports.driverJs.module;
+        this._injectDriverCss();
+        this.driver = driverJsModule({
+            showProgress: true,
+            overlayOpacity: 0.0, // Make overlay less intrusive
+            popoverOffset: 5, // Reduce space between popover and element
+            ...this._configureDriverHooks(),
         });
     }
 
@@ -404,7 +400,7 @@ class TourManager {
                 }
                 setTimeout(() => {
                     element.focus();
-                }, 0);
+                }, FOCUS_DELAY); // Delay to ensure focus is not stolen
                 const oneTimeClickListener = () => {
                     element.removeEventListener("click", oneTimeClickListener);
                     this.driver.moveNext();
@@ -415,35 +411,36 @@ class TourManager {
     }
 
     /**
-     * Creates a driver.js step for a text input or file upload command.
+     * Finds the user argument corresponding to a selector and refines the selector to target the specific input element.
      *
-     * @param {ITestCommand} command The input command.
+     * @param {ITestCommand} command The test command containing the base selector.
      * @param {PluginParentClass} plugin The plugin instance.
-     * @returns {any} A driver.js step object.
+     * @returns {{ userArg: UserArg | undefined, specificSelector: string }} The found user argument and the refined selector.
      * @private
      */
-    private _createInputStep(
+    private _findUserArgAndRefineSelector(
         command: ITestCommand,
         plugin: PluginParentClass
-    ): any {
-        let fieldLabel = "this field";
+    ): { userArg: UserArg | undefined; specificSelector: string } {
         let specificSelector = command.selector!;
+        let foundUserArg: UserArg | undefined;
+
         if (command.selector) {
             const selectorParts = command.selector.split(" ");
             const lastSelectorPart = selectorParts[selectorParts.length - 1];
             const modalSelectorPart = selectorParts.slice(0, -1).join(" ");
             const selectorStr = lastSelectorPart.replace(/^#/, "");
             const suffix = `-${plugin.pluginId}-item`;
+
             if (selectorStr.endsWith(suffix)) {
                 const argId = selectorStr.slice(0, -suffix.length);
-                // First, try a direct match
-                const userArg = plugin
+                foundUserArg = plugin
                     .getUserArgsFlat()
                     .find((arg) => arg.id === argId);
-                if (userArg) {
-                    // Determine tag name for more specific selector
+
+                if (foundUserArg) {
                     let tagName = "";
-                    switch (userArg.type) {
+                    switch (foundUserArg.type) {
                         case UserArgType.Text:
                         case UserArgType.Number:
                         case UserArgType.Color:
@@ -463,47 +460,87 @@ class TourManager {
                     if (tagName) {
                         specificSelector = `${modalSelectorPart} ${tagName}${lastSelectorPart}`;
                     }
-                    // Direct match found
-                    if (userArg.label && userArg.label.trim() !== "") {
-                        fieldLabel = `the "${userArg.label.trim()}" field`;
-                    } else if ((userArg as any).placeHolder) {
-                        const placeholder = (userArg as any).placeHolder;
-                        let nameFromPlaceholder = placeholder
-                            .split("(")[0]
-                            .trim();
-                        nameFromPlaceholder = nameFromPlaceholder
-                            .replace(/\.\.\.$/, "")
-                            .trim();
-                        if (nameFromPlaceholder) {
-                            fieldLabel = `the "${nameFromPlaceholder}" field`;
-                        }
-                    }
                 } else {
                     // No direct match, check for vector components (e.g., x-dimensions)
                     const axisMatch = argId.match(/^([xyz])-/);
                     if (axisMatch) {
                         specificSelector = `${modalSelectorPart} input${lastSelectorPart}`;
-                        const axis = axisMatch[1]; // 'x', 'y', or 'z'
-                        const baseId = argId.substring(2); // e.g., 'dimensions'
-                        const vectorUserArg = plugin
+                        const baseId = argId.substring(2);
+                        foundUserArg = plugin
                             .getUserArgsFlat()
                             .find((arg) => arg.id === baseId);
-                        if (
-                            vectorUserArg &&
-                            vectorUserArg.type === UserArgType.Vector3D
-                        ) {
-                            const groupLabel =
-                                vectorUserArg.label &&
-                                vectorUserArg.label.trim() !== ""
-                                    ? `of the "${vectorUserArg.label.trim()}" field`
-                                    : "of the field";
-                            fieldLabel = `the ${axis.toUpperCase()} value ${groupLabel}`;
-                        }
                     }
                 }
             }
         }
+        return { userArg: foundUserArg, specificSelector };
+    }
+
+    /**
+     * Builds a human-readable label for a form field.
+     *
+     * @param {UserArg | undefined} userArg The user argument object for the field.
+     * @param {string} commandSelector The original selector from the command.
+     * @param {string} pluginId The ID of the current plugin.
+     * @returns {string} The constructed field label.
+     * @private
+     */
+    private _buildFieldLabel(
+        userArg: UserArg | undefined,
+        commandSelector: string,
+        pluginId: string
+    ): string {
+        if (userArg) {
+            if (userArg.label && userArg.label.trim() !== "") {
+                return `the "${userArg.label.trim()}" field`;
+            }
+            if ((userArg as any).placeHolder) {
+                const placeholder = (userArg as any).placeHolder;
+                const nameFromPlaceholder = placeholder
+                    .split("(")[0]
+                    .trim()
+                    .replace(/\.\.\.$/, "")
+                    .trim();
+                if (nameFromPlaceholder) {
+                    return `the "${nameFromPlaceholder}" field`;
+                }
+            }
+            if (userArg.type === UserArgType.Vector3D) {
+                const argId = commandSelector
+                    .replace(/^#/, "")
+                    .replace(`-${pluginId}-item`, "");
+                const axisMatch = argId.match(/^([xyz])-/);
+                if (axisMatch) {
+                    const axis = axisMatch[1].toUpperCase();
+                    return `the ${axis} value of the field`;
+                }
+            }
+        }
+        return "this field";
+    }
+
+    /**
+     * Creates a driver.js step for a text input or file upload command.
+     *
+     * @param {ITestCommand} command The input command.
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @returns {any} A driver.js step object.
+     * @private
+     */
+    private _createInputStep(
+        command: ITestCommand,
+        plugin: PluginParentClass
+    ): any {
+        const { userArg, specificSelector } =
+            this._findUserArgAndRefineSelector(command, plugin);
+        const fieldLabel = this._buildFieldLabel(
+            userArg,
+            command.selector!,
+            plugin.pluginId
+        );
+
         console.log(`Tour Step: Input - Selector: ${specificSelector}`);
+
         const popover = {
             title: plugin.title,
             description: "",
@@ -526,6 +563,7 @@ class TourManager {
                 },
             };
         }
+
         popover.description = `Please enter "${command.data}" as ${fieldLabel}.`;
         return {
             element: specificSelector,
@@ -543,7 +581,7 @@ class TourManager {
                     if (typeof element.select === "function") {
                         element.select();
                     }
-                }, 0);
+                }, FOCUS_DELAY); // Delay to ensure focus is not stolen by the popover
                 const oneTimeInputListener = () => {
                     if (element.value === command.data) {
                         element.removeEventListener(
@@ -605,12 +643,12 @@ class TourManager {
                 title: plugin.title,
                 description: command.data as string,
             },
-            onHighlightStarted: (element: HTMLElement) => {
+            onHighlighted: (element: HTMLElement) => {
                 setTimeout(() => {
                     if (element && typeof element.focus === "function") {
                         element.focus();
                     }
-                }, 0);
+                }, FOCUS_DELAY); // Delay to ensure focus is not stolen
             },
         };
     }
