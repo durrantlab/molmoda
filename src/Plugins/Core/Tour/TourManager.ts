@@ -7,6 +7,7 @@ import { PopoverDOM } from "driver.js";
 import { openPluginCmds } from "@/Testing/TestCmd";
 import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import { UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { messagesApi } from "@/Api/Messages";
 
 const FOCUS_DELAY = 150; // ms
 
@@ -18,6 +19,8 @@ class TourManager {
     private driver: any = null;
     private isRunning = false;
     private lastHighlightedElement: HTMLElement | null = null;
+    private isMoving = false; // To prevent concurrent moves
+    private tourSteps: any[] = []; // Store steps for the current tour
 
     /**
      * Injects the driver.js CSS file into the document head.
@@ -31,6 +34,7 @@ class TourManager {
         cssLink.href = "js/driverjs/driver.css";
         document.head.appendChild(cssLink);
     }
+
     /**
      * Handles the rendering of the popover by applying Bootstrap classes.
      *
@@ -197,6 +201,84 @@ class TourManager {
             popoverOffset: 5, // Reduce space between popover and element
             ...this._configureDriverHooks(),
         });
+
+        // Monkey-patch moveNext to add retry logic
+        const originalMoveNext = this.driver.moveNext.bind(this.driver);
+        this.driver.moveNext = () => {
+            this.moveToNextStepWithRetry(originalMoveNext);
+        };
+    }
+
+    /**
+     * Asynchronously moves to the next tour step, waiting for the element to appear if necessary.
+     *
+     * @param {() => void} originalMoveNext The original moveNext function from the driver instance.
+     * @private
+     */
+    private async moveToNextStepWithRetry(originalMoveNext: () => void) {
+        if (this.isMoving) return;
+        if (!this.driver.hasNextStep()) {
+            this.driver.destroy();
+            return;
+        }
+
+        this.isMoving = true;
+
+        const steps = this.tourSteps; // Use stored steps
+        const activeIndex = this.driver.getActiveIndex();
+        const nextStep = steps[activeIndex + 1];
+
+        if (typeof nextStep.element === "string") {
+            try {
+                await this.waitForElement(nextStep.element);
+                originalMoveNext(); // Element exists, proceed.
+            } catch (error) {
+                console.error(error);
+                messagesApi.popupError(
+                    `Tour element not found: ${nextStep.element}. The tour will now end.`
+                );
+                this.driver.destroy();
+            } finally {
+                this.isMoving = false;
+            }
+        } else {
+            originalMoveNext(); // No element to wait for.
+            this.isMoving = false;
+        }
+    }
+
+    /**
+     * Waits for a DOM element to appear, retrying every 250ms for up to 2 seconds.
+     *
+     * @param {string} selector The CSS selector for the element.
+     * @param {number} [timeout=2000] The total time to wait in milliseconds.
+     * @param {number} [interval=250] The time between retries in milliseconds.
+     * @returns {Promise<HTMLElement>} A promise that resolves with the element or rejects with an error.
+     * @private
+     */
+    private waitForElement(
+        selector: string,
+        timeout = 2000,
+        interval = 250
+    ): Promise<HTMLElement> {
+        return new Promise((resolve, reject) => {
+            const startTime = Date.now();
+            const check = () => {
+                const element = document.querySelector(selector) as HTMLElement;
+                if (element) {
+                    resolve(element);
+                } else if (Date.now() - startTime > timeout) {
+                    reject(
+                        new Error(
+                            `TourManager: Element not found for selector "${selector}" after ${timeout}ms.`
+                        )
+                    );
+                } else {
+                    setTimeout(check, interval);
+                }
+            };
+            check();
+        });
     }
 
     /**
@@ -236,6 +318,7 @@ class TourManager {
             testToRun,
             plugin
         );
+        this.tourSteps = driverSteps; // Store the steps for later use
         if (driverSteps.length > 0) {
             this.driver.setSteps(driverSteps);
             this.driver.drive();
@@ -594,9 +677,7 @@ class TourManager {
             };
         }
 
-        const descriptionParts = [
-            `For ${fieldLabel}, use "${command.data}".`,
-        ];
+        const descriptionParts = [`For ${fieldLabel}, use "${command.data}".`];
         if (userArg) {
             if (userArg.description) {
                 descriptionParts.push(
