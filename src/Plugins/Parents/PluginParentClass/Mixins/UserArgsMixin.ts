@@ -70,7 +70,7 @@ export class UserArgsMixin extends Vue {
     protected getUserArg(id: string): any {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const {userArgs} = this;
+        const { userArgs } = this;
 
         // It's a form element
         let val: any = undefined;
@@ -90,18 +90,18 @@ export class UserArgsMixin extends Vue {
     /**
      * Given a list of user arguments, return a flattened version (so groups removed).
      * A helper function.
-     * 
+     *
      * @param {UserArg[]} userArgs  The user arguments.
      * @returns {UserArg[]}  The flattened user arguments.
      */
-    protected getUserArgsFlat(userArgs?: UserArg[]): UserArg[] {
+    public getUserArgsFlat(userArgs?: UserArg[]): UserArg[] {
         const userArgsFlat: UserArg[] = [];
         if (userArgs === undefined) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             userArgs = this.userArgs;
         }
-        for (const userArg of (userArgs as UserArg[])) {
+        for (const userArg of userArgs as UserArg[]) {
             if (userArg.type === UserArgType.Group) {
                 const userArgGroup = userArg as IUserArgGroup;
                 userArgsFlat.push(...this.getUserArgsFlat(userArgGroup.val));

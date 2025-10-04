@@ -2,34 +2,17 @@
     <span>
         <div :class="'container-fluid ' + cls" :style="styl">
             <div class="row">
-                <div
-                    :class="'col px-0' + (axisIdx === 1 ? ' px-1' : '')"
-                    v-for="axisIdx in axesIdxs"
-                    :key="axisIdx"
-                >
-                    <input
-                        :ref="`inputElem${axes[axisIdx]}`"
-                        :data-idx="axisIdx"
-                        type="number"
-                        class="form-control form-control-sm"
-                        :readonly="readonly"
-                        :id="`${axes[axisIdx]}-${id}`"
-                        :placeholder="axes[axisIdx].toUpperCase() + ' value...'"
-                        :disabled="disabled"
-                        @input="handleInput"
-                        @keydown="onKeyDown"
-                        :value="modelValue[axisIdx]"
-                        :delayBetweenChangesDetected="
-                            delayBetweenChangesDetected
-                        "
-                    />
+                <div :class="'col px-0' + (axisIdx === 1 ? ' px-1' : '')" v-for="axisIdx in axesIdxs" :key="axisIdx">
+                    <input :ref="`inputElem${axes[axisIdx]}`" :data-idx="axisIdx" type="number"
+                        class="form-control form-control-sm" :readonly="readonly" :id="axes[axisIdx] + '-' + id"
+                        :placeholder="axes[axisIdx].toUpperCase() + ' value...'" :disabled="disabled"
+                        @input="handleInput" @keydown="onKeyDown" :value="modelValue[axisIdx]"
+                        :delayBetweenChangesDetected="delayBetweenChangesDetected
+                            " />
                 </div>
             </div>
         </div>
-        <FormElementDescription
-            :description="description"
-            :warning="warning"
-        ></FormElementDescription>
+        <FormElementDescription :description="description" :warning="warning"></FormElementDescription>
     </span>
 </template>
 
@@ -160,5 +143,4 @@ export default class FormVector3D extends Vue {
 // Input of type color
 // .form-control-color {
 //     width: 100%;
-// }
-</style>
+// }</style>

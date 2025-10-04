@@ -5,6 +5,8 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { waitForCondition } from "../Utils/MiscUtils";
 import { PopoverDOM } from "driver.js";
 import { openPluginCmds } from "@/Testing/TestCmd";
+import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
+import { UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * Manages the creation and execution of interactive tours using driver.js,
@@ -13,6 +15,7 @@ import { openPluginCmds } from "@/Testing/TestCmd";
 class TourManager {
     private driver: any = null;
     private isRunning = false;
+    private lastHighlightedElement: HTMLElement | null = null;
 
     /**
      * Initializes the TourManager, loading driver.js and configuring it to
@@ -34,7 +37,34 @@ class TourManager {
         document.head.appendChild(cssLink);
         this.driver = driverJsModule({
             showProgress: true,
+            overlayOpacity: 0.0, // Make overlay less intrusive
+            onHighlightStarted: (element: HTMLElement) => {
+                if (element) {
+                    element.style.setProperty("outline", "3px solid #0d6efd");
+                    element.style.setProperty("outline-offset", "2px");
+                    element.style.setProperty("border-radius", "4px");
+                    this.lastHighlightedElement = element;
+                }
+            },
+            onDeselected: (element: HTMLElement) => {
+                if (element) {
+                    element.style.removeProperty("outline");
+                    element.style.removeProperty("outline-offset");
+                    element.style.removeProperty("border-radius");
+                }
+                this.lastHighlightedElement = null;
+            },
             onDestroyed: () => {
+                if (this.lastHighlightedElement) {
+                    this.lastHighlightedElement.style.removeProperty("outline");
+                    this.lastHighlightedElement.style.removeProperty(
+                        "outline-offset"
+                    );
+                    this.lastHighlightedElement.style.removeProperty(
+                        "border-radius"
+                    );
+                    this.lastHighlightedElement = null;
+                }
                 this.isRunning = false;
                 this.driver = null; // Reset for next tour
             },
@@ -42,6 +72,29 @@ class TourManager {
                 popover: PopoverDOM,
                 { state }: { state: any }
             ) => {
+                // If it's a custom wait step, handle auto-advance here.
+                if (state.activeStep.isWaitStep) {
+                    setTimeout(() => {
+                        waitForCondition(state.activeStep.waitCondition)
+                            .then(() => {
+                                if (
+                                    this.driver &&
+                                    this.driver.getActiveStep() ===
+                                        state.activeStep
+                                ) {
+                                    this.driver.moveNext();
+                                }
+                                return null;
+                            })
+                            .catch((err: any) => {
+                                console.error(
+                                    "TourManager: Error in waitForCondition:",
+                                    err
+                                );
+                            });
+                    }, 0);
+                }
+
                 // This hook runs every time a popover is shown.
                 // 'popover' is the PopoverDOM object with references to the elements.
 
@@ -59,7 +112,8 @@ class TourManager {
                             "card-header",
                             "py-2",
                             // "px-3",
-                            "ps-3", "pe-2",
+                            "ps-3",
+                            "pe-2",
                             "h5",
                             "m-0",
                             "d-flex",
@@ -109,8 +163,12 @@ class TourManager {
                             "ms-1"
                         );
                         // Show "Next" button only for steps that do not auto-advance.
-                        // Auto-advancing steps are identified by having an `onHighlightStarted` handler.
-                        if (state.activeStep?.onHighlightStarted) {
+                        // Auto-advancing steps are interactive ones with `onHighlightStarted`,
+                        // or our custom `isWaitStep`.
+                        if (
+                            state.activeStep?.onHighlightStarted ||
+                            state.activeStep?.isWaitStep
+                        ) {
                             popover.nextButton.style.display = "none";
                         } else {
                             popover.nextButton.style.display = "inline-block";
@@ -208,11 +266,36 @@ class TourManager {
 
         // Add commands to open the plugin from the menu
         const openCmds = openPluginCmds(plugin);
+        const menuPathInfo = processMenuPath(plugin.menuPath);
+        const menuTexts = menuPathInfo
+            ? menuPathInfo.map((info) =>
+                  info.text.replace(/(\.\.\.|_)/g, "").trim()
+              )
+            : [];
+        let menuTextIndex = 0;
         for (const command of openCmds) {
             const step = this._commandToDriverStep(command, plugin);
             if (step) {
                 if (step.popover) {
-                    step.popover.description = `Please click here to continue the tour.`;
+                    // Only create descriptions for click commands
+                    if (command.cmd === TestCommand.Click) {
+                        if (command.selector === "#hamburger-button") {
+                            step.popover.description = `Please click here to open the menu.`;
+                            // Do not increment menuTextIndex for the hamburger button
+                        } else if (
+                            menuTexts.length > 0 &&
+                            menuTextIndex < menuTexts.length
+                        ) {
+                            step.popover.description = `Click the "${menuTexts[menuTextIndex]}" menu item.`;
+                            menuTextIndex++;
+                        } else {
+                            // Fallback for any other clicks (e.g., if openPluginCmds is buggy)
+                            step.popover.description = `Please click here to continue the tour.`;
+                        }
+                    } else {
+                        // For any non-click commands (though none are expected here from openPluginCmds)
+                        step.popover.description = `Please click here to continue the tour.`;
+                    }
                 }
                 steps.push(step);
             }
@@ -266,11 +349,63 @@ class TourManager {
                     },
                 };
             case TestCommand.Text:
-            case TestCommand.Upload:
-                popover.description = `Please enter "${command.data}" into this field.`;
+            case TestCommand.Upload: {
+                let fieldLabel = "this field";
+                if (command.selector) {
+                    const selectorParts = command.selector.split(" ");
+                    const lastSelectorPart =
+                        selectorParts[selectorParts.length - 1];
+                    const selectorStr = lastSelectorPart.replace(/^#/, "");
+                    const suffix = `-${plugin.pluginId}-item`;
+                    if (selectorStr.endsWith(suffix)) {
+                        const argId = selectorStr.slice(0, -suffix.length);
+                        // First, try a direct match
+                        const userArg = plugin
+                            .getUserArgsFlat()
+                            .find((arg) => arg.id === argId);
+                        if (userArg) {
+                            // Direct match found
+                            if (userArg.label && userArg.label.trim() !== "") {
+                                fieldLabel = `the "${userArg.label.trim()}" field`;
+                            } else if ((userArg as any).placeHolder) {
+                                const placeholder = (userArg as any)
+                                    .placeHolder;
+                                let nameFromPlaceholder = placeholder
+                                    .split("(")[0]
+                                    .trim();
+                                nameFromPlaceholder = nameFromPlaceholder
+                                    .replace(/\.\.\.$/, "")
+                                    .trim();
+                                if (nameFromPlaceholder) {
+                                    fieldLabel = `the "${nameFromPlaceholder}" field`;
+                                }
+                            }
+                        } else {
+                            // No direct match, check for vector components (e.g., x-dimensions)
+                            const axisMatch = argId.match(/^([xyz])-/);
+                            if (axisMatch) {
+                                const axis = axisMatch[1]; // 'x', 'y', or 'z'
+                                const baseId = argId.substring(2); // e.g., 'dimensions'
+                                const vectorUserArg = plugin
+                                    .getUserArgsFlat()
+                                    .find((arg) => arg.id === baseId);
+                                if (
+                                    vectorUserArg &&
+                                    vectorUserArg.type === UserArgType.Vector3D
+                                ) {
+                                    const groupLabel =
+                                        vectorUserArg.label &&
+                                        vectorUserArg.label.trim() !== ""
+                                            ? `'${vectorUserArg.label.trim()}' field`
+                                            : "field";
+                                    fieldLabel = `the ${axis.toUpperCase()} value of the ${groupLabel}`;
+                                }
+                            }
+                        }
+                    }
+                }
                 if (command.cmd === TestCommand.Upload) {
-                    popover.description = `Please upload the required file. For this tour, we cannot automate file selection, so we will proceed automatically after a brief pause.`;
-                    // We can't interact with file dialogs, so we just show the message and move on.
+                    popover.description = `Please upload the required file for ${fieldLabel}. For this tour, we cannot automate file selection, so we will proceed automatically after a brief pause.`;
                     return {
                         element: command.selector,
                         popover,
@@ -286,6 +421,7 @@ class TourManager {
                         },
                     };
                 }
+                popover.description = `Please enter "${command.data}" into ${fieldLabel}.`;
                 return {
                     element: command.selector,
                     popover,
@@ -309,36 +445,22 @@ class TourManager {
                         element.addEventListener("input", oneTimeInputListener);
                     },
                 };
+            }
             case TestCommand.WaitUntilRegex:
-                // This is a non-interactive step
+                // This is a non-interactive step. It has no `element` property, so it will
+                // be a centered modal. Custom flags are added to trigger auto-advance logic.
                 return {
                     popover: {
                         ...popover,
                         description: "Waiting for the application to update...",
                     },
-                    onHighlightStarted: () => {
-                        waitForCondition(() => {
-                            const el = document.querySelector(
-                                command.selector!
-                            );
-                            return (
-                                !!el &&
-                                new RegExp(command.data).test(
-                                    el.textContent || ""
-                                )
-                            );
-                        })
-                            .then(() => {
-                                this.driver.moveNext();
-                                return null;
-                            })
-                            .catch((err) => {
-                                throw err;
-                                console.error(
-                                    "TourManager: Error in waitForCondition:",
-                                    err
-                                );
-                            });
+                    isWaitStep: true,
+                    waitCondition: () => {
+                        const el = document.querySelector(command.selector!);
+                        return (
+                            !!el &&
+                            new RegExp(command.data).test(el.textContent || "")
+                        );
                     },
                 };
             case TestCommand.TourNote:
