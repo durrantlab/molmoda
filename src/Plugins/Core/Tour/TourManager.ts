@@ -429,9 +429,7 @@ class TourManager {
                 element.addEventListener("click", oneTimeClickListener);
             },
             onHighlighted: (element: HTMLElement) => {
-                setTimeout(() => {
-                    element.focus();
-                }, FOCUS_DELAY); // Delay to ensure focus is not stolen
+                this._setFocus(element);
             },
         };
     }
@@ -596,7 +594,26 @@ class TourManager {
             };
         }
 
-        popover.description = `For ${fieldLabel}, use "${command.data}".`;
+        const descriptionParts = [
+            `For ${fieldLabel}, use "${command.data}".`,
+        ];
+        if (userArg) {
+            if (userArg.description) {
+                descriptionParts.push(
+                    `<br><br><em>${userArg.description}</em>`
+                );
+            }
+            if (userArg.warningFunc) {
+                const warning = userArg.warningFunc(command.data);
+                if (warning) {
+                    descriptionParts.push(
+                        `<br><br><strong class="text-danger">Warning:</strong> ${warning}`
+                    );
+                }
+            }
+        }
+        popover.description = descriptionParts.join("");
+
         return {
             element: specificSelector,
             popover,
@@ -620,14 +637,26 @@ class TourManager {
                 element.addEventListener("input", oneTimeInputListener);
             },
             onHighlighted: (element: HTMLInputElement) => {
-                setTimeout(() => {
-                    element.focus();
-                    if (typeof element.select === "function") {
-                        element.select();
-                    }
-                }, FOCUS_DELAY); // Delay to ensure focus is not stolen by the popover
+                this._setFocus(element);
             },
         };
+    }
+
+    private _setFocus(element: HTMLInputElement | HTMLElement | null): void {
+        if (!element) {
+            console.error(
+                `TourManager: Element not found for selector "${element}". Skipping step.`
+            );
+            return;
+        }
+        setTimeout(() => {
+            if (typeof element.focus === "function") {
+                element.focus();
+            }
+            if (typeof (element as any).select === "function") {
+                (element as any).select();
+            }
+        }, FOCUS_DELAY); // Delay to ensure focus is not stolen by the popover
     }
 
     /**
@@ -678,11 +707,7 @@ class TourManager {
                 description: command.data as string,
             },
             onHighlighted: (element: HTMLElement) => {
-                setTimeout(() => {
-                    if (element && typeof element.focus === "function") {
-                        element.focus();
-                    }
-                }, FOCUS_DELAY); // Delay to ensure focus is not stolen
+                this._setFocus(element);
             },
         };
     }

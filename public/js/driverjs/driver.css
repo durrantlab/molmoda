@@ -221,3 +221,7 @@
     transform: scale(2);
     transform-origin: bottom center;
 }
+
+.driver-popover {
+    max-width: 50%;
+}
