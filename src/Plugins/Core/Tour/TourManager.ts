@@ -86,7 +86,8 @@ class TourManager {
             }
             if (popover.arrow) {
                 popover.arrow?.classList.add("border-primary");
-                popover.arrow.style.filter = 'drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))';
+                popover.arrow.style.filter =
+                    "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
             }
             if (popover.description) {
                 popover.description.classList.add("card-body", "p-3");
@@ -431,7 +432,7 @@ class TourManager {
                 setTimeout(() => {
                     element.focus();
                 }, FOCUS_DELAY); // Delay to ensure focus is not stolen
-            }
+            },
         };
     }
 
@@ -516,8 +517,24 @@ class TourManager {
         pluginId: string
     ): string {
         if (userArg) {
+            // Prioritize Vector3D check for specific axis labeling
+            if (userArg.type === UserArgType.Vector3D) {
+                const argId = commandSelector
+                    .replace(/^#/, "")
+                    .replace(`-${pluginId}-item`, "");
+                const axisMatch = argId.match(/^([xyz])-/);
+                if (axisMatch) {
+                    const axis = axisMatch[1].toUpperCase();
+                    const groupLabel =
+                        userArg.label && userArg.label.trim() !== ""
+                            ? ` of ${userArg.label.trim()}`
+                            : "";
+                    return `the ${axis} value${groupLabel}`;
+                }
+            }
+
             if (userArg.label && userArg.label.trim() !== "") {
-                return `the "${userArg.label.trim()}"`;
+                return `${userArg.label.trim()}`;
             }
             if ((userArg as any).placeHolder) {
                 const placeholder = (userArg as any).placeHolder;
@@ -527,22 +544,11 @@ class TourManager {
                     .replace(/\.\.\.$/, "")
                     .trim();
                 if (nameFromPlaceholder) {
-                    return `the "${nameFromPlaceholder}"`;
-                }
-            }
-            if (userArg.type === UserArgType.Vector3D) {
-                const argId = commandSelector
-                    .replace(/^#/, "")
-                    .replace(`-${pluginId}-item`, "");
-                const axisMatch = argId.match(/^([xyz])-/);
-                debugger
-                if (axisMatch) {
-                    const axis = axisMatch[1].toUpperCase();
-                    return `the ${axis} value`;
+                    return `${nameFromPlaceholder}`;
                 }
             }
         }
-        return "this field";
+        return "this input";
     }
 
     /**
@@ -590,7 +596,7 @@ class TourManager {
             };
         }
 
-        popover.description = `Please enter "${command.data}" as ${fieldLabel}.`;
+        popover.description = `For ${fieldLabel}, use "${command.data}".`;
         return {
             element: specificSelector,
             popover,
@@ -620,7 +626,7 @@ class TourManager {
                         element.select();
                     }
                 }, FOCUS_DELAY); // Delay to ensure focus is not stolen by the popover
-            }
+            },
         };
     }
 
