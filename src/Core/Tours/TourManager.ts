@@ -247,24 +247,61 @@ class TourManager {
         plugin: PluginParentClass
     ): Promise<any[]> {
         const steps: any[] = [];
-        const processCommandList = (
-            commandListFunc: (() => TestCmdList) | undefined
-        ) => {
-            if (typeof commandListFunc !== "function") return;
-            const testCmdList = commandListFunc();
-            if (testCmdList instanceof TestCmdList) {
-                for (const command of testCmdList.cmds) {
-                    const step = this._commandToDriverStep(command, plugin);
-                    if (step) {
-                        steps.push(step);
-                    }
+        // Add introduction step
+        steps.push({
+            popover: {
+                title: `Welcome to the ${plugin.title} tour!`,
+                description: `${plugin.title} Plugin purpose: ${plugin.intro} ${plugin.details}`,
+            },
+        });
+        this._processCommandList(test.beforePluginOpens, plugin, steps);
+        this._addPluginOpeningSteps(plugin, steps);
+        this._processCommandList(test.pluginOpen, plugin, steps);
+        this._processCommandList(test.closePlugin, plugin, steps);
+        this._processCommandList(test.afterPluginCloses, plugin, steps);
+        // Add conclusion step
+        steps.push({
+            popover: {
+                title: "Tour Complete!",
+                description: `You've completed the tour for the ${plugin.title} plugin. You can now close this message.`,
+            },
+        });
+        return steps;
+    }
+
+    /**
+     * Processes a command list function, converting its commands to tour steps.
+     *
+     * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @param {any[]} steps The array of steps to populate.
+     * @private
+     */
+    private _processCommandList(
+        commandListFunc: (() => TestCmdList) | undefined,
+        plugin: PluginParentClass,
+        steps: any[]
+    ) {
+        if (typeof commandListFunc !== "function") return;
+        const testCmdList = commandListFunc();
+        if (testCmdList instanceof TestCmdList) {
+            for (const command of testCmdList.cmds) {
+                const step = this._commandToDriverStep(command, plugin);
+                if (step) {
+                    steps.push(step);
                 }
             }
-        };
+        }
+    }
 
-        processCommandList(test.beforePluginOpens);
-
-        // Add commands to open the plugin from the menu
+    /**
+     * Adds the steps required to open a plugin from the menu.
+     *
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @param {any[]} steps The array of steps to populate.
+     * @private
+     */
+    private _addPluginOpeningSteps(plugin: PluginParentClass, steps: any[]) {
         const openCmds = openPluginCmds(plugin);
         const menuPathInfo = processMenuPath(plugin.menuPath);
         const menuTexts = menuPathInfo
@@ -300,16 +337,10 @@ class TourManager {
                 steps.push(step);
             }
         }
-
-        processCommandList(test.pluginOpen);
-        processCommandList(test.closePlugin);
-        processCommandList(test.afterPluginCloses);
-
-        return steps;
     }
 
     /**
-     * Converts a single ITestCommand into a driver.js step object.
+     * Converts a single ITestCommand into a driver.js step object by dispatching to helper methods.
      *
      * @param {ITestCommand} command The test command.
      * @param {PluginParentClass} plugin The plugin instance.
@@ -320,159 +351,217 @@ class TourManager {
         command: ITestCommand,
         plugin: PluginParentClass
     ): any | null {
+        switch (command.cmd) {
+            case TestCommand.Click:
+                return this._createClickStep(command, plugin);
+            case TestCommand.Text:
+            case TestCommand.Upload:
+                return this._createInputStep(command, plugin);
+            case TestCommand.WaitUntilRegex:
+                return this._createWaitStep(command, plugin);
+            case TestCommand.TourNote:
+                return this._createNoteStep(command, plugin);
+            default:
+                // Commands like Wait are not interactive and can be skipped in a user tour.
+                return null;
+        }
+    }
+
+    /**
+     * Creates a driver.js step for a click command.
+     *
+     * @param {ITestCommand} command The click command.
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @returns {any} A driver.js step object.
+     * @private
+     */
+    private _createClickStep(
+        command: ITestCommand,
+        plugin: PluginParentClass
+    ): any {
+        return {
+            element: command.selector,
+            popover: {
+                title: plugin.title,
+                description: "Please click here to continue.",
+            },
+            onHighlightStarted: (element: HTMLElement) => {
+                if (!element) {
+                    console.error(
+                        `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                    );
+                    this.driver.moveNext();
+                    return;
+                }
+                const oneTimeClickListener = () => {
+                    element.removeEventListener("click", oneTimeClickListener);
+                    this.driver.moveNext();
+                };
+                element.addEventListener("click", oneTimeClickListener);
+            },
+        };
+    }
+
+    /**
+     * Creates a driver.js step for a text input or file upload command.
+     *
+     * @param {ITestCommand} command The input command.
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @returns {any} A driver.js step object.
+     * @private
+     */
+    private _createInputStep(
+        command: ITestCommand,
+        plugin: PluginParentClass
+    ): any {
+        let fieldLabel = "this field";
+        if (command.selector) {
+            const selectorParts = command.selector.split(" ");
+            const lastSelectorPart = selectorParts[selectorParts.length - 1];
+            const selectorStr = lastSelectorPart.replace(/^#/, "");
+            const suffix = `-${plugin.pluginId}-item`;
+            if (selectorStr.endsWith(suffix)) {
+                const argId = selectorStr.slice(0, -suffix.length);
+                // First, try a direct match
+                const userArg = plugin
+                    .getUserArgsFlat()
+                    .find((arg) => arg.id === argId);
+                if (userArg) {
+                    // Direct match found
+                    if (userArg.label && userArg.label.trim() !== "") {
+                        fieldLabel = `the "${userArg.label.trim()}" field`;
+                    } else if ((userArg as any).placeHolder) {
+                        const placeholder = (userArg as any).placeHolder;
+                        let nameFromPlaceholder = placeholder
+                            .split("(")[0]
+                            .trim();
+                        nameFromPlaceholder = nameFromPlaceholder
+                            .replace(/\.\.\.$/, "")
+                            .trim();
+                        if (nameFromPlaceholder) {
+                            fieldLabel = `the "${nameFromPlaceholder}" field`;
+                        }
+                    }
+                } else {
+                    // No direct match, check for vector components (e.g., x-dimensions)
+                    const axisMatch = argId.match(/^([xyz])-/);
+                    if (axisMatch) {
+                        const axis = axisMatch[1]; // 'x', 'y', or 'z'
+                        const baseId = argId.substring(2); // e.g., 'dimensions'
+                        const vectorUserArg = plugin
+                            .getUserArgsFlat()
+                            .find((arg) => arg.id === baseId);
+                        if (
+                            vectorUserArg &&
+                            vectorUserArg.type === UserArgType.Vector3D
+                        ) {
+                            const groupLabel =
+                                vectorUserArg.label &&
+                                vectorUserArg.label.trim() !== ""
+                                    ? `of the "${vectorUserArg.label.trim()}" field`
+                                    : "of the field";
+                            fieldLabel = `the ${axis.toUpperCase()} value ${groupLabel}`;
+                        }
+                    }
+                }
+            }
+        }
+
         const popover = {
             title: plugin.title,
             description: "",
         };
-        switch (command.cmd) {
-            case TestCommand.Click:
-                popover.description = "Please click here to continue.";
-                return {
-                    element: command.selector,
-                    popover,
-                    onHighlightStarted: (element: HTMLElement) => {
-                        if (!element) {
-                            console.error(
-                                `TourManager: Element not found for selector "${command.selector}". Skipping step.`
-                            );
-                            this.driver.moveNext();
-                            return;
-                        }
-                        const oneTimeClickListener = () => {
-                            element.removeEventListener(
-                                "click",
-                                oneTimeClickListener
-                            );
-                            this.driver.moveNext();
-                        };
-                        element.addEventListener("click", oneTimeClickListener);
-                    },
-                };
-            case TestCommand.Text:
-            case TestCommand.Upload: {
-                let fieldLabel = "this field";
-                if (command.selector) {
-                    const selectorParts = command.selector.split(" ");
-                    const lastSelectorPart =
-                        selectorParts[selectorParts.length - 1];
-                    const selectorStr = lastSelectorPart.replace(/^#/, "");
-                    const suffix = `-${plugin.pluginId}-item`;
-                    if (selectorStr.endsWith(suffix)) {
-                        const argId = selectorStr.slice(0, -suffix.length);
-                        // First, try a direct match
-                        const userArg = plugin
-                            .getUserArgsFlat()
-                            .find((arg) => arg.id === argId);
-                        if (userArg) {
-                            // Direct match found
-                            if (userArg.label && userArg.label.trim() !== "") {
-                                fieldLabel = `the "${userArg.label.trim()}" field`;
-                            } else if ((userArg as any).placeHolder) {
-                                const placeholder = (userArg as any)
-                                    .placeHolder;
-                                let nameFromPlaceholder = placeholder
-                                    .split("(")[0]
-                                    .trim();
-                                nameFromPlaceholder = nameFromPlaceholder
-                                    .replace(/\.\.\.$/, "")
-                                    .trim();
-                                if (nameFromPlaceholder) {
-                                    fieldLabel = `the "${nameFromPlaceholder}" field`;
-                                }
-                            }
-                        } else {
-                            // No direct match, check for vector components (e.g., x-dimensions)
-                            const axisMatch = argId.match(/^([xyz])-/);
-                            if (axisMatch) {
-                                const axis = axisMatch[1]; // 'x', 'y', or 'z'
-                                const baseId = argId.substring(2); // e.g., 'dimensions'
-                                const vectorUserArg = plugin
-                                    .getUserArgsFlat()
-                                    .find((arg) => arg.id === baseId);
-                                if (
-                                    vectorUserArg &&
-                                    vectorUserArg.type === UserArgType.Vector3D
-                                ) {
-                                    const groupLabel =
-                                        vectorUserArg.label &&
-                                        vectorUserArg.label.trim() !== ""
-                                            ? `'${vectorUserArg.label.trim()}' field`
-                                            : "field";
-                                    fieldLabel = `the ${axis.toUpperCase()} value of the ${groupLabel}`;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (command.cmd === TestCommand.Upload) {
-                    popover.description = `Please upload the required file for ${fieldLabel}. For this tour, we cannot automate file selection, so we will proceed automatically after a brief pause.`;
-                    return {
-                        element: command.selector,
-                        popover,
-                        onHighlighted: (element: HTMLElement) => {
-                            if (!element) {
-                                console.error(
-                                    `TourManager: Element not found for selector "${command.selector}". Skipping step.`
-                                );
-                                this.driver.moveNext();
-                                return;
-                            }
-                            setTimeout(() => this.driver.moveNext(), 3000);
-                        },
-                    };
-                }
-                popover.description = `Please enter "${command.data}" into ${fieldLabel}.`;
-                return {
-                    element: command.selector,
-                    popover,
-                    onHighlightStarted: (element: HTMLInputElement) => {
-                        if (!element) {
-                            console.error(
-                                `TourManager: Element not found for selector "${command.selector}". Skipping step.`
-                            );
-                            this.driver.moveNext();
-                            return;
-                        }
-                        const oneTimeInputListener = () => {
-                            if (element.value === command.data) {
-                                element.removeEventListener(
-                                    "input",
-                                    oneTimeInputListener
-                                );
-                                this.driver.moveNext();
-                            }
-                        };
-                        element.addEventListener("input", oneTimeInputListener);
-                    },
-                };
-            }
-            case TestCommand.WaitUntilRegex:
-                // This is a non-interactive step. It has no `element` property, so it will
-                // be a centered modal. Custom flags are added to trigger auto-advance logic.
-                return {
-                    popover: {
-                        ...popover,
-                        description: "Waiting for the application to update...",
-                    },
-                    isWaitStep: true,
-                    waitCondition: () => {
-                        const el = document.querySelector(command.selector!);
-                        return (
-                            !!el &&
-                            new RegExp(command.data).test(el.textContent || "")
+
+        if (command.cmd === TestCommand.Upload) {
+            popover.description = `Please upload the required file for ${fieldLabel}. For this tour, we cannot automate file selection, so we will proceed automatically after a brief pause.`;
+            return {
+                element: command.selector,
+                popover,
+                onHighlighted: (element: HTMLElement) => {
+                    if (!element) {
+                        console.error(
+                            `TourManager: Element not found for selector "${command.selector}". Skipping step.`
                         );
-                    },
-                };
-            case TestCommand.TourNote:
-                popover.description = command.data as string;
-                return {
-                    element: command.selector,
-                    popover,
-                };
-            default:
-                // Other commands like Wait are not interactive and can be skipped in a user tour.
-                return null;
+                        this.driver.moveNext();
+                        return;
+                    }
+                    setTimeout(() => this.driver.moveNext(), 3000);
+                },
+            };
         }
+
+        popover.description = `Please enter "${command.data}" as ${fieldLabel}.`;
+        return {
+            element: command.selector,
+            popover,
+            onHighlightStarted: (element: HTMLInputElement) => {
+                if (!element) {
+                    console.error(
+                        `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                    );
+                    this.driver.moveNext();
+                    return;
+                }
+                const oneTimeInputListener = () => {
+                    if (element.value === command.data) {
+                        element.removeEventListener(
+                            "input",
+                            oneTimeInputListener
+                        );
+                        this.driver.moveNext();
+                    }
+                };
+                element.addEventListener("input", oneTimeInputListener);
+            },
+        };
+    }
+
+    /**
+     * Creates a driver.js step for a wait command.
+     *
+     * @param {ITestCommand} command The wait command.
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @returns {any} A driver.js step object.
+     * @private
+     */
+    private _createWaitStep(
+        command: ITestCommand,
+        plugin: PluginParentClass
+    ): any {
+        return {
+            popover: {
+                title: plugin.title,
+                description: "Waiting for the application to update...",
+            },
+            isWaitStep: true,
+            waitCondition: () => {
+                const el = document.querySelector(command.selector!);
+                return (
+                    !!el && new RegExp(command.data).test(el.textContent || "")
+                );
+            },
+        };
+    }
+
+    /**
+     * Creates a driver.js step for a tour note command.
+     *
+     * @param {ITestCommand} command The tour note command.
+     * @param {PluginParentClass} plugin The plugin instance.
+     * @returns {any} A driver.js step object.
+     * @private
+     */
+    private _createNoteStep(
+        command: ITestCommand,
+        plugin: PluginParentClass
+    ): any {
+        return {
+            element: command.selector,
+            popover: {
+                title: plugin.title,
+                description: command.data as string,
+            },
+        };
     }
 }
 
