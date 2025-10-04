@@ -6,7 +6,7 @@ import { waitForCondition } from "../../../Core/Utils/MiscUtils";
 import { PopoverDOM } from "driver.js";
 import { openPluginCmds } from "@/Testing/TestCmd";
 import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
-import { UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 /**
  * Manages the creation and execution of interactive tours using driver.js,
@@ -17,6 +17,17 @@ class TourManager {
     private isRunning = false;
     private lastHighlightedElement: HTMLElement | null = null;
 
+    /**
+     * Injects the driver.js CSS file into the document head.
+     * @private
+     */
+    private _injectDriverCss(): void {
+        const cssLink = document.createElement("link");
+        cssLink.rel = "stylesheet";
+        cssLink.type = "text/css";
+        cssLink.href = "js/driverjs/driver.css";
+        document.head.appendChild(cssLink);
+    }
     /**
      * Initializes the TourManager, loading driver.js and configuring it to
      * dynamically apply Bootstrap 5 classes to the popovers.
@@ -38,6 +49,7 @@ class TourManager {
         this.driver = driverJsModule({
             showProgress: true,
             overlayOpacity: 0.0, // Make overlay less intrusive
+            popoverOffset: 0, // Reduce space between popover and element
             onHighlightStarted: (element: HTMLElement) => {
                 if (element) {
                     element.style.setProperty("outline", "3px solid #0d6efd");
@@ -307,6 +319,9 @@ class TourManager {
             const step = this._commandToDriverStep(command, plugin);
             if (step) {
                 if (step.popover) {
+                    console.log(
+                        `Tour Step: Open Plugin - Selector: ${command.selector}`
+                    );
                     // Only create descriptions for click commands
                     if (command.cmd === TestCommand.Click) {
                         if (command.selector === "#hamburger-button") {
@@ -372,6 +387,7 @@ class TourManager {
         command: ITestCommand,
         plugin: PluginParentClass
     ): any {
+        console.log(`Tour Step: Click - Selector: ${command.selector}`);
         return {
             element: command.selector,
             popover: {
@@ -386,6 +402,9 @@ class TourManager {
                     this.driver.moveNext();
                     return;
                 }
+                setTimeout(() => {
+                    element.focus();
+                }, 0);
                 const oneTimeClickListener = () => {
                     element.removeEventListener("click", oneTimeClickListener);
                     this.driver.moveNext();
@@ -408,9 +427,11 @@ class TourManager {
         plugin: PluginParentClass
     ): any {
         let fieldLabel = "this field";
+        let specificSelector = command.selector!;
         if (command.selector) {
             const selectorParts = command.selector.split(" ");
             const lastSelectorPart = selectorParts[selectorParts.length - 1];
+            const modalSelectorPart = selectorParts.slice(0, -1).join(" ");
             const selectorStr = lastSelectorPart.replace(/^#/, "");
             const suffix = `-${plugin.pluginId}-item`;
             if (selectorStr.endsWith(suffix)) {
@@ -420,6 +441,28 @@ class TourManager {
                     .getUserArgsFlat()
                     .find((arg) => arg.id === argId);
                 if (userArg) {
+                    // Determine tag name for more specific selector
+                    let tagName = "";
+                    switch (userArg.type) {
+                        case UserArgType.Text:
+                        case UserArgType.Number:
+                        case UserArgType.Color:
+                        case UserArgType.Range:
+                        case UserArgType.ListSelect:
+                            tagName = "input";
+                            break;
+                        case UserArgType.TextArea:
+                            tagName = "textarea";
+                            break;
+                        case UserArgType.Select:
+                        case UserArgType.SelectMolecule:
+                        case UserArgType.SelectRegion:
+                            tagName = "select";
+                            break;
+                    }
+                    if (tagName) {
+                        specificSelector = `${modalSelectorPart} ${tagName}${lastSelectorPart}`;
+                    }
                     // Direct match found
                     if (userArg.label && userArg.label.trim() !== "") {
                         fieldLabel = `the "${userArg.label.trim()}" field`;
@@ -439,6 +482,7 @@ class TourManager {
                     // No direct match, check for vector components (e.g., x-dimensions)
                     const axisMatch = argId.match(/^([xyz])-/);
                     if (axisMatch) {
+                        specificSelector = `${modalSelectorPart} input${lastSelectorPart}`;
                         const axis = axisMatch[1]; // 'x', 'y', or 'z'
                         const baseId = argId.substring(2); // e.g., 'dimensions'
                         const vectorUserArg = plugin
@@ -459,7 +503,7 @@ class TourManager {
                 }
             }
         }
-
+        console.log(`Tour Step: Input - Selector: ${specificSelector}`);
         const popover = {
             title: plugin.title,
             description: "",
@@ -468,12 +512,12 @@ class TourManager {
         if (command.cmd === TestCommand.Upload) {
             popover.description = `Please upload the required file for ${fieldLabel}. For this tour, we cannot automate file selection, so we will proceed automatically after a brief pause.`;
             return {
-                element: command.selector,
+                element: specificSelector,
                 popover,
                 onHighlighted: (element: HTMLElement) => {
                     if (!element) {
                         console.error(
-                            `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                            `TourManager: Element not found for selector "${specificSelector}". Skipping step.`
                         );
                         this.driver.moveNext();
                         return;
@@ -482,19 +526,24 @@ class TourManager {
                 },
             };
         }
-
         popover.description = `Please enter "${command.data}" as ${fieldLabel}.`;
         return {
-            element: command.selector,
+            element: specificSelector,
             popover,
             onHighlightStarted: (element: HTMLInputElement) => {
                 if (!element) {
                     console.error(
-                        `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                        `TourManager: Element not found for selector "${specificSelector}". Skipping step.`
                     );
                     this.driver.moveNext();
                     return;
                 }
+                setTimeout(() => {
+                    element.focus();
+                    if (typeof element.select === "function") {
+                        element.select();
+                    }
+                }, 0);
                 const oneTimeInputListener = () => {
                     if (element.value === command.data) {
                         element.removeEventListener(
@@ -521,6 +570,7 @@ class TourManager {
         command: ITestCommand,
         plugin: PluginParentClass
     ): any {
+        console.log(`Tour Step: Wait - Selector: ${command.selector}`);
         return {
             popover: {
                 title: plugin.title,
@@ -548,11 +598,19 @@ class TourManager {
         command: ITestCommand,
         plugin: PluginParentClass
     ): any {
+        console.log(`Tour Step: Note - Selector: ${command.selector}`);
         return {
             element: command.selector,
             popover: {
                 title: plugin.title,
                 description: command.data as string,
+            },
+            onHighlightStarted: (element: HTMLElement) => {
+                setTimeout(() => {
+                    if (element && typeof element.focus === "function") {
+                        element.focus();
+                    }
+                }, 0);
             },
         };
     }
