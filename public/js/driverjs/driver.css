@@ -199,3 +199,25 @@
 .driver-popover-arrow-none {
     display: none;
 }
+
+/* JDD added to make arrow bigger */
+
+.driver-popover-arrow-side-left {
+    transform: scale(2);
+    transform-origin: left center;
+}
+
+.driver-popover-arrow-side-top {
+    transform: scale(2);
+    transform-origin: top center;
+}
+
+.driver-popover-arrow-side-right {
+    transform: scale(2);
+    transform-origin: right center;
+}
+
+.driver-popover-arrow-side-bottom {
+    transform: scale(2);
+    transform-origin: bottom center;
+}

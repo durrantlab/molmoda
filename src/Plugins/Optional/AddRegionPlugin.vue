@@ -302,7 +302,7 @@ export default class AddRegionPlugin extends PluginParentClass {
                     .text(`#x-center-addregion-item`, "10")
                     .text(`#y-center-addregion-item`, "10")
                     .text(`#z-center-addregion-item`, "10")
-                    .tourNote('Adjust region color here.', `#color-addregion-item`) // Red
+                    .tourNote('You can adjust the color of the region here, but we will skip this step.', `#color-addregion-item`) // Red
                     .text(`#opacity-addregion-item`, "0.5"),
             closePlugin: () =>
                 new TestCmdList().pressPopupButton(".action-btn", this.pluginId),

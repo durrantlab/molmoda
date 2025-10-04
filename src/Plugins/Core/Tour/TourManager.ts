@@ -8,7 +8,7 @@ import { openPluginCmds } from "@/Testing/TestCmd";
 import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import { UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
-const FOCUS_DELAY = 300; // ms
+const FOCUS_DELAY = 150; // ms
 
 /**
  * Manages the creation and execution of interactive tours using driver.js,
@@ -21,7 +21,7 @@ class TourManager {
 
     /**
      * Injects the driver.js CSS file into the document head.
-     * 
+     *
      * @private
      */
     private _injectDriverCss(): void {
@@ -33,7 +33,7 @@ class TourManager {
     }
     /**
      * Handles the rendering of the popover by applying Bootstrap classes.
-     * 
+     *
      * @param {PopoverDOM} popover - The popover DOM object from driver.js.
      * @param {any} state - The current state of the tour step.
      * @private
@@ -86,6 +86,7 @@ class TourManager {
             }
             if (popover.arrow) {
                 popover.arrow?.classList.add("border-primary");
+                popover.arrow.style.filter = 'drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))';
             }
             if (popover.description) {
                 popover.description.classList.add("card-body", "p-3");
@@ -191,7 +192,7 @@ class TourManager {
         this._injectDriverCss();
         this.driver = driverJsModule({
             showProgress: true,
-            overlayOpacity: 0.0, // Make overlay less intrusive
+            overlayOpacity: 0.1, // Make overlay less intrusive
             popoverOffset: 5, // Reduce space between popover and element
             ...this._configureDriverHooks(),
         });
@@ -258,13 +259,35 @@ class TourManager {
         this._processCommandList(test.beforePluginOpens, plugin, steps);
         this._addPluginOpeningSteps(plugin, steps);
         this._processCommandList(test.pluginOpen, plugin, steps);
-        this._processCommandList(test.closePlugin, plugin, steps);
+
+        // Special handling for the closePlugin step to make the message more informative.
+        if (typeof test.closePlugin === "function") {
+            const closeCmdList = test.closePlugin();
+            if (closeCmdList instanceof TestCmdList) {
+                for (const command of closeCmdList.cmds) {
+                    const step = this._commandToDriverStep(command, plugin);
+                    if (step) {
+                        if (
+                            step.popover &&
+                            command.cmd === TestCommand.Click &&
+                            command.selector?.includes(".action-btn")
+                        ) {
+                            // It's a click on an action button. Let's make the message more specific.
+                            step.popover.description = `Click here to run the ${plugin.title} plugin.`;
+                        }
+                        steps.push(step);
+                    }
+                }
+            }
+        }
+
         this._processCommandList(test.afterPluginCloses, plugin, steps);
+
         // Add conclusion step
         steps.push({
             popover: {
                 title: "Tour Complete!",
-                description: `You've completed the tour for the ${plugin.title} plugin. You can now close this message.`,
+                description: `You have completed the tour for the ${plugin.title} plugin.`,
             },
         });
         return steps;
@@ -398,15 +421,17 @@ class TourManager {
                     this.driver.moveNext();
                     return;
                 }
-                setTimeout(() => {
-                    element.focus();
-                }, FOCUS_DELAY); // Delay to ensure focus is not stolen
                 const oneTimeClickListener = () => {
                     element.removeEventListener("click", oneTimeClickListener);
                     this.driver.moveNext();
                 };
                 element.addEventListener("click", oneTimeClickListener);
             },
+            onHighlighted: (element: HTMLElement) => {
+                setTimeout(() => {
+                    element.focus();
+                }, FOCUS_DELAY); // Delay to ensure focus is not stolen
+            }
         };
     }
 
@@ -492,7 +517,7 @@ class TourManager {
     ): string {
         if (userArg) {
             if (userArg.label && userArg.label.trim() !== "") {
-                return `the "${userArg.label.trim()}" field`;
+                return `the "${userArg.label.trim()}"`;
             }
             if ((userArg as any).placeHolder) {
                 const placeholder = (userArg as any).placeHolder;
@@ -502,7 +527,7 @@ class TourManager {
                     .replace(/\.\.\.$/, "")
                     .trim();
                 if (nameFromPlaceholder) {
-                    return `the "${nameFromPlaceholder}" field`;
+                    return `the "${nameFromPlaceholder}"`;
                 }
             }
             if (userArg.type === UserArgType.Vector3D) {
@@ -510,9 +535,10 @@ class TourManager {
                     .replace(/^#/, "")
                     .replace(`-${pluginId}-item`, "");
                 const axisMatch = argId.match(/^([xyz])-/);
+                debugger
                 if (axisMatch) {
                     const axis = axisMatch[1].toUpperCase();
-                    return `the ${axis} value of the field`;
+                    return `the ${axis} value`;
                 }
             }
         }
@@ -576,12 +602,6 @@ class TourManager {
                     this.driver.moveNext();
                     return;
                 }
-                setTimeout(() => {
-                    element.focus();
-                    if (typeof element.select === "function") {
-                        element.select();
-                    }
-                }, FOCUS_DELAY); // Delay to ensure focus is not stolen by the popover
                 const oneTimeInputListener = () => {
                     if (element.value === command.data) {
                         element.removeEventListener(
@@ -593,6 +613,14 @@ class TourManager {
                 };
                 element.addEventListener("input", oneTimeInputListener);
             },
+            onHighlighted: (element: HTMLInputElement) => {
+                setTimeout(() => {
+                    element.focus();
+                    if (typeof element.select === "function") {
+                        element.select();
+                    }
+                }, FOCUS_DELAY); // Delay to ensure focus is not stolen by the popover
+            }
         };
     }
 
