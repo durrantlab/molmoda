@@ -55,6 +55,7 @@ system uses these to autopopulate with plugins. -->
     <StylesWindowPlugin @onPluginSetup="onPluginSetup"></StylesWindowPlugin>
     <TemporarySharePlugin @onPluginSetup="onPluginSetup"></TemporarySharePlugin>
     <ToggleVisiblePlugin @onPluginSetup="onPluginSetup"></ToggleVisiblePlugin>
+    <TourPlugin @onPluginSetup="onPluginSetup"></TourPlugin>
     <UndoPlugin @onPluginSetup="onPluginSetup"></UndoPlugin>
     <UpTreeNavPlugin @onPluginSetup="onPluginSetup"></UpTreeNavPlugin>
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
@@ -143,6 +144,7 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
     StylesWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/StylesWindowPlugin.vue")),
     TemporarySharePlugin: defineAsyncComponent(() => import("@/Plugins/Core/TemporaryShare/TemporarySharePlugin.vue")),
     ToggleVisiblePlugin: defineAsyncComponent(() => import("@/Plugins/Core/EditBar/ToggleVisiblePlugin.vue")),
+    TourPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Tour/TourPlugin.vue")),
     UndoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UndoRedo/UndoPlugin.vue")),
     UpTreeNavPlugin: defineAsyncComponent(() => import("@/Plugins/Core/UpDownTreeNav/UpTreeNavPlugin.vue")),
     ViewerWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/ViewerWindowPlugin.vue")),

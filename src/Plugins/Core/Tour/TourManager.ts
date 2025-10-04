@@ -2,7 +2,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { ITest, ITestCommand, TestCommand } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { waitForCondition } from "../Utils/MiscUtils";
+import { waitForCondition } from "../../../Core/Utils/MiscUtils";
 import { PopoverDOM } from "driver.js";
 import { openPluginCmds } from "@/Testing/TestCmd";
 import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
@@ -247,13 +247,6 @@ class TourManager {
         plugin: PluginParentClass
     ): Promise<any[]> {
         const steps: any[] = [];
-        // Add introduction step
-        steps.push({
-            popover: {
-                title: `Welcome to the ${plugin.title} tour!`,
-                description: `${plugin.title} Plugin purpose: ${plugin.intro} ${plugin.details}`,
-            },
-        });
         this._processCommandList(test.beforePluginOpens, plugin, steps);
         this._addPluginOpeningSteps(plugin, steps);
         this._processCommandList(test.pluginOpen, plugin, steps);

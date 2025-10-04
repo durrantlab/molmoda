@@ -12,10 +12,7 @@
                     <!-- <small v-html="menuPathToUse(plugin.menuPath)"></small> -->
                     <small>
                         Menu: <PluginPathLink :plugin="plugin"></PluginPathLink>
-                        <button v-if="hasTests(plugin)" @click="startTour(plugin)"
-                            class="btn btn-sm btn-outline-primary py-0 px-1 ms-2" style="font-size: 0.7em;">
-                            Start Tour
-                        </button>
+                        <TourLauncher v-if="hasTests(plugin)" :plugin="plugin" />
                     </small>
                 </p>
 
@@ -46,6 +43,7 @@ import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import { citationsTxt } from "../Citations";
 import { Tag, matchesTag } from "./ActivityFocus/ActivityFocusUtils";
+import TourLauncher from "@/UI/Navigation/TourLauncher.vue";
 import * as api from "@/Api";
 
 /** HelpPlugin */
@@ -54,6 +52,7 @@ import * as api from "@/Api";
         PluginComponent,
         PluginPathLink,
         FilterInput,
+        TourLauncher,
     },
 })
 export default class HelpPlugin extends PluginParentClass {

@@ -1,4 +1,4 @@
-import { tourManager } from "@/Core/Tours/TourManager";
+import { tourManager } from "@/Plugins/Core/Tour/TourManager";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 
 export const tourApi = {
