@@ -386,11 +386,22 @@ class TourManager {
                             command.selector?.includes(".action-btn")
                         ) {
                             // It's a click on an action button. Let's make the message more specific.
-                            step.popover.description = `Click here to run the ${plugin.title} plugin.`;
+                            step.popover.description = `Click here to run the "${plugin.title}" plugin.`;
                         }
                         steps.push(step);
                     }
                 }
+            }
+        } else if (!plugin.noPopup) {
+            // If closePlugin is not defined and the plugin has a popup, add the default action button click.
+            const defaultCloseCommand: ITestCommand = {
+                cmd: TestCommand.Click,
+                selector: `#modal-${plugin.pluginId} .action-btn`,
+            };
+            const step = this._commandToDriverStep(defaultCloseCommand, plugin);
+            if (step) {
+                step.popover.description = `Click here to run the "${plugin.title}" plugin.`;
+                steps.push(step);
             }
         }
 
