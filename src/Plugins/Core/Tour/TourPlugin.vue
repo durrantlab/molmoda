@@ -13,6 +13,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
 import { FailingTest } from "@/Testing/FailingTest";
 import { ISoftwareCredit, IContributorCredit } from "@/Plugins/PluginInterfaces";
+import { set } from "lodash";
 
 /**
  * TourPlugin
@@ -33,6 +34,7 @@ export default class TourPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     userArgDefaults: UserArg[] = [];
     tags = []; // Should not be shown in help
+    noPopup = true;
 
     pluginToTour: PluginParentClass | null = null;
     testIndexToRun = 0;

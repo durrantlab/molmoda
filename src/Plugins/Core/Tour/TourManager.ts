@@ -68,8 +68,16 @@ class TourManager {
             }, 0);
         }
 
-        const popoverEl = popover.wrapper?.closest(".driver-popover");
+        const popoverEl = popover.wrapper?.closest(
+            ".driver-popover"
+        ) as HTMLElement;
         if (!popoverEl) return;
+
+        // Set opacity to 0
+        // popoverEl.style.opacity = "0";
+
+        // Apply transform scale to make 0
+        popoverEl.style.transform = "scale(0)";
 
         setTimeout(() => {
             popoverEl.classList.add("card", "shadow-lg", "p-0");
@@ -137,10 +145,23 @@ class TourManager {
                 }
             }
         }, 0);
+
+        // Hackish. Investigate further...
+        setTimeout(() => {
+            window.dispatchEvent(new Event("resize"));
+            setTimeout(() => {
+                window.dispatchEvent(new Event("resize"));
+                // Restore opacity
+                // popoverEl.style.opacity = "1";
+                // Restore scale
+                popoverEl.style.transform = "scale(1)";
+            }, 25);
+        }, 500);
     }
 
     /**
      * Configures and returns the hooks for the driver.js instance.
+     *
      * @returns {object} An object containing all the lifecycle hooks for driver.js.
      * @private
      */
@@ -153,6 +174,13 @@ class TourManager {
                     element.style.setProperty("border-radius", "4px");
                     this.lastHighlightedElement = element;
                 }
+            },
+            onNextClick: () => {
+                // Set opacity to 0
+                // const popoverEl = document.querySelector(".driver-popover") as HTMLElement;
+                // if (popoverEl) {
+                //     popoverEl.style.opacity = "0";
+                // }
             },
             onDeselected: (element: HTMLElement) => {
                 if (element) {
@@ -187,6 +215,7 @@ class TourManager {
 
     /**
      * Initializes the TourManager, loading driver.js and configuring it.
+     *
      * @return {Promise<void>} A promise that resolves when driver.js is loaded.
      */
     private async initializeDriver(): Promise<void> {
