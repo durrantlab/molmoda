@@ -176,11 +176,14 @@ class TourManager {
                 }
             },
             onNextClick: () => {
-                // Set opacity to 0
-                // const popoverEl = document.querySelector(".driver-popover") as HTMLElement;
-                // if (popoverEl) {
-                //     popoverEl.style.opacity = "0";
-                // }
+                // If there is no next step, this is the last one.
+                if (!this.driver.hasNextStep()) {
+                    this.driver.destroy();
+                }
+
+                // For all other steps, `moveNext()` is handled manually by
+                // listeners or promises, so we do nothing here to prevent
+                // driver.js from automatically advancing.
             },
             onDeselected: (element: HTMLElement) => {
                 if (element) {
@@ -411,7 +414,7 @@ class TourManager {
         steps.push({
             popover: {
                 title: "Tour Complete!",
-                description: `You have completed the tour for the ${plugin.title} plugin.`,
+                description: `You have completed the tour for the "${plugin.title}" plugin.`,
             },
         });
         return steps;
