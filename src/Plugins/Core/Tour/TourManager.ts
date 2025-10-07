@@ -5,7 +5,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { waitForCondition } from "../../../Core/Utils/MiscUtils";
 import { PopoverDOM } from "driver.js";
 import { openPluginCmds } from "@/Testing/TestCmd";
-import { processMenuPath } from "@/UI/Navigation/Menu/Menu";
+import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
 import { UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { messagesApi } from "@/Api/Messages";
 
@@ -440,12 +440,23 @@ class TourManager {
      */
     private _addPluginOpeningSteps(plugin: PluginParentClass, steps: any[]) {
         const openCmds = openPluginCmds(plugin);
-        const menuPathInfo = processMenuPath(plugin.menuPath);
-        const menuTexts = menuPathInfo
-            ? menuPathInfo.map((info) =>
-                  info.text.replace(/(\.\.\.|_)/g, "").trim()
-              )
-            : [];
+        // Get original menu path info
+        const originalMenuPathInfo = processMenuPath(plugin.menuPath);
+        if (!originalMenuPathInfo) {
+            return;
+        }
+        // Replicate the logic from openPluginCmds to get the path that corresponds to actual clicks
+        const tempPathForLogic = [...originalMenuPathInfo];
+        const lastItem = tempPathForLogic.pop();
+        if (tempPathForLogic.length > 1) {
+            tempPathForLogic.splice(1, 1); // This removes the non-clickable second-level group
+        }
+        const clickedPathInfo = [...tempPathForLogic, lastItem].filter(
+            Boolean
+        ) as IMenuPathInfo[];
+        const menuTexts = clickedPathInfo.map((info) =>
+            info.text.replace(/(\.\.\.|_)/g, "").trim()
+        );
         let menuTextIndex = 0;
         for (const command of openCmds) {
             const step = this._commandToDriverStep(command, plugin);
