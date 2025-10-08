@@ -79,78 +79,78 @@ class TourManager {
         // Apply transform scale to make 0
         popoverEl.style.transform = "scale(0)";
 
-        setTimeout(() => {
-            popoverEl.classList.add("card", "shadow-lg", "p-0");
-            if (popover.title) {
-                popover.title.classList.add(
-                    "card-header",
-                    "py-2",
-                    "ps-3",
-                    "pe-2",
-                    "h5",
-                    "m-0",
-                    "d-flex",
-                    "justify-content-between",
-                    "align-items-center",
-                    "bg-primary",
-                    "text-white"
-                );
-            }
-            if (popover.arrow) {
-                popover.arrow?.classList.add("border-primary");
-                popover.arrow.style.filter =
-                    "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
-            }
-            if (popover.description) {
-                popover.description.classList.add("card-body", "p-3");
-            }
-            if (popover.footer) {
-                popover.footer.classList.add(
-                    "card-footer",
-                    "d-flex",
-                    "justify-content-end",
-                    "align-items-center",
-                    "py-2",
-                    "px-3"
-                );
-                popover.footer.classList.remove("driver-popover-footer");
-            }
-            if (popover.previousButton) {
-                popover.previousButton.style.display = "none";
-            }
-            if (popover.nextButton) {
-                popover.nextButton.classList.add(
-                    "btn",
-                    "btn-sm",
-                    "btn-primary",
-                    "ms-1"
-                );
-                if (
-                    state.activeStep?.onHighlightStarted ||
-                    state.activeStep?.isWaitStep
-                ) {
-                    popover.nextButton.style.display = "none";
-                } else {
-                    popover.nextButton.style.display = "inline-block";
-                }
-            }
-            if (popover.closeButton) {
-                popover.closeButton.innerHTML = "";
-                popover.closeButton.classList.add(
-                    "btn-close",
-                    "btn-close-white"
-                );
-                if (popover.title) {
-                    popover.title.appendChild(popover.closeButton);
-                }
-            }
-        }, 0);
-
         // Hackish. Investigate further...
         setTimeout(() => {
             window.dispatchEvent(new Event("resize"));
             setTimeout(() => {
                 window.dispatchEvent(new Event("resize"));
+
+                popoverEl.classList.add("card", "shadow-lg", "p-0");
+                if (popover.title) {
+                    popover.title.classList.add(
+                        "card-header",
+                        "py-2",
+                        "ps-3",
+                        "pe-2",
+                        "h5",
+                        "m-0",
+                        "d-flex",
+                        "justify-content-between",
+                        "align-items-center",
+                        "bg-primary",
+                        "text-white"
+                    );
+                }
+                if (popover.arrow) {
+                    popover.arrow?.classList.add("border-primary");
+                    popover.arrow.style.filter =
+                        "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
+                    console.warn("Popover:", popover.arrow);
+                }
+                if (popover.description) {
+                    popover.description.classList.add("card-body", "p-3");
+                }
+                if (popover.footer) {
+                    popover.footer.classList.add(
+                        "card-footer",
+                        "d-flex",
+                        "justify-content-end",
+                        "align-items-center",
+                        "py-2",
+                        "px-3"
+                    );
+                    popover.footer.classList.remove("driver-popover-footer");
+                }
+                if (popover.previousButton) {
+                    popover.previousButton.style.display = "none";
+                }
+                if (popover.nextButton) {
+                    popover.nextButton.classList.add(
+                        "btn",
+                        "btn-sm",
+                        "btn-primary",
+                        "ms-1"
+                    );
+                    if (
+                        state.activeStep?.onHighlightStarted ||
+                        state.activeStep?.isWaitStep
+                    ) {
+                        popover.nextButton.style.display = "none";
+                    } else {
+                        popover.nextButton.style.display = "inline-block";
+                    }
+                }
+                if (popover.closeButton) {
+                    popover.closeButton.innerHTML = "";
+                    popover.closeButton.classList.add(
+                        "btn-close",
+                        "btn-close-white"
+                    );
+                    if (popover.title) {
+                        popover.title.appendChild(popover.closeButton);
+                    }
+                }
+
                 // Restore opacity
                 // popoverEl.style.opacity = "1";
                 // Restore scale

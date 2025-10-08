@@ -138,7 +138,10 @@
 .driver-popover-arrow {
     content: "";
     position: absolute;
-    border: 5px solid #fff;
+
+    /* Would be much better if the bootstrap class could work, but it doesn't
+    seem to stick when I add it to the arrow div */
+    border: 5px solid #0d6efd; /* #fff; */
 }
 .driver-popover-arrow-side-over {
     display: none;
