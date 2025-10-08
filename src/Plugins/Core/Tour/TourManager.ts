@@ -23,6 +23,14 @@ class TourManager {
     private tourSteps: any[] = []; // Store steps for the current tour
 
     /**
+     * Checks if a tour is currently running.
+     *
+     * @returns {boolean} True if a tour is active, false otherwise.
+     */
+    public get isTourRunning(): boolean {
+        return this.isRunning;
+    }
+    /**
      * Injects the driver.js CSS file into the document head.
      *
      * @private
@@ -105,7 +113,6 @@ class TourManager {
                     popover.arrow?.classList.add("border-primary");
                     popover.arrow.style.filter =
                         "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
-                    console.warn("Popover:", popover.arrow);
                 }
                 if (popover.description) {
                     popover.description.classList.add("card-body", "p-3");

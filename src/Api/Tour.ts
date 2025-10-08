@@ -11,4 +11,12 @@ export const tourApi = {
     startTour(plugin: PluginParentClass, testIndex = 0) {
         tourManager.startTour(plugin, testIndex);
     },
+    /**
+     * Checks if a tour is currently running.
+     *
+     * @returns {boolean} True if a tour is running, false otherwise.
+     */
+    isTourRunning(): boolean {
+        return tourManager.isTourRunning;
+    },
 };

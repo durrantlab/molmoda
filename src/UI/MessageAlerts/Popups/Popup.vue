@@ -55,6 +55,7 @@ import { formInputDelayUpdate } from "@/Core/GlobalVars";
 import { popupClosed, popupOpened } from "./OpenPopupList";
 import { capitalizeEachWord } from "@/Core/Utils/StringUtils";
 import { getNextZIndex, releaseZIndex } from "./ZIndexManager";
+import * as api from "@/Api";
 
 /**
  * Popup component
@@ -238,6 +239,9 @@ export default class Popup extends Vue {
    * @param {KeyboardEvent} e  The keyboard event.
    */
   onKeypress(e: KeyboardEvent) {
+    if (api.tour.isTourRunning()) {
+      return;
+    }
     if (e.key === "Enter" && this.submitOnEnter) {
       if (this.actionBtnTxt && this.isActionBtnEnabled) {
         this.actionBtn();

@@ -15,6 +15,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { isTest } from "@/Core/GlobalVars";
 import { Options, Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+import * as api from "@/Api";
 
 const allOpenTooltips: { [key: string]: Tooltip } = {};
 
@@ -30,7 +31,7 @@ export default class Tooltip extends Vue {
 
     private tipLoaded = false;
     private tipObj: any = null;
-    private id = ""
+    private id = "";
     private validationInterval: number | null = null;
 
     testMode = false;
@@ -77,6 +78,9 @@ export default class Tooltip extends Vue {
      * Sets up the tooltip with enhanced flicker prevention
      */
     async loadTip() {
+        if (api.tour.isTourRunning()) {
+            return;
+        }
         if (!this.tipLoaded) {
             this.tipLoaded = true;
 
