@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -30,7 +26,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 })
 export default class ViewerWindowPlugin extends PluginParentClass {
     menuPath = ["[8] Window", "Molecules", "[3] Viewer"];
-    title = "";
+    title = "Viewer Panel";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -41,7 +37,7 @@ export default class ViewerWindowPlugin extends PluginParentClass {
     pluginId = "viewerwindow";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     intro = `Switch to the Viewer panel.`;
     tags = [Tag.All];
@@ -65,7 +61,7 @@ export default class ViewerWindowPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest[]> {
         // This is a test! Nothing specific to do but click the menu items.
-        
+
         return [];
         // {
         //     // afterPluginCloses: () => new TestCmdList().wait(3),

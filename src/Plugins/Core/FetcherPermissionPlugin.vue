@@ -1,19 +1,8 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        cancelBtnTxt="Deny"
-        actionBtnTxt="Allow"
-        actionBtnTxt2="Allow All"
-        @onDone="onAllow"
-        @onDone2="onAllowAll"
-        @onCancel="onDeny"
-        @onClosed="onClosed"
-        variant="warning"
-        @onUserArgChanged="onUserArgChanged"
-        @onPopupDone="onPopupDone"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Deny" actionBtnTxt="Allow"
+        actionBtnTxt2="Allow All" @onDone="onAllow" @onDone2="onAllowAll" @onCancel="onDeny" @onClosed="onClosed"
+        variant="warning" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
+        @onMolCountsChanged="onMolCountsChanged">
         <p>{{ myAppName }} would like to access a third-party web resource:</p>
         <p>{{ url }}</p>
         <p>
@@ -63,7 +52,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "fetcherpermission";
-    intro = "";
+    intro = "Grant permission to access third-party web resources.";
     tags = [Tag.All];
 
     myAppName = appName;
@@ -85,7 +74,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
 
     /**

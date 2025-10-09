@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -30,7 +26,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 })
 export default class LogWindowPlugin extends PluginParentClass {
     menuPath = ["[8] Window", "Records", "Log"];
-    title = "";
+    title = "Log Panel";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -41,7 +37,7 @@ export default class LogWindowPlugin extends PluginParentClass {
     pluginId = "logwindow";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     intro = `Switch to the Log panel.`;
     tags = [Tag.All];

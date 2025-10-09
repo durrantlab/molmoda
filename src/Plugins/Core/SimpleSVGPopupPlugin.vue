@@ -1,14 +1,14 @@
 <template>
   <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
- @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
- modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
- <ImageViewer v-if="svgContents !== ''" :source="svgContents" :filenameBase="filenameBaseToUse"
-   :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight" />
- <!-- :maxHeight="500"  -->
- <div v-if="message !== ''" class="mt-2" v-html="message"></div>
- <Alert v-if="alertMessage !== ''" type="info" extraClasses="mt-2">
-   {{ alertMessage }}
- </Alert>
+    @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
+    modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
+    <ImageViewer v-if="svgContents !== ''" :source="svgContents" :filenameBase="filenameBaseToUse"
+      :showDownloadButtons="showDownloadButtons" :maxHeight="maxHeight" />
+    <!-- :maxHeight="500"  -->
+    <div v-if="message !== ''" class="mt-2" v-html="message"></div>
+    <Alert v-if="alertMessage !== ''" type="info" extraClasses="mt-2">
+      {{ alertMessage }}
+    </Alert>
   </PluginComponent>
 </template>
 <script lang="ts">
@@ -47,11 +47,11 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
   pluginId = "simplesvgpopup";
-  intro = "";
+  intro = "Display an SVG image in a popup.";
   tags = [Tag.All];
 
   // Below set via onPluginStart.
-  title = "";
+  title = "SVG Image";
   message = "";
   alertMessage = "";
   variant = PopupVariant.Primary;

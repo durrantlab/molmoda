@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -31,7 +27,7 @@ export default class RedoPlugin extends PluginParentClass {
     // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
     menuPath = ["Edit", "Revisions", "[2] Redo"];
-    title = "";
+    title = "Redo";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -42,7 +38,7 @@ export default class RedoPlugin extends PluginParentClass {
     pluginId = "redo";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
 
@@ -81,13 +77,28 @@ export default class RedoPlugin extends PluginParentClass {
      * @returns {ITest}  The selenium test commands.
      */
     async getTests(): Promise<ITest> {
+        // Not testable?
+        // Pick up here: https://aistudio.google.com/u/2/prompts/1dWZ_9cjVnWX6CU1KDOAS0g1VPSBo8uns
+        // return {
+        //     beforePluginOpens: () => new TestCmdList()
+        //         .loadExampleMolecule()
+        //         .click("#menu1-edit")
+        //         .click("#menu-plugin-undo")
+        //         .wait(3),
+        //     // afterPluginCloses: () => new TestCmdList().wait(3),
+        // };
         return {
-            beforePluginOpens: () => new TestCmdList()
-                .loadExampleMolecule()
-                .click("#menu1-edit")
-                .click("#menu-plugin-undo")
-                .wait(3),
-            // afterPluginCloses: () => new TestCmdList().wait(3),
+            beforePluginOpens: () =>
+                new TestCmdList()
+                    .loadExampleMolecule(true)
+                    .selectMoleculeInTree("Protein")
+                    .openPlugin("deletemol")
+                    .pressPopupButton(".action-btn", "deletemol")
+                    .waitUntilNotRegex("#navigator", "Protein")
+                    .openPlugin("undo") // run undo
+                    .waitUntilRegex("#navigator", "Protein"),
+            afterPluginCloses: () =>
+                new TestCmdList().waitUntilNotRegex("#navigator", "Protein"),
         };
     }
 }

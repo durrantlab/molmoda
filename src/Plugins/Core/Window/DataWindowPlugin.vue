@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -30,7 +26,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 })
 export default class DataWindowPlugin extends PluginParentClass {
     menuPath = ["[8] Window", "Molecules", "[8] Data"];
-    title = "";
+    title = "Data Panel";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -41,7 +37,7 @@ export default class DataWindowPlugin extends PluginParentClass {
     pluginId = "datawindow";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     intro = `Switch to the Data panel.`;
     tags = [Tag.All];

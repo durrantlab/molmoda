@@ -1,16 +1,9 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        :cancelBtnTxt="neverClose ? '' : 'Ok'"
-        actionBtnTxt=""
-        @onClosed="onClosed"
-        :variant="variantToUse"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
+        @onClosed="onClosed" :variant="variantToUse" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged">
         <!-- modalWidth="default" -->
-    <MessageList :messages="simpleMsgs"></MessageList>
+        <MessageList :messages="simpleMsgs"></MessageList>
     </PluginComponent>
 </template>
 
@@ -56,21 +49,21 @@ export default class SimpleMsgPlugin extends PluginParentClass {
         // },
     ];
     pluginId = "simplemsg";
-    intro = "";
+    intro = "Display a simple message.";
     tags = [Tag.All];
 
     // Below set via onPluginStart.
     simpleMsgs: ISimpleMsg[] = [];
-    
-    title = "";
+
+    title = "Messages";
     // messages: string[] = [];
     // variant = PopupVariant.Primary;
     // callBack: any = undefined;
     neverClose = false;
     showInQueue = false;
-    
+
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
 

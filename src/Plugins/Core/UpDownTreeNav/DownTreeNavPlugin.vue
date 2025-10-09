@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -35,7 +31,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 })
 export default class DownTreeNavPlugin extends PluginParentClass {
     menuPath = ["View", "[6] Toggles", "[8] Toggle Down"];
-    title = "";
+    title = "Toggle Down";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "downtreenav";
@@ -44,7 +40,7 @@ export default class DownTreeNavPlugin extends PluginParentClass {
 
     logJob = false;
     logAnalytics = false;
-    
+
     intro =
         "Toggle visibility and focus with the molecule below the selected one.";
     hotkey = "]";

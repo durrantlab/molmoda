@@ -1,14 +1,7 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        @onPopupDone="onPopupDone"
-        @onPopupCancel="onPopupCancel"
-        @onUserArgChanged="onUserArgChanged"
-        actionBtnTxt="Allow"
-        cancelBtnTxt="Decline"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" @onPopupDone="onPopupDone" @onPopupCancel="onPopupCancel"
+        @onUserArgChanged="onUserArgChanged" actionBtnTxt="Allow" cancelBtnTxt="Decline"
+        @onMolCountsChanged="onMolCountsChanged">
         <div>
             <p>
                 We use cookies to store user settings and collect usage
@@ -107,7 +100,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     //     },
     // ];
     pluginId = "statcollection";
-    intro = "";
+    intro = "Manage cookie and usage statistics settings.";
     title = `Allow Cookies?`;
     open = false;
     tags = [Tag.All];

@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -32,13 +28,13 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 })
 export default class ExpandAllPlugin extends PluginParentClass {
     menuPath = ["[4] View", "Tree", "[1] Expand All"];
-    title = "";
+    title = "Expand All";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "expandall";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
     intro = "Expand all the nodes in the Navigator panel.";

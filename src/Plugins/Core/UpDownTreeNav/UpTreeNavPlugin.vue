@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -32,16 +28,16 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 })
 export default class UpTreeNavPlugin extends PluginParentClass {
     menuPath = ["View", "Toggles", "[7] Toggle Up"];
-    title = "";
+    title = "Toggle Up";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "uptreenav";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
-    
+
     intro = "Toggle visibility and focus with the molecule above the selected one.";
     hotkey = "[";
     tags = [Tag.All];
@@ -63,7 +59,7 @@ export default class UpTreeNavPlugin extends PluginParentClass {
         }
 
         toggleUpDownTreeNav(molsToActOn.molBefore, molsToActOn.molToConsider);
-        
+
         return Promise.resolve();
     }
 
@@ -73,7 +69,7 @@ export default class UpTreeNavPlugin extends PluginParentClass {
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
-     checkPluginAllowed(): string | null {
+    checkPluginAllowed(): string | null {
         return checkAnyMolLoaded();
     }
 

@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -33,7 +29,7 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 })
 export default class SelectAllPlugin extends PluginParentClass {
     menuPath = ["[4] Edit", "Selection", "[0] Select All"];
-    title = "";
+    title = "Select All";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -44,7 +40,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     pluginId = "selectall";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
     intro = "Select all molecules in the tree.";

@@ -1,22 +1,8 @@
 <template>
-  <PluginComponent
-    :infoPayload="infoPayload"
-    v-model="open"
-    cancelBtnTxt="Ok"
-    actionBtnTxt=""
-    @onClosed="onClosed"
-    variant="info"
-    @onUserArgChanged="onUserArgChanged"
-    modalWidth="xl"
-    @onMolCountsChanged="onMolCountsChanged"
-  >
+  <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Ok" actionBtnTxt="" @onClosed="onClosed"
+    variant="info" @onUserArgChanged="onUserArgChanged" modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
     <p v-if="message !== ''">{{ message }}</p>
-    <Table
-      :tableData="tableData"
-      :caption="caption"
-      :precision="precision"
-      :noFixedTable="true"
-    />
+    <Table :tableData="tableData" :caption="caption" :precision="precision" :noFixedTable="true" />
   </PluginComponent>
 </template>
 
@@ -51,7 +37,7 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
   pluginId = "tabledatapopup";
-  intro = "";
+  intro = "Display data in a table format.";
   tags = [Tag.All];
 
   // Below set via onPluginStart.
@@ -60,7 +46,7 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
     rows: [],
   };
 
-  title = "";
+  title = "Table Data";
   message = "";
   precision = 3;
   caption = "";

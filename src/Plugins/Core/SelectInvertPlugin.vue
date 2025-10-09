@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -33,13 +29,13 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 })
 export default class SelectInvertPlugin extends PluginParentClass {
     menuPath = ["Edit", "Selection", "[2] Invert Selection"];
-    title = "";
+    title = "Invert Selection";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "selectinverse";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
     intro = "Invert which molecules are selected in the tree.";
@@ -69,7 +65,7 @@ export default class SelectInvertPlugin extends PluginParentClass {
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
-     checkPluginAllowed(): string | null {
+    checkPluginAllowed(): string | null {
         return checkAnyMolLoaded();
     }
 

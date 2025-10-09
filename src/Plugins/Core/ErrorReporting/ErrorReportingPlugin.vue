@@ -1,14 +1,7 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        :actionBtnTxt="actionBtnTxtToUse"
-        :cancelBtnTxt="cancelBtnTxtToUse"
-        :variant="popupVariant"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" :actionBtnTxt="actionBtnTxtToUse" :cancelBtnTxt="cancelBtnTxtToUse"
+        :variant="popupVariant" @onMolCountsChanged="onMolCountsChanged">
         <MessageList :messages="errorMsgs" />
         <!-- <div> -->
         <!-- {{ txtToUse }} -->
@@ -60,7 +53,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "errorreporting";
-    intro = "";
+    intro = "Report an unexpected error.";
     title = `Unexpected Error!`;
     open = false;
 

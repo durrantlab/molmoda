@@ -1,10 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -30,7 +26,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 })
 export default class InformationWindowPlugin extends PluginParentClass {
     menuPath = ["[8] Window", "Molecules", "[7] Information"];
-    title = "";
+    title = "Information Panel";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {
@@ -41,7 +37,7 @@ export default class InformationWindowPlugin extends PluginParentClass {
     pluginId = "informationwindow";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     intro = `Switch to the Information panel.`;
     tags = [Tag.All];

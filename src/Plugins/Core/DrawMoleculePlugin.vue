@@ -1,37 +1,17 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onPopupDone="onPopupDone"
-        modalWidth="xl"
-        :isActionBtnEnabled="isActionBtnEnabled"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onPopupDone="onPopupDone" modalWidth="xl" :isActionBtnEnabled="isActionBtnEnabled"
+        @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
-            <div
-                ref="chemComposer"
-                style="width: 100%; height: 400px"
-                class="mt-4"
-            ></div>
+            <div ref="chemComposer" style="width: 100%; height: 400px" class="mt-4"></div>
             <!-- @click="onWidgetUpdated" -->
             <!-- @keyup="onWidgetUpdated" -->
             <!-- v-model="molName"
         @onChange="searchByName"
         :description="molNameRespDescription" -->
-            <FormWrapper
-                v-if="testEditing"
-                class="mt-2"
-                id="draw-smiles-wrapper"
-            >
-                <FormInput
-                    v-model="currentSmiles"
-                    placeHolder="SMILES..."
-                    id="draw-smiles"
-                    :delayBetweenChangesDetected="500"
-                    :validateDescription="false"
-                    @onChange="onUpdateSMILES"
-                >
+            <FormWrapper v-if="testEditing" class="mt-2" id="draw-smiles-wrapper">
+                <FormInput v-model="currentSmiles" placeHolder="SMILES..." id="draw-smiles"
+                    :delayBetweenChangesDetected="500" :validateDescription="false" @onChange="onUpdateSMILES">
                     <!-- actionBtnTxt="Update" -->
                     <!-- @onActionBtnClick="onUpdateBtnClick" -->
                 </FormInput>
@@ -404,11 +384,20 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            // pluginOpen: () => new TestCmdList().wait(2).waitUntilRegex("#draw-smiles-wrapper", "C"),
-            afterPluginCloses: () => new TestCmdList().waitUntilRegex(
-                "#navigator",
-                "DrawMolecule"
-            ),
+            name: "Drawing a Molecule Tour",
+            pluginOpen: () =>
+                new TestCmdList()
+                    .tourNote(
+                        "This is the molecular editor. For this tour, we have pre-drawn methane for you.",
+                        `[ref="chemComposer"]`
+                    )
+                    .setUserArg("drawMolName", "Methane", this.pluginId)
+                    .tourNote(
+                        "You can name your new molecule here.",
+                        `#drawMolName-${this.pluginId}-item`
+                    ),
+            afterPluginCloses: () =>
+                new TestCmdList().waitUntilRegex("#navigator", "Methane"),
         };
     }
 }

@@ -27,7 +27,16 @@ export class ValidationMixin extends Vue {
                 `Plugin id must be lowercase. Plugin id: ${pluginId}`
             );
         }
-
+        if (title.trim() === "") {
+            throw new Error(
+                `Plugin title cannot be empty. Plugin id: ${pluginId}`
+            );
+        }
+        if (intro.trim() === "") {
+            throw new Error(
+                `Plugin intro cannot be empty. Plugin id: ${pluginId}`
+            );
+        }
         // Make sure intro is sentence
         if (!isSentence(intro)) {
             throw new Error(

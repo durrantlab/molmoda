@@ -33,7 +33,7 @@ export default class UndoPlugin extends PluginParentClass {
     // @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
     menuPath = ["Edit", "[0] Revisions", "[1] Undo"];
-    title = "";
+    title = "Undo";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
         // {

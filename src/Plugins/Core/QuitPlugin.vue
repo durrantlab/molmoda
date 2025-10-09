@@ -31,7 +31,7 @@ import { detectPlatform, HostOs } from "@/Core/HostOs";
 })
 export default class QuitPlugin extends PluginParentClass {
     menuPath = detectPlatform() === HostOs.Mac ? [appName, "[9]", "[9] Quit"] : ["File", "[9]", "[9] Exit"];
-    title = "";
+    title = "Quit";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "quitplugin";

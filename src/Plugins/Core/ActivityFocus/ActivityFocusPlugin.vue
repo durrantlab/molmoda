@@ -152,26 +152,45 @@ export default class ActivityFocusPlugin extends PluginParentClass {
    * @returns {ITest[]}  The selenium test commands.
    */
   async getTests(): Promise<ITest[]> {
+    const tourTest: ITest = {
+      name: "Full Tour of Activity Focus",
+      pluginOpen: () =>
+        new TestCmdList()
+          .tourNote(
+            "This plugin lets you customize the user interface to focus on a specific activity, like 'Docking' or 'Visualization', hiding less relevant tools.",
+            `#modal-${this.pluginId} .modal-body`
+          )
+          .tourNote(
+            "Select an activity from this dropdown. For this tour, let's select 'Docking'.",
+            `#selectedMode-${this.pluginId}-item`
+          )
+          .setUserArg("selectedMode", Tag.Docking, this.pluginId)
+          .waitUntilRegex(
+            `#modal-${this.pluginId} .alert-info`,
+            "Focus on computational prediction"
+          ),
+      closePlugin: () =>
+        new TestCmdList()
+          .tourNote(
+            "Clicking 'Apply' will restart the application in the selected mode. Your work should be saved first. We will cancel for now.",
+            `#modal-${this.pluginId} .action-btn`
+          )
+          .pressPopupButton(".cancel-btn", this.pluginId),
+    };
     return [
+      tourTest,
       // Test selecting different modes
       {
-        pluginOpen: () => new TestCmdList().setUserArg(
-          "selectedMode",
-          Tag.Docking,
-          this.pluginId
-        ),
-        // afterPluginCloses: () => new TestCmdList()
-        //   .waitUntilRegex(
-        //     "#modal-statcollection",
-        //     "Allow Cookies?"
-        //   ),
+        pluginOpen: () =>
+          new TestCmdList().setUserArg("selectedMode", Tag.Docking, this.pluginId),
       },
       {
-        pluginOpen: () => new TestCmdList().setUserArg(
-          "selectedMode",
-          Tag.Visualization,
-          this.pluginId
-        ),
+        pluginOpen: () =>
+          new TestCmdList().setUserArg(
+            "selectedMode",
+            Tag.Visualization,
+            this.pluginId
+          ),
         // afterPluginCloses: () => new TestCmdList()
         //   .waitUntilRegex(
         //     "#modal-statcollection",

@@ -1,19 +1,8 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        :cancelBtnTxt='showCancelBtn ? "Cancel" : ""'
-        :actionBtnTxt="noBtnTxt"
-        :actionBtnTxt2="yesBtnTxt"
-        @onPopupDone="onPopupDone"
-        @onPopupDone2="yesFunc"
-        @onClosed="onClosed"
-        @onUserArgChanged="onUserArgChanged"
-        :styleBtn1AsCancel="!showCancelBtn"
-        :prohibitCancel="!showCancelBtn"
-        @onCancel="onCancel"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt='showCancelBtn ? "Cancel" : ""'
+        :actionBtnTxt="noBtnTxt" :actionBtnTxt2="yesBtnTxt" @onPopupDone="onPopupDone" @onPopupDone2="yesFunc"
+        @onClosed="onClosed" @onUserArgChanged="onUserArgChanged" :styleBtn1AsCancel="!showCancelBtn"
+        :prohibitCancel="!showCancelBtn" @onCancel="onCancel" @onMolCountsChanged="onMolCountsChanged">
         <!-- :variant="variantToUse" -->
         {{ message }}
     </PluginComponent>
@@ -57,7 +46,7 @@ export default class YesNoPlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "yesnomsg";
-    intro = "";
+    intro = "Display a yes/no confirmation popup.";
     tags = [Tag.All];
     message = "";
     yesBtnTxt = "";
@@ -67,14 +56,14 @@ export default class YesNoPlugin extends PluginParentClass {
     };
     showCancelBtn = true;
 
-    title = "";
+    title = "Question";
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
-    
+
     /**
      * Runs when the users presses the yes button.
      */

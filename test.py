@@ -488,7 +488,7 @@ else:
 plugin_ids = [
     i
     for i in plugin_ids
-    if "simplemsg" not in i[0] and "redo" not in i[0] and "testplugin" not in i[0]
+    if "simplemsg" not in i[0] and "testplugin" not in i[0] and "redo" not in i[0]
 ]
 
 # some plugins are disallowed only for safari

@@ -1,37 +1,21 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        :cancelBtnTxt="neverClose ? '' : 'Ok'"
-        actionBtnTxt=""
-        @onClosed="onClosed"
-        :variant="variant"
-        @onUserArgChanged="onUserArgChanged"
-        @onPopupDone="onPopupDone"
-        modalWidth="xl"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" :cancelBtnTxt="neverClose ? '' : 'Ok'" actionBtnTxt=""
+        @onClosed="onClosed" :variant="variant" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
+        modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
         <!-- width="560"
         height="315" -->
         <div class="embed-responsive embed-responsive-16by9">
-            <iframe
-                ref="iframe"
-                class="embed-responsive-item"
-                style="width: 100%; border: 0.5px solid black"
-                credentialless
-                :src="'https://www.youtube.com/embed/' + youtubeID"
-                title="YouTube video player"
+            <iframe ref="iframe" class="embed-responsive-item" style="width: 100%; border: 0.5px solid black"
+                credentialless :src="'https://www.youtube.com/embed/' + youtubeID" title="YouTube video player"
                 frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-            ></iframe>
-            <p class="text-center pt-0 mb-1" style="margin-top: -10px;"><small><a :href="'https://www.youtube.com/watch?v=' + youtubeID" target="_blank">Watch on Youtube</a></small></p>
+                allowfullscreen></iframe>
+            <p class="text-center pt-0 mb-1" style="margin-top: -10px;"><small><a
+                        :href="'https://www.youtube.com/watch?v=' + youtubeID" target="_blank">Watch on
+                        Youtube</a></small></p>
         </div>
 
-        <p
-            style="overflow: hidden; text-overflow: ellipsis"
-            v-html="message"
-        ></p>
+        <p style="overflow: hidden; text-overflow: ellipsis" v-html="message"></p>
     </PluginComponent>
 </template>
 
@@ -70,11 +54,11 @@ export default class SimpleVideoPlugin extends PluginParentClass {
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "simplevideo";
-    intro = "";
+    intro = "Display a video in a popup.";
     tags = [Tag.All];
 
     // Below set via onPluginStart.
-    title = "";
+    title = "Video";
     message = "";
     youtubeID = "";
     variant = PopupVariant.Primary;
@@ -83,7 +67,7 @@ export default class SimpleVideoPlugin extends PluginParentClass {
     showInQueue = false;
 
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
 
     /**
