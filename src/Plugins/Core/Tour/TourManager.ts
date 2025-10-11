@@ -774,7 +774,9 @@ class TourManager {
                     return;
                 }
                 const oneTimeInputListener = () => {
-                    if (element.value === command.data) {
+                    // Use == for loose equality to handle cases where one is a number and the other is a string.
+                    // eslint-disable-next-line eqeqeq
+                    if (element.value == command.data) {
                         element.removeEventListener(
                             "input",
                             oneTimeInputListener
