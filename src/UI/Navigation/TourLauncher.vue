@@ -31,10 +31,7 @@ export default class TourLauncher extends Vue {
         }
 
         setTimeout(() => {
-            api.plugins.runPlugin("tourplugin", {
-                plugin: this.plugin,
-                testIndex: this.testIndex,
-            });
+            api.tour.startTour(this.plugin, this.testIndex);
         }, 300); // Delay to allow the closing animation to complete
     }
 }

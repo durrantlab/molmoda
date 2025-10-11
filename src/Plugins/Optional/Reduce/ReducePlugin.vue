@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onPopupDone="onPopupDone"
-        actionBtnTxt="Protonate"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Protonate"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
     </PluginComponent>
 </template>
 
@@ -63,7 +57,7 @@ export default class ReducePlugin extends PluginParentClass {
     pluginId = "reduce";
     tags = [Tag.Modeling, Tag.Docking];
     intro = `Protonate/deprotonate proteins, in preparation for docking.`;
-    details = `Uses the reduce program to guess at proper protonation states.`;
+    details = `This plugin uses the reduce program to guess at proper protonation states.`;
 
     // msgOnJobsFinished =
     //     "Finished detecting pockets. Each protein's top six pockets are displayed in the molecular viewer. You can toggle the visibility of the other pockets using the Navigator panel. The Data panel includes additional information about the detected pockets.";

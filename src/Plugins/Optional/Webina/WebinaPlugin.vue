@@ -113,7 +113,7 @@ export default class WebinaPlugin extends PluginParentClass {
     pluginId = "webina";
     tags = [Tag.Docking];
     intro = `Predict the geometry (pose) and strength (affinity) of small-molecule binding.`;
-    details = `Uses a version of AutoDock Vina (Webina).`;
+    details = `This plugin uses a version of AutoDock Vina (Webina) to perform the docking calculations.`;
 
     maxProcs = 1;
 

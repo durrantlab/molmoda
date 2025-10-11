@@ -1,7 +1,7 @@
 <template>
     <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Start Tour" cancelBtnTxt="Cancel"
-        @onPopupDone="onPopupDone">
-        <p v-if="pluginToTour" v-html="pluginToTour.intro + ' ' + pluginToTour.details"></p>
+        @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
+        <!-- <p v-if="pluginToTour" v-html="pluginToTour.intro + ' ' + pluginToTour.details"></p> -->
     </PluginComponent>
 </template>
 <script lang="ts">
@@ -14,6 +14,9 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { FailingTest } from "@/Testing/FailingTest";
 import { ISoftwareCredit, IContributorCredit } from "@/Plugins/PluginInterfaces";
 import { set } from "lodash";
+import { Tag } from "../ActivityFocus/ActivityFocusUtils";
+import { tourManager } from "@/Plugins/Core/Tour/TourManager";
+import { lowerize } from "@/Core/Utils/StringUtils";
 
 /**
  * TourPlugin
@@ -29,13 +32,11 @@ export default class TourPlugin extends PluginParentClass {
     title = "Plugin Tour";
     pluginId = "tourplugin";
     intro = "Start a tour for a plugin.";
-    details = "";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     userArgDefaults: UserArg[] = [];
-    tags = []; // Should not be shown in help
-    noPopup = true;
-
+    tags = [Tag.All];
+    noPopup = false;
     pluginToTour: PluginParentClass | null = null;
     testIndexToRun = 0;
 
@@ -55,6 +56,21 @@ export default class TourPlugin extends PluginParentClass {
         this.pluginToTour = payload.plugin;
         this.testIndexToRun = payload.testIndex || 0;
         this.title = `Tour: ${this.pluginToTour.title}`;
+        let intro = `This tour shows how to use the "${this.pluginToTour.title}" plugin`
+        if (this.pluginToTour.intro) {
+            intro += `, which allows the user to ${lowerize(this.pluginToTour.intro)}`;
+        }
+        if (intro.endsWith('.')) {
+            intro = intro.slice(0, -1); // Remove trailing period for better formatting
+        }
+        intro += '.';
+
+        if (this.pluginToTour.details)
+            intro += ` ${this.pluginToTour.details}`;
+
+        intro = intro.replace(/\.$/, '') + '.'; // Ensure single period at the end
+        intro = intro.replace(/\?\./g, '.'); // Remove any "?." occurrences
+        this.intro = intro;
     }
 
     /**
@@ -62,7 +78,7 @@ export default class TourPlugin extends PluginParentClass {
      */
     onPopupDone() {
         if (this.pluginToTour) {
-            api.tour.startTour(this.pluginToTour, this.testIndexToRun);
+            tourManager.startTour(this.pluginToTour, this.testIndexToRun);
         }
     }
 

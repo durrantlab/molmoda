@@ -69,7 +69,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
   tags = [Tag.Cheminformatics];
   intro = "Get the bioassay data of selected compounds from PubChem.";
   details =
-    "Contacts the online PubChem database to retrieve up to 10 active bioassays for each compound.";
+    "This tool contacts the online PubChem database to retrieve up to 10 active bioassays for each compound.";
 
   /**
    * Check if the plugin is allowed to be used.

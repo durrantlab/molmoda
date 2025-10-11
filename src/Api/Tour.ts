@@ -1,5 +1,6 @@
 import { tourManager } from "@/Plugins/Core/Tour/TourManager";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
+import { pluginsApi } from "@/Api/Plugins";
 
 export const tourApi = {
     /**
@@ -9,8 +10,12 @@ export const tourApi = {
      * @param {number} [testIndex=0] The index of the test to use for the tour.
      */
     startTour(plugin: PluginParentClass, testIndex = 0) {
-        tourManager.startTour(plugin, testIndex);
+  pluginsApi.runPlugin("tourplugin", {
+   plugin: plugin,
+   testIndex: testIndex,
+  });
     },
+
     /**
      * Checks if a tour is currently running.
      *

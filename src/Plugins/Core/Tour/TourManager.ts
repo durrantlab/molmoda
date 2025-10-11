@@ -68,6 +68,7 @@ class TourManager {
                         return null;
                     })
                     .catch((err: any) => {
+                        // throw err
                         console.error(
                             "TourManager: Error in waitForCondition:",
                             err
@@ -183,6 +184,11 @@ class TourManager {
                 }
             },
             onNextClick: () => {
+                const activeStep = this.driver.getActiveStep();
+                if (activeStep && activeStep.isNoteStep) {
+                    this.driver.moveNext();
+                    return;
+                }
                 // If there is no next step, this is the last one.
                 if (!this.driver.hasNextStep()) {
                     this.driver.destroy();
@@ -848,6 +854,7 @@ class TourManager {
                 title: plugin.title,
                 description: command.data as string,
             },
+            isNoteStep: true,
             onHighlighted: (element: HTMLElement) => {
                 this._setFocus(element);
             },

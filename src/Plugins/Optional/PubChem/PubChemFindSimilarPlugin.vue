@@ -92,8 +92,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
   tags = [Tag.LeadOptimization];
   intro = "Build a compound library of chemically similar analogs by searching the PubChem database.";
   details =
-    "Identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your project.";
-
+    "This plugin identifies PubChem-catalogued compounds that are structurally similar to compounds chosen from your project.";
   userArgDefaults: UserArg[] = [
     {
       id: "makemolinputparams",

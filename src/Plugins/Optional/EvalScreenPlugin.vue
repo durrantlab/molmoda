@@ -1,22 +1,10 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        :isActionBtnEnabled="isActionBtnEnabled"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        :submitOnEnter="false"
-        cancelBtnTxt="Done"
-        actionBtnTxt=""
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" :isActionBtnEnabled="isActionBtnEnabled"
+        @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" :submitOnEnter="false" cancelBtnTxt="Done"
+        actionBtnTxt="" @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
             <div class="mt-3">
-                <Alert
-                    v-for="warning in warnings"
-                    :key="warning[0]"
-                    :type="warning[1]"
-                >
+                <Alert v-for="warning in warnings" :key="warning[0]" :type="warning[1]">
                     {{ warning[0] }}
                 </Alert>
             </div>
@@ -31,19 +19,9 @@
                 <h6>Receiver Operating Characteristic (ROC) Curve</h6>
 
                 <!-- title="Receiver Operating Characteristic Curve" -->
-                <Chart
-                    xAxisLabel="False Positive Rate"
-                    yAxisLabel="True Positive Rate"
-                    xAxisLabelHover="FPR"
-                    yAxisLabelHover="TPR"
-                    xAxisUnits=""
-                    yAxisUnits=""
-                    :chartData="rocData"
-                    chartType="scatter"
-                    :ratio="ratio"
-                    :smooth="false"
-                    :fillUnderLine="true"
-                ></Chart>
+                <Chart xAxisLabel="False Positive Rate" yAxisLabel="True Positive Rate" xAxisLabelHover="FPR"
+                    yAxisLabelHover="TPR" xAxisUnits="" yAxisUnits="" :chartData="rocData" chartType="scatter"
+                    :ratio="ratio" :smooth="false" :fillUnderLine="true"></Chart>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -56,8 +34,7 @@
 
                     <p class="mb-0">
                         The AUROC of your screen is
-                        <strong>{{ auroc.toFixed(3) }}</strong
-                        >. If you randomly select one of your active compounds
+                        <strong>{{ auroc.toFixed(3) }}</strong>. If you randomly select one of your active compounds
                         and one of your other compounds, the active will have
                         the better docking score
                         <strong>{{ (auroc * 100).toFixed(1) }}%</strong> of the
@@ -67,19 +44,9 @@
 
                 <h6>Enrichment Factors (EF)</h6>
                 <!-- title="Enrichment Factor" -->
-                <Chart
-                    xAxisLabel="Number of Top Compounds Considered"
-                    yAxisLabel="Enrichment Factor"
-                    xAxisLabelHover="Top Compounds"
-                    yAxisLabelHover="EF"
-                    :xPrecision="0"
-                    xAxisUnits=""
-                    yAxisUnits=""
-                    :chartData="efData"
-                    chartType="scatter"
-                    :ratio="ratio"
-                    :smooth="false"
-                ></Chart>
+                <Chart xAxisLabel="Number of Top Compounds Considered" yAxisLabel="Enrichment Factor"
+                    xAxisLabelHover="Top Compounds" yAxisLabelHover="EF" :xPrecision="0" xAxisUnits="" yAxisUnits=""
+                    :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"></Chart>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -104,7 +71,7 @@
                         <strong>{{
                             parseFloat(percentTopCompoundsActive) /
                             parseFloat(percentTotalActives)
-                        }}</strong>
+                            }}</strong>
                         (<strong>{{ percentTopCompoundsActive }}%</strong> /
                         <strong>{{ percentTotalActives }}%</strong>).
                     </p>
@@ -160,7 +127,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
     pluginId = "evalscreen";
     tags = [Tag.Docking];
     intro = `Calculate receiver operating characteristic and enrichment factor curves.`;
-    details = `Analyzes the docking scores of both known-active and other (inactive or decoy) compounds to assess how well docking prioritizes the known actives.`;
+    details = `This plugin analyzes the docking scores of both known-active and other (inactive or decoy) compounds to assess how well docking prioritizes the known actives.`;
     title = "Evaluate Docking Performance";
 
     isActionBtnEnabled = false;
@@ -354,15 +321,13 @@ export default class EvalScreenPlugin extends PluginParentClass {
             this.analysisVisible = false;
             let msg = "";
             if (allCompoundsNotInActivesOrOthers.size === 1) {
-                msg = `One compound (${
-                    allCompoundsNotInActivesOrOthers.values().next().value
-                }) is not labeled as active ("${actives}") or other ("${others}"). It will be excluded from the analysis.`;
+                msg = `One compound (${allCompoundsNotInActivesOrOthers.values().next().value
+                    }) is not labeled as active ("${actives}") or other ("${others}"). It will be excluded from the analysis.`;
             } else {
-                msg = `Some compounds (${
-                    allCompoundsNotInActivesOrOthers.size
-                }) are not labeled as actives ("${actives}") or others ("${others}"). They will be excluded from the analysis. Examples: ${this.examplesSummary(
-                    allCompoundsNotInActivesOrOthers
-                )}.`;
+                msg = `Some compounds (${allCompoundsNotInActivesOrOthers.size
+                    }) are not labeled as actives ("${actives}") or others ("${others}"). They will be excluded from the analysis. Examples: ${this.examplesSummary(
+                        allCompoundsNotInActivesOrOthers
+                    )}.`;
             }
             this.warnings.push([msg, "warning"]);
         }
@@ -648,14 +613,14 @@ export default class EvalScreenPlugin extends PluginParentClass {
                     true,
                     "./TGFR1_docked.molmoda"
                 ),
-    pluginOpen: () =>
-     new TestCmdList()
-      .setUserArg("activesLabel", "active", this.pluginId)
-      .setUserArg("otherLabel", "other", this.pluginId)
-      .waitUntilRegex("#modal-evalscreen", "0.871"),
-    closePlugin: () =>
-     new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
-    afterPluginCloses: () => new TestCmdList(),
+                pluginOpen: () =>
+                    new TestCmdList()
+                        .setUserArg("activesLabel", "active", this.pluginId)
+                        .setUserArg("otherLabel", "other", this.pluginId)
+                        .waitUntilRegex("#modal-evalscreen", "0.871"),
+                closePlugin: () =>
+                    new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
+                afterPluginCloses: () => new TestCmdList(),
             },
         ];
     }

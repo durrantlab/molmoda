@@ -58,7 +58,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
   contributorCredits: IContributorCredit[] = [];
   pluginId = "activityfocus";
   intro = "Choose which activity to focus on.";
-  details = `Adapts the ${appName} interface to show tools and features most relevant to your chosen activity.`;
+  details = `This plugin adapts the ${appName} interface to show tools and features most relevant to your chosen activity.`;
   tags = [Tag.All];
 
   selectedTag: Tag | null = null;

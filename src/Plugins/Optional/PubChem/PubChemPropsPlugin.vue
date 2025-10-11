@@ -1,13 +1,7 @@
 <template>
   <span>
-    <PluginComponent
-      v-model="open"
-      :infoPayload="infoPayload"
-      @onPopupDone="onPopupDone"
-      actionBtnTxt="Get Properties"
-      @onUserArgChanged="onUserArgChanged"
-      @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Get Properties"
+      @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
   </span>
 </template>
 
@@ -68,7 +62,7 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
   tags = [Tag.Cheminformatics];
   intro = "Get the chemical properties of selected compounds from PubChem.";
   details =
-    "Contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
+    "This plugin contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
   dataSetTitle = "Properties";
 
   /**

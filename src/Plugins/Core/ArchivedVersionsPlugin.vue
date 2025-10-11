@@ -58,7 +58,7 @@ export default class ArchivedVersionsPlugin extends PluginParentClass {
     title = "Archived Versions";
     pluginId = "archivedversions";
     intro = `Access previous versions of ${appName}.`;
-    details = "Links to archived versions for reproducibility, and the beta version to test the latest features.";
+    details = "We retain archived versions for reproducibility and provide the beta version for testing the upcoming features.";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     tags = [Tag.All];

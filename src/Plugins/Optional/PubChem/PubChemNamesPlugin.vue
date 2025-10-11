@@ -72,7 +72,7 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
   tags = [Tag.Cheminformatics];
   intro = "Get the names/synonyms of selected compounds from PubChem.";
   details =
-    "Contacts the online PubChem database to retrieve up to five names for each compound.";
+    "This tool contacts the online PubChem database to retrieve up to five names for each compound.";
   dataSetTitle = "Names";
 
   // Component state

@@ -115,7 +115,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
     ];
 
     intro = `Append example data to the current project.`;
-    details = `Useful for exploring and testing the ${appName} interface.`;
+    details = `This plugin provides example data for exploring and testing the ${appName} interface.`;
 
     /**
      * Detects when user arguments have changed, and updates UI accordingly.
