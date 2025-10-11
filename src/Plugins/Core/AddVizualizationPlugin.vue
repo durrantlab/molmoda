@@ -89,6 +89,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   title = "New Visualization";
   pluginId = "addnewvisualization";
   intro = "Define a new visualization by specifying selection criteria, representation, and color.";
+  details = "This plugin allows for the creation of custom styles to highlight specific parts of a molecule.";
   tags = [Tag.Visualization, Tag.All];
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];

@@ -15,7 +15,6 @@ import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestInterfaces";
-import { FileInfo } from "@/FileSystem/FileInfo";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
@@ -64,6 +63,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     pluginId = "loadalphafold";
     skipLongRunningJobMsg = true;
     intro = `Load a protein from the <a href="https://alphafold.ebi.ac.uk/" target="_blank">AlphaFold Protein Structure Database</a> of predicted protein structures.`;
+    details = "This plugin retrieves AlphaFold-predicted protein models using a UniProt accession number.";
     tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [

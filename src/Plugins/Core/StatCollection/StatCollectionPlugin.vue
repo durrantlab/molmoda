@@ -101,6 +101,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     // ];
     pluginId = "statcollection";
     intro = "Manage cookie and usage statistics settings.";
+    details = "This plugin allows users to enable or disable the collection of anonymous usage statistics.";
     title = `Allow Cookies?`;
     open = false;
     tags = [Tag.All];

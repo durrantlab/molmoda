@@ -40,6 +40,7 @@ export default class EditCompoundPlugin extends PluginParentClass {
     logJob = false;
     // hotkey = "z";
     intro = "Edit a compound.";
+    details = "This plugin opens the selected compound in a molecular editor for modification.";
     tags = [Tag.All];
 
     selected: TreeNode | undefined = undefined;

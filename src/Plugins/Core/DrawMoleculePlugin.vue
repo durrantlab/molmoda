@@ -71,7 +71,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     title = "Draw Molecule";
     intro = `Use a molecular editor to draw or edit a small-molecule compound.`;
     details =
-        "You can also update the SMILES string directly by typing in a text field under the editor.";
+        "This plugin also allows direct editing of the SMILES string via a text field under the editor.";
     tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [

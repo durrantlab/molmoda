@@ -1,36 +1,18 @@
 <template>
-    <PluginComponent
-        :infoPayload="infoPayload"
-        v-model="open"
-        cancelBtnTxt="Cancel"
-        actionBtnTxt="Load"
-        @onPopupDone="onPopupDone"
-        :isActionBtnEnabled="isBtnEnabled()"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Cancel" actionBtnTxt="Load"
+        @onPopupDone="onPopupDone" :isActionBtnEnabled="isBtnEnabled()" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged">
         <FormWrapper>
-            <FormInput
-                ref="formMolName"
-                id="formMolName"
-                v-model="molName"
-                placeHolder="(Optional) The Chemical Name (e.g., Aspirin)..."
-                @onChange="searchByName"
-                :delayBetweenChangesDetected="2000"
-                :description="molNameRespDescription"
-                :validateDescription="false"
-            ></FormInput>
+            <FormInput ref="formMolName" id="formMolName" v-model="molName"
+                placeHolder="(Optional) The Chemical Name (e.g., Aspirin)..." @onChange="searchByName"
+                :delayBetweenChangesDetected="2000" :description="molNameRespDescription" :validateDescription="false">
+            </FormInput>
         </FormWrapper>
-        <FormWrapper
-            ><FormInput
-                ref="formCID"
-                v-model="cid"
-                id="cid"
-                placeHolder="The CID (e.g., 2244)..."
-                :filterFunc="filterUserData"
-                @onKeyDown="onCIDKeyDown"
-                description='The CID number. Search <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem</a> to find the CID yourself.'
-            ></FormInput>
+        <FormWrapper>
+            <FormInput ref="formCID" v-model="cid" id="cid" placeHolder="The CID (e.g., 2244)..."
+                :filterFunc="filterUserData" @onKeyDown="onCIDKeyDown"
+                description='The CID number. Search <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem</a> to find the CID yourself.'>
+            </FormInput>
         </FormWrapper>
     </PluginComponent>
 </template>
@@ -100,8 +82,9 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     molNameRespDescription = "";
     skipLongRunningJobMsg = true;
     intro = `Load a compound from the <a href="https://pubchem.ncbi.nlm.nih.gov/" target="_blank">PubChem Database</a> of small molecules.`;
+    details = "This plugin retrieves small molecules from PubChem using either a chemical name or a PubChem Compound ID (CID).";
     userArgDefaults: UserArg[] = [getDesaltUserArg()];
-    
+
     tags = [Tag.All];
 
     /**
@@ -171,9 +154,8 @@ export default class LoadPubChemPlugin extends PluginParentClass {
                         synonym.toLowerCase() !== this.molName.toLowerCase()
                 );
 
-                this.molNameRespDescription = `<div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block;">Found "${
-                    this.molName
-                }", known also as ${synonyms.join(", ")}<div>`;
+                this.molNameRespDescription = `<div style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; display: block;">Found "${this.molName
+                    }", known also as ${synonyms.join(", ")}<div>`;
                 return;
             })
             .catch(catchFunc);
@@ -308,8 +290,8 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         if (fileInfo === undefined) {
             api.messages.popupError(
                 "Could not load molecule with CID " +
-                    this.cid +
-                    ". Does this CID exist?"
+                this.cid +
+                ". Does this CID exist?"
             );
             return;
         }

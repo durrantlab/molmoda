@@ -123,6 +123,8 @@ export default class PoseViewPlugin extends PluginParentClass {
   pluginId = "poseview";
   intro =
     "Use PoseView to generate a 2D interaction diagram showing protein-ligand interactions.";
+  details = "This plugin provides a two-dimensional layout of molecular interactions to facilitate binding-pose analysis.";
+
   tags = [Tag.Visualization, Tag.Docking];
   isActionBtnEnabled = false;
   numCompounds = 0;

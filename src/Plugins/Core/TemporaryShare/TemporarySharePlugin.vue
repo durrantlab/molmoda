@@ -39,7 +39,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
     pluginId = "temporaryshare";
     intro = "Temporarily share your current session via a link and QR code.";
     details =
-        "This will upload your session to the server and generate a unique, temporary link that you can use to open the session on another device. The link will expire after a short period.";
+        "This plugin will upload your session to a remomte server and generate a unique, temporary link that you can use to open the session on another device. The link will expire after a short period.";
     tags = [Tag.All];
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
