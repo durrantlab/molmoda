@@ -55,7 +55,7 @@ export function getGen3DUserArg(
     label: string,
     description: string,
     includeNoneOption = false,
-    defaultVal=Gen3DLevel.Medium
+ defaultVal = Gen3DLevel.Default
 ): IUserArgSelect {
     const options = [
         {
@@ -90,8 +90,8 @@ export function getGen3DUserArg(
     if (includeNoneOption) {
         options.unshift({
             description:
-                "recommended: quick forcefield optimization and fast conformer search",
-            val: "medium",
+    "recommended: max forcefield optimization and thorough conformer search",
+   val: "best",
         });
         options.unshift({
             description: "none: do not generate 3D coordinates",
