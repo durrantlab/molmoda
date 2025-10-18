@@ -10,14 +10,14 @@ export class ValidationMixin extends Vue {
      * etc.
      *
      * @param {string} pluginId  The plugin ID.
-     * @param {string} intro     The plugin intro.
+     * @param {string|null} intro     The plugin intro.
      * @param {string} details   The plugin details.
      * @param {string[] | string | null} menuPath The plugin's menu path.
      * @param {string} title The plugin's title.
      */
     protected _validatePlugin(
         pluginId: string,
-        intro: string,
+        intro: string | null,
         details: string,
         menuPath: string[] | string | null,
         title: string
@@ -32,24 +32,26 @@ export class ValidationMixin extends Vue {
                 `Plugin title cannot be empty. Plugin id: ${pluginId}`
             );
         }
-        if (intro.trim() === "") {
+        if (intro !== null && intro.trim() === "") {
             throw new Error(
-                `Plugin intro cannot be empty. Plugin id: ${pluginId}`
+                `Plugin intro cannot be empty. In the rare cases where you truly need no intro, set it explicitly to null. Plugin id: ${pluginId}`
             );
         }
         // Make sure intro is sentence
-        if (!isSentence(intro)) {
-            throw new Error(
-                `Plugin intro must be a sentence (start with capital letter, end with punctuation). Plugin id: ${pluginId}. Intro: ${intro}`
-            );
-        }
-
-        // Sentence must be no longer than 100 characters, after HTML tags removed.
-        const introWithoutHtml = intro.replace(/<[^>]*>?/g, "");
-        if (introWithoutHtml.length > 100) {
-            throw new Error(
-                `Plugin intro must be no longer than 100 characters. Use the details property if you need a more extended introduction. Plugin id: ${pluginId}. Intro: ${introWithoutHtml}. Length: ${introWithoutHtml.length}.`
-            );
+        if (intro) {
+            if (!isSentence(intro)) {
+                throw new Error(
+                    `Plugin intro must be a sentence (start with capital letter, end with punctuation). Plugin id: ${pluginId}. Intro: ${intro}`
+                );
+            }
+    
+            // Sentence must be no longer than 100 characters, after HTML tags removed.
+            const introWithoutHtml = intro.replace(/<[^>]*>?/g, "");
+            if (introWithoutHtml.length > 100) {
+                throw new Error(
+                    `Plugin intro must be no longer than 100 characters. Use the details property if you need a more extended introduction. Plugin id: ${pluginId}. Intro: ${introWithoutHtml}. Length: ${introWithoutHtml.length}.`
+                );
+            }
         }
 
         // Made sure details is also a sentence.

@@ -49,7 +49,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
         // },
     ];
     pluginId = "simplemsg";
-    intro = "Display a simple message.";
+    intro = null; // "Display a simple message.";
     tags = [Tag.All];
 
     // Below set via onPluginStart.

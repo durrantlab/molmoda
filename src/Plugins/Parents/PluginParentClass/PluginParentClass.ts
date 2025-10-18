@@ -99,11 +99,13 @@ export abstract class PluginParentClass extends mixins(
 
     /**
      * A very short description of what the plugin does. This is shown at the
-     * top of the plugin. Be brief.
+     * top of the plugin. Be brief. You should almost always have an intro for
+     * the help system. In those rare cases where one is not needed, set
+     * explicitly to null.
      *
      * @type {string}
      */
-    abstract intro: string;
+    abstract intro: string | null;
 
     /**
      * An optional expanded introduction, also shown at the top of the plugin.

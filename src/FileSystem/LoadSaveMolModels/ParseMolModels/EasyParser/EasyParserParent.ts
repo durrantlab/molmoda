@@ -392,6 +392,16 @@ export abstract class EasyParserParent {
     }
 
     /**
+     * Checks if the molecule contains any hydrogen atoms.
+     *
+     * @returns {boolean} True if at least one hydrogen atom is found, false otherwise.
+     */
+    public hasHydrogens(): boolean {
+        // Use .some for efficiency, as it will stop as soon as a hydrogen is found.
+        return this.atoms.some((atom) => atom.elem?.toUpperCase() === "H");
+    }
+
+    /**
      * Get the approximate bounds of the molecule. NOTE: This code not used, but
      * could be useful in the future.
      *

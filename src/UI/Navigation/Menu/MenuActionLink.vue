@@ -59,7 +59,11 @@ export default class MenuActionLink extends Vue {
             return "";
         }
 
-        let txt = loadedPlugins[pluginId].intro;
+        if (!loadedPlugins[pluginId].intro) {
+            return "";
+        }
+
+        let txt = loadedPlugins[pluginId].intro as string;
 
         // Get text, but not any HTML tags.
         txt = txt.replace(/<[^>]*>?/g, "");
