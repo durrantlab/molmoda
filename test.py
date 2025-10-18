@@ -47,7 +47,15 @@ chosen_index = menu.show()
 root_url = urls[chosen_index]
 
 browsers_to_use = []
-browser_choices = ["[s] standard three", "chrome", "chrome-headless", "firefox", "firefox-headless", "safari", "[d] done"]
+browser_choices = [
+    "[s] standard three",
+    "chrome",
+    "chrome-headless",
+    "firefox",
+    "firefox-headless",
+    "safari",
+    "[d] done",
+]
 menu = TerminalMenu(browser_choices, title="Select the browsers to use")
 
 while True:
@@ -64,6 +72,7 @@ while True:
     browsers_to_use.sort()
 
 print("\nUsing root URL: " + root_url)
+
 
 class el:
     def __init__(self, selector, drvr, timeout=50):
@@ -164,18 +173,19 @@ class el:
             wait = WebDriverWait(
                 self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
             )
-            
+
             def check(driver):
-                inner_html = self.el.get_attribute("innerHTML")
+                # inner_html = self.el.get_attribute("innerHTML")
+                text_content = self.text
 
-
-                # print(f"Checking innerHTML: {inner_html}")  # Print the innerHTML for debugging                
+                # print(f"Checking innerHTML: {inner_html}")  # Print the innerHTML for debugging
                 # with open("tmp.txt", "w") as f:
                 #     f.write(inner_html)
                 # os.system("cat tmp.txt | pbcopy; rm tmp.txt")
-                
-                return re.search(regex, inner_html)
-        
+
+                # return re.search(regex, inner_html)
+                return re.search(regex, text_content)
+
             self.el = wait.until(check)
             # .until(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
         except TimeoutException as e:
@@ -188,7 +198,8 @@ class el:
             regex = html.unescape(regex)
             WebDriverWait(
                 self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
-            ).until_not(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
+            ).until_not(lambda driver: re.search(regex, self.text))
+            # ).until_not(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
         except TimeoutException as e:
             self.throw_error(
                 f"{self.selector} still contains [[{regex}]] after {self.timeout} seconds"
@@ -227,21 +238,22 @@ class el:
         # self.driver.quit()
         raise Exception(msg)
 
+
 def make_chrome_driver(options):
-    service = Service(executable_path='utils/chromedriver_wrapper.sh')
-    options.set_capability('goog:loggingPrefs', {'browser': 'ALL'})
+    service = Service(executable_path="utils/chromedriver_wrapper.sh")
+    options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
     driver = webdriver.Chrome(service=service, options=options)
-    
+
     # Check if the root_url is a localhost URL.
     if "localhost" in root_url or "127.0.0.1" in root_url:
         # Enable the Network domain of the Chrome DevTools Protocol.
-        driver.execute_cdp_cmd('Network.enable', {})
-        
+        driver.execute_cdp_cmd("Network.enable", {})
+
         # Setting a blanket Origin header can cause CORS issues with external sites.
         # Modern browsers treat localhost as a secure context, so this override is often
         # not necessary and can be detrimental for tests involving multiple origins.
         # driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {'headers': {'Origin': root_url}})
-        
+
     return driver
 
 
@@ -258,7 +270,9 @@ def make_driver(browser):
         driver = webdriver.Firefox(options=options)
         driver.maximize_window()
     elif browser == "firefox-headless":
-        input("Could get an error here (untested). Involving e.php. If so, it's because firefox-headless doesn't send the Origin header with 'localhost' in it...")
+        input(
+            "Could get an error here (untested). Involving e.php. If so, it's because firefox-headless doesn't send the Origin header with 'localhost' in it..."
+        )
         options = webdriver.FirefoxOptions()
         options.add_argument("-headless")
         options.add_argument("--width=1920")
@@ -272,7 +286,7 @@ def make_driver(browser):
         os.system("""osascript -e 'tell application "Safari" to activate'""")
     elif browser == "chrome":
         # NOTE: If this ever starts running really slow, you probably aren't
-        # using arm64-compiled version of chrome. 
+        # using arm64-compiled version of chrome.
 
         # brew install chromedriver (to update too)
 
@@ -289,16 +303,19 @@ def make_driver(browser):
         options.add_argument("--start-maximized")
         options.add_argument("--window-size=1920,1080")
         # Set a common user agent to make the headless browser appear more like a standard browser.
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+        options.add_argument(
+            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        )
         driver = make_chrome_driver(options)
     return driver
+
 
 def do_logs_have_errors(driver, browser):
     if "firefox" in browser.lower():
         # Firefox driver has no get_log method
         return False
 
-    logs = driver.get_log('browser')
+    logs = driver.get_log("browser")
 
     # Get all the logs that are SEVERE, WARNING, or ERROR
     logs_to_keep = [l for l in logs if l["level"] in ["SEVERE", "ERROR"]]
@@ -306,21 +323,29 @@ def do_logs_have_errors(driver, browser):
     # Don't keep ones with "404 (Not Found)". This should be handeled
     # separately.
     logs_to_keep = [
-        l for l in logs_to_keep 
-        if "message" in l 
-        and "status of 404" not in l["message"] 
-        and "status code 404" not in l["message"] 
+        l
+        for l in logs_to_keep
+        if "message" in l
+        and "status of 404" not in l["message"]
+        and "status code 404" not in l["message"]
         and "status of 400" not in l["message"]
         and "404 (Not Found)" not in l["message"]
         # Very annoying that www.ebi.ac.uk throws CORS errors instead of 404...
-        and not ("https://www.ebi.ac.uk/" in l["message"] and "blocked by CORS policy" in l["message"])
-        and not ("https://www.ebi.ac.uk/" in l["message"] and "Failed to load resource" in l["message"])
+        and not (
+            "https://www.ebi.ac.uk/" in l["message"]
+            and "blocked by CORS policy" in l["message"]
+        )
+        and not (
+            "https://www.ebi.ac.uk/" in l["message"]
+            and "Failed to load resource" in l["message"]
+        )
     ]
 
     if not logs_to_keep:
         return False
     else:
         return " ".join([l["message"] for l in logs_to_keep])
+
 
 allowed_threads = {
     "chrome": 4,
@@ -333,6 +358,7 @@ allowed_threads = {
 drivers = {}
 browser = ""
 
+
 def check_errors(driver, browser):
     # Check for JavaScript errors in the browser console
     js_errs = do_logs_have_errors(driver, browser)
@@ -343,6 +369,7 @@ def check_errors(driver, browser):
             raise Exception(f"Critical JavaScript error: {js_errs}")
     return js_errs
 
+
 def run_test(plugin_id_tuple):
     global drivers
     global browser
@@ -352,10 +379,12 @@ def run_test(plugin_id_tuple):
         drivers[key] = make_driver(browser)
 
     driver = drivers[key]
-    
+
     try:
         plugin_name, plugin_idx = plugin_id_tuple
-        test_lbl = f"{plugin_name}{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
+        test_lbl = (
+            f"{plugin_name}{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
+        )
         # print(f"Starting test: {test_lbl}...")
         url = f"{root_url}/?test={plugin_name}"
         if plugin_idx is not None:
@@ -374,7 +403,9 @@ def run_test(plugin_id_tuple):
         # This allows the test runner to catch the failure, report it, and
         # continue with other tests instead of halting the entire suite.
         if cmds is None:
-            raise Exception("No commands found. Are you sure you specified an actual plugin id?")
+            raise Exception(
+                "No commands found. Are you sure you specified an actual plugin id?"
+            )
         # MODIFICATION END
         if cmds_str is None:
             print(f"Failed to parse JSON: {cmds_str}")
@@ -383,7 +414,7 @@ def run_test(plugin_id_tuple):
                 "test": test_lbl,
                 "error": f"Failed to parse JSON: {cmds_str}",
             }
-        
+
         screenshot_dir = f"./screenshots/{test_lbl}"
         if os.path.exists(screenshot_dir):
             shutil.rmtree(screenshot_dir)
@@ -427,7 +458,7 @@ def run_test(plugin_id_tuple):
                 #         print(f"Ignored JavaScript error: {js_errs} (ignored, user gesture)")
                 #     else:
                 #         raise Exception(f"Critical JavaScript error: {js_errs}")
-                
+
             # resp = f"Passed: {test_lbl}"
             resp = {
                 "status": "passed",
@@ -454,7 +485,10 @@ def run_test(plugin_id_tuple):
     finally:
         # Clear browser storage to ensure a clean state for the next test
         with contextlib.suppress(Exception):
-            driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
+            driver.execute_script(
+                "window.localStorage.clear(); window.sessionStorage.clear();"
+            )
+
 
 # If first argument given, use that as plugin_id
 if len(sys.argv) > 1:
@@ -471,7 +505,7 @@ if len(sys.argv) > 1:
             subjob_idx = int(arg) - 1
         except ValueError:
             plugin_ids.append(arg)
-    
+
     # Now add the subjob_idx to the plugin_ids
     plugin_ids = [(i, subjob_idx) for i in plugin_ids]
 
@@ -493,11 +527,7 @@ plugin_ids = [
 
 # some plugins are disallowed only for safari
 if "safari" in browsers_to_use:
-    plugin_ids = [
-        i
-        for i in plugin_ids
-        if "documentation" not in i[0]
-    ]
+    plugin_ids = [i for i in plugin_ids if "documentation" not in i[0]]
 
 plugin_ids.sort()
 # print(plugin_ids)
@@ -508,7 +538,7 @@ plugin_ids.sort()
 # all_test_results = {}
 
 passed_tests = []
-failed_tests = [] # MODIFICATION: Added a global failed_tests list
+failed_tests = []  # MODIFICATION: Added a global failed_tests list
 
 for browser_to_use in browsers_to_use:
     # Set global var
@@ -522,11 +552,13 @@ for browser_to_use in browsers_to_use:
         # MODIFICATION: Reset failed_tests_this_round for each attempt
         failed_tests_this_round = []
         drivers = {}
-        
+
         # MODIFICATION: Shuffle the list of tests to be run in this round for randomness.
         random.shuffle(plugin_ids_per_browser)
 
-        with ThreadPoolExecutor(max_workers=allowed_threads[browser_to_use]) as executor:
+        with ThreadPoolExecutor(
+            max_workers=allowed_threads[browser_to_use]
+        ) as executor:
             # Use a dictionary to map futures to the tests they represent
             # (optional but can be useful)
             futures_to_tests = {}
@@ -537,7 +569,7 @@ for browser_to_use in browsers_to_use:
                 # While there are tests to submit or futures that haven't been processed
                 while plugin_ids_per_browser:
                     # MODIFICATION: Use pop() to take a random test from the shuffled list.
-                    test = plugin_ids_per_browser.pop() 
+                    test = plugin_ids_per_browser.pop()
                     future = executor.submit(run_test, test)
                     futures_to_tests[future] = test
 
@@ -559,18 +591,38 @@ for browser_to_use in browsers_to_use:
                         )
                         if result["status"] == "passed":
                             # MODIFICATION: Append the result dictionary to passed_tests
-                            passed_tests.append({**result, "try": try_idx + 1, "browser": browser_to_use})
+                            passed_tests.append(
+                                {
+                                    **result,
+                                    "try": try_idx + 1,
+                                    "browser": browser_to_use,
+                                }
+                            )
                         else:
                             # MODIFICATION: Append the original test tuple to the list for retrying
                             failed_tests_this_round.append(test)
                             # MODIFICATION: Append the full result to the global failed_tests list for reporting
-                            failed_tests.append({**result, "try": try_idx + 1, "browser": browser_to_use})
+                            failed_tests.append(
+                                {
+                                    **result,
+                                    "try": try_idx + 1,
+                                    "browser": browser_to_use,
+                                }
+                            )
                     except Exception as e:
                         print(f"Test {test} raised an exception: {e}")
                         # MODIFICATION: Append the original test tuple for retrying
                         failed_tests_this_round.append(test)
                         # MODIFICATION: Append a constructed error result for reporting
-                        failed_tests.append({"status": "failed", "test": f"{test[0]}{f' #{test[1] + 1}' if test[1] is not None else ''}", "error": str(e), "try": try_idx + 1, "browser": browser_to_use})
+                        failed_tests.append(
+                            {
+                                "status": "failed",
+                                "test": f"{test[0]}{f' #{test[1] + 1}' if test[1] is not None else ''}",
+                                "error": str(e),
+                                "try": try_idx + 1,
+                                "browser": browser_to_use,
+                            }
+                        )
                     finally:
                         del futures_to_tests[future]
 
@@ -591,7 +643,10 @@ for browser_to_use in browsers_to_use:
             break
 
         plugin_ids_str = ", ".join(
-            [i[0] if i[1] is None else f"{i[0]} #{str(i[1] + 1)}" for i in plugin_ids_per_browser]
+            [
+                i[0] if i[1] is None else f"{i[0]} #{str(i[1] + 1)}"
+                for i in plugin_ids_per_browser
+            ]
         )
         print(f"Will retry the following tests: {plugin_ids_str}")
 
@@ -611,14 +666,18 @@ if not unique_failed_tests:
     print("   None!")
 else:
     for result in unique_failed_tests:
-        print(f"   {result['test']}-{result['browser']} (Final Error: {result['error']})")
+        print(
+            f"   {result['test']}-{result['browser']} (Final Error: {result['error']})"
+        )
 # MODIFICATION END
 
 print("")
 print(urls[chosen_index] + "\n")
 
 if failed_tests:
-    unique_failed_names = sorted(list(set([t['test'].split(' #')[0] for t in failed_tests])))
+    unique_failed_names = sorted(
+        list(set([t["test"].split(" #")[0] for t in failed_tests]))
+    )
     print(f" RUN AGAIN (FAILED)?: {' '.join(unique_failed_names)}")
 # input("Done. Press Enter to end all tests...")
 

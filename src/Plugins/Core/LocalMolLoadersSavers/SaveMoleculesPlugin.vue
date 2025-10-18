@@ -46,6 +46,8 @@ import { appName } from "@/Core/GlobalVars";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
+let lastSavedFilename: string | null = null;
+
 /**
  * SaveMoleculesPlugin
  */
@@ -205,14 +207,16 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     this.setUserArg("saveSelected", true);
     this.setUserArg("saveHiddenAndUnselected", false);
     this.setUserArg("separateCompounds", true);
-
-    const projectTitle = this.$store.state.projectTitle;
-    if (projectTitle) {
-      this.setUserArg("filename", projectTitle);
+    if (lastSavedFilename) {
+      this.setUserArg("filename", lastSavedFilename);
     } else {
-      this.setUserArg("filename", ""); // Ensure it's blank if no title
+      const projectTitle = this.$store.state.projectTitle;
+      if (projectTitle) {
+        this.setUserArg("filename", projectTitle);
+      } else {
+        this.setUserArg("filename", ""); // Ensure it's blank if no title
+      }
     }
-
     payload = undefined;
   }
 
@@ -356,6 +360,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    */
   async runJobInBrowser(): Promise<void> {
     let filename = this.getUserArg("filename");
+    lastSavedFilename = filename;
     const useMolModaFormat = this.getUserArg("useMolModaFormat") as boolean;
     let compoundFormat = this.getUserArg("compoundFormat");
     let nonCompoundFormat = this.getUserArg("nonCompoundFormat");
@@ -459,7 +464,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * @returns {ITest[]}  The selenium test commands.
    */
   async getTests(): Promise<ITest[]> {
-    const molModaJob = {
+    const molModaJob: ITest = {
       beforePluginOpens: () => new TestCmdList()
         .loadExampleMolecule(true)
         .selectMoleculeInTree("Protein"),
@@ -474,7 +479,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       ),
     };
 
-    const jobs = [molModaJob];
+    const jobs: ITest[] = [molModaJob];
 
     let idx = 0;
     for (const toConsider of [
@@ -531,7 +536,30 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
         pluginOpen: () => pluginOpenCmdList,
       });
     }
-
+    const reuseFilenameTest: ITest = {
+      name: "Reuse Last Saved Filename",
+      beforePluginOpens: () =>
+        new TestCmdList()
+          .loadExampleMolecule(true) // 1. Load something to save.
+          .openPlugin("savemolecules") // 2. Open save plugin for the first time.
+          .setUserArg("filename", "my-reused-project-name", this.pluginId) // 3. Set a filename.
+          .pressPopupButton(".action-btn", this.pluginId) // 4. "Save" it. This also closes the popup.
+          .waitUntilRegex("#log", "Job savemolecules.*? ended"), // 5. Wait for save to complete.
+      // The test runner opens the plugin again here. `onBeforePopupOpen` should pre-fill the filename.
+      pluginOpen: () =>
+        new TestCmdList()
+          // 6. Check if the input field has the reused name.
+          // This relies on the test runner's ability to read the `value` of an input field.
+          .waitUntilRegex(
+            "#filename-savemolecules-item",
+            "my-reused-project-name"
+          ),
+      // No action needed in closePlugin as we're just verifying the state on open.
+      closePlugin: () =>
+        new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
+      afterPluginCloses: () => new TestCmdList(),
+    };
+    jobs.push(reuseFilenameTest);
     return jobs;
   }
 }
