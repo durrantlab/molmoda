@@ -143,7 +143,8 @@ export abstract class GetPropPluginParent extends PluginParentClass {
                     `Successfully retrieved data for ${molecules.length} compounds. The data have also been added to the Data panel.`,
                     this.formattedTableData,
                     "Results Summary",
-                    3
+                    3,
+                    this.dataSetTitle
                 );
             },
         });

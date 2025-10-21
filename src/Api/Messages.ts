@@ -58,7 +58,13 @@ export const messagesApi = {
                 toastParams.duration = 0; // Never autohides
                 toastParams.showCloseBtn = false; // No close button
             }
-            addToast(sanitizedTitle, sanitizedMessage, variant, callBack, toastParams);
+            addToast(
+                sanitizedTitle,
+                sanitizedMessage,
+                variant,
+                callBack,
+                toastParams
+            );
             return;
         }
 
@@ -153,12 +159,13 @@ export const messagesApi = {
      * @param  {number}       [precision=3]  The number of decimal places to
      *                                       display.
      */
-    popupTableData: async function(
+    popupTableData: async function (
         title: string,
         message: string,
         tableData: ITableData,
         caption: string,
-        precision = 3
+        precision = 3,
+        downloadFilenameBase?: string
     ): Promise<void> {
         const sanitizedTitle = await sanitizeHtml(title);
         const sanitizedMessage = await sanitizeHtml(message);
@@ -169,6 +176,7 @@ export const messagesApi = {
             tableData,
             caption,
             precision,
+            downloadFilenameBase: downloadFilenameBase || caption,
             open: true, // open
         } as ITableDataMsg);
     },

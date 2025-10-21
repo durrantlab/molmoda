@@ -11,7 +11,7 @@
       <div class="d-flex flex-wrap gap-2">
         <!-- Add unique ID to connect input and label -->
         <div v-for="tableData in allTableData" :key="tableData[0]">
-          <input type="checkbox" :id="'btn-check-' + tableData[0]" :value="tableData[0]" v-model="selectedSources"
+          <input type="checkbox" :id='`btn-check-${tableData[0]}`' :value="tableData[0]" v-model="selectedSources"
             class="btn-check" autocomplete="off" />
           <label :for="'btn-check-' + tableData[0]" class="btn btn-outline-primary btn-sm">
             {{ tableData[0] }}
@@ -19,9 +19,9 @@
         </div>
       </div>
     </div>
-
-    <Table v-if="mergedTableData !== null" id="merged-data" :tableData="mergedTableData" caption="All Molecular Data"
-      :noFixedTable="true" @rowClicked="rowClicked" :clickableRows="true">
+ <Table v-if="mergedTableData !== null" id='data-panel-table' :tableData="mergedTableData"
+  caption="All Molecular Data" :noFixedTable="true" @rowClicked="rowClicked" :clickableRows="true"
+  downloadFilenameBase="all-molecular-data">
     </Table>
   </span>
 </template>

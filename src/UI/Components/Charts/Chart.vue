@@ -46,7 +46,7 @@ export default class Chart extends Vue {
     @Prop({ default: false }) fillUnderLine!: boolean;
     @Prop({ default: ChartRatios.Ratio1x1 }) ratio!: ChartRatios;
     @Prop({ default: false }) smooth!: boolean;
-
+ @Prop({ required: true }) downloadFilenameBase!: string;
     private chartInstance: any = null;
 
     /**
@@ -94,7 +94,8 @@ export default class Chart extends Vue {
      * @param {string} format  The format to download as.
      */
     async download(format: string) {
-        const filename = slugify(this.title) + "." + format;
+        // const filename = slugify(this.title) + "." + format;
+        const filename = slugify(this.downloadFilenameBase) + "." + format;
         if (format === "png") {
             const fileSaver = await dynamicImports.fileSaver.module;
 

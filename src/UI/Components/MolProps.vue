@@ -1,8 +1,8 @@
 <template>
     <span v-if="countsTableData !== null" >
-        <Table :tableData="lipinskiTableData" caption="Lipinski Properties" />
-        <Table :tableData="otherTableData" caption="Other Properties" />
-        <Table :tableData="countsTableData" caption="Counts" />
+  <Table :tableData="lipinskiTableData" caption="Lipinski Properties" downloadFilenameBase="lipinski-properties" />
+  <Table :tableData="otherTableData" caption="Other Properties" downloadFilenameBase="other-properties" />
+  <Table :tableData="countsTableData" caption="Counts" downloadFilenameBase="counts" />
     </span>
 </template>
 

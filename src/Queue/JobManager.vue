@@ -1,11 +1,7 @@
 <template>
     <div>
-        <div
-            v-if="jobStatusInfos[0][1].length > 0"
-            style="margin-top: -6px"
-            class="text-primary cancel-pending-btn me-2"
-            @click="cancelAll()"
-        >
+        <div v-if="jobStatusInfos[0][1].length > 0" style="margin-top: -6px"
+            class="text-primary cancel-pending-btn me-2" @click="cancelAll()">
             Cancel All
         </div>
         <!-- <div
@@ -16,14 +12,9 @@
         <span v-for="(tableData, idx) of allTableData" :key="idx">
             <span v-if="isTableVisible(idx)">
                 <div v-if="tableData && tableData.rows.length > 0">
-                    <Table
-                        :tableData="tableData"
-                        :caption="jobStatusInfos[idx][0]"
-                        @cancelJob="cancelJob"
-                        :noFixedTable="true"
-                        initialSortColumnName="Start"
-                        initialSortOrder="desc"
-                    ></Table>
+                    <Table :tableData="tableData" :caption="jobStatusInfos[idx][0]" @cancelJob="cancelJob"
+                        :noFixedTable="true" initialSortColumnName="Start" initialSortOrder="desc"
+                        :downloadFilenameBase="jobStatusInfos[idx][0]"></Table>
                 </div>
                 <div v-else>
                     <div class="table-title">{{ jobStatusInfos[idx][0] }}</div>

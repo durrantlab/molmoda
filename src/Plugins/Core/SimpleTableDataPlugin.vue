@@ -2,7 +2,8 @@
   <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Ok" actionBtnTxt="" @onClosed="onClosed"
     variant="info" @onUserArgChanged="onUserArgChanged" modalWidth="xl" @onMolCountsChanged="onMolCountsChanged">
     <p v-if="message !== ''">{{ message }}</p>
-    <Table :tableData="tableData" :caption="caption" :precision="precision" :noFixedTable="true" />
+    <Table :tableData="tableData" :caption="caption" :precision="precision" :noFixedTable="true"
+      :downloadFilenameBase="downloadFilenameBase" />
   </PluginComponent>
 </template>
 
@@ -50,7 +51,7 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
   message = "";
   precision = 3;
   caption = "";
-
+  downloadFilenameBase = "";
   showInQueue = false;
 
   userArgDefaults: UserArg[] = [];
@@ -72,6 +73,7 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
     this.message = payload.message;
     this.caption = payload.caption;
     this.precision = payload.precision !== undefined ? payload.precision : 3;
+    this.downloadFilenameBase = payload.downloadFilenameBase || payload.caption;
     this.open = payload.open !== undefined ? payload.open : true;
   }
 

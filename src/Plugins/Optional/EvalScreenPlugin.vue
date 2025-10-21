@@ -21,7 +21,7 @@
                 <!-- title="Receiver Operating Characteristic Curve" -->
                 <Chart xAxisLabel="False Positive Rate" yAxisLabel="True Positive Rate" xAxisLabelHover="FPR"
                     yAxisLabelHover="TPR" xAxisUnits="" yAxisUnits="" :chartData="rocData" chartType="scatter"
-                    :ratio="ratio" :smooth="false" :fillUnderLine="true"></Chart>
+     :ratio="ratio" :smooth="false" :fillUnderLine="true" downloadFilenameBase="roc-curve"></Chart>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -46,7 +46,8 @@
                 <!-- title="Enrichment Factor" -->
                 <Chart xAxisLabel="Number of Top Compounds Considered" yAxisLabel="Enrichment Factor"
                     xAxisLabelHover="Top Compounds" yAxisLabelHover="EF" :xPrecision="0" xAxisUnits="" yAxisUnits=""
-                    :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"></Chart>
+     :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"
+     downloadFilenameBase="enrichment-factors"></Chart>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">

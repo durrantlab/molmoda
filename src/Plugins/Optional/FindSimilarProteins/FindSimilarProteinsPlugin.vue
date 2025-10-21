@@ -350,7 +350,9 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             "Similar Proteins Found",
             `Found ${sortedResults.length} unique similar proteins.`,
             tableData,
-            "Search Results"
+            "Search Results",
+            3,
+            "similar-proteins-results"
         );
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
         const alignStructures = this.getUserArg("alignStructures") as boolean;

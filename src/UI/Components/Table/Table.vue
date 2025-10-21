@@ -143,6 +143,7 @@ export default class Table extends Vue {
     @Prop({ default: { headers: [], rows: [] } }) tableData!: ITableData;
     @Prop({ default: 2 }) precision!: number;
     @Prop({ default: "" }) caption!: string;
+ @Prop({ required: true }) downloadFilenameBase!: string;
     @Prop({ default: true }) noFixedTable!: boolean;
     @Prop({ default: false }) clickableRows!: boolean;
     @Prop({ default: "" }) initialSortColumnName!: string;
@@ -429,7 +430,8 @@ export default class Table extends Vue {
      * @param {string} format  The format to use.
      */
     download(format: string) {
-        const filename = slugify(this.caption) + "." + format;
+        // const filename = slugify(this.caption) + "." + format;
+        const filename = slugify(this.downloadFilenameBase) + "." + format;
 
         // Convert the data into a more managable format for human consumption.
         // const data = JSON.parse(JSON.stringify(this.tableDataToUse));

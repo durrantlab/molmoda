@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { ITableData } from "@/UI/Components/Table/Types";
-
 export enum PopupVariant {
     Primary = "primary",
     Secondary = "secondary",
@@ -14,12 +11,12 @@ export enum PopupVariant {
 }
 
 export interface IToastOptions {
- /**
-  * The duration in milliseconds for the toast to be visible. If 0 or less, the
-  * toast will not automatically hide. If undefined, it will use the default
-  * auto-hide duration.
-  */
- duration?: number;
+    /**
+     * The duration in milliseconds for the toast to be visible. If 0 or less, the
+     * toast will not automatically hide. If undefined, it will use the default
+     * auto-hide duration.
+     */
+    duration?: number;
     showCloseBtn?: boolean;
 }
 
@@ -28,6 +25,7 @@ export interface ISimpleMsg {
     message: string;
     datetime?: string;
     variant?: PopupVariant;
+    // eslint-disable-next-line @typescript-eslint/ban-types
     callBack?: Function;
     neverClose?: boolean;
     open?: boolean; // Whether to open or close
@@ -40,6 +38,7 @@ export interface ITableDataMsg {
     caption: string;
     precision?: number;
     open?: boolean; // Whether to open or close
+    downloadFilenameBase?: string;
 }
 
 export enum YesNo {
