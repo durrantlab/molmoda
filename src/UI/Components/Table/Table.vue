@@ -432,57 +432,31 @@ export default class Table extends Vue {
     download(format: string) {
         // const filename = slugify(this.caption) + "." + format;
         const filename = slugify(this.downloadFilenameBase) + "." + format;
-
-        // Convert the data into a more managable format for human consumption.
-        // const data = JSON.parse(JSON.stringify(this.tableDataToUse));
-        // data.headers = data.headers.map((h: IHeader) => h.text);
-        // data.rows = data.rows.map((r: { [key: string]: CellValue }) => {
-        //   const row: { [key: string]: any } = {};
-        //   for (const header of data.headers) {
-        //     row[header] = (r[header] as ICellValue).val;
-        //   }
-        //   return row;
-        // });
-
-        // If you use this one, already in the right format, but hidden columns
-        // appear.
-        const data = JSON.parse(
-            JSON.stringify(this.tableData)
-        ) as ITableDataInternal;
-
-        // Remove column "id" if it exists. TODO: Would be good to remove all
-        // hidden ones.
-        for (const header of data.headers) {
-            if (header.text === "id") {
-                const headerIndex = data.headers.indexOf(header);
-                data.headers.splice(headerIndex, 1);
-
-                for (const row of data.rows) {
-                    delete row[header.text];
-                }
-                break;
+  // Use `tableDataToUse` as it contains the currently displayed data (sorted and formatted).
+  const dataToExport = this.tableDataToUse;
+  if (!dataToExport) {
+   return;
             }
-        }
-
-        // Remove "val" from ICellValue.
-        const newRows = data.rows.map((r: { [key: string]: ICellValue }) => {
+  const newRows = dataToExport.rows.map(
+   (r: { [key: string]: ICellValue }) => {
             const row: { [key: string]: any } = {};
-            for (const header of data.headers) {
-                const val = (r[header.text] as ICellValue).val
-                if (val !== undefined) {
+    for (const header of dataToExport.headers) {
+     const cell = r[header.text];
+     if (cell !== undefined) {
+      const val = cell.val; // It's guaranteed to be an ICellValue object from tableDataToUse
                     // Strip html from val
                     const div = document.createElement("div");
-                    div.innerHTML = val as string;
+      div.innerHTML = String(val);
                     const valStripped = div.textContent || div.innerText || val;
 
                     row[header.text] = valStripped;
                 }
             }
             return row;
-        });
-
+   }
+  );
         const dataToSave = {
-            headers: data.headers.map((h: IHeader) => h.text),
+   headers: dataToExport.headers.map((h: IHeader) => h.text),
             rows: newRows as IDataRows,
         };
 
