@@ -32,7 +32,7 @@ import * as api from "@/Api";
 import { appName } from "@/Core/GlobalVars";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
 import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";

@@ -189,8 +189,8 @@ export default class App extends Vue {
     const testIndexStr = getUrlParam("testIndex");
     const testIndex = testIndexStr ? parseInt(testIndexStr, 10) : 0;
     try {
-      // Wait for the target plugin to be loaded and registered.
-      await waitForCondition(() => !!loadedPlugins[tourPluginId], 100, 10000); // 10s timeout
+   // Wait for both the target plugin and the tour plugin itself to be loaded.
+   await waitForCondition(() => !!loadedPlugins[tourPluginId] && !!loadedPlugins["tourplugin"], 100, 10000); // 10s timeout
       const plugin = loadedPlugins[tourPluginId];
       if (plugin) {
         // Wait for any initial popups (like stat collection) to close before starting the tour.

@@ -569,12 +569,16 @@ class TourManager {
                     console.error(
                         `TourManager: Element not found for selector "${command.selector}". Skipping step.`
                     );
-                    this.driver.moveNext();
+                    if (this.driver) {
+                        this.driver.moveNext();
+                    }
                     return;
                 }
                 const oneTimeClickListener = () => {
                     element.removeEventListener("click", oneTimeClickListener);
-                    this.driver.moveNext();
+                    if (this.driver) {
+                        this.driver.moveNext();
+                    }
                 };
                 element.addEventListener("click", oneTimeClickListener);
             },
