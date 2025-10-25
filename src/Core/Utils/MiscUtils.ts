@@ -17,20 +17,24 @@ export function randomID(l = 13): string {
 /**
  * Wait for a condition to be true.
  *
- * @param {Function} conditionFunc         The function that returns the
- *                                         condition.
- * @param {number}   [checkFrequency=100]  The frequency to check the condition.
- * @returns {Promise<undefined>}  A promise that resolves when the condition is
- *     true.
+ * @param {() => boolean} conditionFunc         The function that returns the
+ *                                              condition.
+ * @param {number}        [checkFrequency=100]  The frequency to check the
+ *                                              condition.
+ * @param {number}        [timeout=0]           The maximum time to wait in ms.
+ *                                              If 0, waits indefinitely.
+ * @returns {Promise<void>}  A promise that resolves when the condition is true,
+ *  or rejects if it times out.
  */
 export function waitForCondition(
     conditionFunc: () => boolean,
-    checkFrequency = 100
-): Promise<undefined> {
-    return new Promise((resolve) => {
+    checkFrequency = 100,
+    timeout = 0
+): Promise<void> {
+    return new Promise((resolve, reject) => {
         // Perform an immediate check
         if (conditionFunc()) {
-            resolve(undefined);
+            resolve();
             return;
         }
 
@@ -38,8 +42,19 @@ export function waitForCondition(
         const interval = setInterval(() => {
             if (conditionFunc()) {
                 clearInterval(interval);
-                resolve(undefined);
+                if (timeoutId) clearTimeout(timeoutId);
+                resolve();
             }
         }, checkFrequency);
+
+        let timeoutId: number | null = null;
+        if (timeout > 0) {
+            timeoutId = window.setTimeout(() => {
+                clearInterval(interval);
+                reject(
+                    new Error(`waitForCondition timed out after ${timeout}ms`)
+                );
+            }, timeout);
+        }
     });
 }

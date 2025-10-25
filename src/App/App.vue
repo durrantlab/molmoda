@@ -51,6 +51,9 @@ import { setupElectron } from "@/Core/Electron/ElectronUtils";
 import ProgressBar from "@/UI/Components/ProgressBar.vue"; // Import ProgressBar
 import { getQueueStore } from "@/Queue/QueueStore"; // Import QueueStore access
 import ToastContainer from "@/UI/MessageAlerts/Toasts/ToastContainer.vue";
+import { getUrlParam } from "@/Core/UrlParams";
+import { waitForCondition } from "@/Core/Utils/MiscUtils";
+import { isAnyPopupOpen } from "@/UI/MessageAlerts/Popups/OpenPopupList";
 /**
  * Main app component
  */
@@ -175,6 +178,36 @@ export default class App extends Vue {
     }
   }
 
+  /**
+ * Checks if a tour is requested via URL parameters and starts it.
+ */
+  async checkIfTourIsRequested(): Promise<void> {
+    const tourPluginId = getUrlParam("tour");
+    if (!tourPluginId) {
+      return;
+    }
+    const testIndexStr = getUrlParam("testIndex");
+    const testIndex = testIndexStr ? parseInt(testIndexStr, 10) : 0;
+    try {
+      // Wait for the target plugin to be loaded and registered.
+      await waitForCondition(() => !!loadedPlugins[tourPluginId], 100, 10000); // 10s timeout
+      const plugin = loadedPlugins[tourPluginId];
+      if (plugin) {
+        // Wait for any initial popups (like stat collection) to close before starting the tour.
+        await waitForCondition(() => !isAnyPopupOpen(), 250, 10000); // 10s timeout
+        // Use the API to start the tour.
+        api.tour.startTour(plugin, testIndex);
+      } else {
+        const msg = `Tour requested for a non-existent or unloaded plugin: "${tourPluginId}"`;
+        console.error(msg);
+        api.messages.popupError(msg);
+      }
+    } catch (error) {
+      const msg = `Failed to start tour for plugin "${tourPluginId}": ${error}`;
+      console.error(msg);
+      api.messages.popupError(msg);
+    }
+  }
   /** mounted function */
   async mounted() {
     api.messages.log(`${appName} started`);
@@ -196,10 +229,11 @@ export default class App extends Vue {
           compileErrorsArray.join("</li><li>") +
           "</li></ul>"
         );
-      }, 1000); 
+      }, 1000);
     }
 
     checkIfUrlOpen();
+    this.checkIfTourIsRequested();
     setupAutoSave();
     setupElectron();
 
@@ -312,7 +346,9 @@ a {
 // Improve Scrolling Feel: On iOS, you can enable momentum-based scrolling
 // (where the content continues to scroll for a moment after you lift your
 // finger), which feels much more native.
-.tree-view-wrapper, .log-container { /* And any other scrollable containers */
+.tree-view-wrapper,
+.log-container {
+  /* And any other scrollable containers */
   -webkit-overflow-scrolling: touch;
 }
 </style>
