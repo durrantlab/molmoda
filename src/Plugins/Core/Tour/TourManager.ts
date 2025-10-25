@@ -6,9 +6,13 @@ import { waitForCondition } from "../../../Core/Utils/MiscUtils";
 import { PopoverDOM } from "driver.js";
 import { openPluginCmds } from "@/Testing/TestCmd";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
-import { UserArg, UserArgType } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import {
+ UserArg,
+ UserArgType,
+ IUserArgSelect,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { messagesApi } from "@/Api/Messages";
-
+import { slugify } from "@/Core/Utils/StringUtils";
 const FOCUS_DELAY = 150; // ms
 
 /**
@@ -748,7 +752,28 @@ class TourManager {
             };
         }
 
-        const descriptionParts = [`For ${fieldLabel}, use "${command.data}".`];
+  let valueForDisplay = command.data;
+  let actionVerb = "enter";
+
+  if (userArg?.type === UserArgType.Select) {
+   actionVerb = "select";
+   const options = (userArg as IUserArgSelect).options;
+   const foundOption = options.find((opt) => {
+    const optionVal = typeof opt === "string" ? slugify(opt) : opt.val;
+    return optionVal == command.data;
+   });
+
+   if (foundOption) {
+    valueForDisplay =
+     typeof foundOption === "string"
+      ? foundOption
+      : foundOption.description;
+   }
+  }
+
+  const descriptionParts = [
+   `For ${fieldLabel}, ${actionVerb} "${valueForDisplay}".`,
+  ];
         if (userArg) {
             if (userArg.description) {
                 descriptionParts.push(
