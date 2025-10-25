@@ -304,6 +304,14 @@ export class Viewer3DMol extends ViewerParent {
             }
         );
 
+        if (newMol.atoms.length === 0) {
+            // Sometimes, the way things are parsed, you can have a segment that
+            // contains ONLY altlocs. These are removed by 3dmoljs, resulting in
+            // a molecule with no atoms. That causes an error with rendering. So
+            // let's just remove them here.
+            this._mol3dObj.models = this._mol3dObj.models.filter((m: any) => m.atoms.length > 0)
+        }
+
         // Remove all styles
         newMol.setStyle({}, {});
 

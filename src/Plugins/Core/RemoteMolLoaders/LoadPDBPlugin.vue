@@ -229,6 +229,19 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "7VBA"
                 ),
             },
+
+            {
+                name: "Render problem is remove-GLModels-with-no-atoms fails",
+                pluginOpen: () => new TestCmdList().setUserArg(
+                    "pdbId",
+                    "6rig",
+                    this.pluginId
+                ),
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
+                    "#navigator",
+                    "6RIG"
+                ),
+            },
         ];
     }
 }
