@@ -40,6 +40,7 @@ export default class LogWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Log panel.`;
+    details = "This plugin brings the Log panel into focus, where you can see a history of actions and system messages.";
     tags = [Tag.All];
 
     /**

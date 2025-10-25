@@ -54,6 +54,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "errorreporting";
     intro = "Report an unexpected error.";
+    details = "This plugin displays error information and allows the user to send a report to help improve the software.";
     title = `Unexpected Error!`;
     open = false;
 

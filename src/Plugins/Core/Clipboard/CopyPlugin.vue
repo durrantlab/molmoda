@@ -68,6 +68,7 @@ export default class CopyPlugin extends PluginParentClass {
 
     logJob = false;
     intro = "Copy the selected molecules to the clipboard.";
+    details = "This plugin copies molecular data in PDB or MOL2 format, depending on the selection, for use in other applications.";
     formatMsg = "";
 
     hotkey = "c";

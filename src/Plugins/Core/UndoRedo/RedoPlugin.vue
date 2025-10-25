@@ -44,6 +44,7 @@ export default class RedoPlugin extends PluginParentClass {
 
     hotkey = "y";
     intro = "Redo the last undo.";
+    details = "This plugin re-applies the last action that was reversed using the Undo command.";
     tags = [Tag.All];
 
     /**

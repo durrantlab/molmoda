@@ -53,6 +53,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "fetcherpermission";
     intro = "Grant permission to access third-party web resources.";
+    details = `For security, ${appName} requires your approval before fetching data from external websites.`;
     tags = [Tag.All];
 
     myAppName = appName;

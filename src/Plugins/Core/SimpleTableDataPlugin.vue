@@ -39,6 +39,7 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
   contributorCredits: IContributorCredit[] = [];
   pluginId = "tabledatapopup";
   intro = "Display data in a table format.";
+  details = "This is a system plugin used to show tabular data in a sortable, downloadable format.";
   tags = [Tag.All];
 
   // Below set via onPluginStart.

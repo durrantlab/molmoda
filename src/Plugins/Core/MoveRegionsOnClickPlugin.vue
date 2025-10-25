@@ -55,6 +55,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     ];
     pluginId = "moveregionsonclick";
     intro = `Move all selected regions to this atom's position:`;
+    details = "This plugin allows for precise repositioning of docking boxes or other regions by clicking on an atom in the 3D viewer.";
     tags = [Tag.All];
     userArgDefaults: UserArg[] = [];
     

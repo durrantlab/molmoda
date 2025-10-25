@@ -40,6 +40,7 @@ export default class StylesWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Styles panel.`;
+    details = "This plugin brings the Styles panel into focus, where you can change the visual representation of molecules.";
     tags = [Tag.All];
 
     /**

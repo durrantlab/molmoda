@@ -48,6 +48,7 @@ export default class SimpleSVGPopupPlugin extends PluginParentClass {
   contributorCredits: IContributorCredit[] = [];
   pluginId = "simplesvgpopup";
   intro = "Display an SVG image in a popup.";
+  details = "This is a system plugin used by other plugins to show SVG graphics, such as QR codes or 2D diagrams.";
   tags = [Tag.All];
 
   // Below set via onPluginStart.

@@ -40,6 +40,7 @@ export default class DataWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Data panel.`;
+    details = "This plugin brings the Data panel into focus, where the user can view molecular properties and other tabular data.";
     tags = [Tag.All];
 
     /**

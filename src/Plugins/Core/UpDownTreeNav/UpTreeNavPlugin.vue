@@ -39,6 +39,7 @@ export default class UpTreeNavPlugin extends PluginParentClass {
     logAnalytics = false;
 
     intro = "Toggle visibility and focus with the molecule above the selected one.";
+    details = "This plugin provides a keyboard-friendly way to navigate through molecules in the 3D viewer.";
     hotkey = "[";
     tags = [Tag.All];
 

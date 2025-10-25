@@ -24,6 +24,7 @@ export default class ResetLayoutPlugin extends PluginParentClass {
     title = "Reset Layout";
     pluginId = "resetlayout";
     intro = "Resets the panel layout to its default configuration.";
+    details = "If you have rearranged or closed panels, this plugin will restore the original (default) layout.";
     noPopup = true;
     logJob = false;
     logAnalytics = false;

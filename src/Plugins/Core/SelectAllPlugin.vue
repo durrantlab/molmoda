@@ -44,6 +44,7 @@ export default class SelectAllPlugin extends PluginParentClass {
     logJob = false;
     logAnalytics = false;
     intro = "Select all molecules in the tree.";
+    details = "This plugin selects every item currently loaded in the Navigator panel.";
     tags = [Tag.All];
     hotkey = "a";
 

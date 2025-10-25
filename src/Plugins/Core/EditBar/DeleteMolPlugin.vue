@@ -48,6 +48,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     ];
     pluginId = "deletemol";
     intro = "Delete the selected molecule(s)?";
+    details = "This plugin removes the selected items from the project.";
     userArgDefaults: UserArg[] = [];
     tags = [Tag.All];
 

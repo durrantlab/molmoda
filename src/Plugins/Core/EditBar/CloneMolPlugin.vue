@@ -44,6 +44,7 @@ export default class CloneMolPlugin extends PluginParentClass {
     ];
     pluginId = "clonemol";
     intro = `Clone (copy) the selected molecule.`;
+    details = "This plugin creates an identical, independent copy of the selected molecule within the current project.";
     tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [

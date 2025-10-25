@@ -69,6 +69,7 @@ export default class HelpPlugin extends PluginParentClass {
     ];
     pluginId = "help";
     intro = "List information about each of the loaded plugins.";
+    details = "This plugin provides a searchable list of all available plugins with descriptions of their functionality.";
     filterStr = "";  // Not used, but needed for FilterInput component.
     userArgDefaults: UserArg[] = [];
 

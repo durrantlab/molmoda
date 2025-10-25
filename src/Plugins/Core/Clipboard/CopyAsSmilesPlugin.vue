@@ -64,7 +64,7 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
 
     logJob = false;
     intro = "Copy the selected compound(s) to the clipboard as SMILES strings.";
-
+  details =  "This plugin is useful for transferring the structure of a small-molecule compound to other applications that support the SMILES format.";
     /**
      * Check if this plugin can currently be used.
      *

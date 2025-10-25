@@ -46,6 +46,7 @@ export default class DocumentationLinkPlugin extends PluginParentClass {
     
     logJob = false;
     intro = `Read the ${appName} documentation.`;
+    details = "This plugin opens the official documentation in a new browser tab.";
     noPopup = true;
     tags = [Tag.All];
 

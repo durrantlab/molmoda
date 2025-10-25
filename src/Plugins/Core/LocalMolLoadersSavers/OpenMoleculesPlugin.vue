@@ -57,6 +57,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     filesToLoad: FileInfo[] = [];
     pluginId = "openmolecules";
     intro = "Open (load) molecule file(s).";
+    details = "This plugin allows the user to import molecular structure files from their local computer.";
     tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [

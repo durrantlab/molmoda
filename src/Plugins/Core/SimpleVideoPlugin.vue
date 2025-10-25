@@ -55,6 +55,7 @@ export default class SimpleVideoPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "simplevideo";
     intro = "Display a video in a popup.";
+    details = "This is a system plugin for embedding and displaying videos, typically for tutorials.";
     tags = [Tag.All];
 
     // Below set via onPluginStart.

@@ -34,6 +34,7 @@
     contributorCredits: IContributorCredit[] = [];
     pluginId = "renameproject";
     intro = "Rename the current project.";
+    details = "This plugin changes the title of the project, which is also used as the default filename when saving.";
     tags = [Tag.All];
     userArgDefaults: UserArg[] = [
    {

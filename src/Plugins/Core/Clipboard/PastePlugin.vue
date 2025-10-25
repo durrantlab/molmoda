@@ -82,6 +82,7 @@ export default class PastePlugin extends PluginParentClass {
 
     logJob = false;
     intro = "Paste a molecule from the clipboard.";
+    details = "This plugin allows users to paste molecular structures from the clipboard in various text formats.";
     formatMsg = "";
 
     hotkey = "v";

@@ -47,6 +47,7 @@ export default class YesNoPlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "yesnomsg";
     intro = "Display a yes/no confirmation popup.";
+    details = "This is a system plugin for asking the user a yes/no question.";
     tags = [Tag.All];
     message = "";
     yesBtnTxt = "";

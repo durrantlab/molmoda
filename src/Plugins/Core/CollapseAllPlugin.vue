@@ -42,6 +42,7 @@ export default class CollapseAllPlugin extends PluginParentClass {
     logJob = false;
     logAnalytics = false;
     intro = "Collapse all the nodes in the Navigator panel.";
+    details = "This plugin helps to tidy up the view when many items are expanded.";
     tags = [Tag.All];
 
     // hotkey = "i";

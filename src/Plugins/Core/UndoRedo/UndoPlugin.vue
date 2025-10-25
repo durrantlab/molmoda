@@ -50,6 +50,7 @@ export default class UndoPlugin extends PluginParentClass {
 
     hotkey = "z";
     intro = "Undo the last action.";
+    details = "This plugin reverses the last change made to the project state.";
     tags = [Tag.All];
 
     /**

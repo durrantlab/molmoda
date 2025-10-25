@@ -40,6 +40,7 @@ export default class InformationWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Information panel.`;
+    details = "This plugin brings the Information panel into focus, which displays details about the selected molecule.";
     tags = [Tag.All];
 
     /**

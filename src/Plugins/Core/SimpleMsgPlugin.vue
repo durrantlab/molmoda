@@ -50,6 +50,7 @@ export default class SimpleMsgPlugin extends PluginParentClass {
     ];
     pluginId = "simplemsg";
     intro = null; // "Display a simple message.";
+    details = "This is a system plugin for displaying simple messages to the user.";
     tags = [Tag.All];
 
     // Below set via onPluginStart.

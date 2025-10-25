@@ -38,6 +38,7 @@ export default class ExpandAllPlugin extends PluginParentClass {
     logJob = false;
     logAnalytics = false;
     intro = "Expand all the nodes in the Navigator panel.";
+    details = "This plugin reveals all nested items within the molecular hierarchy.";
     tags = [Tag.All];
 
     // hotkey = "i";

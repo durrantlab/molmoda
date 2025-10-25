@@ -45,6 +45,7 @@ export default class RenameMolPlugin extends PluginParentClass {
     ];
     pluginId = "renamemol";
     intro = `Rename the molecule.`;
+    details = "This plugin allows the user to change the display name of the selected item in the Navigator panel.";
     tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [

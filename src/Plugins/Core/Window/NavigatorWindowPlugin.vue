@@ -40,6 +40,7 @@ export default class NavigatorWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Navigator panel.`;
+    details = "This plugin brings the Navigator panel into focus, where the molecular hierarchy is displayed.";
     tags = [Tag.All];
 
     /**

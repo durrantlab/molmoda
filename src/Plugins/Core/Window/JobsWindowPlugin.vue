@@ -40,6 +40,7 @@ export default class JobsWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Jobs panel.`;
+    details = "This plugin brings the Jobs panel into focus, allowing you to monitor the progress of background tasks.";
     tags = [Tag.All];
 
     /**

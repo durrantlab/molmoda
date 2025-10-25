@@ -40,6 +40,7 @@ export default class ViewerWindowPlugin extends PluginParentClass {
 
     logJob = false;
     intro = `Switch to the Viewer panel.`;
+    details = "This plugin brings the 3D molecular viewer panel into focus.";
     tags = [Tag.All];
 
     /**

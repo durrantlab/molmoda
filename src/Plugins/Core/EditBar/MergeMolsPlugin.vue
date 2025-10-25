@@ -46,6 +46,8 @@ export default class MergeMolsPlugin extends PluginParentClass {
     ];
     pluginId = "mergemols";
     intro = "Copy and merge the selected molecules into a single new molecule.";
+  details = "This plugin is useful for combining multiple structures, such as a protein and several ligands, into one entry.";
+
     userArgDefaults: UserArg[] = [
         {
             id: "newName",

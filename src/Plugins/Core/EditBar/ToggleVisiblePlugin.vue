@@ -36,6 +36,7 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     contributorCredits: IContributorCredit[] = [];
     pluginId = "togglevisiblemols";
     intro = "Toggle the visibility of the selected molecules.";
+    details = "This plugin shows or hides the selected molecules in the 3D viewer.";
     userArgDefaults: UserArg[] = [];
 
     noPopup = true;

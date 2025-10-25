@@ -39,6 +39,7 @@ export default class SelectInvertPlugin extends PluginParentClass {
     logJob = false;
     logAnalytics = false;
     intro = "Invert which molecules are selected in the tree.";
+    details = "This plugin deselects all currently selected items and selects all unselected items.";
     tags = [Tag.All];
     hotkey = "i";
 

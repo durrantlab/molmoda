@@ -65,6 +65,7 @@ export default class NewProjectPlugin extends PluginParentClass {
     
     hotkey = "n";
     intro = "Start a new project. Your current project will be lost.";
+    details = "This plugin clears all current data and starts a fresh session.";
     tags = [Tag.All];
 
     /**

@@ -54,6 +54,7 @@ export default class AddRegionPlugin extends PluginParentClass {
     ];
     pluginId = "addregion";
     intro = `Add a new box or spherical region to the project.`;
+    details = "This plugin adds regions, which may be used to define the search space for docking calculations.";
     tags = [Tag.Docking];
 
     userArgDefaults: UserArg[] = [

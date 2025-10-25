@@ -45,6 +45,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     logAnalytics = false;
 
     intro = "Clear the selection of all molecules.";
+    details = "This plugin deselects any currently selected items in the Navigator panel.";
     tags = [Tag.All];
 
     /**
