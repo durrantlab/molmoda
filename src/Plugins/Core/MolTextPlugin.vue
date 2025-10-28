@@ -42,7 +42,7 @@ import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { getGen3DUserArg, WhichMolsGen3D, IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import Mol2DView from "@/UI/Components/Mol2DView.vue"; // Import the new component
-
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 /**
  * A function that returns the options and validate functions for the available
  * molecular formats.
@@ -243,12 +243,10 @@ export default class MolTextPlugin extends PluginParentClass {
 
                 node.title = this.getUserArg("pastedMolName"); // "PastedFile";
                 node.type = TreeNodeType.Compound;
-
-                const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
-                    node,
-                ]);
-
-                rootNode.title = this.getUserArg("pastedMolName"); // "PastedFile";
+                const rootNode = loadHierarchicallyFromTreeNodes(
+                    [node],
+                    this.getUserArg("pastedMolName")
+                );
                 rootNode.addToMainTree(this.pluginId);
                 return;
             })

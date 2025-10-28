@@ -46,7 +46,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
-
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 enum SearchMode {
   Similar = "similar",
   Substructure = "substructure",
@@ -410,9 +410,6 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
       });
 
     // Create and add root node
-    const rootNode = TreeNode.loadHierarchicallyFromTreeNodes(
-      treeNodes as TreeNode[]
-    );
     const searchModeText = (
       {
         [SearchMode.Similar]: "similarity",
@@ -420,8 +417,10 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
         [SearchMode.Superstructure]: "superstructure",
       } as any
     )[searchMode];
-
-    rootNode.title = `${searchModeText}_search`;
+    const rootNode = loadHierarchicallyFromTreeNodes(
+      treeNodes as TreeNode[],
+      `${searchModeText}_search`
+    );
     rootNode.addToMainTree(this.pluginId);
   }
 

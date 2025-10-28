@@ -43,7 +43,7 @@ import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { isTest } from "@/Core/GlobalVars";
-
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
 // https://partridgejiang.github.io/Kekule.js/documents/index.html
@@ -163,7 +163,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                         "ring",
                         "charge",
                     ])
-                    // create all default style components
+// create all default style components
                     .setStyleToolComponentNames([
                         // "fontName",
                         // "fontSize",
@@ -336,12 +336,10 @@ export default class DrawMoleculePlugin extends PluginParentClass {
             .then((node: any) => {
                 node.title = this.getUserArg("drawMolName");
                 node.type = TreeNodeType.Compound;
-
-                const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
-                    node,
-                ]);
-
-                rootNode.title = this.getUserArg("drawMolName");
+                const rootNode = loadHierarchicallyFromTreeNodes(
+                    [node],
+                    this.getUserArg("drawMolName")
+                );
                 rootNode.addToMainTree(this.pluginId);
                 return;
             })

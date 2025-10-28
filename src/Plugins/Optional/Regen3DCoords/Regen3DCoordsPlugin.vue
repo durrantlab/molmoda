@@ -32,6 +32,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 /**
  * Regen3DCoordsPlugin
  */
@@ -115,6 +116,11 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
             const treeNode = TreeNode.loadFromFileInfo({
                 fileInfo,
                 tag: this.pluginId,
+                desalt: false,
+                gen3D: {
+                    whichMols: WhichMolsGen3D.None, // Already generated
+                },
+                // surpressMsgs: true,
             });
             treeNodePromises.push(treeNode);
         }
@@ -139,9 +145,10 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
         const onlyTreeNodes = treeNodes.filter(
             (tn) => tn !== undefined
         ) as TreeNode[];
-        const rootNode =
-            TreeNode.loadHierarchicallyFromTreeNodes(onlyTreeNodes);
-        rootNode.title = "Compounds:3D";
+        const rootNode = loadHierarchicallyFromTreeNodes(
+            onlyTreeNodes,
+            "Compounds:3D"
+        );
         rootNode.addToMainTree(this.pluginId);
         return;
     }

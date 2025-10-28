@@ -1,7 +1,7 @@
 import { IMolsToConsider } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/Types";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "../../../TreeNodes/TreeNode/TreeNode";
-import { SelectedType } from "./TreeInterfaces";
+import { SelectedType, TreeNodeType } from "./TreeInterfaces";
 import { TreeNodeList } from "../../../TreeNodes/TreeNodeList/TreeNodeList";
 import { treeNodeDeepClone } from "../../../TreeNodes/Deserializers";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
@@ -255,4 +255,210 @@ export function getUniqueResiduesFromVisibleMolecules(): {
         names: Array.from(allResidueNames).sort(),
         ids: Array.from(allResidueIds).sort((a, b) => a - b),
     };
+}
+
+/**
+ * Gets the chain of a given tree node.
+ *
+ * @param {TreeNode} treeNode The tree node.
+ * @param {string[]} availableChains The available chains.
+ * @returns {string} The chain.
+ */
+function getChain(treeNode: TreeNode, availableChains: string[]): string {
+    let chain: string | undefined = undefined;
+    if (!treeNode.model) {
+        // If there's no model, use first available chain.
+        chain = availableChains.shift();
+    } else {
+        const firstAtom = makeEasyParser(treeNode.model).getAtom(0);
+        if (!firstAtom) {
+            // If there are no atoms in the model, use first
+            // available chain.
+            chain = availableChains.shift();
+        } else {
+            const firstAtomChain = firstAtom.chain;
+            if (firstAtomChain === "" || firstAtomChain === undefined) {
+                // If the first atom has no chain, use first
+                // available chain.
+                chain = availableChains.shift();
+            } else if (availableChains.indexOf(firstAtomChain) === -1) {
+                // If the first atom's chain is not available, use
+                // first available chain.
+                chain = availableChains.shift();
+            } else {
+                // Use the first atom's chain.
+                chain = firstAtomChain;
+            }
+        }
+    }
+    return chain as string;
+}
+/**
+ * Organizes a flat list of terminal TreeNode objects into a standard hierarchical structure.
+ *
+ * @param {TreeNode[]} treeNodes The flat list of terminal nodes to organize.
+ * @param {string} rootTitle The title for the root node of the new hierarchy.
+ * @param {boolean} [divideCompoundsByChain=true] Whether to group compounds by chain.
+ * @returns {TreeNode} The new root TreeNode containing the organized hierarchy.
+ */
+export function organizeNodesIntoHierarchy(
+    treeNodes: TreeNode[],
+    rootTitle: string,
+    divideCompoundsByChain = true
+): TreeNode {
+    // Divide the nodes into categories for all possible types.
+    const categories: { [key: string]: any } = {};
+    for (const treeNode of treeNodes) {
+        if (treeNode.type) {
+            let categoryName =
+                treeNode.type.charAt(0).toUpperCase() + treeNode.type.slice(1);
+            if (
+                [
+                    TreeNodeType.Compound,
+                    TreeNodeType.Metal,
+                    TreeNodeType.Lipid,
+                    TreeNodeType.Ions,
+                ].includes(treeNode.type)
+            ) {
+                categoryName += "s";
+            }
+            if (!categories[categoryName]) {
+                categories[categoryName] = [];
+            }
+            categories[categoryName].push(treeNode);
+        }
+    }
+    // Further divide the Compounds into chains.
+    if (categories["Compounds"]) {
+        if (divideCompoundsByChain) {
+            const compounds = categories["Compounds"];
+            const newCompounds: { [key: string]: TreeNode[] } = {};
+            for (const treeNode of compounds) {
+                const chain = getChain(treeNode, ["A"]);
+                if (!newCompounds[chain]) {
+                    newCompounds[chain] = [];
+                }
+                newCompounds[chain].push(treeNode);
+            }
+            categories["Compounds"] = newCompounds;
+        } else {
+            categories["Compounds"] = {
+                A: categories["Compounds"],
+            };
+        }
+    }
+    // Create the root node
+    const rootNode = new TreeNode({
+        title: rootTitle,
+        treeExpanded: false,
+        visible: true,
+        selected: SelectedType.False,
+        focused: false,
+        viewerDirty: true,
+        nodes: new TreeNodeList([]),
+    });
+    const categoryOrder = [
+        "Protein",
+        "Nucleic",
+        "Compounds",
+        "Metals",
+        "Lipids",
+        "Ions",
+        "Solvent",
+    ];
+    const titleToTypeMap: Map<string, TreeNodeType> = new Map([
+        ["Protein", TreeNodeType.Protein],
+        ["Nucleic", TreeNodeType.Nucleic],
+        ["Compounds", TreeNodeType.Compound],
+        ["Metals", TreeNodeType.Metal],
+        ["Lipids", TreeNodeType.Lipid],
+        ["Ions", TreeNodeType.Ions],
+        ["Solvent", TreeNodeType.Solvent],
+    ]);
+    for (const title of categoryOrder) {
+        const type = titleToTypeMap.get(title);
+        if (!type || !categories[title] || categories[title].length === 0) {
+            continue;
+        }
+        const categoryNode = new TreeNode({
+            title: title,
+            treeExpanded: false,
+            visible: true,
+            selected: SelectedType.False,
+            focused: false,
+            viewerDirty: true,
+            type: type,
+            nodes: new TreeNodeList([]),
+        });
+        rootNode.nodes?.push(categoryNode);
+        if (title === "Compounds") {
+            for (const chain of Object.keys(categories[title])) {
+                const chainNode = new TreeNode({
+                    title: chain as string,
+                    treeExpanded: false,
+                    visible: true,
+                    selected: SelectedType.False,
+                    focused: false,
+                    viewerDirty: true,
+                    type: type,
+                    nodes: new TreeNodeList(categories[title][chain]),
+                });
+                categoryNode.nodes?.push(chainNode);
+            }
+        } else {
+            // Logic for other categories that are grouped by chain directly
+            const availableChainsOrig: string[] = [];
+            for (let i = 0; i < 26; i++) {
+                availableChainsOrig.push(String.fromCharCode(65 + i));
+            }
+            let availableChains: string[] = [];
+            for (const treeNode of categories[title]) {
+                if (availableChains.length === 0) {
+                    availableChains = availableChainsOrig.slice();
+                }
+                const chain = getChain(treeNode, availableChains);
+                treeNode.title = chain as string;
+                categoryNode.nodes?.push(treeNode);
+            }
+        }
+    }
+    return rootNode;
+}
+
+/**
+ * Given a list of tree nodes, flattens them to terminals and organizes them into a standard hierarchy.
+ *
+ * @param {TreeNode[]} treeNodes The tree nodes to organize.
+ * @param {string} rootNodeTitle The title for the root node of the new hierarchy.
+ * @param {boolean} [divideCompoundsByChain=true] Whether to divide compounds by chain.
+ * @returns {TreeNode} The root tree node of the loaded tree.
+ */
+export function loadHierarchicallyFromTreeNodes(
+    treeNodes: TreeNode[],
+    rootNodeTitle: string,
+    divideCompoundsByChain = true
+): TreeNode {
+    // Consider only the terminal nodes
+    const allTreeNodes: TreeNode[] = [];
+    for (const treeNode of treeNodes) {
+        if (treeNode.nodes) {
+            const terminalNodes = treeNode.nodes.terminals;
+            const nodes = terminalNodes._nodes;
+            if (nodes.length === 1) {
+                nodes[0].title = treeNode.title;
+            } else {
+                for (let i = 0; i < nodes.length; i++) {
+                    nodes[i].title = `${treeNode.title}:${i + 1}`;
+                }
+            }
+            allTreeNodes.push(...nodes);
+        } else {
+            allTreeNodes.push(treeNode);
+        }
+    }
+    return organizeNodesIntoHierarchy(
+        allTreeNodes,
+        rootNodeTitle,
+        divideCompoundsByChain
+    );
 }

@@ -37,7 +37,7 @@ import { makeEasyParser } from "./EasyParser";
 import { EasyParserParent } from "./EasyParser/EasyParserParent";
 import { convertIAtomsToIFileInfoPDB } from "../ConvertMolModels/_ConvertIAtoms";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
-
+import { organizeNodesIntoHierarchy } from "@/UI/Navigation/TreeView/TreeUtils";
 
 enum NodesOrModel {
     Nodes,
@@ -459,168 +459,97 @@ function dividePDBAtomsIntoDistinctComponents(
             // No atoms in model. Skip.
             continue;
         }
-
-        // Check if has multiple frames
-        let proteinAtomsByChain = organizeSelByChain(
-            proteinSel,
-            molWithAtomsToDivide,
-            "Protein"
-        );
-
-        // Occasionally, an amino acids is acting as a ligand. In this case,
-        // don't include it as part of the protein. A good example is 1M15.
-        proteinAtomsByChain.nodes?.forEach((chain: TreeNode) => {
-            if (!chain.model) {
-                return;
-            }
-
-            const newProtModel = [] as IAtom[];
-
-            for (const atom of chain.model as IAtom[]) {
-                if (
-                    atom.hetflag &&
-                    standardProteinResidues.indexOf(atom.resn) !== -1
-                ) {
-                    // Add it back, because it's a standard protein residue, but
-                    // marked as HETATM.
-                    molWithAtomsToDivide.appendAtoms(atom);
-                } else {
-                    newProtModel.push(atom);
+        // Create a flat list of terminal nodes
+        const terminalNodes = new TreeNodeList();
+        const componentSels: [any, TreeNodeType, boolean][] = [
+            [proteinSel, TreeNodeType.Protein, false],
+            [nucleicSel, TreeNodeType.Nucleic, false],
+            [solventSel, TreeNodeType.Solvent, true],
+            [metalSel, TreeNodeType.Metal, true],
+            [ionSel, TreeNodeType.Ions, true],
+            [lipidSel, TreeNodeType.Lipid, false],
+        ];
+        for (const [sel, type, flatten] of componentSels) {
+            let selToUse = {};
+            if (sel.or) {
+                // Special case for ionSel
+                for (const s of sel.or) {
+                    selToUse = { ...selToUse, ...s };
                 }
-            }
-
-            if (newProtModel.length > 0) {
-                // There are still some amino acids that are not HETATM. These
-                // are protein, so keep them.
-                chain.model = newProtModel;
             } else {
-                // There are no amino acids that are not HETATM. Mark them for
-                // removal.
-                chain.model = undefined;
+                selToUse = sel;
             }
-        });
-        // Remove empty chains
-        if (proteinAtomsByChain.nodes) {
-            proteinAtomsByChain.nodes = proteinAtomsByChain.nodes.filter(
-                (n: TreeNode) => {
-                    if (n.model) {
-                        return (n.model as IAtom[]).length > 0;
+            const atoms = molWithAtomsToDivide.selectedAtoms(selToUse, true);
+            if (atoms.length > 0) {
+                if (flatten) {
+                    terminalNodes.push(
+                        new TreeNode({
+                            title: type,
+                            type: type,
+                            model: atoms,
+                            visible: true,
+                            focused: false,
+                            viewerDirty: true,
+                            treeExpanded: false,
+                            selected: SelectedType.False,
+                        })
+                    );
+                } else {
+                    // Group by chain
+                    const atomsByChain: { [key: string]: IAtom[] } = {};
+                    atoms.forEach((atom) => {
+                        const chain = atom.chain || "A";
+                        if (!atomsByChain[chain]) atomsByChain[chain] = [];
+                        atomsByChain[chain].push(atom);
+                    });
+                    for (const chainId in atomsByChain) {
+                        terminalNodes.push(
+                            new TreeNode({
+                                title: chainId,
+                                type: type,
+                                model: atomsByChain[chainId],
+                                visible: true,
+                                focused: false,
+                                viewerDirty: true,
+                                treeExpanded: false,
+                                selected: SelectedType.False,
+                            })
+                        );
                     }
-                    return false;
                 }
-            );
-        }
-
-        let nucleicAtomsByChain = organizeSelByChain(
-            nucleicSel,
-            molWithAtomsToDivide,
-            "Nucleic"
-        );
-        const solventAtomsByChain = organizeSelByChain(
-            solventSel,
-            molWithAtomsToDivide,
-            "Solvent"
-        );
-        let metalAtomsByChain = organizeSelByChain(
-            metalSel,
-            molWithAtomsToDivide,
-            "Metal"
-        );
-
-        // note modifying 3dmoljs selection to accomodate eazyParser format.
-        let ionSelToUse = {};
-        for (const sel of ionSel.or) {
-            ionSelToUse = {
-                ...ionSelToUse,
-                ...sel,
-            };
-        }
-        const ionAtomsByChain = organizeSelByChain(
-            ionSelToUse,
-            molWithAtomsToDivide,
-            "Ion"
-        );
-
-        let lipidAtomsByChain = organizeSelByChain(
-            lipidSel,
-            molWithAtomsToDivide,
-            "Lipid"
-        );
-
-        let compoundsByChain = organizeSelByChain(
-            {},
-            molWithAtomsToDivide,
-            "Compound"
-        );
-
-        // Everything else is ligands
-
-        // Further divide by residue (since each ligand is on its own residue,
-        // not bound to any other).
-        compoundsByChain = divideChainsIntoResidues(compoundsByChain);
-
-        // If any of the terminal nodes on compoundsByChain contains
-        // undefined, redefine it per the frame title.
-        compoundsByChain.nodes?.terminals._nodes.forEach((n: TreeNode) => {
-            if (n.title.indexOf("undefined") > -1) {
-                n.title = frameTitle;
             }
-        });
-
-        // You don't need to divide solvent and ions by chain.
-        const solventAtomsNoChain = flattenChains(solventAtomsByChain);
-        const ionAtomsNoChain = flattenChains(ionAtomsByChain);
-
-        // For everything else, if given chain has one item, collapse it.
-        if (COLLAPSE_ONE_NODE_LEVELS) {
-            compoundsByChain = collapseSingles(compoundsByChain, true);
-            proteinAtomsByChain = collapseSingles(proteinAtomsByChain);
-            nucleicAtomsByChain = collapseSingles(nucleicAtomsByChain);
-            metalAtomsByChain = collapseSingles(metalAtomsByChain);
-            lipidAtomsByChain = collapseSingles(lipidAtomsByChain);
         }
-
-        proteinAtomsByChain.type = TreeNodeType.Protein;
-        nucleicAtomsByChain.type = TreeNodeType.Nucleic;
-        compoundsByChain.type = TreeNodeType.Compound;
-        metalAtomsByChain.type = TreeNodeType.Metal;
-        lipidAtomsByChain.type = TreeNodeType.Lipid;
-        ionAtomsNoChain.type = TreeNodeType.Ions;
-        solventAtomsNoChain.type = TreeNodeType.Solvent;
-
-        let molName = data.fileInfo.name;
-
-        // Remove extension from name
-        molName = getFileNameParts(molName).basename;
-
-        // Add name from content if you like (decided against it)
-        // molName =
-        //     molName +
-        //     (frames.length > 1 ? ", " + (frameIdx + 1).toString() : "");
-        // const molNameFromContent = getNameFromContent(frame, molFormatInfo);
-        // if (molNameFromContent !== "") {
-        //     molName = `${molNameFromContent}:${molName}`;
-        // }
-
-        // Page into single object
-        let fileContents = new TreeNode({
-            title: frameTitle, // molName,
-            viewerDirty: true,
-            treeExpanded: false,
-            visible: true,
-            focused: false,
-            selected: SelectedType.False,
-            nodes: new TreeNodeList([
-                proteinAtomsByChain,
-                nucleicAtomsByChain,
-                compoundsByChain,
-                metalAtomsByChain,
-                lipidAtomsByChain,
-                ionAtomsNoChain,
-                solventAtomsNoChain,
-            ]),
-        });
-
+        // Everything else is a compound, grouped by residue
+        const remainingAtoms = molWithAtomsToDivide.atoms;
+        if (remainingAtoms.length > 0) {
+            const atomsByResidue: { [key: string]: IAtom[] } = {};
+            remainingAtoms.forEach((atom) => {
+                const resId = `${atom.resn}:${atom.resi}:${atom.chain || "A"}`;
+                if (!atomsByResidue[resId]) atomsByResidue[resId] = [];
+                atomsByResidue[resId].push(atom);
+            });
+            for (const resId in atomsByResidue) {
+                const atoms = atomsByResidue[resId];
+                terminalNodes.push(
+                    new TreeNode({
+                        title: `${atoms[0].resn}:${atoms[0].resi}`,
+                        type: TreeNodeType.Compound,
+                        model: atoms,
+                        visible: true,
+                        focused: false,
+                        viewerDirty: true,
+                        treeExpanded: false,
+                        selected: SelectedType.False,
+                    })
+                );
+            }
+        }
+        // Organize the flat list into a hierarchy
+        let fileContents = organizeNodesIntoHierarchy(
+            terminalNodes.toArray(),
+            frameTitle
+        );
+        // Clean up and add to the list of frames
         fileContents = cleanUpFileContents(fileContents);
 
         fileContentsAllFrames.push(fileContents);
@@ -648,19 +577,7 @@ async function divideMol2AtomsIntoDistinctComponents(
     const molNode = _getDefaultTreeNode(molName, NodesOrModel.Model);
     molNode.model = data.fileInfo;
     molNode.type = TreeNodeType.Compound;
-
-    const chainNode = _getDefaultTreeNode("A", NodesOrModel.Nodes);
-    chainNode.type = TreeNodeType.Compound;
-
-    const compoundNode = _getDefaultTreeNode("Compounds", NodesOrModel.Nodes);
-    compoundNode.type = TreeNodeType.Compound;
-
-    const rootNode = _getDefaultTreeNode(molName, NodesOrModel.Nodes);
-
-    rootNode.nodes = new TreeNodeList([compoundNode]);
-    compoundNode.nodes = new TreeNodeList([chainNode]);
-    chainNode.nodes = new TreeNodeList([molNode]);
-
+    const rootNode = organizeNodesIntoHierarchy([molNode], molName);
     return new TreeNodeList([rootNode]);
 }
 

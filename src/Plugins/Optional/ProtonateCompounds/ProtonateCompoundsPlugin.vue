@@ -40,7 +40,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 /**
  * ProtonateCompoundsPlugin
  */
@@ -184,12 +184,10 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
         const onlyTreeNodes = treeNodes.filter(
             (tn) => tn !== undefined
         ) as TreeNode[];
-
-        const rootNode =
-            TreeNode.loadHierarchicallyFromTreeNodes(onlyTreeNodes);
-
-        rootNode.title = "Compounds:protonated";
-
+        const rootNode = loadHierarchicallyFromTreeNodes(
+            onlyTreeNodes,
+            "Compounds:protonated"
+        );
         rootNode.addToMainTree(this.pluginId);
 
         return;

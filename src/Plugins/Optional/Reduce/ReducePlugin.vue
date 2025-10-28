@@ -32,7 +32,7 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { ReduceQueue } from "./ReduceQueue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 /**
  * ReducePlugin
  */
@@ -194,13 +194,10 @@ export default class ReducePlugin extends PluginParentClass {
         for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
             const protProtonatedTreeNode = protProtonatedTreeNodes[i];
             protProtonatedTreeNode.visible = i < initialCompoundsVisible;
-
-            const treeNode = TreeNode.loadHierarchicallyFromTreeNodes([
-                protProtonatedTreeNode,
-            ]);
-            // console.log(payloads);
-            // console.log(pdbOuts);
-            treeNode.title = payloads[i].title + ":protonated";
+            const treeNode = loadHierarchicallyFromTreeNodes(
+                [protProtonatedTreeNode],
+                payloads[i].title + ":protonated"
+            );
             treeNode.addToMainTree(this.pluginId);
         }
 

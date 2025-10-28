@@ -65,7 +65,7 @@ import { triggerErrorPopup } from "@/Plugins/Core/ErrorReporting/ErrorReporting"
 import { prepForErrorCustomMsg } from "./WebinaErrors";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
-
+import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 let msgOnJobsFinishedtoUse: string | undefined;
 
 /**
@@ -740,13 +740,10 @@ export default class WebinaPlugin extends PluginParentClass {
                 // one is as good as any.
                 const protTreeNode = origProtTreeNode as TreeNode;
                 const title = protTreeNode.getAncestry().get(0).title;
-
-                const rootNode = TreeNode.loadHierarchicallyFromTreeNodes([
-                    dockedTreeNode,
-                ]);
-
-                rootNode.title = `${title}:docking`;
-
+                const rootNode = loadHierarchicallyFromTreeNodes(
+                    [dockedTreeNode],
+                    `${title}:docking`
+                );
                 if (isTest) {
                     // If testing, append ":testdock" to all new molecules so
                     // you can watch for them. #TODO: This is a little hacky.
