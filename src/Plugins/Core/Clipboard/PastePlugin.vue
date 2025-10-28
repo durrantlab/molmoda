@@ -245,7 +245,7 @@ export default class PastePlugin extends PluginParentClass {
             ),
             afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#modal-simplemsg",
-                "File contained no valid"
+                "Could not process"
             ),
         });
         // Test for desalting functionality

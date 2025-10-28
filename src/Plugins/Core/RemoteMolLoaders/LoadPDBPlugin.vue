@@ -242,6 +242,22 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "6RIG"
                 ),
             },
+
+            {
+                name: "Try to load a PDB that is too big",
+                pluginOpen: () => new TestCmdList().setUserArg(
+                    "pdbId",
+                    "5YZG",
+                    this.pluginId
+                ),
+                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
+                    "#modal-simplemsg",
+                    "Could not load"
+                ),
+            },
+
+
+
         ];
     }
 }

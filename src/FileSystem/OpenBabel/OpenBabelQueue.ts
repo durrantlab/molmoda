@@ -32,57 +32,64 @@ export class OpenBabelQueue extends QueueParent {
             true // auto terminate the worker.
         )
             .then((outputBatch: any[]) => {
-                // Determine if the word "error" (case insensitive) is in any of the 
-                // stdErr properties.
-                let errMsg = "";
+                const errorMessages: string[] = [];
                 for (let i = 0; i < outputBatch.length; i++) {
-                    if (outputBatch[i].stdErr && outputBatch[i].stdErr.toLowerCase().includes("error")) {
-                        let toAdd = outputBatch[i].stdErr;
-                        toAdd = toAdd.replace("Open Babel ", "");
-                        
-                        // Remove any line where the line contains only =
-                        toAdd = toAdd.replace(/^=+$/gm, "");
-                        
-                        // Remove "*" at start of line
-                        toAdd = toAdd.replace(/^\*{1,10}/gm, "");
-
-                        toAdd = toAdd.trim();
-
-                        // Any line that does not end in punctuation (.?!), add a period.
-                        toAdd = toAdd.replace(/([^.!?])$/gm, "$1.");
-                        
-                        toAdd = toAdd.replace(/\s{2,}/g, " ");
-                        toAdd = toAdd.trim();
-
-                        // New lines become spaces.
-                        toAdd = toAdd.replace(/\n/g, " ");
-
-                        if (inputs[i].surpressMsgs !== true) {
-                            errMsg = "One or more input molecules could not be processed. Perhaps one of your structures is too large, or the format is incorrect. Technical details: " + errMsg + toAdd + "\n";
+                    const output = outputBatch[i];
+                    const input = inputs[i];
+                    if (
+                        output.stdErr &&
+                        output.stdErr.toLowerCase().includes("error")
+                    ) {
+                        if (input.surpressMsgs) {
+                            continue;
                         }
+                        const stdErr = output.stdErr;
+                        let errorMessage: string;
+                        if (
+                            stdErr.includes("Cannot enlarge memory") ||
+                            stdErr.includes("(OOM)")
+                        ) {
+                            errorMessage = `The molecule '${input.inputFile.name}' is too large to process due to memory limitations.`;
+                        } else {
+                            let details = stdErr.replace("Open Babel ", "");
+                            details = details.replace(/^=+$/gm, "");
+                            details = details.replace(/^\*{1,10}/gm, "");
+                            details = details.trim();
+                            details = details.replace(/([^.!?])$/gm, "$1.");
+                            details = details.replace(/\s{2,}/g, " ");
+                            details = details.trim();
+                            details = details.replace(/\n/g, " ");
+                            errorMessage = `Could not process '${input.inputFile.name}'. The structure may be too large or the format incorrect. Technical details: ${details}`;
+                        }
+                        errorMessages.push(errorMessage);
                     }
                 }
-                if (errMsg !== "") {
-                    messagesApi.popupError(errMsg);
+                if (errorMessages.length > 0) {
+                    let finalMessage = "";
+                    if (errorMessages.length === 1) {
+                        finalMessage = errorMessages[0];
+                    } else {
+                        finalMessage =
+                            "<p>Multiple errors occurred during processing:</p><ul><li>" +
+                            errorMessages.join("</li><li>") +
+                            "</li></ul>";
+                    }
+                    messagesApi.popupError(finalMessage);
                 }
-
-                // debugger;
-
                 // If any of the files have {ERROR} in them, let user know and
                 // remove from outputBatch.
                 for (let i = 0; i < outputBatch.length; i++) {
-                    for (let j = 0; j < outputBatch[i].outputFiles.length; j++) {
-                        if (outputBatch[i].outputFiles[j] == "{ERROR}") {
-                            outputBatch[i].outputFiles[j] = undefined;
-                        }
+                    if (outputBatch[i].outputFiles) {
+                        outputBatch[i].outputFiles = outputBatch[
+                            i
+                        ].outputFiles.filter(
+                            (file: string | undefined) =>
+                                file !== "{ERROR}" && file !== undefined
+                        );
+                    } else {
+                        outputBatch[i].outputFiles = [];
                     }
-
-                    // Remove ones that are undefined
-                    outputBatch[i].outputFiles = outputBatch[i].outputFiles.filter(
-                        (x: any) => x !== undefined
-                    );
                 }
-
                 // Update .output value of each jobInfo.
                 for (let i = 0; i < inputBatch.length; i++) {
                     inputBatch[i].output = outputBatch[i];

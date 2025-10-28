@@ -265,7 +265,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ),
             afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#modal-simplemsg",
-                "File contained no valid"
+                "Could not process"
             ),
             // .expandMoleculesTree(titles)
             // .waitUntilRegex("#navigator", substrng),

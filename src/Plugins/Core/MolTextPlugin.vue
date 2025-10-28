@@ -336,7 +336,7 @@ export default class MolTextPlugin extends PluginParentClass {
             afterPluginCloses: () =>
                 new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
-                    "File contained no valid"
+                    "Could not process"
                 ),
         });
         return tests;

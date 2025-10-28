@@ -9,6 +9,7 @@ import { molFormatInformation, MolLoader } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { addDefaultLoadMolParams, ILoadMolParams } from "./Types";
 import { stopAllWaitSpinners } from "@/UI/MessageAlerts/WaitSpinner";
+import { isAnyPopupOpen } from "@/UI/MessageAlerts/Popups/OpenPopupList";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -131,6 +132,10 @@ export function _parseMoleculeFile(
             // }
 
             if (treeNodeList.length === 0) {
+                if (isAnyPopupOpen()) {
+                    stopAllWaitSpinners(); // Still need to stop the spinner
+                    return treeNodeList; // Abort showing a new error message
+                }
                 let msg =
                     "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>";
 
