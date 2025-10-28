@@ -71,8 +71,8 @@ export default class ReducePlugin extends PluginParentClass {
                 considerProteins: true,
                 proteinFormat: "pdb",
                 // compoundFormat: "pdbqtlig", // Will include torsions
-                includeMetalsSolventAsProtein: false,
-                allowUserToToggleIncludeMetalsSolventAsProtein: false,
+                includeMetalsSolventAsProtein: true,
+                allowUserToToggleIncludeMetalsSolventAsProtein: true,
             } as IMoleculeInputParams),
         } as IUserArgMoleculeInputParams,
     ];
@@ -142,6 +142,8 @@ export default class ReducePlugin extends PluginParentClass {
      */
     async runJobInBrowser(payloads: any[]): Promise<void> {
         const pdbOuts = payloads.map((payload) => payload.output);
+
+        debugger
 
         // Make fileInfos
         const fileInfos = pdbOuts.map((pdbOut) => {

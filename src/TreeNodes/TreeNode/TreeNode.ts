@@ -485,21 +485,26 @@ export class TreeNode {
                 allTreeNodes.push(treeNode);
             }
         }
-
-        // Divide the nodes into categories. For now, supporting only Protein
-        // and Compounds. TODO: Expand to all possible categories.
+        // Divide the nodes into categories for all possible types.
         const categories: { [key: string]: any } = {};
         for (const treeNode of allTreeNodes) {
-            if (treeNode.type === TreeNodeType.Compound) {
-                if (!categories["Compounds"]) {
-                    categories["Compounds"] = [];
+            if (treeNode.type) {
+                let categoryName =
+                    treeNode.type.charAt(0).toUpperCase() +
+                    treeNode.type.slice(1);
+                if (
+                    [
+                        TreeNodeType.Compound,
+                        TreeNodeType.Metal,
+                        TreeNodeType.Lipid,
+                    ].includes(treeNode.type)
+                ) {
+                    categoryName += "s";
                 }
-                categories["Compounds"].push(treeNode);
-            } else if (treeNode.type === TreeNodeType.Protein) {
-                if (!categories["Protein"]) {
-                    categories["Protein"] = [];
+                if (!categories[categoryName]) {
+                    categories[categoryName] = [];
                 }
-                categories["Protein"].push(treeNode);
+                categories[categoryName].push(treeNode);
             }
         }
 
@@ -535,18 +540,27 @@ export class TreeNode {
             viewerDirty: true,
             nodes: new TreeNodeList([]),
         });
-
-        for (const title of ["Protein", "Compounds"]) {
-            const type =
-                title === "Protein"
-                    ? TreeNodeType.Protein
-                    : TreeNodeType.Compound;
-
-            if (!categories[title]) {
-                continue;
-            }
-
-            if (categories[title].length === 0) {
+        const categoryOrder = [
+            "Protein",
+            "Nucleic",
+            "Compounds",
+            "Metals",
+            "Lipids",
+            "Ions",
+            "Solvent",
+        ];
+        const titleToTypeMap: Map<string, TreeNodeType> = new Map([
+            ["Protein", TreeNodeType.Protein],
+            ["Nucleic", TreeNodeType.Nucleic],
+            ["Compounds", TreeNodeType.Compound],
+            ["Metals", TreeNodeType.Metal],
+            ["Lipids", TreeNodeType.Lipid],
+            ["Ions", TreeNodeType.Ions],
+            ["Solvent", TreeNodeType.Solvent],
+        ]);
+        for (const title of categoryOrder) {
+            const type = titleToTypeMap.get(title);
+            if (!type || !categories[title] || categories[title].length === 0) {
                 continue;
             }
 
@@ -563,26 +577,7 @@ export class TreeNode {
             });
 
             rootNode.nodes?.push(categoryNode);
-
-            if (title === "Protein") {
-                const availableChainsOrig: string[] = [];
-                for (let i = 0; i < 26; i++) {
-                    availableChainsOrig.push(String.fromCharCode(65 + i));
-                }
-
-                let availableChains: string[] = [];
-
-                for (const treeNode of categories[title]) {
-                    if (availableChains.length === 0) {
-                        availableChains = availableChainsOrig.slice();
-                    }
-
-                    // Chains contain models
-                    const chain = TreeNode._getChain(treeNode, availableChains);
-                    treeNode.title = chain as string;
-                    categoryNode.nodes?.push(treeNode);
-                }
-            } else if (title === "Compounds") {
+            if (title === "Compounds") {
                 for (const chain of Object.keys(categories[title])) {
                     const chainNode = new TreeNode({
                         title: chain as string,
@@ -596,26 +591,24 @@ export class TreeNode {
                     });
                     categoryNode.nodes?.push(chainNode);
                 }
+            } else {
+                // Logic for Protein, Nucleic, Metal, Lipid, Ions, Solvent
+                const availableChainsOrig: string[] = [];
+                for (let i = 0; i < 26; i++) {
+                    availableChainsOrig.push(String.fromCharCode(65 + i));
+                }
+                let availableChains: string[] = [];
+                for (const treeNode of categories[title]) {
+                    if (availableChains.length === 0) {
+                        availableChains = availableChainsOrig.slice();
+                    }
+                    // Chains contain models
+                    const chain = TreeNode._getChain(treeNode, availableChains);
+                    treeNode.title = chain as string;
+                    categoryNode.nodes?.push(treeNode);
+                }
             }
-
-            // // The one named "A" or whatever the chain is.
-            // const chainNode = new TreeNode({
-            //     title: chain as string,
-            //     treeExpanded: false,
-            //     visible: true,
-            //     selected: SelectedType.False,
-            //     focused: false,
-            //     viewerDirty: true,
-            //     type: type,
-            //     nodes: new TreeNodeList([treeNode])
-            // });
-
-            // categoryNode.nodes?.push(chainNode);
-
-            // // Add the nodes to the chain node. Contain models.
-            // chainNode.nodes = new TreeNodeList(categories[title]);
         }
-
         return rootNode;
     }
 
@@ -847,7 +840,7 @@ export class TreeNode {
             }
         }
         // If you add new molecules to the tree, focus on everything.
-  const viewer = await visualizationApi.viewer;
+        const viewer = await visualizationApi.viewer;
         // Set the style according to the current user specs.
         updateStylesInViewer();
 

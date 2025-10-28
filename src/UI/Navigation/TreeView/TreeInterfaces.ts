@@ -111,8 +111,6 @@ export interface ICylinder extends IRegion {
     dashed?: boolean;
 }
 
-
-
 export enum TreeNodeDataType {
     Table,
     Graph,
