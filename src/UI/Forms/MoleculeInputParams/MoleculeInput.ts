@@ -12,14 +12,16 @@ export interface IMoleculeInputParams {
     considerCompounds?: boolean;
     proteinFormat?: string;
     compoundFormat?: string;
-    includeMetalsSolventAsProtein?: boolean;
-    allowUserToToggleIncludeMetalsSolventAsProtein?: boolean;
-
+	includeMetalsAsProtein?: boolean;
+	includeSolventAsProtein?: boolean;
+	allowUserToToggleIncludeMetalsAsProtein?: boolean;
+	allowUserToToggleIncludeSolventAsProtein?: boolean;
     // Below is useful if running things in webworkers. Sends input molecules or
     // molecule pairs in batches. If not specified, batching not applied (just
     // flat list of molecules). If set to null, batches according to nprocs.
     batchSize?: number | null | undefined;
 }
+
 export interface IProtCmpdTreeNodePair {
     prot: FileInfo;
     cmpd: FileInfo;
@@ -29,7 +31,6 @@ export interface IProtCmpdCounts {
     compounds: number;
     proteins: number;
 }
-
 
 /**
  * MoleculeInput class.
@@ -42,8 +43,10 @@ export class MoleculeInput {
     } as IMolsToConsider;
     considerProteins = true;
     considerCompounds = true;
-    includeMetalsSolventAsProtein = true;
-    allowUserToToggleIncludeMetalsSolventAsProtein = true;
+	includeMetalsAsProtein = true;
+	includeSolventAsProtein = true;
+	allowUserToToggleIncludeMetalsAsProtein = true;
+	allowUserToToggleIncludeSolventAsProtein = true;
     proteinFormat = "pdb";
     compoundFormat = "mol2";
 
@@ -80,13 +83,20 @@ export class MoleculeInput {
         if (params.compoundFormat !== undefined) {
             this.compoundFormat = params.compoundFormat;
         }
-        if (params.includeMetalsSolventAsProtein !== undefined) {
-            this.includeMetalsSolventAsProtein = params.includeMetalsSolventAsProtein;
+		if (params.includeMetalsAsProtein !== undefined) {
+			this.includeMetalsAsProtein = params.includeMetalsAsProtein;
+		}
+		if (params.includeSolventAsProtein !== undefined) {
+			this.includeSolventAsProtein = params.includeSolventAsProtein;
         }
-        if (params.allowUserToToggleIncludeMetalsSolventAsProtein !== undefined) {
-            this.allowUserToToggleIncludeMetalsSolventAsProtein = params.allowUserToToggleIncludeMetalsSolventAsProtein;
+		if (params.allowUserToToggleIncludeMetalsAsProtein !== undefined) {
+			this.allowUserToToggleIncludeMetalsAsProtein =
+				params.allowUserToToggleIncludeMetalsAsProtein;
         }
-
+		if (params.allowUserToToggleIncludeSolventAsProtein !== undefined) {
+			this.allowUserToToggleIncludeSolventAsProtein =
+				params.allowUserToToggleIncludeSolventAsProtein;
+		}
         // If not specified, use the default batch size.
         if (params.batchSize !== undefined) {
             this.batchSize = params.batchSize;
@@ -122,10 +132,16 @@ export class MoleculeInput {
         const protFileInfoPromises = compiledMols.nodeGroups.map(
             (prots: TreeNodeList) => {
                 // Keep only protein if so specified.
-                if (!this.includeMetalsSolventAsProtein) {
-                    prots = prots.filter((p: TreeNode) => {
-                        return p.type === TreeNodeType.Protein
-                    });
+				if (!this.includeMetalsAsProtein) {
+					prots = prots.filter(
+						(p: TreeNode) =>
+							p.type !== TreeNodeType.Metal && p.type !== TreeNodeType.Ions
+					);
+				}
+				if (!this.includeSolventAsProtein) {
+					prots = prots.filter(
+						(p: TreeNode) => p.type !== TreeNodeType.Solvent
+					);
                 }
 
                 // return getConvertedTxts(prots, "pdb", true).then(
@@ -142,7 +158,11 @@ export class MoleculeInput {
         let cmpdFileInfoPromise: Promise<any> = Promise.resolve();
         if (compiledMols.compoundsNodes) {
             // cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, "pdb", false);
-            cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, this.compoundFormat, false);
+			cmpdFileInfoPromise = getConvertedTxts(
+				compiledMols.compoundsNodes,
+				this.compoundFormat,
+				false
+			);
         }
 
         const allProtPromises = Promise.all(protFileInfoPromises);

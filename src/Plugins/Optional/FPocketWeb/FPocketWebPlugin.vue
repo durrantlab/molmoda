@@ -105,6 +105,10 @@ export default class FPocketWebPlugin extends PluginParentClass {
                 considerCompounds: false,
                 considerProteins: true,
                 proteinFormat: "pdb",
+                includeSolventAsProtein: false,
+                allowUserToToggleIncludeSolventAsProtein: false,
+                includeMetalsAsProtein: true,
+                allowUserToToggleIncludeMetalsAsProtein: true,
             }),
         } as IUserArgMoleculeInputParams,
         {

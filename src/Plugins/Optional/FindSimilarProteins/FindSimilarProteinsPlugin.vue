@@ -15,29 +15,24 @@ import {
 import {
     UserArg,
     UserArgType,
-    IUserArgSelectMolecule,
-    IUserArgMoleculeInputParams,
-    IUserArgNumber,
-    IUserArgRange,
-    IUserArgCheckbox,
     IUserArgSelect,
+    IUserArgMoleculeInputParams,
+    IUserArgRange,
+    IUserArgNumber,
     IUserArgTextArea,
+    IUserArgCheckbox,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { checkMultipleTopLevelProteinsLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModels";
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { MoleculeTypeFilter } from "@/UI/Forms/FormSelectMolecule/FormSelectMoleculeInterfaces";
-import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { convertFastaToSeqences } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
@@ -103,8 +98,10 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 considerProteins: true,
                 considerCompounds: false,
                 proteinFormat: "pdb",
-                includeMetalsSolventAsProtein: true,
-                allowUserToToggleIncludeMetalsSolventAsProtein: false,
+                includeMetalsAsProtein: true,
+                includeSolventAsProtein: true,
+                allowUserToToggleIncludeMetalsAsProtein: false,
+                allowUserToToggleIncludeSolventAsProtein: false,
             }),
             label: "Proteins to use as queries",
         } as IUserArgMoleculeInputParams,

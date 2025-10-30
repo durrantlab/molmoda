@@ -139,7 +139,12 @@ export default class PoseViewPlugin extends PluginParentClass {
         considerProteins: true,
         proteinFormat: "pdb",
         compoundFormat: "sdf",
-        includeMetalsSolventAsProtein: false,
+
+        // I don't believe pose view detects interactions with metals or solvent
+        allowUserToToggleIncludeMetalsAsProtein: false,
+        allowUserToToggleIncludeSolventAsProtein: false,
+        includeMetalsAsProtein: false,
+        includeSolventAsProtein: false,
       }),
       label: "Proteins and compound to consider",
     } as IUserArgMoleculeInputParams,

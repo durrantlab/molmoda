@@ -4,23 +4,32 @@
       <FormSelect
         v-model="selectionMode"
         :options="selectionOptions"
-        :id="'molecule-selection'"
+        :id="tag + '-molecule-selection'"
       />
       <!-- :description="`Choose which ${molNameToUse} to consider`" -->
       <FormCheckBox
         v-if="
           val.considerProteins &&
-          val.allowUserToToggleIncludeMetalsSolventAsProtein
+          val.allowUserToToggleIncludeMetalsAsProtein
         "
-        v-model="val.includeMetalsSolventAsProtein"
-        text="Count metals/solvent as part of the protein"
-        id="countMetalsSolvent"
+        v-model="val.includeMetalsAsProtein"
+        text="Count metals/ions as part of the protein"
+        :id="tag + '-include-metals'"
+      />
+      <FormCheckBox
+        v-if="
+          val.considerProteins &&
+          val.allowUserToToggleIncludeSolventAsProtein
+        "
+        v-model="val.includeSolventAsProtein"
+        text="Count solvent as part of the protein"
+        :id="tag + '-include-solvent'"
       />
     </FormWrapper>
     <FormElementDescription :description="summary"></FormElementDescription>
   </span>
 </template>
-   
+
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { Prop, Watch } from "vue-property-decorator";

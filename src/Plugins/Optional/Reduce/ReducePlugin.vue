@@ -71,8 +71,15 @@ export default class ReducePlugin extends PluginParentClass {
                 considerProteins: true,
                 proteinFormat: "pdb",
                 // compoundFormat: "pdbqtlig", // Will include torsions
-                includeMetalsSolventAsProtein: true,
-                allowUserToToggleIncludeMetalsSolventAsProtein: true,
+                
+                // Note that reduce can use waters in its calculations, but it
+                // doesn't add hydrogens to them. This would confuse the user,
+                // so let's just not include waters in the calculation.
+                includeSolventAsProtein: false,
+                allowUserToToggleIncludeSolventAsProtein: false,
+                
+                includeMetalsAsProtein: true,
+                allowUserToToggleIncludeMetalsAsProtein: true,
             } as IMoleculeInputParams),
         } as IUserArgMoleculeInputParams,
     ];

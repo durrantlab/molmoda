@@ -137,7 +137,8 @@ export default class WebinaPlugin extends PluginParentClass {
                 considerProteins: true,
                 proteinFormat: "pdbqt",
                 compoundFormat: "pdbqtlig", // Will include torsions
-                includeMetalsSolventAsProtein: false,
+                includeMetalsAsProtein: false,
+                includeSolventAsProtein: false,
             } as IMoleculeInputParams),
         } as IUserArgMoleculeInputParams,
         {
