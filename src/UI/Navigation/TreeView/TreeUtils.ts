@@ -6,6 +6,8 @@ import { TreeNodeList } from "../../../TreeNodes/TreeNodeList/TreeNodeList";
 import { treeNodeDeepClone } from "../../../TreeNodes/Deserializers";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
+import * as api from "@/Api";
+import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 /**
  * Given a IMolsToConsider variable, gets the molecules to consider.
  *
@@ -461,4 +463,66 @@ export function loadHierarchicallyFromTreeNodes(
         rootNodeTitle,
         divideCompoundsByChain
     );
+}
+
+/**
+ * Toggles visibility of a list of nodes. If more than 20 nodes are to become visible,
+ * it prompts the user for confirmation.
+ *
+ * @param {TreeNodeList} nodesToToggle The list of nodes whose visibility should be toggled.
+ */
+export async function toggleVisibilityWithConfirmation(
+    nodesToToggle: TreeNodeList
+): Promise<void> {
+    if (nodesToToggle.length === 0) {
+        return;
+    }
+
+    // Determine the new visibility state. If any node is visible, all will be hidden.
+    const anyVisible = nodesToToggle.some((n) => n.visible);
+    const newVisibleState = !anyVisible;
+
+    const performToggle = () => {
+        nodesToToggle.forEach((nodeToToggle: TreeNode) => {
+            nodeToToggle.visible = newVisibleState; // This setter will propagate to children.
+            nodeToToggle.viewerDirty = true;
+        });
+    };
+
+    if (newVisibleState) {
+        // Only prompt when making nodes visible
+        const allAffectedTerminals = new TreeNodeList();
+        nodesToToggle.forEach((node) => {
+            if (node.model) {
+                // is terminal
+                allAffectedTerminals.push(node);
+            } else if (node.nodes) {
+                // is container
+                allAffectedTerminals.extend(node.nodes.terminals);
+            }
+        });
+
+        const uniqueTerminals = allAffectedTerminals.filters.onlyUnique;
+        const countToMakeVisible = uniqueTerminals.filter(
+            (n) => !n.visible
+        ).length;
+
+        if (countToMakeVisible > 20) {
+            const resp = await api.messages.popupYesNo(
+                `You are about to make ${countToMakeVisible} molecules visible at once. This may impact performance. Do you want to continue?`,
+                "Performance Warning",
+                "Yes, Continue",
+                "Cancel"
+            );
+            if (resp === YesNo.Yes) {
+                performToggle();
+            }
+            // If No or Cancel, do nothing.
+        } else {
+            performToggle();
+        }
+    } else {
+        // Hiding nodes doesn't need a warning
+        performToggle();
+    }
 }

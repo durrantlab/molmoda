@@ -72,6 +72,7 @@ import { doSelecting, selectInstructionsBrief } from "./MolSelecting";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { IMenuItem, IMenuSubmenu } from "../Menu/Menu";
+import { toggleVisibilityWithConfirmation } from "../TreeView/TreeUtils";
 interface IIconsToDisplay {
     visible?: boolean;
     focused?: boolean;
@@ -359,37 +360,23 @@ export default class TitleBar extends Vue {
      *
      * @param {string} id  The id of the molecule (node).
      */
-    toggleVisible(id: string) {
+    async toggleVisible(id: string) {
         let node = this.getNode(id);
-
-        if (node !== null) {
-            let newVisible = !node.visible;
-
-            // Make this one the appropriate visibility
-            node.visible = newVisible;
-            node.viewerDirty = true;
-
-            // Similarly update the visibility on all children.
-            const children = node.nodes;
-            if (children) {
-                children.flattened.forEach((node2: TreeNode) => {
-                    node2.visible = newVisible;
-                    node2.viewerDirty = true;
-                });
-            }
-
-            // Now also update visibility on anything that is selected, if the
-            // current one is selected.
-            if (node.selected !== SelectedType.False) {
-                const selecteds = getMoleculesFromStore().filters.keepSelected(true, true);
-                selecteds.forEach((node2: TreeNode) => {
-                    node2.visible = newVisible;
-                    node2.viewerDirty = true;
-                });
-            }
+        if (node === null) {
+            return;
         }
-    }
 
+        let nodesToToggle: TreeNodeList;
+        if (node.selected !== SelectedType.False) {
+            // The clicked node is selected, so toggle all selected nodes.
+            nodesToToggle = getMoleculesFromStore().filters.keepSelected(true, true);
+        } else {
+            // The clicked node is not selected, so only toggle this node and its descendants.
+            nodesToToggle = new TreeNodeList([node]).flattened;
+        }
+
+  await toggleVisibilityWithConfirmation(nodesToToggle);
+    }
     /**
      * Toggle whether a molecule is focused.
      *

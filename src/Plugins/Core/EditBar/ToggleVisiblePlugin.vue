@@ -11,16 +11,15 @@ import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { checkAnyMolSelected } from "../../CheckUseAllowedUtils";
+import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-
+import { toggleVisibilityWithConfirmation } from "@/UI/Navigation/TreeView/TreeUtils";
 /**
  * ToggleVisiblePlugin
  */
@@ -40,61 +39,34 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
 
     noPopup = true;
-
     logJob = false;
     logAnalytics = false;
     tags = [Tag.All];
-
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
      *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
-    runJobInBrowser(): Promise<void> {
-        let selecteds = getMoleculesFromStore().filters.keepSelected(
+    async runJobInBrowser(): Promise<void> {
+        let nodesToToggle = getMoleculesFromStore().filters.keepSelected(
             true,
             true
         );
-
-        if (selecteds.length === 0) {
-            selecteds = getMoleculesFromStore().flattened;
+        if (nodesToToggle.length === 0) {
+            nodesToToggle = getMoleculesFromStore().flattened;
         }
-
-        selecteds.forEach((node) => {
-            node.visibleWithoutChildren = !node.visible;
-            node.viewerDirty = true;
-        });
-
-        // How many of these are visible?
-        // const numVisible = selecteds.filters.keepVisible(true, false).length;
-        // const numNotvisible = selecteds.length - numVisible;
-
-        // if (numVisible > numNotvisible) {
-        //     // Set them to be invisible
-        //     selecteds.forEach((node) => {
-        //         node.visible = false;
-        //         node.viewerDirty = true;
-        //     });
-        // } else {
-        //     // Set them to be visible
-        //     selecteds.forEach((node) => {
-        //         node.visible = true;
-        //         node.viewerDirty = true;
-        //     });
-        // }
-
-        return Promise.resolve();
+        await toggleVisibilityWithConfirmation(nodesToToggle);
     }
 
     /**
      * Check if this plugin can currently be used.
      *
      * @returns {string | null}  If it returns a string, show that as an error
-     *     message. If null, proceed to run the plugin.
+     *  message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        return checkAnyMolSelected();
+        return checkAnyMolLoaded();
     }
 
     /**
@@ -105,19 +77,63 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        return [
-            {
-                beforePluginOpens: () => new TestCmdList()
+        const setupToHideMany = new TestCmdList()
+            // Load over 50 molecules
+            .loadExampleMolecule(true, "testmols/over_50_mols.smi")
+            // .click("#navigator")
+            // .waitUntilRegex("#navigator", "frame60")
+            // Hide all molecules
+            // .openPlugin("selectall")
+            // .openPlugin("togglevisiblemols")
+            // .waitUntilRegex(
+            //     '#navigator div[data-label="molecule-1"]',
+            //     'svg.+?data-icon="eye-slash"'
+            // );
+
+        const confirmVisibilityTest: ITest = {
+            name: "Confirm making > 20 molecules visible",
+            beforePluginOpens: () => setupToHideMany,
+            afterPluginCloses: () =>
+                new TestCmdList()
+                    .wait(10)
+                    .waitUntilRegex("document", "div")
+                    // .waitUntilRegex("#modal-yesnomsg", "performance")
+                    // .click("#modal-yesnomsg .action-btn2") // "Yes, Continue"
+                    // .waitUntilRegex(
+                    //     '#navigator div[data-label="molecule-1"]',
+                    //     'svg.+?data-icon="eye"'
+                    // ),
+        };
+
+        const cancelVisibilityTest: ITest = {
+            name: "Cancel making > 20 molecules visible",
+            beforePluginOpens: () => setupToHideMany,
+            afterPluginCloses: () =>
+                new TestCmdList()
+                    .waitUntilRegex("#modal-yesnomsg", "performance")
+                    .click("#modal-yesnomsg .action-btn") // "Cancel"
+                    .waitUntilRegex(
+                        '#navigator div[data-label="molecule-1"]',
+                        'svg.+?data-icon="eye-slash"'
+                    ), // Should remain hidden
+        };
+
+        const defaultToggleTest: ITest = {
+            name: "Default toggle behavior",
+            beforePluginOpens: () =>
+                new TestCmdList()
                     .loadExampleMolecule(true)
                     .selectMoleculeInTree("Protein"), // Select a molecule to toggle
-                afterPluginCloses: () => new TestCmdList()
+            afterPluginCloses: () =>
+                new TestCmdList()
                     // It starts visible (fa-eye), after toggle it should be invisible (fa-eye-slash)
                     .waitUntilRegex(
                         '#navigator div[data-label="Protein"]',
                         'svg.+?data-icon="eye-slash"'
                     ),
-            },
-        ];
+        };
+
+        return [confirmVisibilityTest] ; // [defaultToggleTest, confirmVisibilityTest, cancelVisibilityTest];
     }
 }
 </script>
