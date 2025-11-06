@@ -78,6 +78,7 @@ export default class FormSelectMolecule extends Vue {
      * @default MoleculeTypeFilter.All
      */
     @Prop({ default: MoleculeTypeFilter.All }) filterType!: MoleculeTypeFilter;
+
     /**
      * Gets all molecules from the Vuex store.
      *
@@ -86,6 +87,7 @@ export default class FormSelectMolecule extends Vue {
     get allMolecules(): TreeNodeList {
         return this.$store.state.molecules as TreeNodeList;
     }
+
     /**
      * Gets the top-level molecules filtered by the specified type.
      *

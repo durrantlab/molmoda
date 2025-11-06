@@ -8,6 +8,8 @@ import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ea
 import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 import * as api from "@/Api";
 import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+
 /**
  * Given a IMolsToConsider variable, gets the molecules to consider.
  *
@@ -466,10 +468,11 @@ export function loadHierarchicallyFromTreeNodes(
 }
 
 /**
- * Toggles visibility of a list of nodes. If more than 20 nodes are to become visible,
- * it prompts the user for confirmation.
+ * Toggles visibility of a list of nodes. If too many nodes are to become
+ * visible, it prompts the user for confirmation.
  *
- * @param {TreeNodeList} nodesToToggle The list of nodes whose visibility should be toggled.
+ * @param {TreeNodeList} nodesToToggle The list of nodes whose visibility should
+ *      be toggled.
  */
 export async function toggleVisibilityWithConfirmation(
     nodesToToggle: TreeNodeList
@@ -506,8 +509,8 @@ export async function toggleVisibilityWithConfirmation(
         const countToMakeVisible = uniqueTerminals.filter(
             (n) => !n.visible
         ).length;
-
-        if (countToMakeVisible > 20) {
+        const visibilityThreshold = await getSetting("initialCompoundsVisible");
+        if (countToMakeVisible > visibilityThreshold) {
             const resp = await api.messages.popupYesNo(
                 `You are about to make ${countToMakeVisible} molecules visible at once. This may impact performance. Do you want to continue?`,
                 "Performance Warning",

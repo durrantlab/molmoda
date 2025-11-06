@@ -12,10 +12,12 @@ export interface IMoleculeInputParams {
     considerCompounds?: boolean;
     proteinFormat?: string;
     compoundFormat?: string;
-	includeMetalsAsProtein?: boolean;
-	includeSolventAsProtein?: boolean;
-	allowUserToToggleIncludeMetalsAsProtein?: boolean;
-	allowUserToToggleIncludeSolventAsProtein?: boolean;
+    includeMetalsAsProtein?: boolean;
+    includeSolventAsProtein?: boolean;
+    includeNucleicAsProtein?: boolean;
+    allowUserToToggleIncludeMetalsAsProtein?: boolean;
+    allowUserToToggleIncludeSolventAsProtein?: boolean;
+    allowUserToToggleIncludeNucleicAsProtein?: boolean;
     // Below is useful if running things in webworkers. Sends input molecules or
     // molecule pairs in batches. If not specified, batching not applied (just
     // flat list of molecules). If set to null, batches according to nprocs.
@@ -43,10 +45,12 @@ export class MoleculeInput {
     } as IMolsToConsider;
     considerProteins = true;
     considerCompounds = true;
-	includeMetalsAsProtein = true;
-	includeSolventAsProtein = true;
-	allowUserToToggleIncludeMetalsAsProtein = true;
-	allowUserToToggleIncludeSolventAsProtein = true;
+    includeMetalsAsProtein = true;
+    includeSolventAsProtein = true;
+    includeNucleicAsProtein = true;
+    allowUserToToggleIncludeMetalsAsProtein = true;
+    allowUserToToggleIncludeSolventAsProtein = true;
+    allowUserToToggleIncludeNucleicAsProtein = true;
     proteinFormat = "pdb";
     compoundFormat = "mol2";
 
@@ -59,7 +63,7 @@ export class MoleculeInput {
 
     /**
      * The constructor for the MoleculeInput class.
-     * 
+     *
      * @param {IMoleculeInputParams} params  The parameters of the MoleculeInput
      *     object.
      */
@@ -83,20 +87,27 @@ export class MoleculeInput {
         if (params.compoundFormat !== undefined) {
             this.compoundFormat = params.compoundFormat;
         }
-		if (params.includeMetalsAsProtein !== undefined) {
-			this.includeMetalsAsProtein = params.includeMetalsAsProtein;
-		}
-		if (params.includeSolventAsProtein !== undefined) {
-			this.includeSolventAsProtein = params.includeSolventAsProtein;
+        if (params.includeMetalsAsProtein !== undefined) {
+            this.includeMetalsAsProtein = params.includeMetalsAsProtein;
         }
-		if (params.allowUserToToggleIncludeMetalsAsProtein !== undefined) {
-			this.allowUserToToggleIncludeMetalsAsProtein =
-				params.allowUserToToggleIncludeMetalsAsProtein;
+        if (params.includeSolventAsProtein !== undefined) {
+            this.includeSolventAsProtein = params.includeSolventAsProtein;
         }
-		if (params.allowUserToToggleIncludeSolventAsProtein !== undefined) {
-			this.allowUserToToggleIncludeSolventAsProtein =
-				params.allowUserToToggleIncludeSolventAsProtein;
-		}
+        if (params.includeNucleicAsProtein !== undefined) {
+            this.includeNucleicAsProtein = params.includeNucleicAsProtein;
+        }
+        if (params.allowUserToToggleIncludeMetalsAsProtein !== undefined) {
+            this.allowUserToToggleIncludeMetalsAsProtein =
+                params.allowUserToToggleIncludeMetalsAsProtein;
+        }
+        if (params.allowUserToToggleIncludeSolventAsProtein !== undefined) {
+            this.allowUserToToggleIncludeSolventAsProtein =
+                params.allowUserToToggleIncludeSolventAsProtein;
+        }
+        if (params.allowUserToToggleIncludeNucleicAsProtein !== undefined) {
+            this.allowUserToToggleIncludeNucleicAsProtein =
+                params.allowUserToToggleIncludeNucleicAsProtein;
+        }
         // If not specified, use the default batch size.
         if (params.batchSize !== undefined) {
             this.batchSize = params.batchSize;
@@ -109,8 +120,7 @@ export class MoleculeInput {
      * @returns {Promise<IProtCmpdTreeNodePair[]>}  The protein, compound pairs.
      */
     public getProtAndCompoundPairs(): Promise<
-        | IProtCmpdTreeNodePair[]
-        | FileInfo[]
+        IProtCmpdTreeNodePair[] | FileInfo[]
         // | IProtCmpdTreeNodePair[][]
         // | FileInfo[][]
     > {
@@ -132,16 +142,22 @@ export class MoleculeInput {
         const protFileInfoPromises = compiledMols.nodeGroups.map(
             (prots: TreeNodeList) => {
                 // Keep only protein if so specified.
-				if (!this.includeMetalsAsProtein) {
-					prots = prots.filter(
-						(p: TreeNode) =>
-							p.type !== TreeNodeType.Metal && p.type !== TreeNodeType.Ions
-					);
-				}
-				if (!this.includeSolventAsProtein) {
-					prots = prots.filter(
-						(p: TreeNode) => p.type !== TreeNodeType.Solvent
-					);
+                if (!this.includeMetalsAsProtein) {
+                    prots = prots.filter(
+                        (p: TreeNode) =>
+                            p.type !== TreeNodeType.Metal &&
+                            p.type !== TreeNodeType.Ions
+                    );
+                }
+                if (!this.includeSolventAsProtein) {
+                    prots = prots.filter(
+                        (p: TreeNode) => p.type !== TreeNodeType.Solvent
+                    );
+                }
+                if (!this.includeNucleicAsProtein) {
+                    prots = prots.filter(
+                        (p: TreeNode) => p.type !== TreeNodeType.Nucleic
+                    );
                 }
 
                 // return getConvertedTxts(prots, "pdb", true).then(
@@ -158,20 +174,21 @@ export class MoleculeInput {
         let cmpdFileInfoPromise: Promise<any> = Promise.resolve();
         if (compiledMols.compoundsNodes) {
             // cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, "pdb", false);
-			cmpdFileInfoPromise = getConvertedTxts(
-				compiledMols.compoundsNodes,
-				this.compoundFormat,
-				false
-			);
+            cmpdFileInfoPromise = getConvertedTxts(
+                compiledMols.compoundsNodes,
+                this.compoundFormat,
+                false
+            );
         }
 
         const allProtPromises = Promise.all(protFileInfoPromises);
+
         // const allCmpdPromises = Promise.all(cmpdFileInfoPromises);
 
         return Promise.all([allProtPromises, cmpdFileInfoPromise])
             .then((payload: FileInfo[][]) => {
                 let [prots, cmpds] = payload;
-                
+
                 // Remove any undefineds. This happens when there are no
                 // proteins and/or compounds loaded.
                 prots = prots.filter((p: FileInfo) => p !== undefined);
@@ -208,7 +225,7 @@ export class MoleculeInput {
 
     // /**
     //  * Given a list of items, divide the list into batches.
-    //  * 
+    //  *
     //  * @param {any[]} lst  The list of items.
     //  * @returns {any[] | any[][]}  The list of items, divided into batches.
     //  */

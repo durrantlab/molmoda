@@ -1,30 +1,23 @@
 <template>
   <span>
     <FormWrapper cls="border-0" :label="textToUse">
-      <FormSelect
-        v-model="selectionMode"
-        :options="selectionOptions"
-        :id="tag + '-molecule-selection'"
-      />
+      <FormSelect v-model="selectionMode" :options="selectionOptions" :id="tag + '-molecule-selection'" />
       <!-- :description="`Choose which ${molNameToUse} to consider`" -->
-      <FormCheckBox
-        v-if="
-          val.considerProteins &&
-          val.allowUserToToggleIncludeMetalsAsProtein
-        "
-        v-model="val.includeMetalsAsProtein"
-        text="Count metals/ions as part of the protein"
-        :id="tag + '-include-metals'"
-      />
-      <FormCheckBox
-        v-if="
-          val.considerProteins &&
-          val.allowUserToToggleIncludeSolventAsProtein
-        "
-        v-model="val.includeSolventAsProtein"
-        text="Count solvent as part of the protein"
-        :id="tag + '-include-solvent'"
-      />
+      <FormCheckBox v-if="
+        val.considerProteins &&
+        val.allowUserToToggleIncludeMetalsAsProtein
+      " v-model="val.includeMetalsAsProtein" text="Count metals/ions as part of the protein receptor"
+        :id="tag + '-include-metals'" />
+      <FormCheckBox v-if="
+        val.considerProteins &&
+        val.allowUserToToggleIncludeSolventAsProtein
+      " v-model="val.includeSolventAsProtein" text="Count solvent as part of the protein receptor"
+        :id="tag + '-include-solvent'" />
+      <FormCheckBox v-if="
+        val.considerProteins &&
+        val.allowUserToToggleIncludeNucleicAsProtein
+      " v-model="val.includeNucleicAsProtein" text="Count nucleic acids as part of the protein receptor"
+        :id="tag + '-include-nucleic'" />
     </FormWrapper>
     <FormElementDescription :description="summary"></FormElementDescription>
   </span>
@@ -86,8 +79,8 @@ export default class MoleculeInputParams extends Vue {
     return this.text !== "" || this.text === undefined
       ? this.text
       : `${this.molNameToUse
-          .slice(0, 1)
-          .toUpperCase()}${this.molNameToUse.slice(1)} to consider`;
+        .slice(0, 1)
+        .toUpperCase()}${this.molNameToUse.slice(1)} to consider`;
   }
 
   /**

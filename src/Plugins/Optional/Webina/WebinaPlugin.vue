@@ -15,7 +15,7 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import {
     checkCompoundLoaded,
-    checkProteinLoaded,
+    checkProteinOrNucleicLoaded,
 } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -66,6 +66,7 @@ import { prepForErrorCustomMsg } from "./WebinaErrors";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+
 let msgOnJobsFinishedtoUse: string | undefined;
 
 /**
@@ -139,6 +140,10 @@ export default class WebinaPlugin extends PluginParentClass {
                 compoundFormat: "pdbqtlig", // Will include torsions
                 includeMetalsAsProtein: false,
                 includeSolventAsProtein: false,
+                includeNucleicAsProtein: false,
+                allowUserToToggleIncludeMetalsAsProtein: true,
+                allowUserToToggleIncludeSolventAsProtein: true,
+                allowUserToToggleIncludeNucleicAsProtein: true,
             } as IMoleculeInputParams),
         } as IUserArgMoleculeInputParams,
         {
@@ -342,9 +347,9 @@ export default class WebinaPlugin extends PluginParentClass {
      *     message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
-        const protLoaded = checkProteinLoaded();
-        if (protLoaded !== null) {
-            return protLoaded;
+        const receptorLoaded = checkProteinOrNucleicLoaded();
+        if (receptorLoaded !== null) {
+            return receptorLoaded;
         }
 
         return checkCompoundLoaded();

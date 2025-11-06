@@ -29,7 +29,7 @@ import { toggleVisibilityWithConfirmation } from "@/UI/Navigation/TreeView/TreeU
     },
 })
 export default class ToggleVisiblePlugin extends PluginParentClass {
-    menuPath = ["Edit", "Molecules", "[6] Toggle Visible"];
+ menuPath = ["View", "Toggles", "[9] Toggle Visible"];
     title = "Toggle Visible";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];

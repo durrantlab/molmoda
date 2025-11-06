@@ -33,6 +33,7 @@ import { MoleculeTypeFilter } from "@/UI/Forms/FormSelectMolecule/FormSelectMole
 import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { alignFileInfos } from "./AlignProteinsUtils";
+
 /**
  * A plugin to align multiple protein structures to a reference protein.
  */
@@ -70,10 +71,12 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 considerProteins: true,
                 considerCompounds: false,
                 proteinFormat: "pdb",
-                allowUserToToggleIncludeMetalsAsProtein: false,
-                allowUserToToggleIncludeSolventAsProtein: false,
                 includeMetalsAsProtein: true,
                 includeSolventAsProtein: true,
+    includeNucleicAsProtein: true,
+    allowUserToToggleIncludeMetalsAsProtein: false,
+    allowUserToToggleIncludeSolventAsProtein: false,
+    allowUserToToggleIncludeNucleicAsProtein: false,
             }),
             label: "Proteins to align",
         } as IUserArgMoleculeInputParams,

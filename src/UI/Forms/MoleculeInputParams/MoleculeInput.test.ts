@@ -40,6 +40,7 @@ describe("MoleculeInput component filtering", () => {
         // Clear mocks before each test
         (getMoleculesFromStore as jest.Mock).mockClear();
         (convertFileInfosOpenBabel as jest.Mock).mockClear();
+
         // Mock the implementation for OpenBabel to just pass through the PDB content
         // This simulates a format conversion from PDB to PDB.
         (convertFileInfosOpenBabel as jest.Mock).mockImplementation(
@@ -99,6 +100,19 @@ describe("MoleculeInput component filtering", () => {
             bonds: [],
             bondOrder: [],
         };
+        const nucleicAtom: IAtom = {
+            serial: 4,
+            atom: "P",
+            resn: "A",
+            chain: "B",
+            resi: 1,
+            elem: "P",
+            x: 4,
+            y: 4,
+            z: 4,
+            bonds: [],
+            bondOrder: [],
+        };
 
         // Terminal nodes that hold the actual molecular data
         const proteinTerminalNode = new TreeNode({
@@ -134,6 +148,17 @@ describe("MoleculeInput component filtering", () => {
             viewerDirty: false,
             src: "test.pdb",
         });
+        const nucleicTerminalNode = new TreeNode({
+            title: "NA Chain B",
+            type: TreeNodeType.Nucleic,
+            model: [nucleicAtom],
+            visible: true,
+            selected: SelectedType.False,
+            treeExpanded: false,
+            focused: false,
+            viewerDirty: false,
+            src: "test.pdb",
+        });
 
         // The root node containing the hierarchy
         const rootNode = new TreeNode({
@@ -147,6 +172,7 @@ describe("MoleculeInput component filtering", () => {
                 proteinTerminalNode,
                 metalTerminalNode,
                 solventTerminalNode,
+                nucleicTerminalNode,
             ]),
             src: "test.pdb",
         });
@@ -154,11 +180,13 @@ describe("MoleculeInput component filtering", () => {
         proteinTerminalNode.parentId = rootNode.id;
         metalTerminalNode.parentId = rootNode.id;
         solventTerminalNode.parentId = rootNode.id;
+        nucleicTerminalNode.parentId = rootNode.id;
+
         const mockMolecules = new TreeNodeList([rootNode]);
         (getMoleculesFromStore as jest.Mock).mockReturnValue(mockMolecules);
     });
 
-    it("should include protein, metal, and solvent by default", async () => {
+    it("should include protein, metal, solvent, and nucleic acid by default", async () => {
         const params: IMoleculeInputParams = {
             considerProteins: true,
             considerCompounds: false, // Ensure we are only testing protein-related components
@@ -171,9 +199,10 @@ describe("MoleculeInput component filtering", () => {
 
         expect(result).toHaveLength(1);
         const pdbContent = result[0].contents;
-        expect(pdbContent).toContain("ATOM      1  CA  GLY A   1"); // Protein
-        expect(pdbContent).toContain("HETATM    2 ZN    ZN "); // Metal (new chain for some reason)
-        expect(pdbContent).toContain("  O   HOH "); // Solvent
+        expect(pdbContent).toMatch(/ATOM\s+.*\s+CA\s+GLY\s+/); // Protein
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+ZN\s+ZN\s+/); // Metal
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+O\s+HOH\s+/); // Solvent
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+P\s+A\s+/); // Nucleic Acid
     });
 
     it("should exclude metals when includeMetalsAsProtein is false", async () => {
@@ -187,12 +216,12 @@ describe("MoleculeInput component filtering", () => {
         const moleculeInput = new MoleculeInput(params);
         const result =
             (await moleculeInput.getProtAndCompoundPairs()) as FileInfo[];
-
         expect(result).toHaveLength(1);
         const pdbContent = result[0].contents;
-        expect(pdbContent).toContain("ATOM      1  CA  GLY A   1"); // Protein
-        expect(pdbContent).not.toContain("HETATM    2 ZN    ZN "); // Metal excluded
-        expect(pdbContent).toContain("  O   HOH "); // Solvent included
+        expect(pdbContent).toMatch(/ATOM\s+.*\s+CA\s+GLY\s+/); // Protein
+        expect(pdbContent).not.toMatch(/HETATM\s+.*\s+ZN\s+ZN\s+/); // Metal excluded
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+O\s+HOH\s+/); // Solvent included
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+P\s+A\s+/); // Nucleic Acid included
     });
 
     it("should exclude solvent when includeSolventAsProtein is false", async () => {
@@ -206,12 +235,30 @@ describe("MoleculeInput component filtering", () => {
         const moleculeInput = new MoleculeInput(params);
         const result =
             (await moleculeInput.getProtAndCompoundPairs()) as FileInfo[];
-
         expect(result).toHaveLength(1);
         const pdbContent = result[0].contents;
-        expect(pdbContent).toContain("ATOM      1  CA  GLY A   1"); // Protein
-        expect(pdbContent).toContain("HETATM    2 ZN    ZN "); // Metal included
-        expect(pdbContent).not.toContain("  O   HOH "); // Solvent excluded
+        expect(pdbContent).toMatch(/ATOM\s+.*\s+CA\s+GLY\s+/); // Protein
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+ZN\s+ZN\s+/); // Metal included
+        expect(pdbContent).not.toMatch(/HETATM\s+.*\s+O\s+HOH\s+/); // Solvent excluded
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+P\s+A\s+/); // Nucleic Acid included
+    });
+
+    it("should exclude nucleic acids when includeNucleicAsProtein is false", async () => {
+        const params: IMoleculeInputParams = {
+            considerProteins: true,
+            considerCompounds: false,
+            proteinFormat: "pdb",
+            includeNucleicAsProtein: false,
+        };
+        const moleculeInput = new MoleculeInput(params);
+        const result =
+            (await moleculeInput.getProtAndCompoundPairs()) as FileInfo[];
+        expect(result).toHaveLength(1);
+        const pdbContent = result[0].contents;
+        expect(pdbContent).toMatch(/ATOM\s+.*\s+CA\s+GLY\s+/); // Protein
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+ZN\s+ZN\s+/); // Metal included
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+O\s+HOH\s+/); // Solvent included
+        expect(pdbContent).not.toMatch(/HETATM\s+.*\s+P\s+A\s+/); // Nucleic Acid excluded
     });
 
     it("should exclude both metal and solvent when both flags are false", async () => {
@@ -225,11 +272,11 @@ describe("MoleculeInput component filtering", () => {
         const moleculeInput = new MoleculeInput(params);
         const result =
             (await moleculeInput.getProtAndCompoundPairs()) as FileInfo[];
-
         expect(result).toHaveLength(1);
         const pdbContent = result[0].contents;
-        expect(pdbContent).toContain("ATOM      1  CA  GLY A   1"); // Protein
-        expect(pdbContent).not.toContain("HETATM    2 ZN    ZN "); // Metal excluded
-        expect(pdbContent).not.toContain("  O   HOH "); // Solvent excluded
+        expect(pdbContent).toMatch(/ATOM\s+.*\s+CA\s+GLY\s+/); // Protein
+        expect(pdbContent).not.toMatch(/HETATM\s+.*\s+ZN\s+ZN\s+/); // Metal excluded
+        expect(pdbContent).not.toMatch(/HETATM\s+.*\s+O\s+HOH\s+/); // Solvent excluded
+        expect(pdbContent).toMatch(/HETATM\s+.*\s+P\s+A\s+/); // Nucleic Acid included
     });
 });

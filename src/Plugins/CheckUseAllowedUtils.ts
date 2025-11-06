@@ -6,6 +6,7 @@ import {
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+
 /**
  * Checks whether the user has selected any molecule.
  *
@@ -176,6 +177,34 @@ function _checkTypeLoaded(
  */
 export function checkProteinLoaded(treeNodeList?: TreeNodeList): string | null {
     return _checkTypeLoaded(TreeNodeType.Protein, treeNodeList);
+}
+
+/**
+ * Checks whether the user has loaded any protein or nucleic acid.
+ *
+ * @param  {TreeNodeList} [treeNodeList]  The molecule containers to consider.
+ *          Ultimately defaults to all molecules
+ *          if not specified.
+ * @returns {string | null}  An error if the user hasn't selected any molecules,
+ *   null otherwise.
+ */
+export function checkProteinOrNucleicLoaded(
+    treeNodeList?: TreeNodeList
+): string | null {
+    if (treeNodeList === undefined) {
+        treeNodeList = getMoleculesFromStore();
+    }
+    const proteins = treeNodeList.flattened.filters.keepType(
+        TreeNodeType.Protein
+    );
+    const nucleicAcids = treeNodeList.flattened.filters.keepType(
+        TreeNodeType.Nucleic
+    );
+
+    if (proteins.length === 0 && nucleicAcids.length === 0) {
+        return "No protein or nucleic acid is currently loaded. Try adding a receptor first.";
+    }
+    return null;
 }
 
 /**
