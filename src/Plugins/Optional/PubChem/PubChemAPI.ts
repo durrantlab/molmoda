@@ -679,10 +679,11 @@ export async function fetchSuperstructureCompounds(
     maxRecords = 100
 ): Promise<any> {
     try {
+        // https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest#section=Substructure-Superstructure
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsuperstructure/smiles/${encodeURIComponent(
                 easyNeutralizeSMILES(smiles)
-            )}/cids/JSON?MatchIsotopes=false`,
+            )}/cids/JSON?MatchIsotopes=false&ChainsMatchRings=false`,
             maxRecords
         );
 
