@@ -33,13 +33,16 @@ import os
 # from selenium.webdriver.logging import LogEntries
 # from selenium.webdriver.logging import LogType
 
+# DEVTOOLS flag to control the automatic opening of Chrome DevTools.
+DEVTOOLS = True
+
 # Make a menu to select the url
 urls = [
     "http://localhost:8080",
     # "https://durrantlab.pitt.edu/apps/molmoda/beta/",
     # "https://durrantlab.pitt.edu/molmoda/",
-    "https://molmoda.org/",
-    "https://beta.molmoda.org/",
+    "https://molmoda.org",
+    "https://beta.molmoda.org",
 ]
 
 menu = TerminalMenu(urls, title="Select the root URL")
@@ -91,10 +94,26 @@ class el:
     @property
     def text(self):
         txt = self.el.get_attribute("value")
-        if txt is None:
+        if txt in [None, ""]:
             txt = self.el.get_attribute("innerHTML")
 
         return txt
+
+    # @property
+    # def text(self):
+    #     # First, try to get the text using the more reliable 'textContent' attribute.
+    #     txt = self.el.get_attribute("textContent")
+    #     if txt:
+    #         # The textContent might have leading/trailing whitespace.
+    #         return txt.strip()
+
+    #     # Fallback to innerHTML if textContent is empty for some reason.
+    #     txt = self.el.get_attribute("innerHTML")
+    #     if txt:
+    #         return txt.strip()
+
+    #     # Finally, check the 'value' attribute, which is useful for input elements.
+    #     return self.el.get_attribute("value")
 
     @text.setter
     def text(self, value):
@@ -190,7 +209,7 @@ class el:
             # .until(lambda driver: re.search(regex, self.el.get_attribute("innerHTML")))
         except TimeoutException as e:
             self.throw_error(
-                f"{self.selector} does not contain [[{regex}]] after {self.timeout} seconds"
+                f"{self.selector} does not contain [[{regex}]] after {self.timeout} seconds; Actual text: [[{self.text}]]"
             )
 
     def wait_until_does_not_contain_regex(self, regex):
@@ -240,6 +259,10 @@ class el:
 
 
 def make_chrome_driver(options):
+    # If DEVTOOLS is True, add the argument to open DevTools automatically.
+    if DEVTOOLS:
+        options.add_argument("--auto-open-devtools-for-tabs")
+
     service = Service(executable_path="utils/chromedriver_wrapper.sh")
     options.set_capability("goog:loggingPrefs", {"browser": "ALL"})
     driver = webdriver.Chrome(service=service, options=options)
@@ -675,10 +698,28 @@ print("")
 print(urls[chosen_index] + "\n")
 
 if failed_tests:
-    unique_failed_names = sorted(
-        list(set([t["test"].split(" #")[0] for t in failed_tests]))
-    )
-    print(f" RUN AGAIN (FAILED)?: {' '.join(unique_failed_names)}")
+    failed_summary = {}
+    for t in failed_tests:
+        parts = t["test"].split(" #")
+        name = parts[0]
+        if name not in failed_summary:
+            failed_summary[name] = {"indices": set(), "no_index_failed": False}
+        if len(parts) > 1:
+            failed_summary[name]["indices"].add(int(parts[1]))
+        else:
+            failed_summary[name]["no_index_failed"] = True
+
+    run_again_parts = []
+    for name in sorted(failed_summary.keys()):
+        summary = failed_summary[name]
+        if summary["no_index_failed"]:
+            run_again_parts.append(name)
+        elif summary["indices"]:
+            indices = summary["indices"]
+            indices_str = "".join(map(str, sorted(list(indices))))
+            run_again_parts.append(f"{name}({indices_str})")
+
+    print(f" RUN AGAIN (FAILED)?: {' '.join(run_again_parts)}")
 # input("Done. Press Enter to end all tests...")
 
 # driver.quit()

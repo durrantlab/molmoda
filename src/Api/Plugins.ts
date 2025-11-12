@@ -15,7 +15,9 @@ export const pluginsApi = {
             console.error(
                 `Attempted to run a non-existent plugin: "${pluginName}"`
             );
-            return;
+            // Throw an error here
+            throw new Error(`Plugin "${pluginName}" does not exist.`);
+            // return;
         }
         if (plugin.onPluginStart !== null) {
             plugin.onPluginStart(params);

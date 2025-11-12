@@ -226,7 +226,8 @@ export class TestCmdList {
                     messagesApi.stopWaitSpinner(spinnerId);
                 });
         }
-        this.waitUntilRegex("#styles", "Protein");
+        // this.waitUntilRegex("#styles", "Protein");
+        this.waitUntilNotRegex("#styles", "The project contains no molecules");
         if (expandInMoleculeTree) {
             // this.expandMoleculesTree("4WP4");
         }

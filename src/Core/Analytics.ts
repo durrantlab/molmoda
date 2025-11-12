@@ -64,6 +64,7 @@ function _logInternal(eventName: string, eventAction: string) {
     const formData = new FormData();
     formData.append("e", `${eventName}-${eventAction}`);
     formData.append("beta", (GlobalVars.isBeta || GlobalVars.isLocalHost) ? "1" : "0");
+    formData.append("test", GlobalVars.isTest ? "1" : "0");
     fetcher("https://molmoda.org/e.php", {
         responseType: ResponseType.TEXT,
         formPostData: formData,
