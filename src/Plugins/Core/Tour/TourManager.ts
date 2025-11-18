@@ -562,12 +562,21 @@ class TourManager {
         plugin: PluginParentClass
     ): any {
         console.log(`Tour Step: Click - Selector: ${command.selector}`);
-        return {
-            element: command.selector,
-            popover: {
+  const popover = {
                 title: plugin.title,
                 description: "Please click here to continue.",
-            },
+  };
+  const selector = command.selector || "";
+  const selectMoleculeMatch = selector.match(
+   /#navigator div\[data-label="([^"]+)"\]/
+  );
+  if (selectMoleculeMatch) {
+   const moleculeName = selectMoleculeMatch[1];
+   popover.description = `Please click on "${moleculeName}" in the Navigator panel to select it.`;
+  }
+  return {
+   element: command.selector,
+   popover: popover,
             onHighlightStarted: (element: HTMLElement) => {
                 if (!element) {
                     console.error(

@@ -166,8 +166,13 @@ export default class StatCollectionPlugin extends PluginParentClass {
      * Runs when the plugin is first loaded.
      */
     async onMounted() {
-        const statStatusSet = await isStatStatusSet();
-        this.open = !isTest && !statStatusSet;
+        // Putting this in a timeout to avoid a testing error. Sometimes the
+        // javascript hasn't completely loaded yet. Hacky, admittedly.
+        setTimeout(async () => {
+            const statStatusSet = await isStatStatusSet();
+            this.open = !isTest && !statStatusSet;
+        }, 1000);
+
     }
 }
 </script>

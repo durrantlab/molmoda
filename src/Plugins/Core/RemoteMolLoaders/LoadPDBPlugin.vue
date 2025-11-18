@@ -252,7 +252,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 ),
                 afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#modal-simplemsg",
-                    "too large to process"
+                    "may be too large"
                 ),
             },
 
