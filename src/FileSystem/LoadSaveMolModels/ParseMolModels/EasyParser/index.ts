@@ -48,10 +48,15 @@ export function makeEasyParser(
         return new EasyParserMol2(src as IFileInfo);
     }
 
-    // Fallback or throw error if format not supported by EasyParsers
-    console.warn(
-        `EasyParser: Format "${typ}" (primaryExt: "${formatInfo?.primaryExt}") not explicitly handled. Defaulting to Mol2 parser, which may not be correct.`
-    );
-    // As a last resort, try Mol2 parser, or consider throwing an error.
-    return new EasyParserMol2(src as IFileInfo);
+    // Format not explicitly handled (e.g. MOLMODA, ZIP, or unknown).
+    // Return empty parser to avoid errors from incorrect parsing attempts.
+    return new EasyParserIAtomList([]);
+
+
+    // // Fallback or throw error if format not supported by EasyParsers
+    // console.warn(
+    //     `EasyParser: Format "${typ}" (primaryExt: "${formatInfo?.primaryExt}") not explicitly handled. Defaulting to Mol2 parser, which may not be correct.`
+    // );
+    // // As a last resort, try Mol2 parser, or consider throwing an error.
+    // return new EasyParserMol2(src as IFileInfo);
 }

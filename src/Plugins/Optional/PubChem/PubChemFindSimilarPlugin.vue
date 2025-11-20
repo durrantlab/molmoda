@@ -447,6 +447,9 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
           .setUserArg("gen3D", Gen3DLevel.Fastest, this.pluginId), // Test fastest 3D gen
         afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#navigator",
+          "similarity_"
+        ).openPlugin("expandall").waitUntilRegex(
+          "#navigator",
           "similar_"
         ),
       },
@@ -466,6 +469,9 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
           .setUserArg("gen3D", Gen3DLevel.None, this.pluginId), // Test no 3D gen
         afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#navigator",
+          "substructure_"
+        ).openPlugin("expandall").waitUntilRegex(
+          "#navigator",
           "contains_"
         ),
       },
@@ -484,6 +490,9 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
           .setUserArg("maxresults", 10, this.pluginId)
           .setUserArg("gen3D", Gen3DLevel.Best, this.pluginId), // Test best 3D gen
         afterPluginCloses: () => new TestCmdList().waitUntilRegex(
+          "#navigator",
+          "superstructure_"
+        ).openPlugin("expandall").waitUntilRegex(
           "#navigator",
           "contained_in_"
         ),

@@ -21,7 +21,7 @@
                 <!-- title="Receiver Operating Characteristic Curve" -->
                 <Chart xAxisLabel="False Positive Rate" yAxisLabel="True Positive Rate" xAxisLabelHover="FPR"
                     yAxisLabelHover="TPR" xAxisUnits="" yAxisUnits="" :chartData="rocData" chartType="scatter"
-     :ratio="ratio" :smooth="false" :fillUnderLine="true" downloadFilenameBase="roc-curve"></Chart>
+                    :ratio="ratio" :smooth="false" :fillUnderLine="true" downloadFilenameBase="roc-curve"></Chart>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -46,8 +46,8 @@
                 <!-- title="Enrichment Factor" -->
                 <Chart xAxisLabel="Number of Top Compounds Considered" yAxisLabel="Enrichment Factor"
                     xAxisLabelHover="Top Compounds" yAxisLabelHover="EF" :xPrecision="0" xAxisUnits="" yAxisUnits=""
-     :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"
-     downloadFilenameBase="enrichment-factors"></Chart>
+                    :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"
+                    downloadFilenameBase="enrichment-factors"></Chart>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -72,7 +72,7 @@
                         <strong>{{
                             parseFloat(percentTopCompoundsActive) /
                             parseFloat(percentTotalActives)
-                            }}</strong>
+                        }}</strong>
                         (<strong>{{ percentTopCompoundsActive }}%</strong> /
                         <strong>{{ percentTotalActives }}%</strong>).
                     </p>
@@ -612,7 +612,8 @@ export default class EvalScreenPlugin extends PluginParentClass {
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(
                     true,
-                    "./TGFR1_docked.molmoda"
+                    "./TGFR1_docked.molmoda",
+                    "docking_box"
                 ),
                 pluginOpen: () =>
                     new TestCmdList()

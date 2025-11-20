@@ -252,6 +252,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 afterPluginCloses: () =>
                     new TestCmdList()
                         .waitUntilRegex("#styles", "Atoms")
+                        .openPlugin("expandall")
                         // .expandMoleculesTree(titles)
                         .waitUntilRegex("#navigator", substrng),
             };

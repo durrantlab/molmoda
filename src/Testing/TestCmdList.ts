@@ -23,6 +23,9 @@ import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { addFailingUrlSubstring } from "@/Core/Fetcher";
 import { ITestCommand } from "./TestInterfaces";
 import { visualizationApi } from "@/Api/Visualization";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
+import { processMenuPath, IMenuPathInfo } from "@/UI/Navigation/Menu/Menu";
+import { slugify } from "@/Core/Utils/StringUtils";
 
 const examplesLoaded: string[] = [];
 
@@ -141,18 +144,85 @@ export class TestCmdList {
     }
 
     /**
-     * Opens a plugin programmatically by its ID.
+  * Opens a plugin programmatically by queuing clicks on the menu items.
+  * This allows the plugin to be opened during the test execution sequence.
      *
      * @param {string} pluginId The ID of the plugin to open.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public openPlugin(pluginId: string): TestCmdList {
-        pluginsApi.runPlugin(pluginId);
+        // Previous implementation ran the plugin immediately during test construction.
+        // pluginsApi.runPlugin(pluginId);
+
+        // New implementation: Queue UI events to open the plugin.
+        const plugin = loadedPlugins[pluginId];
+        if (!plugin) {
+            console.error(`TestCmdList: Plugin ${pluginId} not found.`);
+            return this;
+        }
+
+        if (plugin.menuPath === null) {
+            // If no menu path, we can't click to open it. 
+            // Fallback to running it directly? Or log error?
+            // Running directly works for logic but might bypass UI state checks.
+            // For now, let's just run it directly if no menu path, but warn.
+            console.warn(`TestCmdList: Plugin ${pluginId} has no menu path. Running directly.`);
+            pluginsApi.runPlugin(pluginId);
+            return this;
+        }
+
+        const menuData = processMenuPath(plugin.menuPath) as IMenuPathInfo[];
+        if (!menuData) {
+            return this;
+        }
+
+        const lastMenuData = menuData.pop();
+        const lastSel =
+            ".navbar #menu-plugin-" +
+            plugin.pluginId +
+            "-" +
+            slugify(lastMenuData?.text as string);
+
+        // If there are more than two items remaining in menuData, the second one is
+        // a separator (not triggering an actual submenu that would require a
+        // click). So remove that one.
+        if (menuData.length > 1) {
+            menuData.splice(1, 1);
+        }
+
+        const sels = menuData.map(
+            (x, i) => ".navbar #menu" + (i + 1).toString() + "-" + slugify(x.text)
+        );
+
+        // Check if #hamburger-button is visible.
+        const hamburgerButton = document.querySelector(
+            "#hamburger-button"
+        ) as HTMLDivElement;
+        const hamburgerButtonVisible =
+            hamburgerButton !== null &&
+            hamburgerButton !== undefined &&
+            getComputedStyle(hamburgerButton).display !== "none";
+
+        if (hamburgerButtonVisible) {
+            this.click("#hamburger-button");
+        }
+
+        // Queue the clicks
+        for (const sel of sels) {
+            this.click(sel);
+        }
+        this.wait(1); // Small wait for menu to open
+        this.click(lastSel);
+        this.wait(1); // Small wait for plugin to load
+
         return this;
     }
 
     /**
      * Opens a plugin with a specific payload. This bypasses the menu system.
+  * Note: This still executes immediately during test construction, as there
+  * is no standard UI mechanism to pass arbitrary payloads via clicks.
+  * Use with caution in test sequences.
      *
      * @param {string} pluginId The ID of the plugin to open.
      * @param {any} payload The payload to pass to the plugin's onPluginStart method.
@@ -184,11 +254,16 @@ export class TestCmdList {
      *                                                molecule.
      * @param {string}  [url="4WP4.pdb"]              The URL of the molecule to
      *                                                load.
+     * @param {string}  [expectedTitle]               The expected title of the
+     *                                                molecule in the navigator.
+     *                                                If not provided, derived
+     *                                                from the filename.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public loadExampleMolecule(
         expandInMoleculeTree = false,
-        url = "4WP4.pdb"
+        url = "4WP4.pdb",
+        expectedTitle?: string
     ): TestCmdList {
         if (examplesLoaded.indexOf(url) !== -1) {
             // Already loaded
@@ -226,12 +301,12 @@ export class TestCmdList {
                     messagesApi.stopWaitSpinner(spinnerId);
                 });
         }
-  const moleculeName = url.split("/").pop()?.split(".")[0] || "molecule";
-  this.waitUntilRegex("#navigator", moleculeName);
+        const moleculeName = expectedTitle || (url.split("/").pop()?.split(".")[0] || "molecule");
+        this.waitUntilRegex("#navigator", moleculeName);
         if (expandInMoleculeTree) {
-   // If we expand, we should also wait for a common child to appear
-   // to ensure the expansion has been rendered.
-   this.waitUntilRegex("#navigator", "Protein");
+            // If we expand, we should also wait for a common child to appear
+            // to ensure the expansion has been rendered.
+            this.waitUntilRegex("#navigator", "Protein");
         }
         return this;
     }
@@ -277,11 +352,11 @@ export class TestCmdList {
                 // throw err;
                 return;
             });
-  this.waitUntilRegex("#navigator", name);
+        this.waitUntilRegex("#navigator", name);
         if (expandInMoleculeTree) {
-   // SMILES molecules usually load as a single compound, but if they are complex and get split,
-   // waiting for a common child might be useful. "Compound" is a good default.
-   this.waitUntilRegex("#navigator", "Compound");
+            // SMILES molecules usually load as a single compound, but if they are complex and get split,
+            // waiting for a common child might be useful. "Compound" is a good default.
+            this.waitUntilRegex("#navigator", "Compound");
         }
         return this;
     }

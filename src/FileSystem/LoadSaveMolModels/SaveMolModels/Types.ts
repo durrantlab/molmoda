@@ -1,5 +1,6 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 export interface IMolsToConsider {
     hiddenAndUnselected?: boolean;
@@ -8,15 +9,23 @@ export interface IMolsToConsider {
 }
 
 export interface ICompiledNodes {
-    // Non-compound nodes could be grouped by molecule. If not, will be a list
-    // of only one item.
-    nodeGroups: TreeNodeList[];
-
-    // Compound nodes, if given, will always be per compound.
-    compoundsNodes?: TreeNodeList;
+ // Map of component type to a list of node groups.
+ // Each node group represents one file to be saved.
+ // e.g. Protein -> [[Mol1_ChainA, Mol1_ChainB], [Mol2_ChainA]]
+ // e.g. Compound -> [[Cmpd1], [Cmpd2]]
+ byType: Map<TreeNodeType, TreeNodeList[]>;
+ 
+ // Legacy properties to maintain compatibility with other plugins (e.g. MoleculeInput)
+ // Non-compound nodes grouped by molecule
+ nodeGroups: TreeNodeList[];
+ // Compound nodes (all compounds in one list usually, or per compound)
+ compoundsNodes?: TreeNodeList;
 }
 
 export interface ICmpdNonCmpdFileInfos {
-    compoundFileInfos: FileInfo[];
-    nonCompoundFileInfos: FileInfo[];
+ // Flattened list of all files to save
+ allFileInfos: FileInfo[];
+ // Legacy properties
+ compoundFileInfos: FileInfo[];
+ nonCompoundFileInfos: FileInfo[];
 }

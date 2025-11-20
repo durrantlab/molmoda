@@ -2,134 +2,78 @@
 // be accessed directly.
 
 import { compileByMolecule } from "./CompileByMolecule";
-import { getConvertedTxts, getPrimaryExt, saveTxtFiles } from "./SaveMolModelsUtils";
+import { saveTxtFiles, getConvertedTxtsWithNaming } from "./SaveMolModelsUtils";
 import {
     IMolsToConsider,
     ICompiledNodes,
     ICmpdNonCmpdFileInfos,
 } from "./Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
- * Compiles (organizes) all the molecules, separating compounds if appropriate.
- * As currently implemented, always merges models of the same molecule together,
- * with possible exception of compound (if so specified).
+ * Compiles (organizes) all the molecules.
  *
- * @param  {IMolsToConsider} molsToConsider         The molecules to compile.
- * @param  {boolean}         keepCompoundsSeparate  Whether to keep compounds
- *                                                  separate. If false, they are
- *                                                  merged with the main
- *                                                  molecule.
+ * @param  {IMolsToConsider} molsToConsider   The molecules to compile.
+ * @param  {boolean}   separateComponents     Whether to separate components.
  * @returns {ICompiledNodes}  The compiled nodes.
  */
 export function compileMolModels(
     molsToConsider: IMolsToConsider,
-    keepCompoundsSeparate: boolean
+ separateComponents: boolean
 ): ICompiledNodes {
-    // If we don't want to keep compounds separate, combine all nodes into a single group
-    if (!keepCompoundsSeparate) {
-        const allNodes = compileByMolecule(molsToConsider, true);
-        // Combine all nodes into a single group
-        const combinedNodes = new TreeNodeList();
-        allNodes.nodeGroups.forEach(group => {
-            group.forEach(node => {
-                combinedNodes.push(node);
-            });
-        });
-        if (allNodes.compoundsNodes) {
-            allNodes.compoundsNodes.forEach(node => {
-                combinedNodes.push(node);
-            });
-        }
-        return {
-            nodeGroups: [combinedNodes],
-            compoundsNodes: undefined
-        };
-    }
-    
-    // Otherwise, use the existing compilation logic
-    return compileByMolecule(molsToConsider, keepCompoundsSeparate);
+ return compileByMolecule(molsToConsider, separateComponents);
 }
 
 /**
- * @param  {ICompiledNodes} compiledNodes      The compiled (organized) models,
- *                                             the output of compileMolModels().
- * @param  {string}         compoundFormat     The format to save compounds.
- * @param  {string}         nonCompoundFormat  The format to save non-compounds.
- * @returns {Promise<ICmpdNonCmpdFileInfos>}  The compound and
- *     non-compound file infos.
+ * Converts compiled models to file infos.
+ *
+ * @param  {ICompiledNodes} compiledNodes   The compiled models.
+ * @param  {{ [key in TreeNodeType]?: string }}   formats  Map of formats for each component type.
+ * @param  {string} fallbackFormat Format to use if specific type not in map (or for mixed).
+ * @returns {Promise<ICmpdNonCmpdFileInfos>}  The file infos.
  */
 export function convertCompiledMolModelsToIFileInfos(
     compiledNodes: ICompiledNodes,
-    compoundFormat: string,
-    nonCompoundFormat: string
+ formats: { [key in TreeNodeType]?: string },
+ fallbackFormat: string
 ): Promise<ICmpdNonCmpdFileInfos> {
-    const compoundTargetExt = getPrimaryExt(compoundFormat);
-    const nonCompoundTargetExt = getPrimaryExt(nonCompoundFormat);
+ 
+ const allPromises: Promise<FileInfo[]>[] = [];
 
-    // There could be multiple noncompound groups. Convert them separately.
-    const nonCompoundPromises = compiledNodes.nodeGroups
-        // mol_filter_ok
-        .filter((group) => group.length > 0)
-        .map((nodes) =>
-            // Always merging here.
-            getConvertedTxts(nodes, nonCompoundTargetExt, true)
-        );
+ compiledNodes.byType.forEach((nodeGroups, type) => {
+  const format = formats[type] || fallbackFormat;
+  
+  nodeGroups.forEach(group => {
+      // Always merge the group into one file.
+      allPromises.push(getConvertedTxtsWithNaming(group, format, true, type));
+  });
+ });
 
-    // Now do the compounds.
-    let compoundPromises: Promise<FileInfo[]>[] = [];
-    if (compiledNodes.compoundsNodes) {
-        compoundPromises = compiledNodes.compoundsNodes.map((node) =>
-            // Note that compounds never merged
-            getConvertedTxts(new TreeNodeList([node]), compoundTargetExt, false)
-        );
-    }
+ return Promise.all(allPromises).then((results) => {
+  const flat = results.reduce((acc, val) => acc.concat(val), []);
+  // Populate legacy fields for compatibility if needed, though flat list is usually sufficient for saving
+  const compoundFileInfos = flat.filter(f => f.name.includes("Compound")); 
+  const nonCompoundFileInfos = flat.filter(f => !f.name.includes("Compound"));
 
-    const allCompoundPromises = Promise.all(compoundPromises);
-    const allNonCompoundPromises = Promise.all(nonCompoundPromises);
-
-    return Promise.all([allCompoundPromises, allNonCompoundPromises]).then(
-        (fileInfos: any[]) => {
-            const compounds = fileInfos[0] as FileInfo[][];
-            const nonCompounds = fileInfos[1] as FileInfo[][];
-
-            const compoundsFlat = compounds.reduce(
-                (acc, val) => acc.concat(val),
-                []
-            );
-            const nonCompoundsFlat = nonCompounds.reduce(
-                (acc, val) => acc.concat(val),
-                []
-            );
-
-            return {
-                compoundFileInfos: compoundsFlat,
-                nonCompoundFileInfos: nonCompoundsFlat,
-            } as ICmpdNonCmpdFileInfos;
-        }
-    );
+  return { 
+      allFileInfos: flat,
+      compoundFileInfos,
+      nonCompoundFileInfos
+  };
+ });
 }
 
 /**
- * Saves the compiled (organized) models, the output of
- * convertCompiledMolModelsToIFileInfos().
+ * Saves the compiled models.
  *
- * @param  {string}                filename                      The filename to
- *                                                               save to.
- * @param  {ICmpdNonCmpdFileInfos} compoundNonCompoundFileInfos  The compound
- *                                                               and
- *                                                               non-compound
- *                                                               file infos.
- * @returns {Promise<any>}  The promise that resolves when the files are saved.
+ * @param  {string}    filename       The filename to save to.
+ * @param  {ICmpdNonCmpdFileInfos} infos  The file infos.
+ * @returns {Promise<any>}  The promise.
  */
 export function saveMolFiles(
     filename: string,
-    compoundNonCompoundFileInfos: ICmpdNonCmpdFileInfos
+ infos: ICmpdNonCmpdFileInfos
 ): Promise<any> {
-    const files = [
-        ...compoundNonCompoundFileInfos.compoundFileInfos,
-        ...compoundNonCompoundFileInfos.nonCompoundFileInfos,
-    ];
-    return saveTxtFiles(files, filename);
+ return saveTxtFiles(infos.allFileInfos, filename);
 }
