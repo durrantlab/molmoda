@@ -226,10 +226,12 @@ export class TestCmdList {
                     messagesApi.stopWaitSpinner(spinnerId);
                 });
         }
-        // this.waitUntilRegex("#styles", "Protein");
-        this.waitUntilNotRegex("#styles", "The project contains no molecules");
+  const moleculeName = url.split("/").pop()?.split(".")[0] || "molecule";
+  this.waitUntilRegex("#navigator", moleculeName);
         if (expandInMoleculeTree) {
-            // this.expandMoleculesTree("4WP4");
+   // If we expand, we should also wait for a common child to appear
+   // to ensure the expansion has been rendered.
+   this.waitUntilRegex("#navigator", "Protein");
         }
         return this;
     }
@@ -275,10 +277,11 @@ export class TestCmdList {
                 // throw err;
                 return;
             });
-        this.waitUntilRegex("#styles", "Compound");
+  this.waitUntilRegex("#navigator", name);
         if (expandInMoleculeTree) {
-            // Similar to original function, left commented out
-            // this.expandMoleculesTree("molecule");
+   // SMILES molecules usually load as a single compound, but if they are complex and get split,
+   // waiting for a common child might be useful. "Compound" is a good default.
+   this.waitUntilRegex("#navigator", "Compound");
         }
         return this;
     }

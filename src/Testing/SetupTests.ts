@@ -59,16 +59,16 @@ export function setupTests() {
  */
 export function expandAndShowAllMolsInTree() {
     // Get all molecules.
- // The setTimeout was causing a race condition where test commands
- // would execute before the tree was expanded in the data model.
- // Vue's reactivity will handle the DOM update. Test commands should
- // use `waitUntilRegex` to wait for the DOM to reflect the new state.
+    // The setTimeout was causing a race condition where test commands
+    // would execute before the tree was expanded in the data model.
+    // Vue's reactivity will handle the DOM update. Test commands should
+    // use `waitUntilRegex` to wait for the DOM to reflect the new state.
 
     // setTimeout(() => {
-        getMoleculesFromStore().flattened.forEach((mol) => {
-            mol.treeExpanded = true;
-            mol.visible = true;
-            mol.selected = SelectedType.False;
-        });
+    getMoleculesFromStore().flattened.forEach((mol) => {
+        mol.treeExpanded = true;
+        mol.visible = true;
+        mol.selected = SelectedType.False;
+    });
     // }, 500);
 }
