@@ -1,65 +1,47 @@
 <template>
     <PluginComponent :infoPayload="infoPayload" v-model="open" @onPopupDone="onPopupDone" @onPopupCancel="onPopupCancel"
-        @onUserArgChanged="onUserArgChanged" actionBtnTxt="Allow" cancelBtnTxt="Decline"
+  @onUserArgChanged="onUserArgChanged" actionBtnTxt="Enable & Support" cancelBtnTxt="No, Thanks"
         @onMolCountsChanged="onMolCountsChanged">
         <div>
-            <p>
-                We use cookies to store user settings and collect usage
-                statistics via Google Analytics (GA). Tracking usage helps us
-                convince funding agencies to provide the essential grants our
-                work relies on.
+   <p class="lead text-center mb-3">
+    Help keep {{ appName }} free and open-source.
+            </p>
+   <p>
+    {{ appName }} relies on grant funding to continue development. To secure these grants,
+    we need to demonstrate to funding agencies that the software is being used.
             </p>
 
-            <p>
-                We'll never use GA to record your molecular structures or
-                analyses. GA only gathers basic user data like tracking IDs, IP
-                addresses, and device details. This data is sent to Google in
-                the U.S. for processing and so is subject to U.S. law.
-            </p>
+   <div class="card bg-light mb-3">
+    <div class="card-body p-2">
+     <h6 class="card-title mb-2">Our Privacy Guarantee:</h6>
+     <div class="d-flex align-items-center mb-1">
+      <span class="text-success me-2">✔</span>
+      <small>We <strong>DO</strong> count anonymous page visits and geography.</small>
+     </div>
+     <div class="d-flex align-items-center mb-1">
+      <span class="text-success me-2">✔</span>
+      <small>We <strong>DO</strong> save your layout and preferences locally.</small>
+     </div>
+     <div class="d-flex align-items-center">
+      <span class="text-danger me-2" style="font-weight:bold">✕</span>
+      <small>We <strong>NEVER</strong> track your molecules, sequences, or results.</small>
+     </div>
+    </div>
+   </div>
 
-            <p>
-                {{ appName }} is accessible without cookies enabled. If you
-                enable cookies, you can disable them anytime through
-                <PluginPathLink plugin="settings"></PluginPathLink>
-            </p>
-
-            <!-- <p>Dear user,</p>
-            <p>
-                We need your help! Would you please authorize us to use Google
-                Analytics 4 (GA) to record limited information about your use of
-                {{appName}}?
-            </p>
-
-            <p>
-                <b>
-                    Help us convince funding agencies that our work makes a
-                    difference.
-                </b>
-                The
-                <a href="http://durrantlab.com" target="_blank">Durrant lab</a>
-                is a not-for-profit team dedicated to making open-source
-                software more accessible. Tracking usage helps us convince
-                funding agencies to provide the essential grants our work relies
-                on. It also helps us understand how we can improve our software.
-            </p>
-
-            <p>
-                <b>What information?</b> We'll never use GA to record your
-                molecular structures or analyses. GA only gathers basic user
-                data like tracking IDs, IP addresses, and device details. This
-                data is sent to Google in the U.S. for processing and so is
-                subject to U.S. law.
-            </p>
-
-            <p>
-                <b>No strings attached.</b> {{appName}} is fully accessible
-                without GA enabled, but we hope you'll choose to help us out!
-                You can disable GA anytime through <i>{{appName}} →
-                Settings...</i>
-            </p>
-
-            <p>Is it alright if we enable GA?</p> -->
+   <div class="alert alert-light border p-2 mb-0" style="font-size: 0.8rem; line-height: 1.3; color: #6c757d;">
+   <p class="mb-1">
+     We use <strong>Google Analytics</strong> to collect these anonymous statistics.
+    </p>
+    <p class="mb-1">
+     By clicking "Enable & Support", you consent to your anonymous usage data being transmitted to and stored by Google in the <strong>United States</strong>, where it is subject to <strong>U.S. law</strong>.
+    </p>
+    <p class="mb-0">
+     {{ appName }} works without cookies enabled. You can revoke this permission at any time via
+     <PluginPathLink plugin="settings"></PluginPathLink>.
+   </p>
         </div>
+  </div>
     </PluginComponent>
 </template>
 
@@ -82,6 +64,14 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 
 /**
  * StatCollectionPlugin
+ *
+ * Approaches to improve authorization:
+ * 1. Grant Funding Narrative: Link permission to the survival of the tool.
+ * 2. Privacy Assurance: Explicitly list what is NOT tracked (molecules/IP).
+ * 3. Functional Benefit: Emphasize saving settings/preferences.
+ * 4. Visual Distinction: Use Check/X marks to make the privacy policy scannable.
+ * 5. Button Phrasing: "Enable & Support" implies a positive contribution rather than just compliance.
+ * 6. Legal Transparency: Explicitly mentions Google Analytics, US storage, and US law.
  */
 @Options({
     components: {
@@ -100,9 +90,9 @@ export default class StatCollectionPlugin extends PluginParentClass {
     //     },
     // ];
     pluginId = "statcollection";
-    intro = "Manage cookie and usage statistics settings.";
-    details = "This plugin allows users to enable or disable the collection of anonymous usage statistics.";
-    title = `Allow Cookies?`;
+ intro = "Support future development.";
+ details = "This plugin enables anonymous statistics to help us secure funding to keep MolModa free.";
+ title = `Support ${appName}?`;
     open = false;
     tags = [Tag.All];
     userArgDefaults: UserArg[] = [];
@@ -177,4 +167,9 @@ export default class StatCollectionPlugin extends PluginParentClass {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.lead {
+ font-size: 1.1rem;
+ font-weight: 500;
+}
+</style>
