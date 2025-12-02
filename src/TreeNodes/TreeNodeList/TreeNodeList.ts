@@ -396,7 +396,19 @@ export class TreeNodeList {
             // TODO: Show error message?
             return;
         }
-        treeNodeList.addToMainTree(params.tag);
+
+        // If hideOnLoad is true, set all nodes (including parents) to invisible
+        // before adding to the main tree.
+        if (params.hideOnLoad) {
+            treeNodeList.flattened.forEach((n) => {
+                n.visible = false;
+            });
+        }
+
+        // Pass !params.hideOnLoad as resetVisibilityAndSelection.
+        // If hideOnLoad is true, we do NOT want addToMainTree to reset visibility to true.
+        treeNodeList.addToMainTree(params.tag, true, true, !params.hideOnLoad);
+
         // Get all the terminal nodes.
         const terminalNodes = treeNodeList.terminals;
 
@@ -413,34 +425,36 @@ export class TreeNodeList {
             // node.treeExpanded = false;
         }
 
-        // If there are more than MAX_VISIBLE nodes, let user know some not visible.
-        const initialCompoundsVisible = await getSetting(
-            "initialCompoundsVisible"
-        );
-        if (terminalNodes.length > initialCompoundsVisible) {
-            // Expand trees to make the user aware of hidden molecules.
-            // NOTE: I decided against the below for consistency. Leave
-            // commented out in case you want to revisit this.
-
-            // treeNodeList._nodes[0].treeExpanded = true;
-            // treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
-            //     node.treeExpanded = true;
-            // });
-            // treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
-            //     node.treeExpanded = true;
-            // });
-
-            // A message helps too.
-            messagesApi.popupMessage(
-                "Some Molecules not Visible",
-                `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
-                PopupVariant.Info,
-                undefined,
-                false,
-                {}
+        // If not hiding on load, check if we need to warn about too many visible molecules.
+        if (!params.hideOnLoad) {
+            // If there are more than MAX_VISIBLE nodes, let user know some not visible.
+            const initialCompoundsVisible = await getSetting(
+                "initialCompoundsVisible"
             );
-        }
+            if (terminalNodes.length > initialCompoundsVisible) {
+                // Expand trees to make the user aware of hidden molecules.
+                // NOTE: I decided against the below for consistency. Leave
+                // commented out in case you want to revisit this.
 
+                // treeNodeList._nodes[0].treeExpanded = true;
+                // treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
+                //     node.treeExpanded = true;
+                // });
+                // treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
+                //     node.treeExpanded = true;
+                // });
+
+                // A message helps too.
+                messagesApi.popupMessage(
+                    "Some Molecules not Visible",
+                    `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+                    PopupVariant.Info,
+                    undefined,
+                    false,
+                    {}
+                );
+            }
+        }
         // this.extend(treeNodeList);
         return treeNodeList;
     }

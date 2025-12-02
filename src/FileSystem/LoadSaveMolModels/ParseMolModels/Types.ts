@@ -9,6 +9,7 @@ export interface ILoadMolParams {
     gen3D?: IGen3DOptions;
     defaultTitle?: string;
     surpressMsgs?: boolean;
+    hideOnLoad?: boolean;
 }
 
 /**
@@ -24,6 +25,7 @@ export function addDefaultLoadMolParams(
         addToTree: true,
         desalt: false,
         defaultTitle: "Molecule",
+        hideOnLoad: false,
         ...params,
     };
 }

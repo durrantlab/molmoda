@@ -46,6 +46,8 @@ system uses these to autopopulate with plugins. -->
     <SaveMoleculesPlugin @onPluginSetup="onPluginSetup"></SaveMoleculesPlugin>
     <SelectAllPlugin @onPluginSetup="onPluginSetup"></SelectAllPlugin>
     <SelectInvertPlugin @onPluginSetup="onPluginSetup"></SelectInvertPlugin>
+    <SelectInvisiblePlugin @onPluginSetup="onPluginSetup"></SelectInvisiblePlugin>
+    <SelectVisiblePlugin @onPluginSetup="onPluginSetup"></SelectVisiblePlugin>
     <SettingsPlugin @onPluginSetup="onPluginSetup"></SettingsPlugin>
     <SimpleMsgPlugin @onPluginSetup="onPluginSetup"></SimpleMsgPlugin>
     <SimpleSVGPopupPlugin @onPluginSetup="onPluginSetup"></SimpleSVGPopupPlugin>
@@ -136,6 +138,8 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
     SaveMoleculesPlugin: defineAsyncComponent(() => import("@/Plugins/Core/LocalMolLoadersSavers/SaveMoleculesPlugin.vue")),
     SelectAllPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectAllPlugin.vue")),
     SelectInvertPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectInvertPlugin.vue")),
+    SelectInvisiblePlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectInvisiblePlugin.vue")),
+    SelectVisiblePlugin: defineAsyncComponent(() => import("@/Plugins/Core/SelectVisiblePlugin.vue")),
     SettingsPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Settings/SettingsPlugin.vue")),
     SimpleMsgPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SimpleMsgPlugin.vue")),
     SimpleSVGPopupPlugin: defineAsyncComponent(() => import("@/Plugins/Core/SimpleSVGPopupPlugin.vue")),

@@ -2,46 +2,41 @@
     <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
         @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
-
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Options } from "vue-class-component";
 import {
     IContributorCredit,
     ISoftwareCredit,
 } from "@/Plugins/PluginInterfaces";
-import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { selectNodesBasedOnCondition } from "@/UI/Navigation/TreeView/TreeUtils";
 
-/** SelectInvertPlugin */
+/** SelectInvisiblePlugin */
 @Options({
     components: {
         PluginComponent,
     },
 })
-export default class SelectInvertPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Selection", "[3] Invert Selection"];
-    title = "Invert Selection";
+export default class SelectInvisiblePlugin extends PluginParentClass {
+    menuPath = ["Edit", "Selection", "[2] Select Invisible"];
+    title = "Select Invisible";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
-    pluginId = "selectinverse";
+    pluginId = "selectinvisible";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-
     logJob = false;
     logAnalytics = false;
-    intro = "Invert which molecules are selected in the tree.";
-    details = "This plugin deselects all currently selected items and selects all unselected items.";
+    intro = "Select all invisible molecules.";
+    details = "This plugin selects all molecules that are currently hidden in the viewer and deselects those that are visible.";
     tags = [Tag.All];
-    hotkey = "i";
 
     /**
      * Every plugin runs some job. This is the function that does the job
@@ -50,13 +45,10 @@ export default class SelectInvertPlugin extends PluginParentClass {
      * @returns {Promise<void>}  Resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
-        const allNodes = (this.$store.state["molecules"] as TreeNodeList)
-            .flattened;
-        allNodes.forEach((n) => {
-            if (n.selected === SelectedType.False)
-                n.selected = SelectedType.True;
-            else n.selected = SelectedType.False;
-        });
+        selectNodesBasedOnCondition(
+            this.$store.state["molecules"],
+            (n) => !n.visible
+        );
         return Promise.resolve();
     }
 
@@ -64,7 +56,7 @@ export default class SelectInvertPlugin extends PluginParentClass {
      * Check if this plugin can currently be used.
      *
      * @returns {string | null}  If it returns a string, show that as an error
-     *     message. If null, proceed to run the plugin.
+     *  message. If null, proceed to run the plugin.
      */
     checkPluginAllowed(): string | null {
         return checkAnyMolLoaded();
@@ -84,5 +76,4 @@ export default class SelectInvertPlugin extends PluginParentClass {
     }
 }
 </script>
-
 <style scoped lang="scss"></style>

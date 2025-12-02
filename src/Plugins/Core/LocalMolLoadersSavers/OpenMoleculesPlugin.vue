@@ -238,23 +238,37 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             const name = fileToTest[0];
             // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
-            const substrng = fileToTest[1] as string;
+            let navSubstrng = fileToTest[1] as string;
+            let stylesSubstrng = "Atoms";
             const pluginOpenCmdList = new TestCmdList().setUserArg(
                 "formFile",
                 "file://./src/Testing/mols/" + name,
                 this.pluginId
             );
-            if (idx % 2 === 0) {
+
+            // Make some invisible to test that functionality, though molmoda
+            // files define their own visibility.
+            // debugger
+            if ((idx % 2 === 0) && (fileToTest[0].indexOf(".molmoda") === -1)) {
                 pluginOpenCmdList.click("#hideOnLoad-openmolecules-item");
+                navSubstrng = 'eye-slash'; // To check invisible.
+                stylesSubstrng = 'No molecules are currently visible.';
             }
+
+            // if (fileToTest[0].indexOf(".molmoda") !== -1) {
+            //     // It's a molmoda file, so the filename won't appear in the
+            //     // title. Pick something else what will.
+            //     navSubstrng = "ATP:501";
+            // }
+
             return {
                 pluginOpen: () => pluginOpenCmdList,
                 afterPluginCloses: () =>
                     new TestCmdList()
-                        .waitUntilRegex("#styles", "Atoms")
+                        .waitUntilRegex("#styles", stylesSubstrng)
                         .openPlugin("expandall")
                         // .expandMoleculesTree(titles)
-                        .waitUntilRegex("#navigator", substrng),
+                        .waitUntilRegex("#navigator", navSubstrng),
             };
         });
         // Final test to verify error catching.

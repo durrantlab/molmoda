@@ -660,6 +660,7 @@ export abstract class PluginParentClass extends mixins(
         params: ILoadMolParams,
         hideOnLoad = false
     ): Promise<void> {
+        params.hideOnLoad = hideOnLoad;
         return new TreeNodeList()
             .loadFromFileInfo(params)
             .then((newTreeNodeList) => {
@@ -667,7 +668,7 @@ export abstract class PluginParentClass extends mixins(
                 // undefined.
                 if (newTreeNodeList) {
                     // newTreeNodeList.addToMainTree(this.pluginId);
-
+                    // Logic for hiding handled in loadFromFileInfo/addToMainTree
                     if (hideOnLoad) {
                         newTreeNodeList.flattened.forEach((n) => {
                             n.visible = false;

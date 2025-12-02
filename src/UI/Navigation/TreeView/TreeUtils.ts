@@ -11,6 +11,26 @@ import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 
 /**
+ * Selects nodes in a list based on a condition function.
+ *
+ * @param {TreeNodeList} treeNodeList  The list of nodes to process.
+ * @param {(node: TreeNode) => boolean} conditionFunc  Returns true if the node should be selected.
+ */
+export function selectNodesBasedOnCondition(
+    treeNodeList: TreeNodeList,
+    conditionFunc: (node: TreeNode) => boolean
+) {
+    const allNodes = treeNodeList.flattened;
+    allNodes.forEach((n) => {
+        if (conditionFunc(n)) {
+            n.selected = SelectedType.True;
+        } else {
+            n.selected = SelectedType.False;
+        }
+    });
+}
+
+/**
  * Given a IMolsToConsider variable, gets the molecules to consider.
  *
  * @param  {IMolsToConsider} molsToConsider   The molsToUse variable.

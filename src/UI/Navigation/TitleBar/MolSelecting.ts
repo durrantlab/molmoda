@@ -218,28 +218,13 @@ export function selectProgramatically(id: string) {
 
     waitForScrollStart = new Date().getTime();
     waitForScollInterval = setInterval(() => {
-        const selected = document.getElementsByClassName(
-            "selected"
-        )[0] as HTMLElement;
+  const selected = document.querySelector("#navigator .selected") as HTMLElement;
         if (selected) {
-            // selected.scrollIntoView();
-            // scroll gradually over 1 sec
-            // selected.scrollIntoView({ behavior: "smooth", block: "center" });
-
-            // Helpful: https://stackoverflow.com/questions/51618548/scrollintoview-is-not-working-does-not-taking-in-account-fixed-element
-            const wrapper = document.getElementById("navigator")
-                ?.parentElement as HTMLElement;
-            const count =
-                selected.offsetTop -
-                wrapper.scrollTop -
-                0.5 * wrapper.offsetHeight; // xx = any extra distance from top ex. 60
-
-            wrapper.scrollBy({ top: count, left: 0, behavior: "smooth" });
-
+   selected.scrollIntoView({ behavior: "smooth", block: "center" });
             clearInterval(waitForScollInterval);
         } else if (new Date().getTime() - waitForScrollStart > 3000) {
             // Give up after a bit.
             clearInterval(waitForScollInterval);
         }
-    }, 500);
+ }, 100);
 }

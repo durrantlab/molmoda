@@ -28,7 +28,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
     },
 })
 export default class ClearSelectionPlugin extends PluginParentClass {
-    menuPath = ["Edit", "Selection", "[1] Clear Selection"];
+    menuPath = ["Edit", "Selection", "[4] Clear Selection"];
     title = "Clear Selection";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [

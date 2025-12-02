@@ -872,6 +872,8 @@ export default class WebinaPlugin extends PluginParentClass {
                 afterPluginCloses: () =>
                     new TestCmdList()
                         .waitUntilRegex("#modal-errorreporting", "Could not dock")
+                        .click("#modal-errorreporting .cancel-btn")
+                        .openPlugin("expandall")
                         .waitUntilRegex("#navigator", "frame3:bad_ligs:testdock"),
             },
             // Test out ligands that have too many bonds.
