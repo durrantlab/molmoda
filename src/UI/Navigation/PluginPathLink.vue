@@ -1,5 +1,5 @@
 <template>
-    <a class="link-primary" @click.prevent="goToMenuPath" v-html="titleToUse"></a>
+ <a :class="linkClass" @click.prevent="goToMenuPath" v-html="titleToUse"></a>
 </template>
 
 <script lang="ts">
@@ -24,7 +24,7 @@ import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 export default class PluginPathLink extends Vue {
     @Prop({ required: true }) plugin!: PluginParentClass | string;
     @Prop({ default: undefined }) title!: string | undefined;
-
+ @Prop({ default: "link-primary" }) linkClass!: string;
     pluginToUse: PluginParentClass | null = null;
 
     /**

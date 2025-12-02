@@ -1,9 +1,10 @@
 <template>
     <Popup v-if="renderInnerPopup" :title="infoPayload.title" v-model="openToUse" :cancelBtnTxt="cancelBtnTxt"
-        :actionBtnTxt="actionBtnTxt" :actionBtnTxt2="actionBtnTxt2" :actionBtnTxt3="actionBtnTxt3"
-        :actionBtnTxt4="actionBtnTxt4" :isActionBtnEnabled="validateUserInputs" :prohibitCancel="prohibitCancel"
-        :variant="variant" @onDone="onPopupDone" @onDone2="onPopupDone2" @onDone3="onPopupDone3" @onDone4="onPopupDone4"
-        @onClosed="onClosed" @onCancel="onPopupCancel" :id="'modal-' + infoPayload.pluginId" :modalWidth="modalWidth"
+        :cancelBtnClass="cancelBtnClass" :actionBtnTxt="actionBtnTxt" :actionBtnTxt2="actionBtnTxt2"
+        :actionBtnTxt3="actionBtnTxt3" :actionBtnTxt4="actionBtnTxt4" :isActionBtnEnabled="validateUserInputs"
+        :prohibitCancel="prohibitCancel" :cancelXBtn="cancelXBtn" :variant="variant" @onDone="onPopupDone"
+        @onDone2="onPopupDone2" @onDone3="onPopupDone3" @onDone4="onPopupDone4" @onClosed="onClosed"
+        @onCancel="onPopupCancel" :id="'modal-' + infoPayload.pluginId" :modalWidth="modalWidth"
         :submitOnEnter="submitOnEnter" :styleBtn1AsCancel="styleBtn1AsCancel">
         <!-- <span v-if="openToUse"> -->
         <!-- :footerTxt="citationTxt" -->
@@ -80,7 +81,13 @@ export default class PluginComponent extends mixins(PopupMixin) {
 
     /** The text that appears on the cancel button (e.g., "Cancel"). */
     @Prop({ default: "Cancel" }) cancelBtnTxt!: string;
-
+    /**
+     * The class to apply to the cancel button. Defaults to 'btn-secondary' (grey button).
+     * Use 'btn-link text-decoration-none text-secondary' for a subtle text-only look.
+     */
+    @Prop({ default: "btn-secondary" }) cancelBtnClass!: string;
+    /** Whether to show the X cancel button in the header. */
+    @Prop({ default: true }) cancelXBtn!: boolean;
     /**
      * The popup variant (i.e., whether to style the popup as primary, secondary,
      * success, danger, etc.).

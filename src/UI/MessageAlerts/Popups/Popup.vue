@@ -5,6 +5,7 @@
       <div class="modal-content">
         <div :class="headerClasses" ref="header">
           <h5 class="modal-title">{{ titleToUse }}</h5>
+          <!-- Only show X button if cancelXBtn is true -->
           <button v-if="cancelXBtn && !prohibitCancel" type="button"
             :class="'btn-close ' + (styling === 0 ? 'btn-close-white' : '')" data-bs-dismiss="modal"
             aria-label="Close"></button>
@@ -13,7 +14,8 @@
           <slot></slot>
         </div>
         <div class="modal-footer">
-          <button v-if="cancelBtnTxt && !prohibitCancel" type="button" class="btn btn-secondary cancel-btn"
+          <!-- Use dynamic class for cancel button -->
+          <button v-if="cancelBtnTxt && !prohibitCancel" type="button" :class="'btn ' + cancelBtnClass + ' cancel-btn'"
             data-bs-dismiss="modal" @click="cancelBtn" :disabled="isClosing">
             {{ cancelBtnTxt }}
           </button>
@@ -67,6 +69,7 @@ export default class Popup extends Vue {
   @Prop({ required: true }) modelValue!: any;
   @Prop({ default: "My Title" }) title!: string;
   @Prop() cancelBtnTxt!: string; // If undefined, no cancel button
+  @Prop({ default: "btn-secondary" }) cancelBtnClass!: string; // Default to standard grey button
   @Prop() actionBtnTxt!: string; // If undefined, no ok button
   @Prop({ default: "" }) actionBtnTxt2!: string; // If undefined, no ok button
   @Prop({ default: "" }) actionBtnTxt3!: string; // If undefined, no ok button
