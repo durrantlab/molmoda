@@ -1,13 +1,11 @@
 <template>
     <Section title="">
-        <span
-            v-for="selStyleForMolType in selStylesForMolTypes"
-            v-bind:key="selStyleForMolType.molType"
-        >
-            <StylesForMolType
-                :selAndStyle="selStyleForMolType.selAndStyle"
-                :molType="selStyleForMolType.molType"
-            ></StylesForMolType>
+        <FormSelect id="hydrogens" label="Hydrogens" v-model="hydrogenOptionComputed" :options="hydrogenOptions"
+            @onChange="updateHydrogens"></FormSelect>
+        <hr class="mt-3 mb-2" />
+        <span v-for="selStyleForMolType in selStylesForMolTypes" v-bind:key="selStyleForMolType.molType">
+            <StylesForMolType :selAndStyle="selStyleForMolType.selAndStyle" :molType="selStyleForMolType.molType">
+            </StylesForMolType>
         </span>
     </Section>
 </template>
@@ -24,7 +22,9 @@ import isEqual from "lodash.isequal";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import StylesForMolType from "./StylesForMolType.vue";
-import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { HydrogenDisplayType, ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { currentSelsAndStyles, customSelsAndStyles, updateStylesInViewer } from "@/Core/Styling/StyleManager";
+import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 
 interface ISelAndStyleCount {
     selAndStyle: ISelAndStyle;
@@ -49,6 +49,61 @@ interface ISelStyleForMolType {
     },
 })
 export default class StylesAllMolTypes extends Vue {
+    hydrogenOptions: IUserArgOption[] = [
+        { description: "Show All", val: HydrogenDisplayType.All },
+        { description: "Polar Only", val: HydrogenDisplayType.Polar },
+        { description: "Hide All", val: HydrogenDisplayType.None },
+    ];
+
+    /**
+     * Computed property for the hydrogen display option.
+     * This avoids side-effects in the getter by deriving the value from the current state.
+     *
+     * @returns {string} The current hydrogen display option.
+     */
+    get hydrogenOptionComputed(): string {
+        // Check the first available style to determine the current setting
+        if (this.selStylesForMolTypes.length > 0 && this.selStylesForMolTypes[0].selAndStyle.hydrogens) {
+            return this.selStylesForMolTypes[0].selAndStyle.hydrogens;
+        }
+        return HydrogenDisplayType.All;
+    }
+
+    /**
+     * Setter for the hydrogen display option.
+     * This handles updates when the user changes the selection.
+     *
+     * @param {string} val The new hydrogen display option.
+     */
+    set hydrogenOptionComputed(val: string) {
+        this.updateHydrogens(val);
+    }
+
+    /**
+     * Update the hydrogen display setting for all molecules.
+     *
+     * @param {string} val The new hydrogen display setting.
+     */
+    updateHydrogens(val: string) {
+        const hydrogenType = val as HydrogenDisplayType;
+
+        // Update default styles
+        for (const molType in currentSelsAndStyles) {
+            const styles = currentSelsAndStyles[molType as TreeNodeType];
+            styles.forEach(style => {
+                style.hydrogens = hydrogenType;
+            });
+        }
+
+        // Update custom styles
+        for (const styleName in customSelsAndStyles) {
+            customSelsAndStyles[styleName].hydrogens = hydrogenType;
+        }
+
+        // Trigger viewer update
+        updateStylesInViewer();
+    }
+
     /**
      * Get the styles and mol types for the visible molcules. It goes through all
      * these molecules and finds the style elements that are most common, then
@@ -86,6 +141,7 @@ export default class StylesAllMolTypes extends Vue {
             let selStyles = allSelStylesCollected[selStyleType];
 
             let selStylesAndCounts = this._initStyleToStyleCount([selStyles[0]]);
+
             for (let i = 1; i < selStyles.length; i++) {
                 let newStyleCounts = this._initStyleToStyleCount([selStyles[i]]);
                 selStylesAndCounts = this._tallyStyles(
@@ -111,7 +167,6 @@ export default class StylesAllMolTypes extends Vue {
                         : {}, // No styles for this type.
             } as ISelStyleForMolType;
         });
-
         return mostCommonSelStylesPerMolType;
     }
 

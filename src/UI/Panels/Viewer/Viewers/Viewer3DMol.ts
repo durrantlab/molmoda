@@ -21,7 +21,7 @@ import { convertIAtomsToIFileInfoPDB } from "@/FileSystem/LoadSaveMolModels/Conv
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { HydrogenDisplayType, ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { getNamedPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { waitForCondition } from "@/Core/Utils/MiscUtils";
 
@@ -30,6 +30,7 @@ import { waitForCondition } from "@/Core/Utils/MiscUtils";
  */
 export class Viewer3DMol extends ViewerParent {
     public _mol3dObj: any; // public to make debugging easier
+
     // private _zoomToModelsTimeout: any;
     // New properties for hybrid debounce
     private _renderCooldownTimer: number | null = null;
@@ -224,7 +225,29 @@ export class Viewer3DMol extends ViewerParent {
     ) {
         const model = this.lookup(id);
         if (model && model.setStyle) {
+   // Apply the base style.
+   // If add=false (default), this clears prior styles on the selected atoms and sets the new one.
+   // If add=true, it layers this style on top.
             model.setStyle(selection, style, add);
+
+   // Handle Hydrogen Display options.
+   // We perform this *after* setting the base style.
+   // We use add=false (implied by omission or explicit) to REPLACING the style
+   // for the specific hydrogen atoms with an empty style {}, which effectively hides them in 3Dmol.js.
+   if (style.hydrogens) {
+    if (style.hydrogens === HydrogenDisplayType.None) {
+     // Hide all hydrogens within the current selection
+     // { ...selection, elem: 'H' } selects only H atoms within the original scope
+     // {} removes any visualization style
+     model.setStyle({ ...selection, elem: 'H' }, {});
+    } else if (style.hydrogens === HydrogenDisplayType.Polar) {
+     // Hide non-polar hydrogens (Hydrogens bonded to Carbon)
+     // Keep H if bonded to N, O, S, etc. Hide if bonded to C.
+     model.setStyle({ ...selection, elem: 'H', bonded: { elem: 'C' } }, {});
+    }
+    // If 'all', we don't need to do anything as the base style applied above
+    // naturally includes hydrogens if the selection/style didn't exclude them.
+   }
         }
     }
 
@@ -347,6 +370,7 @@ export class Viewer3DMol extends ViewerParent {
     addBox(region: IBox): Promise<GenericRegionType> {
         const dimens = region.dimensions as number[];
         const center = region.center as number[];
+
         const box = this._mol3dObj.addBox({
             corner: {
                 x: center[0] - 0.5 * dimens[0],
@@ -444,6 +468,7 @@ export class Viewer3DMol extends ViewerParent {
             this._mol3dObj.render();
         }
     }
+
     /**
      * Schedules a render of the viewer. This uses a hybrid "leading-edge"
      * debounce strategy. The first call in a series triggers an immediate
@@ -460,10 +485,12 @@ export class Viewer3DMol extends ViewerParent {
         if (!this._isInRenderCooldown) {
             this._performRender();
             this._isInRenderCooldown = true;
+
             // Clear any existing cooldown timer.
             if (this._renderCooldownTimer) {
                 clearTimeout(this._renderCooldownTimer);
             }
+
             // Set a timer to end the cooldown period.
             this._renderCooldownTimer = window.setTimeout(() => {
                 this._isInRenderCooldown = false;
@@ -471,16 +498,19 @@ export class Viewer3DMol extends ViewerParent {
             }, this.RENDER_COOLDOWN_MS);
         } else {
             // We ARE in a cooldown period. Schedule a trailing-edge render.
+
             // Clear any previously scheduled trailing-edge render to debounce.
             if (this._renderTrailingEdgeTimer) {
                 clearTimeout(this._renderTrailingEdgeTimer);
             }
+
             // Schedule a new one to run after a short delay.
             this._renderTrailingEdgeTimer = window.setTimeout(() => {
                 this._performRender();
                 this._renderTrailingEdgeTimer = null;
             }, this.RENDER_DEBOUNCE_MS);
         }
+
         return Promise.resolve();
     }
 
