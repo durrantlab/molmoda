@@ -1,22 +1,13 @@
 <template>
     <Section title="">
-  <span
-   v-for="selStyleForMolType in selStylesForMolTypes"
-   v-bind:key='selStyleForMolType.molType'
->
-   <StylesForMolType
-    :selAndStyle="selStyleForMolType.selAndStyle"
-    :molType="selStyleForMolType.molType"
-   ></StylesForMolType>
+        <span v-for="selStyleForMolType in selStylesForMolTypes" v-bind:key='selStyleForMolType.molType'>
+            <StylesForMolType :selAndStyle="selStyleForMolType.selAndStyle" :molType="selStyleForMolType.molType">
+            </StylesForMolType>
         </span>
-  <Section :level="2" title="Hydrogens">
-   <FormSelect
-    id="hydrogens"
-    v-model="hydrogenOptionComputed"
-    :options="hydrogenOptions"
-    @onChange="updateHydrogens"
-   ></FormSelect>
-  </Section>
+        <Section :level="2" title="Hydrogens">
+            <FormSelect id="hydrogens" v-model="hydrogenOptionComputed" :options="hydrogenOptions"
+                @onChange="updateHydrogens"></FormSelect>
+        </Section>
     </Section>
 </template>
 
