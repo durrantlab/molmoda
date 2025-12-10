@@ -5,8 +5,14 @@
             </StylesForMolType>
         </span>
         <Section :level="2" title="Hydrogens">
+            <template v-slot:afterTitle>
+                <IconSwitcher :useFirst="hydrogenOptionComputed !== 'none'" :iconID1="['far', 'eye']"
+                    :iconID2="['far', 'eye-slash']" :icon2Style="{ color: 'lightgray' }" :width="24"
+                    @click="toggleHydrogensVisible" :clickable="true" title="Toggle Hydrogens" tipPlacement="left" />
+            </template>
             <FormSelect id="hydrogens" v-model="hydrogenOptionComputed" :options="hydrogenOptions"
-                @onChange="updateHydrogens"></FormSelect>
+                @onChange="updateHydrogens">
+            </FormSelect>
         </Section>
     </Section>
 </template>
@@ -26,6 +32,7 @@ import StylesForMolType from "./StylesForMolType.vue";
 import { HydrogenDisplayType, ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { currentSelsAndStyles, customSelsAndStyles, updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 
 interface ISelAndStyleCount {
     selAndStyle: ISelAndStyle;
@@ -47,6 +54,7 @@ interface ISelStyleForMolType {
         Section,
         FormSelect,
         StylesForMolType,
+        IconSwitcher,
     },
 })
 export default class StylesAllMolTypes extends Vue {
@@ -55,6 +63,9 @@ export default class StylesAllMolTypes extends Vue {
         { description: "Polar Only", val: HydrogenDisplayType.Polar },
         { description: "Hide All", val: HydrogenDisplayType.None },
     ];
+
+    // Store the previous option to restore it when toggling visibility back on
+    previousHydrogenOption: string | null = null;
 
     /**
      * Computed property for the hydrogen display option.
@@ -81,12 +92,41 @@ export default class StylesAllMolTypes extends Vue {
     }
 
     /**
+     * Toggles hydrogen visibility.
+     * If currently hidden, restores previous state (or defaults to All).
+     * If currently shown, saves state and hides.
+     */
+    toggleHydrogensVisible() {
+        const current = this.hydrogenOptionComputed;
+        if (current === HydrogenDisplayType.None) {
+            // Restore
+            const target = this.previousHydrogenOption || HydrogenDisplayType.All;
+            this.updateHydrogens(target);
+        } else {
+            // Hide
+            this.updateHydrogens(HydrogenDisplayType.None);
+        }
+    }
+
+    /**
      * Update the hydrogen display setting for all molecules.
      *
      * @param {string} val The new hydrogen display setting.
      */
     updateHydrogens(val: string) {
         const hydrogenType = val as HydrogenDisplayType;
+
+        // Logic to remember previous state
+        if (hydrogenType === HydrogenDisplayType.None) {
+            // If we are switching TO None, save the current state (if it wasn't already None)
+            if (this.hydrogenOptionComputed !== HydrogenDisplayType.None) {
+                this.previousHydrogenOption = this.hydrogenOptionComputed;
+            }
+        } else {
+            // If we are switching TO a visible state manually (not via toggle), forget the previous state
+            // effectively treating this as a new "base" state.
+            this.previousHydrogenOption = null;
+        }
 
         // Update default styles
         for (const molType in currentSelsAndStyles) {
