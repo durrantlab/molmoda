@@ -45,7 +45,7 @@ export class Viewer3DMol extends ViewerParent {
     // is the time after the last call before we render again. In other words,
     // wait time for the trailing render.
     private readonly RENDER_DEBOUNCE_MS = 1000;
-    
+
     // Keep track of labels on regions so you can show and hide them with the
     // region itself.
     private _regionLabels: { [key: string]: GenericLabelType } = {};
@@ -225,29 +225,60 @@ export class Viewer3DMol extends ViewerParent {
     ) {
         const model = this.lookup(id);
         if (model && model.setStyle) {
-   // Apply the base style.
-   // If add=false (default), this clears prior styles on the selected atoms and sets the new one.
-   // If add=true, it layers this style on top.
+            // Apply the base style first. This will apply to all atoms in the selection,
+            // including hydrogens.
             model.setStyle(selection, style, add);
 
-   // Handle Hydrogen Display options.
-   // We perform this *after* setting the base style.
-   // We use add=false (implied by omission or explicit) to REPLACING the style
-   // for the specific hydrogen atoms with an empty style {}, which effectively hides them in 3Dmol.js.
-   if (style.hydrogens) {
-    if (style.hydrogens === HydrogenDisplayType.None) {
-     // Hide all hydrogens within the current selection
-     // { ...selection, elem: 'H' } selects only H atoms within the original scope
-     // {} removes any visualization style
-     model.setStyle({ ...selection, elem: 'H' }, {});
-    } else if (style.hydrogens === HydrogenDisplayType.Polar) {
-     // Hide non-polar hydrogens (Hydrogens bonded to Carbon)
-     // Keep H if bonded to N, O, S, etc. Hide if bonded to C.
-     model.setStyle({ ...selection, elem: 'H', bonded: { elem: 'C' } }, {});
-    }
-    // If 'all', we don't need to do anything as the base style applied above
-    // naturally includes hydrogens if the selection/style didn't exclude them.
-   }
+            // Handle Hydrogen Display options
+            if (style.hydrogens) {
+                if (style.hydrogens === HydrogenDisplayType.None) {
+                    // Hide all hydrogens within the current selection
+                    // { ...selection, elem: 'H' } selects only H atoms within the original scope
+                    // {} with default add=false replaces style (hides them)
+                    model.setStyle({ ...selection, elem: 'H' }, {}, false);
+                } else if (style.hydrogens === HydrogenDisplayType.Polar) {
+                    // For Polar, we want to hide non-polar hydrogens.
+                    // Strategy:
+                    // 1. Hide ALL hydrogens first (clears the style applied above for H atoms)
+                    model.setStyle({ ...selection, elem: 'H' }, {}, false);
+
+                    // 2. Identify Polar Hydrogens manually
+                    // We need to look up atoms to check bonds.
+
+                    // Get all atoms in the model to resolve bond indices
+                    const allAtoms = model.selectedAtoms({});
+                    // Get atoms specifically in the current selection
+                    const selectedAtoms = model.selectedAtoms(selection);
+
+                    const polarHIndices: number[] = [];
+                    const polarElems = new Set(['N', 'O', 'S']);
+
+                    for (const atom of selectedAtoms) {
+                        if (atom.elem === 'H' && atom.bonds) {
+                            for (const bondIdx of atom.bonds) {
+                                const neighbor = allAtoms[bondIdx];
+                                // Ensure neighbor exists and is polar
+                                if (neighbor && polarElems.has(neighbor.elem)) {
+                                    polarHIndices.push(atom.index);
+                                    break; // Found a polar bond, this H is polar
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. Re-apply the style ONLY to Polar Hydrogens
+                    if (polarHIndices.length > 0) {
+                        // use add=true to layer this style on top of the hidden/empty style set in step 1
+                        model.setStyle(
+                            { index: polarHIndices },
+                            style,
+                            true
+                        );
+                    }
+                }
+                // If 'all', we don't need to do anything as the base style applied above
+                // naturally includes all hydrogens.
+            }
         }
     }
 
