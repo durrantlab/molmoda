@@ -143,6 +143,14 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             description: "The maximum number of similar proteins to retrieve for each query protein.",
         } as IUserArgNumber,
         {
+            id: "has_ligands",
+            type: UserArgType.Checkbox,
+            label: "Has Ligand(s)",
+            description:
+                "Only return proteins that contain non-polymer ligands (molecular weight ≥ 150 Da).",
+            val: false,
+        } as IUserArgCheckbox,
+        {
             id: "downloadStructures",
             type: UserArgType.Checkbox,
             label: "Download structures",
@@ -227,6 +235,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const evalue = this.getUserArg("evalue_cutoff");
         const identity = (this.getUserArg("identity_cutoff") as number) / 100.0;
         const maxResults = this.getUserArg("max_results");
+        const hasLigands = this.getUserArg("has_ligands") as boolean;
         const inputType = this.getUserArg("inputType");
         const payloads: any[] = [];
         if (inputType === "project") {
@@ -243,6 +252,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                     evalue,
                     identity,
                     maxResults,
+                    hasLigands,
                     queryIdentifier,
                     query: fi.treeNode,
                 });
@@ -263,6 +273,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                     evalue,
                     identity,
                     maxResults,
+                    hasLigands,
                     queryIdentifier: name,
                     query: name, // The query is the FASTA header string
                 });
@@ -595,6 +606,29 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#modal-tabledatapopup", "1AAR")
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1AAR"),
+            },
+            // Test 8: Search WITHOUT Has Ligands (should find 1G6L and 2WHH)
+            {
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, "https://files.rcsb.org/view/1AJV.pdb"),
+                pluginOpen: () => new TestCmdList(),
+                    // .setUserArg("max_results", 25, this.pluginId),
+                afterPluginCloses: () => new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "2WHH")  // has ligands
+                    .waitUntilRegex("#modal-tabledatapopup", "1G6L")  // no ligands
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "2WHH-aligned-to-1AJV"),
+            },
+            // Test 9: Search WITH Has Ligands (should find 2WHH but NOT 1G6L)
+            {
+                beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, "https://files.rcsb.org/view/1AJV.pdb"),
+                pluginOpen: () => new TestCmdList()
+                    .click("#modal-findsimilarproteins #has_ligands-findsimilarproteins-item"),
+                    // .setUserArg("max_results", 25, this.pluginId),
+                afterPluginCloses: () => new TestCmdList()
+                    .waitUntilRegex("#modal-tabledatapopup", "2WHH")  // has ligands
+                    .waitUntilNotRegex("#modal-tabledatapopup", "1G6L")  // no ligands
+                    .click("#modal-tabledatapopup .cancel-btn")
+                    .waitUntilRegex("#navigator", "2WHH-aligned-to-1AJV"),
             },
         ];
         return tests;

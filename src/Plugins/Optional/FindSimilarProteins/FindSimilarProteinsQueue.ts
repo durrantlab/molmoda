@@ -43,6 +43,7 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 maxResults,
                 queryIdentifier,
                 query,
+                hasLigands,
             } = jobInfo.input;
             let proteinSequence: string;
             if (sequence) {
@@ -64,17 +65,55 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 throw new Error("Could not extract sequence from protein.");
             }
             // 2. Build the PDB API query
-            const apiQuery = {
-                query: {
-                    type: "terminal",
-                    service: "sequence",
-                    parameters: {
-                        evalue_cutoff: evalue,
-                        identity_cutoff: identity,
-                        sequence_type: "protein",
-                        value: proteinSequence,
-                    },
+            const sequenceQuery = {
+                type: "terminal",
+                service: "sequence",
+                parameters: {
+                    evalue_cutoff: evalue,
+                    identity_cutoff: identity,
+                    sequence_type: "protein",
+                    value: proteinSequence,
                 },
+            };
+            let queryNode;
+            if (hasLigands) {
+                const ligandQuery = {
+                    type: "group",
+                    logical_operator: "and",
+                    nodes: [
+                        {
+                            type: "terminal",
+                            service: "text_chem",
+                            parameters: {
+                                attribute: "chem_comp.type",
+                                operator: "exact_match",
+                                negation: false,
+                                value: "non-polymer",
+                            },
+                        },
+                        {
+                            type: "terminal",
+                            service: "text_chem",
+                            parameters: {
+                                attribute: "chem_comp.formula_weight",
+                                operator: "greater_or_equal",
+                                negation: false,
+                                value: 150,
+                            },
+                        },
+                    ],
+                    label: "text_chem",
+                };
+                queryNode = {
+                    type: "group",
+                    logical_operator: "and",
+                    nodes: [sequenceQuery, ligandQuery],
+                };
+            } else {
+                queryNode = sequenceQuery;
+            }
+            const apiQuery = {
+                query: queryNode,
                 return_type: "entry",
                 request_options: {
                     paginate: {
@@ -99,6 +138,7 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 responseType: ResponseType.JSON,
                 formPostData: apiQuery,
             });
+            console.log(apiQuery);debugger;
             // Filter out the query protein itself from the results
             const filteredResults = results.result_set.filter(
                 (item: any) =>
