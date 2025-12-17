@@ -15,6 +15,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { Options } from "vue-class-component";
 import { switchToGoldenLayoutPanel } from "./Common";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { TestCmdList } from "@/Testing/TestCmdList";
 
 /**
  * StylesWindowPlugin
@@ -61,12 +62,49 @@ export default class StylesWindowPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        // This is a test! Nothing specific to do but click the menu items.
+  const colorSchemeSelector = "#colorscheme-colorscheme-form-item";
 
-        return [];
-        // {
-        //     afterPluginCloses: () => new TestCmdList().wait(3),
-        // };
+  return [
+   {
+    beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true).selectMoleculeInTree("Protein"),
+    pluginOpen: () => new TestCmdList()
+     // --- Test Protein Styles ---
+     // Atoms Style
+     .text("#atoms-protein", "Atoms: Spheres").wait(1)
+     .text(colorSchemeSelector, "Color by Chain").wait(1)
+     .text("#atoms-protein", "Atoms: Sticks").wait(1)
+     .text(colorSchemeSelector, "Color by Element").wait(1)
+     .text("#atoms-protein", "Atoms: Lines").wait(1)
+     .text("#atoms-protein", "Atoms: Hidden").wait(1)
+     // Backbone Style
+     .text("#protein-protein", "Backbone: Cartoon").wait(1)
+     .text(colorSchemeSelector, "Color by Spectrum").wait(1)
+     .text(colorSchemeSelector, "Color by Chain").wait(1)
+     .text("#protein-protein", "Backbone: Hidden").wait(1)
+     // Surface Style
+     .text("#surface-protein", "Surface").wait(1)
+     .text(colorSchemeSelector, "Color by Solid").wait(1)
+     .text("#surface-protein", "Surface: Hidden").wait(1)
+     // Hydrogens
+     .text("#hydrogens", "Polar Only").wait(1)
+     .text("#hydrogens", "Hide All").wait(1)
+     .text("#hydrogens", "Show All").wait(1)
+
+     // --- Test Compound Styles ---
+     .selectMoleculeInTree("Compounds")
+     // Atoms Style
+     .text("#atoms-compound", "Atoms: Spheres").wait(1)
+     .text(colorSchemeSelector, "Color by Solid").wait(1)
+     .text("#atoms-compound", "Atoms: Sticks").wait(1)
+     .text(colorSchemeSelector, "Color Carbons").wait(1)
+     // Surface Style
+     .text("#surface-compound", "Surface").wait(1)
+     .text(colorSchemeSelector, "Color by Element").wait(1)
+     .text("#surface-compound", "Surface: Hidden").wait(1)
+     // Reset to standard
+     .text("#atoms-compound", "Atoms: Sticks").wait(1)
+   }
+  ];
     }
 }
 </script>

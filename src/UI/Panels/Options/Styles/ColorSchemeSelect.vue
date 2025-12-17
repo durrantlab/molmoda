@@ -1,6 +1,6 @@
 <template>
   <div :class="cls">
-    <FormFull v-model="constructedColorForm" id="color-style" spacing="0"></FormFull>
+ <FormFull v-model="constructedColorForm" id="colorscheme-form" spacing="0"></FormFull>
   </div>
 </template>
 
@@ -27,6 +27,7 @@ import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces";
 import { ColorSchemeOptionsForSelect, defaultColor } from "@/UI/Panels/Options/Styles/ColorSchemeOptionsForSelect";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { colorDefinitionIndexToName, colorDefinitionNameToIndex, colorSchemeToDefinitionIndex } from "@/Core/Styling/Colors/ColorSchemeDefinitions";
+
 /**
  * ColorSchemeSelect component. This is just to select the color style for a
  * single molecular type (e.g., protein) and representation (e.g., surface). The
@@ -147,6 +148,7 @@ export default class ColorSchemeSelect extends Vue {
         return v.id === "colorscheme";
       })[0] as IUserArgColor
     )?.val;
+
     (style as any)[this.repName] = this.colorSchemeOptionsForSelect.colorDefinitionIndexToScheme(
       parseInt(colorschemeIdx)
     );

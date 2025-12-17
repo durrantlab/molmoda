@@ -208,6 +208,7 @@ export default class StylesAllMolTypes extends Vue {
                         : {}, // No styles for this type.
             } as ISelStyleForMolType;
         });
+
         return mostCommonSelStylesPerMolType;
     }
 

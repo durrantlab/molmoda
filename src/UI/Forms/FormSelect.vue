@@ -1,7 +1,7 @@
 <template>
   <span>
     <div class="input-group">
-      <select class="form-select form-select-sm" :id="id" :disabled="disabled" @input="handleInput" :value="modelValue">
+   <select class="form-select form-select-sm" :id="id" :disabled="disabled" @input="handleInput" @change="handleInput" :value="modelValue">
         <!-- <option selected>Open this select menu</option> -->
         <option v-for="opt in optionsToUse" :value="opt.val" v-bind:key="opt.val" :disabled="opt.disabled === true">
           {{ opt.description }}
