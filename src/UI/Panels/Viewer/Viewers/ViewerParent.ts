@@ -54,7 +54,8 @@ export abstract class ViewerParent {
 
     // Keep track of the regions.
     regionCache: { [id: string]: GenericRegionType } = {};
-
+    // Keep track of region definitions to avoid unnecessary recreation
+    regionDefinitionCache: { [id: string]: IRegion } = {};
     // This function is called to add a class to the a div surrounding the
     // viewer. For example, to change the style on the cursor depending on
     // whether you're hovering over an atom.
@@ -141,7 +142,13 @@ export abstract class ViewerParent {
      * @returns {void}
      */
     abstract removeSurface(surface: GenericSurfaceType): void;
-
+    /**
+     * Updates the style of a surface.
+     *
+     * @param {string} id The id of the model.
+     * @param {GenericStyleType} style The new style.
+     */
+    abstract updateSurfaceStyle(id: string, style: GenericStyleType): void;
     /**
      * Hide a model.
      *
@@ -466,7 +473,7 @@ export abstract class ViewerParent {
                         treeNode.region as IRegion
                     ).then((region: GenericRegionType) => {
                         this.regionCache[id] = region;
-
+                        this.regionDefinitionCache[id] = treeNode.region as IRegion;
                         // Hide it if it should be invisible.  Handled elsewhere
                         // (up chain).
                         // if (treeNode && !treeNode.visible) {
@@ -716,7 +723,7 @@ export abstract class ViewerParent {
         // Copy the ISelAndStyle object and remove the selection
         let style = { ...selAndStyle };
         delete style.selection;
-  delete style.moleculeId; // This is for our internal use only
+        delete style.moleculeId; // This is for our internal use only
         // Convert the style
         style = this.convertStyle(style, treeNode);
 
@@ -810,8 +817,10 @@ export abstract class ViewerParent {
         if (this.regionCache[id]) {
             delete this.regionCache[id];
         }
+        if (this.regionDefinitionCache[id]) {
+            delete this.regionDefinitionCache[id];
+        }
     }
-
     /**
      * Clear the surface associated with a molecule id.
      *
@@ -882,12 +891,12 @@ export abstract class ViewerParent {
      */
     abstract makeAtomsNotHoverable(model: GenericModelType): void;
 
- /**
-  * Sets the viewer to be clickable on the background (empty space).
-  *
-  * @param {Function} callback The callback to run when the background is clicked.
-  */
- abstract setBackgroundClickable(callback: () => void): void;
+    /**
+     * Sets the viewer to be clickable on the background (empty space).
+     *
+     * @param {Function} callback The callback to run when the background is clicked.
+     */
+    abstract setBackgroundClickable(callback: () => void): void;
 
     /**
      * Sets (updates) the style of an existing region.
@@ -895,47 +904,23 @@ export abstract class ViewerParent {
      * @param {TreeNode} treeNode  The tree node containing the region to
      *                             update.
      */
-    updateRegionStyle(treeNode: TreeNode) {
-        // Rather than update the region, we remove it and re-add it. This is
-        // because the 3DMoljs viewer does not have a way to update the position
-        // as best I can tell.
-
-        const id = treeNode.id as string;
-        const regionStyle = JSON.parse(
-            JSON.stringify(treeNode.region as IRegion)
-        );
-
-        if (treeNode.selected !== SelectedType.False) {
-            // yellow
-            regionStyle.color = "#ffff00";
-            regionStyle.opacity = 0.75;
+    abstract updateRegionStyle(treeNode: TreeNode): void;
+    /**
+     * Checks if two arrays are equal.
+     *
+     * @param {any[]} a First array.
+     * @param {any[]} b Second array.
+     * @returns {boolean} True if equal.
+     */
+    protected areArraysEqual(a: any[], b: any[]): boolean {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
         }
-
-        // Always remove any old regions.
-
-        this.addRegion(regionStyle)
-            .then(async (region: GenericRegionType) => {
-                // Remove previous region if it exists
-                this._removeRegion(id);
-
-                // add new region
-                this.regionCache[id] = region;
-
-                // Also remove previous region label
-                this.destroyRegionLabel(id);
-
-                // Add new region
-                // const treeNode = getMoleculesFromStore().filters.onlyId(id);
-                const title = treeNode?.title;
-                this.createRegionLabel(id, title ?? "Region");
-
-                return;
-            })
-            .catch((err: Error) => {
-                throw err;
-            });
+        return true;
     }
-
     /**
      * Gets the text to show when mouse hovers over an atom.
      *

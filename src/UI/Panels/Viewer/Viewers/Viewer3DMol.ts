@@ -7,6 +7,8 @@ import {
     IBox,
     ICylinder,
     ISphere,
+    RegionType,
+    SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     GenericSurfaceType,
@@ -24,6 +26,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { HydrogenDisplayType, ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { getNamedPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { waitForCondition } from "@/Core/Utils/MiscUtils";
+import { IRegion } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
  * Viewer3DMol
@@ -316,17 +319,21 @@ export class Viewer3DMol extends ViewerParent {
             atomSelectionForSurface // selection of atoms to base the surface on
         );
     }
-
-    // updateSurfaceStyle(id: string, style: GenericStyleType): void {
-    //     // debugger;
-    //     const surfaceIdx = this.surfaces[id];
-    //     if (surfaceIdx) {
-    //         const tmp = this._mol3dObj.setSurfaceMaterialStyle(surfaceIdx, JSON.parse(JSON.stringify(style.surface)));
-    //         // debugger;
-    //         this.renderAll();
-    //     }
-    // }
-
+    /**
+     * Updates the style of a surface.
+     *
+     * @param {string} id The id of the model.
+     * @param {GenericStyleType} style The new style.
+     */
+    updateSurfaceStyle(id: string, style: GenericStyleType): void {
+        const surfaceIds = this.surfaces[id];
+        if (surfaceIds) {
+            for (const surfaceId of surfaceIds) {
+                this._mol3dObj.setSurfaceMaterialStyle(surfaceId, style.surface);
+            }
+            this.renderAll();
+        }
+    }
     /**
      * Adds a model to the viewer. Returns same model, but now it's been added
      * to viewer.
@@ -1081,5 +1088,43 @@ export class Viewer3DMol extends ViewerParent {
                 this._atomClicked = false;
             }, 50);
         });
+    }
+    /**
+     * Sets (updates) the style of an existing region.
+     *
+     * @param {TreeNode} treeNode  The tree node containing the region to
+     *        update.
+     */
+    updateRegionStyle(treeNode: TreeNode) {
+  // Rather than update the region, we remove it and re-add it. This is
+  // because the 3DMoljs viewer does not have a way to update the position
+  // as best I can tell.
+        const id = treeNode.id as string;
+  const regionStyle = JSON.parse(
+            JSON.stringify(treeNode.region as IRegion)
+        );
+        if (treeNode.selected !== SelectedType.False) {
+            // yellow
+   regionStyle.color = "#ffff00";
+   regionStyle.opacity = 0.75;
+        }
+  // Always remove any old regions.
+  this.addRegion(regionStyle)
+            .then(async (region: GenericRegionType) => {
+                // Remove previous region if it exists
+                this._removeRegion(id);
+                // add new region
+                this.regionCache[id] = region;
+                // Also remove previous region label
+                this.destroyRegionLabel(id);
+                // Add new region
+                // const treeNode = getMoleculesFromStore().filters.onlyId(id);
+                const title = treeNode?.title;
+                this.createRegionLabel(id, title ?? "Region");
+                return;
+            })
+            .catch((err: Error) => {
+                throw err;
+            });
     }
 }

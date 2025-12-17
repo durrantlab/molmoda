@@ -26,6 +26,9 @@ import {
   TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import isEqual from "lodash.isequal";
 
 /**
  * ViewerPanel component
@@ -282,42 +285,70 @@ export default class ViewerPanel extends Vue {
 
     return style;
   }
-
+  private previousSurfaceStylesCache: { [key: string]: ISelAndStyle } = {};
   /**
-   * Update the styles of the molecules.
+   * Set the surface style.
    *
-   * @param {TreeNode} treeNode  The tree node to update.
+   * @param {TreeNode}    treeNode   The tree node to set the style
+   *            of.
+   * @param {ISelAndStyle[]}    surfaceStyles The surface styles.
    * @param {Promise<any>[]} surfacePromises  The promises for the surfaces.
-   * @returns {boolean}  True if styles is defined in the end. False otherwise.
+   * @returns {Promise<void>}  A promise that resolves when the surface style
+   *  has been set.
    */
-  private _clearAndSetStyle(
+  private async _setSurfaceStyle(
     treeNode: TreeNode,
+    surfaceStyles: ISelAndStyle[],
     surfacePromises: Promise<any>[]
-  ): boolean {
-    if (treeNode.styles === undefined) {
-      return false;
+  ): Promise<void> {
+    if (surfaceStyles.length === 0) {
+      return;
     }
-
-    // Styles to apply, so make sure it's visible.
-
-    let surfaceStyles: ISelAndStyle[] = []; // Should only be one, but keep list for consistency.
-    let nonSurfaceStyles: ISelAndStyle[] = [];
-
-    // Separate surface style from other styles
-    for (let style of treeNode.styles) {
-      if (style.surface) {
-        surfaceStyles.push(style);
+    // Clear current (nonsurface) styles. Because if there's a surface, why show
+    // anything beneath it? NOTE: Actually, there are circumstances where you'd
+    // want to maintain what's beneath the surface.
+    // api.visualization.viewerObj?.clearMoleculeStyles(treeNode.id as string);
+    const previousSurfaceStyle =
+      this.previousSurfaceStylesCache[treeNode.id as string];
+    // Clear any surfaces associated with this molecule.
+    // api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
+    // Add new surface styles
+    for (let style of surfaceStyles) {
+      // Deep copy style
+      style = JSON.parse(JSON.stringify(style));
+      style = this._changeStyleIfSelected(treeNode, style);
+      // console.log("Previous surface style:", previousSurfaceStyle);
+      // console.log("Current surface style:", style);
+      // It's a surface. Mark it for adding later.
+      const convertedStyle = api.visualization.viewerObj?.convertStyle(
+        style,
+        treeNode
+      );
+      // Check if we can just update the style on the existing surface instead of recreating it.
+      // We can update if the previous style exists and the selection hasn't changed.
+      const selectionChanged = !isEqual(previousSurfaceStyle?.selection, style.selection);
+      if (previousSurfaceStyle !== undefined && !selectionChanged && api.visualization.viewerObj?.updateSurfaceStyle) {
+        // Existing surface with same selection. Just update the style.
+        api.visualization.viewerObj.updateSurfaceStyle(treeNode.id as string, convertedStyle);
       } else {
-        nonSurfaceStyles.push(style);
+        // No previous surface or selection changed. Need to recreate.
+        // Delete existing surface.
+        api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
+        // Add new surface.
+        surfacePromises.push(
+          api.visualization.viewerObj?.addSurface(
+            treeNode.id as string,
+            convertedStyle
+          ) as Promise<any>
+        );
       }
+      // NOTE: Should only be one element in surfaceStyles. So cache can
+      // just be single style.
+      this.previousSurfaceStylesCache[treeNode.id as string] = JSON.parse(
+        JSON.stringify(style)
+      );
     }
-
-    this._setNonSurfaceStyle(nonSurfaceStyles, treeNode);
-    this._setSurfaceStyle(treeNode, surfaceStyles, surfacePromises);
-
-    return true;
   }
-
   /**
    * Set the non-surface style.
    *
@@ -430,93 +461,35 @@ export default class ViewerPanel extends Vue {
       }
     }
   }
-
-  private previousSurfaceStylesCache: { [key: string]: ISelAndStyle } = {};
-
   /**
-   * Set the surface style.
+   * Update the styles of the molecules.
    *
-   * @param {TreeNode}       treeNode         The tree node to set the style
-   *                                          of.
-   * @param {ISelAndStyle[]}       surfaceStyles    The surface styles.
+   * @param {TreeNode} treeNode  The tree node to update.
    * @param {Promise<any>[]} surfacePromises  The promises for the surfaces.
-   * @returns {Promise<void>}  A promise that resolves when the surface style
-   *     has been set.
+   * @returns {boolean}  True if styles is defined in the end. False otherwise.
    */
-  private async _setSurfaceStyle(
+  private _clearAndSetStyle(
     treeNode: TreeNode,
-    surfaceStyles: ISelAndStyle[],
     surfacePromises: Promise<any>[]
-  ): Promise<void> {
-    if (surfaceStyles.length === 0) {
-      return;
+  ): boolean {
+    if (treeNode.styles === undefined) {
+      return false;
     }
-
-    // Clear current (nonsurface) styles. Because if there's a surface, why show
-    // anything beneath it? NOTE: Actually, there are circumstances where you'd
-    // want to maintain what's beneath the surface.
-    // api.visualization.viewerObj?.clearMoleculeStyles(treeNode.id as string);
-
-    const previousSurfaceStyle =
-      this.previousSurfaceStylesCache[treeNode.id as string];
-
-    // Clear any surfaces associated with this molecule.
-    // api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
-
-    // Add new surface styles
-    for (let style of surfaceStyles) {
-      // Deep copy style
-      style = JSON.parse(JSON.stringify(style));
-
-      style = this._changeStyleIfSelected(treeNode, style);
-
-      // console.log("Previous surface style:", previousSurfaceStyle);
-      // console.log("Current surface style:", style);
-
-      // It's a surface. Mark it for adding later.
-      const convertedStyle = api.visualization.viewerObj?.convertStyle(
-        style,
-        treeNode
-      );
-
-      if (previousSurfaceStyle === undefined) {
-        // No previous surface, so need to create a new one.
-        surfacePromises.push(
-          api.visualization.viewerObj?.addSurface(
-            treeNode.id as string,
-            convertedStyle
-          ) as Promise<any>
-        );
+    // Styles to apply, so make sure it's visible.
+    let surfaceStyles: ISelAndStyle[] = []; // Should only be one, but keep list for consistency.
+    let nonSurfaceStyles: ISelAndStyle[] = [];
+    // Separate surface style from other styles
+    for (let style of treeNode.styles) {
+      if (style.surface) {
+        surfaceStyles.push(style);
       } else {
-        // Existing surface. You can't just update its color, because
-        // 3dmoljs doesn't associated original atom info with the
-        // surface vertices. Need to recreate the entire surface.
-
-        // Delete existing surface.
-        api.visualization.viewerObj?.clearSurfacesOfMol(treeNode.id as string);
-
-        // Add new surface.
-        surfacePromises.push(
-          api.visualization.viewerObj?.addSurface(
-            treeNode.id as string,
-            convertedStyle
-          ) as Promise<any>
-        );
-
-        // api.visualization.viewerObj?.updateSurfaceStyle(
-        //     treeNode.id as string,
-        //     convertedStyle
-        // );
+        nonSurfaceStyles.push(style);
       }
-
-      // NOTE: Should only be one element in surfaceStyles. So cache can
-      // just be single style.
-      this.previousSurfaceStylesCache[treeNode.id as string] = JSON.parse(
-        JSON.stringify(style)
-      );
     }
+    this._setNonSurfaceStyle(nonSurfaceStyles, treeNode);
+    this._setSurfaceStyle(treeNode, surfaceStyles, surfacePromises);
+    return true;
   }
-
   /**
    * Updates any style changes.
    *
@@ -550,8 +523,7 @@ export default class ViewerPanel extends Vue {
     const dirtyNodes = treeNodes.filter(
       (treeNode: TreeNode) => treeNode.viewerDirty
     );
-
-    // You're about to update the style, so mark it as not dirty.
+    // You're about to update the style, so mark it for not dirty.
     dirtyNodes.forEach((treeNode: TreeNode) => {
       treeNode.viewerDirty = false;
     });
