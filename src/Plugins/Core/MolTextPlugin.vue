@@ -286,7 +286,6 @@ export default class MolTextPlugin extends PluginParentClass {
         this.currentSmilesForPreview = ""; // Reset preview on open
     }
 
-
     /**
      * Gets the test commands for the plugin. For advanced use.
      *
