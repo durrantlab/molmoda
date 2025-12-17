@@ -1,6 +1,4 @@
-import { getOrderedResidueSequenceFromModel } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
-import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { QueueParent } from "@/Queue/QueueParent";
 import { IJobInfo } from "@/Queue/QueueTypes";
 
@@ -36,34 +34,22 @@ export class FindSimilarProteinsQueue extends QueueParent {
     private async runSingleJob(jobInfo: IJobInfo): Promise<void> {
         try {
             const {
-                proteinFileInfo,
+                // proteinFileInfo, // No longer used if we always pass sequence
                 sequence,
                 evalue,
                 identity,
                 maxResults,
-                queryIdentifier,
-                query,
-                hasLigands,
+                queryIdentifiers, // Now an array of strings
+                query, // This is now the list of sources
+    // hasLigands, // Ignored in query, handled in plugin
             } = jobInfo.input;
-            let proteinSequence: string;
-            if (sequence) {
-                proteinSequence = sequence;
-            } else if (proteinFileInfo) {
-                const parser = makeEasyParser(proteinFileInfo);
-                const sequenceInfo = await getOrderedResidueSequenceFromModel(
-                    parser.atoms
-                );
-                proteinSequence = sequenceInfo
-                    .map((r) => r.oneLetterCode)
-                    .join("");
-            } else {
-                throw new Error(
-                    "No sequence or proteinFileInfo provided in job input."
-                );
-            }
+
+            // Sequence is passed from the plugin after processing
+            const proteinSequence = sequence;
             if (!proteinSequence) {
-                throw new Error("Could not extract sequence from protein.");
+                throw new Error("No sequence provided in job input.");
             }
+
             // 2. Build the PDB API query
             const sequenceQuery = {
                 type: "terminal",
@@ -75,45 +61,11 @@ export class FindSimilarProteinsQueue extends QueueParent {
                     value: proteinSequence,
                 },
             };
-            let queryNode;
-            if (hasLigands) {
-                const ligandQuery = {
-                    type: "group",
-                    logical_operator: "and",
-                    nodes: [
-                        {
-                            type: "terminal",
-                            service: "text_chem",
-                            parameters: {
-                                attribute: "chem_comp.type",
-                                operator: "exact_match",
-                                negation: false,
-                                value: "non-polymer",
-                            },
-                        },
-                        {
-                            type: "terminal",
-                            service: "text_chem",
-                            parameters: {
-                                attribute: "chem_comp.formula_weight",
-                                operator: "greater_or_equal",
-                                negation: false,
-                                value: 150,
-                            },
-                        },
-                    ],
-                    label: "text_chem",
-                };
-                queryNode = {
-                    type: "group",
-                    logical_operator: "and",
-                    nodes: [sequenceQuery, ligandQuery],
-                };
-            } else {
-                queryNode = sequenceQuery;
-            }
+
+   // Always use the simple sequence query, regardless of hasLigands setting.
+   // Filtering for ligands will be done post-download in the plugin.
             const apiQuery = {
-                query: queryNode,
+                query: sequenceQuery,
                 return_type: "entry",
                 request_options: {
                     paginate: {
@@ -138,13 +90,18 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 responseType: ResponseType.JSON,
                 formPostData: apiQuery,
             });
-            console.log(apiQuery);debugger;
-            // Filter out the query protein itself from the results
+
+            // Filter out the query proteins themselves from the results
             const filteredResults = results.result_set.filter(
-                (item: any) =>
-                    item.identifier.toUpperCase() !==
-                    queryIdentifier.toUpperCase()
+                (item: any) => {
+                    if (Array.isArray(queryIdentifiers)) {
+                        return !queryIdentifiers.includes(item.identifier.toUpperCase());
+                    }
+                    // Fallback for single string (backward compatibility or error case)
+                    return item.identifier.toUpperCase() !== String(queryIdentifiers).toUpperCase();
+                }
             );
+
             // 4. Store the results in the job output
             jobInfo.output = {
                 results: filteredResults,

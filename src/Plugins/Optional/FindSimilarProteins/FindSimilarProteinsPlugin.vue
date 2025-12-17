@@ -34,12 +34,15 @@ import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { convertFastaToSeqences } from "@/Core/Bioinformatics/AminoAcidUtils";
+import { convertFastaToSeqences, getOrderedResidueSequenceFromModel } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { loadPdbIdToFileInfo } from "@/Plugins/Core/RemoteMolLoaders/RemoteMolLoadersUtils";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { FindSimilarProteinsQueue } from "./FindSimilarProteinsQueue";
 import { alignFileInfos } from "../Align/AlignProteinsUtils";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
@@ -78,6 +81,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         "This tool uses US-align to perform structural alignment. Aligned structures will be added to the project.";
     tags = [Tag.Modeling];
     isActionBtnEnabled = false;
+
     userArgDefaults: UserArg[] = [
         {
             id: "inputType",
@@ -195,6 +199,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         // Trigger onUserArgChange to update the visibility of other fields
         this.onUserArgChange();
     }
+
     /**
      * Handles changes to user arguments to update button state.
      */
@@ -202,9 +207,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const inputType = this.getUserArg("inputType");
         const isProject = inputType === "project";
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+
         this.setUserArgEnabled("protein_to_query", isProject);
         this.setUserArgEnabled("fastaText", !isProject);
         this.setUserArgEnabled("alignStructures", downloadStructures);
+
         if (isProject) {
             const moleculeInput: MoleculeInput = this.getUserArg("protein_to_query");
             if (!moleculeInput || !moleculeInput.molsToConsider) {
@@ -232,31 +239,67 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      */
     async onPopupDone(): Promise<void> {
         this.closePopup();
+
         const evalue = this.getUserArg("evalue_cutoff");
         const identity = (this.getUserArg("identity_cutoff") as number) / 100.0;
         const maxResults = this.getUserArg("max_results");
         const hasLigands = this.getUserArg("has_ligands") as boolean;
         const inputType = this.getUserArg("inputType");
-        const payloads: any[] = [];
+
+        // Map unique sequence string -> { identifiers: Set<string>, sources: Array<{ title: string, treeNode?: TreeNode }> }
+        const uniqueSequences = new Map<string, {
+            identifiers: Set<string>,
+            sources: Array<{ title: string, treeNode?: TreeNode }>
+        }>();
+
+        // Helper to add sequence to the map
+        const addSequence = (seq: string, identifier: string, source: { title: string, treeNode?: TreeNode }) => {
+            // Remove 'X' residues from sequence as requested
+            const cleanSeq = seq.replace(/X/g, "");
+            if (cleanSeq.length === 0) return;
+
+            if (!uniqueSequences.has(cleanSeq)) {
+                uniqueSequences.set(cleanSeq, { identifiers: new Set(), sources: [] });
+            }
+            const entry = uniqueSequences.get(cleanSeq)!;
+            entry.identifiers.add(identifier.toUpperCase());
+            entry.sources.push(source);
+        };
+
         if (inputType === "project") {
             const proteinFileInfos: FileInfo[] = this.getUserArg("protein_to_query");
+
             if (proteinFileInfos.length === 0) {
                 messagesApi.popupError("No proteins selected to query.");
                 return;
             }
-            proteinFileInfos.forEach((fi) => {
-                if (!fi.treeNode) return;
-                const queryIdentifier = fi.treeNode.getAncestry().get(0).title;
-                payloads.push({
-                    proteinFileInfo: fi,
-                    evalue,
-                    identity,
-                    maxResults,
-                    hasLigands,
-                    queryIdentifier,
-                    query: fi.treeNode,
-                });
-            });
+
+            for (const fi of proteinFileInfos) {
+                if (!fi.treeNode) continue;
+                // Get the top-level molecule node to use as context for this protein structure
+                const topLevelNode = fi.treeNode.getAncestry().get(0);
+                const queryIdentifier = topLevelNode.title;
+
+                // Parse the merged PDB/file content to get individual chains
+                const parser = makeEasyParser(fi);
+                const sequenceInfo = await getOrderedResidueSequenceFromModel(parser.atoms);
+
+                // Group residues by chain
+                const chains: { [key: string]: string[] } = {};
+                for (const res of sequenceInfo) {
+                    if (!chains[res.chain]) chains[res.chain] = [];
+                    chains[res.chain].push(res.oneLetterCode);
+                }
+
+                // Add each chain sequence
+                for (const chainId in chains) {
+                    const seq = chains[chainId].join("");
+                    const sourceTitle = `${topLevelNode.title}:${chainId}`;
+                    // We associate the topLevelNode (which is the whole protein) with this source
+                    // so we can use it later for alignment reference.
+                    addSequence(seq, queryIdentifier, { title: sourceTitle, treeNode: topLevelNode });
+                }
+            }
         } else {
             // FASTA input
             const fastaText = this.getUserArg("fastaText") as string;
@@ -268,21 +311,28 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 return;
             }
             sequences.forEach(([name, seq]) => {
-                payloads.push({
-                    sequence: seq,
-                    evalue,
-                    identity,
-                    maxResults,
-                    hasLigands,
-                    queryIdentifier: name,
-                    query: name, // The query is the FASTA header string
-                });
+                addSequence(seq, name, { title: name });
             });
         }
+
+        const payloads: any[] = [];
+        uniqueSequences.forEach((data, seq) => {
+            payloads.push({
+                sequence: seq,
+                evalue,
+                identity,
+                maxResults,
+                hasLigands,
+                queryIdentifiers: Array.from(data.identifiers), // Pass all associated identifiers for exclusion
+                query: data.sources, // Pass the list of source objects
+            });
+        });
+
         if (payloads.length === 0) {
-            messagesApi.popupError("No valid queries to process.");
+            messagesApi.popupError("No valid unique sequences found to process.");
             return;
         }
+
         const maxProcs = await getSetting("maxProcs");
         const queue = new FindSimilarProteinsQueue(
             this.pluginId,
@@ -292,9 +342,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             1, // procsPerJobBatch
             5 // simulBatches (to respect PDB rate limit)
         );
+
         const allJobOutputs: any[] = await queue.done;
         this.processAndDisplayResults(allJobOutputs);
     }
+
     /**
      * Processes the combined results from all jobs and displays them in a table.
      *
@@ -303,31 +355,36 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     private async processAndDisplayResults(allJobOutputs: any[]): Promise<void> {
         const combinedResults = new Map<
             string,
-            { score: number; queries: Set<TreeNode | string> }
+            { score: number; queries: Set<string> }
         >();
+
         allJobOutputs.forEach((jobOutput: any) => {
             if (jobOutput.error) {
-                const query = jobOutput.query;
-                const queryTitle =
-                    query instanceof TreeNode ? query.title : query || "Unknown Query";
-                console.error(`Error for ${queryTitle}: ${jobOutput.error}`);
+                const sources = jobOutput.query as Array<{ title: string }>;
+                const queryTitles = sources.map(s => s.title).join(", ");
+                console.error(`Error for queries [${queryTitles}]: ${jobOutput.error}`);
                 return;
             }
+
+            const sources = jobOutput.query as Array<{ title: string }>;
+            const sourceTitles = sources.map(s => s.title);
+
             jobOutput.results?.forEach((item: any) => {
                 const existing = combinedResults.get(item.identifier);
                 if (existing) {
-                    existing.queries.add(jobOutput.query);
+                    sourceTitles.forEach(t => existing.queries.add(t));
                     if (item.score > existing.score) {
                         existing.score = item.score; // Keep the best score for a given PDB ID
                     }
                 } else {
                     combinedResults.set(item.identifier, {
                         score: item.score,
-                        queries: new Set([jobOutput.query]),
+                        queries: new Set(sourceTitles),
                     });
                 }
             });
         });
+
         if (combinedResults.size === 0) {
             messagesApi.popupMessage(
                 "No Similar Proteins",
@@ -335,9 +392,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             );
             return;
         }
+
         const sortedResults = [...combinedResults.entries()].sort(
             (a, b) => b[1].score - a[1].score
         );
+
         const tableData = {
             headers: [
                 { text: "PDB ID", width: 80 },
@@ -347,13 +406,10 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             rows: sortedResults.map(([pdbId, data]) => ({
                 "PDB ID": `<a href="https://www.rcsb.org/structure/${pdbId}" target="_blank" rel="noopener noreferrer">${pdbId}</a>`,
                 Score: data.score.toFixed(4),
-                "Query Protein": Array.from(data.queries)
-                    .map((q) =>
-                        q instanceof TreeNode ? q.descriptions.pathName(" > ", 30) : q
-                    )
-                    .join(", "),
+                "Query Protein": Array.from(data.queries).join(", "),
             })),
         };
+
         messagesApi.popupTableData(
             "Similar Proteins Found",
             `Found ${sortedResults.length} unique similar proteins.`,
@@ -362,12 +418,15 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             3,
             "similar-proteins-results"
         );
+
         const downloadStructures = this.getUserArg("downloadStructures") as boolean;
         const alignStructures = this.getUserArg("alignStructures") as boolean;
+
         if (downloadStructures) {
             await this._downloadAndAlignStructures(allJobOutputs, alignStructures);
         }
     }
+
     /**
      * Downloads and optionally aligns the structures from the search results.
      *
@@ -379,75 +438,77 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         align: boolean
     ): Promise<void> {
         const spinnerId = messagesApi.startWaitSpinner();
+        const hasLigands = this.getUserArg("has_ligands") as boolean;
+
         // Group PDBs by the reference they should be aligned to.
         // Key: reference identifier (TreeNode.id or a PDB ID).
         // Value: Set of mobile PDB IDs.
         const alignmentGroups = new Map<string, Set<string>>();
-        // Store the query object (TreeNode or string) for each reference.
-        const referenceToQueryMap = new Map<string, (TreeNode | string)[]>();
+        // Store the reference object (TreeNode or string) for each reference ID.
+        const referenceObjMap = new Map<string, TreeNode | string>();
 
         for (const jobOutput of allJobOutputs) {
             if (jobOutput.error || !jobOutput.results || jobOutput.results.length === 0) {
                 continue;
             }
-            const { query, results } = jobOutput;
-            const mobilePdbIds: string[] = results.map((item: any) => item.identifier);
-            let referenceId: string;
-            if (query instanceof TreeNode) {
-                referenceId = query.id as string;
-            } else {
-                // For FASTA, the reference is the top hit.
-                if (mobilePdbIds.length > 0) {
-                    referenceId = mobilePdbIds[0];
+
+            const sources = jobOutput.query as Array<{ title: string, treeNode?: TreeNode }>;
+            const mobilePdbIds: string[] = jobOutput.results.map((item: any) => item.identifier);
+
+            // We iterate through all sources that matched this sequence.
+            // Each source represents a potential alignment reference target.
+            for (const source of sources) {
+                let referenceId: string;
+                let referenceObj: TreeNode | string;
+
+                if (source.treeNode) {
+                    // If we have a project TreeNode (the protein structure), use its ID
+                    referenceId = source.treeNode.id as string;
+                    referenceObj = source.treeNode;
                 } else {
-                    // This case should be caught earlier, but as a safeguard:
-                    console.warn(
-                        "Job output has no results, cannot determine reference ID for FASTA query:",
-                        query
-                    );
-                    continue;
+                    // For FASTA queries, we use the top hit as the reference if no project node exists.
+                    if (mobilePdbIds.length > 0) {
+                        referenceId = mobilePdbIds[0];
+                        referenceObj = referenceId;
+                    } else {
+                        continue;
+                    }
                 }
-            }
-            if (!referenceToQueryMap.has(referenceId)) {
-                referenceToQueryMap.set(referenceId, []);
-            }
-            referenceToQueryMap.get(referenceId)!.push(query);
-            if (!alignmentGroups.has(referenceId)) {
-                alignmentGroups.set(referenceId, new Set<string>());
-            }
-            const mobileSet = alignmentGroups.get(referenceId);
-            if (mobileSet) {
+
+                if (!alignmentGroups.has(referenceId)) {
+                    alignmentGroups.set(referenceId, new Set<string>());
+                    referenceObjMap.set(referenceId, referenceObj);
+                }
+                const mobileSet = alignmentGroups.get(referenceId)!;
                 mobilePdbIds.forEach((id) => mobileSet.add(id));
             }
         }
 
         try {
             for (const [referenceId, mobileIdSet] of alignmentGroups.entries()) {
-                const queries = referenceToQueryMap.get(referenceId);
-                if (!queries || queries.length === 0) {
-                    console.warn(`No query found for reference ID: ${referenceId}`);
-                    continue;
-                }
-                const query = queries[0];
-                const isProjectQuery = query instanceof TreeNode;
+                const referenceObj = referenceObjMap.get(referenceId);
+                if (!referenceObj) continue;
+
+                const isProjectQuery = typeof referenceObj !== "string";
                 let referenceFileInfo: FileInfo | null = null;
                 let referenceTitle = "";
+
                 if (align) {
                     if (isProjectQuery) {
-                        const referenceNode = getMoleculesFromStore().filters.onlyId(referenceId);
-                        if (referenceNode) {
-                            referenceFileInfo = await referenceNode.toFileInfo("pdb", true);
-                            referenceTitle = referenceNode.getAncestry().get(0).title;
-                        }
+                        const referenceNode = referenceObj as TreeNode;
+                        referenceFileInfo = await referenceNode.toFileInfo("pdb", true);
+                        referenceTitle = referenceNode.getAncestry().get(0).title;
                     } else {
-                        referenceFileInfo = await loadPdbIdToFileInfo(referenceId);
-                        referenceTitle = referenceId;
+                        const pdbId = referenceObj as string;
+                        referenceFileInfo = await loadPdbIdToFileInfo(pdbId);
+                        referenceTitle = pdbId;
                         await this.addFileInfoToViewer({
                             fileInfo: referenceFileInfo,
                             tag: this.pluginId,
                         });
                     }
                 }
+
                 const mobileIds = Array.from(mobileIdSet);
                 for (const pdbId of mobileIds) {
                     if (align && pdbId === referenceId) continue;
@@ -464,10 +525,37 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                                 console.warn(`Alignment failed for ${pdbId}, loading unaligned structure.`);
                             }
                         }
-                        await this.addFileInfoToViewer({
+
+                        // Check if ligands are present if required
+                        const node = await TreeNode.loadFromFileInfo({
                             fileInfo: mobileFileInfo,
                             tag: this.pluginId,
-                        });
+                            addToTree: false,
+                        } as ILoadMolParams);
+                        if (!node) {
+                            console.warn(`Failed to load structure for PDB ID ${pdbId}.`);
+                            continue;
+                        }
+                        const tempList = new TreeNodeList([node])
+
+                        // This works, but entries with ligands are still
+                        // present in the table, even if they are not present in
+                        // the final tree. Also, I think it is aligning even if
+                        // it doesn't have a ligand. Need to check.
+
+                        if (hasLigands) {
+                            console.log("MOO", tempList.terminals.length);
+                            const hasCompound = tempList.terminals.some(
+                                (node) => node.type === TreeNodeType.Compound
+                            );
+                            if (!hasCompound) {
+                                continue;
+                            }
+                        }
+
+                        // Add to main tree
+                        tempList.addToMainTree(this.pluginId);
+
                     } catch (error) {
                         console.error(`Failed to load or process PDB ID ${pdbId}:`, error);
                     }
@@ -481,6 +569,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             messagesApi.stopWaitSpinner(spinnerId);
         }
     }
+
     /**
      * This plugin does not run jobs in the browser directly; it uses a queue.
      *
@@ -508,6 +597,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
             "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG";
         const rawSeq2 =
             "MADQLTEEQIAEFKEAFSLFDKDGDGTITTKELGTVMRSLGQNPTEAELQDMINEVDADGNGTIDFPEFLTMMARKMKDTDSEEEIREAFRVFDKDGNGYISAAELRHVMTNLGEKLTDEEVDEMIREADIDGDGQVNYEEFVQMMTAK";
+
         const tests: ITest[] = [
             // Test 1: Project Search and Download (with Alignment)
             {
@@ -610,25 +700,26 @@ DIDGDGQVNYEEFVQMMTAK*`;
             // Test 8: Search WITHOUT Has Ligands (should find 1G6L and 2WHH)
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, "https://files.rcsb.org/view/1AJV.pdb"),
-                pluginOpen: () => new TestCmdList(),
-                    // .setUserArg("max_results", 25, this.pluginId),
+                pluginOpen: () => new TestCmdList()
+                    .setUserArg("max_results", 25, this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "2WHH")  // has ligands
+                    .waitUntilRegex("#modal-tabledatapopup", "1AJX")  // has ligands
                     .waitUntilRegex("#modal-tabledatapopup", "1G6L")  // no ligands
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "2WHH-aligned-to-1AJV"),
+                    .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV"),
             },
-            // Test 9: Search WITH Has Ligands (should find 2WHH but NOT 1G6L)
+            // Test 9: Search WITH Has Ligands (should find 1AJX but NOT 1G6L)
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, "https://files.rcsb.org/view/1AJV.pdb"),
                 pluginOpen: () => new TestCmdList()
-                    .click("#modal-findsimilarproteins #has_ligands-findsimilarproteins-item"),
-                    // .setUserArg("max_results", 25, this.pluginId),
+                    .click("#modal-findsimilarproteins #has_ligands-findsimilarproteins-item")
+                    .setUserArg("max_results", 25, this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "2WHH")  // has ligands
+                    .waitUntilRegex("#modal-tabledatapopup", "1AJX")  // has ligands
+                    .waitUntilRegex("#modal-tabledatapopup", "1GNO")  // has ligands
                     .waitUntilNotRegex("#modal-tabledatapopup", "1G6L")  // no ligands
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "2WHH-aligned-to-1AJV"),
+                    .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV"),
             },
         ];
         return tests;
