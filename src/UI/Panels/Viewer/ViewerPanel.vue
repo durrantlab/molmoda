@@ -247,8 +247,8 @@ export default class ViewerPanel extends Vue {
     if (justColorCarbons) {
       // Just color the carbons yellow
       for (let key in style) {
-        if (key === "selection" || key === "moleculeId") {
-          // Don't change the selection.
+  if (key === "selection" || key === "moleculeId" || key === "hydrogens") {
+    // Don't change the selection or hydrogens.
           continue;
         }
         if (style[key]["color"]) {
@@ -260,8 +260,8 @@ export default class ViewerPanel extends Vue {
     } else {
       // Color everything yellow.
       for (let key in style) {
-        if (key === "selection" || key === "moleculeId") {
-          // Don't change the selection.
+  if (key === "selection" || key === "moleculeId" || key === "hydrogens") {
+    // Don't change the selection or hydrogens.
           continue;
         }
 
@@ -376,7 +376,7 @@ export default class ViewerPanel extends Vue {
           // if (treeNode.type === TreeNodeType.Solvent) {
           //   debugger;
           // }
-          if (key === "selection") {
+    if (key === "selection" || key === "hydrogens") {
             // Don't change the selection.
             continue;
           }
@@ -533,6 +533,7 @@ export default class ViewerPanel extends Vue {
     const treeNodes: TreeNode[] = await Promise.all(addMolPromises);
 
     const surfacePromises: Promise<any>[] = [];
+
     // Keep track of visible molecules so you can zoom on them
     // later.
     let visibleTerminalNodeModelsIds = treeNodes
