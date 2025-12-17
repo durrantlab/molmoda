@@ -33,7 +33,6 @@ import {
     IContributorCredit,
 } from "@/Plugins/PluginInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -44,6 +43,9 @@ import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { isTest } from "@/Core/GlobalVars";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
 // https://partridgejiang.github.io/Kekule.js/documents/index.html
@@ -92,6 +94,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
             },
         } as IUserArgText,
     ];
+
     currentSmiles = "";
 
     kekule: any;
@@ -133,6 +136,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                 this.chemComposer = new this.kekule.Editor.Composer(
                     chemComposerRef
                 );
+
                 this.chemComposer
                     .setEnableOperHistory(true)
                     .setEnableLoadNewFile(false)
@@ -163,7 +167,8 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                         "ring",
                         "charge",
                     ])
-// create all default style components
+
+                    // create all default style components
                     .setStyleToolComponentNames([
                         // "fontName",
                         // "fontSize",
@@ -232,6 +237,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         });
 
         let mol2Txts: string[] = [];
+
         mol2Txts = await convertFileInfosOpenBabel(
             [fileInfo],
             "mol2",
@@ -240,6 +246,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
             undefined,
             true
         );
+
         if (mol2Txts.length === 0) {
             // throw new Error("Failed to convert SMILES to MOL2.");
             return;
@@ -286,6 +293,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                 generator.setSourceMol(mol);
                 generator.executeSync(() => {
                     const newMol = generator.getGeneratedMol();
+
                     // this.chemComposer
                     //     .getRenderConfigs()
                     //     .getMoleculeDisplayConfigs()
@@ -319,7 +327,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     /**
      * Runs when the user presses the action button and the popup closes.
      */
-    onPopupDone() {
+    async onPopupDone() {
         const myFile = new FileInfo({
             name: randomID() + ".smi",
             contents: this.kekule.IO.saveFormatData(
@@ -328,24 +336,22 @@ export default class DrawMoleculePlugin extends PluginParentClass {
             ),
         });
 
-        const treeNode = TreeNode.loadFromFileInfo({
+        const treeNodeList = await parseAndLoadMoleculeFile({
             fileInfo: myFile,
             tag: this.pluginId,
+            addToTree: false
         });
-        treeNode
-            .then((node: any) => {
-                node.title = this.getUserArg("drawMolName");
-                node.type = TreeNodeType.Compound;
-                const rootNode = loadHierarchicallyFromTreeNodes(
-                    [node],
-                    this.getUserArg("drawMolName")
-                );
-                rootNode.addToMainTree(this.pluginId);
-                return;
-            })
-            .catch((err: any) => {
-                throw err;
-            });
+
+        if (treeNodeList && treeNodeList.length > 0) {
+            const node = treeNodeList.get(0);
+            node.title = this.getUserArg("drawMolName");
+            node.type = TreeNodeType.Compound;
+            const rootNode = loadHierarchicallyFromTreeNodes(
+                [node],
+                this.getUserArg("drawMolName")
+            );
+            rootNode.addToMainTree(this.pluginId);
+        }
     }
 
     /**

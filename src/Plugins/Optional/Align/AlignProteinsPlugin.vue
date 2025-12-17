@@ -33,6 +33,7 @@ import { MoleculeTypeFilter } from "@/UI/Forms/FormSelectMolecule/FormSelectMole
 import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { alignFileInfos } from "./AlignProteinsUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 
 /**
  * A plugin to align multiple protein structures to a reference protein.
@@ -81,6 +82,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
             label: "Proteins to align",
         } as IUserArgMoleculeInputParams,
     ];
+
     /**
      * Checks if the plugin is allowed to be used.
      *
@@ -96,10 +98,12 @@ export default class AlignProteinsPlugin extends PluginParentClass {
     onUserArgChange() {
         const refId = this.getUserArg("referenceMolecule");
         const moleculeInput: MoleculeInput = this.getUserArg("mobileMolecules");
+
         if (!moleculeInput || !moleculeInput.molsToConsider) {
             this.isActionBtnEnabled = false;
             return;
         }
+
         // Use compileMolModels to get a synchronous representation of what will be processed.
         const compiledMols = compileMolModels(moleculeInput.molsToConsider, true);
         // mobileMolecules only considers proteins, so compoundsNodes can be ignored.
@@ -114,10 +118,12 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 return null;
             })
             .filter((id): id is string => id !== null);
+
         // Filter out the reference molecule from the mobile list
         const finalMobileCount = mobileTopLevelNodeIds.filter(
             (id) => id !== refId
         ).length;
+
         this.isActionBtnEnabled = refId !== "" && finalMobileCount > 0;
     }
 
@@ -128,6 +134,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
         this.closePopup();
         this.submitJobs([this.userArgs]);
     }
+
     /**
      * The main alignment logic.
      *
@@ -140,14 +147,17 @@ export default class AlignProteinsPlugin extends PluginParentClass {
             const arg = userArgs.find((a) => a.id === id);
             return arg ? arg.val : undefined;
         };
+
         try {
             const refId = getArgValue("referenceMolecule") as string;
             const mobileInfosFromInput = getArgValue(
                 "mobileMolecules"
             ) as FileInfo[];
+
             if (!refId || !mobileInfosFromInput) {
                 throw new Error("Missing reference or mobile molecules.");
             }
+
             const allMolecules = getMoleculesFromStore();
             const referenceNode = allMolecules.filters.onlyId(refId);
             if (!referenceNode) {
@@ -213,11 +223,14 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                     continue;
                 }
                 const originalTopLevelNode = newFileInfo.treeNode;
-                const loadedNodeContainer = await TreeNode.loadFromFileInfo({
+    const loadedNodeContainerList = await parseAndLoadMoleculeFile({
                     fileInfo: newFileInfo,
                     tag: this.pluginId,
+     addToTree: false
                 });
-                if (loadedNodeContainer) {
+
+    if (loadedNodeContainerList) {
+     const loadedNodeContainer = loadedNodeContainerList.get(0);
                     loadedNodeContainer.title = `${originalTopLevelNode.title}-aligned`;
                     loadedNodeContainer.addToMainTree(this.pluginId);
                 }
@@ -228,6 +241,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
             messagesApi.stopWaitSpinner(spinnerId);
         }
     }
+
     /**
      * Gets the test commands for the plugin. For advanced use.
      *

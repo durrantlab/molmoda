@@ -3,9 +3,9 @@ import { messagesApi } from "@/Api/Messages";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
 import { getUrlParam } from "@/Core/UrlParams";
 import { FileInfo } from "./FileInfo";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { validateShareCode } from "@/Plugins/Core/TemporaryShare/TemporaryShareUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+
 /**
  * Open a remote file using its URL. TODO: Good to move this elsewhere, perhaps
  * in FS.
@@ -89,14 +89,12 @@ export async function checkIfUrlOpen(): Promise<void> {
     if (paramName !== "" && ["smi", "smiles"].includes(paramName)) {
         const smiles = urlValue as string;
         const fileInfo = new FileInfo({ name: "smiles.smi", contents: smiles });
-        const treenode = await TreeNode.loadFromFileInfo({
+
+        await parseAndLoadMoleculeFile({
             fileInfo,
             tag: null,
+            addToTree: true
         });
-        if (treenode) {
-            const treeNodeList = new TreeNodeList([treenode]);
-            treeNodeList.addToMainTree(null);
-        }
     } else {
         // Not a SMILES string, treat as a direct URL to a file.
         await openRemoteFile(urlValue as string);

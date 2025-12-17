@@ -47,6 +47,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 
 /**
  * FPocketWebPlugin
@@ -322,26 +323,28 @@ export default class FPocketWebPlugin extends PluginParentClass {
         if (stdErr !== "") {
             console.warn(stdErr);
         }
+
         const promises = [
-            TreeNode.loadFromFileInfo({
+            parseAndLoadMoleculeFile({
                 fileInfo: new FileInfo({
                     name: payload.origFileName,
                     contents: outPdbFileTxt,
                 }),
                 tag: this.pluginId,
+                addToTree: false
             }),
             Promise.resolve(pocketProps),
         ];
 
         const payload2: any[] = await Promise.all(promises);
-
-        const outPdbFileTreeNode = payload2[0] as TreeNode | void;
+        const outPdbFileTreeNodeList = payload2[0] as TreeNodeList | void;
         const pocketProps2 = payload2[1] as any[];
 
-        if (outPdbFileTreeNode === undefined) {
+        if (outPdbFileTreeNodeList === undefined || !outPdbFileTreeNodeList) {
             return;
         }
 
+        const outPdbFileTreeNode = outPdbFileTreeNodeList.get(0);
         outPdbFileTreeNode.title = "Pockets: " + payload.label;
 
         // const numInitiallyVisible = 5;
@@ -417,13 +420,14 @@ export default class FPocketWebPlugin extends PluginParentClass {
             selected: SelectedType.False,
             focused: false,
             viewerDirty: true,
-            nodes: new TreeNodeList(),
+            nodes: new TreeNodeList([]),
         });
 
         pseudoAtomNodes?.forEach((node: TreeNode, idx: number) => {
             const box = node.getBoxRegion();
             box.opacity = 0.9;
             box.color = randomPastelColor();
+
             const newNode = new TreeNode({
                 title: "Pocket" + (idx + 1).toString() + "Box",
                 type: TreeNodeType.Region,
@@ -442,6 +446,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
                     } as ITreeNodeData,
                 },
             });
+
             shapesNode.nodes?.push(newNode);
         });
 

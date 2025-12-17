@@ -1,17 +1,15 @@
-import { messagesApi } from "@/Api/Messages";
+
 import type { FileInfo } from "@/FileSystem/FileInfo";
-import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
+import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { messagesApi } from "@/Api/Messages";
 import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
 import { TreeNodeListCopies } from "./_Copy";
 import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
-import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
-import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
-import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
-import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 
 /**
  * TreeNodeList class
@@ -375,6 +373,7 @@ export class TreeNodeList {
     /**
      * Loads a molecule into the list.
      *
+     * @deprecated Use `parseAndLoadMoleculeFile` from `FileSystem` instead.
      * @param  {ILoadMolParams} params  The parameters for loading the molecule.
      * @returns {Promise<void | TreeNodeList>}  A promise that resolves with the
      *     list of new nodes, or undefined on failure.
@@ -382,81 +381,7 @@ export class TreeNodeList {
     public async loadFromFileInfo(
         params: ILoadMolParams
     ): Promise<void | TreeNodeList> {
-        const fileName = params.fileInfo.name;
-
-        // Do not add to tree
-        params.addToTree = false;
-
-        const treeNodeList: void | TreeNodeList = await _parseMoleculeFile(
-            params
-        );
-
-        if (!treeNodeList || treeNodeList.length === 0) {
-            // Apparently wasn't possible to parse molecule.
-            // TODO: Show error message?
-            return;
-        }
-
-        // If hideOnLoad is true, set all nodes (including parents) to invisible
-        // before adding to the main tree.
-        if (params.hideOnLoad) {
-            treeNodeList.flattened.forEach((n) => {
-                n.visible = false;
-            });
-        }
-
-        // Pass !params.hideOnLoad as resetVisibilityAndSelection.
-        // If hideOnLoad is true, we do NOT want addToMainTree to reset visibility to true.
-        treeNodeList.addToMainTree(params.tag, true, true, !params.hideOnLoad);
-
-        // Get all the terminal nodes.
-        const terminalNodes = treeNodeList.terminals;
-
-        // Rename the nodes in treeNodeList and make some of them
-        // invisible.
-        for (let i = 0; i < terminalNodes.length; i++) {
-            const node = terminalNodes.get(i);
-            // If "undefined" in title, rename
-            if (node.title.indexOf("undefined") >= 0) {
-                const { basename } = getFileNameParts(fileName);
-                node.title = basename + ":" + (i + 1).toString();
-            }
-            // node.visible = i < initialCompoundsVisible;
-            // node.treeExpanded = false;
-        }
-
-        // If not hiding on load, check if we need to warn about too many visible molecules.
-        if (!params.hideOnLoad) {
-            // If there are more than MAX_VISIBLE nodes, let user know some not visible.
-            const initialCompoundsVisible = await getSetting(
-                "initialCompoundsVisible"
-            );
-            if (terminalNodes.length > initialCompoundsVisible) {
-                // Expand trees to make the user aware of hidden molecules.
-                // NOTE: I decided against the below for consistency. Leave
-                // commented out in case you want to revisit this.
-
-                // treeNodeList._nodes[0].treeExpanded = true;
-                // treeNodeList.lookup([0, "*"]).forEach((node: TreeNode) => {
-                //     node.treeExpanded = true;
-                // });
-                // treeNodeList.lookup([0, "*", "*"]).forEach((node: TreeNode) => {
-                //     node.treeExpanded = true;
-                // });
-
-                // A message helps too.
-                messagesApi.popupMessage(
-                    "Some Molecules not Visible",
-                    `The ${fileName} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
-                    PopupVariant.Info,
-                    undefined,
-                    false,
-                    {}
-                );
-            }
-        }
-        // this.extend(treeNodeList);
-        return treeNodeList;
+        return parseAndLoadMoleculeFile(params);
     }
 
     /**
@@ -541,6 +466,7 @@ export class TreeNodeList {
         if (!inWorker) {
             messagesApi.stopWaitSpinner(spinnerId);
         }
+
         return fileInfos;
     }
 

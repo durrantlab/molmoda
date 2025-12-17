@@ -23,7 +23,6 @@ import {
     ISoftwareCredit,
     IContributorCredit,
 } from "@/Plugins/PluginInterfaces";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     IUserArgOption,
@@ -43,6 +42,9 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { getGen3DUserArg, WhichMolsGen3D, IGen3DOptions } from "@/FileSystem/OpenBabel/OpenBabel";
 import Mol2DView from "@/UI/Components/Mol2DView.vue"; // Import the new component
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+
 /**
  * A function that returns the options and validate functions for the available
  * molecular formats.
@@ -222,11 +224,12 @@ export default class MolTextPlugin extends PluginParentClass {
             level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
 
-        const treeNodePromise = TreeNode.loadFromFileInfo({
+        const treeNodePromise = parseAndLoadMoleculeFile({
             fileInfo,
             tag: this.pluginId,
             desalt: this.getUserArg("desalt"),
-            gen3D: gen3DParams
+            gen3D: gen3DParams,
+            addToTree: false
         });
 
         if (treeNodePromise === undefined) {
@@ -234,15 +237,16 @@ export default class MolTextPlugin extends PluginParentClass {
         }
 
         treeNodePromise
-            .then((node: any) => {
-                if (node === undefined) {
+            .then((treeNodeList: void | TreeNodeList) => {
+                if (!treeNodeList || treeNodeList.length === 0) {
                     // Happens with invalid molecule. Error should be detected
                     // elsewhere. To trigger (example), use "C##moose"
                     return;
                 }
-
+                const node = treeNodeList.get(0);
                 node.title = this.getUserArg("pastedMolName"); // "PastedFile";
                 node.type = TreeNodeType.Compound;
+
                 const rootNode = loadHierarchicallyFromTreeNodes(
                     [node],
                     this.getUserArg("pastedMolName")
@@ -299,19 +303,23 @@ export default class MolTextPlugin extends PluginParentClass {
             "testmols/example_mult.pdb",
             "testmols/example_mult.mol2",
         ];
+
         const promises = urls.map((url) => fetcher(url));
         const txts = await Promise.all(promises);
+
         const tests = txts.map((txt: string) => {
             const fileInfo = new FileInfo({
                 name: "tmp.smi",
                 contents: txt,
             });
             const guessedFormat = fileInfo.guessFormat();
+
             const pluginOpenCmds = new TestCmdList().setUserArg(
                 "molTextArea",
                 txt,
                 this.pluginId
             );
+
             if (
                 guessedFormat &&
                 (guessedFormat.primaryExt === "smi" ||
@@ -321,12 +329,14 @@ export default class MolTextPlugin extends PluginParentClass {
                     .wait(2) // wait for rdkit to render
                     .waitUntilRegex("#modal-moltextplugin .svg-wrapper", "<svg");
             }
+
             return {
                 pluginOpen: () => pluginOpenCmds,
                 afterPluginCloses: () =>
                     new TestCmdList().waitUntilRegex("#navigator", "PastedMol"),
             };
         });
+
         // Final test to verify error catching
         tests.push({
             pluginOpen: () =>
@@ -337,6 +347,7 @@ export default class MolTextPlugin extends PluginParentClass {
                     "Could not process"
                 ),
         });
+
         return tests;
     }
 }

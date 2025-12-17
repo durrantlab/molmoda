@@ -10,6 +10,8 @@ import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
 import { addDefaultLoadMolParams, ILoadMolParams } from "./Types";
 import { stopAllWaitSpinners } from "@/UI/MessageAlerts/WaitSpinner";
 import { isAnyPopupOpen } from "@/UI/MessageAlerts/Popups/OpenPopupList";
+import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -49,18 +51,19 @@ function _fixTitle(title: string, defaultTitle: string): string {
 }
 
 /**
- * Given an IFileInfo object (name, contents, type), load the molecule. Should
- * call only from TreeNodeList.load.
+ * Given an IFileInfo object (name, contents, type), load the molecule.
+ * Handles parsing, post-processing titles, checking visibility limits, and optionally adding to the tree.
  *
  * @param  {ILoadMolParams} params  The parameters for loading the molecule.
  * @returns {Promise<void | TreeNodeList>}  A promise that resolves when the
- *     molecule is loaded.
+ *  molecule is loaded.
  */
-export function _parseMoleculeFile(
+export function parseAndLoadMoleculeFile(
     params: ILoadMolParams
 ): Promise<void | TreeNodeList> {
     params = addDefaultLoadMolParams(params);
     const spinnerId = messagesApi.startWaitSpinner();
+
     const formatInfo = params.fileInfo.getFormatInfo();
     if (formatInfo === undefined) {
         const errorMessage = `Could not determine file format for "${params.fileInfo.name}".`;
@@ -125,10 +128,10 @@ export function _parseMoleculeFile(
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return promise
-        .then((treeNodeList: TreeNodeList) => {
+  .then(async (treeNodeList: TreeNodeList) => {
             // Merge the TreeNodeLists into one
             // for (let i = 1; i < treeNodeLists.length; i++) {
-            //     treeNodeList.extend(treeNodeLists[i]);
+   //  treeNodeList.extend(treeNodeLists[i]);
             // }
 
             if (treeNodeList.length === 0) {
@@ -144,16 +147,15 @@ export function _parseMoleculeFile(
                 // Get first 5 lines of fileInfo.contents
                 if (params.fileInfo.contents.trim() !== "") {
                     // const first5Lines = fileInfo.contents
-                    //     .split("\n")
-                    //     .slice(0, 5);
+     //  .split("\n")
+     //  .slice(0, 5);
                     // let first5LinesStr = first5Lines.join("\n");
 
                     // // Add line ... if appropriate
                     // first5LinesStr +=
-                    //     fileInfo.contents.length > first5LinesStr.length
-                    //         ? "\n..."
-                    //         : "";
-
+     //  fileInfo.contents.length > first5LinesStr.length
+     //   ? "\n..."
+     //   : "";
                     msg += `<p>File contents:</p><code><textarea disabled class="form-control" rows="3">${params.fileInfo.contents}</textarea>`;
                 }
                 messagesApi.popupError(msg);
@@ -175,15 +177,55 @@ export function _parseMoleculeFile(
                 t.title = _fixTitle(t.title, params.defaultTitle as string);
             });
 
-            // if (treeNode.nodes && treeNode.nodes.terminals) {
-            //     treeNode.nodes.terminals.forEach((terminal) => {
-            //         terminal.title = terminal.title.replace("*****", defaultTitle);
-            //     });
-            // }
+   // Get all the terminal nodes to process titles and visibility.
+   const terminalNodes = mergedTreeNodeList.terminals;
+
+   // Rename the nodes in treeNodeList and make some of them
+   // invisible.
+   for (let i = 0; i < terminalNodes.length; i++) {
+    const node = terminalNodes.get(i);
+    // If "undefined" in title, rename based on filename
+    if (node.title.indexOf("undefined") >= 0) {
+     const { basename } = getFileNameParts(params.fileInfo.name);
+     node.title = basename + ":" + (i + 1).toString();
+    }
+   }
+
+   // If hideOnLoad is true, set all nodes (including parents) to invisible.
+   if (params.hideOnLoad) {
+    mergedTreeNodeList.flattened.forEach((n) => {
+     n.visible = false;
+    });
+   }
 
             if (params.addToTree) {
-                mergedTreeNodeList.addToMainTree(params.tag);
-            }
+    // Pass !params.hideOnLoad as resetVisibilityAndSelection.
+    // If hideOnLoad is true, we do NOT want addToMainTree to reset visibility to true.
+    mergedTreeNodeList.addToMainTree(
+     params.tag,
+     true,
+     true,
+     !params.hideOnLoad
+    );
+
+    // If not hiding on load, check if we need to warn about too many visible molecules.
+    if (!params.hideOnLoad) {
+     const initialCompoundsVisible = await getSetting(
+      "initialCompoundsVisible"
+     );
+     if (terminalNodes.length > initialCompoundsVisible) {
+      messagesApi.popupMessage(
+       "Some Molecules not Visible",
+       `The ${params.fileInfo.name} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+       PopupVariant.Info,
+       undefined,
+       false,
+       {}
+      );
+     }
+    }
+   }
+
             messagesApi.stopWaitSpinner(spinnerId);
             return mergedTreeNodeList;
         })

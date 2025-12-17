@@ -47,6 +47,8 @@ import { messagesApi } from "@/Api/Messages";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+
 enum SearchMode {
   Similar = "similar",
   Substructure = "substructure",
@@ -379,20 +381,21 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
     // Step 5: Convert to TreeNodes
     const treeNodePromises = convertedFileInfos.map(async (mol) => {
-      const treeNode = await TreeNode.loadFromFileInfo({
+      const treeNodeList = await parseAndLoadMoleculeFile({
         fileInfo: mol,
         tag: this.pluginId,
         desalt: false,
         gen3D: {
           whichMols: WhichMolsGen3D.None, // Already generated
         },
+        addToTree: false,
         // surpressMsgs: true,
       });
       progressCounts++;
       this.updateProgressInQueueStore(
         0.25 + (0.75 * progressCounts) / progressTotal
       );
-      return treeNode;
+      return treeNodeList && treeNodeList.length > 0 ? treeNodeList.get(0) : undefined;
     });
 
     let treeNodes = (await Promise.all(

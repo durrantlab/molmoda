@@ -66,6 +66,8 @@ import { prepForErrorCustomMsg } from "./WebinaErrors";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
@@ -400,8 +402,8 @@ export default class WebinaPlugin extends PluginParentClass {
 
         const data: { [key: string]: ITreeNodeData } = {};
         let scoreLabel = "";
-
         const webinaParamsAsKeyVal: { [name: string]: any } = {};
+
         const toRemove = ["ligand", "out", "receptor", "score_only"];
         for (const paramName in webinaParams) {
             if (toRemove.indexOf(paramName) !== -1) continue;
@@ -516,14 +518,15 @@ export default class WebinaPlugin extends PluginParentClass {
             contents: pdbqtOut,
         });
 
-        return TreeNode.loadFromFileInfo({ fileInfo, tag: this.pluginId, surpressMsgs: false } as ILoadMolParams)
-            .then((treeNode: TreeNode | void) => {
-                if (!treeNode) {
+        return parseAndLoadMoleculeFile({ fileInfo, tag: this.pluginId, surpressMsgs: false, addToTree: false } as ILoadMolParams)
+            .then((treeNodeList: TreeNodeList | void) => {
+                if (!treeNodeList) {
                     throw new Error("Could not load file into tree node.");
                 }
 
                 // This has been loaded hierarchically. So the one
                 // terminal node is the actual TreeNode.
+                const treeNode = treeNodeList.get(0);
                 let terminalTreeNode = treeNode.nodes?.terminals.get(0);
 
                 if (terminalTreeNode) {
@@ -583,6 +586,7 @@ export default class WebinaPlugin extends PluginParentClass {
         userArgs.forEach((arg: UserArg) => {
             webinaParams[arg.id] = arg.val;
         });
+
         const region = webinaParams["region"];
         webinaParams["center_x"] = region.center[0];
         webinaParams["center_y"] = region.center[1];
@@ -590,6 +594,7 @@ export default class WebinaPlugin extends PluginParentClass {
         webinaParams["size_x"] = region.dimensions[0];
         webinaParams["size_y"] = region.dimensions[1];
         webinaParams["size_z"] = region.dimensions[2];
+
         webinaParams["receptor"] = "/receptor.pdbqt";
         webinaParams["ligand"] = "/ligand.pdbqt";
         webinaParams["out"] = "/output.pdbqt";
@@ -732,13 +737,14 @@ export default class WebinaPlugin extends PluginParentClass {
                     scoreLabel
                 );
 
-                if (dockedTreeNode === undefined) {
+                if (dockedTreeNode === undefined || !dockedTreeNode) {
                     continue;
                 }
+                const node = dockedTreeNode as TreeNode;
 
                 // Hide if not first few
                 if (jobIndex >= initialCompoundsVisible) {
-                    dockedTreeNode.visible = false;
+                    node.visible = false;
                 }
 
                 // Get the top title of the protein. Because things have been
@@ -746,10 +752,12 @@ export default class WebinaPlugin extends PluginParentClass {
                 // one is as good as any.
                 const protTreeNode = origProtTreeNode as TreeNode;
                 const title = protTreeNode.getAncestry().get(0).title;
+
                 const rootNode = loadHierarchicallyFromTreeNodes(
-                    [dockedTreeNode],
+                    [node],
                     `${title}:docking`
                 );
+
                 if (isTest) {
                     // If testing, append ":testdock" to all new molecules so
                     // you can watch for them. #TODO: This is a little hacky.
@@ -845,6 +853,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 afterPluginCloses: () =>
                     new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
+
             // Test score in place
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
@@ -853,6 +862,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 afterPluginCloses: () =>
                     new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
+
             // Test keep all poses
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(),
@@ -861,6 +871,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 afterPluginCloses: () =>
                     new TestCmdList().waitUntilRegex("#navigator", "4WP4:docking"),
             },
+
             // Test bad ligands
             {
                 beforePluginOpens: () =>
@@ -876,6 +887,7 @@ export default class WebinaPlugin extends PluginParentClass {
                         .openPlugin("expandall")
                         .waitUntilRegex("#navigator", "frame3:bad_ligs:testdock"),
             },
+
             // Test out ligands that have too many bonds.
             {
                 beforePluginOpens: () =>
@@ -890,6 +902,7 @@ export default class WebinaPlugin extends PluginParentClass {
                         "Will not dock compound"
                     ),
             },
+
             // Test just standard docking, but with a very large docking box
             // (blind docking) to stress the memory.
             {

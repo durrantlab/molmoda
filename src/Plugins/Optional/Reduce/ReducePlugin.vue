@@ -33,6 +33,10 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { ReduceQueue } from "./ReduceQueue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+
 /**
  * ReducePlugin
  */
@@ -149,9 +153,6 @@ export default class ReducePlugin extends PluginParentClass {
      */
     async runJobInBrowser(payloads: any[]): Promise<void> {
         const pdbOuts = payloads.map((payload) => payload.output);
-
-        debugger
-
         // Make fileInfos
         const fileInfos = pdbOuts.map((pdbOut) => {
             return new FileInfo({
@@ -161,24 +162,23 @@ export default class ReducePlugin extends PluginParentClass {
         });
 
         // Convert to tree nodes
-        const treeNodesPromises: Promise<TreeNode>[] = fileInfos.map(
+  const treeNodesPromises: Promise<TreeNode | void>[] = fileInfos.map(
             (fileInfo) => {
-                return TreeNode.loadFromFileInfo({
+    return parseAndLoadMoleculeFile({
                     fileInfo,
                     tag: this.pluginId,
+     addToTree: false
                 })
-                    .then((treeNode: TreeNode | void) => {
-                        if (!treeNode) {
+     .then((treeNodeList: TreeNodeList | void) => {
+      if (!treeNodeList) {
                             throw new Error(
                                 "Could not load file into tree node."
                             );
                         }
-
+      return treeNodeList.get(0);
                         // treeNode.src = payload.origCmpdTreeNode.src;
                         // treeNode.data = data;
                         // treeNode.data[scoreLabel].treeNodeId = treeNode.id;
-
-                        return treeNode;
                     })
                     .catch((err: Error) => {
                         // TODO: FIX
@@ -192,7 +192,8 @@ export default class ReducePlugin extends PluginParentClass {
 
         const protProtonatedTreeNodes = (await Promise.all(
             treeNodesPromises
-        )) as TreeNode[];
+  )).filter(n => n !== undefined) as TreeNode[];
+
         const initialCompoundsVisible = await getSetting(
             "initialCompoundsVisible"
         );
@@ -201,6 +202,7 @@ export default class ReducePlugin extends PluginParentClass {
         for (let i = 0; i < protProtonatedTreeNodes.length; i++) {
             const protProtonatedTreeNode = protProtonatedTreeNodes[i];
             protProtonatedTreeNode.visible = i < initialCompoundsVisible;
+
             const treeNode = loadHierarchicallyFromTreeNodes(
                 [protProtonatedTreeNode],
                 payloads[i].title + ":protonated"

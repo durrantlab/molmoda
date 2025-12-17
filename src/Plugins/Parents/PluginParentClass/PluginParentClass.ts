@@ -37,7 +37,7 @@ import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
-
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
 // export type RunJobReturn = Promise<void>;
@@ -498,8 +498,8 @@ export abstract class PluginParentClass extends mixins(
         const startTime = new Date().getTime();
 
         await this.runJobInBrowser(parameterSet);
+  let endLogTxt = "";
 
-        let endLogTxt = "";
         if (this.logJob) {
             endLogTxt = this.onEndJobLogMsg(this.pluginId);
             endLogTxt = removeTerminalPunctuation(endLogTxt);
@@ -604,6 +604,7 @@ export abstract class PluginParentClass extends mixins(
             this.menuPath,
             this.title
         );
+
         registerLoadedPlugin(this);
 
         // Add to menu and credits.
@@ -661,20 +662,15 @@ export abstract class PluginParentClass extends mixins(
         hideOnLoad = false
     ): Promise<void> {
         params.hideOnLoad = hideOnLoad;
-        return new TreeNodeList()
-            .loadFromFileInfo(params)
+  return parseAndLoadMoleculeFile(params)
             .then((newTreeNodeList) => {
                 // Note: If loading molmoda file, newTreeNodeList will be
                 // undefined.
                 if (newTreeNodeList) {
-                    // newTreeNodeList.addToMainTree(this.pluginId);
-                    // Logic for hiding handled in loadFromFileInfo/addToMainTree
-                    if (hideOnLoad) {
-                        newTreeNodeList.flattened.forEach((n) => {
-                            n.visible = false;
-                        });
-                    }
-
+     // The logic for adding to the main tree, hiding, renaming, and
+     // showing warnings is now handled within parseAndLoadMoleculeFile
+     // via TreeNodeList.loadFromFileInfo logic consolidation.
+     // So we don't need to do anything else here.
                     return;
                 }
                 return;

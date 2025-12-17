@@ -38,6 +38,8 @@ import {
     IGen3DOptions,
     Gen3DLevel,
 } from "@/FileSystem/OpenBabel/OpenBabel";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /** PastePlugin */
 @Options({
@@ -160,22 +162,26 @@ export default class PastePlugin extends PluginParentClass {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
             level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
+
         try {
-            const node = await TreeNode.loadFromFileInfo({
+            const treeNodeList = await parseAndLoadMoleculeFile({
                 fileInfo,
                 tag: this.pluginId,
                 desalt: this.getUserArg("desalt"),
                 defaultTitle: this.getUserArg("pastedMolName"),
                 gen3D: gen3DParams,
+                addToTree: false, // Don't add yet, need to set title
             });
-            if (node === undefined) {
-                return;
+
+            if (treeNodeList && treeNodeList instanceof TreeNodeList && treeNodeList.length > 0) {
+                const node = treeNodeList.get(0);
+                node.title = this.getUserArg("pastedMolName");
+                treeNodeList.addToMainTree(this.pluginId);
             }
-            node.title = this.getUserArg("pastedMolName");
-            node.addToMainTree(this.pluginId);
+
         } catch (error) {
             console.error("Error during paste operation:", error);
-            // Error messages to the user are likely handled within the `loadFromFileInfo` call chain.
+            // Error messages to the user are likely handled within the `parseAndLoadMoleculeFile` call chain.
         }
     }
 
@@ -236,6 +242,7 @@ export default class PastePlugin extends PluginParentClass {
                 ),
             });
         });
+
         // Test to detect error catching for invalid SMILES
         tests.push({
             pluginOpen: () => new TestCmdList().setUserArg(
@@ -248,6 +255,7 @@ export default class PastePlugin extends PluginParentClass {
                 "Could not process"
             ),
         });
+
         // Test for desalting functionality
         tests.push({
             pluginOpen: () => new TestCmdList()
@@ -258,6 +266,7 @@ export default class PastePlugin extends PluginParentClass {
                 "desalted_mol"
             ),
         });
+
         // Test for 3D coordinate generation
         tests.push({
             pluginOpen: () => new TestCmdList()

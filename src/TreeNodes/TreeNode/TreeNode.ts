@@ -1,6 +1,5 @@
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { _parseMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import {
     getMoleculesFromStore,
     pushToStoreList,
@@ -398,29 +397,6 @@ export class TreeNode {
     }
 
     /**
-     * Get a new TreeNode from a file info object.
-     *
-     * @param  {ILoadMolParams} params  The parameters.
-     * @returns {Promise<void | TreeNode>}  The new TreeNode.
-     */
-    public static async loadFromFileInfo(
-        params: ILoadMolParams
-    ): Promise<void | TreeNode> {
-        // NOTE: static
-
-        // Do not add to the tree
-        params.addToTree = false;
-
-        const treeNodeList = await _parseMoleculeFile(params);
-
-        if (treeNodeList === undefined) {
-            return undefined;
-        }
-
-        return treeNodeList.get(0);
-    }
-
-    /**
      * Creates a new TreeNode. Putting this in a function here helps with circular
      * dependencies.
      *
@@ -479,6 +455,7 @@ export class TreeNode {
             const thisChild = this.nodes?.find((child: TreeNode) => {
                 return child.type === otherNodeType;
             });
+
             if (thisChild === undefined) {
                 // No, so just add it. Straightforward.
                 otherChild.parentId = this.id;
@@ -562,8 +539,10 @@ export class TreeNode {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
         }
+
         // Get all nodes in the subtree to set selection and tags.
         const allNodesInSubtree = new TreeNodeList([this]).flattened;
+
         // Add tag if provided.
         if (tag) {
             allNodesInSubtree.forEach((node) => {
@@ -576,6 +555,7 @@ export class TreeNode {
                 }
             });
         }
+
         if (resetVisibilityAndSelection) {
             // Set visibility to true for this node and all its non-terminal children.
             allNodesInSubtree.forEach((node) => {
@@ -585,25 +565,30 @@ export class TreeNode {
                 }
             });
             this.visible = true;
+
             // For terminal nodes, make only the first few visible.
             const terminalNodes = this.nodes
                 ? this.nodes.terminals
                 : new TreeNodeList([]);
+
             if (this.model) {
                 // This node is a terminal node itself.
                 terminalNodes.push(this);
             }
+
             const initialCompoundsVisible = await getSetting(
                 "initialCompoundsVisible"
             );
             terminalNodes.forEach((node, i) => {
                 node.visible = i < initialCompoundsVisible;
             });
+
             // Ensure nodes are not selected when added.
             allNodesInSubtree.forEach((node) => {
                 node.selected = SelectedType.False;
             });
         }
+
         // If this node has only one terminal node, and that terminal, prepend
         // the top-level title to the title of the terminal node.
         if (
@@ -615,7 +600,9 @@ export class TreeNode {
                 this.nodes.terminals.get(0).title
             }`;
         }
+
         pushToStoreList("molecules", this);
+
         if (store.state.projectTitle === "") {
             const topAncestor = this.getAncestry(getMoleculesFromStore()).get(
                 0
@@ -624,6 +611,7 @@ export class TreeNode {
                 setStoreVar("projectTitle", topAncestor.title);
             }
         }
+
         // If you add new molecules to the tree, focus on everything.
         const viewer = await visualizationApi.viewer;
         // Set the style according to the current user specs.
@@ -689,6 +677,7 @@ export class TreeNode {
                 }
             }
         }
+
         if (color === undefined) {
             // If none of the styles can a color attribute set, just use red.
             color = "red";

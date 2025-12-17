@@ -41,6 +41,9 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+
 /**
  * ProtonateCompoundsPlugin
  */
@@ -147,7 +150,8 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
         // Make new fileinfos with protonated files
         // const treeNodes: TreeNode[] = [];
-        const treeNodePromises: Promise<void | TreeNode>[] = [];
+  const treeNodePromises: Promise<void | TreeNodeList>[] = [];
+
         for (let i = 0; i < molTexts.length; i++) {
             const fileInfo = new FileInfo({
                 name: compounds[i].name,
@@ -155,35 +159,40 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
                 auxData: compounds[i].treeNode?.title,
                 // treeNode: compounds[i].treeNode,
             });
-            const treeNode = TreeNode.loadFromFileInfo({
+
+   const treeNodeListPromise = parseAndLoadMoleculeFile({
                 fileInfo,
                 tag: this.pluginId,
+    addToTree: false
             });
-            treeNodePromises.push(treeNode);
+   treeNodePromises.push(treeNodeListPromise);
         }
 
-        let treeNodes = (await Promise.all(
+  let treeNodeLists = (await Promise.all(
             treeNodePromises
-        )) as (void | TreeNode)[];
-        treeNodes = treeNodes.map((n) => {
-            if (n === undefined) {
+  )) as (void | TreeNodeList)[];
+
+  const treeNodes = treeNodeLists.map((n) => {
+   if (!n) {
                 return undefined;
             }
-            if (n.nodes) {
+   const node = n.get(0);
+   if (node.nodes) {
                 // Should have only one terminal
-                n = n.nodes.terminals.get(0);
+    return node.nodes.terminals.get(0);
             }
-            n.type = TreeNodeType.Compound;
-            const compound = compounds.find((c) => c.auxData === n?.title);
+   node.type = TreeNodeType.Compound;
+   const compound = compounds.find((c) => c.auxData === node?.title);
             if (compound && compound.treeNode !== undefined) {
-                n.title = compound.treeNode.title;
+    node.title = compound.treeNode.title;
             }
-            return n;
+   return node;
         });
 
         const onlyTreeNodes = treeNodes.filter(
             (tn) => tn !== undefined
         ) as TreeNode[];
+
         const rootNode = loadHierarchicallyFromTreeNodes(
             onlyTreeNodes,
             "Compounds:protonated"

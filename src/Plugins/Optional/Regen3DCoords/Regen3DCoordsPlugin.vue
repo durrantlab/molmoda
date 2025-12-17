@@ -33,6 +33,9 @@ import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+
 /**
  * Regen3DCoordsPlugin
  */
@@ -65,6 +68,7 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
             "Choose the quality level for 3D coordinate generation. 'Best' is recommended for accuracy but is slower."
         ),
     ];
+
     /**
      * Runs before the popup opens. Starts importing the modules needed for the
      * plugin.
@@ -72,6 +76,7 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
     async onBeforePopupOpen() {
         // No special actions needed before opening.
     }
+
     /**
      * Check if this plugin can currently be used.
      *
@@ -81,6 +86,7 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
     checkPluginAllowed(): string | null {
         return checkCompoundLoaded();
     }
+
     /**
      * Runs when the user presses the action button and the popup closes.
      *
@@ -92,10 +98,12 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
             whichMols: WhichMolsGen3D.All, // Always regenerate for this plugin
             level: this.getUserArg("gen3D"),
         };
+
         const conversionPromises = compounds.map((compound) => {
             const parser = makeEasyParser(compound);
             const hasH = parser.hasHydrogens();
             const phParam = hasH ? undefined : null; // null triggers -d flag (delete hydrogens)
+
             // Each call to convertFileInfosOpenBabel returns a promise that resolves to string[]
             return convertFileInfosOpenBabel(
                 [compound], // Process one file at a time
@@ -104,47 +112,51 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
                 phParam
             );
         });
+
         const conversionResults = await Promise.all(conversionPromises);
         const molTexts = conversionResults.flat(); // Flatten the array of arrays
-        const treeNodePromises: Promise<void | TreeNode>[] = [];
+
+        const treeNodePromises: Promise<void | TreeNodeList>[] = [];
         for (let i = 0; i < molTexts.length; i++) {
             const fileInfo = new FileInfo({
                 name: compounds[i].name,
                 contents: molTexts[i],
                 auxData: compounds[i].treeNode?.title,
             });
-            const treeNode = TreeNode.loadFromFileInfo({
+
+            const treeNodeList = parseAndLoadMoleculeFile({
                 fileInfo,
                 tag: this.pluginId,
                 desalt: false,
                 gen3D: {
                     whichMols: WhichMolsGen3D.None, // Already generated
                 },
+                addToTree: false
                 // surpressMsgs: true,
             });
-            treeNodePromises.push(treeNode);
+            treeNodePromises.push(treeNodeList);
         }
-        let treeNodes = (await Promise.all(
+
+        let treeNodeLists = (await Promise.all(
             treeNodePromises
-        )) as (void | TreeNode)[];
-        treeNodes = treeNodes.map((n) => {
-            if (n === undefined) {
-                return undefined;
-            }
-            if (n.nodes) {
-                // Should have only one terminal
-                n = n.nodes.terminals.get(0);
-            }
-            n.type = TreeNodeType.Compound;
-            const compound = compounds.find((c) => c.auxData === n?.title);
-            if (compound && compound.treeNode !== undefined) {
-                n.title = compound.treeNode.title;
-            }
-            return n;
-        });
-        const onlyTreeNodes = treeNodes.filter(
-            (tn) => tn !== undefined
-        ) as TreeNode[];
+        )) as (void | TreeNodeList)[];
+
+        const onlyTreeNodes = treeNodeLists
+            .filter((tl) => tl !== undefined)
+            .map((tl) => {
+                let n = (tl as TreeNodeList).get(0);
+                if (n.nodes) {
+                    // Should have only one terminal
+                    n = n.nodes.terminals.get(0);
+                }
+                n.type = TreeNodeType.Compound;
+                const compound = compounds.find((c) => c.auxData === n?.title);
+                if (compound && compound.treeNode !== undefined) {
+                    n.title = compound.treeNode.title;
+                }
+                return n;
+            });
+
         const rootNode = loadHierarchicallyFromTreeNodes(
             onlyTreeNodes,
             "Compounds:3D"
@@ -152,6 +164,7 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
         rootNode.addToMainTree(this.pluginId);
         return;
     }
+
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
@@ -161,6 +174,7 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
     runJobInBrowser(): Promise<void> {
         return Promise.resolve();
     }
+
     /**
      * Gets the test commands for the plugin. For advanced use.
      *

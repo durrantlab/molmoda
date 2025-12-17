@@ -43,6 +43,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
@@ -304,12 +305,14 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             // FASTA input
             const fastaText = this.getUserArg("fastaText") as string;
             const sequences = convertFastaToSeqences(fastaText);
+
             if (sequences.length === 0) {
                 messagesApi.popupError(
                     "No valid sequences found in the provided FASTA text."
                 );
                 return;
             }
+
             sequences.forEach(([name, seq]) => {
                 addSequence(seq, name, { title: name });
             });
@@ -512,32 +515,38 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 const mobileIds = Array.from(mobileIdSet);
                 for (const pdbId of mobileIds) {
                     if (align && pdbId === referenceId) continue;
+
                     try {
                         let mobileFileInfo = await loadPdbIdToFileInfo(pdbId);
+
                         // If filtering by ligands, check BEFORE alignment to save time
                         if (hasLigands) {
-                            const tempNode = await TreeNode.loadFromFileInfo({
+       const tempList = await parseAndLoadMoleculeFile({
                                 fileInfo: mobileFileInfo,
                                 tag: this.pluginId,
-                                addToTree: false,
-                            } as ILoadMolParams);
-                            if (!tempNode) {
+        addToTree: false
+       });
+
+       if (!tempList) {
                                 console.warn(`Failed to parse structure for PDB ID ${pdbId}.`);
                                 continue;
                             }
-                            const tempList = new TreeNodeList([tempNode]);
+
                             const hasCompound = tempList.terminals.some(
                                 (node) => node.type === TreeNodeType.Compound
                             );
+
                             if (!hasCompound) {
                                 continue; // Skip if no compound found
                             }
+
                             // If we're not aligning, we can just use this node
                             if (!align) {
                                 tempList.addToMainTree(this.pluginId);
                                 continue;
                             }
                         }
+
                         if (align && referenceFileInfo) {
                             const aligned = await alignFileInfos(referenceFileInfo, [
                                 mobileFileInfo,
@@ -549,17 +558,19 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                                 console.warn(`Alignment failed for ${pdbId}, loading unaligned structure.`);
                             }
                         }
+
                         // Check if ligands are present if required (and not already added above)
-                        const node = await TreeNode.loadFromFileInfo({
+      const tempList = await parseAndLoadMoleculeFile({
                             fileInfo: mobileFileInfo,
                             tag: this.pluginId,
                             addToTree: false,
                         } as ILoadMolParams);
-                        if (!node) {
+
+      if (!tempList) {
                             console.warn(`Failed to load structure for PDB ID ${pdbId}.`);
                             continue;
                         }
-                        const tempList = new TreeNodeList([node])
+
                         // Add to main tree
                         tempList.addToMainTree(this.pluginId);
 
@@ -614,6 +625,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1S68-aligned-to-1XDN"),
             },
+
             // Test 2: FASTA text search with alignment
             {
                 // Failed: findsimilarproteins #2 #modal-findsimilarproteins #fastaText-findsimilarproteins-item not found after 50 seconds.
@@ -629,6 +641,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1D3Z-aligned-to-1AAR")
                     .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR"),
             },
+
             // Test 3: FASTA text with just sequence, no header, without alignment
             {
                 pluginOpen: () => new TestCmdList()
@@ -643,6 +656,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1AAR") // Reference
                     .waitUntilRegex("#navigator", '1CMX'), // Mobile
             },
+
             // Test 4: Two proteins from project
             {
                 beforePluginOpens: () => new TestCmdList()
@@ -657,6 +671,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1S68-aligned-to-1XDN")
                     .waitUntilRegex("#navigator", "1Q9B-aligned-to-4WP4"),
             },
+
             // Test 5: Two full FASTA sequences
             {
                 beforePluginOpens: () => new TestCmdList()
@@ -675,6 +690,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From fastaText1
                     .waitUntilRegex("#navigator", "1LVC-aligned-to-1IQ5"), // From fastaText2 (Calmodulin)
             },
+
             // Test 6: Two raw sequences
             {
                 beforePluginOpens: () => new TestCmdList()
@@ -693,6 +709,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From rawSeq1
                     .waitUntilRegex("#navigator", "1LVC-aligned-to-1IQ5"), // From rawSeq2 (Calmodulin)
             },
+
             // Test 7: Open with no proteins, should default to FASTA and run
             {
                 // No beforePluginOpens, so project is empty
@@ -704,6 +721,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1AAR"),
             },
+
             // Test 8: Search WITHOUT Has Ligands (should find 1G6L and 2WHH)
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, "https://files.rcsb.org/view/1AJV.pdb"),
@@ -716,6 +734,7 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV")
                     .waitUntilRegex("#navigator", "1G6L-aligned-to-1AJV")  // no ligands
             },
+
             // Test 9: Search WITH Has Ligands (should find 1AJX but NOT 1G6L)
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true, "https://files.rcsb.org/view/1AJV.pdb"),
