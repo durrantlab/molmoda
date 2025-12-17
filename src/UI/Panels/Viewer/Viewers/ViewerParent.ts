@@ -422,6 +422,7 @@ export abstract class ViewerParent {
     addTreeNodeList(treeNodeList: TreeNodeList): Promise<TreeNode>[] {
         // Add all the models and put them in the cache.
         const addMolPromises: Promise<TreeNode>[] = [];
+
         for (let idx = 0; idx < treeNodeList.length; idx++) {
             const treeNode = treeNodeList.get(idx);
             const id = treeNode.id as string;
@@ -880,6 +881,13 @@ export abstract class ViewerParent {
      * @param {GenericModelType} model  The model to make NOT hoverable.
      */
     abstract makeAtomsNotHoverable(model: GenericModelType): void;
+
+ /**
+  * Sets the viewer to be clickable on the background (empty space).
+  *
+  * @param {Function} callback The callback to run when the background is clicked.
+  */
+ abstract setBackgroundClickable(callback: () => void): void;
 
     /**
      * Sets (updates) the style of an existing region.

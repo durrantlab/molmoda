@@ -36,6 +36,7 @@ export class Viewer3DMol extends ViewerParent {
     private _renderCooldownTimer: number | null = null;
     private _renderTrailingEdgeTimer: number | null = null;
     private _isInRenderCooldown = false;
+    private _atomClicked = false;
 
     // Time after initial (immediate) render before we allow another render. In
     // other words, cooldown after an immediate render.
@@ -693,6 +694,7 @@ export class Viewer3DMol extends ViewerParent {
         );
 
         viewer.setBackgroundColor(0xffffff);
+
         this._mol3dObj = viewer;
 
         // Changing the thickness of the fog doesn't seem to be
@@ -856,6 +858,9 @@ export class Viewer3DMol extends ViewerParent {
             {},
             true,
             (atom: any /* _viewer: any, _event: any, _container: any */) => {
+                this._atomClicked = true;
+                setTimeout(() => { this._atomClicked = false; }, 200);
+
                 this.centerOnPoint(atom.x, atom.y, atom.z);
                 setTimeout(() => {
                     // Delay the callback so that the centering has time to
@@ -1057,5 +1062,24 @@ export class Viewer3DMol extends ViewerParent {
      */
     setView(view: number[]) {
         this._mol3dObj.setView(view);
+    }
+
+    /**
+     * Sets the viewer to be clickable on the background (empty space).
+     *
+     * @param {Function} callback The callback to run when the background is clicked.
+     */
+    setBackgroundClickable(callback: () => void) {
+        if (!this._mol3dObj) return;
+        const canvas = this._mol3dObj.getCanvas();
+        canvas.addEventListener("click", () => {
+            setTimeout(() => {
+                if (!this._atomClicked) {
+                    callback();
+                }
+                // Ensure flag is reset in case atom click handler didn't fire or timing was off
+                this._atomClicked = false;
+            }, 50);
+        });
     }
 }

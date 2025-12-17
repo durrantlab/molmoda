@@ -118,6 +118,11 @@ export default class ViewerPanel extends Vue {
             window["viewer"] = viewer;
 
             api.visualization.viewerObj = viewer;
+
+            viewer.setBackgroundClickable(() => {
+              api.plugins.runPlugin("clearselection");
+            });
+
             this.$emit("onViewerLoaded");
             return viewer;
           });
@@ -247,8 +252,8 @@ export default class ViewerPanel extends Vue {
     if (justColorCarbons) {
       // Just color the carbons yellow
       for (let key in style) {
-  if (key === "selection" || key === "moleculeId" || key === "hydrogens") {
-    // Don't change the selection or hydrogens.
+        if (key === "selection" || key === "moleculeId" || key === "hydrogens") {
+          // Don't change the selection or hydrogens.
           continue;
         }
         if (style[key]["color"]) {
@@ -260,8 +265,8 @@ export default class ViewerPanel extends Vue {
     } else {
       // Color everything yellow.
       for (let key in style) {
-  if (key === "selection" || key === "moleculeId" || key === "hydrogens") {
-    // Don't change the selection or hydrogens.
+        if (key === "selection" || key === "moleculeId" || key === "hydrogens") {
+          // Don't change the selection or hydrogens.
           continue;
         }
 
@@ -376,7 +381,7 @@ export default class ViewerPanel extends Vue {
           // if (treeNode.type === TreeNodeType.Solvent) {
           //   debugger;
           // }
-    if (key === "selection" || key === "hydrogens") {
+          if (key === "selection" || key === "hydrogens") {
             // Don't change the selection.
             continue;
           }
