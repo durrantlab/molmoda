@@ -514,6 +514,30 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                     if (align && pdbId === referenceId) continue;
                     try {
                         let mobileFileInfo = await loadPdbIdToFileInfo(pdbId);
+                        // If filtering by ligands, check BEFORE alignment to save time
+                        if (hasLigands) {
+                            const tempNode = await TreeNode.loadFromFileInfo({
+                                fileInfo: mobileFileInfo,
+                                tag: this.pluginId,
+                                addToTree: false,
+                            } as ILoadMolParams);
+                            if (!tempNode) {
+                                console.warn(`Failed to parse structure for PDB ID ${pdbId}.`);
+                                continue;
+                            }
+                            const tempList = new TreeNodeList([tempNode]);
+                            const hasCompound = tempList.terminals.some(
+                                (node) => node.type === TreeNodeType.Compound
+                            );
+                            if (!hasCompound) {
+                                continue; // Skip if no compound found
+                            }
+                            // If we're not aligning, we can just use this node
+                            if (!align) {
+                                tempList.addToMainTree(this.pluginId);
+                                continue;
+                            }
+                        }
                         if (align && referenceFileInfo) {
                             const aligned = await alignFileInfos(referenceFileInfo, [
                                 mobileFileInfo,
@@ -525,8 +549,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                                 console.warn(`Alignment failed for ${pdbId}, loading unaligned structure.`);
                             }
                         }
-
-                        // Check if ligands are present if required
+                        // Check if ligands are present if required (and not already added above)
                         const node = await TreeNode.loadFromFileInfo({
                             fileInfo: mobileFileInfo,
                             tag: this.pluginId,
@@ -537,22 +560,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                             continue;
                         }
                         const tempList = new TreeNodeList([node])
-
-                        // This works, but entries with ligands are still
-                        // present in the table, even if they are not present in
-                        // the final tree. Also, I think it is aligning even if
-                        // it doesn't have a ligand. Need to check.
-
-                        if (hasLigands) {
-                            console.log("MOO", tempList.terminals.length);
-                            const hasCompound = tempList.terminals.some(
-                                (node) => node.type === TreeNodeType.Compound
-                            );
-                            if (!hasCompound) {
-                                continue;
-                            }
-                        }
-
                         // Add to main tree
                         tempList.addToMainTree(this.pluginId);
 
@@ -706,7 +713,8 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#modal-tabledatapopup", "1AJX")  // has ligands
                     .waitUntilRegex("#modal-tabledatapopup", "1G6L")  // no ligands
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV"),
+                    .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV")
+                    .waitUntilRegex("#navigator", "1G6L-aligned-to-1AJV")  // no ligands
             },
             // Test 9: Search WITH Has Ligands (should find 1AJX but NOT 1G6L)
             {
@@ -719,7 +727,9 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .waitUntilRegex("#modal-tabledatapopup", "1GNO")  // has ligands
                     .waitUntilNotRegex("#modal-tabledatapopup", "1G6L")  // no ligands
                     .click("#modal-tabledatapopup .cancel-btn")
-                    .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV"),
+                    .waitUntilRegex("#navigator", "1AJX-aligned-to-1AJV")
+                    .waitUntilRegex("#navigator", "1GNO-aligned-to-1AJV")  // has ligands
+                    .waitUntilNotRegex("#navigator", "1G6L-aligned-to-1AJV")  // no ligands
             },
         ];
         return tests;

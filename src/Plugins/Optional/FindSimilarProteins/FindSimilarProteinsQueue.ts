@@ -41,7 +41,7 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 maxResults,
                 queryIdentifiers, // Now an array of strings
                 query, // This is now the list of sources
-    // hasLigands, // Ignored in query, handled in plugin
+                hasLigands, // Handled here now
             } = jobInfo.input;
 
             // Sequence is passed from the plugin after processing
@@ -62,10 +62,29 @@ export class FindSimilarProteinsQueue extends QueueParent {
                 },
             };
 
-   // Always use the simple sequence query, regardless of hasLigands setting.
-   // Filtering for ligands will be done post-download in the plugin.
+            let finalQuery: any = sequenceQuery;
+
+            if (hasLigands) {
+                const ligandQuery = {
+                    type: "terminal",
+                    service: "text",
+                    parameters: {
+                        attribute: "rcsb_entry_info.nonpolymer_entity_count",
+                        operator: "greater",
+                        value: 0,
+                    },
+                };
+
+                finalQuery = {
+                    type: "group",
+                    logical_operator: "and",
+                    nodes: [sequenceQuery, ligandQuery],
+                };
+            }
+
+            // 3. Make the API call
             const apiQuery = {
-                query: sequenceQuery,
+                query: finalQuery,
                 return_type: "entry",
                 request_options: {
                     paginate: {
