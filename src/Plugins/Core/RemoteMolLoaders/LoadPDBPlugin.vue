@@ -255,9 +255,20 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "may be too large"
                 ),
             },
-
-
-
+            {
+                name: "Merge bonded compounds (6LQ4)",
+                pluginOpen: () => new TestCmdList().setUserArg(
+                    "pdbId",
+                    "6LQ4",
+                    this.pluginId
+                ),
+    afterPluginCloses: () => new TestCmdList()
+     .openPlugin("expandall")
+     .waitUntilRegex(
+                    "#navigator",
+                    "MYR:702-COA:703"
+                ),
+            },
         ];
     }
 }
