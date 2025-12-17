@@ -9,6 +9,7 @@ import {
     ISphere,
     RegionType,
     SelectedType,
+ IRegion,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     GenericSurfaceType,
@@ -26,7 +27,6 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { HydrogenDisplayType, ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { getNamedPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { waitForCondition } from "@/Core/Utils/MiscUtils";
-import { IRegion } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
  * Viewer3DMol
@@ -80,9 +80,8 @@ export class Viewer3DMol extends ViewerParent {
     _removeRegion(id: string) {
         // remove from viewer
         const region = this.lookup(id);
-        if (region) {
+  if (region && typeof region !== "string") {
             this._mol3dObj.removeShape(region);
-
             // Also remove label
             this.destroyRegionLabel(id);
         }
@@ -121,7 +120,7 @@ export class Viewer3DMol extends ViewerParent {
      */
     hideRegion(id: string) {
         const region = this.lookup(id);
-        if (region) {
+  if (region && typeof region !== "string") {
             region.hidden = true;
             this.destroyRegionLabel(id);
         }
@@ -148,7 +147,7 @@ export class Viewer3DMol extends ViewerParent {
      */
     showRegion(id: string, opacity: number) {
         const region = this.lookup(id);
-        if (region) {
+  if (region && typeof region !== "string") {
             region.hidden = false;
             region.opacity = opacity;
 
@@ -164,7 +163,7 @@ export class Viewer3DMol extends ViewerParent {
      */
     createRegionLabel(id: string, text: string) {
         const region = this.lookup(id);
-        if (region) {
+  if (region && typeof region !== "string") {
             console.log("CREATE: ", id, text);
 
             // Delete old label
@@ -396,8 +395,7 @@ export class Viewer3DMol extends ViewerParent {
             radius: region.radius,
             color: region.color,
         });
-        this._setRegionOpacity(sphere, region?.opacity);
-        return Promise.resolve(sphere);
+        return this._setRegionOpacity(sphere, region?.opacity).then(() => sphere);
     }
 
     /**
@@ -423,10 +421,7 @@ export class Viewer3DMol extends ViewerParent {
             },
             color: region.color,
         });
-
-        this._setRegionOpacity(box, region?.opacity);
-
-        return Promise.resolve(box);
+        return this._setRegionOpacity(box, region?.opacity).then(() => box);
     }
 
     /**
@@ -451,8 +446,7 @@ export class Viewer3DMol extends ViewerParent {
             color: region.color,
             radiusRatio: region.radiusRatio,
         });
-        this._setRegionOpacity(arrow, region?.opacity);
-        return Promise.resolve(arrow);
+        return this._setRegionOpacity(arrow, region?.opacity).then(() => arrow);
     }
 
     /**
@@ -479,8 +473,7 @@ export class Viewer3DMol extends ViewerParent {
             toCap: 2,
             dashed: region.dashed,
         });
-        this._setRegionOpacity(cylinder, region?.opacity);
-        return Promise.resolve(cylinder);
+        return this._setRegionOpacity(cylinder, region?.opacity).then(() => cylinder);
     }
 
     /**
@@ -488,14 +481,18 @@ export class Viewer3DMol extends ViewerParent {
      *
      * @param {any}                region    The region to set the opacity of.
      * @param {number | undefined} opacity  The opacity to set.
+  * @returns {Promise<void>} A promise that resolves when the opacity is set and render called.
      */
-    private _setRegionOpacity(region: any, opacity: number | undefined) {
-        setTimeout(() => {
-            // Not sure why, but this needs to be in a setTimeout for the
-            // opacity to actually change.
-            region.opacity = opacity || 0.8;
-            this.renderAll();
-        }, 0);
+    private _setRegionOpacity(region: any, opacity: number | undefined): Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                // Not sure why, but this needs to be in a setTimeout for the
+                // opacity to actually change.
+                region.opacity = opacity || 0.8;
+                this.renderAll();
+                resolve();
+            }, 0);
+        });
     }
 
     /**
@@ -1096,20 +1093,20 @@ export class Viewer3DMol extends ViewerParent {
      *        update.
      */
     updateRegionStyle(treeNode: TreeNode) {
-  // Rather than update the region, we remove it and re-add it. This is
-  // because the 3DMoljs viewer does not have a way to update the position
-  // as best I can tell.
+        // Rather than update the region, we remove it and re-add it. This is
+        // because the 3DMoljs viewer does not have a way to update the position
+        // as best I can tell.
         const id = treeNode.id as string;
-  const regionStyle = JSON.parse(
+        const regionStyle = JSON.parse(
             JSON.stringify(treeNode.region as IRegion)
         );
         if (treeNode.selected !== SelectedType.False) {
             // yellow
-   regionStyle.color = "#ffff00";
-   regionStyle.opacity = 0.75;
+            regionStyle.color = "#ffff00";
+            regionStyle.opacity = 0.75;
         }
-  // Always remove any old regions.
-  this.addRegion(regionStyle)
+        // Always remove any old regions.
+        this.addRegion(regionStyle)
             .then(async (region: GenericRegionType) => {
                 // Remove previous region if it exists
                 this._removeRegion(id);
@@ -1126,5 +1123,55 @@ export class Viewer3DMol extends ViewerParent {
             .catch((err: Error) => {
                 throw err;
             });
+    }
+    /**
+     * Checks if two arrays are equal.
+     *
+     * @param {any[]} a First array.
+     * @param {any[]} b Second array.
+     * @returns {boolean} True if equal.
+     */
+    protected areArraysEqual(a: any[], b: any[]): boolean {
+        if (a === b) return true;
+        if (a == null || b == null) return false;
+        if (a.length !== b.length) return false;
+        for (let i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) return false;
+        }
+        return true;
+    }
+    /**
+     * Gets the text to show when mouse hovers over an atom.
+     *
+     * @param {string} chain  The chain id.
+     * @param {string} resn   The residue name.
+     * @param {string} resi   The residue index.
+     * @param {string} atomName  The atom name.
+     * @returns {string | undefined}  The text to show, or undefined if no text
+     *   should be shown.
+     */
+    protected hoverLabelText(
+        chain?: string,
+        resn?: string,
+        resi?: string,
+        atomName?: string
+    ): string | undefined {
+        const lbls: string[] = [];
+        if (chain) {
+            lbls.push(chain);
+        }
+        if (resn) {
+            lbls.push(resn);
+        }
+        if (resi) {
+            lbls.push(resi);
+        }
+        if (atomName) {
+            lbls.push(atomName);
+        }
+        if (lbls.length > 0) {
+            return lbls.join(":");
+        }
+        return undefined;
     }
 }
