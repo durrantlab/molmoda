@@ -77,6 +77,7 @@ const smiLikeSeparators = [
 
 const noBondOrdersWarning =
     " files do not describe bond orders. One can reliably infer bond orders for most macromolecules (e.g., proteins). For small molecules, consider a format like SDF or MOL2 instead.";
+
 const noCoordinatesWarning =
     " files do not include 3D atomic coordinates. Consider a format like SDF or MOL2 if coordinates are essential.";
 
@@ -115,7 +116,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         exts: ["cif"],
         description: "Crystallographic Information File",
         hasBondOrders: false,
-        loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken. Actually, open babel too. Doesn't do multi-frame CIF files.
+  loader: MolLoader.OpenBabel, // 3dmol.js cif parser seems to be broken. Open Babel handles multi-frame CIFs correctly via direct conversion.
         frameSeparators: cifLikeSeparators,
         extractMolNameRegex: cifLikeNames,
         neverDesalt: true,

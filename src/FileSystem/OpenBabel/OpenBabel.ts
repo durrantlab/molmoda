@@ -55,7 +55,7 @@ export function getGen3DUserArg(
     label: string,
     description: string,
     includeNoneOption = false,
- defaultVal = Gen3DLevel.Default
+    defaultVal = Gen3DLevel.Default
 ): IUserArgSelect {
     const options = [
         {
@@ -90,8 +90,8 @@ export function getGen3DUserArg(
     if (includeNoneOption) {
         options.unshift({
             description:
-    "recommended: max forcefield optimization and thorough conformer search",
-   val: "best",
+                "recommended: max forcefield optimization and thorough conformer search",
+            val: "best",
         });
         options.unshift({
             description: "none: do not generate 3D coordinates",
@@ -310,6 +310,7 @@ async function convertToNewFormat(
             gen3D?.whichMols === undefined
                 ? WhichMolsGen3D.OnlyIfLacks3D
                 : gen3D.whichMols;
+
         if (gen3D?.level === Gen3DLevel.None) {
             // A second way to say no 3D generation.
             whichMols = WhichMolsGen3D.None;
@@ -324,7 +325,7 @@ async function convertToNewFormat(
                 cmds.push(...["--gen3D", level]);
                 break;
             case WhichMolsGen3D.OnlyIfLacks3D:
-                if (fileInfo.auxData.lacks3D === true) {
+                if (fileInfo.auxData && fileInfo.auxData.lacks3D === true) {
                     cmds.push(...["--gen3D", level]);
                 }
                 break;
@@ -351,6 +352,7 @@ async function convertToNewFormat(
         const formatInfo = getFormatInfoGivenType(targetFormat);
 
         const extToUse = formatInfo?.obabelFormatName ?? targetFormat;
+
         cmds.push(...["-O", "tmpout." + extToUse]);
 
         if (formatInfo?.extraObabelArgs !== undefined) {
@@ -403,7 +405,24 @@ export async function convertFileInfosOpenBabel(
 
     const msgTimer = considerThreeDNeededWarning(formatInfos);
 
-    const fileInfos = await separateFiles(srcFileInfos, formatInfos);
+    // If the format is CIF or MCIF, do not separate files. This is because
+    // the intermediate CIF writing by Open Babel can be lossy (stripping
+    // polymer entity info), causing the subsequent PDB conversion to fail
+    // to identify chains correctly.
+    const skipSeparation = formatInfos.some(
+        (f) => f?.primaryExt === "cif" || f?.primaryExt === "mcif"
+    );
+
+    let fileInfos: FileInfo[];
+    if (skipSeparation) {
+        fileInfos = srcFileInfos;
+        // Initialize auxData if missing, as separateFiles usually does this
+        fileInfos.forEach((f, i) => {
+            if (!f.auxData) f.auxData = formatInfos[i];
+        });
+    } else {
+        fileInfos = await separateFiles(srcFileInfos, formatInfos);
+    }
 
     const outputFiles = await convertToNewFormat(
         fileInfos,
@@ -420,6 +439,7 @@ export async function convertFileInfosOpenBabel(
         clearTimeout(msgTimer);
         // messagesApi.closePopupMessage();
     }
+
     return outputFiles;
 
     // .catch((err: any) => {
