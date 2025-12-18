@@ -95,25 +95,28 @@ export class TreeNodeListNodeActions {
         if (cached) {
             return cached;
         }
-        /**
-         * A recursive function to find the terminal leaves of mols.
-         *
-         * @param  {TreeNodeList} mls  The hierarchical array of TreeNode to
-         *                                search.
-         * @returns {TreeNodeList}  The flat array of nodes.
-         */
-        const findNodes = (mls: TreeNodeList): TreeNodeList => {
-            const allNodes = mls.newTreeNodeList();
-
-            mls.forEach((mol: TreeNode) => {
-                allNodes.push(mol);
-                if (mol.nodes) {
-                    allNodes.extend(findNodes(mol.nodes));
+        const resultNodes: TreeNode[] = [];
+        // Use a stack for iterative traversal to avoid recursion limits and improve performance.
+        const stack: TreeNode[] = [];
+        const rootNodes = this.parentTreeNodeList.nodes;
+        // Initialize stack with root nodes in reverse order so they are popped in the correct order.
+        for (let i = rootNodes.length - 1; i >= 0; i--) {
+            stack.push(rootNodes[i]);
+        }
+        while (stack.length > 0) {
+            const node = stack.pop();
+            if (node) {
+                resultNodes.push(node);
+                if (node.nodes && node.nodes.length > 0) {
+                    const children = node.nodes.nodes;
+                    // Push children in reverse order to maintain Pre-order traversal
+                    for (let i = children.length - 1; i >= 0; i--) {
+                        stack.push(children[i]);
+                    }
                 }
-            });
-            return allNodes;
-        };
-        const result = findNodes(this.parentTreeNodeList);
+            }
+        }
+        const result = this.parentTreeNodeList.newTreeNodeList(resultNodes);
         setFlattenedInCache(this.parentTreeNodeList, result);
         return result;
     }
