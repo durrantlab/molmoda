@@ -1,6 +1,6 @@
 <template>
   <div :class="cls">
- <FormFull v-model="constructedColorForm" id="colorscheme-form" spacing="0"></FormFull>
+    <FormFull v-model="constructedColorForm" id="colorscheme-form" spacing="0"></FormFull>
   </div>
 </template>
 

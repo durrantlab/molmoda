@@ -84,22 +84,27 @@ export const allColorSchemeDefinitions: IColorSchemeDefinition[] = [
  */
 const _addColorToStyle = memoize(
     function (colorScheme: IColorScheme, color: string): IColorScheme {
-        let strColorScheme = JSON.stringify(colorScheme);
+        const newColorScheme = { ...colorScheme };
+        const replacePlaceholders = (val: string): string => {
+            let newVal = val;
+            if (newVal.indexOf("#HEX") > -1) {
+                newVal = newVal.replace(/#HEX/g, color);
+            }
+            if (newVal.indexOf("#COLORNAME") > -1) {
+                newVal = newVal.replace(/#COLORNAME/g, hexToColorName(color));
+            }
+            return newVal;
+        };
 
-        // Has #HEX?
-        if (strColorScheme.indexOf("#HEX") > -1) {
-            strColorScheme = strColorScheme.replace(/#HEX/g, color);
+        if (typeof newColorScheme.color === "string") {
+            newColorScheme.color = replacePlaceholders(newColorScheme.color);
         }
-
-        // Has #COLORNAME?
-        if (strColorScheme.indexOf("#COLORNAME") > -1) {
-            strColorScheme = strColorScheme.replace(
-                /#COLORNAME/g,
-                hexToColorName(color)
+        if (typeof newColorScheme.colorscheme === "string") {
+            newColorScheme.colorscheme = replacePlaceholders(
+                newColorScheme.colorscheme
             );
         }
-
-        return JSON.parse(strColorScheme);
+        return newColorScheme;
     },
     (...args) => JSON.stringify(args)
 );
