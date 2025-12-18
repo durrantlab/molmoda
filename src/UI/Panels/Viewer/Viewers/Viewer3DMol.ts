@@ -9,7 +9,7 @@ import {
     ISphere,
     RegionType,
     SelectedType,
- IRegion,
+    IRegion,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
     GenericSurfaceType,
@@ -54,6 +54,9 @@ export class Viewer3DMol extends ViewerParent {
     // region itself.
     private _regionLabels: { [key: string]: GenericLabelType } = {};
 
+    // Track mouse down position to prevent click events on drag
+    private _mouseDownPosition: { x: number; y: number } | null = null;
+
     /**
      * Removes a model from the viewer.
      *
@@ -80,7 +83,7 @@ export class Viewer3DMol extends ViewerParent {
     _removeRegion(id: string) {
         // remove from viewer
         const region = this.lookup(id);
-  if (region && typeof region !== "string") {
+        if (region && typeof region !== "string") {
             this._mol3dObj.removeShape(region);
             // Also remove label
             this.destroyRegionLabel(id);
@@ -120,7 +123,7 @@ export class Viewer3DMol extends ViewerParent {
      */
     hideRegion(id: string) {
         const region = this.lookup(id);
-  if (region && typeof region !== "string") {
+        if (region && typeof region !== "string") {
             region.hidden = true;
             this.destroyRegionLabel(id);
         }
@@ -147,7 +150,7 @@ export class Viewer3DMol extends ViewerParent {
      */
     showRegion(id: string, opacity: number) {
         const region = this.lookup(id);
-  if (region && typeof region !== "string") {
+        if (region && typeof region !== "string") {
             region.hidden = false;
             region.opacity = opacity;
 
@@ -163,7 +166,7 @@ export class Viewer3DMol extends ViewerParent {
      */
     createRegionLabel(id: string, text: string) {
         const region = this.lookup(id);
-  if (region && typeof region !== "string") {
+        if (region && typeof region !== "string") {
             console.log("CREATE: ", id, text);
 
             // Delete old label
@@ -1076,7 +1079,20 @@ export class Viewer3DMol extends ViewerParent {
     setBackgroundClickable(callback: () => void) {
         if (!this._mol3dObj) return;
         const canvas = this._mol3dObj.getCanvas();
-        canvas.addEventListener("click", () => {
+        // Track mouse down position
+        canvas.addEventListener("mousedown", (event: MouseEvent) => {
+            this._mouseDownPosition = { x: event.clientX, y: event.clientY };
+        });
+        canvas.addEventListener("click", (event: MouseEvent) => {
+            // Check if mouse moved significantly
+            if (this._mouseDownPosition) {
+                const dx = event.clientX - this._mouseDownPosition.x;
+                const dy = event.clientY - this._mouseDownPosition.y;
+                // Use a small threshold (e.g. 3 pixels) to account for tiny movements during a click
+                if (dx * dx + dy * dy > 9) {
+                    return;
+                }
+            }
             setTimeout(() => {
                 if (!this._atomClicked) {
                     callback();
@@ -1086,6 +1102,7 @@ export class Viewer3DMol extends ViewerParent {
             }, 50);
         });
     }
+
     /**
      * Sets (updates) the style of an existing region.
      *
@@ -1140,6 +1157,7 @@ export class Viewer3DMol extends ViewerParent {
         }
         return true;
     }
+
     /**
      * Gets the text to show when mouse hovers over an atom.
      *
