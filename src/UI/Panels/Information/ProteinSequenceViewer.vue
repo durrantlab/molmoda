@@ -44,8 +44,9 @@ import { colorNameToHex } from "@/Core/Styling/Colors/ColorUtils";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { pluginsApi } from "@/Api/Plugins";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import isEqual from "lodash.isequal";
 // --- Configuration Constants ---
 const LABEL_WIDTH = 40;  // Width of line number labels in pixels
 const AMINO_ACID_WIDTH = 15;
@@ -260,8 +261,16 @@ export default class ProteinSequenceViewer extends Vue {
      */
     disposeTooltips() {
         this.tooltipInstances.forEach(tooltip => {
-            if (tooltip && typeof tooltip.dispose === 'function') {
-                tooltip.dispose();
+            if (tooltip) {
+                try {
+                    if (typeof tooltip.dispose === 'function') {
+                        tooltip.dispose();
+                    }
+                } catch (e) {
+                    // Ignore errors during disposal to prevent "Cannot read properties of null (reading 'template')"
+                    // which can occur if the tooltip was in a transition state or already partially destroyed.
+                    // console.warn('Error disposing tooltip:', e);
+                }
             }
         });
         this.tooltipInstances = []; // Reset the array
@@ -285,7 +294,10 @@ export default class ProteinSequenceViewer extends Vue {
 
         const newProcessedLines: ProcessedLine[] = [];
         if (this.sequence.length === 0) {
-            this.processedSequenceLines = newProcessedLines;
+            // Don't update if nothing changed (equality check is done later for populated lists)
+            if (this.processedSequenceLines.length !== 0) {
+                this.processedSequenceLines = newProcessedLines;
+            }
             return;
         }
 
@@ -329,6 +341,12 @@ export default class ProteinSequenceViewer extends Vue {
                 residues: currentLineResidues
             });
         }
+        // Optimization: Deep equality check to prevent unnecessary updates.
+        // This prevents the tooltips from being destroyed/recreated when the sequence is functionally identical
+        // (e.g. when triggered by selection updates that don't change atoms).
+        if (isEqual(newProcessedLines, this.processedSequenceLines)) {
+            return;
+        }
         this.processedSequenceLines = newProcessedLines;
     }
 
@@ -363,7 +381,19 @@ export default class ProteinSequenceViewer extends Vue {
     async onSequenceChanged() {
         this.calculateLines();
     }
-
+    /**
+     * Watches for changes in the processed lines. When lines change (e.g. resize
+     * or new sequence), we must re-initialize tooltips.
+     */
+    @Watch("processedSequenceLines")
+    async onProcessedLinesChanged() {
+        // Dispose old tooltips before DOM update
+        this.disposeTooltips();
+        // Wait for DOM update
+        await this.$nextTick();
+        // Initialize new tooltips
+        this.initializeTooltips();
+    }
     /**
      * Lifecycle hook called when the component is mounted. Initializes tooltips
      * and sets up resize observer.
@@ -389,28 +419,8 @@ export default class ProteinSequenceViewer extends Vue {
         this.setupResizeObserver();
         this.currentRootContainerWidthPx = (this.$refs.rootContainer as HTMLElement)?.offsetWidth || 0;
         await this.calculateLines();
-        // Initialize tooltips after the first render and line calculation
-        await this.$nextTick();
-        this.initializeTooltips();
+        // initializeTooltips is handled by the watcher on processedSequenceLines or calculateLines
     }
-
-    /**
-     * Lifecycle hook called before the component is updated.
-     * Disposes of tooltips before the DOM is patched.
-     */
-    beforeUpdate() {
-        this.disposeTooltips();
-    }
-
-    /**
-     * Lifecycle hook called after the component’s DOM has been updated.
-     * Re-initializes tooltips on the new/updated DOM elements.
-     */
-    async updated() {
-        await this.$nextTick(); // Ensure DOM is fully updated
-        this.initializeTooltips();
-    }
-
     /**
      * Lifecycle hook called before the component is unmounted. Cleans up
      * tooltips and resize observer to prevent memory leaks.

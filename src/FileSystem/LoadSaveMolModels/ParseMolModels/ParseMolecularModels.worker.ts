@@ -600,13 +600,54 @@ function dividePDBAtomsIntoDistinctComponents(
     merged: false,
     connectedTo: [] as number[], // indices of other groups
    }));
-   // 3. Build connectivity graph
-   for (let i = 0; i < groups.length; i++) {
-    for (let j = i + 1; j < groups.length; j++) {
+   // 3. Build connectivity graph optimized with spatial hashing
+   const GRID_SIZE = 5.0; // Angstroms
+   const CUTOFF = 3.0; // Matches areGroupsBonded check distance threshold
+   const grid = new Map<string, number[]>();
+   
+   // Add groups to grid based on their bounding box
+   groups.forEach((g, idx) => {
+    const bounds = g.parser.getBounds();
+    if (!bounds) return;
+    const margin = CUTOFF / 2; // Expand bounds by half the cutoff on each side
+    const iMin = Math.floor((bounds.minX - margin) / GRID_SIZE);
+    const iMax = Math.floor((bounds.maxX + margin) / GRID_SIZE);
+    const jMin = Math.floor((bounds.minY - margin) / GRID_SIZE);
+    const jMax = Math.floor((bounds.maxY + margin) / GRID_SIZE);
+    const kMin = Math.floor((bounds.minZ - margin) / GRID_SIZE);
+    const kMax = Math.floor((bounds.maxZ + margin) / GRID_SIZE);
+    for (let i = iMin; i <= iMax; i++) {
+     for (let j = jMin; j <= jMax; j++) {
+      for (let k = kMin; k <= kMax; k++) {
+       const key = `${i},${j},${k}`;
+       if (!grid.has(key)) grid.set(key, []);
+       grid.get(key)!.push(idx);
+      }
+     }
+    }
+   });
+   // Identify potential pairs from the grid
+   const potentialPairs = new Set<string>();
+   for (const indices of grid.values()) {
+    if (indices.length < 2) continue;
+    for (let i = 0; i < indices.length; i++) {
+     for (let j = i + 1; j < indices.length; j++) {
+      const idx1 = indices[i];
+      const idx2 = indices[j];
+      // Canonical key to avoid duplicates (smaller index first)
+      const key = idx1 < idx2 ? `${idx1},${idx2}` : `${idx2},${idx1}`;
+      potentialPairs.add(key);
+     }
+    }
+   }
+   // Check bonds only for spatially adjacent groups
+   for (const pairKey of potentialPairs) {
+    const [s1, s2] = pairKey.split(",");
+    const i = parseInt(s1);
+    const j = parseInt(s2);
      if (areGroupsBonded(groups[i].parser, groups[j].parser)) {
       groups[i].connectedTo.push(j);
       groups[j].connectedTo.push(i);
-     }
     }
    }
    // 4. Traverse graph to find connected components

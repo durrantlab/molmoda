@@ -262,12 +262,12 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "6LQ4",
                     this.pluginId
                 ),
-    afterPluginCloses: () => new TestCmdList()
-     .openPlugin("expandall")
-     .waitUntilRegex(
-                    "#navigator",
-                    "MYR:702-COA:703"
-                ),
+                afterPluginCloses: () => new TestCmdList()
+                    .openPlugin("expandall")
+                    .waitUntilRegex(
+                        "#navigator",
+                        "MYR:702-COA:703"
+                    ),
             },
         ];
     }
