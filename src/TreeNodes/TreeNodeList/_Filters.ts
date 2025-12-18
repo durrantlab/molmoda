@@ -3,8 +3,8 @@ import { TreeNodeType, SelectedType } from "@/UI/Navigation/TreeView/TreeInterfa
 import type { TreeNode } from "../TreeNode/TreeNode";
 import type { TreeNodeList } from "./TreeNodeList";
 import {
- getTerminalsFromCache,
- setTerminalsInCache,
+    getTerminalsFromCache,
+    setTerminalsInCache,
 } from "../TreeCache";
 
 // Naming convention:
@@ -229,11 +229,15 @@ export class TreeNodeListFilters {
      * @returns {TreeNodeList} The filtered list.
      */
     public get onlyUnique(): TreeNodeList {
+        const seenIds = new Set<string | undefined>();
         // mol_filter_ok
-        return this.parentTreeNodeList.filter(
-            (node, index, self) =>
-                index === self.findIndex((t: TreeNode) => t.id === node.id)
-        );
+        return this.parentTreeNodeList.filter((node) => {
+            if (seenIds.has(node.id)) {
+                return false;
+            }
+            seenIds.add(node.id);
+            return true;
+        });
     }
 
     /**
@@ -325,9 +329,9 @@ export class TreeNodeListFilters {
      * @returns {TreeNodeList}  The array of terminal nodes.
      */
     public get onlyTerminal(): TreeNodeList {
-  const cached = getTerminalsFromCache(this.parentTreeNodeList);
-  if (cached) {
-   return cached;
+        const cached = getTerminalsFromCache(this.parentTreeNodeList);
+        if (cached) {
+            return cached;
         }
         /**
          * A recursive function to find the terminal leaves of mols.
@@ -349,7 +353,7 @@ export class TreeNodeListFilters {
             return leaves;
         };
         const result = findLeaves(this.parentTreeNodeList);
-  setTerminalsInCache(this.parentTreeNodeList, result);
+        setTerminalsInCache(this.parentTreeNodeList, result);
         return result;
     }
 

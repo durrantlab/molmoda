@@ -237,12 +237,12 @@ export abstract class QueueParent {
         while (true) {
             // Cancel in progress
             if (this.jobsCancelling) {
-              return;
+                return;
             }
 
             // No more input batches to add.
             if (this._inputBatches.length === 0) {
-              break;
+                break;
             }
 
             if (
@@ -256,7 +256,7 @@ export abstract class QueueParent {
             const inputBatch = this._inputBatches.shift();
             // No more input batches to add.
             if (!inputBatch) {
-              break;
+                break;
             }
 
             // Add jobs to the _jobsCurrentlyRunning list.
@@ -310,7 +310,9 @@ export abstract class QueueParent {
                     if (msg.indexOf("SharedArrayBuffer") !== -1) {
                         msg += ". Consider updating your Safari browser or using a different browser such as Google Chrome."
                     }
-                
+                    if (msg.indexOf("must not be shared") !== -1) {
+                        msg += ". This browser (likely Safari) does not support using SharedArrayBuffer with TextDecoder. We recommend using Google Chrome on Desktop for docking."
+                    }
                     messagesApi.popupError(msg);
                     throw new Error(msg);
                 });
@@ -325,10 +327,10 @@ export abstract class QueueParent {
             startInQueueStore(this._id, this._maxTotalProcs, () => {
                 // This function allows the queue to be cancelled from an external
                 // location.
-    
+
                 // To the extent possible, abort currently running jobs.
                 this.jobsCancelling = true;
-    
+
                 // Stop the timer that will try to submit additional jobs
                 clearInterval(this._queueTimer);
             });
