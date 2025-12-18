@@ -259,7 +259,35 @@ export abstract class EasyParserParent {
         const allZZero = zCoords.every((c) => c === 0);
         return allXZero || allYZero || allZZero;
     }
-
+    /**
+ * Builds a spatial grid for the atoms in this parser.
+ *
+ * @param {number} stride The stride to use when iterating atoms.
+ * @param {number} cellSize The size of each grid cell (should match query distance).
+ * @returns {Map<string, number[]>} A map where keys are "x,y,z" indices and values are arrays of atom indices.
+ */
+    private _buildSpatialGrid(stride: number, cellSize: number): Map<string, number[]> {
+        const grid = new Map<string, number[]>();
+        for (let i = 0; i < this.length; i += stride) {
+            const atom = this.getAtom(i);
+            if (
+                atom.x === undefined ||
+                atom.y === undefined ||
+                atom.z === undefined
+            ) {
+                continue;
+            }
+            const cx = Math.floor(atom.x / cellSize);
+            const cy = Math.floor(atom.y / cellSize);
+            const cz = Math.floor(atom.z / cellSize);
+            const key = `${cx},${cy},${cz}`;
+            if (!grid.has(key)) {
+                grid.set(key, []);
+            }
+            grid.get(key)!.push(i);
+        }
+        return grid;
+    }
     /**
      * Checks if any atom in this parser is within a specified distance of any atom
      * in another parser, optionally using strides to speed up the check.
@@ -311,7 +339,64 @@ export abstract class EasyParserParent {
             return false; // Bounding boxes are too far apart
         }
         // *** End Bounding Box Check ***
-
+        // *** Optimization 3: Spatial Hashing ***
+        // Heuristic: If we have a lot of comparisons to make (NxM > ~5000), build a grid.
+        // We build the grid on the larger molecule to minimize the overhead of grid construction
+        // relative to the number of lookups. Actually, cost is approx (Build N) + (Query M * 27).
+        // Minimizing (N + 27M) suggests we should build the grid on the larger set (N) so we only query 27*M times.
+        const count1 = Math.ceil(this.length / selfStride);
+        const count2 = Math.ceil(otherParser.length / otherStride);
+        if (count1 * count2 > 5000) {
+            // Identify which parser is larger to build the grid on it
+            let gridParser: EasyParserParent;
+            let queryParser: EasyParserParent;
+            let gridStride: number;
+            let queryStride: number;
+            if (count1 >= count2) {
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                gridParser = this;
+                gridStride = selfStride;
+                queryParser = otherParser;
+                queryStride = otherStride;
+            } else {
+                gridParser = otherParser;
+                gridStride = otherStride;
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
+                queryParser = this;
+                queryStride = selfStride;
+            }
+            const grid = gridParser._buildSpatialGrid(gridStride, distance);
+            for (let i = 0; i < queryParser.length; i += queryStride) {
+                const qAtom = queryParser.getAtom(i);
+                if (qAtom.x === undefined || qAtom.y === undefined || qAtom.z === undefined) continue;
+                const cx = Math.floor(qAtom.x / distance);
+                const cy = Math.floor(qAtom.y / distance);
+                const cz = Math.floor(qAtom.z / distance);
+                // Check neighbors (3x3x3 block)
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dz = -1; dz <= 1; dz++) {
+                            const key = `${cx + dx},${cy + dy},${cz + dz}`;
+                            const binIndices = grid.get(key);
+                            if (!binIndices) continue;
+                            // Check atoms in this bin
+                            for (const idx of binIndices) {
+                                const gAtom = gridParser.getAtom(idx);
+                                const distSq =
+                                    (qAtom.x - gAtom.x!) ** 2 +
+                                    (qAtom.y - gAtom.y!) ** 2 +
+                                    (qAtom.z - gAtom.z!) ** 2;
+                                if (distSq <= distanceSqThreshold) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        // *** Fallback: Brute Force (Original Logic) ***
         for (let i = 0; i < this.length; i += selfStride) {
             const atom1 = this.getAtom(i);
             // Ensure atom1 has coordinates

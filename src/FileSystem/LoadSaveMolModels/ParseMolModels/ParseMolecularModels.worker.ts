@@ -46,22 +46,22 @@ enum NodesOrModel {
 
 const COLLAPSE_ONE_NODE_LEVELS = false;
 const COVALENT_RADII: { [key: string]: number } = {
- H: 0.31, HE: 0.28, LI: 1.28, BE: 0.96, B: 0.84, C: 0.76,
- N: 0.71, O: 0.66, F: 0.57, NE: 0.58, NA: 1.66, MG: 1.41,
- AL: 1.21, SI: 1.11, P: 1.07, S: 1.05, CL: 1.02, K: 2.03,
- CA: 1.76, SC: 1.57, TI: 1.48, V: 1.44, CR: 1.39, MN: 1.39,
- FE: 1.32, CO: 1.26, NI: 1.24, CU: 1.32, ZN: 1.22, GA: 1.22,
- GE: 1.20, AS: 1.19, SE: 1.20, BR: 1.20, KR: 1.16, RB: 2.20,
- SR: 1.95, Y: 1.90, ZR: 1.75, NB: 1.64, MO: 1.54, TC: 1.47,
- RU: 1.46, RH: 1.42, PD: 1.39, AG: 1.45, CD: 1.44, IN: 1.42,
- SN: 1.39, SB: 1.39, TE: 1.38, I: 1.39, XE: 1.40, CS: 2.44,
- BA: 2.15, LA: 2.07, CE: 2.04, PR: 2.03, ND: 2.01, PM: 1.99,
- SM: 1.98, EU: 1.98, GD: 1.96, TB: 1.94, DY: 1.92, HO: 1.92,
- ER: 1.89, TM: 1.90, YB: 1.87, LU: 1.87, HF: 1.75, TA: 1.70,
- W: 1.62, RE: 1.51, OS: 1.44, IR: 1.41, PT: 1.36, AU: 1.36,
- HG: 1.32, TL: 1.45, PB: 1.46, BI: 1.48, PO: 1.40, AT: 1.50,
- RN: 1.50, FR: 2.60, RA: 2.21, AC: 2.15, TH: 2.06, PA: 2.00,
- U: 1.96, NP: 1.90, PU: 1.87, AM: 1.80, CM: 1.69
+    H: 0.31, HE: 0.28, LI: 1.28, BE: 0.96, B: 0.84, C: 0.76,
+    N: 0.71, O: 0.66, F: 0.57, NE: 0.58, NA: 1.66, MG: 1.41,
+    AL: 1.21, SI: 1.11, P: 1.07, S: 1.05, CL: 1.02, K: 2.03,
+    CA: 1.76, SC: 1.57, TI: 1.48, V: 1.44, CR: 1.39, MN: 1.39,
+    FE: 1.32, CO: 1.26, NI: 1.24, CU: 1.32, ZN: 1.22, GA: 1.22,
+    GE: 1.20, AS: 1.19, SE: 1.20, BR: 1.20, KR: 1.16, RB: 2.20,
+    SR: 1.95, Y: 1.90, ZR: 1.75, NB: 1.64, MO: 1.54, TC: 1.47,
+    RU: 1.46, RH: 1.42, PD: 1.39, AG: 1.45, CD: 1.44, IN: 1.42,
+    SN: 1.39, SB: 1.39, TE: 1.38, I: 1.39, XE: 1.40, CS: 2.44,
+    BA: 2.15, LA: 2.07, CE: 2.04, PR: 2.03, ND: 2.01, PM: 1.99,
+    SM: 1.98, EU: 1.98, GD: 1.96, TB: 1.94, DY: 1.92, HO: 1.92,
+    ER: 1.89, TM: 1.90, YB: 1.87, LU: 1.87, HF: 1.75, TA: 1.70,
+    W: 1.62, RE: 1.51, OS: 1.44, IR: 1.41, PT: 1.36, AU: 1.36,
+    HG: 1.32, TL: 1.45, PB: 1.46, BI: 1.48, PO: 1.40, AT: 1.50,
+    RN: 1.50, FR: 2.60, RA: 2.21, AC: 2.15, TH: 2.06, PA: 2.00,
+    U: 1.96, NP: 1.90, PU: 1.87, AM: 1.80, CM: 1.69
 };
 const DEFAULT_COVALENT_RADIUS = 0.76; // Approx Carbon
 const BONDING_TOLERANCE = 0.45;
@@ -72,8 +72,8 @@ const BONDING_TOLERANCE = 0.45;
  * @returns {number} The radius.
  */
 function getAtomRadius(atom: IAtom): number {
- const elem = atom.elem ? atom.elem.toUpperCase() : "";
- return COVALENT_RADII[elem] || DEFAULT_COVALENT_RADIUS;
+    const elem = atom.elem ? atom.elem.toUpperCase() : "";
+    return COVALENT_RADII[elem] || DEFAULT_COVALENT_RADIUS;
 }
 /**
  * Checks if two groups of atoms are bonded.
@@ -83,27 +83,27 @@ function getAtomRadius(atom: IAtom): number {
  * @returns {boolean} True if bonded.
  */
 function areGroupsBonded(group1: EasyParserParent, group2: EasyParserParent): boolean {
- // Optimization: Check bounding boxes with a generous cutoff first
- // Max bond dist roughly 2.5A (S-S + tolerance).
- if (!group1.isWithinDistance(group2, 3.0)) {
-  return false;
- }
- for (let i = 0; i < group1.length; i++) {
-  const a1 = group1.getAtom(i);
-  if (a1.x === undefined || a1.y === undefined || a1.z === undefined) continue;
-  const r1 = getAtomRadius(a1);
-  for (let j = 0; j < group2.length; j++) {
-   const a2 = group2.getAtom(j);
-   if (a2.x === undefined || a2.y === undefined || a2.z === undefined) continue;
-   const r2 = getAtomRadius(a2);
-   const distSq = (a1.x - a2.x) ** 2 + (a1.y - a2.y) ** 2 + (a1.z - a2.z) ** 2;
-   const threshold = r1 + r2 + BONDING_TOLERANCE;
-   if (distSq <= threshold * threshold) {
-    return true;
-   }
-  }
- }
- return false;
+    // Optimization: Check bounding boxes with a generous cutoff first
+    // Max bond dist roughly 2.5A (S-S + tolerance).
+    if (!group1.isWithinDistance(group2, 3.0)) {
+        return false;
+    }
+    for (let i = 0; i < group1.length; i++) {
+        const a1 = group1.getAtom(i);
+        if (a1.x === undefined || a1.y === undefined || a1.z === undefined) continue;
+        const r1 = getAtomRadius(a1);
+        for (let j = 0; j < group2.length; j++) {
+            const a2 = group2.getAtom(j);
+            if (a2.x === undefined || a2.y === undefined || a2.z === undefined) continue;
+            const r2 = getAtomRadius(a2);
+            const distSq = (a1.x - a2.x) ** 2 + (a1.y - a2.y) ** 2 + (a1.z - a2.z) ** 2;
+            const threshold = r1 + r2 + BONDING_TOLERANCE;
+            if (distSq <= threshold * threshold) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 /**
  * Helper function to generate default mol container (used throughout).
@@ -581,108 +581,108 @@ function dividePDBAtomsIntoDistinctComponents(
         // Everything else is a compound, grouped by residue
         const remainingAtoms = molWithAtomsToDivide.atoms;
         if (remainingAtoms.length > 0) {
-   // 1. Group by residue ID
+            // 1. Group by residue ID
             const atomsByResidue: { [key: string]: IAtom[] } = {};
-   const resKeys: string[] = [];
+            const resKeys: string[] = [];
             remainingAtoms.forEach((atom) => {
                 const resId = `${atom.resn}:${atom.resi}:${atom.chain || "A"}`;
-    if (!atomsByResidue[resId]) {
-     atomsByResidue[resId] = [];
-     resKeys.push(resId);
-    }
+                if (!atomsByResidue[resId]) {
+                    atomsByResidue[resId] = [];
+                    resKeys.push(resId);
+                }
                 atomsByResidue[resId].push(atom);
             });
-   // 2. Create parsers for each group to use optimization features
-   const groups = resKeys.map((key) => ({
-    key,
-    atoms: atomsByResidue[key],
-    parser: makeEasyParser(atomsByResidue[key]),
-    merged: false,
-    connectedTo: [] as number[], // indices of other groups
-   }));
-   // 3. Build connectivity graph optimized with spatial hashing
-   const GRID_SIZE = 5.0; // Angstroms
-   const CUTOFF = 3.0; // Matches areGroupsBonded check distance threshold
-   const grid = new Map<string, number[]>();
-   
-   // Add groups to grid based on their bounding box
-   groups.forEach((g, idx) => {
-    const bounds = g.parser.getBounds();
-    if (!bounds) return;
-    const margin = CUTOFF / 2; // Expand bounds by half the cutoff on each side
-    const iMin = Math.floor((bounds.minX - margin) / GRID_SIZE);
-    const iMax = Math.floor((bounds.maxX + margin) / GRID_SIZE);
-    const jMin = Math.floor((bounds.minY - margin) / GRID_SIZE);
-    const jMax = Math.floor((bounds.maxY + margin) / GRID_SIZE);
-    const kMin = Math.floor((bounds.minZ - margin) / GRID_SIZE);
-    const kMax = Math.floor((bounds.maxZ + margin) / GRID_SIZE);
-    for (let i = iMin; i <= iMax; i++) {
-     for (let j = jMin; j <= jMax; j++) {
-      for (let k = kMin; k <= kMax; k++) {
-       const key = `${i},${j},${k}`;
-       if (!grid.has(key)) grid.set(key, []);
-       grid.get(key)!.push(idx);
-      }
-     }
-    }
-   });
-   // Identify potential pairs from the grid
-   const potentialPairs = new Set<string>();
-   for (const indices of grid.values()) {
-    if (indices.length < 2) continue;
-    for (let i = 0; i < indices.length; i++) {
-     for (let j = i + 1; j < indices.length; j++) {
-      const idx1 = indices[i];
-      const idx2 = indices[j];
-      // Canonical key to avoid duplicates (smaller index first)
-      const key = idx1 < idx2 ? `${idx1},${idx2}` : `${idx2},${idx1}`;
-      potentialPairs.add(key);
-     }
-    }
-   }
-   // Check bonds only for spatially adjacent groups
-   for (const pairKey of potentialPairs) {
-    const [s1, s2] = pairKey.split(",");
-    const i = parseInt(s1);
-    const j = parseInt(s2);
-     if (areGroupsBonded(groups[i].parser, groups[j].parser)) {
-      groups[i].connectedTo.push(j);
-      groups[j].connectedTo.push(i);
-    }
-   }
-   // 4. Traverse graph to find connected components
-   for (let i = 0; i < groups.length; i++) {
-    if (groups[i].merged) continue;
-    const componentIndices: number[] = [i];
-    groups[i].merged = true;
-    const stack = [i];
-    while (stack.length > 0) {
-     const curr = stack.pop()!;
-     for (const neighbor of groups[curr].connectedTo) {
-      if (!groups[neighbor].merged) {
-       groups[neighbor].merged = true;
-       componentIndices.push(neighbor);
-       stack.push(neighbor);
-      }
-     }
-    }
-    // 5. Merge component
-    // Sort by index to maintain some stability/sequential order
-    componentIndices.sort((a, b) => a - b);
-    const combinedAtoms: IAtom[] = [];
-    const titles: string[] = [];
-    for (const idx of componentIndices) {
-     const g = groups[idx];
-     combinedAtoms.push(...g.atoms);
-     // Use the first atom's info for the title part
-     titles.push(`${g.atoms[0].resn}:${g.atoms[0].resi}`);
-    }
-    const mergedTitle = titles.join("-");
+            // 2. Create parsers for each group to use optimization features
+            const groups = resKeys.map((key) => ({
+                key,
+                atoms: atomsByResidue[key],
+                parser: makeEasyParser(atomsByResidue[key]),
+                merged: false,
+                connectedTo: [] as number[], // indices of other groups
+            }));
+            // 3. Build connectivity graph optimized with spatial hashing
+            const GRID_SIZE = 5.0; // Angstroms
+            const CUTOFF = 3.0; // Matches areGroupsBonded check distance threshold
+            const grid = new Map<string, number[]>();
+
+            // Add groups to grid based on their bounding box
+            groups.forEach((g, idx) => {
+                const bounds = g.parser.getBounds();
+                if (!bounds) return;
+                const margin = CUTOFF / 2; // Expand bounds by half the cutoff on each side
+                const iMin = Math.floor((bounds.minX - margin) / GRID_SIZE);
+                const iMax = Math.floor((bounds.maxX + margin) / GRID_SIZE);
+                const jMin = Math.floor((bounds.minY - margin) / GRID_SIZE);
+                const jMax = Math.floor((bounds.maxY + margin) / GRID_SIZE);
+                const kMin = Math.floor((bounds.minZ - margin) / GRID_SIZE);
+                const kMax = Math.floor((bounds.maxZ + margin) / GRID_SIZE);
+                for (let i = iMin; i <= iMax; i++) {
+                    for (let j = jMin; j <= jMax; j++) {
+                        for (let k = kMin; k <= kMax; k++) {
+                            const key = `${i},${j},${k}`;
+                            if (!grid.has(key)) grid.set(key, []);
+                            grid.get(key)!.push(idx);
+                        }
+                    }
+                }
+            });
+            // Identify potential pairs from the grid
+            const potentialPairs = new Set<string>();
+            for (const indices of grid.values()) {
+                if (indices.length < 2) continue;
+                for (let i = 0; i < indices.length; i++) {
+                    for (let j = i + 1; j < indices.length; j++) {
+                        const idx1 = indices[i];
+                        const idx2 = indices[j];
+                        // Canonical key to avoid duplicates (smaller index first)
+                        const key = idx1 < idx2 ? `${idx1},${idx2}` : `${idx2},${idx1}`;
+                        potentialPairs.add(key);
+                    }
+                }
+            }
+            // Check bonds only for spatially adjacent groups
+            for (const pairKey of potentialPairs) {
+                const [s1, s2] = pairKey.split(",");
+                const i = parseInt(s1);
+                const j = parseInt(s2);
+                if (areGroupsBonded(groups[i].parser, groups[j].parser)) {
+                    groups[i].connectedTo.push(j);
+                    groups[j].connectedTo.push(i);
+                }
+            }
+            // 4. Traverse graph to find connected components
+            for (let i = 0; i < groups.length; i++) {
+                if (groups[i].merged) continue;
+                const componentIndices: number[] = [i];
+                groups[i].merged = true;
+                const stack = [i];
+                while (stack.length > 0) {
+                    const curr = stack.pop()!;
+                    for (const neighbor of groups[curr].connectedTo) {
+                        if (!groups[neighbor].merged) {
+                            groups[neighbor].merged = true;
+                            componentIndices.push(neighbor);
+                            stack.push(neighbor);
+                        }
+                    }
+                }
+                // 5. Merge component
+                // Sort by index to maintain some stability/sequential order
+                componentIndices.sort((a, b) => a - b);
+                const combinedAtoms: IAtom[] = [];
+                const titles: string[] = [];
+                for (const idx of componentIndices) {
+                    const g = groups[idx];
+                    combinedAtoms.push(...g.atoms);
+                    // Use the first atom's info for the title part
+                    titles.push(`${g.atoms[0].resn}:${g.atoms[0].resi}`);
+                }
+                const mergedTitle = titles.join("-");
                 terminalNodes.push(
                     new TreeNode({
-      title: mergedTitle,
+                        title: mergedTitle,
                         type: TreeNodeType.Compound,
-      model: combinedAtoms,
+                        model: combinedAtoms,
                         visible: true,
                         focused: false,
                         viewerDirty: true,
