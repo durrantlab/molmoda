@@ -1,4 +1,3 @@
-// ================== FILE: Core/Bioinformatics/AminoAcidUtils.ts ==================
 /**
  * Defines properties and utilities for amino acids.
  */
@@ -224,7 +223,29 @@ const aminoAcidProperties: Record<string, AminoAcidProperty> = {
         color: AMBIGUOUS_HYDROPHOBIC_COLOR,
     },
 };
-
+// Build a static reverse lookup map for O(1) access
+const threeLetterToOneLetterMap: Record<string, string> = {};
+// 1. Populate from standard properties
+for (const key in aminoAcidProperties) {
+    const prop = aminoAcidProperties[key];
+    threeLetterToOneLetterMap[prop.threeLetterCode] = prop.oneLetterCode;
+}
+// 2. Handle common PDB variations by mapping to standard one-letter codes
+const pdbVariations: Record<string, string> = {
+    MSE: "M", // Selenomethionine
+    CSO: "C", // S-hydroxycysteine
+    SEP: "S", // Phosphoserine
+    TPO: "T", // Phosphothreonine
+    PTR: "Y", // Phosphotyrosine
+    // 'ASX': 'B', // Asparagine or Aspartic acid - already handled by aminoAcidProperties 'B'
+    // 'GLX': 'Z', // Glutamine or Glutamic acid - already handled by aminoAcidProperties 'Z'
+    // 'XLE': 'J', // Leucine or Isoleucine - already handled by aminoAcidProperties 'J'
+    UNK: "X", // Unknown
+    // Add more mappings as needed for specific PDB HETNAMs that should map to a standard AA
+};
+for (const key in pdbVariations) {
+    threeLetterToOneLetterMap[key] = pdbVariations[key];
+}
 /**
  * Converts a three-letter amino acid code (case-insensitive) to its one-letter code.
  * Handles common PDB variations for modified residues by mapping them to their parent amino acid.
@@ -236,31 +257,8 @@ export const threeLetterToPdbOneLetter = memoize(function (
     threeLetterCode: string
 ): string {
     const upperCode = threeLetterCode.toUpperCase();
-    // Direct match
-    for (const key in aminoAcidProperties) {
-        if (aminoAcidProperties[key].threeLetterCode === upperCode) {
-            return aminoAcidProperties[key].oneLetterCode;
-        }
-    }
-    // Handle common PDB variations by mapping to standard one-letter codes
-    const pdbVariations: Record<string, string> = {
-        MSE: "M", // Selenomethionine
-        CSO: "C", // S-hydroxycysteine
-        SEP: "S", // Phosphoserine
-        TPO: "T", // Phosphothreonine
-        PTR: "Y", // Phosphotyrosine
-        // 'ASX': 'B', // Asparagine or Aspartic acid - already handled by aminoAcidProperties 'B'
-        // 'GLX': 'Z', // Glutamine or Glutamic acid - already handled by aminoAcidProperties 'Z'
-        // 'XLE': 'J', // Leucine or Isoleucine - already handled by aminoAcidProperties 'J'
-        UNK: "X", // Unknown
-        // Add more mappings as needed for specific PDB HETNAMs that should map to a standard AA
-    };
-    if (pdbVariations[upperCode]) {
-        return pdbVariations[upperCode];
-    }
-    return "X"; // Default for unmapped or truly unknown residues
+    return threeLetterToOneLetterMap[upperCode] || "X";
 });
-
 /**
  * Converts a one-letter amino acid code to its three-letter code.
  *

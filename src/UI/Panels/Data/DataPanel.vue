@@ -19,9 +19,9 @@
         </div>
       </div>
     </div>
- <Table v-if="mergedTableData !== null" id='data-panel-table' :tableData="mergedTableData"
-  caption="All Molecular Data" :noFixedTable="true" @rowClicked="rowClicked" :clickableRows="true"
-  downloadFilenameBase="all-molecular-data">
+    <Table v-if="mergedTableData !== null" id='data-panel-table' :tableData="mergedTableData"
+      caption="All Molecular Data" :noFixedTable="true" @rowClicked="rowClicked" :clickableRows="true"
+      downloadFilenameBase="all-molecular-data">
     </Table>
   </span>
 </template>
@@ -163,25 +163,29 @@ export default class DataPanel extends Vue {
     ];
     // Collect all unique entries (molecule paths + ids)
     const entries = new Set<string>();
-    // First pass: collect all headers and entries
-    filteredTableData.forEach(([source, tableData]) => {
-      tableData.rows.forEach((row: { [key: string]: CellValue }) => {
-        // const entry = (row.Entry as string) + "||>>" + row.id;
-        const entry = JSON.stringify([(row.Entry as string), row.id]);
-        entries.add(entry);
-        // Add source-prefixed headers for all columns except Entry and id
-        tableData.headers.forEach((header: IHeader) => {
-          const headerText = header.text;
-          if (headerText !== "Entry" && headerText !== "id") {
-            const combinedHeader = {
-              text: `${source}: ${headerText}`,
-            };
-            if (!headers.some((h) => h.text === combinedHeader.text)) {
-              headers.push(combinedHeader);
-            }
+    // Pre-index rows of each source table into a Map keyed by the Entry ID.
+    // This avoids O(N^3) complexity in the merging loop below.
+    const indexedData = filteredTableData.map(([source, tableData]) => {
+      const rowMap = new Map<string, { [key: string]: CellValue }>();
+      // Add headers once per source table instead of once per row
+      tableData.headers.forEach((header: IHeader) => {
+        const headerText = header.text;
+        if (headerText !== "Entry" && headerText !== "id") {
+          const combinedHeader = {
+            text: `${source}: ${headerText}`,
+          };
+          if (!headers.some((h) => h.text === combinedHeader.text)) {
+            headers.push(combinedHeader);
           }
-        });
+        }
       });
+      // Index rows
+      tableData.rows.forEach((row: { [key: string]: CellValue }) => {
+        const entryKey = JSON.stringify([(row.Entry as string), row.id]);
+        entries.add(entryKey);
+        rowMap.set(entryKey, row);
+      });
+      return { source, headers: tableData.headers, rowMap };
     });
     // Build rows
     const rows: { [key: string]: CellValue }[] = Array.from(entries).map(
@@ -197,14 +201,11 @@ export default class DataPanel extends Vue {
             row[header.text] = { val: "" } as ICellValue;
           }
         });
-        // Fill in the data
-        filteredTableData.forEach(([source, tableData]) => {
-          const sourceRow = tableData.rows.find(
-            (r: { [key: string]: CellValue }) =>
-              r.Entry === entryName && r.id === id // + "||>>" + r.id === entry
-          );
+        // Fill in the data using the pre-indexed maps (O(1) lookup)
+        indexedData.forEach(({ source, headers: sourceHeaders, rowMap }) => {
+          const sourceRow = rowMap.get(entry);
           if (sourceRow) {
-            tableData.headers.forEach((header: IHeader) => {
+            sourceHeaders.forEach((header: IHeader) => {
               const headerText = header.text;
               if (headerText !== "Entry" && headerText !== "id") {
                 const combinedHeader = `${source}: ${headerText}`;
