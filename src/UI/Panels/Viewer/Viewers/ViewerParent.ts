@@ -265,19 +265,7 @@ export abstract class ViewerParent {
   abstract getView(): number[];
 
   abstract setView(view: number[]): void;
-  /**
-   * Rotate the camera.
-   *
-   * @param {number} angle Angle in degrees.
-   * @param {string} axis Axis 'x', 'y', 'z'.
-   */
-  abstract rotate(angle: number, axis: string): void;
-  /**
-   * Zoom the camera.
-   *
-   * @param {number} factor Zoom factor.
-   */
-  abstract zoom(factor: number): void;
+
   /**
    * Clear the current molecular styles.
    *
