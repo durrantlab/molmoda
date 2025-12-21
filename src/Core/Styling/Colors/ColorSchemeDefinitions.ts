@@ -163,20 +163,20 @@ export function colorSchemeToDefinitionIndex(
     if (color !== undefined) {
         if (color === "@byMolecule") {
             return MOLECULE_INDEX;
-    }
+        }
         if (color !== "spectrum") {
             return SOLID_INDEX;
-    }
+        }
     }
 
     // Check colorscheme-based schemes
     if (colorscheme !== undefined) {
         if (colorscheme.endsWith("Carbon")) {
             return COLOR_CARBONS_INDEX;
-    }
+        }
         if (colorscheme === "ssJmol") {
             return SECONDARY_STRUCTURE_INDEX;
-    }
+        }
         if (colorscheme === "chain") {
             return CHAIN_INDEX;
         }

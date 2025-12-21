@@ -214,8 +214,8 @@ export default class EvalScreenPlugin extends PluginParentClass {
     examplesSummary(items: string[] | Set<string>, count = 3): string {
         // If it's a set, convert it to array.
         items = Array.from(items);
+  let toJoin: string[] = [];
 
-        let toJoin: string[] = [];
         if (items.length < count) {
             toJoin = items;
         } else {
@@ -284,6 +284,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         const intersection = new Set(
             [...matchingActiveTitles].filter((x) => matchingOtherTitles.has(x))
         );
+
         if (intersection.size > 0) {
             this.analysisVisible = false;
             let start = "";
@@ -312,12 +313,14 @@ export default class EvalScreenPlugin extends PluginParentClass {
                 (node) => node.title
             ) as string[]
         );
+
         const allCompoundsNotInActivesOrOthers = new Set(
             [...allCompoundsTitles].filter(
                 (x) =>
                     !matchingActiveTitles.has(x) && !matchingOtherTitles.has(x)
             )
         );
+
         if (allCompoundsNotInActivesOrOthers.size > 0) {
             this.analysisVisible = false;
             let msg = "";
@@ -339,6 +342,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         const othersLabeled = otherScores.map((score: number) => {
             return [score, 0] as [number, number];
         });
+
         const labelScores = activesLabeled.concat(othersLabeled);
 
         return { labelScores, calcAnalysis };
