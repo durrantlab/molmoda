@@ -1018,6 +1018,28 @@ export class Viewer3DMol extends ViewerParent {
    */
   setView(view: number[]) {
     this._mol3dObj.setView(view);
+    this.renderAll();
+  }
+
+  /**
+   * Rotate the camera.
+   *
+   * @param {number} angle Angle in degrees.
+   * @param {string} axis Axis 'x', 'y', 'z'.
+   */
+  rotate(angle: number, axis: string) {
+    this._mol3dObj.rotate(angle, axis);
+    this.renderAll();
+  }
+
+  /**
+   * Zoom the camera.
+   *
+   * @param {number} factor Zoom factor.
+   */
+  zoom(factor: number) {
+    this._mol3dObj.zoom(factor);
+    this.renderAll();
   }
 
   /**
