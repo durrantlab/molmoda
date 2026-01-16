@@ -5,79 +5,38 @@
         <!-- @onChange="onDataUpdated" -->
         <!-- cls="border-0 mt-2" -->
         <!-- cls="px-3" -->
-        <FormWrapper
-            :label="
-                regionsInTree ? 'Load from Sphere or Box Region' : undefined
-            "
-            :disabled="disabled"
-        >
-            <FormSelect
-                v-if="regionsInTree"
-                :disabled="disabled"
-                :options="regionsInTree"
-                :modelValue="selectedRegionId"
-                @onChange="onRegionSelected"
-            >
+        <FormWrapper :label="regionsInTree ? 'Load from Sphere or Box Region' : undefined
+            " :disabled="disabled">
+            <FormSelect v-if="regionsInTree" :disabled="disabled" :options="regionsInTree"
+                :modelValue="selectedRegionId" @onChange="onRegionSelected">
             </FormSelect>
         </FormWrapper>
 
-        <FormWrapper
-            :label="regionNameToUse + 'Dimensions (X, Y, Z)'"
-            :disabled="disabled"
-            v-if="isBox"
-        >
+        <FormWrapper :label="regionNameToUse + 'Dimensions (X, Y, Z)'" :disabled="disabled" v-if="isBox">
             <!-- :placeHolder="placeHolder" -->
             <!-- :filterFunc="filterFunc" -->
-            <FormVector3D
-                v-model="modelValueToUse.dimensions"
-                :id="'dimens-' + id"
-                :disabled="disabled"
-                :description="description"
-                @onChange="resetSelected"
-                styl="padding-left: 12px; padding-right: 12px;"
-                :delayBetweenChangesDetected="0"
-            />
+            <FormVector3D v-model="modelValueToUse.dimensions" :id="'dimens-' + id" :disabled="disabled"
+                :description="description" @onChange="resetSelected" styl="padding-left: 12px; padding-right: 12px;"
+                :delayBetweenChangesDetected="0" />
         </FormWrapper>
-        <FormWrapper
-            :label="regionNameToUse + 'Radius'"
-            :disabled="disabled"
-            v-else
-        >
+        <FormWrapper :label="regionNameToUse + 'Radius'" :disabled="disabled" v-else>
             <!-- :placeHolder="placeHolder" -->
             <!-- :filterFunc="filterFunc" -->
-            <FormInput
-                v-model="modelValueToUse.radius"
-                :id="id + '-radius'"
-                :disabled="disabled"
-                :description="description"
-                styl="padding-left: 12px; padding-right: 12px;"
-                @onChange="resetSelected"
-                placeHolder="Radius..."
-            />
+            <FormInput v-model="modelValueToUse.radius" :id="id + '-radius'" :disabled="disabled"
+                :description="description" styl="padding-left: 12px; padding-right: 12px;" @onChange="onRadiusChange"
+                placeHolder="Radius..." />
         </FormWrapper>
 
-        <FormWrapper
-            :label="regionNameToUse + 'Center (X, Y, Z)'"
-            :disabled="disabled"
-        >
+        <FormWrapper :label="regionNameToUse + 'Center (X, Y, Z)'" :disabled="disabled">
             <!-- :placeHolder="placeHolder" -->
             <!-- :filterFunc="filterFunc" -->
-            <FormVector3D
-                v-model="modelValueToUse.center"
-                :id="'center-' + id"
-                :disabled="disabled"
-                :description="description"
-                @onChange="resetSelected"
-                styl="padding-left: 12px; padding-right: 12px;"
-                :delayBetweenChangesDetected="0"
-            />
+            <FormVector3D v-model="modelValueToUse.center" :id="'center-' + id" :disabled="disabled"
+                :description="description" @onChange="resetSelected" styl="padding-left: 12px; padding-right: 12px;"
+                :delayBetweenChangesDetected="0" />
         </FormWrapper>
         <!-- </div> -->
         <!-- </div> -->
-        <FormElementDescription
-            :description="description"
-            :warning="warningToUse"
-        ></FormElementDescription>
+        <FormElementDescription :description="description" :warning="warningToUse"></FormElementDescription>
         <!-- <FormElementDescription
             v-if="regionsInTree === undefined"
             description="No sphere or box regions in project. Please define a box center and dimensions below."
@@ -206,7 +165,7 @@ export default class FormSelectRegion extends Vue {
     onModelValueChanged() {
         if (this.modelValue === null || this.modelValue === undefined) {
             this.modelValueToUse = JSON.parse(JSON.stringify(defaultVals));
-            this.selectedRegionId = "noneSelected";
+            this.selectedRegionId = 'noneSelected';
             return;
         }
 
@@ -241,7 +200,19 @@ export default class FormSelectRegion extends Vue {
      * none selected.
      */
     resetSelected() {
-        this.selectedRegionId = "noneSelected";
+        this.selectedRegionId = 'noneSelected';
+    }
+
+    /**
+     * Updates the dimensions based on the radius when the radius input changes.
+     * Also resets the selected region.
+     */
+    onRadiusChange() {
+        this.resetSelected();
+        if (this.modelValueToUse.radius) {
+            const dimen = this.modelValueToUse.radius * 2;
+            this.modelValueToUse.dimensions = [dimen, dimen, dimen];
+        }
     }
 
     /**
@@ -251,7 +222,7 @@ export default class FormSelectRegion extends Vue {
      */
     onRegionSelected(id: string) {
         if (id === "noneSelected") {
-            this.selectedRegionId = "noneSelected";
+            this.selectedRegionId = 'noneSelected';
             return;
         }
 
@@ -281,11 +252,11 @@ export default class FormSelectRegion extends Vue {
             this.modelValueToUse.radius =
                 Math.round(
                     sigFigFactor *
-                        Math.sqrt(
-                            halfDimens[0] ** 2 +
-                                halfDimens[1] ** 2 +
-                                halfDimens[2] ** 2
-                        )
+                    Math.sqrt(
+                        halfDimens[0] ** 2 +
+                        halfDimens[1] ** 2 +
+                        halfDimens[2] ** 2
+                    )
                 ) / sigFigFactor;
             this.isBox = true;
         }
@@ -330,9 +301,9 @@ export default class FormSelectRegion extends Vue {
 
         if (
             visibleselectedRegions.length +
-                visibleNotselectedRegions.length +
-                selectedNotVisible.length +
-                notVisibleNotSelected.length ===
+            visibleNotselectedRegions.length +
+            selectedNotVisible.length +
+            notVisibleNotSelected.length ===
             0
         ) {
             return undefined;
@@ -344,10 +315,10 @@ export default class FormSelectRegion extends Vue {
         // selectedNotVisible.sort(sortFunc);
         // notVisibleNotSelected.sort(sortFunc);
 
-        visibleNotselectedRegions.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
-        visibleselectedRegions.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
-        selectedNotVisible.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
-        notVisibleNotSelected.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => {return node.title;}));
+        visibleNotselectedRegions.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => { return node.title; }));
+        visibleselectedRegions.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => { return node.title; }));
+        selectedNotVisible.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => { return node.title; }));
+        notVisibleNotSelected.sort(createNaturalSortFunc<TreeNode>((node: TreeNode) => { return node.title; }));
 
         const options = [] as IUserArgOption[];
 
@@ -465,5 +436,4 @@ export default class FormSelectRegion extends Vue {
 // Input of type color
 // .form-control-color {
 //     width: 100%;
-// }
-</style>
+// }</style>

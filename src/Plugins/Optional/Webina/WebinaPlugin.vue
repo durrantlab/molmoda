@@ -163,25 +163,36 @@ export default class WebinaPlugin extends PluginParentClass {
                 ) {
                     return "Your docking region is centered on (0, 0, 0). Change the coordinates or load from a region that encompasses your binding site.";
                 }
+                // Check dimensions. Note that for spheres, the bounding box dimension
+                // is 2 * radius.
 
-                if (
-                    (val.radius && val.radius < 10) ||
-                    (val.dimensions &&
-                        (val.dimensions[0] < 10 ||
-                            val.dimensions[1] < 10 ||
-                            val.dimensions[2] < 10))
-                ) {
-                    return "Your docking region is very small. Consider increasing the dimensions to at least 10 Å.";
+                // Sphere Case
+                if (val.radius !== undefined) {
+                    if (val.radius < 5) {
+                        return "Your docking region is very small. Consider increasing the radius to at least 5 Å.";
+                    }
+                    if (val.radius > 10) {
+                        return "Your docking region is very large. Consider reducing the radius to at most 10 Å.";
+                    }
                 }
 
-                if (
-                    (val.radius && val.radius > 20) ||
-                    (val.dimensions &&
-                        (val.dimensions[0] > 20 ||
-                            val.dimensions[1] > 20 ||
-                            val.dimensions[2] > 20))
-                ) {
-                    return "Your docking region is very large. Consider reducing the dimensions to at most 20 Å.";
+                // Box Case
+                if (val.dimensions) {
+                    if (
+                        val.dimensions[0] < 10 ||
+                        val.dimensions[1] < 10 ||
+                        val.dimensions[2] < 10
+                    ) {
+                        return "Your docking region is very small. Consider increasing the dimensions to at least 10 Å.";
+                    }
+
+                    if (
+                        val.dimensions[0] > 20 ||
+                        val.dimensions[1] > 20 ||
+                        val.dimensions[2] > 20
+                    ) {
+                        return "Your docking region is very large. Consider reducing the dimensions to at most 20 Å.";
+                    }
                 }
 
                 // if (val === "PastedMol") {
