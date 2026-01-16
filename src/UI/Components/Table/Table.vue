@@ -6,34 +6,22 @@
         <slot name="afterHeader"></slot>
 
         <div class="table-responsive">
-            <table
-                :class="
-                    'table table-striped table-hover table-sm mb-0 pb-0 table-borderless' +
-                    (noFixedTable ? '' : ' fixed-table')
-                "
-            >
+            <table :class="'table table-striped table-hover table-sm mb-0 pb-0 table-borderless' +
+                (noFixedTable ? '' : ' fixed-table')
+                ">
                 <thead style="border-top: 0">
                     <tr>
-                        <th
-                            v-for="header of tableDataToUse.headers"
-                            v-bind:key="header.text"
-                            class="sticky-header px-2 cell"
-                            :style="
-                                'font-weight: 550;' +
+                        <th v-for="header of tableDataToUse.headers" v-bind:key="header.text"
+                            class="sticky-header px-2 cell" :style="'font-weight: 550;' +
                                 (header.width
                                     ? 'width:' + header.width + 'px;'
                                     : '') +
                                 (isHeaderSortable(header)
                                     ? 'cursor: pointer;'
                                     : '')
-                            "
-                            @click="headerClick(header)"
-                        >
+                                " @click="headerClick(header)">
                             <span v-if="isHeaderSortable(header)">
-                                <Icon
-                                    style="color: #212529"
-                                    :icon="['fa', headerIcon(header)]"
-                                />&nbsp;
+                                <Icon style="color: #212529" :icon="['fa', headerIcon(header)]" />&nbsp;
                             </span>
                             <!-- Show note as a tool tip if defined.-->
                             <Tooltip :tip="getHeaderToolTipText(header)">
@@ -46,63 +34,34 @@
                     <tr>
                         <td :colspan="tableData?.headers.length" class="px-2">
                             Download as
-                            <a
-                                @click.prevent="download('csv')"
-                                class="link-primary"
-                                >CSV</a
-                            >,
-                            <a
-                                @click.prevent="download('xlsx')"
-                                class="link-primary"
-                                >XLSX</a
-                            >, or
-                            <a
-                                @click.prevent="download('json')"
-                                class="link-primary"
-                                >JSON</a
-                            >
+                            <a @click.prevent="download('csv')" class="link-primary">CSV</a>,
+                            <a @click.prevent="download('xlsx')" class="link-primary">XLSX</a>, or
+                            <a @click.prevent="download('json')" class="link-primary">JSON</a>
                         </td>
                     </tr>
                 </tfoot>
                 <tbody>
-                    <tr
-                        v-for="(row, rowIdx) of tableDataToUse.rows"
-                        v-bind:key="rowIdx"
-                    >
-                        <td
-                            v-for="header of tableDataToUse.headers"
-                            v-bind:key="header.text"
-                            @click="rowClicked(rowIdx, getCell(row[header.text]).val.toString())"
-                            class="cell px-2"
-                            :style="clickableRows ? 'cursor: pointer;' : ''"
-                        >
-                            <Tooltip
-                                :tip="
-                                    getCellToolTipText(
-                                        getCell(row[header.text])
-                                    )
-                                "
-                            >
+                    <tr v-for="(row, rowIdx) of tableDataToUse.rows" v-bind:key="rowIdx">
+                        <td v-for="header of tableDataToUse.headers" v-bind:key="header.text"
+                            @click="rowClicked(rowIdx, getCell(row[header.text]).val.toString())" class="cell px-2"
+                            :style="clickableRows ? 'cursor: pointer;' : ''">
+                            <Tooltip :tip="getCellToolTipText(
+                                getCell(row[header.text])
+                            )
+                                ">
                                 <span v-html="getCell(row[header.text]).val"></span>
-                                <div
-                                    v-if="
-                                        showIcon(getCell(row[header.text]), row)
-                                    "
-                                    class="icon-clickable"
-                                    @click.stop="
-                                        iconClicked(
-                                            getCell(row[header.text])
-                                                .iconClickEmitName,
-                                            row
-                                        )
-                                    "
-                                >
-                                    <Icon
-                                        :icon="
-                                            getCell(row[header.text])
-                                                .iconClasses
-                                        "
-                                    />
+                                <div v-if="
+                                    showIcon(getCell(row[header.text]), row)
+                                " class="icon-clickable" @click.stop="
+                                    iconClicked(
+                                        getCell(row[header.text])
+                                            .iconClickEmitName,
+                                        row
+                                    )
+                                    ">
+                                    <Icon :icon="getCell(row[header.text])
+                                        .iconClasses
+                                        " />
                                 </div>
                             </Tooltip>
                         </td>
@@ -123,6 +82,9 @@ import Icon from "../Icon.vue";
 import { IDataRows } from "@/Core/FS/FSInterfaces";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
+import { addToast } from "@/UI/MessageAlerts/Toasts/ToastManager";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+
 
 // Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
 interface ITableDataInternal {
@@ -143,7 +105,7 @@ export default class Table extends Vue {
     @Prop({ default: { headers: [], rows: [] } }) tableData!: ITableData;
     @Prop({ default: 2 }) precision!: number;
     @Prop({ default: "" }) caption!: string;
- @Prop({ required: true }) downloadFilenameBase!: string;
+    @Prop({ required: true }) downloadFilenameBase!: string;
     @Prop({ default: true }) noFixedTable!: boolean;
     @Prop({ default: false }) clickableRows!: boolean;
     @Prop({ default: "" }) initialSortColumnName!: string;
@@ -415,13 +377,18 @@ export default class Table extends Vue {
         this.$emit("rowClicked", toEmit);
 
         // Separate from above, make it so value of content is copied to the
-        // clipboard. TODO: The user has no indication that the text has been
-        // copied. We need some sort of non-intrusive notification.
+        // clipboard. Provide a non-intrusive notification.
         if (cellTxt) {
             const clipboardJs = await dynamicImports.clipboardJs.module;
             clipboardJs.copy(cellTxt);
+            addToast(
+                "Copied",
+                "Text copied to clipboard.",
+                PopupVariant.Success,
+                undefined,
+                { duration: 2000 }
+            );
         }
-
     }
 
     /**
@@ -432,31 +399,31 @@ export default class Table extends Vue {
     download(format: string) {
         // const filename = slugify(this.caption) + "." + format;
         const filename = slugify(this.downloadFilenameBase) + "." + format;
-  // Use `tableDataToUse` as it contains the currently displayed data (sorted and formatted).
-  const dataToExport = this.tableDataToUse;
-  if (!dataToExport) {
-   return;
-            }
-  const newRows = dataToExport.rows.map(
-   (r: { [key: string]: ICellValue }) => {
-            const row: { [key: string]: any } = {};
-    for (const header of dataToExport.headers) {
-     const cell = r[header.text];
-     if (cell !== undefined) {
-      const val = cell.val; // It's guaranteed to be an ICellValue object from tableDataToUse
-                    // Strip html from val
-                    const div = document.createElement("div");
-      div.innerHTML = String(val);
-                    const valStripped = div.textContent || div.innerText || val;
+        // Use `tableDataToUse` as it contains the currently displayed data (sorted and formatted).
+        const dataToExport = this.tableDataToUse;
+        if (!dataToExport) {
+            return;
+        }
+        const newRows = dataToExport.rows.map(
+            (r: { [key: string]: ICellValue }) => {
+                const row: { [key: string]: any } = {};
+                for (const header of dataToExport.headers) {
+                    const cell = r[header.text];
+                    if (cell !== undefined) {
+                        const val = cell.val; // It's guaranteed to be an ICellValue object from tableDataToUse
+                        // Strip html from val
+                        const div = document.createElement("div");
+                        div.innerHTML = String(val);
+                        const valStripped = div.textContent || div.innerText || val;
 
-                    row[header.text] = valStripped;
+                        row[header.text] = valStripped;
+                    }
                 }
+                return row;
             }
-            return row;
-   }
-  );
+        );
         const dataToSave = {
-   headers: dataToExport.headers.map((h: IHeader) => h.text),
+            headers: dataToExport.headers.map((h: IHeader) => h.text),
             rows: newRows as IDataRows,
         };
 
