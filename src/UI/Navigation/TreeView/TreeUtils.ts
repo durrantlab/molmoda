@@ -281,42 +281,7 @@ export function getUniqueResiduesFromVisibleMolecules(): {
     };
 }
 
-/**
- * Gets the chain of a given tree node.
- *
- * @param {TreeNode} treeNode The tree node.
- * @param {string[]} availableChains The available chains.
- * @returns {string} The chain.
- */
-function getChain(treeNode: TreeNode, availableChains: string[]): string {
-    let chain: string | undefined = undefined;
-    if (!treeNode.model) {
-        // If there's no model, use first available chain.
-        chain = availableChains.shift();
-    } else {
-        const firstAtom = makeEasyParser(treeNode.model).getAtom(0);
-        if (!firstAtom) {
-            // If there are no atoms in the model, use first
-            // available chain.
-            chain = availableChains.shift();
-        } else {
-            const firstAtomChain = firstAtom.chain;
-            if (firstAtomChain === "" || firstAtomChain === undefined) {
-                // If the first atom has no chain, use first
-                // available chain.
-                chain = availableChains.shift();
-            } else if (availableChains.indexOf(firstAtomChain) === -1) {
-                // If the first atom's chain is not available, use
-                // first available chain.
-                chain = availableChains.shift();
-            } else {
-                // Use the first atom's chain.
-                chain = firstAtomChain;
-            }
-        }
-    }
-    return chain as string;
-}
+
 /**
  * Organizes a flat list of terminal TreeNode objects into a standard hierarchical structure.
  *
@@ -357,8 +322,10 @@ export function organizeNodesIntoHierarchy(
         if (divideCompoundsByChain) {
             const compounds = categories["Compounds"];
             const newCompounds: { [key: string]: TreeNode[] } = {};
+            // Fallback list of chains to assign if a compound has NO chain defined.
+            const availableChainsOrig = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
             for (const treeNode of compounds) {
-                const chain = getChain(treeNode, ["A"]);
+                const chain = getChain(treeNode, availableChainsOrig);
                 if (!newCompounds[chain]) {
                     newCompounds[chain] = [];
                 }
@@ -431,22 +398,46 @@ export function organizeNodesIntoHierarchy(
             }
         } else {
             // Logic for other categories that are grouped by chain directly
-            const availableChainsOrig: string[] = [];
-            for (let i = 0; i < 26; i++) {
-                availableChainsOrig.push(String.fromCharCode(65 + i));
-            }
-            let availableChains: string[] = [];
+            const availableChainsOrig = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
             for (const treeNode of categories[title]) {
-                if (availableChains.length === 0) {
-                    availableChains = availableChainsOrig.slice();
-                }
-                const chain = getChain(treeNode, availableChains);
+                const chain = getChain(treeNode, availableChainsOrig);
                 treeNode.title = chain as string;
                 categoryNode.nodes?.push(treeNode);
             }
         }
     }
     return rootNode;
+}
+
+/**
+ * Gets the chain of a given tree node.
+ *
+ * @param {TreeNode} treeNode The tree node.
+ * @param {string[]} availableChains The available chains to use if the node has no chain.
+ * @returns {string} The chain.
+ */
+function getChain(treeNode: TreeNode, availableChains: string[]): string {
+    let chain: string | undefined = undefined;
+    if (!treeNode.model) {
+        // If there's no model, use first available chain from the fallback list.
+        chain = availableChains.shift();
+    } else {
+        const firstAtom = makeEasyParser(treeNode.model).getAtom(0);
+        if (!firstAtom) {
+            // If there are no atoms in the model, use first available chain.
+            chain = availableChains.shift();
+        } else {
+            const firstAtomChain = firstAtom.chain;
+            if (firstAtomChain === "" || firstAtomChain === undefined) {
+                // If the first atom has no chain, use first available chain.
+                chain = availableChains.shift();
+            } else {
+                // Use the actual chain from the molecule.
+                chain = firstAtomChain;
+            }
+        }
+    }
+    return chain || "A"; // Fallback to 'A' if everything else fails
 }
 
 /**
