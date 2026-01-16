@@ -32,6 +32,7 @@ export default class TourPlugin extends PluginParentClass {
     title = "Plugin Tour";
     pluginId = "tourplugin";
     intro = "Start a tour for a plugin.";
+    details = null; // "This plugin guides users through the features of other plugins.";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     userArgDefaults: UserArg[] = [];

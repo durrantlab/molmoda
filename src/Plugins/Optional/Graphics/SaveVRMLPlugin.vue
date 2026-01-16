@@ -53,6 +53,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
   pluginId = "savevrml";
 
   intro = `Save the current molecular scene as a VRML2 file (3D model).`;
+  details = "This plugin exports the scene geometry for use in 3D modeling software.";
   tags = [Tag.Visualization];
 
   userArgDefaults: UserArg[] = [

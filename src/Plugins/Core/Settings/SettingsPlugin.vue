@@ -1,15 +1,7 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Save"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        :hideIfDisabled="true"
-        actionBtnTxt2="Load Defaults"
-        @onPopupDone2="setDefaults"
-        @onMolCountsChanged="onMolCountsChanged"
-    >
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Save" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" :hideIfDisabled="true" actionBtnTxt2="Load Defaults"
+        @onPopupDone2="setDefaults" @onMolCountsChanged="onMolCountsChanged">
         <!-- cancelBtnTxt="Done" -->
     </PluginComponent>
 </template>
@@ -55,8 +47,8 @@ import { detectPlatform, HostOs } from "@/Core/HostOs";
     },
 })
 export default class SettingsPlugin extends PluginParentClass {
-    menuPath = detectPlatform() === HostOs.Mac ? [`[1] ${appName}`, "[2] Settings..."]: ["Edit", "[9] Preferences..."];
-    
+    menuPath = detectPlatform() === HostOs.Mac ? [`[1] ${appName}`, "[2] Settings..."] : ["Edit", "[9] Preferences..."];
+
     title = detectPlatform() === HostOs.Mac ? "Settings" : "Preferences";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [
@@ -67,6 +59,8 @@ export default class SettingsPlugin extends PluginParentClass {
     ];
     pluginId = "settings";
     intro = `Modify ${appName} general settings.`;
+    details = "This plugin configures global preferences.";
+
     tags = [Tag.All];
 
     userArgDefaults: UserArg[] = [
@@ -134,7 +128,7 @@ export default class SettingsPlugin extends PluginParentClass {
             ],
         } as IUserArgSelect,
     ];
-    
+
     logJob = false;
 
     /**
@@ -245,7 +239,7 @@ export default class SettingsPlugin extends PluginParentClass {
     onPopupDone() {
         // Putting in [] so all settings sent together, rather than one-by-one.
         this.submitJobs([this.userArgs]);
-        restartAutoSaveTimer() 
+        restartAutoSaveTimer()
     }
 
     /**

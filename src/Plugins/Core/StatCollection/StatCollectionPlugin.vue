@@ -79,7 +79,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
     // ];
     pluginId = "statcollection";
     intro = null; // "Support future development.";
-    // details = "Anonymous usage statistics help us secure funding to keep MolModa free.";
+    details = null; // "Anonymous usage statistics help us secure funding to keep MolModa free.";
     title = `Support ${appName}?`;
     open = false;
     tags = [Tag.All];

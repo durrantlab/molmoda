@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Save"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Save" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -50,6 +44,7 @@ export default class SavePNGPlugin extends PluginParentClass {
     pluginId = "savepng";
 
     intro = `Save the current view as a PNG file.`;
+    details = "This plugin captures the molecular viewer's content as a PNG image.";
     tags = [Tag.Visualization];
 
     userArgDefaults: UserArg[] = [
@@ -68,7 +63,7 @@ export default class SavePNGPlugin extends PluginParentClass {
         } as IUserArgText,
     ];
 
-    
+
 
     /**
      * Check if this plugin can currently be used.

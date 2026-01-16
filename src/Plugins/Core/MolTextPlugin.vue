@@ -122,6 +122,7 @@ export default class MolTextPlugin extends PluginParentClass {
     ];
     pluginId = "moltextplugin";
     intro = `Type or paste molecular text.`;
+    details = "This plugin allows you to manually enter or paste molecular data in various formats.";
     title = "Molecular Text";
     tags = [Tag.All];
 

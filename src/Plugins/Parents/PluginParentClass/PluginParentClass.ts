@@ -108,12 +108,13 @@ export abstract class PluginParentClass extends mixins(
     abstract intro: string | null;
 
     /**
-     * An optional expanded introduction, also shown at the top of the plugin.
-     * It should describe how the program does what it does. Be brief.
+     * An expanded introduction, also shown at the top of the plugin. It should
+     * describe how the program does what it does. Be brief. In very rare cases,
+     * you may skip this by setting it to null.
      *
      * @type {string}
      */
-    details = "";
+    abstract details: string | null;
 
     /**
      * A list of user arguments. Note that `userArgDefaults` defines the default
@@ -157,7 +158,7 @@ export abstract class PluginParentClass extends mixins(
             userArgs: this.userArgs,
             pluginId: this.pluginId,
             intro: this.intro || "",
-            details: this.details,
+            details: this.details || "",
             softwareCredits: this.softwareCredits,
             contributorCredits: this.contributorCredits,
             logAnalytics: this.logAnalytics,
@@ -600,7 +601,7 @@ export abstract class PluginParentClass extends mixins(
         this._validatePlugin(
             this.pluginId,
             this.intro,
-            this.details,
+            this.details || "",
             this.menuPath,
             this.title
         );
