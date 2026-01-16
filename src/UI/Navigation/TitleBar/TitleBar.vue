@@ -346,6 +346,17 @@ export default class TitleBar extends Vue {
         if (node !== null) {
             node.treeExpanded = !node.treeExpanded;
 
+            // If expanding, and the node has only one child, expand that child too (recursively).
+            // This helps navigate deep hierarchies where intermediate levels have only single children.
+            if (node.treeExpanded) {
+                let currentNode = node;
+                while (currentNode.nodes && currentNode.nodes.length === 1) {
+                    const child = currentNode.nodes.get(0);
+                    child.treeExpanded = true;
+                    currentNode = child;
+                }
+            }
+
             // If it has only one terminal node, just expand everything.
             if (node.nodes?.terminals.length === 1) {
                 node.nodes.flattened.forEach((node2: TreeNode) => {
@@ -375,7 +386,7 @@ export default class TitleBar extends Vue {
             nodesToToggle = new TreeNodeList([node]).flattened;
         }
 
-  await toggleVisibilityWithConfirmation(nodesToToggle);
+        await toggleVisibilityWithConfirmation(nodesToToggle);
     }
     /**
      * Toggle whether a molecule is focused.
