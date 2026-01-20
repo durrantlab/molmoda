@@ -507,25 +507,6 @@ export class Viewer3DMol extends ViewerParent {
 
     return Promise.resolve();
   }
-
-  /**
-   * Get the molecules for zooming. This is used to zoom in on a set of
-   * models. It filters out any models that are not molecules (i.e., those
-   * that do not have a `selectedAtoms` method).
-   *
-   * @param {string[]} ids  The ids of the models to get.
-   * @returns {GLModel[]}  The models that can be zoomed in on.
-   */
-  private _getMolsForZooming(ids: string[]): GLModel[] {
-    let models = ids.map((id) => this.lookup(id));
-    models = models.filter((model) => model !== undefined);
-
-    // Remove ones that aren't molecules. So can't focus on boxes.
-    // Appears to be a limitation of 3dmoljs.
-    models = models.filter((model) => model.selectedAtoms !== undefined);
-    return models;
-  }
-
   /**
    * Zoom in on a set of models.
    *
@@ -536,39 +517,129 @@ export class Viewer3DMol extends ViewerParent {
     // too often.
 
     let models: GLModel[] = [];
+    let regions: IRegion[] = [];
     const startTime = performance.now();
 
     await waitForCondition(() => {
-      models = this._getMolsForZooming(ids);
+      models = [];
+      regions = [];
+      for (const id of ids) {
+        const obj = this.lookup(id);
+        if (obj) {
+          if ((obj as any).selectedAtoms !== undefined) {
+            models.push(obj as GLModel);
+          } else if (this.regionDefinitionCache[id]) {
+            regions.push(this.regionDefinitionCache[id]);
+          }
+        }
+      }
+      const foundSomething = models.length > 0 || regions.length > 0;
       const elapsedTime = performance.now() - startTime;
-      return models.length > 0 || elapsedTime > 5000; // Wait for five seconds max.
+      return foundSomething || elapsedTime > 5000; // Wait for five seconds max.
     }, 100);
 
-    // If no models found, don't zoom.
-    if (models.length === 0) {
+    if (models.length === 0 && regions.length === 0) {
       return;
     }
 
-    this._mol3dObj.zoomTo({ model: models.map((m) => m.id) }, 750, true);
+    const modelIdsToZoom = models.map((m) => m.id);
+    let tempModel: any = null;
 
-    // // Clear any existing timeout
-    // if (this._zoomToModelsTimeout) {
-    //     clearTimeout(this._zoomToModelsTimeout);
-    // }
+    // If regions are present, we calculate their bounding box and create a
+    // temporary invisible model to encompass them, so we can zoom to it.
+    if (regions.length > 0) {
+      let minX = Infinity;
+      let minY = Infinity;
+      let minZ = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+      let maxZ = -Infinity;
 
-    // // Set a new timeout
-    // this._zoomToModelsTimeout = setTimeout(() => {
-    //     debugger
-    //     this._mol3dObj.zoomTo({ model: models }, 500, true);
-    //     // if (models.length > 0) {
-    //     // } else {
-    //     //     // Zoom to all as backup option. Commented out because if there are
-    //     //     // regions, this causes problems.
-    //     //     // this._mol3dObj.zoomTo();
-    //     // }
-    // }, 500);
+      for (const region of regions) {
+        let rMinX, rMinY, rMinZ, rMaxX, rMaxY, rMaxZ;
+        const c = region.center;
+
+        if (region.type === RegionType.Sphere) {
+          const r = (region as ISphere).radius || 0;
+          rMinX = c[0] - r;
+          rMaxX = c[0] + r;
+          rMinY = c[1] - r;
+          rMaxY = c[1] + r;
+          rMinZ = c[2] - r;
+          rMaxZ = c[2] + r;
+        } else if (region.type === RegionType.Box) {
+          const d = (region as IBox).dimensions || [0, 0, 0];
+          const hw = d[0] / 2;
+          const hh = d[1] / 2;
+          const hd = d[2] / 2;
+          rMinX = c[0] - hw;
+          rMaxX = c[0] + hw;
+          rMinY = c[1] - hh;
+          rMaxY = c[1] + hh;
+          rMinZ = c[2] - hd;
+          rMaxZ = c[2] + hd;
+        } else if (
+          region.type === RegionType.Arrow ||
+          region.type === RegionType.Cylinder
+        ) {
+          const r = (region as IArrow).radius || 0;
+          const start = region.center;
+          const end = (region as IArrow | ICylinder).endPt;
+          rMinX = Math.min(start[0], end[0]) - r;
+          rMaxX = Math.max(start[0], end[0]) + r;
+          rMinY = Math.min(start[1], end[1]) - r;
+          rMaxY = Math.max(start[1], end[1]) + r;
+          rMinZ = Math.min(start[2], end[2]) - r;
+          rMaxZ = Math.max(start[2], end[2]) + r;
+        } else {
+          // Fallback
+          rMinX = c[0];
+          rMaxX = c[0];
+          rMinY = c[1];
+          rMaxY = c[1];
+          rMinZ = c[2];
+          rMaxZ = c[2];
+        }
+
+        if (rMinX < minX) minX = rMinX;
+        if (rMinY < minY) minY = rMinY;
+        if (rMinZ < minZ) minZ = rMinZ;
+        if (rMaxX > maxX) maxX = rMaxX;
+        if (rMaxY > maxY) maxY = rMaxY;
+        if (rMaxZ > maxZ) maxZ = rMaxZ;
+      }
+
+      // Create a dummy model using XYZ format to define the bounding box corners.
+      // PDB format is strict about column positions, XYZ is safer for dynamic values.
+      if (Number.isFinite(minX) && Number.isFinite(maxX)) {
+        const xyzText = `2
+Dummy Model for Zoom
+C ${minX} ${minY} ${minZ}
+C ${maxX} ${maxY} ${maxZ}`;
+
+        tempModel = this._mol3dObj.addModel(xyzText, "xyz");
+        // IMPORTANT: We must give it a style (e.g. sphere) so 3Dmol considers
+        // it a valid renderable object for zooming. However, we set opacity to 0
+        // so the user doesn't see these dummy atoms.
+        tempModel.setStyle({}, { sphere: { radius: 0.1, opacity: 0 } });
+        // Use the model's ID for zooming
+        const id =
+          typeof tempModel.getID === "function"
+            ? tempModel.getID()
+            : tempModel.id;
+        modelIdsToZoom.push(id);
+      }
+    }
+
+    this._mol3dObj.zoomTo({ model: modelIdsToZoom }, 750, true);
+
+    if (tempModel) {
+      // Remove the temporary model after the zoom animation is likely finished
+      setTimeout(() => {
+        this._mol3dObj.removeModel(tempModel);
+      }, 800);
+    }
   }
-
   /**
    * Zoom in on a specific point.
    *
@@ -1076,6 +1147,9 @@ export class Viewer3DMol extends ViewerParent {
         this._removeRegion(id);
         // add new region
         this.regionCache[id] = region;
+        // IMPORTANT: Update the definition cache so zoomToModels has the correct
+        // coordinates for the moved/resized region.
+        this.regionDefinitionCache[id] = regionStyle;
         // Also remove previous region label
         this.destroyRegionLabel(id);
         // Add new region
