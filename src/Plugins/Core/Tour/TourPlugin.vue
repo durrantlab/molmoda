@@ -57,9 +57,9 @@ export default class TourPlugin extends PluginParentClass {
         this.pluginToTour = payload.plugin;
         this.testIndexToRun = payload.testIndex || 0;
         this.title = `Tour: ${this.pluginToTour.title}`;
-        let intro = `This tour shows how to use the "${this.pluginToTour.title}" plugin`
+        let intro = `This tour demonstrates the "${this.pluginToTour.title}" plugin`
         if (this.pluginToTour.intro) {
-            intro += `, which allows the user to ${lowerize(this.pluginToTour.intro)}`;
+            intro += `, which allows you to ${lowerize(this.pluginToTour.intro)}`;
         }
         if (intro.endsWith('.')) {
             intro = intro.slice(0, -1); // Remove trailing period for better formatting
