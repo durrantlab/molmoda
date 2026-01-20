@@ -12,8 +12,8 @@
             <span v-if="analysisVisible">
                 <Alert type="info">
                     Your screen includes
-                    <strong>{{ numActives }}</strong> active compounds and
-                    <strong>{{ numIactives }}</strong> other compounds.
+                    <strong>{{ numActives }}</strong> active {{ numActives === 1 ? "compound" : "compounds" }} and
+                    <strong>{{ numIactives }}</strong> other {{ numIactives === 1 ? "compound" : "compounds" }}.
                 </Alert>
 
                 <h6>Receiver Operating Characteristic (ROC) Curve</h6>
@@ -62,12 +62,12 @@
                         <strong>{{ numActives + numIactives }}</strong>
                         compounds total. Of these,
                         <strong>{{ percentTotalActives }}%</strong>
-                        (<strong>{{ numActives }}</strong> compounds) were
+                        (<strong>{{ numActives }}</strong> {{ numActives === 1 ? "compound" : "compounds" }}) were
                         active. But among the top
-                        <strong>{{ bestEFCutoff }}</strong> best-scoring
-                        compounds,
+                        <strong>{{ bestEFCutoff }}</strong> best-scoring compounds,
                         <strong>{{ percentTopCompoundsActive }}%</strong>
-                        (<strong>{{ numActivesAtBestEF }}</strong> compounds)
+                        (<strong>{{ numActivesAtBestEF }}</strong> {{ numActivesAtBestEF === 1 ? "compound" :
+                        "compounds" }})
                         were active, giving an enrichment factor of
                         <strong>{{
                             parseFloat(percentTopCompoundsActive) /
@@ -214,7 +214,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
     examplesSummary(items: string[] | Set<string>, count = 3): string {
         // If it's a set, convert it to array.
         items = Array.from(items);
-  let toJoin: string[] = [];
+        let toJoin: string[] = [];
 
         if (items.length < count) {
             toJoin = items;
