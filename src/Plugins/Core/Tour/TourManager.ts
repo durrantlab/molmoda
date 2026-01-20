@@ -38,16 +38,75 @@ class TourManager {
     }
 
     /**
-     * Injects the driver.js CSS file into the document head.
+  * Injects the driver.js CSS file and custom overrides into the document head.
      *
      * @private
      */
     private _injectDriverCss(): void {
+        // Inject standard CSS
         const cssLink = document.createElement("link");
         cssLink.rel = "stylesheet";
         cssLink.type = "text/css";
         cssLink.href = "js/driverjs/driver.css";
         document.head.appendChild(cssLink);
+
+        // Inject custom overrides to make the arrow blend with the Bootstrap card header/footer
+        const style = document.createElement("style");
+        style.innerHTML = `
+   /* 
+    Case 1: Popover is BELOW the element. 
+    Arrow is at the TOP of the popover. It points UP. 
+    It connects to the Header (Blue).
+   */
+   div.driver-popover.driverjs-theme .driver-popover-tip.top {
+    border-bottom-color: #0d6efd !important; /* Bootstrap Primary Blue */
+    border-top-color: transparent !important;
+   }
+
+   /* 
+    Case 2: Popover is ABOVE the element (e.g. for action buttons).
+    Arrow is at the BOTTOM of the popover. It points DOWN.
+    It connects to the Footer (Light Gray).
+   */
+   div.driver-popover.driverjs-theme .driver-popover-tip.bottom {
+    border-top-color: #f8f9fa !important; /* Approx Bootstrap card-footer bg */
+    border-bottom-color: transparent !important;
+   }
+   
+   /* 
+    Case 3: Popover is to the RIGHT of the element.
+    Arrow is at the LEFT of the popover. It points LEFT.
+    It connects to the Body (White).
+   */
+   div.driver-popover.driverjs-theme .driver-popover-tip.left {
+    border-right-color: #ffffff !important;
+    border-left-color: transparent !important;
+    border-top-color: transparent !important;
+    border-bottom-color: transparent !important;
+   }
+
+   /* 
+    Case 4: Popover is to the LEFT of the element.
+    Arrow is at the RIGHT of the popover. It points RIGHT.
+    It connects to the Body (White).
+   */
+   div.driver-popover.driverjs-theme .driver-popover-tip.right {
+    border-left-color: #ffffff !important;
+    border-right-color: transparent !important;
+    border-top-color: transparent !important;
+    border-bottom-color: transparent !important;
+   }
+   
+   /* 
+    Fix z-index to be strictly above everything.
+    driver.js overlay is usually around 100000+. 
+    We set this to 100 million to be safe.
+   */
+   div.driver-popover {
+    z-index: 100000000 !important;
+   }
+  `;
+        document.head.appendChild(style);
     }
 
     /**
@@ -119,7 +178,8 @@ class TourManager {
                 }
 
                 if (popover.arrow) {
-                    popover.arrow?.classList.add("border-primary");
+                    // NOTE: Do NOT add 'border-primary' here. It ruins the CSS triangle hack used by driver.js.
+                    // Color matching is handled by _injectDriverCss overrides.
                     popover.arrow.style.filter =
                         "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
                 }
@@ -172,8 +232,7 @@ class TourManager {
                         popover.title.appendChild(popover.closeButton);
                     }
                 }
-
-                // Restore opacity
+    // Restore opacity
                 // popoverEl.style.opacity = "1";
                 // Restore scale
                 popoverEl.style.transform = "scale(1)";
@@ -197,8 +256,11 @@ class TourManager {
                     console.log(`[Tour Debug] Step ${stepIdx}${debugInfo}`, step);
                 }
                 if (element) {
+                    // Use 'nearest' to avoid unnecessary scrolling if element is already in view
+                    element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+
                     element.style.setProperty("outline", "3px solid #0d6efd");
-                    element.style.setProperty("outline-offset", "2px");
+                    element.style.setProperty("outline-offset", "4px"); // Increased offset for cleaner look
                     element.style.setProperty("border-radius", "4px");
                     this.lastHighlightedElement = element;
                 }
@@ -263,7 +325,8 @@ class TourManager {
         this.driver = driverJsModule({
             showProgress: true,
             overlayOpacity: 0.1, // Make overlay less intrusive
-            popoverOffset: 5, // Reduce space between popover and element
+            popoverOffset: 15, // Increased to provide more space between element and popover (prevents obscuring)
+            stagePadding: 5,   // Adds padding around the highlighted element
             ...this._configureDriverHooks(),
         });
 
@@ -329,6 +392,7 @@ class TourManager {
         return new Promise((resolve, reject) => {
             const startTime = Date.now();
             const check = () => {
+                // If the selector targets multiple items (like with comma), verify at least one exists
                 const element = document.querySelector(selector) as HTMLElement;
                 if (element) {
                     resolve(element);
@@ -659,19 +723,29 @@ class TourManager {
         debugInfo?: string
     ): any | null {
         let step: any = null;
+        // Improve highlighting for SVG wrappers
+        let selector = command.selector;
+        if (selector && selector.endsWith(".svg-wrapper")) {
+            // Attempt to target the inner SVG first, falling back to the wrapper
+            selector += " > svg, " + selector;
+        }
+        const cmdForStep = { ...command, selector };
+
         switch (command.cmd) {
             case TestCommand.Click:
-                step = this._createClickStep(command, plugin);
+                step = this._createClickStep(cmdForStep, plugin);
+                // Suggest 'top' positioning for action buttons to prevent obscuring.
+                // This places the popover ABOVE the button.
                 break;
             case TestCommand.Text:
             case TestCommand.Upload:
-                step = this._createInputStep(command, plugin);
+                step = this._createInputStep(cmdForStep, plugin);
                 break;
             case TestCommand.WaitUntilRegex:
-                step = this._createWaitStep(command, plugin);
+                step = this._createWaitStep(command, plugin); // Use original command/selector for wait checks
                 break;
             case TestCommand.TourNote:
-                step = this._createNoteStep(command, plugin);
+                step = this._createNoteStep(cmdForStep, plugin);
                 break;
             default:
                 // Commands like Wait are not interactive and can be skipped in a user tour.
