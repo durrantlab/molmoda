@@ -153,91 +153,102 @@ class TourManager {
 
         // Apply transform scale to make 0
         popoverEl.style.transform = "scale(0)";
+        popoverEl.style.opacity = "0";
 
-        // Hackish. Investigate further...
+        // Longer delay for click steps to allow scroll to complete
+        const initialDelay = state.activeStep?.isClickStep ? 600 : 500;
+
         setTimeout(() => {
             window.dispatchEvent(new Event("resize"));
             setTimeout(() => {
                 window.dispatchEvent(new Event("resize"));
-                popoverEl.classList.add("card", "shadow-lg", "p-0");
+                setTimeout(() => {
+                    window.dispatchEvent(new Event("resize"));
+                    popoverEl.classList.add("card", "shadow-lg", "p-0");
 
-                if (popover.title) {
-                    popover.title.classList.add(
-                        "card-header",
-                        "py-2",
-                        "ps-3",
-                        "pe-2",
-                        "h5",
-                        "m-0",
-                        "d-flex",
-                        "justify-content-between",
-                        "align-items-center",
-                        "bg-primary",
-                        "text-white"
-                    );
-                }
-
-                if (popover.arrow) {
-                    // NOTE: Do NOT add 'border-primary' here. It ruins the CSS triangle hack used by driver.js.
-                    // Color matching is handled by _injectDriverCss overrides.
-                    popover.arrow.style.filter =
-                        "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
-                }
-
-                if (popover.description) {
-                    popover.description.classList.add("card-body", "p-3");
-                }
-
-                if (popover.footer) {
-                    popover.footer.classList.add(
-                        "card-footer",
-                        "d-flex",
-                        "justify-content-end",
-                        "align-items-center",
-                        "py-2",
-                        "px-3"
-                    );
-                    popover.footer.classList.remove("driver-popover-footer");
-                }
-
-                if (popover.previousButton) {
-                    popover.previousButton.style.display = "none";
-                }
-
-                if (popover.nextButton) {
-                    popover.nextButton.classList.add(
-                        "btn",
-                        "btn-sm",
-                        "btn-primary",
-                        "ms-1"
-                    );
-
-                    if (
-                        state.activeStep?.onHighlightStarted ||
-                        state.activeStep?.isWaitStep
-                    ) {
-                        popover.nextButton.style.display = "none";
-                    } else {
-                        popover.nextButton.style.display = "inline-block";
-                    }
-                }
-
-                if (popover.closeButton) {
-                    popover.closeButton.innerHTML = "";
-                    popover.closeButton.classList.add(
-                        "btn-close",
-                        "btn-close-white"
-                    );
                     if (popover.title) {
-                        popover.title.appendChild(popover.closeButton);
+                        popover.title.classList.add(
+                            "card-header",
+                            "py-2",
+                            "ps-3",
+                            "pe-2",
+                            "h5",
+                            "m-0",
+                            "d-flex",
+                            "justify-content-between",
+                            "align-items-center",
+                            "bg-primary",
+                            "text-white"
+                        );
                     }
-                }
-    // Restore opacity
-                // popoverEl.style.opacity = "1";
-                // Restore scale
-                popoverEl.style.transform = "scale(1)";
-            }, 25);
-        }, 500);
+
+                    if (popover.arrow) {
+                        // NOTE: Do NOT add 'border-primary' here. It ruins the CSS triangle hack used by driver.js.
+                        // Color matching is handled by _injectDriverCss overrides.
+                        popover.arrow.style.filter =
+                            "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
+                    }
+
+                    if (popover.description) {
+                        popover.description.classList.add("card-body", "p-3");
+                    }
+
+                    if (popover.footer) {
+                        popover.footer.classList.add(
+                            "card-footer",
+                            "d-flex",
+                            "justify-content-end",
+                            "align-items-center",
+                            "py-2",
+                            "px-3"
+                        );
+                        popover.footer.classList.remove("driver-popover-footer");
+                    }
+
+                    if (popover.previousButton) {
+                        popover.previousButton.style.display = "none";
+                    }
+
+                    if (popover.nextButton) {
+                        popover.nextButton.classList.add(
+                            "btn",
+                            "btn-sm",
+                            "btn-primary",
+                            "ms-1"
+                        );
+
+                        // Hide Next button for click steps, wait steps, and steps with onHighlightStarted
+                        if (
+                            state.activeStep?.isClickStep ||
+                            state.activeStep?.isWaitStep ||
+                            state.activeStep?.onHighlightStarted
+                        ) {
+                            popover.nextButton.style.display = "none";
+                        } else {
+                            popover.nextButton.style.display = "inline-block";
+                        }
+                    }
+
+                    if (popover.closeButton) {
+                        popover.closeButton.innerHTML = "";
+                        popover.closeButton.classList.add(
+                            "btn-close",
+                            "btn-close-white"
+                        );
+                        if (popover.title) {
+                            popover.title.appendChild(popover.closeButton);
+                        }
+                    }
+                    // Restore opacity
+                    // popoverEl.style.opacity = "1";
+                    // Restore scale
+                    popoverEl.style.transform = "scale(1)";
+                    popoverEl.style.opacity = "1";
+                }, 25);
+
+            }, initialDelay);
+
+        });
     }
 
     /**
@@ -256,12 +267,8 @@ class TourManager {
                     console.log(`[Tour Debug] Step ${stepIdx}${debugInfo}`, step);
                 }
                 if (element) {
-                    // Use 'nearest' to avoid unnecessary scrolling if element is already in view
+                    // Scroll into view, but don't add outline styling
                     element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-
-                    element.style.setProperty("outline", "3px solid #0d6efd");
-                    element.style.setProperty("outline-offset", "4px"); // Increased offset for cleaner look
-                    element.style.setProperty("border-radius", "4px");
                     this.lastHighlightedElement = element;
                 }
             },
@@ -281,26 +288,13 @@ class TourManager {
                 // driver.js from automatically advancing.
             },
             onDeselected: (element: HTMLElement) => {
-                if (element) {
-                    element.style.removeProperty("outline");
-                    element.style.removeProperty("outline-offset");
-                    element.style.removeProperty("border-radius");
-                }
+                // No outline to remove anymore
                 this.lastHighlightedElement = null;
             },
             onDestroyed: () => {
-                if (this.lastHighlightedElement) {
-                    this.lastHighlightedElement.style.removeProperty("outline");
-                    this.lastHighlightedElement.style.removeProperty(
-                        "outline-offset"
-                    );
-                    this.lastHighlightedElement.style.removeProperty(
-                        "border-radius"
-                    );
-                    this.lastHighlightedElement = null;
-                }
+                this.lastHighlightedElement = null;
                 this.isRunning = false;
-                this.driver = null; // Reset for next tour
+                this.driver = null;
             },
             onPopoverRender: (
                 popover: PopoverDOM,
@@ -324,9 +318,9 @@ class TourManager {
         this._injectDriverCss();
         this.driver = driverJsModule({
             showProgress: true,
-            overlayOpacity: 0.1, // Make overlay less intrusive
-            popoverOffset: 15, // Increased to provide more space between element and popover (prevents obscuring)
-            stagePadding: 5,   // Adds padding around the highlighted element
+            overlayOpacity: 0.1,
+            popoverOffset: 25,  // Increased from 15 to 25
+            stagePadding: 5,
             ...this._configureDriverHooks(),
         });
 
@@ -352,14 +346,21 @@ class TourManager {
 
         this.isMoving = true;
 
-        const steps = this.tourSteps; // Use stored steps
+        const steps = this.tourSteps;
         const activeIndex = this.driver.getActiveIndex();
         const nextStep = steps[activeIndex + 1];
 
         if (typeof nextStep.element === "string") {
             try {
-                await this.waitForElement(nextStep.element);
-                originalMoveNext(); // Element exists, proceed.
+                const element = await this.waitForElement(nextStep.element);
+
+                // Scroll element into view BEFORE moving to the step
+                element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+
+                // Wait for scroll to complete
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                originalMoveNext();
             } catch (error) {
                 console.error(error);
                 messagesApi.popupError(
@@ -370,7 +371,7 @@ class TourManager {
                 this.isMoving = false;
             }
         } else {
-            originalMoveNext(); // No element to wait for.
+            originalMoveNext();
             this.isMoving = false;
         }
     }
@@ -770,13 +771,13 @@ class TourManager {
         command: ITestCommand,
         plugin: PluginParentClass
     ): any {
-        // console.log(`Tour Step: Click - Selector: ${command.selector}`);
-        const popover = {
+        const selector = command.selector || "";
+
+        const popover: any = {
             title: plugin.title,
             description: "Please click here to continue.",
         };
 
-        const selector = command.selector || "";
         const selectMoleculeMatch = selector.match(
             /#navigator div\[data-label="([^"]+)"\]/
         );
@@ -786,18 +787,22 @@ class TourManager {
         }
 
         return {
-            element: command.selector,
+            element: selector,
             popover: popover,
-            onHighlightStarted: (element: HTMLElement) => {
+            isClickStep: true,
+            onHighlighted: (element: HTMLElement) => {
                 if (!element) {
                     console.error(
-                        `TourManager: Element not found for selector "${command.selector}". Skipping step.`
+                        `TourManager: Element not found for selector "${selector}". Skipping step.`
                     );
                     if (this.driver) {
                         this.driver.moveNext();
                     }
                     return;
                 }
+
+                this._setFocus(element);
+
                 const oneTimeClickListener = () => {
                     element.removeEventListener("click", oneTimeClickListener);
                     if (this.driver) {
@@ -805,9 +810,6 @@ class TourManager {
                     }
                 };
                 element.addEventListener("click", oneTimeClickListener);
-            },
-            onHighlighted: (element: HTMLElement) => {
-                this._setFocus(element);
             },
         };
     }
