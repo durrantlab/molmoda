@@ -1,6 +1,6 @@
 {
     "name": "MolModa",
-    "version": "2026.1.16",
+    "version": "2026.1.19",
     "private": false,
     "scripts": {
         "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",

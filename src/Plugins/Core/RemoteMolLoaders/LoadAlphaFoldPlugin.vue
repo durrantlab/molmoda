@@ -17,6 +17,7 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * LoadAlphaFoldPlugin
@@ -89,9 +90,6 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
             },
         } as IUserArgText,
     ];
-
-
-
     /**
      * Runs when the user presses the action button and the popup closes.
      */
@@ -113,22 +111,47 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
             ". Are you sure the AlphaFold Protein Structure Database includes a model with this ID?";
         const spinnerId = api.messages.startWaitSpinner();
         try {
-            const fileInfo = await loadRemoteToFileInfo(
-                `https://alphafold.ebi.ac.uk/api/prediction/${uniprot.toUpperCase()}`
-            );
-            const pdbUrl = (JSON.parse(fileInfo.contents)[0] as any)["pdbUrl"];
-            if (pdbUrl) {
-                const pdbFileInfo = await loadRemoteToFileInfo(pdbUrl);
-                await this.addFileInfoToViewer({
-                    fileInfo: pdbFileInfo,
-                    tag: this.pluginId,
-                });
+            // Use local PHP proxy to bypass CORS on the summary endpoint
+            const summaryUrl = `https://molmoda.org/alphafold-proxy.php?id=${uniprot.toUpperCase()}`;
+            const fileInfo = await loadRemoteToFileInfo(summaryUrl);
+
+            let data = fileInfo.contents;
+            if (typeof data === "string") {
+                data = JSON.parse(data);
+            }
+
+            const structures = data.structures;
+            if (structures && structures.length > 0) {
+                const summary = structures[0].summary;
+                const modelUrl = summary.model_url;
+
+                if (modelUrl) {
+                    // Extract filename from the URL (e.g. AF-P86927-F1-model_v6.cif)
+                    const filename = modelUrl.split("/").pop();
+
+                    if (!filename) throw new Error("Invalid model URL format.");
+
+                    // Use local PHP proxy to download the file (also bypasses CORS if file server restricts it)
+                    const proxyFileUrl = `https://molmoda.org/alphafold-proxy.php?file=${filename}`;
+                    const modelFileInfo = await loadRemoteToFileInfo(proxyFileUrl);
+
+                    // Ensure the file info has the correct name/extension for the loader
+                    modelFileInfo.name = filename;
+
+                    await this.addFileInfoToViewer({
+                        fileInfo: modelFileInfo,
+                        tag: this.pluginId,
+                    });
+                } else {
+                    throw new Error("No model URL found in structure summary.");
+                }
             } else {
-                throw new Error("No PDB file found.");
+                throw new Error("No structures found for this UniProt ID.");
             }
         } catch (err: any) {
+            console.log(err);
             api.messages.popupError(errorMsg);
-            throw err;
+            // throw err;
         } finally {
             api.messages.stopWaitSpinner(spinnerId);
         }
