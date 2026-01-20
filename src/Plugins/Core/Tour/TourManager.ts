@@ -125,8 +125,15 @@ class TourManager {
         popover: PopoverDOM,
         { state }: { state: any }
     ): void {
-        // If it's a custom wait step, handle auto-advance here.
+        const popoverEl = popover.wrapper?.closest(
+            ".driver-popover"
+        ) as HTMLElement;
+
         if (state.activeStep.isWaitStep) {
+            if (popoverEl) {
+                popoverEl.style.display = "none";
+            }
+
             setTimeout(() => {
                 waitForCondition(state.activeStep.waitCondition)
                     .then(() => {
@@ -146,14 +153,28 @@ class TourManager {
                         );
                     });
             }, 0);
+            return;
         }
 
-        const popoverEl = popover.wrapper?.closest(
-            ".driver-popover"
-        ) as HTMLElement;
         if (!popoverEl) return;
 
-        // Apply styles directly without delays, assuming element is stable
+        // If the step has no element target (like a modal wait step), force it to be centered.
+        // This fixes a race condition where the initial wait modal might appear off-center.
+        if (!state.activeStep.element) {
+            popoverEl.style.setProperty("position", "fixed", "important");
+            popoverEl.style.setProperty("top", "50%", "important");
+            popoverEl.style.setProperty("left", "50%", "important");
+            popoverEl.style.setProperty(
+                "transform",
+                "translate(-50%, -50%)",
+                "important"
+            );
+            popoverEl.style.setProperty("margin", "0", "important");
+            if (popover.arrow) {
+                popover.arrow.style.display = "none";
+            }
+        }
+
         popoverEl.classList.add("card", "shadow-lg", "p-0");
 
         if (popover.title) {
