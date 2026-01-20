@@ -308,6 +308,24 @@ class TourManager {
             this.moveToNextStepWithRetry(originalMoveNext);
         };
     }
+    /**
+     * Checks if an element is fully visible in the viewport.
+     *
+     * @param {HTMLElement} el The element to check.
+     * @returns {boolean} True if the element is fully visible in the viewport.
+     * @private
+     */
+    private _isElementInViewport(el: HTMLElement): boolean {
+        const rect = el.getBoundingClientRect();
+        return (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <=
+            (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <=
+            (window.innerWidth || document.documentElement.clientWidth)
+        );
+    }
 
     /**
      * Asynchronously moves to the next tour step, waiting for the element to appear if necessary.
@@ -317,6 +335,7 @@ class TourManager {
      */
     private async moveToNextStepWithRetry(originalMoveNext: () => void) {
         if (this.isMoving) return;
+
         if (!this.driver.hasNextStep()) {
             this.driver.destroy();
             return;
@@ -331,11 +350,9 @@ class TourManager {
         if (typeof nextStep.element === "string") {
             try {
                 const element = await this.waitForElement(nextStep.element);
-
-                // Smooth scroll and wait for it to complete
-                await this._smoothScrollIntoView(element);
-
-                // Force layout recalculation
+                if (!this._isElementInViewport(element)) {
+                    await this._smoothScrollIntoView(element);
+                }
                 window.dispatchEvent(new Event("resize"));
 
                 originalMoveNext();
