@@ -153,107 +153,82 @@ class TourManager {
         ) as HTMLElement;
         if (!popoverEl) return;
 
-        // Set opacity to 0
-        // popoverEl.style.opacity = "0";
+        // Apply styles directly without delays, assuming element is stable
+        popoverEl.classList.add("card", "shadow-lg", "p-0");
 
-        // Apply transform scale to make 0
-        popoverEl.style.transform = "scale(0)";
-        popoverEl.style.opacity = "0";
+        if (popover.title) {
+            popover.title.classList.add(
+                "card-header",
+                "py-2",
+                "ps-3",
+                "pe-2",
+                "h5",
+                "m-0",
+                "d-flex",
+                "justify-content-between",
+                "align-items-center",
+                "bg-primary",
+                "text-white"
+            );
+        }
 
-        // Longer delay for click steps to allow scroll to complete
-        const initialDelay = state.activeStep?.isClickStep ? 600 : 500;
+        if (popover.arrow) {
+            // NOTE: Do NOT add 'border-primary' here. It ruins the CSS triangle hack used by driver.js.
+            // Color matching is handled by _injectDriverCss overrides.
+            popover.arrow.style.filter =
+                "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
+        }
 
-        setTimeout(() => {
-            window.dispatchEvent(new Event("resize"));
-            setTimeout(() => {
-                window.dispatchEvent(new Event("resize"));
-                setTimeout(() => {
-                    window.dispatchEvent(new Event("resize"));
-                    popoverEl.classList.add("card", "shadow-lg", "p-0");
+        if (popover.description) {
+            popover.description.classList.add("card-body", "p-3");
+        }
 
-                    if (popover.title) {
-                        popover.title.classList.add(
-                            "card-header",
-                            "py-2",
-                            "ps-3",
-                            "pe-2",
-                            "h5",
-                            "m-0",
-                            "d-flex",
-                            "justify-content-between",
-                            "align-items-center",
-                            "bg-primary",
-                            "text-white"
-                        );
-                    }
+        if (popover.footer) {
+            popover.footer.classList.add(
+                "card-footer",
+                "d-flex",
+                "justify-content-end",
+                "align-items-center",
+                "py-2",
+                "px-3"
+            );
+            popover.footer.classList.remove("driver-popover-footer");
+        }
 
-                    if (popover.arrow) {
-                        // NOTE: Do NOT add 'border-primary' here. It ruins the CSS triangle hack used by driver.js.
-                        // Color matching is handled by _injectDriverCss overrides.
-                        popover.arrow.style.filter =
-                            "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
-                    }
+        if (popover.previousButton) {
+            popover.previousButton.style.display = "none";
+        }
 
-                    if (popover.description) {
-                        popover.description.classList.add("card-body", "p-3");
-                    }
+        if (popover.nextButton) {
+            popover.nextButton.classList.add(
+                "btn",
+                "btn-sm",
+                "btn-primary",
+                "ms-1"
+            );
 
-                    if (popover.footer) {
-                        popover.footer.classList.add(
-                            "card-footer",
-                            "d-flex",
-                            "justify-content-end",
-                            "align-items-center",
-                            "py-2",
-                            "px-3"
-                        );
-                        popover.footer.classList.remove("driver-popover-footer");
-                    }
+            // Hide Next button for click steps, wait steps, and steps with onHighlightStarted
+            if (
+                state.activeStep?.isClickStep ||
+                state.activeStep?.isWaitStep ||
+                state.activeStep?.onHighlightStarted
+            ) {
+                popover.nextButton.style.display = "none";
+            } else {
+                popover.nextButton.style.display = "inline-block";
+            }
+        }
 
-                    if (popover.previousButton) {
-                        popover.previousButton.style.display = "none";
-                    }
-
-                    if (popover.nextButton) {
-                        popover.nextButton.classList.add(
-                            "btn",
-                            "btn-sm",
-                            "btn-primary",
-                            "ms-1"
-                        );
-
-                        // Hide Next button for click steps, wait steps, and steps with onHighlightStarted
-                        if (
-                            state.activeStep?.isClickStep ||
-                            state.activeStep?.isWaitStep ||
-                            state.activeStep?.onHighlightStarted
-                        ) {
-                            popover.nextButton.style.display = "none";
-                        } else {
-                            popover.nextButton.style.display = "inline-block";
-                        }
-                    }
-
-                    if (popover.closeButton) {
-                        popover.closeButton.innerHTML = "";
-                        popover.closeButton.classList.add(
-                            "btn-close",
-                            "btn-close-white"
-                        );
-                        if (popover.title) {
-                            popover.title.appendChild(popover.closeButton);
-                        }
-                    }
-                    // Restore opacity
-                    // popoverEl.style.opacity = "1";
-                    // Restore scale
-                    popoverEl.style.transform = "scale(1)";
-                    popoverEl.style.opacity = "1";
-                }, 25);
-
-            }, initialDelay);
-
-        });
+        if (popover.closeButton) {
+            popover.closeButton.innerHTML = "";
+            popover.closeButton.classList.add(
+                "btn-close",
+                "btn-close-white"
+            );
+            if (popover.title) {
+                popover.title.appendChild(popover.closeButton);
+            }
+        }
     }
 
     /**
@@ -381,6 +356,7 @@ class TourManager {
 
     /**
      * Smoothly scrolls an element into view and waits for the scroll to complete.
+     * Uses position stability check to ensure animations/scrolls are finished.
      *
      * @param {HTMLElement} element The element to scroll into view.
      * @returns {Promise<void>} A promise that resolves when scrolling is complete.
@@ -388,58 +364,45 @@ class TourManager {
      */
     private _smoothScrollIntoView(element: HTMLElement): Promise<void> {
         return new Promise((resolve) => {
-            // Find the scrollable container
-            const scrollableParent = element.closest(".modal-body") as HTMLElement | null;
+            element.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "nearest",
+            });
 
-            // If no scrollable parent or element is already visible, resolve quickly
-            if (!scrollableParent) {
-                element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
-                setTimeout(resolve, 300);
-                return;
-            }
+            let lastRect = element.getBoundingClientRect();
+            let stableFrames = 0;
 
-            // Check if element is already in view
-            const containerRect = scrollableParent.getBoundingClientRect();
-            const elementRect = element.getBoundingClientRect();
-            const isInView = elementRect.top >= containerRect.top &&
-                elementRect.bottom <= containerRect.bottom;
-
-            if (isInView) {
-                // Already in view, no scroll needed
-                resolve();
-                return;
-            }
-
-            let resolved = false;
-            const cleanup = () => {
-                if (resolved) return;
-                resolved = true;
-                scrollableParent.removeEventListener("scrollend", onScrollEnd);
-            };
-
-            const onScrollEnd = () => {
-                cleanup();
-                // Extra delay to let browser settle
-                setTimeout(resolve, 100);
-            };
-
-            // Listen for scrollend event
-            scrollableParent.addEventListener("scrollend", onScrollEnd, { once: true });
-
-            // Fallback timeout in case scrollend doesn't fire
-            setTimeout(() => {
-                if (!resolved) {
-                    cleanup();
-                    setTimeout(resolve, 100);
+            const checkStability = () => {
+                const currentRect = element.getBoundingClientRect();
+                // Check if the element has stopped moving
+                if (
+                    Math.abs(currentRect.top - lastRect.top) < 1 &&
+                    Math.abs(currentRect.left - lastRect.left) < 1
+                ) {
+                    stableFrames++;
+                } else {
+                    stableFrames = 0;
                 }
-            }, 600);
+                lastRect = currentRect;
 
-            // Perform the scroll
-            element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+                // Wait for ~15 frames (approx 250ms at 60fps) of stability
+                if (stableFrames > 15) {
+                    resolve();
+                } else {
+                    requestAnimationFrame(checkStability);
+                }
+            };
+
+            requestAnimationFrame(checkStability);
+
+            // Fallback timeout in case requestAnimationFrame stalls or takes too long
+            setTimeout(resolve, 2000);
         });
     }
+
     /**
-     * Waits for a DOM element to appear, retrying every 250ms for up to 2 seconds.
+     * Waits for a DOM element to appear and be visible, retrying every 250ms for up to 2 seconds.
      *
      * @param {string} selector The CSS selector for the element.
      * @param {number} [timeout=2000] The total time to wait in milliseconds.
@@ -457,12 +420,19 @@ class TourManager {
             const check = () => {
                 // If the selector targets multiple items (like with comma), verify at least one exists
                 const element = document.querySelector(selector) as HTMLElement;
-                if (element) {
+                // Ensure element exists AND is visible/rendered
+                const isVisible =
+                    element &&
+                    (element.offsetWidth > 0 ||
+                        element.offsetHeight > 0 ||
+                        element.getClientRects().length > 0);
+
+                if (isVisible) {
                     resolve(element);
                 } else if (Date.now() - startTime > timeout) {
                     reject(
                         new Error(
-                            `TourManager: Element not found for selector "${selector}" after ${timeout}ms.`
+                            `TourManager: Element not found or not visible for selector "${selector}" after ${timeout}ms.`
                         )
                     );
                 } else {
