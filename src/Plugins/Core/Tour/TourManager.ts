@@ -53,6 +53,11 @@ class TourManager {
         // Inject custom overrides to make the arrow blend with the Bootstrap card header/footer
         const style = document.createElement("style");
         style.innerHTML = `
+   /* Enable smooth scrolling in modal bodies */
+   .modal-body {
+       scroll-behavior: smooth;
+   }
+
    /* 
     Case 1: Popover is BELOW the element. 
     Arrow is at the TOP of the popover. It points UP. 
@@ -267,8 +272,7 @@ class TourManager {
                     console.log(`[Tour Debug] Step ${stepIdx}${debugInfo}`, step);
                 }
                 if (element) {
-                    // Scroll into view, but don't add outline styling
-                    element.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+                    // Don't scroll here - it's handled in moveToNextStepWithRetry
                     this.lastHighlightedElement = element;
                 }
             },
@@ -287,8 +291,7 @@ class TourManager {
                 // listeners or promises, so we do nothing here to prevent
                 // driver.js from automatically advancing.
             },
-            onDeselected: (element: HTMLElement) => {
-                // No outline to remove anymore
+            onDeselected: () => {
                 this.lastHighlightedElement = null;
             },
             onDestroyed: () => {
@@ -354,11 +357,11 @@ class TourManager {
             try {
                 const element = await this.waitForElement(nextStep.element);
 
-                // Scroll element into view BEFORE moving to the step
-                element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+                // Smooth scroll and wait for it to complete
+                await this._smoothScrollIntoView(element);
 
-                // Wait for scroll to complete
-                await new Promise(resolve => setTimeout(resolve, 400));
+                // Force layout recalculation
+                window.dispatchEvent(new Event("resize"));
 
                 originalMoveNext();
             } catch (error) {
@@ -376,6 +379,65 @@ class TourManager {
         }
     }
 
+    /**
+     * Smoothly scrolls an element into view and waits for the scroll to complete.
+     *
+     * @param {HTMLElement} element The element to scroll into view.
+     * @returns {Promise<void>} A promise that resolves when scrolling is complete.
+     * @private
+     */
+    private _smoothScrollIntoView(element: HTMLElement): Promise<void> {
+        return new Promise((resolve) => {
+            // Find the scrollable container
+            const scrollableParent = element.closest(".modal-body") as HTMLElement | null;
+
+            // If no scrollable parent or element is already visible, resolve quickly
+            if (!scrollableParent) {
+                element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+                setTimeout(resolve, 300);
+                return;
+            }
+
+            // Check if element is already in view
+            const containerRect = scrollableParent.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            const isInView = elementRect.top >= containerRect.top &&
+                elementRect.bottom <= containerRect.bottom;
+
+            if (isInView) {
+                // Already in view, no scroll needed
+                resolve();
+                return;
+            }
+
+            let resolved = false;
+            const cleanup = () => {
+                if (resolved) return;
+                resolved = true;
+                scrollableParent.removeEventListener("scrollend", onScrollEnd);
+            };
+
+            const onScrollEnd = () => {
+                cleanup();
+                // Extra delay to let browser settle
+                setTimeout(resolve, 100);
+            };
+
+            // Listen for scrollend event
+            scrollableParent.addEventListener("scrollend", onScrollEnd, { once: true });
+
+            // Fallback timeout in case scrollend doesn't fire
+            setTimeout(() => {
+                if (!resolved) {
+                    cleanup();
+                    setTimeout(resolve, 100);
+                }
+            }, 600);
+
+            // Perform the scroll
+            element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+        });
+    }
     /**
      * Waits for a DOM element to appear, retrying every 250ms for up to 2 seconds.
      *
