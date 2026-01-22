@@ -1011,7 +1011,7 @@ class TourManager {
                         }
                         this.driver.refresh();
                     }
-                }, 1000);  This works, but it's hashish. Is there not a way to run this driver.refresh() on some concrete signal that things have settled down.
+                }, 1000);  // This works, but it's hashish. Is there not a way to run this driver.refresh() on some concrete signal that things have settled down.
 
                 this._setFocus(element);
 
