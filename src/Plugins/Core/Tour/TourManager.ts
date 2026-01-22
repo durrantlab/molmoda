@@ -14,6 +14,7 @@ import {
 import { messagesApi } from "@/Api/Messages";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { isLocalHost } from "@/Core/GlobalVars";
+import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 const FOCUS_DELAY = 150; // ms
 
@@ -27,6 +28,8 @@ class TourManager {
     private lastHighlightedElement: HTMLElement | null = null;
     private isMoving = false; // To prevent concurrent moves
     private tourSteps: any[] = []; // Store steps for the current tour
+    private currentPluginTitle = "";
+    private isTourCompleted = false;
 
     /**
      * Checks if a tour is currently running.
@@ -38,7 +41,7 @@ class TourManager {
     }
 
     /**
-  * Injects the driver.js CSS file and custom overrides into the document head.
+     * Injects the driver.js CSS file and custom overrides into the document head.
      *
      * @private
      */
@@ -69,7 +72,7 @@ class TourManager {
    }
 
    /* 
-    Case 2: Popover is ABOVE the element (e.g. for action buttons).
+ Case 2: Popover is ABOVE the element.
     Arrow is at the BOTTOM of the popover. It points DOWN.
     It connects to the Footer (Light Gray).
    */
@@ -146,7 +149,7 @@ class TourManager {
                 tourDebugInfo: state.activeStep?.tourDebugInfo,
             });
         }
-        
+
         const popoverEl = popover.wrapper?.closest(
             ".driver-popover"
         ) as HTMLElement;
@@ -182,7 +185,8 @@ class TourManager {
 
         // If the step has no element target (like a modal wait step), force it to be centered.
         // This fixes a race condition where the initial wait modal might appear off-center.
-        if (!state.activeStep.element) {
+        const isConclusion = state.activeStep.tourDebugInfo === "Conclusion";
+        if (!state.activeStep.element || isConclusion) {
             popoverEl.style.setProperty("position", "fixed", "important");
             popoverEl.style.setProperty("top", "50%", "important");
             popoverEl.style.setProperty("left", "50%", "important");
@@ -250,6 +254,17 @@ class TourManager {
                 "ms-1"
             );
 
+            // Check if this is the last step to handle the "Done" button behavior
+            const isLastStep = !this.driver.hasNextStep();
+            if (isLastStep) {
+                popover.nextButton.innerText = "Done";
+                // Directly attach listener to ensure we capture the completion, 
+                // as driver.js destroy() might bypass onNextClick hooks.
+                popover.nextButton.addEventListener("click", () => {
+                    this.isTourCompleted = true;
+                });
+            }
+
             // Hide Next button for click steps, wait steps, and steps with onHighlightStarted
             if (
                 state.activeStep?.isClickStep ||
@@ -311,8 +326,10 @@ class TourManager {
                     this.driver.moveNext();
                     return;
                 }
+
                 // If there is no next step, this is the last one.
                 if (!this.driver.hasNextStep()) {
+                    this.isTourCompleted = true;
                     this.driver.destroy();
                 }
 
@@ -326,6 +343,13 @@ class TourManager {
             onDestroyed: () => {
                 this.lastHighlightedElement = null;
                 this.isRunning = false;
+
+                // Show completion message only if the tour finished successfully
+                if (this.isTourCompleted) {
+                    this.showCompletionMessage();
+                }
+                this.isTourCompleted = false;
+
                 this.driver = null;
             },
             onPopoverRender: (
@@ -362,6 +386,7 @@ class TourManager {
             this.moveToNextStepWithRetry(originalMoveNext);
         };
     }
+
     /**
      * Checks if an element is fully visible in the viewport.
      *
@@ -407,6 +432,7 @@ class TourManager {
             if (isLocalHost) {
                 console.log("[Tour Debug] moveToNextStepWithRetry: no next step, destroying");
             }
+            this.isTourCompleted = true;
             this.driver.destroy();
             return;
         }
@@ -427,14 +453,14 @@ class TourManager {
                 if (isLocalHost) {
                     console.log(`[Tour Debug] moveToNextStepWithRetry: element found for "${nextStep.element}"`);
                 }
-                
+
                 // Always wait for the element's position to stabilize.
                 // This handles cases where:
                 // 1. The element needs to be scrolled into view
                 // 2. The element is inside a modal that's still animating
                 // 3. Any CSS transitions are still running
                 await this._waitForElementStability(element);
-                
+
                 if (!this._isElementInViewport(element)) {
                     await this._smoothScrollIntoView(element);
                 }
@@ -580,6 +606,7 @@ class TourManager {
     ): Promise<HTMLElement> {
         return new Promise((resolve, reject) => {
             const startTime = Date.now();
+
             const check = () => {
                 // If the selector targets multiple items (like with comma), verify at least one exists
                 const element = document.querySelector(selector) as HTMLElement;
@@ -602,6 +629,7 @@ class TourManager {
                     setTimeout(check, interval);
                 }
             };
+
             check();
         });
     }
@@ -621,16 +649,16 @@ class TourManager {
             console.warn("A tour is already running.");
             return;
         }
-
         this.isRunning = true;
+        this.isTourCompleted = false;
+        this.currentPluginTitle = plugin.title;
         await this.initializeDriver();
-
         let tests: ITest | ITest[] = await plugin.getTests();
         if (!Array.isArray(tests)) {
             tests = [tests];
         }
-
         const testToRun = tests[testIndex];
+
         if (!testToRun) {
             console.error(
                 `Test index ${testIndex} not found for plugin ${plugin.pluginId}`
@@ -704,15 +732,6 @@ class TourManager {
 
         this._processCommandList(test.afterPluginCloses, plugin, steps, "afterPluginCloses");
 
-        // Add conclusion step
-        steps.push({
-            popover: {
-                title: "Tour Complete!",
-                description: `You have completed the tour for the "${plugin.title}" plugin.`,
-            },
-            tourDebugInfo: "Conclusion",
-        });
-
         return steps;
     }
 
@@ -731,6 +750,7 @@ class TourManager {
     ) {
         const allArgs = plugin.getUserArgsFlat();
         let cmds: ITestCommand[] = [];
+
         if (typeof commandListFunc === "function") {
             const testCmdList = commandListFunc();
             if (testCmdList instanceof TestCmdList) {
@@ -795,7 +815,6 @@ class TourManager {
         if (arg.type === UserArgType.Vector3D) {
             selector = `#x-${arg.id}-${plugin.pluginId}-item`;
         }
-
         const label = arg.label || "Parameter";
         const description = arg.description
             ? `<br><br><em>${arg.description}</em>`
@@ -872,6 +891,7 @@ class TourManager {
         );
 
         let menuTextIndex = 0;
+
         openCmds.forEach((command, index) => {
             const step = this._commandToDriverStep(command, plugin, `Menu Navigation cmd #${index}`);
             if (step) {
@@ -919,6 +939,7 @@ class TourManager {
         debugInfo?: string
     ): any | null {
         let step: any = null;
+
         // Improve highlighting for SVG wrappers
         let selector = command.selector;
         if (selector && selector.endsWith(".svg-wrapper")) {
@@ -989,7 +1010,7 @@ class TourManager {
                 if (isLocalHost) {
                     console.log(`[Tour Debug] _createClickStep onHighlighted called for selector "${selector}", element:`, element);
                 }
-                
+
                 if (!element) {
                     console.error(
                         `TourManager: Element not found for selector "${selector}". Skipping step.`
@@ -1018,52 +1039,54 @@ class TourManager {
                 const oneTimeClickListener = () => {
                     // Remove using default bubbling phase (no capture)
                     element.removeEventListener("click", oneTimeClickListener);
-                    
+
                     // Guard against driver being null (e.g., if tour was already destroyed)
                     if (!this.driver) {
                         return;
                     }
-                    
+
                     // Check if this is the last step or if the next step has no element
                     // (like the "Tour Complete!" conclusion step). In either case, we need
                     // to delay longer to ensure native click handlers complete before
                     // driver.js manipulates the DOM.
                     const isLastStep = !this.driver.hasNextStep();
                     let nextStepHasNoElement = false;
-                    
+
                     if (!isLastStep) {
                         const activeIndex = this.driver.getActiveIndex();
                         const nextStep = this.tourSteps[activeIndex + 1];
                         nextStepHasNoElement = nextStep && !nextStep.element;
                     }
-                    
+
                     const needsDelayForNativeHandler = isLastStep || nextStepHasNoElement;
-                    
+
                     if (needsDelayForNativeHandler) {
                         // Use a longer delay to ensure native click handlers (like modal close)
                         // fully complete before driver.js manipulates the DOM.
                         // We use requestAnimationFrame + setTimeout to ensure we're past
                         // the current event loop and any triggered animations/transitions.
                         requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            if (this.driver) {
+                            setTimeout(() => {
+                                if (this.driver) {
                                     if (isLastStep) {
-                                this.driver.destroy();
+                                        this.isTourCompleted = true; // Mark as completed before destroying
+                                        this.driver.destroy();
                                     } else {
                                         this.driver.moveNext();
-                            }
+                                    }
                                 }
                             }, 150);
                         });
                     } else {
                         // For normal steps, advance immediately after the click event completes
-                    setTimeout(() => {
-                        if (this.driver) {
-                            this.driver.moveNext();
-                        }
+                        setTimeout(() => {
+                            if (this.driver) {
+                                this.driver.moveNext();
+                            }
                         }, 0);
                     }
                 };
+
                 // Use bubbling phase (default) instead of capture.
                 // This ensures the element receives and handles the click before the tour advances.
                 element.addEventListener("click", oneTimeClickListener);
@@ -1090,6 +1113,7 @@ class TourManager {
             const selectorParts = command.selector.split(" ");
             const lastSelectorPart = selectorParts[selectorParts.length - 1];
             const modalSelectorPart = selectorParts.slice(0, -1).join(" ");
+
             const selectorStr = lastSelectorPart.replace(/^#/, "");
             const suffix = `-${plugin.pluginId}-item`;
 
@@ -1118,6 +1142,7 @@ class TourManager {
                             tagName = "select";
                             break;
                     }
+
                     if (tagName) {
                         specificSelector = `${modalSelectorPart} ${tagName}${lastSelectorPart}`;
                     }
@@ -1208,6 +1233,7 @@ class TourManager {
         );
 
         // console.log(`Tour Step: Input - Selector: ${specificSelector}`);
+
         const popover = {
             title: plugin.title,
             description: "",
@@ -1233,6 +1259,7 @@ class TourManager {
 
         let valueForDisplay = command.data;
         let actionVerb = "enter";
+
         if (userArg?.type === UserArgType.Select) {
             actionVerb = "select";
             const options = (userArg as IUserArgSelect).options;
@@ -1241,7 +1268,6 @@ class TourManager {
                 // eslint-disable-next-line eqeqeq
                 return optionVal == command.data;
             });
-
             if (foundOption) {
                 valueForDisplay =
                     typeof foundOption === "string"
@@ -1281,6 +1307,7 @@ class TourManager {
                     this.driver.moveNext();
                     return;
                 }
+
                 const oneTimeInputListener = () => {
                     // Use == for loose equality to handle cases where one is a number and the other is a string.
                     // eslint-disable-next-line eqeqeq
@@ -1300,6 +1327,12 @@ class TourManager {
         };
     }
 
+    /**
+     * Sets focus to the specified element after a brief delay.
+     *
+     * @param {HTMLInputElement | HTMLElement | null} element The element to focus.
+     * @private
+     */
     private _setFocus(element: HTMLInputElement | HTMLElement | null): void {
         if (!element) {
             console.error(
@@ -1371,6 +1404,19 @@ class TourManager {
                 this._setFocus(element);
             },
         };
+    }
+
+    /**
+     * Shows the completion message in a standard modal.
+     * 
+     * @private
+     */
+    private showCompletionMessage() {
+        messagesApi.popupMessage(
+            "Tour Complete!",
+            `You have completed the tour for the "${this.currentPluginTitle}" plugin.`,
+            PopupVariant.Success
+        );
     }
 }
 
