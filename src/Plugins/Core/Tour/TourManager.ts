@@ -103,12 +103,24 @@ class TourManager {
    }
    
    /* 
-    Fix z-index to be strictly above everything.
-    driver.js overlay is usually around 100000+. 
-    We set this to 100 million to be safe.
+    Fix z-index to be strictly above everything, including Bootstrap modals.
+    Bootstrap modals use z-index ~1050-1055, modal backdrop ~1040.
+    driver.js overlay is usually around 10000+. 
+    We set these to very high values to ensure they appear above modals.
    */
    div.driver-popover {
     z-index: 100000000 !important;
+   }
+   
+   /* The overlay (dark semi-transparent background) */
+   .driver-overlay {
+    z-index: 99999998 !important;
+   }
+   
+   /* The highlighted element's "stage" or cutout area */
+   .driver-active-element {
+    z-index: 99999999 !important;
+    position: relative !important;
    }
   `;
         document.head.appendChild(style);
@@ -125,6 +137,16 @@ class TourManager {
         popover: PopoverDOM,
         { state }: { state: any }
     ): void {
+        if (isLocalHost) {
+            console.log(`[Tour Debug] _handlePopoverRender called, activeStep:`, {
+                element: state.activeStep?.element,
+                isWaitStep: state.activeStep?.isWaitStep,
+                isClickStep: state.activeStep?.isClickStep,
+                isNoteStep: state.activeStep?.isNoteStep,
+                tourDebugInfo: state.activeStep?.tourDebugInfo,
+            });
+        }
+        
         const popoverEl = popover.wrapper?.closest(
             ".driver-popover"
         ) as HTMLElement;
@@ -237,6 +259,11 @@ class TourManager {
                 popover.nextButton.style.display = "none";
             } else {
                 popover.nextButton.style.display = "inline-block";
+                if (state.activeStep?.isNoteStep) {
+                    setTimeout(() => {
+                        popover.nextButton.focus();
+                    }, FOCUS_DELAY);
+                }
             }
         }
 
@@ -250,6 +277,12 @@ class TourManager {
                 popover.title.appendChild(popover.closeButton);
             }
         }
+
+        setTimeout(() => {
+            if (document.activeElement === popover.closeButton) {
+                (document.activeElement as HTMLElement).blur();
+            }
+        }, FOCUS_DELAY);
     }
 
     /**
@@ -355,9 +388,25 @@ class TourManager {
      * @private
      */
     private async moveToNextStepWithRetry(originalMoveNext: () => void) {
-        if (this.isMoving) return;
+        if (this.isMoving) {
+            if (isLocalHost) {
+                console.log("[Tour Debug] moveToNextStepWithRetry: skipped because isMoving=true");
+            }
+            return;
+        }
+
+        // Guard against driver being null
+        if (!this.driver) {
+            if (isLocalHost) {
+                console.log("[Tour Debug] moveToNextStepWithRetry: skipped because driver is null");
+            }
+            return;
+        }
 
         if (!this.driver.hasNextStep()) {
+            if (isLocalHost) {
+                console.log("[Tour Debug] moveToNextStepWithRetry: no next step, destroying");
+            }
             this.driver.destroy();
             return;
         }
@@ -368,9 +417,24 @@ class TourManager {
         const activeIndex = this.driver.getActiveIndex();
         const nextStep = steps[activeIndex + 1];
 
+        if (isLocalHost) {
+            console.log(`[Tour Debug] moveToNextStepWithRetry: activeIndex=${activeIndex}, nextStep element="${nextStep?.element}", debugInfo="${nextStep?.tourDebugInfo}"`);
+        }
+
         if (typeof nextStep.element === "string") {
             try {
                 const element = await this.waitForElement(nextStep.element);
+                if (isLocalHost) {
+                    console.log(`[Tour Debug] moveToNextStepWithRetry: element found for "${nextStep.element}"`);
+                }
+                
+                // Always wait for the element's position to stabilize.
+                // This handles cases where:
+                // 1. The element needs to be scrolled into view
+                // 2. The element is inside a modal that's still animating
+                // 3. Any CSS transitions are still running
+                await this._waitForElementStability(element);
+                
                 if (!this._isElementInViewport(element)) {
                     await this._smoothScrollIntoView(element);
                 }
@@ -387,6 +451,9 @@ class TourManager {
                 this.isMoving = false;
             }
         } else {
+            if (isLocalHost) {
+                console.log(`[Tour Debug] moveToNextStepWithRetry: nextStep has no string element, calling originalMoveNext directly`);
+            }
             originalMoveNext();
             this.isMoving = false;
         }
@@ -436,6 +503,64 @@ class TourManager {
 
             // Fallback timeout in case requestAnimationFrame stalls or takes too long
             setTimeout(resolve, 2000);
+        });
+    }
+
+    /**
+     * Waits for an element's position to stabilize (stop moving).
+     * This is useful for waiting for modal animations, CSS transitions, etc.
+     *
+     * @param {HTMLElement} element The element to monitor.
+     * @param {number} [stableFramesRequired=10] Number of stable frames required (at 60fps, 10 frames ≈ 167ms).
+     * @param {number} [timeout=1000] Maximum time to wait in milliseconds.
+     * @returns {Promise<void>} A promise that resolves when the element is stable.
+     * @private
+     */
+    private _waitForElementStability(
+        element: HTMLElement,
+        stableFramesRequired = 10,
+        timeout = 1000
+    ): Promise<void> {
+        return new Promise((resolve) => {
+            let lastRect = element.getBoundingClientRect();
+            let stableFrames = 0;
+            const startTime = Date.now();
+
+            const checkStability = () => {
+                // Timeout fallback
+                if (Date.now() - startTime > timeout) {
+                    if (isLocalHost) {
+                        console.log(`[Tour Debug] _waitForElementStability: timeout reached, proceeding`);
+                    }
+                    resolve();
+                    return;
+                }
+
+                const currentRect = element.getBoundingClientRect();
+                // Check if the element has stopped moving
+                if (
+                    Math.abs(currentRect.top - lastRect.top) < 1 &&
+                    Math.abs(currentRect.left - lastRect.left) < 1 &&
+                    Math.abs(currentRect.width - lastRect.width) < 1 &&
+                    Math.abs(currentRect.height - lastRect.height) < 1
+                ) {
+                    stableFrames++;
+                } else {
+                    stableFrames = 0;
+                }
+                lastRect = currentRect;
+
+                if (stableFrames >= stableFramesRequired) {
+                    if (isLocalHost) {
+                        console.log(`[Tour Debug] _waitForElementStability: element stable after ${stableFrames} frames`);
+                    }
+                    resolve();
+                } else {
+                    requestAnimationFrame(checkStability);
+                }
+            };
+
+            requestAnimationFrame(checkStability);
         });
     }
 
@@ -861,6 +986,10 @@ class TourManager {
             popover: popover,
             isClickStep: true,
             onHighlighted: (element: HTMLElement) => {
+                if (isLocalHost) {
+                    console.log(`[Tour Debug] _createClickStep onHighlighted called for selector "${selector}", element:`, element);
+                }
+                
                 if (!element) {
                     console.error(
                         `TourManager: Element not found for selector "${selector}". Skipping step.`
@@ -871,14 +1000,72 @@ class TourManager {
                     return;
                 }
 
+                // Force driver.js to recalculate positions after a brief delay.
+                // This fixes issues where elements inside modals have incorrect
+                // bounding rects when first highlighted due to stacking contexts
+                // or ongoing animations.
+                setTimeout(() => {
+                    if (this.driver && this.driver.refresh) {
+                        if (isLocalHost) {
+                            console.log(`[Tour Debug] Calling driver.refresh() for selector "${selector}"`);
+                        }
+                        this.driver.refresh();
+                    }
+                }, 1000);  This works, but it's hashish. Is there not a way to run this driver.refresh() on some concrete signal that things have settled down.
+
                 this._setFocus(element);
 
                 const oneTimeClickListener = () => {
+                    // Remove using default bubbling phase (no capture)
                     element.removeEventListener("click", oneTimeClickListener);
-                    if (this.driver) {
-                        this.driver.moveNext();
+                    
+                    // Guard against driver being null (e.g., if tour was already destroyed)
+                    if (!this.driver) {
+                        return;
+                    }
+                    
+                    // Check if this is the last step or if the next step has no element
+                    // (like the "Tour Complete!" conclusion step). In either case, we need
+                    // to delay longer to ensure native click handlers complete before
+                    // driver.js manipulates the DOM.
+                    const isLastStep = !this.driver.hasNextStep();
+                    let nextStepHasNoElement = false;
+                    
+                    if (!isLastStep) {
+                        const activeIndex = this.driver.getActiveIndex();
+                        const nextStep = this.tourSteps[activeIndex + 1];
+                        nextStepHasNoElement = nextStep && !nextStep.element;
+                    }
+                    
+                    const needsDelayForNativeHandler = isLastStep || nextStepHasNoElement;
+                    
+                    if (needsDelayForNativeHandler) {
+                        // Use a longer delay to ensure native click handlers (like modal close)
+                        // fully complete before driver.js manipulates the DOM.
+                        // We use requestAnimationFrame + setTimeout to ensure we're past
+                        // the current event loop and any triggered animations/transitions.
+                        requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            if (this.driver) {
+                                    if (isLastStep) {
+                                this.driver.destroy();
+                                    } else {
+                                        this.driver.moveNext();
+                            }
+                                }
+                            }, 150);
+                        });
+                    } else {
+                        // For normal steps, advance immediately after the click event completes
+                    setTimeout(() => {
+                        if (this.driver) {
+                            this.driver.moveNext();
+                        }
+                        }, 0);
                     }
                 };
+                // Use bubbling phase (default) instead of capture.
+                // This ensures the element receives and handles the click before the tour advances.
                 element.addEventListener("click", oneTimeClickListener);
             },
         };
