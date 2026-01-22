@@ -377,6 +377,7 @@ class TourManager {
             overlayOpacity: 0.1,
             popoverOffset: 25,  // Increased from 15 to 25
             stagePadding: 5,
+   allowClose: false, // Prevent accidental closure via overlay click or ESC
             ...this._configureDriverHooks(),
         });
 
