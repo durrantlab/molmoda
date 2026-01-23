@@ -377,7 +377,7 @@ class TourManager {
             overlayOpacity: 0.1,
             popoverOffset: 25,  // Increased from 15 to 25
             stagePadding: 5,
-   allowClose: false, // Prevent accidental closure via overlay click or ESC
+            allowClose: false, // Prevent accidental closure via overlay click or ESC
             ...this._configureDriverHooks(),
         });
 
@@ -817,15 +817,23 @@ class TourManager {
             selector = `#x-${arg.id}-${plugin.pluginId}-item`;
         }
         const label = arg.label || "Parameter";
-        const description = arg.description
+        let description = arg.description
             ? `<br><br><em>${arg.description}</em>`
             : "";
+
+        if (arg.type === UserArgType.MoleculeInputParams) {
+            description += " Here you can input or modify the molecular structure and parameters.";
+        } else {
+            description += ` Set ${label}.${description}`;
+        }
+
+        description = description.trim();
 
         return {
             element: selector,
             popover: {
                 title: plugin.title,
-                description: `Set ${label}.${description}`,
+                description: description,
             },
             isNoteStep: true,
             onHighlighted: (element: HTMLElement) => {
