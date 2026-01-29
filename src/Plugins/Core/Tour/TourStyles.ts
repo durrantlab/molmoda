@@ -87,6 +87,12 @@ export function injectDriverCss(): void {
     z-index: 99999999 !important;
     position: relative !important;
    }
+
+   /* Hidden state for menu item popovers during repositioning */
+   div.driver-popover.tour-menu-item-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+   }
   `;
     document.head.appendChild(style);
 }
@@ -111,6 +117,7 @@ export function handlePopoverRender(
             isWaitStep: state.activeStep?.isWaitStep,
             isClickStep: state.activeStep?.isClickStep,
             isNoteStep: state.activeStep?.isNoteStep,
+            isMenuItem: state.activeStep?.isMenuItem,
             tourDebugInfo: state.activeStep?.tourDebugInfo,
         });
     }
@@ -146,6 +153,28 @@ export function handlePopoverRender(
     }
 
     if (!popoverEl) return;
+
+    // For menu items, hide the popover initially - it will be shown after repositioning
+    // Check if this is the first render (before repositioning to parent li)
+    const elementSelector = state.activeStep?.element || "";
+    const isRepositioned = typeof elementSelector === "string" && elementSelector.includes("data-tour-menu-highlight");
+    
+    if (isLocalHost) {
+        console.log(`[Tour Debug] Menu item check: isMenuItem=${state.activeStep?.isMenuItem}, elementSelector="${elementSelector}", isRepositioned=${isRepositioned}`);
+    }
+    
+    if (state.activeStep?.isMenuItem && !isRepositioned) {
+        popoverEl.classList.add("tour-menu-item-hidden");
+        if (isLocalHost) {
+            console.log(`[Tour Debug] Hiding popover for menu item repositioning`);
+        }
+    } else {
+        // Either not a menu item, or it's been repositioned - make sure it's visible
+        popoverEl.classList.remove("tour-menu-item-hidden");
+        if (state.activeStep?.isMenuItem && isLocalHost) {
+            console.log(`[Tour Debug] Showing popover after menu item repositioning`);
+        }
+    }
 
     // If the step has no element target (like a modal wait step), force it to be centered.
     const isConclusion = state.activeStep.tourDebugInfo === "Conclusion";

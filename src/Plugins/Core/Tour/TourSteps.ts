@@ -162,79 +162,156 @@ export function createClickStep(
         popover.description = `Please click on "${moleculeName}" in the Navigator panel to select it.`;
     }
 
-    return {
+    // Detect if this is a menu item selector (inside dropdown menus or nav items)
+    // These are typically positioned near the left edge and benefit from right-side popovers
+    // Patterns to detect:
+    // - .dropdown-menu, .dropdown-item, .nav-link (class-based)
+    // - .navbar #menu1-xxx (top-level navbar menus)
+    // - Selectors containing #menu followed by digits (menu item IDs)
+    const isMenuItem = selector.includes(".dropdown-menu") ||
+        selector.includes(".dropdown-item") ||
+        selector.includes(".nav-link") ||
+        selector.includes(".navbar") ||
+        /#menu\d/.test(selector);
+
+    if (isLocalHost) {
+        console.log(`[Tour Debug] createClickStep: selector="${selector}", isMenuItem=${isMenuItem}`);
+    }
+
+    // For menu items, we want to highlight the parent <li> for better popover positioning,
+    // but still attach the click listener to the actual menu item element.
+    // We'll find the parent li dynamically in onHighlighted.
+    const step: any = {
         element: selector,
         popover: popover,
         isClickStep: true,
-        onHighlighted: (element: HTMLElement) => {
-            if (isLocalHost) {
-                console.log(`[Tour Debug] createClickStep onHighlighted called for selector "${selector}", element:`, element);
-            }
+        isMenuItem: isMenuItem,
+        actualClickSelector: selector, // Store original selector for click handling
+    };
 
-            if (!element) {
-                console.error(
-                    `TourManager: Element not found for selector "${selector}". Skipping step.`
-                );
-                if (context.manager.driver) {
-                    context.manager.driver.moveNext();
+    // For menu items, force the popover to appear on the right side
+    // This prevents the popover from obscuring the menu item when it's near the left edge
+    // Note: side/align must be at step level, not inside popover
+    if (isMenuItem) {
+        step.popover.side = "right";
+        step.popover.align = "start";
+    }
+
+    step.onHighlighted = (element: HTMLElement) => {
+        if (isLocalHost) {
+            console.log(`[Tour Debug] createClickStep onHighlighted called for selector "${selector}", element:`, element);
+        }
+
+        if (!element) {
+            console.error(
+                `TourManager: Element not found for selector "${selector}". Skipping step.`
+            );
+            if (context.manager.driver) {
+                context.manager.driver.moveNext();
+            }
+            return;
+        }
+
+        // For menu items, try to re-highlight using the parent <li> element
+        // This provides better popover positioning for items near screen edges
+        if (isMenuItem && context.manager.driver) {
+            const parentLi = element.closest("li.nav-item, li.dropdown-item, li");
+            if (parentLi && parentLi !== element) {
+                if (isLocalHost) {
+                    console.log(`[Tour Debug] Found parent <li> for menu item, re-highlighting:`, parentLi);
                 }
+
+                // Get current step and update its element to the parent
+                const activeStep = context.manager.driver.getActiveStep();
+                if (activeStep) {
+                    // Temporarily add a unique attribute to target the parent
+                    parentLi.setAttribute("data-tour-menu-highlight", "true");
+                    activeStep.element = "[data-tour-menu-highlight='true']";
+
+                    // Refresh to re-highlight with the new element
+                    // The popover will be shown by handlePopoverRender after this refresh
+                    context.manager.driver.refresh();
+
+                    // Manually show the popover after refresh since onPopoverRender may not be called again
+                    requestAnimationFrame(() => {
+                        const popoverEl = document.querySelector(".driver-popover") as HTMLElement;
+                        if (popoverEl) {
+                            popoverEl.classList.remove("tour-menu-item-hidden");
+                            if (isLocalHost) {
+                                console.log(`[Tour Debug] Manually showing popover after refresh`);
+                            }
+                        }
+                    });
+
+                    // Clean up the attribute after a short delay
+                    setTimeout(() => {
+                        parentLi.removeAttribute("data-tour-menu-highlight");
+                    }, 100);
+                }
+            }
+        }
+
+        setTimeout(() => {
+            if (context.manager.driver && context.manager.driver.refresh) {
+                if (isLocalHost) {
+                    console.log(`[Tour Debug] Calling driver.refresh() for selector "${selector}"`);
+                }
+                context.manager.driver.refresh();
+            }
+        }, 1000);
+
+        setFocus(element);
+
+        // For menu items, we need to attach the click listener to the actual clickable element,
+        // not the parent <li> that we're highlighting
+        const clickTarget = isMenuItem
+            ? (document.querySelector(selector) as HTMLElement) || element
+            : element;
+
+        const oneTimeClickListener = () => {
+            clickTarget.removeEventListener("click", oneTimeClickListener);
+
+            if (!context.manager.driver) {
                 return;
             }
 
-            setTimeout(() => {
-                if (context.manager.driver && context.manager.driver.refresh) {
-                    if (isLocalHost) {
-                        console.log(`[Tour Debug] Calling driver.refresh() for selector "${selector}"`);
-                    }
-                    context.manager.driver.refresh();
-                }
-            }, 1000);
+            const isLastStep = !context.manager.driver.hasNextStep();
+            let nextStepHasNoElement = false;
 
-            setFocus(element);
+            if (!isLastStep) {
+                const activeIndex = context.manager.driver.getActiveIndex();
+                const nextStep = context.manager.tourSteps[activeIndex + 1];
+                nextStepHasNoElement = nextStep && !nextStep.element;
+            }
 
-            const oneTimeClickListener = () => {
-                element.removeEventListener("click", oneTimeClickListener);
+            const needsDelayForNativeHandler = isLastStep || nextStepHasNoElement;
 
-                if (!context.manager.driver) {
-                    return;
-                }
-
-                const isLastStep = !context.manager.driver.hasNextStep();
-                let nextStepHasNoElement = false;
-
-                if (!isLastStep) {
-                    const activeIndex = context.manager.driver.getActiveIndex();
-                    const nextStep = context.manager.tourSteps[activeIndex + 1];
-                    nextStepHasNoElement = nextStep && !nextStep.element;
-                }
-
-                const needsDelayForNativeHandler = isLastStep || nextStepHasNoElement;
-
-                if (needsDelayForNativeHandler) {
-                    requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            if (context.manager.driver) {
-                                if (isLastStep) {
-                                    context.markCompleted();
-                                    context.manager.driver.destroy();
-                                } else {
-                                    context.manager.driver.moveNext();
-                                }
-                            }
-                        }, 150);
-                    });
-                } else {
+            if (needsDelayForNativeHandler) {
+                requestAnimationFrame(() => {
                     setTimeout(() => {
                         if (context.manager.driver) {
-                            context.manager.driver.moveNext();
+                            if (isLastStep) {
+                                context.markCompleted();
+                                context.manager.driver.destroy();
+                            } else {
+                                context.manager.driver.moveNext();
+                            }
                         }
-                    }, 0);
-                }
-            };
+                    }, 150);
+                });
+            } else {
+                setTimeout(() => {
+                    if (context.manager.driver) {
+                        context.manager.driver.moveNext();
+                    }
+                }, 0);
+            }
+        };
 
-            element.addEventListener("click", oneTimeClickListener);
-        },
+        clickTarget.addEventListener("click", oneTimeClickListener);
     };
+
+    return step;
 }
 
 /**
