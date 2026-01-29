@@ -206,3 +206,36 @@ export function getElementLabel(element: HTMLElement): string {
     text = text.replace(/\s+/g, " ").trim();
     return text;
 }
+
+/**
+ * Checks if the element's value matches the expected value.
+ * Handles both standard value property and selected option text for select elements.
+ * 
+ * @param {HTMLElement} element The element to check.
+ * @param {any} expectedValue The expected value.
+ * @returns {boolean} True if the value matches.
+ */
+export function isElementValueCorrect(element: HTMLElement, expectedValue: any): boolean {
+    if (!element) return false;
+    
+    // Check 'value' property (inputs, selects)
+    // Use loose equality to match how inputs often store numbers as strings
+    const val = (element as HTMLInputElement).value;
+    // eslint-disable-next-line eqeqeq
+    if (val == expectedValue) return true;
+
+    // For Select elements, also check the text of the selected option
+    if (element.tagName.toLowerCase() === 'select') {
+        const select = element as HTMLSelectElement;
+        if (select.selectedIndex >= 0) {
+            const selectedOption = select.options[select.selectedIndex];
+            if (selectedOption) {
+                const text = selectedOption.text.trim();
+                 // eslint-disable-next-line eqeqeq
+                if (text == expectedValue) return true;
+            }
+        }
+    }
+    
+    return false;
+}

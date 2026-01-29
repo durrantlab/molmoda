@@ -7,7 +7,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { ITestCommand, TestCommand } from "@/Testing/TestInterfaces";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { isLocalHost } from "@/Core/GlobalVars";
-import { setFocus } from "./TourUtils";
+import { setFocus, isElementValueCorrect } from "./TourUtils";
 import { TourManager } from "./TourManager";
 
 /**
@@ -325,6 +325,7 @@ export function createInputStep(
     return {
         element: specificSelector,
         popover,
+        expectedValue: command.data, // Pass expected value to step for runtime checking
         onHighlightStarted: (element: HTMLInputElement) => {
             if (!element) {
                 console.error(
@@ -334,14 +335,15 @@ export function createInputStep(
                 return;
             }
 
-            const oneTimeInputListener = () => {
-                // eslint-disable-next-line eqeqeq
-                if (element.value == command.data) {
-                    element.removeEventListener("input", oneTimeInputListener);
+            const checkAndAdvance = () => {
+                if (isElementValueCorrect(element, command.data)) {
+                    element.removeEventListener("input", checkAndAdvance);
+                    element.removeEventListener("change", checkAndAdvance);
                     context.manager.driver.moveNext();
                 }
             };
-            element.addEventListener("input", oneTimeInputListener);
+            element.addEventListener("input", checkAndAdvance);
+            element.addEventListener("change", checkAndAdvance);
         },
         onHighlighted: (element: HTMLInputElement) => {
             setFocus(element);

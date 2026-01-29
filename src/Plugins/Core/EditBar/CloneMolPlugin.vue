@@ -212,10 +212,10 @@ export default class CloneMolPlugin extends PluginParentClass {
                     .selectMoleculeInTree("Compounds")
                     .wait(0.5)
                     .click('#navigator div[data-label="Compounds"] span.cloneextract')
-                    .text("#newName-clonemol-item", "Compounds-clonned")
+                    .text("#newName-clonemol-item", "Compounds-cloned")
                     .pressPopupButton(".action-btn", this.pluginId)
                     .wait(2)
-                    .waitUntilRegex("#navigator", "Compounds-clonned"),
+                    .waitUntilRegex("#navigator", "Compounds-cloned"),
             },
             // Test 2: Attempt to clone with no selection
             {

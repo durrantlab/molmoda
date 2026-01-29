@@ -4,33 +4,13 @@ import { ITest, ITestCommand, TestCommand } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { openPluginCmds } from "@/Testing/TestCmd";
 import { IMenuPathInfo, processMenuPath } from "@/UI/Navigation/Menu/Menu";
-import {
-    UserArgType,
-} from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArgType, } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { messagesApi } from "@/Api/Messages";
 import { isLocalHost } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
-
-// Modular imports
-import { 
-    injectDriverCss, 
-    handlePopoverRender 
-} from "./TourStyles";
-import {
-    isElementInViewport,
-    smoothScrollIntoView,
-    waitForElementStability,
-    waitForElement
-} from "./TourUtils";
-import { 
-    ITourContext,
-    findUserArgAndRefineSelector,
-    createClickStep,
-    createInputStep,
-    createWaitStep,
-    createNoteStep,
-    createDefaultArgStep
-} from "./TourSteps";
+import { injectDriverCss, handlePopoverRender } from "./TourStyles";
+import { isElementInViewport, smoothScrollIntoView, waitForElementStability, waitForElement, isElementValueCorrect } from "./TourUtils";
+import { ITourContext, findUserArgAndRefineSelector, createClickStep, createInputStep, createWaitStep, createNoteStep, createDefaultArgStep } from "./TourSteps";
 
 /**
  * Manages the creation and execution of interactive tours using driver.js,
@@ -76,12 +56,27 @@ export class TourManager {
             },
             onNextClick: () => {
                 const activeStep = this.driver.getActiveStep();
-                if (activeStep && activeStep.isNoteStep) {
+                
+                if (activeStep) {
+                    // Allow moving next if it's a note step
+                    if (activeStep.isNoteStep) {
                     this.driver.moveNext();
                     return;
                 }
 
-                // If there is no next step, this is the last one.
+                    // Allow moving next if it's an input step and the value is already correct
+                    if (activeStep.expectedValue !== undefined) {
+                        const selector = activeStep.element;
+                        if (typeof selector === "string") {
+                            const element = document.querySelector(selector) as HTMLElement;
+                            if (isElementValueCorrect(element, activeStep.expectedValue)) {
+                                this.driver.moveNext();
+                                return;
+                            }
+                        }
+                    }
+                }
+
                 if (!this.driver.hasNextStep()) {
                     this.isTourCompleted = true;
                     this.driver.destroy();
@@ -131,6 +126,7 @@ export class TourManager {
             popoverOffset: 25,
             stagePadding: 5,
             allowClose: false,
+            allowKeyboardControl: false,
             ...this._configureDriverHooks(),
         });
 
@@ -504,7 +500,9 @@ export class TourManager {
 
         const context: ITourContext = {
             manager: this,
-            markCompleted: () => { this.isTourCompleted = true; }
+            markCompleted: () => {
+                this.isTourCompleted = true;
+            }
         };
 
         switch (command.cmd) {

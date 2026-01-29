@@ -2,7 +2,7 @@ import { PopoverDOM } from "driver.js";
 import { waitForCondition } from "../../../Core/Utils/MiscUtils";
 import { isLocalHost } from "@/Core/GlobalVars";
 import { FOCUS_DELAY } from "./TourConstants";
-import { getElementLabel } from "./TourUtils";
+import { getElementLabel, isElementValueCorrect } from "./TourUtils";
 
 /**
  * Injects the driver.js CSS file and custom overrides into the document head.
@@ -202,7 +202,35 @@ export function handlePopoverRender(
                     const text = getElementLabel(element);
                     // Update the message if we found a reasonable short label
                     if (text.length > 0 && text.length < 30) {
-                        popover.description.innerHTML = `Please click "${text}" to continue.`;
+                        popover.description.innerHTML = `Please click "<b>${text}</b>" to continue.`;
+                    }
+                }
+            }
+        }
+
+        // Logic for input/select steps where the value is already set correctly
+        const selector = state.activeStep.element;
+        if (state.activeStep?.expectedValue !== undefined && typeof selector === "string") {
+            const element = document.querySelector(selector) as HTMLElement;
+            
+            if (isElementValueCorrect(element, state.activeStep.expectedValue)) {
+                const originalDesc = popover.description.innerHTML;
+
+                // Try to rewrite "For X, enter Y" -> "X is set to Y"
+                const prefixRegex = /^(For .*, (?:enter|select) ".*"\.)/;
+                const match = originalDesc.match(prefixRegex);
+
+                if (match) {
+                    const originalSentence = match[1];
+                    const newSentence = originalSentence
+                        .replace(/^For (.*), (?:enter|select) "(.*)"\.$/, '$1 is set to "$2".')
+                        .replace(/^For (.*), (?:enter|select) "(.*)"\./, '$1 is set to "$2".');
+
+                    popover.description.innerHTML = originalDesc.replace(originalSentence, `${newSentence} <span class="text-success">(Correct)</span>`);
+                } else {
+                    // Fallback if the regex doesn't match the standard description pattern
+                    if (!originalDesc.includes("(Correct)")) {
+                        popover.description.innerHTML += ` <br><span class="text-success">(Already set correctly)</span>`;
                     }
                 }
             }
@@ -241,15 +269,41 @@ export function handlePopoverRender(
             });
         }
 
+        // Determine if we should show the "Next" button
+        let showNext = true;
+
         if (
             state.activeStep?.isClickStep ||
-            state.activeStep?.isWaitStep ||
-            state.activeStep?.onHighlightStarted
+            state.activeStep?.isWaitStep
         ) {
+            // Usually we hide "Next" for click or wait steps
+            showNext = false;
+        } else if (state.activeStep?.onHighlightStarted) {
+            // It's likely an interactive step (input/upload).
+            // Default to hidden, requiring interaction.
+            showNext = false;
+
+            // If it's an input step and the value is already correct, allow Next.
+            if (state.activeStep.expectedValue !== undefined) {
+                const selector = state.activeStep.element;
+                if (typeof selector === "string") {
+                    const element = document.querySelector(selector) as HTMLElement;
+                    if (isElementValueCorrect(element, state.activeStep.expectedValue)) {
+                        showNext = true;
+                    }
+                }
+            }
+        }
+
+        if (state.activeStep?.isNoteStep) {
+            showNext = true;
+        }
+
+        if (!showNext) {
             popover.nextButton.style.display = "none";
         } else {
             popover.nextButton.style.display = "inline-block";
-            if (state.activeStep?.isNoteStep) {
+            if (state.activeStep?.isNoteStep || (showNext && state.activeStep?.expectedValue !== undefined)) {
                 setTimeout(() => {
                     popover.nextButton.focus();
                 }, FOCUS_DELAY);
