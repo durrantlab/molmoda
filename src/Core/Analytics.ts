@@ -56,7 +56,6 @@ async function injectGoogleAnalyticsScriptIfNeeded() {
 
 /**
  * Logs an event internally.
- *
  * @param  {string} eventName   The event name.
  * @param  {string} eventAction The event action.
  */
@@ -75,7 +74,6 @@ function _logInternal(eventName: string, eventAction: string) {
 /**
  * Logs an event to Google Analytics. This function is asynchronous and will
  * inject the Google Analytics script if it hasn't been injected already.
- *
  * @param  {string} eventName   The event name.
  * @param  {string} eventAction The event action.
  * @param  {string} gaEventData The event data to log.
@@ -99,7 +97,6 @@ async function _logGoogleAnalytics(
 
 /**
  * Logs an event to Google Analytics.
- *
  * @param  {string} eventName                    The event name.
  * @param  {string} eventAction                  The event action.
  * @returns {void}

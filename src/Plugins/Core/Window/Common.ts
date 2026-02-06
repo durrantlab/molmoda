@@ -25,6 +25,9 @@ export function switchToGoldenLayoutPanel(componentTitle: string) {
 
     // Now flash that panel to get the user's attention.
     let val = 10;
+    /**
+     * Updates the background color of the content item to create a flashing effect.
+     */
     const updateColor = () => {
         const bgColor = `rgb(${val}, ${val}, ${val}, 0.05)`;
         // console.log(bgColor);

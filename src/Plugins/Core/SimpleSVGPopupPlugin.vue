@@ -13,8 +13,6 @@
 </template>
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
-import { Options } from "vue-class-component";
-import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {
   ISimpleSvg,
   PopupVariant,

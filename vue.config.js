@@ -70,6 +70,9 @@ module.exports = defineConfig({
             crypto: false,
             os: require.resolve("os-browserify/browser"),
             perf_hooks: false,
+            // Added for memfs compatibility
+            process: require.resolve("process/browser"),
+            url: require.resolve("url/"),
         };
 
         config.resolve.symlinks = false;

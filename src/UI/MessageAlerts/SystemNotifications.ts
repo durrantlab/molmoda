@@ -12,6 +12,9 @@ export async function showSystemNotification(title: string, body: string) {
         console.log("This browser does not support desktop notification");
         return;
     }
+    /**
+     * Displays the notification.
+     */
     const show = () => {
         // Safely strip HTML from the body string using DOMParser
         const parser = new DOMParser();
@@ -21,7 +24,10 @@ export async function showSystemNotification(title: string, body: string) {
             body: plainTextBody,
             icon: logoPath,
         });
-        // Add an event listener to focus the window when the notification is clicked.
+        /**
+         * Add an event listener to focus the window when the notification is clicked.
+         * @returns {void}
+         */
         notification.onclick = () => {
             window.focus();
             notification.close();

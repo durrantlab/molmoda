@@ -26,7 +26,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";

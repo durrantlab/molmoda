@@ -24,8 +24,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
-import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";

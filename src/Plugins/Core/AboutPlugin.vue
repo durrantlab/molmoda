@@ -48,7 +48,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
 import { appName, appCompileTime, appIntro, appDetails, logoPath } from "@/Core/GlobalVars";
@@ -92,7 +91,6 @@ export default class AboutPlugin extends PluginParentClass {
 
   /**
    * Get the software credits to show in order.
-   *
    * @returns {ISoftwareCredit[]} The software credits to show, in order.
    */
   get softwareCreditsToShowInOrder(): ISoftwareCredit[] {
@@ -108,7 +106,6 @@ export default class AboutPlugin extends PluginParentClass {
 
   /**
    * Get the contributor credits to show in order.
-   *
    * @returns {IContributorCredit[]} The contributor credits to show, in order.
    */
   get contributorCreditsToShowInOrder(): IContributorCredit[] {
@@ -125,7 +122,6 @@ export default class AboutPlugin extends PluginParentClass {
   /**
    * Get the license URL for a software credit. Prioritizes licenseUrl over
    * the default license URL.
-   *
    * @param {ISoftwareCredit} credit The software credit.
    * @returns {string} The URL for the license.
    */
@@ -135,7 +131,6 @@ export default class AboutPlugin extends PluginParentClass {
   
   /**
    * Get the name of the app.
-   *
    * @returns {string} The name of the app.
    */
   get appName(): string {
@@ -144,7 +139,6 @@ export default class AboutPlugin extends PluginParentClass {
 
   /**
    * Get the compile time of the app.
-   *
    * @returns {string} The compile time of the app.
    */
   get appCompileTime(): string {
@@ -168,7 +162,6 @@ export default class AboutPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the
    * job running. About plugin does not have a job.
-   * 
    * @returns {Promise<void>}  Resolves when the job is done.
    */
   runJobInBrowser(): Promise<void> {
@@ -177,7 +170,6 @@ export default class AboutPlugin extends PluginParentClass {
 
   /**
    * Gets the test commands for the plugin. For advanced use.
-   *
    * @gooddefault
    * @document
    * @returns {ITest}  The selenium test commands.

@@ -1,7 +1,11 @@
 let resetLayoutFunc: (() => void) | null = null;
 let _isSessionLayoutActive = false;
 
-
+/**
+ * Registers the function that resets the Golden Layout. This is called by the
+ * GoldLayout component on mount.
+ * @param {Function} func The function that will perform the layout reset.
+ */
 export function registerResetLayoutFunc(func: () => void) {
     resetLayoutFunc = func;
 }
@@ -24,7 +28,6 @@ export const layoutApi = {
     /**
      * Sets whether a temporary session layout is active. When active, layout
      * changes are not saved to local storage.
-     *
      * @param {boolean} isActive - True if a session layout is active.
      */
     setSessionLayoutActive(isActive: boolean) {
@@ -33,7 +36,6 @@ export const layoutApi = {
 
     /**
      * Checks if a temporary session layout is currently active.
-     *
      * @returns {boolean} True if a session layout is active.
      */
     isSessionLayoutActive(): boolean {

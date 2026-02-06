@@ -4,8 +4,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
-import * as api from "@/Api";
 import {
   IContributorCredit,
   ISoftwareCredit,

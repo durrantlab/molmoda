@@ -90,7 +90,7 @@ const pdbLikeNames = [
 
 const cifLikeNames = [
     /^_chemical_name_common '(.+?)'$/gm,
-    // eslint-disable-next-line regexp/no-super-linear-backtracking
+     
     /^_struct\.pdbx_descriptor\s*'(.+?)'\s*$/gm,
     // eslint-disable-next-line regexp/no-super-linear-backtracking
     /^_entry.id\s*(.+?)\s*?$/gm,
@@ -131,6 +131,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         extractMolNameRegex: pdbLikeNames,
         saveWarning: "PDB" + noBondOrdersWarning,
         neverDesalt: true,
+        /**
+         * Validates the contents of a PDB file.
+         * @param {string} contents The contents of the file.
+         * @returns {boolean} True if the contents are valid for a PDB file,
+         *     false otherwise.
+         */
         validateContents: (contents: string) => {
             // Note that this will assume pdbqt and pqr files are pdb. But not
             // validating contents of those other files for now.
@@ -162,11 +168,23 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
             },
         ],
         extractMolNameRegex: [/^@<TRIPOS>MOLECULE\n(.+)$/gm],
+        /**
+         * Validates the contents of a MOL2 file.
+         * @param {string} contents The contents of the file.
+         * @returns {boolean} True if the contents are valid for a MOL2 file,
+         *     false otherwise.
+         */
         validateContents: (contents: string) => {
             // If contains @<TRIPOS>ATOM, assume it's a mol2 file.
             const mol2Regex = /^@<TRIPOS>ATOM/m;
             return mol2Regex.test(contents);
         },
+        /**
+         * Updates the molecule name in MOL2 file contents.
+         * @param {string} contents The original contents of the MOL2 file.
+         * @param {string} newName The new molecule name.
+         * @returns {string} The updated contents with the new molecule name.
+         */
         updateMolNameInContents: (contents: string, newName: string) => {
             // Replace the second line with the new name.
             const lines = contents.split("\n");
@@ -202,6 +220,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
             // NOTE: Leaving off g so will only match first line
             /^(.+)$/m,
         ],
+        /**
+         * Validates the contents of an SDF file.
+         * @param {string} contents The contents of the file.
+         * @returns {boolean} True if the contents are valid for an SDF file,
+         *     false otherwise.
+         */
         validateContents: (contents: string) => {
             // If it has $$$$ on its own line, assume it's an sdf file.
             const sdfRegex = /^\$\$\$\$$/m;
@@ -253,6 +277,12 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         extractMolNameRegex: smiLikeNames,
         saveWarning: "SMI" + noCoordinatesWarning,
         lacks3D: true,
+        /**
+         * Validates the contents of a SMILES file.
+         * @param {string} contents The contents of the file.
+         * @returns {boolean} True if the contents are valid for a SMILES file,
+         *     false otherwise.
+         */
         validateContents: (contents: string) => {
             let lines = contents.split("\n");
             lines = lines.filter((line) => line.trim().length > 0);
@@ -380,7 +410,6 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
 
 /**
  * Pre-process SMILES strings to remove any leading or trailing spaces.
- *
  * @param  {string} text  The text to pre-process.
  * @returns {string}  The pre-processed text.
  */
@@ -401,7 +430,6 @@ function smiPreProcessor(text: string): string {
 /**
  * Get the descriptions of the available formats (for use in saving-molecule
  * modals).
- *
  * @param  {boolean|undefined} [hasbondOrders]  Whether to only return those
  *                                              formats that do or do not
  *                                              support bond orders. Ignored if
@@ -431,7 +459,6 @@ export function getFormatDescriptions(
 
 /**
  * Get information about a format given its extension.
- *
  * @param  {string} typ  The type (as returned by getFileType).
  * @returns {IFormatInfo | undefined}  Information about the format, or
  *     undefined if the extension is not recognised.

@@ -25,7 +25,6 @@ class PropertyQueue extends QueueParent {
 
     /**
      * Creates a new PropertyQueue.
-     *
      * @param {GetPropPluginParent} parent     The parent plugin.
      * @param {string}              jobTypeId  The job type ID.
      * @param {any[]}               inputs     The inputs for the jobs.
@@ -56,7 +55,6 @@ class PropertyQueue extends QueueParent {
 
     /**
      * Runs a batch of jobs.
-     *
      * @param {IJobInfo[]} inputBatch  The batch of jobs to run.
      * @param {number}     procs       The number of processes to use.
      * @returns {Promise<IJobInfo[]>} The results of the jobs.
@@ -108,7 +106,6 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
     /**
      * Gets the results array. This is aimply the values of the results data.
-     *
      * @returns {any[]}  The results array.
      */
     get resultsArray(): any[] {
@@ -117,7 +114,6 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
     /**
      * Called when the popup is done.
-     *
      * @returns {Promise<void>|undefined}  A promise that resolves when the
      *     popup is done.
      */
@@ -136,6 +132,9 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
         // Create new queue with concrete class
         const queue = new PropertyQueue(this, this.pluginId, molecules, {
+            /**
+             * Called when the queue is completed.
+             */
             onQueueDone: () => {
                 // Show results in popup table when complete
                 messagesApi.popupTableData(
@@ -162,7 +161,6 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
     /**
      * Gets the formatted table data with merged headers from all rows.
-     *
      * @returns {ITableData} The formatted table data.
      */
     get formattedTableData(): ITableData {
@@ -231,7 +229,6 @@ export abstract class GetPropPluginParent extends PluginParentClass {
 
     /**
      * Runs a job in the browser.
-     *
      * @param {FileInfo} mol  The molecule to run the job on.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */

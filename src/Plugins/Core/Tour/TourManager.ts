@@ -27,7 +27,6 @@ export class TourManager {
 
     /**
      * Checks if a tour is currently running.
-     *
      * @returns {boolean} True if a tour is active, false otherwise.
      */
     public get isTourRunning(): boolean {
@@ -36,12 +35,16 @@ export class TourManager {
 
     /**
      * Configures and returns the hooks for the driver.js instance.
-     *
      * @returns {object} An object containing all the lifecycle hooks for driver.js.
      * @private
      */
     private _configureDriverHooks(): object {
         return {
+            /**
+             * Called when a step is highlighted.
+             * @param {HTMLElement} element The highlighted element.
+             * @param {any} step The current step data.
+             */
             onHighlightStarted: (element: HTMLElement, step: any) => {
                 if (isLocalHost) {
                     const stepIdx = this.driver?.getActiveIndex() ?? "unknown";
@@ -54,6 +57,9 @@ export class TourManager {
                     this.lastHighlightedElement = element;
                 }
             },
+            /**
+             * Called when the "Next" button is clicked.
+             */
             onNextClick: () => {
                 const activeStep = this.driver.getActiveStep();
                 
@@ -86,9 +92,15 @@ export class TourManager {
                 // listeners or promises, so we do nothing here to prevent
                 // driver.js from automatically advancing.
             },
+            /**
+             * Called when a step is deselected.
+             */
             onDeselected: () => {
                 this.lastHighlightedElement = null;
             },
+            /**
+             * Called when the tour is destroyed.
+             */
             onDestroyed: () => {
                 this.lastHighlightedElement = null;
                 this.isRunning = false;
@@ -101,6 +113,12 @@ export class TourManager {
 
                 this.driver = null;
             },
+            /**
+             * Called when a popover is rendered.
+             * @param {any} popover The popover element.
+             * @param {object} param1 An object containing the state.
+             * @param {any} param1.state The state object.
+             */
             onPopoverRender: (popover: any, { state }: { state: any }) => {
                 handlePopoverRender(popover, { state }, this.driver, () => {
                     this.isTourCompleted = true;
@@ -111,7 +129,6 @@ export class TourManager {
 
     /**
      * Initializes the TourManager, loading driver.js and configuring it.
-     *
      * @return {Promise<void>} A promise that resolves when driver.js is loaded.
      */
     private async initializeDriver(): Promise<void> {
@@ -132,6 +149,10 @@ export class TourManager {
 
         // Monkey-patch moveNext to add retry logic
         const originalMoveNext = this.driver.moveNext.bind(this.driver);
+
+        /**
+         * Moves to the next tour step with retry logic.
+         */
         this.driver.moveNext = () => {
             this.moveToNextStepWithRetry(originalMoveNext);
         };
@@ -139,7 +160,6 @@ export class TourManager {
 
     /**
      * Asynchronously moves to the next tour step, waiting for the element to appear if necessary.
-     *
      * @param {() => void} originalMoveNext The original moveNext function from the driver instance.
      * @private
      */
@@ -218,9 +238,8 @@ export class TourManager {
 
     /**
      * Starts a tour for a given plugin.
-     *
      * @param {PluginParentClass} plugin The plugin instance.
-     * @param {number} [testIndex=0] The index of the test to use for the tour.
+     * @param {number} [testIndex] The index of the test to use for the tour.
      * @return {Promise<void>} A promise that resolves when the tour starts.
      */
     public async startTour(
@@ -265,7 +284,6 @@ export class TourManager {
 
     /**
      * Converts an ITest object into an array of driver.js steps.
-     *
      * @param {ITest} test The test definition.
      * @param {PluginParentClass} plugin The plugin instance.
      * @returns {Promise<any[]>} A promise resolving to an array of driver.js steps.
@@ -319,7 +337,6 @@ export class TourManager {
 
     /**
      * Adds steps for the plugin modal, ensuring all user arguments are visited.
-     *
      * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
@@ -385,11 +402,10 @@ export class TourManager {
 
     /**
      * Processes a command list function, converting its commands to tour steps.
-     *
      * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
-  * @param {string} [listName="Command List"] The name of the list for debugging.
+     * @param {string} [listName] The name of the list for debugging.
      * @private
      */
     private _processCommandList(
@@ -412,7 +428,6 @@ export class TourManager {
 
     /**
      * Adds the steps required to open a plugin from the menu.
-     *
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
      * @private
@@ -476,10 +491,9 @@ export class TourManager {
 
     /**
      * Converts a single ITestCommand into a driver.js step object by dispatching to helper methods.
-     *
      * @param {ITestCommand} command The test command.
      * @param {PluginParentClass} plugin The plugin instance.
-  * @param {string} [debugInfo] Optional info for debugging the tour step.
+     * @param {string} [debugInfo] Optional info for debugging the tour step.
      * @returns {any | null} A driver.js step object or null for non-interactive commands.
      * @private
      */
@@ -500,6 +514,9 @@ export class TourManager {
 
         const context: ITourContext = {
             manager: this,
+            /**
+             * Marks the tour as completed.
+             */
             markCompleted: () => {
                 this.isTourCompleted = true;
             }
@@ -532,7 +549,6 @@ export class TourManager {
 
     /**
      * Shows the completion message in a standard modal.
-     * 
      * @private
      */
     private showCompletionMessage() {

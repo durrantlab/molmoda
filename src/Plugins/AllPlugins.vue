@@ -85,7 +85,6 @@ system uses these to autopopulate with plugins. -->
 <script lang="ts">
 import { Vue } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
-import { Options } from "vue-class-component";
 import { defineAsyncComponent } from "vue";
 import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";

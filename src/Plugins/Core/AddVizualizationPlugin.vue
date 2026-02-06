@@ -15,7 +15,6 @@
   </PluginComponent>
 </template>
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {

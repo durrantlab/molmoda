@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 
 import * as api from "@/Api/";
 
@@ -28,7 +27,7 @@ import {
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import isEqual from "lodash.isequal";
+import { isEqual } from 'lodash';
 
 /**
  * ViewerPanel component

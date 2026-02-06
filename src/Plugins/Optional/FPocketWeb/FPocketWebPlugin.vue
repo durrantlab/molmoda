@@ -26,7 +26,6 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
-import { Options } from "vue-class-component";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     ITreeNodeData,

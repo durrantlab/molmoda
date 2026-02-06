@@ -14,7 +14,6 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { Options } from "vue-class-component";
 import {
     IContributorCredit,
     ISoftwareCredit,

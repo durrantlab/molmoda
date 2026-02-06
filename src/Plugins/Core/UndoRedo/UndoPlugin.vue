@@ -8,7 +8,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import * as api from "@/Api";
 import { addToUndoStackAfterUserInaction, undo } from "./UndoStack";

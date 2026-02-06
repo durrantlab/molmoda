@@ -13,7 +13,6 @@
 
 <script lang="ts">
 
-import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";

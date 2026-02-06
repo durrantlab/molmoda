@@ -11,7 +11,6 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { Options } from "vue-class-component";
 import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import {

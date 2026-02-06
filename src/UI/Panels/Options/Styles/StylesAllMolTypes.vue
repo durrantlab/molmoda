@@ -25,7 +25,7 @@ import Section from "@/UI/Layout/Section.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
 // @ts-ignore
-import isEqual from "lodash.isequal";
+import { isEqual } from 'lodash';
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import StylesForMolType from "./StylesForMolType.vue";

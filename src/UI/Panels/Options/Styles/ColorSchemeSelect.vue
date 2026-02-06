@@ -14,7 +14,7 @@ import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import isEqual from "lodash.isequal";
+import { isEqual } from 'lodash';
 
 import {
   UserArg,

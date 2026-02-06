@@ -3,7 +3,6 @@
         @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { stateToJsonStr } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModa";
 import { fetcher, ResponseType } from "@/Core/Fetcher";

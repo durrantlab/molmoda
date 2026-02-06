@@ -227,7 +227,12 @@ export function naturalSort<T>(
     b: T,
     keyAccessor: (item: T) => string = (item) => String(item)
 ): number {
-    // Helper function to split a string into an array of text and number chunks
+    /**
+     * Helper function to split a string into an array of text and number chunks
+     * for natural sorting.
+     * @param {string} str The string to split.
+     * @returns {(string | number)[]} An array of strings and numbers.
+     */
     const splitIntoChunks = (str: string): (string | number)[] => {
         // Use regex to match text and number sequences
         const matches = str.match(/(\d+|\D+)/g) || [];

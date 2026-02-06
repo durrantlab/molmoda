@@ -28,7 +28,6 @@ import {
     RegionType,
     TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { Options } from "vue-class-component";
 import { randomPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { Tag } from "../Core/ActivityFocus/ActivityFocusUtils";

@@ -188,7 +188,11 @@ function _mergeMols(mols: GLModel[] | IAtom[][] | IFileInfo[]): IAtom[] {
         } else {
             // Current chain has already been used (by different molecule). So
             // pick another one from the chainsAvailable set.
-            curChain = chainsAvailable.values().next().value;
+            const nextChain = chainsAvailable.values().next().value;
+            if (!nextChain) {
+                throw new Error("No available chains remaining");
+            }
+            curChain = nextChain;
         }
         chainsAvailable.delete(curChain);
 

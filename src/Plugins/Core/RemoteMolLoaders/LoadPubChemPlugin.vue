@@ -20,8 +20,6 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/no-this-alias */
 
-import { Options } from "vue-class-component";
-import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import {
     IContributorCredit,

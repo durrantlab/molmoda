@@ -26,7 +26,6 @@ export class TreeNodeListFilters {
 
     /**
      * Creates an instance of TreeNodeListFilters.
-     *
      * @param  {TreeNodeList} parentTreeNodeList  The parent TreeNodeList.
      */
     constructor(parentTreeNodeList: TreeNodeList) {
@@ -36,8 +35,7 @@ export class TreeNodeListFilters {
     /**
      * Returns a flattened list (including all descendent nodes) if
      * deepAndFlatten is true. Otherwise, returns the parent TreeNodeList.
-     *
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list.
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list.
      * @returns {TreeNodeList}  The flattened list, or the parent TreeNodeList.
      */
     private getFlattenedIfAppropriate(deepAndFlatten = false): TreeNodeList {
@@ -48,12 +46,11 @@ export class TreeNodeListFilters {
 
     /**
      * Returns a list of nodes that have (or do not have) models.
-     *
-     * @param  {boolean} [keepModel=true]        Whether to create a list of
+     * @param  {boolean} [keepModel]        Whether to create a list of
      *                                           nodes that have models, or a
      *                                           list of nodes that don't have
      *                                           models.
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that have (or do not have)
      *     models.
@@ -70,12 +67,11 @@ export class TreeNodeListFilters {
 
     /**
      * Returns a list of nodes that have (or do not have) regions.
-     *
-     * @param  {boolean} [keepRegion=true]       Whether to create a list of
+     * @param  {boolean} [keepRegion]       Whether to create a list of
      *                                           nodes that have regions, or a
      *                                           list of nodes that don't have
      *                                           regions.
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that have (or do not have)
      *    regions.
@@ -95,8 +91,7 @@ export class TreeNodeListFilters {
 
     /**
      * Returns a list of nodes that are (or are not) selected.
-     *
-     * @param  {boolean|SelectedType} [keepSelected=true]     Whether to create
+     * @param  {boolean|SelectedType} [keepSelected]     Whether to create
      *                                                        a list of nodes
      *                                                        that are selected,
      *                                                        or a list of nodes
@@ -108,7 +103,7 @@ export class TreeNodeListFilters {
      *                                                        with that
      *                                                        SelectedType will
      *                                                        be returned.
-     * @param  {boolean}              [deepAndFlatten=false]  Whether to flatten
+     * @param  {boolean}              [deepAndFlatten]  Whether to flatten
      *                                                        the list and
      *                                                        consider all
      *                                                        descendent nodes.
@@ -140,12 +135,11 @@ export class TreeNodeListFilters {
 
     /**
      * Returns a list of nodes that are (or are not) visible.
-     *
-     * @param  {boolean} [keepVisible=true]      Whether to create a list of
+     * @param  {boolean} [keepVisible]      Whether to create a list of
      *                                           nodes that are visible, or a
      *                                           list of nodes that are not
      *                                           visible.
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that are (or are not) visible.
      */
@@ -164,12 +158,11 @@ export class TreeNodeListFilters {
 
     /**
      * Returns a list of nodes that are (or are not) undefined.
-     *
-     * @param  {boolean} [removeUndefined=true]  Whether to create a list of
+     * @param  {boolean} [removeUndefined]  Whether to create a list of
      *                                           nodes that are NOT undefined,
      *                                           or a list of nodes that are
      *                                           undefined.
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that are (or are not)
      *     undefined.
@@ -189,9 +182,8 @@ export class TreeNodeListFilters {
 
     /**
      * Returns a list of nodes that have (or do not have) a given type.
-     *
      * @param  {TreeNodeType} type                    The type to filter by.
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that have (or do not have) a
      *     given type.
@@ -208,9 +200,8 @@ export class TreeNodeListFilters {
     /**
      * Returns a list of nodes that do not have a given id. Good for removing a
      * specific node from the list.
-     *
      * @param  {string}  id                      The id to filter by.
-     * @param  {boolean} [deepAndFlatten=false]  Whether to flatten the list and
+     * @param  {boolean} [deepAndFlatten]  Whether to flatten the list and
      *                                           consider all descendent nodes.
      * @returns {TreeNodeList}  The list of nodes that do not have a given id.
      */
@@ -225,7 +216,6 @@ export class TreeNodeListFilters {
 
     /**
      * Given a list of TreeNode, returns only those with unique ids.
-     *
      * @returns {TreeNodeList} The filtered list.
      */
     public get onlyUnique(): TreeNodeList {
@@ -242,7 +232,6 @@ export class TreeNodeListFilters {
 
     /**
      * A recursive function to find the node of id.
-     *
      * @param  {TreeNodeList} mls  The array of TreeNode to search.
      * @param  {string}          i    The id of the node to find.
      * @returns {TreeNode | null}  The node with the given id, or null if
@@ -285,7 +274,6 @@ export class TreeNodeListFilters {
 
     /**
      * Find a node with a given id.
-     *
      * @param  {string}          id    The id of the node to find.
      * @returns {TreeNode | null}  The node with the given id, or null if not
      *     found.
@@ -300,7 +288,6 @@ export class TreeNodeListFilters {
     /**
      * Get the nodes with the given ids. If a node has sub-nodes, keep those with
      * matching ids too.
-     *
      * @param  {string[]} ids  The ids of the nodes to keep.
      * @returns {TreeNodeList}  The list of nodes with the given ids.
      */
@@ -325,7 +312,6 @@ export class TreeNodeListFilters {
 
     /**
      * Get all the nodes that are terminal (have a model, not sub-molecules).
-     *
      * @returns {TreeNodeList}  The array of terminal nodes.
      */
     public get onlyTerminal(): TreeNodeList {
@@ -335,7 +321,6 @@ export class TreeNodeListFilters {
         }
         /**
          * A recursive function to find the terminal leaves of mols.
-         *
          * @param  {TreeNodeList} mls  The array of TreeNode to search.
          * @returns {TreeNodeList}  The array of terminal nodes (leaves).
          */
@@ -360,7 +345,6 @@ export class TreeNodeListFilters {
     /**
      * An easy way to look up nodes in the descendency. Can be a list of
      * criteria (one criteria per level) or a single criteria.
-     *
      * @param  {EasyCriterion[]|EasyCriterion} searchCriteria  The criteria.
      * @returns {TreeNodeList}  The nodes that match the criteria.
      */
@@ -374,6 +358,11 @@ export class TreeNodeListFilters {
 
         const hits = this.parentTreeNodeList.newTreeNodeList();
         const { newTreeNodeList } = this.parentTreeNodeList;
+        /**
+         * A recursive function to search the tree nodes.
+         * @param  {EasyCriterion[]}  searchCrit  The search criteria.
+         * @param  {TreeNodeList}    treeNodeList  The TreeNodeList to search.
+         */
         const recurse = (
             searchCrit: EasyCriterion[],
             treeNodeList: TreeNodeList

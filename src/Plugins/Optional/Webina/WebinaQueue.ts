@@ -13,7 +13,6 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Make a webina instance.
-     *
      * @param {*} WEBINA_MODULE  The webina module.
      * @returns {Promise<any>}  Resolves with the webina instance.
      */
@@ -33,6 +32,9 @@ export class WebinaQueue extends QueueParent {
         const allOutputs: any[] = [];
         let allJobInfos: (IJobInfo | undefined)[] = [];
 
+        /**
+         * Updates the progress by one job.
+         */
         const updateProgressByOneJob = () => {
             this._jobCounter++;
             this._onProgress(this._jobCounter / this._numTotalJobs);
@@ -114,7 +116,6 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A function that runs before the program starts.
-             *
              * @param {IJobInfo[]} jobInfos   The job infos.
              * @param {Function} onQueueDone  The callback function to call when
              *                                the job is done.
@@ -217,7 +218,6 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A helper function to locate WASM files.
-             *
              * @param {string} path  The requested path.
              * @returns {string}  The actual path to the WASM file.
              */
@@ -255,7 +255,6 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A function that runs when stdout is written to.
-             *
              * @param {string} text  The text written to stdout.
              */
             print(text: string) {
@@ -294,7 +293,6 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A function that runs when stderr is written to.
-             *
              * @param {string} text  The text written to stderr.
              */
             printErr(text: string) {
@@ -326,7 +324,6 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Run a batch of jobs.
-     *
      * @param {IJobInfo[]} inputBatch  The input batch.
      * @param {number}     procs       The number of processors to use.
      * @returns {Promise<IJobInfo[]>}  The output batch.
@@ -360,7 +357,6 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Make the argument list for the webina wasm binary.
-     *
      * @param {IJobInfo[]} jobInfos  The job infos.
      * @returns {string[]}  The argument list.
      */
@@ -429,7 +425,6 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

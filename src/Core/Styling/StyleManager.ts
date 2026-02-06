@@ -5,7 +5,7 @@ import {
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import isEqual from "lodash.isequal";
+import { isEqual } from 'lodash';
 import { ISelAndStyle } from "./SelAndStyleInterfaces";
 import { defaultStyles } from "./SelAndStyleDefinitions";
 import { messagesApi } from "@/Api/Messages"; // Added import

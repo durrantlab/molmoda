@@ -60,6 +60,10 @@ export function filesToFileInfos(
             (resolve, reject) => {
                 const reader = new FileReader();
 
+                /**
+                 * Handles the file load event.
+                 * @param {ProgressEvent} e The progress event.
+                 */
                 reader.onload = (e: ProgressEvent) => {
                     // If it's not an acceptable file type, abort effort.
                     const err = checkBadFileType(
@@ -91,6 +95,10 @@ export function filesToFileInfos(
                     }
                 };
 
+                /**
+                 * Handles file read errors.
+                 * @param {ProgressEvent} e The progress event.
+                 */
                 reader.onerror = (e: any) => {
                     reject(e.currentTarget.error.message);
                 };

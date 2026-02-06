@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import {
     IContributorCredit,
     ISoftwareCredit,

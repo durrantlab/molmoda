@@ -6,10 +6,22 @@ import { TextDecoder } from 'util';
 // Polyfill TextDecoder for JSDOM
 global.TextDecoder = TextDecoder as any;
 
-// Helper to read blob content in a JSDOM-compatible way
+/**
+ * Helper to read blob content in a JSDOM-compatible way
+ * @param {Blob} blob  The blob to read
+ * @returns {Promise<string>} The text content of the blob
+ */
 const readBlobAsText = (blob: Blob): Promise<string> => {
+    /**
+     * Reads the blob as text.
+     * @returns {Promise<string>} The text content.
+     */
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
+        /**
+         * Handles the load event.
+         * @returns {void}
+         */
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = reject;
         reader.readAsText(blob);
@@ -39,16 +51,40 @@ const mockJSZip = jest.fn().mockImplementation(() => mockZipInstance);
 
 (mockJSZip as any).loadAsync = jest.fn().mockResolvedValue({
     files: {
-        'file1.txt': { async: () => Promise.resolve('content1') },
-        '__MACOSX/file1.txt': { async: () => Promise.resolve('metadata') },
-        '.DS_Store': { async: () => Promise.resolve('metadata') },
+        'file1.txt': {
+            /**
+             * Mock file entries in the zip.
+             * @returns {Promise<string>} The content of the file.
+             */
+            async: () => Promise.resolve('content1')
+        },
+        '__MACOSX/file1.txt': {
+            /**
+             * MacOS specific files to be ignored.
+             * @returns {Promise<string>} The content of the file.
+             */
+            async: () => Promise.resolve('metadata')
+        },
+        '.DS_Store': {
+            /**
+             * Dotfiles to be ignored.
+             * @returns {Promise<string>} The content of the file.
+             */
+            async: () => Promise.resolve('metadata')
+        },
     },
 });
 
-
+/**
+ * Mock dynamic imports
+ */
 jest.mock('@/Core/DynamicImports', () => ({
     dynamicImports: {
         fileSaver: {
+            /**
+             * Returns the fileSaver module.
+             * @returns {Promise<any>} The fileSaver module.
+             */
             get module() {
                 return Promise.resolve({
                     saveAs: mockSaveAs,
@@ -56,6 +92,10 @@ jest.mock('@/Core/DynamicImports', () => ({
             },
         },
         exceljs: {
+            /**
+             * Returns the exceljs module.
+             * @returns {Promise<any>} The exceljs module.
+             */
             get module() {
                 return Promise.resolve({
                     Workbook: jest.fn().mockImplementation(() => mockExcelWorkbookInstance),
@@ -63,6 +103,10 @@ jest.mock('@/Core/DynamicImports', () => ({
             },
         },
         jsZip: {
+            /**
+             * Returns the jsZip module.
+             * @returns {Promise<any>} The jsZip module.
+             */
             get module() {
                 return Promise.resolve(mockJSZip);
             }
@@ -70,14 +114,24 @@ jest.mock('@/Core/DynamicImports', () => ({
     },
 }));
 
-// Mock atob for JSDOM environment
+/**
+ * Mock atob for JSDOM environment
+ * @param {string} b64  The base64 string.
+ * @returns {string} The decoded binary string.
+ */
 global.atob = (b64) => Buffer.from(b64, 'base64').toString('binary');
 
 describe("FS data exporting and file operations", () => {
+    /**
+     * Clears all mocks before each test.
+     */
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
+    /**
+     * Tests for saveData function.
+     */
     describe("saveData", () => {
         const sampleData: IData = {
             headers: ["ID", "Name", "Value"],

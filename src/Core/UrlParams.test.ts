@@ -4,7 +4,10 @@ describe("getUrlParam", () => {
     // Store original window.location
     const originalLocation = window.location;
 
-    // Mock window.location
+    /**
+     * Mocks the window.location with a given search string.
+     * @param {string} search The search string to set in the mocked location.
+     */
     const mockLocation = (search: string) => {
         Object.defineProperty(window, "location", {
             writable: true,

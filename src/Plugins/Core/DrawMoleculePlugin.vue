@@ -24,7 +24,6 @@
 <script lang="ts">
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
-import { Options } from "vue-class-component";
 
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { IUserArgText, UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";

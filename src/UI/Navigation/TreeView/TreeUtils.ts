@@ -496,6 +496,9 @@ export async function toggleVisibilityWithConfirmation(
     const anyVisible = nodesToToggle.some((n) => n.visible);
     const newVisibleState = !anyVisible;
 
+    /**
+     * Performs the visibility toggle on the nodes.
+     */
     const performToggle = () => {
         nodesToToggle.forEach((nodeToToggle: TreeNode) => {
             nodeToToggle.visible = newVisibleState; // This setter will propagate to children.

@@ -28,7 +28,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { Prop } from "vue-property-decorator";
 import MenuActionLink from "./MenuActionLink.vue";
 import MenuLevel2 from "./MenuLevel2.vue";

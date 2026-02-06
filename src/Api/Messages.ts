@@ -25,16 +25,15 @@ import { sanitizeHtml } from "@/Core/Security/Sanitize";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
-     *
      * @param  {string}        title                        The title of the
      *                                                      popup.
      * @param  {string}        message                      The message to
      *                                                      display.
-     * @param  {PopupVariant}  [variant=PopupVariant.Info]  The type of message.
+     * @param  {PopupVariant}  [variant]  The type of message.
      * @param  {Function}      [callBack]                   A function to call
      *                                                      when the popup is
      *                                                      closed.
-     * @param  {boolean}       [neverClose=false]           If true, the modal
+     * @param  {boolean}       [neverClose]           If true, the modal
      *                                                      can never be closed.
      * @param {IToastOptions}  [toastParams]                If provided,
      *                                                      displays a toast
@@ -93,7 +92,6 @@ export const messagesApi = {
 
     /**
      * Displays an error popup.
-     *
      * @param  {string}   message     The error message.
      * @param  {Function} [callBack]  A function to call when the popup is
      *                                closed.
@@ -115,12 +113,12 @@ export const messagesApi = {
 
     /**
      * Displays a Yes-No popup message.
-     *
      * @param  {string}  message          The message to display.
      * @param  {string}  [title]          The title of the popup.
      * @param  {string}  [yesBtnTxt]      The text to use for the yes button.
      * @param  {string}  [noBtnTxt]       The text to use for the no button.
      * @param  {boolean} [showCancelBtn]  Whether to show the cancel button.
+     * @returns {Promise<YesNo>}  Resolves to YesNo.Yes, YesNo.No, or YesNo.Cancel.
      */
     popupYesNo: async function (
         message: string,
@@ -135,6 +133,11 @@ export const messagesApi = {
                 pluginsApi.runPlugin("yesnomsg", {
                     title,
                     message,
+                    /**
+                     * Callback function to handle the user's response.
+                     * @param {YesNo} val - The user's response (Yes, No, or Cancel).
+                     * @returns {void}
+                     */
                     callBack: (val: YesNo) => {
                         resolve(val);
                     },
@@ -151,13 +154,14 @@ export const messagesApi = {
 
     /**
      * Displays a popup message.
-     *
-     * @param  {string}       title          The title of the popup.
-     * @param  {string}       message        The message to display.
-     * @param  {ITableData}   tableData      The table data to display.
-     * @param  {string}       caption        The caption of the table.
-     * @param  {number}       [precision=3]  The number of decimal places to
-     *                                       display.
+     * @param  {string}       title                  The title of the popup.
+     * @param  {string}       message                The message to display.
+     * @param  {ITableData}   tableData              The table data to display.
+     * @param  {string}       caption                The caption of the table.
+     * @param  {number}       [precision]          The number of decimal
+     *                                               places to display.
+     * @param  {string}       [downloadFilenameBase] The base filename for
+     *                                               downloads.
      */
     popupTableData: async function (
         title: string,
@@ -183,8 +187,7 @@ export const messagesApi = {
 
     /**
      * Starts a wait spinner. Returns an id that can be used to stop the spinner.
-     *
-     * @param {number} [timeOut=30000]  The timeout in milliseconds.
+     * @param {number} [timeOut]  The timeout in milliseconds.
      * @returns {string}  The id of the spinner.
      */
     startWaitSpinner: function (timeOut = 30000): string {
@@ -193,7 +196,6 @@ export const messagesApi = {
 
     /**
      * Stops a wait spinner.
-     *
      * @param {string} id  The id of the spinner.
      */
     stopWaitSpinner: function (id: string) {
@@ -209,7 +211,6 @@ export const messagesApi = {
 
     /**
      * Logs a message. Appears in the log at the bottom of the screen.
-     *
      * @param {string} message       The message to log.
      * @param {any}    [parameters]  The parameters associated with this log, if
      *                               any.

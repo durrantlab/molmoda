@@ -11,7 +11,6 @@ import { slugify, capitalize } from "@/Core/Utils/StringUtils";
 /**
  * Finds terminal nodes, and separates them into compounds and non-compounds.
  * (Kept for backward compatibility or specific plugins, though compileByMolecule is preferred now)
- *
  * @param  {TreeNodeList} treeNodeList  All compounds.
  * @returns {any}  The terminal nodes, separated into
  *     compounds and non-compounds.
@@ -35,7 +34,6 @@ export function separateCompoundNonCompoundTerminalNodes(
 /**
  * Given a list of molecules, collect text for saving.
  * Includes naming logic based on component type.
- *
  * @param  {TreeNodeList} nodes    The molecules.
  * @param  {string}   targetExt   The target extension (format).
  * @param  {boolean}  merge    Whether to merge all molecules into one.
@@ -73,7 +71,6 @@ export function getConvertedTxtsWithNaming(
 
 /**
  * Backwards compatibility wrapper
- *
  * @param  {TreeNodeList} nodes    The molecules.
  * @param  {string}   targetExt   The target extension (format).
  * @param  {boolean}  merge    Whether to merge all molecules into one.
@@ -98,6 +95,11 @@ export function getConvertedTxts(
     });
 }
 
+/**
+ * Get the primary extension for a given format.
+ * @param {string} format The format.
+ * @returns {string} The primary extension.
+ */
 export function getPrimaryExt(format: string): string {
     const formatInfo = getFormatInfoGivenType(format) as IFormatInfo;
     return formatInfo ? formatInfo.primaryExt : format;
@@ -105,9 +107,9 @@ export function getPrimaryExt(format: string): string {
 
 /**
  * Get a filename appropriate for a given node (molecule).
- *
  * @param {TreeNode} treeNode  The molecule.
  * @param {string} ext  The extension to use.
+ * @param {TreeNodeType} [type] The component type (for naming).
  * @returns {string} The filename.
  */
 function getFilename(treeNode: TreeNode, ext: string, type?: TreeNodeType): string {
@@ -145,7 +147,6 @@ function getFilename(treeNode: TreeNode, ext: string, type?: TreeNodeType): stri
 /**
  * Given a list of IFileInfo objects (e.g., from getSaveTxtPromises), save them
  * to the disk. Compress if necessary.
- *
  * @param  {FileInfo[]} files     The files to save.
  * @param  {string}     compressedName  The filename to use.
  * @returns {Promise<any>}  A promise that resolves when the files are saved.

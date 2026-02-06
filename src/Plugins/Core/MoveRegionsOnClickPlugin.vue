@@ -23,8 +23,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
-import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";

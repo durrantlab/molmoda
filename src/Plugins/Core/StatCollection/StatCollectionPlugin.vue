@@ -44,7 +44,6 @@
 <script lang="ts">
 import PluginComponent from "../../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../../Parents/PluginParentClass/PluginParentClass";
-import { Options } from "vue-class-component";
 import { isStatStatusSet, disableStats, enableStats } from "./StatUtils";
 import {
     ISoftwareCredit,

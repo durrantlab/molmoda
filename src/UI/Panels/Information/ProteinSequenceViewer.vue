@@ -46,7 +46,7 @@ import { pluginsApi } from "@/Api/Plugins";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import isEqual from "lodash.isequal";
+import { isEqual } from 'lodash';
 // --- Configuration Constants ---
 const LABEL_WIDTH = 40;  // Width of line number labels in pixels
 const AMINO_ACID_WIDTH = 15;

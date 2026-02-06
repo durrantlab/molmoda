@@ -4,7 +4,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { redo } from "./UndoStack";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";

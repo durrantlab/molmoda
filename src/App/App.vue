@@ -98,7 +98,6 @@ export default class App extends Vue {
 
   /**
    * Removes credits with duplicate names.
-   *
    * @param {Credits} credits  Credits to consider.
    * @returns {Credits} The list of credits, with ones that have duplicate names
    *     removed.
@@ -114,7 +113,6 @@ export default class App extends Vue {
    * Called when a plugin has finished setting up. Collects the menu and
    * credits data. Runs each time a plugin is loaded, so multiple times (since
    * multiple plugins).
-   *
    * @param {IPluginSetupInfo} pluginSetupInfo  Information about the plugin
    *                                            that has finished setting up.
    */
@@ -179,8 +177,8 @@ export default class App extends Vue {
   }
 
   /**
- * Checks if a tour is requested via URL parameters and starts it.
- */
+   * Checks if a tour is requested via URL parameters and starts it.
+   */
   async checkIfTourIsRequested(): Promise<void> {
     const tourPluginId = getUrlParam("tour");
     if (!tourPluginId) {

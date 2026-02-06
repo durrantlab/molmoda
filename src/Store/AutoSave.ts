@@ -15,7 +15,6 @@ let timerId: any = undefined;
 
 /**
  * Deletes the autosave.
- * 
  * @returns {Promise<void>} A promise that resolves when the autosave is deleted.
  */
 export async function deleteAutoSave(): Promise<void> {
@@ -37,6 +36,9 @@ export function stopAutoSaveTimer() {
 export function restartAutoSaveTimer() {
     stopAutoSaveTimer();
 
+    /**
+     * The timer tick function.
+     */
     const timerTick = async () => {
         const tickInterval = await getSetting("autoSaveFrequencyMinutes");
         if (tickInterval <= 0) {

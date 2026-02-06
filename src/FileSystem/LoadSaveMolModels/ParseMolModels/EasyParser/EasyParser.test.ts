@@ -85,12 +85,34 @@ const iAtomListContent: IAtom[] = [
 ];
 
 const mockGLModel: GLModel = {
+    /**
+     * Returns the list of atoms in the GLModel.
+     * @returns {IAtom[]} The list of atoms.
+     */
     selectedAtoms: () => iAtomListContent,
+    /**
+     * Removes all atoms from the GLModel.
+     */
     removeAtoms: () => {},
+    /**
+     * Hides the GLModel.
+     */
     hide: () => {},
+    /**
+     * Shows the GLModel.
+     */
     show: () => {},
+    /**
+     * Sets the style for the GLModel.
+     */
     setStyle: () => {},
+    /**
+     * Sets clickable state for the GLModel.
+     */
     setClickable: () => {},
+    /**
+     * Sets hoverable state for the GLModel.
+     */
     setHoverable: () => {},
     id: 123
 };

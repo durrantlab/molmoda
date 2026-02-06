@@ -134,16 +134,39 @@ export abstract class EasyParserParent {
         for (const key of keys) {
             const val = sel[key];
 
+            /**
+             * The filter function for the current key.
+             * @param {IAtom} atom The atom to check.
+             * @returns {boolean} True if the atom matches the selection, false otherwise.
+             */
             let filterFunc: (atom: IAtom) => boolean = (atom: IAtom) => true;
 
             switch (key) {
                 case "resn":
+                    /**
+                     * Filter function for residue names.
+                     * @param {IAtom} atom The atom to check.
+                     * @returns {boolean} True if the atom's residue name is in
+                     *     the selection, false otherwise.
+                     */
                     filterFunc = (atom) => val.includes(atom.resn);
                     break;
                 case "chain":
+                    /**
+                     * Filter function for chain identifiers.
+                     * @param {IAtom} atom The atom to check.
+                     * @returns {boolean} True if the atom's chain identifier is
+                     *     in the selection, false otherwise.
+                     */
                     filterFunc = (atom) => val.includes(atom.chain);
                     break;
                 case "elem":
+                    /**
+                     * Filter function for element symbols.
+                     * @param {IAtom} atom The atom to check.
+                     * @returns {boolean} True if the atom's element symbol is
+                     *     in the selection, false otherwise.
+                     */
                     filterFunc = (atom) => {
                         if (atom.elem === undefined) {
                             return false;

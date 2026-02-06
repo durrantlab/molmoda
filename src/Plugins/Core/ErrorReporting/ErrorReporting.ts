@@ -179,6 +179,9 @@ export function triggerErrorPopup(
         title: "",
         message: errTxt,
         variant: PopupVariant.Danger,
+        /**
+         * A callback function to report the error to the server.
+         */
         callBack: async () => {
             if (informServer) {
                 await reportErrorToServer(errTxt);

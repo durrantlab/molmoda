@@ -4,9 +4,19 @@ import { sanitizeHtml, sanitizeSvg } from "./Sanitize";
 jest.mock("@/Core/DynamicImports", () => ({
     dynamicImports: {
         dompurify: {
+            /**
+             * Returns a mock DOMPurify module.
+             * @returns {Promise<any>} A promise that resolves to a mock DOMPurify object.
+             */
             get module() {
                 // Return a mock DOMPurify object
                 return Promise.resolve({
+                    /**
+                     * Sanitizes the input HTML or SVG string.
+                     * @param {string} input The HTML or SVG string to sanitize.
+                     * @param {any} [config] Optional configuration for sanitization.
+                     * @returns {string} The sanitized string.
+                     */
                     sanitize: (input: string, config?: any) => {
                         // A simplified mock that mimics the real library for testing purposes.
                         // It removes script tags and event handlers.

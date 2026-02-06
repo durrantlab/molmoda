@@ -20,6 +20,11 @@ interface WorkerResponse {
     id: string;
 }
 
+/**
+ * The webworker onmessage handler.
+ * @param {MessageEvent} e  The message event.
+ * @returns {void}
+ */
 self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
     try {
         const { vrmlContent, mergeCutoff, reductionFraction, id } = e.data;

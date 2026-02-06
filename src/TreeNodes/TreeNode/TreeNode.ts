@@ -89,7 +89,6 @@ export class TreeNode {
 
     /**
      * The constructor.
-     *
      * @param  {ITreeNode} params  The parameters.
      */
     constructor(params: ITreeNode) {
@@ -126,7 +125,6 @@ export class TreeNode {
 
     /**
      * Get the selected state.
-     *
      * @returns {SelectedType}  The selected state.
      */
     get selected(): SelectedType {
@@ -135,7 +133,6 @@ export class TreeNode {
 
     /**
      * Set the selected state.
-     *
      * @param {SelectedType} val  The selected state.
      */
     set selected(val: SelectedType) {
@@ -192,7 +189,6 @@ export class TreeNode {
 
     /**
      * Get whether this node is visible.
-     *
      * @returns {boolean}  Whether this node is visible.
      */
     public get visible(): boolean {
@@ -201,7 +197,6 @@ export class TreeNode {
 
     /**
      * Set whether this node is visible.
-     *
      * @param {boolean} val  Whether this node is visible.
      */
     public set visible(val: boolean) {
@@ -222,7 +217,6 @@ export class TreeNode {
 
     /**
      * Get the descriptions subclass.
-     *
      * @returns {TreeNodeDescriptions}  The descriptions subclass.
      */
     public get descriptions(): TreeNodeDescriptions {
@@ -231,7 +225,6 @@ export class TreeNode {
 
     /**
      * Get the parent node of the current node.
-     *
      * @returns {TreeNode | undefined}  The parent node, or undefined if there
      *     is no parent.
      */
@@ -242,7 +235,6 @@ export class TreeNode {
 
     /**
      * Serialize the TreeNode (removes objects).
-     *
      * @returns {ITreeNode}  The serialized TreeNode.
      */
     public serialize(): ITreeNode {
@@ -298,7 +290,6 @@ export class TreeNode {
 
     /**
      * Shallow copy the TreeNode. Doesn't recreate GLModel objects, for example.
-     *
      * @returns {TreeNode}  The shallow copy.
      */
     public shallowCopy(): TreeNode {
@@ -326,8 +317,7 @@ export class TreeNode {
     /**
      * Get a nodes ancestory. First element is most distant ancestor (greatest
      * grandparent), and last is this node itself.
-     *
-     * @param  {TreeNodeList}  [mols=undefined]  The list of molecules to
+     * @param  {TreeNodeList}  [mols]  The list of molecules to
      *                                           search. If undefined, uses all
      *                                           molecules.
      * @returns {TreeNodeList}  The list of nodes in the ancestory.
@@ -342,10 +332,9 @@ export class TreeNode {
 
     /**
      * Convert this TreeNode to a specified molecular format.
-     *
      * @param  {string}    targetExt   The extension of the format to
      *            convert to.
-     * @param {boolean} [considerDescendants=false] If true and this is a container node,
+     * @param {boolean} [considerDescendants] If true and this is a container node,
      *            its descendants will be merged into a single file.
      * @returns {Promise<FileInfo>} The text-formatted (e.g., PDB, MOL2) string as a FileInfo object.
      */
@@ -399,7 +388,6 @@ export class TreeNode {
     /**
      * Creates a new TreeNode. Putting this in a function here helps with circular
      * dependencies.
-     *
      * @param  {ITreeNode} params  The parameters to create the TreeNode with.
      * @returns {TreeNode}  The new TreeNode.
      */
@@ -410,12 +398,17 @@ export class TreeNode {
 
     /**
      * Get the depth of the tree (number of descendents).
-     *
      * @returns {number}  The depth of the tree.
      */
     public get depth(): number {
         let maxDepthFound = 1;
 
+        /**
+         * Recursively traverse the tree to find the maximum depth.
+         * @param {TreeNode} node The current node.
+         * @param {number} depthSoFar The depth so far.
+         * @returns {number} The maximum depth found.
+         */
         const recurse = (node: TreeNode, depthSoFar: number) => {
             if (node.nodes) {
                 node.nodes.forEach((child: TreeNode) => {
@@ -435,7 +428,6 @@ export class TreeNode {
 
     /**
      * Merge another node into this one. In place.
-     *
      * @param  {TreeNode} otherNode  The node to merge into this one.
      */
     public mergeInto(otherNode: TreeNode) {
@@ -504,16 +496,15 @@ export class TreeNode {
 
     /**
      * A helper function. Adds this node to the molecules in the vuex store.
-     *
      * @param {string | null} tag       The tag to add to this
      *             node.
-     * @param {boolean} [reassignIds=true]    Whether to reassign
+     * @param {boolean} [reassignIds]    Whether to reassign
      *             IDs to the new nodes
      *             to avoid collisions.
      *             Set to false when
      *             loading a saved
      *             session.
-     * @param {boolean} [terminalNodeTitleRevisable=true] Whether the title of
+     * @param {boolean} [terminalNodeTitleRevisable] Whether the title of
      *             the terminal node
      *             should be revisable.
      *             Revised if there is
@@ -521,7 +512,7 @@ export class TreeNode {
      *             node. If you're adding
      *             nodes incrementally,
      *             good to set to false.
-     * @param {boolean} [resetVisibilityAndSelection=true] Whether to make the molecule
+     * @param {boolean} [resetVisibilityAndSelection] Whether to make the molecule
      *            visible and unselected. Set to false
      *            when loading a saved session where these
      *            properties should be preserved.
@@ -622,8 +613,7 @@ export class TreeNode {
 
     /**
      * Gets the box surrounding the model.
-     *
-     * @param  {number} [padding=3.4]  The padding to add to the box.
+     * @param  {number} [padding]  The padding to add to the box.
      * @returns {IBox}  The box.
      */
     public getBoxRegion(padding = 3.4): IBox {

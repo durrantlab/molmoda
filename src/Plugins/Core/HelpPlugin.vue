@@ -31,7 +31,6 @@
 </template>
 
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { Prop } from "vue-property-decorator";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";

@@ -9,8 +9,7 @@
     ></PluginComponent>
   </template>
   <script lang="ts">
-  import { Options } from "vue-class-component";
-  import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
+    import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
   import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
   import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
   import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";

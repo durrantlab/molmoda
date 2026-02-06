@@ -7,7 +7,7 @@ import { IColorScheme } from "./ColorInterfaces";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import isEqual from "lodash.isequal";
+import { isEqual } from 'lodash';
 import { hexToColorName } from "./ColorUtils";
 import memoize from "lodash.memoize";
 
@@ -84,7 +84,6 @@ const colorDefinitionNameToIndexMap = new Map<string, number>(
 /**
  * Adds a color to the style using definition index.
  * Optimized memoization using simple string key instead of JSON.stringify.
- *
  * @param {number} definitionIndex  The index in allColorSchemeDefinitions
  * @param {string} color  The color to add.
  * @returns {IColorScheme}  The color style with the color added.
@@ -94,6 +93,11 @@ const _addColorToStyleByIndex = memoize(
         const colorScheme = allColorSchemeDefinitions[definitionIndex].colorScheme;
         const newColorScheme = { ...colorScheme };
 
+        /**
+         * Replaces placeholders in a string with the actual color values.
+         * @param {string} val  The string value with potential placeholders.
+         * @returns {string} The string with placeholders replaced.
+         */
         const replacePlaceholders = (val: string): string => {
             let newVal = val;
             if (newVal.includes("#HEX")) {
@@ -120,7 +124,6 @@ const _addColorToStyleByIndex = memoize(
 /**
  * Converts a name to an index in colorSchemes.
  * Uses pre-computed Map for O(1) lookup instead of O(n) array search.
- *
  * @param {string} name  The name.
  * @returns {number} The index.
  */
@@ -133,7 +136,6 @@ export const colorDefinitionNameToIndex = memoize(function (
 
 /**
  * Converts an index in the colorSchemes array to a name.
- *
  * @param {number} index  The index.
  * @returns {string} The name.
  */
@@ -150,7 +152,6 @@ const CHAIN_INDEX = colorDefinitionNameToIndex("Chain");
 
 /**
  * Converts a style to an index in the colorSchemes array.
- *
  * @param {IColorScheme} colorScheme  The style.
  * @returns {number} The index.
  */
@@ -190,7 +191,6 @@ export function colorSchemeToDefinitionIndex(
 
 /**
  * Given an index in the colorSchemes array, returns the color style.
- *
  * @param {number} index  The index.
  * @param {string} color  The color to add to the style.
  * @returns {IColorScheme}  The color style.
@@ -204,7 +204,6 @@ export function colorDefinitionIndexToScheme(
 
 /**
  * Given a name, returns the color style.
- *
  * @param {string} name  The name.
  * @param {string} color  The color to add to the style.
  * @returns {IColorScheme}  The color style.

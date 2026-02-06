@@ -2,7 +2,6 @@
     <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 <script lang="ts">
-import { Options } from "vue-class-component";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";

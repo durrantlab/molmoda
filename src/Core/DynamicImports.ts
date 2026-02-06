@@ -44,6 +44,9 @@ function addToHeader(
     modulesAlreadyAddedToHeader[id] = new Promise((resolve) => {
         const script = document.createElement("script");
         script.src = jsUrl;
+        /**
+         * Called when the script is loaded.
+         */
         script.onload = async () => {
             await waitForCondition(() => {
                 return getModule() !== undefined;
@@ -224,6 +227,9 @@ export const dynamicImports = {
                 })
                 .then((Indigo: any) => {
                     return new Promise((resolve) => {
+                        /**
+                         * Called when the Indigo module's runtime is initialized.
+                         */
                         Indigo.Module.onRuntimeInitialized = () => {
                             resolve(Indigo);
                         };
