@@ -17,8 +17,7 @@
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
 import { saveData } from "@/Core/FS/FS";
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { ChartRatios, ChartType, IChartDataPoint } from "./ChartInterfaces";
 import { slugify } from "@/Core/Utils/StringUtils";
 
@@ -27,7 +26,7 @@ import { slugify } from "@/Core/Utils/StringUtils";
 /**
  * Chart component.
  */
-@Options({
+@Component({
     components: {},
 })
 export default class Chart extends Vue {
@@ -58,7 +57,6 @@ export default class Chart extends Vue {
 
     /**
      * Get the x-axis label to use.
-     * 
      * @returns {string}  The x-axis label to use.
      */
     get xAxisLabelToUse(): string {
@@ -70,7 +68,6 @@ export default class Chart extends Vue {
 
     /**
      * Get the y-axis label to use.
-     * 
      * @returns {string}  The y-axis label to use.
      */
     get yAxisLabelToUse(): string {
@@ -90,7 +87,6 @@ export default class Chart extends Vue {
 
     /**
      * Download the chart as a file.
-     * 
      * @param {string} format  The format to download as.
      */
     async download(format: string) {

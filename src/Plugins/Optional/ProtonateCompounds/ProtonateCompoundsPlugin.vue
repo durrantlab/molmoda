@@ -41,11 +41,13 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 
 /**
  * ProtonateCompoundsPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Alert,
@@ -115,7 +117,6 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -125,18 +126,17 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     async onPopupDone(): Promise<void> {
-        const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
+        const compounds: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
 
-        const pH = this.getUserArg("pH");
-        // const regen3DCoords = this.getUserArg("regen3DCoords");
+        const pH = this.userArgsMixin.getUserArg("pH");
+        // const regen3DCoords = this.userArgsMixin.getUserArg("regen3DCoords");
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.All,
-            level: this.getUserArg("gen3D"),
+            level: this.userArgsMixin.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         const molTexts = (await convertFileInfosOpenBabel(
@@ -220,7 +220,6 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -229,7 +228,6 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

@@ -1,21 +1,19 @@
 import { isSentence } from "@/Core/Utils/StringUtils";
-import { Vue } from "vue-class-component";
 
 /**
- * ValidationMixin
+ * Validation
  */
-export class ValidationMixin extends Vue {
+export class Validation {
     /**
      * Validates the plugin to make sure all children define what they should,
      * etc.
-     *
      * @param {string} pluginId  The plugin ID.
      * @param {string|null} intro     The plugin intro.
      * @param {string} details   The plugin details.
      * @param {string[] | string | null} menuPath The plugin's menu path.
      * @param {string} title The plugin's title.
      */
-    protected _validatePlugin(
+    public validatePlugin(
         pluginId: string,
         intro: string | null,
         details: string,
@@ -117,8 +115,6 @@ export class ValidationMixin extends Vue {
      * Checks if the plugin can currently run. This function allows plugins to
      * provide a warning message when the user has not yet loaded the data
      * necessary to run the plugin successfully.
-     *
-     *
      * @document
      * @param {any} _  This parameter given only to enable reactivity
      *                 elsewhere. Not used.

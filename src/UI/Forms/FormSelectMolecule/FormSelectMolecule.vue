@@ -26,8 +26,7 @@
     </span>
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
@@ -39,10 +38,11 @@ import { MoleculeTypeFilter } from "./FormSelectMoleculeInterfaces";
  * tree. It supports filtering by molecule type (protein, compound, or all) and
  * groups molecules by visibility.
  */
-@Options({
+@Component({
     components: {
         FormElementDescription,
     },
+    emits: ["update:modelValue", "onChange"],
 })
 export default class FormSelectMolecule extends Vue {
     /**

@@ -77,6 +77,15 @@ module.exports = defineConfig({
 
         config.resolve.symlinks = false;
 
+        // Handle vue-facing-decorator ESM
+        config.module = config.module || {};
+        config.module.rules = config.module.rules || [];
+        config.module.rules.push({
+            test: /\.js$/,
+            include: /node_modules\/vue-facing-decorator/,
+            type: 'javascript/auto',
+        });
+
         config.plugins.push(
             new CopyPlugin({
                 patterns: [

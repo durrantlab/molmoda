@@ -21,13 +21,12 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 
 /**
  * Alert component
  */
-@Options({
+@Component({
     components: {},
 })
 export default class Alert extends Vue {

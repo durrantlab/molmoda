@@ -42,18 +42,18 @@ import FormInput from "@/UI/Forms/FormInput.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
-import { Options, Vue } from "vue-class-component";
-import { Watch } from "vue-property-decorator";
+import { Vue } from "vue-facing-decorator";
 import { getFirstSelected, getSmilesOfTreeNode } from "./InformationPanelUtils";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getOrderedResidueSequenceFromModel, ResidueInfo } from "@/Core/Bioinformatics/AminoAcidUtils";
+import { Component, Watch } from "vue-facing-decorator";
 
 /**
  * InformationPanel component
  */
-@Options({
+@Component({
     components: {
         SmilesPopupViewer,
         ProteinSequenceViewer,

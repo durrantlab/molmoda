@@ -43,6 +43,7 @@ export function findUserArgAndRefineSelector(
         if (selectorStr.endsWith(suffix)) {
             const argId = selectorStr.slice(0, -suffix.length);
             foundUserArg = plugin
+                .userArgsMixin
                 .getUserArgsFlat()
                 .find((arg) => arg.id === argId);
 
@@ -76,6 +77,7 @@ export function findUserArgAndRefineSelector(
                     specificSelector = `${modalSelectorPart} input${lastSelectorPart}`;
                     const baseId = argId.substring(2);
                     foundUserArg = plugin
+                        .userArgsMixin
                         .getUserArgsFlat()
                         .find((arg) => arg.id === baseId);
                 }

@@ -16,11 +16,12 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * LoadPDBPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -111,13 +112,12 @@ export default class LoadPDBPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        const pdbId = this.getUserArg("pdbId");
+        const pdbId = this.userArgsMixin.getUserArg("pdbId");
         this.submitJobs([pdbId]);
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     *
      * @param {string} pdbIds  The PDB IDs to load (separated by space).
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
@@ -138,6 +138,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     fileInfo,
                     tag: this.pluginId,
                 });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (err: any) {
                 // Failed a second time! Probably not a valid PDB.
                 api.messages.popupError(
@@ -153,7 +154,6 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

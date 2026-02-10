@@ -47,7 +47,7 @@ import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/TreeUtils";
-import { Watch } from "vue-property-decorator";
+import { Component, Watch } from "vue-facing-decorator";
 // import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 // import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces"; // Potentially needed
 
@@ -75,7 +75,7 @@ interface ProgrammaticAddVizPayload {
  * residue name, chain ID) and a chosen representation (sphere, stick, etc.)
  * with a corresponding color scheme.
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
     ColorSchemeSelect,
@@ -255,7 +255,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * @returns {boolean} True if the button should be enabled, false otherwise.
    */
   get isActionBtnEnabled(): boolean {
-    const styleNameUserArg = this.getUserArg("styleName");
+    const styleNameUserArg = this.userArgsMixin.getUserArg("styleName");
     const styleName = typeof styleNameUserArg === 'string' ? styleNameUserArg : (styleNameUserArg as IUserArgText)?.val || ""; // Adjusted to safely access val
     return styleName.trim().length > 0 && this.currentSelectionRepType !== null;
   }
@@ -265,7 +265,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * type and resets the color scheme.
    */
   onUserArgChange(): void {
-    const repType = this.getUserArg("representationType") as Representation;
+    const repType = this.userArgsMixin.getUserArg("representationType") as Representation;
     if (this.currentSelectionRepType !== repType) {
       this.currentSelectionRepType = repType;
       // Reset the specific part of currentRepresentationStyle
@@ -273,7 +273,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.currentRepresentationStyle = {};
     }
 
-    if (this.getUserArg("styleName") === this.lastProgrammaticStyleName) {
+    if (this.userArgsMixin.getUserArg("styleName") === this.lastProgrammaticStyleName) {
       // This means the user has not yet manually changed the style name,      
       const prts: string[] = [];
       if (this.rawVals["selectionResidueNames"]) {
@@ -283,7 +283,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         prts.push(this.rawVals["selectionResidueIds"]);
       }
       const name = prts.join(" & ");
-      this.setUserArg("styleName", name);
+      this.userArgsMixin.setUserArg("styleName", name);
       this.lastProgrammaticStyleName = name;
     }
   }
@@ -323,18 +323,18 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     this.programmaticMoleculeId = undefined; // Reset at the start
     if (payload && (payload as ProgrammaticAddVizPayload).runProgrammatically) {
       const progPayload = payload as ProgrammaticAddVizPayload;
-      this.setUserArg("styleName", progPayload.styleName);
+      this.userArgsMixin.setUserArg("styleName", progPayload.styleName);
       const { selection, ...representationAndColor } = progPayload.styleDefinition;
       this.programmaticMoleculeId = progPayload.styleDefinition.moleculeId;
-      this.setUserArg("moleculeId", this.programmaticMoleculeId || "");
+      this.userArgsMixin.setUserArg("moleculeId", this.programmaticMoleculeId || "");
       if (selection) {
-        this.setUserArg("selectionResidueNames", selection.resn || []);
-        this.setUserArg("selectionResidueIds", selection.resi || []);
+        this.userArgsMixin.setUserArg("selectionResidueNames", selection.resn || []);
+        this.userArgsMixin.setUserArg("selectionResidueIds", selection.resi || []);
         // Note: Other selection criteria (chain, atom, elem) are not in
         // userArgDefaults by default. If they were, they'd be set here too.
       } else { // Ensure defaults are empty if no selection provided
-        this.setUserArg("selectionResidueNames", []);
-        this.setUserArg("selectionResidueIds", []);
+        this.userArgsMixin.setUserArg("selectionResidueNames", []);
+        this.userArgsMixin.setUserArg("selectionResidueIds", []);
       }
 
       const repTypes: Representation[] = [
@@ -351,7 +351,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       }
 
       if (foundRepType) {
-        this.setUserArg("representationType", foundRepType);
+        this.userArgsMixin.setUserArg("representationType", foundRepType);
         this.currentSelectionRepType = foundRepType;
         // Ensure currentRepresentationStyle has the correct structure for
         // ColorSchemeSelect or direct use
@@ -379,15 +379,15 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       this.editMode = true;
       this.editingStyleName = uiEditPayload.styleNameToEdit ?? null; // Ensure it's null if undefined
       this.title = "Edit Visualization";
-      this.setUserArg("styleName", this.editingStyleName);
+      this.userArgsMixin.setUserArg("styleName", this.editingStyleName);
 
       // Cast assuming it will be string if editMode is true
       const styleToEdit = StyleManager.customSelsAndStyles[this.editingStyleName as string];
       if (styleToEdit) {
         this.programmaticMoleculeId = styleToEdit.moleculeId;
-        this.setUserArg("moleculeId", styleToEdit.moleculeId || "");
-        this.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
-        this.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
+        this.userArgsMixin.setUserArg("moleculeId", styleToEdit.moleculeId || "");
+        this.userArgsMixin.setUserArg("selectionResidueNames", styleToEdit.selection?.resn || []);
+        this.userArgsMixin.setUserArg("selectionResidueIds", styleToEdit.selection?.resi || []);
 
         let repType: Representation | null = null;
         if (styleToEdit.sphere) repType = AtomsRepresentation.Sphere;
@@ -397,14 +397,14 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         else if (styleToEdit.surface) repType = SurfaceRepresentation.Surface;
 
         if (repType) {
-          this.setUserArg("representationType", repType);
+          this.userArgsMixin.setUserArg("representationType", repType);
           this.currentSelectionRepType = repType;
           this.currentRepresentationStyle = { [repType]: (styleToEdit as any)[repType] || {} };
         } else {
           // If no specific representation key is found, default to the one in
           // userArgs This handles cases where the style might be just a
           // selection with no explicit representation type like sphere/stick
-          this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
+          this.currentSelectionRepType = this.userArgsMixin.getUserArg("representationType") as Representation;
           // Reset style or try to infer if possible
           this.currentRepresentationStyle = {};
         }
@@ -413,12 +413,12 @@ export default class AddVizualizationPlugin extends PluginParentClass {
         this.editingStyleName = null;
         this.title = "New Visualization";
         messagesApi.popupError(`Style "${uiEditPayload.styleNameToEdit}" not found. Opening in 'New Visualization' mode.`);
-        this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
+        this.currentSelectionRepType = this.userArgsMixin.getUserArg("representationType") as Representation;
         this.currentRepresentationStyle = {};
       }
     } else { // UI Add mode
-      this.setUserArg("moleculeId", "");
-      this.currentSelectionRepType = this.getUserArg("representationType") as Representation;
+      this.userArgsMixin.setUserArg("moleculeId", "");
+      this.currentSelectionRepType = this.userArgsMixin.getUserArg("representationType") as Representation;
       this.currentRepresentationStyle = {};
     }
     this.updateResidueOptions();
@@ -438,7 +438,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     let finalStyle: ISelAndStyle;
     let overwriteForStyleManagerCall: boolean;
 
-    const formStyleNameVal = this.getUserArg("styleName");
+    const formStyleNameVal = this.userArgsMixin.getUserArg("styleName");
     styleName = typeof formStyleNameVal === 'string' ? formStyleNameVal.trim() : "";
 
 
@@ -451,12 +451,12 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     }
 
     const selection: any = {};
-    const resNamesArg = this.getUserArg("selectionResidueNames");
+    const resNamesArg = this.userArgsMixin.getUserArg("selectionResidueNames");
     if (Array.isArray(resNamesArg) && resNamesArg.length > 0) {
       selection.resn = this.expandResidueNameMacros(resNamesArg);
     }
 
-    const resIdsArg = this.getUserArg("selectionResidueIds");
+    const resIdsArg = this.userArgsMixin.getUserArg("selectionResidueIds");
     if (Array.isArray(resIdsArg) && resIdsArg.length > 0) {
       selection.resi = resIdsArg;
     }
@@ -465,7 +465,7 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     // they were, they would be processed here.
 
     finalStyle = { selection };
-    const moleculeId = (this.getUserArg("moleculeId") as string)?.trim();
+    const moleculeId = (this.userArgsMixin.getUserArg("moleculeId") as string)?.trim();
     if (moleculeId) {
       finalStyle.moleculeId = moleculeId;
     } else if (this.programmaticMoleculeId) {

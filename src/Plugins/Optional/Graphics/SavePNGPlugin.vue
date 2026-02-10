@@ -20,11 +20,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { checkAnyMolLoaded } from "@/Plugins/CheckUseAllowedUtils";
+import { Component } from "vue-facing-decorator";
+import * as api from "@/Api";
 
 /**
  * SavePNGPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -65,7 +67,6 @@ export default class SavePNGPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -77,12 +78,11 @@ export default class SavePNGPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        this.submitJobs([{ filename: this.getUserArg("filename") }]);
+        this.submitJobs([{ filename: this.userArgsMixin.getUserArg("filename") }]);
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     *
      * @param {any} parameters  Information about the PNG file to save.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
@@ -98,7 +98,6 @@ export default class SavePNGPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

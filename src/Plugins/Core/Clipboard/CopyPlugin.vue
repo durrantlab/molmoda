@@ -32,9 +32,10 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /** CopyPlugin */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Alert,

@@ -3,8 +3,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import MenuLevel1 from "./Menu/MenuLevel1.vue";
 
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
@@ -16,7 +15,7 @@ import { delayForPopupOpenClose } from "@/Core/GlobalVars";
 /**
  * PluginPathLink component
  */
-@Options({
+@Component({
     components: {
         MenuLevel1,
     },

@@ -16,15 +16,14 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 
 /**
  * Radio component
  */
-@Options({
+@Component({
     components: {},
-    emits: { onclick },
+    emits: [ "onclick" ],
 })
 export default class Radio extends Vue {
     @Prop({ required: true }) option!: string;

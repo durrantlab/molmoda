@@ -91,8 +91,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormInput from "../FormInput.vue";
 import FormWrapper from "../FormWrapper.vue";
 import FormSelect from "../FormSelect.vue";
@@ -120,7 +119,7 @@ import FormSelectMolecule from "../FormSelectMolecule/FormSelectMolecule.vue";
 /**
  * FormFull
  */
-@Options({
+@Component({
   components: {
     FormWrapper,
     FormInput,

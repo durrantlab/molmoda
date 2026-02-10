@@ -6,21 +6,21 @@
 </template>
 <script lang="ts">
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import * as api from "@/Api";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
 import { FailingTest } from "@/Testing/FailingTest";
 import { ISoftwareCredit, IContributorCredit } from "@/Plugins/PluginInterfaces";
-import { set } from "lodash";
 import { Tag } from "../ActivityFocus/ActivityFocusUtils";
 import { tourManager } from "@/Plugins/Core/Tour/TourManager";
 import { lowerize } from "@/Core/Utils/StringUtils";
+import { Component } from "vue-facing-decorator";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 
 /**
  * TourPlugin
  * A plugin that displays an introductory modal before starting a tour for another plugin.
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -41,10 +41,9 @@ export default class TourPlugin extends PluginParentClass {
 
     /**
      * Called before the popup opens. It receives the plugin to be toured as a payload.
-     *
      * @param {object} payload The payload containing the plugin instance.
      * @param {PluginParentClass} payload.plugin The plugin to start the tour for.
-     * @param {number} [payload.testIndex=0] The index of the test to use for the tour.
+     * @param {number} [payload.testIndex] The index of the test to use for the tour.
      * @returns {Promise<boolean | void>} Returns false to prevent opening if no plugin is provided.
      */
     async onBeforePopupOpen(payload: { plugin: PluginParentClass; testIndex?: number }): Promise<boolean | void> {
@@ -83,7 +82,6 @@ export default class TourPlugin extends PluginParentClass {
 
     /**
      * This plugin does not run a background job.
-     *
      * @returns {Promise<void>}
      */
     async runJobInBrowser(): Promise<void> {
@@ -92,7 +90,6 @@ export default class TourPlugin extends PluginParentClass {
 
     /**
      * This plugin is not intended to be tested via the automated testing system.
-     *
      * @returns {Promise<ITest>} A failing test configuration.
      */
     async getTests(): Promise<ITest> {

@@ -12,8 +12,7 @@ import {
     ICalcMolProps,
 } from "@/Plugins/Optional/MolProps/CalcMolProps";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import Table from "./Table/Table.vue";
 import { ITableData } from "./Table/Types";
 
@@ -24,7 +23,7 @@ const alreadyCalculatedOther: {[key: string]: any} = {}
 /**
  * MolProps component
  */
-@Options({
+@Component({
     components: {
         Table,
     },

@@ -15,12 +15,13 @@ import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.v
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { FileInfo } from "@/FileSystem/FileInfo";
+import { Component } from "vue-facing-decorator";
+import { loadRemoteToFileInfo } from "./RemoteMolLoadersUtils";
 
 /**
  * LoadAlphaFoldPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -92,13 +93,12 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        let uniprot = this.getUserArg("uniprot");
+        let uniprot = this.userArgsMixin.getUserArg("uniprot");
         this.submitJobs([uniprot]);
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     *
      * @param {string} uniprot  The requested uniprot id.
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
@@ -156,7 +156,6 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
     }
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

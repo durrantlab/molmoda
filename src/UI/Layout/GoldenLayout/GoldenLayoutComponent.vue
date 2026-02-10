@@ -23,13 +23,12 @@
 
 <script lang="ts">
 import { slugify } from "@/Core/Utils/StringUtils";
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 
 /**
  * GoldenLayoutComponent component
  */
-@Options({})
+@Component({})
 export default class GoldenLayoutComponent extends Vue {
   @Prop() name!: string;
   @Prop() state!: string;

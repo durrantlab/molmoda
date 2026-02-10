@@ -29,11 +29,13 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
+import { Component } from "vue-facing-decorator";
+import { ITest } from "@/Testing/TestInterfaces";
 
 /**
  * PubChemNamesPlugin
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -81,7 +83,6 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
 
   /**
    * Check if the plugin is allowed to run.
-   *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
   checkPluginAllowed(): string | null {
@@ -90,7 +91,6 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
 
   /**
    * Get the names of the molecule.
-   *
    * @param {FileInfo} molFileInfo The molecule file info.
    * @returns {Promise} The names of the molecule.
    */
@@ -161,7 +161,6 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
 
   /**
    * Get the tests for the plugin.
-   *
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {

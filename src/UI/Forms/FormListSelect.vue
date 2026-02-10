@@ -29,8 +29,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { IUserArgOption } from "./FormFull/FormFullInterfaces";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
 import FormInput from "./FormInput.vue";
@@ -48,7 +47,7 @@ interface ParsedListResult {
  * numbers, with support for numeric ranges) via a text field. Optionally, a
  * dropdown can be provided to append predefined items to the list.
  */
-@Options({
+@Component({
     components: {
         FormInput,
         // FormSelect, // No longer used here

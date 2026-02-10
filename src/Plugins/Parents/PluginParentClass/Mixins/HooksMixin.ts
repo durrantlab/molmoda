@@ -1,10 +1,11 @@
-/* eslint-disable jsdoc/check-tag-names */
-import { Vue } from "vue-class-component";
+import type { PluginParentClass } from "../PluginParentClass";
 
 /**
- * HooksMixin
+ * Hooks
  */
-export class HooksMixin extends Vue {
+export class Hooks {
+    parent: PluginParentClass;
+
     /**
      * Called right before the plugin popup opens. Can be used to initialize the
      * plugin's state.
@@ -14,14 +15,13 @@ export class HooksMixin extends Vue {
      * properties of the payload are mapped to the plugin's user arguments, and
      * the plugin's action is triggered without opening a popup. This function
      * can also be overwritten by child plugins (and often is).
-     *
      * @param {any} [payload] The payload passed to the plugin, used for UI
      *        initialization or programmatic execution.
      * @return {Promise<boolean | void>} If `false` is returned, the popup will
      *         not open (abort).
      * @document
      */
-    protected async onBeforePopupOpen(payload?: any): Promise<boolean | void> {
+    public async onBeforePopupOpen(payload?: any): Promise<boolean | void> {
         // if payload is an object with runProgrammatically=true, set userArgs and bypass popup
         if (
             payload &&
@@ -35,23 +35,35 @@ export class HooksMixin extends Vue {
                 if (Object.prototype.hasOwnProperty.call(progPayload, key)) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    this.setUserArg(key, progPayload[key]);
+                    this.parent.userArgsMixin.setUserArg(key, progPayload[key]);
                 }
             }
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            this.noPopup = true;
+            this.parent.noPopup = true;
         }
+    if ((this.parent as any).onBeforePopupOpen) {
+      return (this.parent as any).onBeforePopupOpen(payload);
+    }
         return;
     }
 
     /**
      * Called right after the plugin popup opens.
-     *
      * @document
      */
-    protected onPopupOpen(): void {
-        // can be optionally overridden.
+    public onPopupOpen(): void {
+    if ((this.parent as any).onPopupOpen) {
+      (this.parent as any).onPopupOpen();
+    }
         return;
+    }
+
+    /**
+     * Constructor
+     * @param {PluginParentClass} parent The parent plugin class.
+     */
+    constructor(parent: PluginParentClass) {
+        this.parent = parent;
     }
 }

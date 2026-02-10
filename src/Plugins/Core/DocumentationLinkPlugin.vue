@@ -10,7 +10,7 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+ 
 
 import {
     IContributorCredit,
@@ -23,9 +23,10 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /** DocumentationLinkPlugin */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -59,6 +60,7 @@ export default class DocumentationLinkPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
         return Promise.resolve();
@@ -66,7 +68,6 @@ export default class DocumentationLinkPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

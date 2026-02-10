@@ -1,5 +1,5 @@
-/* eslint-disable jsdoc/check-tag-names */
-import { Vue } from "vue-class-component";
+ 
+import { Vue } from "vue-facing-decorator";
 
 /**
  * PopupMixin
@@ -13,7 +13,6 @@ export class PopupMixin extends Vue {
 
     /**
      * Closes the popup.
-     * 
      * @helper
      * @document
      */
@@ -24,11 +23,10 @@ export class PopupMixin extends Vue {
 
     /**
      * Opens the popup.
-     * 
      * @helper
      * @document
      */
-    protected openPopup(): void {
+    public openPopup(): void {
         this.open = true;
 
         // If no popup, don't change open and just submit jobs automatically.

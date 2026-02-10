@@ -24,8 +24,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import FormWrapper from "../FormWrapper.vue";
 import Alert from "@/UI/Layout/Alert.vue";
@@ -52,7 +51,7 @@ function numAndNoun(num: number, noun: string): string {
  * visible, selected, or all molecules, and provides feedback about how many
  * molecules will be processed.
  */
-@Options({
+@Component({
   components: {
     FormElementDescription,
     FormSelect,
@@ -60,6 +59,7 @@ function numAndNoun(num: number, noun: string): string {
     Alert,
     FormCheckBox,
   },
+  emits: ["update:modelValue", "onChange", "onMolCountsChanged"],
 })
 export default class MoleculeInputParams extends Vue {
   @Prop({ default: new MoleculeInput() }) modelValue!: MoleculeInput;

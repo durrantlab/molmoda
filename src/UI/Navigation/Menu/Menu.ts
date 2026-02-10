@@ -1,6 +1,6 @@
 import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 import { matchesTag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { Vue } from "vue-class-component";
+import { Vue } from "vue-facing-decorator";
 
 export type IMenuEntry = IMenuItem | IMenuSubmenu;
 

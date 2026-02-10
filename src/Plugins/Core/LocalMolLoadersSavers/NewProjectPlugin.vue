@@ -35,11 +35,13 @@ import Alert from "@/UI/Layout/Alert.vue";
 import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { storeIsDirty, setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore"
+import { Component } from "vue-facing-decorator";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 
 /**
  * NewProjectPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         FormFile,
@@ -87,7 +89,6 @@ export default class NewProjectPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the save project link.
-     *
      * @param {Event | undefined} e  The event (if any) that triggered this
      *                               function.
      */
@@ -103,7 +104,6 @@ export default class NewProjectPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     * 
      * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
@@ -114,7 +114,6 @@ export default class NewProjectPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commandss.

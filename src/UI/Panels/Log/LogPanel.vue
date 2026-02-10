@@ -28,14 +28,14 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Watch } from "vue-property-decorator";
+import { Vue } from "vue-facing-decorator";
+import { Component, Watch } from "vue-facing-decorator";
 import { ILog } from "./LogUtils";
 
 /**
  * LogPanel component
  */
-@Options({
+@Component({
   components: {},
 })
 export default class LogPanel extends Vue {

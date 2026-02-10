@@ -22,17 +22,17 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormElementDescription from "./FormElementDescription.vue";
 
 /**
  * FormCheckBox component
  */
-@Options({
+@Component({
     components: {
         FormElementDescription,
     },
+    emits: ["update:modelValue", "onChange"],
 })
 export default class FormCheckBox extends Vue {
     @Prop({ required: true }) modelValue!: boolean;

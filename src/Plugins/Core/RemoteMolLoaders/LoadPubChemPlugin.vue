@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/no-this-alias */
+ 
 
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import {
@@ -30,7 +30,7 @@ import * as api from "@/Api";
 import { appName } from "@/Core/GlobalVars";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { ITest } from "@/Testing/TestInterfaces";
 import { correctFilenameExt } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -38,11 +38,13 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
+import FormInput from "@/UI/Forms/FormInput.vue";
 
 /**
  * LoadPubChemPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         FormInput,
@@ -87,7 +89,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Filters text to match desired format.
-     *
      * @param {string} val  The text to assess.
      * @returns {string} The filtered text.
      */
@@ -99,7 +100,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Get the name of the app.
-     *
      * @returns {string} The name of the app.
      */
     get appName(): string {
@@ -116,7 +116,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     /**
      * If text is a properly formatted UniProt accession, enable the button.
      * Otherwise, disabled.
-     *
      * @returns {boolean} Whether to disable the button.
      */
     isBtnEnabled(): boolean {
@@ -162,9 +161,8 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Loads the 1D molecule (SMILES) from PubChem.
-     *
      * @param {string} filename  The filename to use.
-     * @param {boolean} [getIsomeric=true]  Whether to get isomeric SMILES.
+     * @param {boolean} [getIsomeric]  Whether to get isomeric SMILES.
      *     If false, will get regular SMILES.
      * @returns {Promise<FileInfo | void>} A promise that resolves when it is
      *     loaded.
@@ -187,7 +185,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
-     *
      * @param {string} filename  The filename to use.
      * @returns {Promise<FileInfo | void>} A promise that resolves when it is
      *     loaded.
@@ -209,7 +206,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Loads the 3D molecule from PubChem. Returns undefined
-     *
      * @param {string} filename  The filename to use.
      * @returns {Promise<FileInfo | void>} A promise that resolves when it is
      *     loaded.
@@ -258,7 +254,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     *
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
     async runJobInBrowser(): Promise<void> {
@@ -296,7 +291,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
         return this.addFileInfoToViewer({
             fileInfo,
-            desalt: this.getUserArg("desalt"),
+            desalt: this.userArgsMixin.getUserArg("desalt"),
             tag: this.pluginId,
         });
 
@@ -309,7 +304,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         //             return this.addFileInfoToViewer(
         //                 fileInfo,
         //                 undefined,
-        //                 this.getUserArg("desalt")
+        //                 this.userArgsMixin.getUserArg("desalt")
         //             );
         //         })
         //         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -323,7 +318,6 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

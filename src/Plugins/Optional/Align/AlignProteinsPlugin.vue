@@ -5,9 +5,6 @@
     </PluginComponent>
 </template>
 <script lang="ts">
-    IContributorCredit,
-    ISoftwareCredit,
-} from "@/Plugins/PluginInterfaces";
 import {
     UserArg,
     UserArgType,
@@ -32,11 +29,13 @@ import { cloneMolsWithAncestry } from "@/UI/Navigation/TreeView/TreeUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { alignFileInfos } from "./AlignProteinsUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
+import { Component } from "vue-facing-decorator";
 
 /**
  * A plugin to align multiple protein structures to a reference protein.
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -83,7 +82,6 @@ export default class AlignProteinsPlugin extends PluginParentClass {
 
     /**
      * Checks if the plugin is allowed to be used.
-     *
      * @returns {string | null} An error message if not allowed, otherwise null.
      */
     checkPluginAllowed(): string | null {
@@ -94,8 +92,8 @@ export default class AlignProteinsPlugin extends PluginParentClass {
      * Handles changes to user arguments to update button state.
      */
     onUserArgChange() {
-        const refId = this.getUserArg("referenceMolecule");
-        const moleculeInput: MoleculeInput = this.getUserArg("mobileMolecules");
+        const refId = this.userArgsMixin.getUserArg("referenceMolecule");
+        const moleculeInput: MoleculeInput = this.userArgsMixin.getUserArg("mobileMolecules");
 
         if (!moleculeInput || !moleculeInput.molsToConsider) {
             this.isActionBtnEnabled = false;
@@ -135,7 +133,6 @@ export default class AlignProteinsPlugin extends PluginParentClass {
 
     /**
      * The main alignment logic.
-     *
      * @param {UserArg[]} userArgs The user arguments from the form.
      * @returns {Promise<void>}
      */
@@ -242,7 +239,6 @@ export default class AlignProteinsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]} The selenium test commands.

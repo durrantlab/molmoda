@@ -29,8 +29,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import Mol2DView from "./Mol2DView.vue"; // Import the new reusable component
 
@@ -39,7 +38,7 @@ import Mol2DView from "./Mol2DView.vue"; // Import the new reusable component
  * Mol2DView and provides a popup for a larger view upon clicking the image.
  * The initial Mol2DView is lazy-loaded.
  */
-@Options({
+@Component({
     components: {
         Popup,
         Mol2DView,

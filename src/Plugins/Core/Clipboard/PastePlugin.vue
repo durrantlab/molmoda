@@ -10,9 +10,8 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+ 
 
-} from "@/Plugins/PluginInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { IUserArgText, UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -20,7 +19,6 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import Alert from "@/UI/Layout/Alert.vue";
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import * as api from "@/Api";
@@ -36,9 +34,11 @@ import {
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 
 /** PastePlugin */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Alert,
@@ -88,7 +88,6 @@ export default class PastePlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     *
      * @param {any} payload  The payload (node id)
      */
     async onBeforePopupOpen(payload: any) {
@@ -156,22 +155,22 @@ export default class PastePlugin extends PluginParentClass {
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-            level: this.getUserArg("gen3D"),
+            level: this.userArgsMixin.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         try {
             const treeNodeList = await parseAndLoadMoleculeFile({
                 fileInfo,
                 tag: this.pluginId,
-                desalt: this.getUserArg("desalt"),
-                defaultTitle: this.getUserArg("pastedMolName"),
+                desalt: this.userArgsMixin.getUserArg("desalt"),
+                defaultTitle: this.userArgsMixin.getUserArg("pastedMolName"),
                 gen3D: gen3DParams,
                 addToTree: false, // Don't add yet, need to set title
             });
 
             if (treeNodeList && treeNodeList instanceof TreeNodeList && treeNodeList.length > 0) {
                 const node = treeNodeList.get(0);
-                node.title = this.getUserArg("pastedMolName");
+                node.title = this.userArgsMixin.getUserArg("pastedMolName");
                 treeNodeList.addToMainTree(this.pluginId);
             }
 
@@ -207,7 +206,6 @@ export default class PastePlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

@@ -1,14 +1,10 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onUserArgChanged="onUserArgChanged"
+        @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+ 
 
 import {
     IContributorCredit,
@@ -22,22 +18,23 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { checkAnyMolLoaded } from "../CheckUseAllowedUtils";
+import { Component } from "vue-facing-decorator";
 
 /** CollapseAllPlugin */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
 })
 export default class CollapseAllPlugin extends PluginParentClass {
     menuPath = ["View", "Tree", "[2] Collapse All"];
- title = "Collapse All";
+    title = "Collapse All";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "collapseall";
     noPopup = true;
     userArgDefaults: UserArg[] = [];
-    
+
     logJob = false;
     logAnalytics = false;
     intro = "Collapse all the nodes in the Navigator panel.";
@@ -49,7 +46,6 @@ export default class CollapseAllPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @returns {Promise<void>}  Resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -63,7 +59,6 @@ export default class CollapseAllPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -73,7 +68,6 @@ export default class CollapseAllPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

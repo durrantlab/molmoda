@@ -5,8 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import Section from "@/UI/Layout/Section.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
@@ -34,13 +33,13 @@ import { colorDefinitionIndexToName, colorDefinitionNameToIndex, colorSchemeToDe
  * same component gets used separately for each representation, for each
  * molecule type. See StylesForMolType component.
  */
-@Options({
+@Component({
   components: {
     Section,
     FormSelect,
     FormFull,
   },
-  emits: { onChange: "onChange", "update:modelValue": "update:modelValue" },
+  emits: [ "onChange", "update:modelValue" ],
 })
 export default class ColorSchemeSelect extends Vue {
   // Looks like this: { "cartoon": { "color": "spectrum" } }
@@ -54,7 +53,6 @@ export default class ColorSchemeSelect extends Vue {
 
   /**
    * Gets the color form.
-   *
    * @returns {any[]}  The color form.
    */
   get constructedColorForm(): any[] {
@@ -122,7 +120,6 @@ export default class ColorSchemeSelect extends Vue {
 
   /**
    * Get the constructed color form.
-   *
    * @param {UserArg[]} val  The color form.
    */
   set constructedColorForm(val: UserArg[]) {
@@ -161,7 +158,6 @@ export default class ColorSchemeSelect extends Vue {
   /**
    * Add default values to the style object if it is missing. Acts in place, so
    * returns nothing.
-   *
    * @param {ISelAndStyle} style  The style. Looks something like
    *                        {"cartoon":{"color":"spectrum"}}.
    */

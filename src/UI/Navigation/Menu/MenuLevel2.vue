@@ -13,7 +13,7 @@
 
 <script lang="ts">
 
-import { Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";
 import MenuLevel3 from "./MenuLevel3.vue";
@@ -21,7 +21,7 @@ import MenuLevel3 from "./MenuLevel3.vue";
 /**
  * MenuLevel2 component
  */
-@Options({
+@Component({
   components: {
     MenuActionLink,
     MenuLevel3

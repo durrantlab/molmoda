@@ -30,8 +30,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { getAminoAcidProperty, ResidueInfo } from "@/Core/Bioinformatics/AminoAcidUtils";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
@@ -62,7 +61,7 @@ interface ProcessedLine {
  * ProteinSequenceViewer component displays a protein sequence with residues
  * color-coded and clickable to select in a 3D viewer.
  */
-@Options({
+@Component({
     components: {},
 })
 export default class ProteinSequenceViewer extends Vue {

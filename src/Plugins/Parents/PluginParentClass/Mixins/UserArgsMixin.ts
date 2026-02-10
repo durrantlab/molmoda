@@ -1,29 +1,25 @@
-/* eslint-disable jsdoc/check-tag-names */
-import {
-    UserArg,
-    UserArgType,
-    IUserArgGroup,
-} from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { Vue } from "vue-class-component";
+import { UserArg, UserArgType, IUserArgGroup, } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { recurseUserArgsAndAct } from "../../UserInputUtils";
+import type { PluginParentClass } from "../PluginParentClass";
 
 /**
- * HooksMixin
+ * Hooks
  */
-export class UserArgsMixin extends Vue {
+export class UserArgs {
+    protected parent: PluginParentClass;
+
     /**
      * Update whether a user argument is enabled. You can access the userArgs
      * variable directly, but this is more convenient because you can look it up
      * by id (helper function). Allows you to modify one `userArgs` enabled
      * value based on the value of another (see also `<PluginComponent>`'s
      * `onUserArgChange` function).
-     *
      * @param {string}                id          The id of the user argument to
      *                                            update.
      * @param {boolean}               val         The new value of the enabled
      *                                            flag.
      */
-    protected setUserArgEnabled(id: string, val: boolean) {
+    public setUserArgEnabled(id: string, val: boolean) {
         recurseUserArgsAndAct(
             (userArg: UserArg) => {
                 return userArg.id === id;
@@ -33,7 +29,7 @@ export class UserArgsMixin extends Vue {
             },
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            this.userArgs
+            this.parent.userArgs
         );
     }
 
@@ -41,11 +37,10 @@ export class UserArgsMixin extends Vue {
      * Note that userArgs is reactive, so you can just modify it directly. But
      * it is a list, not an object, so you can't easily update based on the id.
      * This is a helper function to do that.
-     *
      * @param {string} id   The id of the user argument to update.
      * @param {any}    val  The new value of the user argument.
      */
-    protected setUserArg(id: string, val: any) {
+    public setUserArg(id: string, val: any) {
         recurseUserArgsAndAct(
             (userArg: UserArg) => {
                 return userArg.id === id;
@@ -55,22 +50,21 @@ export class UserArgsMixin extends Vue {
             },
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            this.userArgs
+            this.parent.userArgs
         );
     }
 
     /**
      * Given a list of user arguments, find the one with the specified name and
      * return its value. A helper function.
-     *
      * @param  {string}                id        The name of the user argument
      *                                           to find.
      * @returns {any}  The value of the user argument with the specified name.
      */
-    protected getUserArg(id: string): any {
+    public getUserArg(id: string): any {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const { userArgs } = this;
+        const { userArgs } = this.parent;
 
         // It's a form element
         let val: any = undefined;
@@ -90,7 +84,6 @@ export class UserArgsMixin extends Vue {
     /**
      * Given a list of user arguments, return a flattened version (so groups removed).
      * A helper function.
-     *
      * @param {UserArg[]} userArgs  The user arguments.
      * @returns {UserArg[]}  The flattened user arguments.
      */
@@ -99,7 +92,7 @@ export class UserArgsMixin extends Vue {
         if (userArgs === undefined) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            userArgs = this.userArgs;
+            userArgs = this.parent.userArgs;
         }
         for (const userArg of userArgs as UserArg[]) {
             if (userArg.type === UserArgType.Group) {
@@ -110,5 +103,13 @@ export class UserArgsMixin extends Vue {
             }
         }
         return userArgsFlat;
+    }
+
+    /**
+     * Constructor
+     * @param {PluginParentClass} parent  The parent plugin class.
+     */
+    constructor(parent: PluginParentClass) {
+        this.parent = parent;
     }
 }

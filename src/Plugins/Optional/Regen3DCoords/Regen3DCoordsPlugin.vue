@@ -26,7 +26,6 @@ import {
     convertFileInfosOpenBabel,
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
@@ -34,11 +33,12 @@ import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ea
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
 
 /**
  * Regen3DCoordsPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -78,7 +78,6 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *  message. If null, proceed to run the plugin.
      */
@@ -88,14 +87,13 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     async onPopupDone(): Promise<void> {
-        const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
+        const compounds: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
         const gen3DParams: IGen3DOptions = {
             whichMols: WhichMolsGen3D.All, // Always regenerate for this plugin
-            level: this.getUserArg("gen3D"),
+            level: this.userArgsMixin.getUserArg("gen3D"),
         };
 
         const conversionPromises = compounds.map((compound) => {
@@ -167,7 +165,6 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -176,7 +173,6 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

@@ -8,8 +8,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
 import { ITableDataMsg } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
@@ -21,11 +19,12 @@ import { pluginsApi } from "@/Api/Plugins";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { ITableData } from "@/UI/Components/Table/Types";
 import Table from "@/UI/Components/Table/Table.vue";
+import { Component } from "vue-facing-decorator";
 
 /**
  * SimpleMsgPlugin
  */
-@Options({
+@Component({
   components: {
     Popup,
     PluginComponent,
@@ -61,7 +60,6 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
   /**
    * Runs when the user first starts the plugin. For example, if the plugin is
    * in a popup, this function would open the popup.
-   *
    * @param {ITableDataMsg} [payload]  Information about the table message to
    *                                   display.
    * @returns {Promise<void>}          Promise that resolves when the plugin is
@@ -87,7 +85,6 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
   /**
    * Every plugin runs some job. This is the function that does the job
    * running.
-   *
    * @returns {Promise<void>}  A promise that resolves when the job is done.
    */
   runJobInBrowser(): Promise<void> {
@@ -100,7 +97,6 @@ export default class SimpleTableDataPlugin extends PluginParentClass {
 
   /**
    * Gets the test commands for the plugin. For advanced use.
-   *
    * @gooddefault
    * @document
    * @returns {ITest[]}  The selenium test commands.

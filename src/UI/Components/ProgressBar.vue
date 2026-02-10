@@ -14,9 +14,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
-
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 const INACTIVITY_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
 const COMPLETION_PAUSE_MS = 250; // 0.25 seconds
 const MIN_DISPLAY_PROGRESS = 0.05; // 5%
@@ -26,7 +24,7 @@ const MIN_DISPLAY_PROGRESS = 0.05; // 5%
  * including minimum display, completion pause, and inactivity timeout.
  * The gray track is always visible, the colored bar shows progress.
  */
-@Options({})
+@Component({})
 export default class ProgressBar extends Vue {
     /** The actual highest progress value (0-1) from the parent. Defaults to 0. */
     @Prop({ type: Number, default: 0 })

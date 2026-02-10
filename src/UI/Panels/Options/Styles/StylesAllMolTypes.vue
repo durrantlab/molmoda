@@ -20,7 +20,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import Section from "@/UI/Layout/Section.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
 
@@ -49,7 +49,7 @@ interface ISelStyleForMolType {
  * set style and colors on all molecule types. This is the "parent" component
  * that gets used in StylesPanel.vue.
  */
-@Options({
+@Component({
     components: {
         Section,
         FormSelect,

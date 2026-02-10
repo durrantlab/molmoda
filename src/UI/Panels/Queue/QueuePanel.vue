@@ -9,16 +9,17 @@
 /* eslint-disable no-unreachable */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { Options, Vue } from "vue-class-component";
+import { Vue } from "vue-facing-decorator";
 
 // import JobManager from "@/Queue/JobManagers/JobManager.vue";
 import Section from "@/UI/Layout/Section.vue";
 import JobManager from "@/Queue/JobManager.vue";
+import { Component } from "vue-facing-decorator";
 
 /**
  * QueuePanel component
  */
-@Options({
+@Component({
     components: {
         JobManager,
         Section,

@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import MenuActionLink from "./MenuActionLink.vue";
 import MenuLevel2 from "./MenuLevel2.vue";
 import {
@@ -44,7 +44,7 @@ import { slugify } from "@/Core/Utils/StringUtils";
 /**
  * MenuLevel1 component
  */
-@Options({
+@Component({
   components: {
     MenuActionLink,
     MenuLevel2,

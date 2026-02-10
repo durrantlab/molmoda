@@ -6,13 +6,12 @@
 
 <script lang="ts">
 
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 
 /**
  * GoldenLayoutContainer component
  */
-@Options({})
+@Component({})
 export default class GoldenLayoutContainer extends Vue {
   @Prop() name!: string;
   @Prop() title!: string;

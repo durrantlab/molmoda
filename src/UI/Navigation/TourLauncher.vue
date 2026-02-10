@@ -4,14 +4,13 @@
     </button>
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 
 /**
  * A button component that launches a tour for a given plugin.
  */
-@Options({})
+@Component({})
 export default class TourLauncher extends Vue {
     @Prop({ required: true }) plugin!: PluginParentClass;
     @Prop({ default: 0 }) testIndex!: number;

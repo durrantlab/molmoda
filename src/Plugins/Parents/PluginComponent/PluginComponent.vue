@@ -25,8 +25,8 @@
 <script lang="ts">
 // Every plugin component must use this component.
 
-import { Options, mixins } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { mixins } from "vue-facing-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import FormFull from "@/UI/Forms/FormFull/FormFull.vue";
 import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
@@ -44,11 +44,22 @@ import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 /**
  * PopupOptionalPlugin component
  */
-@Options({
+@Component({
     components: {
         Popup,
         FormFull,
     },
+    emits: [
+        "update:modelValue",
+        "onPopupDone",
+        "onPopupDone2",
+        "onPopupDone3",
+        "onPopupDone4",
+        "onPopupCancel",
+        "onUserArgChanged",
+        "onMolCountsChanged",
+        "onRawValChange",
+    ],
 })
 export default class PluginComponent extends mixins(PopupMixin) {
     /** Whether the action button (e.g., "Load") is enabled. */

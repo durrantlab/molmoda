@@ -4,11 +4,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
-    IContributorCredit,
-    ISoftwareCredit,
-} from "@/Plugins/PluginInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -18,10 +13,12 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { checkAnyMolLoaded } from "../../CheckUseAllowedUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { toggleVisibilityWithConfirmation } from "@/UI/Navigation/TreeView/TreeUtils";
+import { Component } from "vue-facing-decorator";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 /**
  * ToggleVisiblePlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -43,7 +40,6 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
@@ -59,7 +55,6 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *  message. If null, proceed to run the plugin.
      */
@@ -69,7 +64,6 @@ export default class ToggleVisiblePlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

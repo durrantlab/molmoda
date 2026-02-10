@@ -30,7 +30,7 @@
 /* eslint-disable no-unreachable */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 
 import Table from "@/UI/Components/Table/Table.vue";
 import {
@@ -53,7 +53,7 @@ import { getTreeVersion } from "@/TreeNodes/TreeCache";
 /**
  * DataPanel component
  */
-@Options({
+@Component({
   components: {
     Table,
     FormSelectRegion,

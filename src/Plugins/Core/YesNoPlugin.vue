@@ -26,11 +26,12 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { pluginsApi } from "@/Api/Plugins";
 import MessageList from "@/UI/MessageAlerts/MessageList.vue";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * YesNoPlugin
  */
-@Options({
+@Component({
     components: {
         Popup,
         PluginComponent,

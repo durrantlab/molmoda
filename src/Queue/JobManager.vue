@@ -35,7 +35,7 @@ import {
     CellValue,
     IHeader,
 } from "@/UI/Components/Table/Types";
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import { cancelInQueueStore, getQueueStore } from "./QueueStore";
 import { IJobStatusInfo, JobStatus } from "./QueueTypes";
 import { formatTimestamp } from "@/Core/Utils/TimeUtils";
@@ -60,7 +60,7 @@ const headers: [IHeader[], IHeader[]] = [
 /**
  * JobManager
  */
-@Options({
+@Component({
     components: {
         Table,
     },

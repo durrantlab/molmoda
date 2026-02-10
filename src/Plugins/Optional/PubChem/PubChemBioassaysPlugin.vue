@@ -24,11 +24,14 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
+import { Component } from "vue-facing-decorator";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { ITest } from "@/Testing/TestInterfaces";
 
 /**
  * PubChemBioassaysPlugin
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -70,7 +73,6 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
   /**
    * Check if the plugin is allowed to be used.
-   *
    * @returns {string | null} Error message if not allowed, else null.
    */
   checkPluginAllowed(): string | null {
@@ -79,7 +81,6 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
   /**
    * Get the bioassay data for the selected compound.
-   *
    * @param {FileInfo} molFileInfo The file info of the selected compound.
    * @returns {Promise} The bioassay data.
    */
@@ -133,7 +134,6 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
   /**
    * Get the tests for the plugin.
-   *
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {

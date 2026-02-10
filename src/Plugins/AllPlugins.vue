@@ -83,8 +83,8 @@ system uses these to autopopulate with plugins. -->
   </div>
 </template>
 <script lang="ts">
-import { Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Vue } from "vue-facing-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import { defineAsyncComponent } from "vue";
 import { IContributorCredit, IPluginSetupInfo, ISoftwareCredit } from "./PluginInterfaces";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
@@ -93,7 +93,7 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
 /**
  * Component where all plugins are placed.
  */
-@Options({
+@Component({
   components: {
     AboutPlugin: defineAsyncComponent(() => import("@/Plugins/Core/AboutPlugin.vue")),
     HelpPlugin: defineAsyncComponent(() => import("@/Plugins/Core/HelpPlugin.vue")),
@@ -173,6 +173,7 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
  // TEMPLATE3 END
 
   },
+  emits: ['onPluginSetup']
 })
 export default class AllPlugins extends Vue {
   @Prop({ required: true }) softwareCredits!: ISoftwareCredit[];

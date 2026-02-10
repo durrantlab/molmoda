@@ -25,8 +25,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -34,7 +33,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 /**
  * FormFile component
  */
-@Options({
+@Component({
     components: {
         FormElementDescription,
     },

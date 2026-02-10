@@ -14,8 +14,7 @@
 
 <script lang="ts">
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { IUserArgOption } from "./FormFull/FormFullInterfaces";
 import FormElementDescription from "./FormElementDescription.vue";
 import { slugify } from "@/Core/Utils/StringUtils";
@@ -23,10 +22,11 @@ import { slugify } from "@/Core/Utils/StringUtils";
 /**
  * FormSelect component
  */
-@Options({
+@Component({
   components: {
     FormElementDescription,
   },
+  emits: ["update:modelValue", "onChange"],
 })
 export default class FormSelect extends Vue {
   @Prop({ required: true }) modelValue!: string;

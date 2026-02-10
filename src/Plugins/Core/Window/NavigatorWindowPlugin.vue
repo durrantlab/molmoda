@@ -14,11 +14,12 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { switchToGoldenLayoutPanel } from "./Common";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * NavigatorWindowPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },

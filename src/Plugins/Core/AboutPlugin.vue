@@ -1,27 +1,17 @@
 <template>
-  <PluginComponent
-    v-model="open"
-    :infoPayload="infoPayload"
-    cancelBtnTxt="Done"
-    actionBtnTxt=""
-    @onPopupDone="onPopupDone"
-    @onUserArgChanged="onUserArgChanged"
-    @onMolCountsChanged="onMolCountsChanged"
-  >
-  <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block; width:192px; height: 192px;" />
+  <PluginComponent v-model="open" :infoPayload="infoPayload" cancelBtnTxt="Done" actionBtnTxt=""
+    @onPopupDone="onPopupDone" @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged">
+    <img :src="lazyLoadedImg" class="img-thumbnail mb-2 mx-auto" style="display:block; width:192px; height: 192px;" />
     <p>
       The following organizations and individuals have contributed, directly or
       indirectly, to the {{ appName }} project:
     </p>
 
     <ul>
-      <li
-        v-for="credit of contributorCreditsToShowInOrder"
-        v-bind:key="credit.name"
-      >
+      <li v-for="credit of contributorCreditsToShowInOrder" v-bind:key="credit.name">
         <a v-if="credit.url" :href="credit.url" target="_blank">{{
           credit.name
-        }}</a>
+          }}</a>
         <span v-else>{{ credit.name }}</span>
       </li>
     </ul>
@@ -32,15 +22,9 @@
     </p>
 
     <ul>
-      <li
-        v-for="credit of softwareCreditsToShowInOrder"
-        v-bind:key="credit.name"
-      >
-        <a :href="credit.url" target="_blank">{{ credit.name }}</a> (<a
-    :href="getLicenseUrl(credit)"
-          target="_blank"
-          >{{ credit.license.name }} </a
-        >)
+      <li v-for="credit of softwareCreditsToShowInOrder" v-bind:key="credit.name">
+        <a :href="credit.url" target="_blank">{{ credit.name }}</a> (<a :href="getLicenseUrl(credit)" target="_blank">{{
+          credit.license.name }} </a>)
       </li>
     </ul>
     <p>This version of {{ appName }} was compiled on {{ appCompileTime }}.</p>
@@ -49,7 +33,7 @@
 
 <script lang="ts">
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-import { Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import { appName, appCompileTime, appIntro, appDetails, logoPath } from "@/Core/GlobalVars";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
@@ -60,7 +44,7 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { detectPlatform, HostOs } from "@/Core/HostOs";
 
 /** AboutPlugin */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -70,7 +54,7 @@ export default class AboutPlugin extends PluginParentClass {
   @Prop({ required: true }) contributorCreditsToShow!: IContributorCredit[];
 
   menuPath = detectPlatform() === HostOs.Mac ? [`[1] ${appName}`, "[1] About..."] : ["Help", "[9] About..."];
-  
+
   title = "About";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
@@ -83,7 +67,7 @@ export default class AboutPlugin extends PluginParentClass {
   intro = appIntro;
   details = appDetails;
   userArgDefaults: UserArg[] = [];
-  
+
   logJob = false;
   tags = [Tag.All];
 
@@ -128,7 +112,7 @@ export default class AboutPlugin extends PluginParentClass {
   getLicenseUrl(credit: ISoftwareCredit): string {
     return credit.licenseUrl || credit.license.url;
   }
-  
+
   /**
    * Get the name of the app.
    * @returns {string} The name of the app.

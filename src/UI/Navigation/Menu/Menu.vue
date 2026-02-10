@@ -23,8 +23,7 @@
 
 <script lang="ts">
 
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import MenuLevel1 from "./MenuLevel1.vue";
 import { IMenuEntry, menuDataSorted } from "./Menu";
 import { setAllMenuData } from "@/Plugins/LoadedPlugins";
@@ -34,7 +33,7 @@ import { dynamicImports } from "@/Core/DynamicImports";
 /**
  * Menu component
  */
-@Options({
+@Component({
   components: {
     MenuLevel1,
   },

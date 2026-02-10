@@ -13,15 +13,14 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import Icon from "@/UI/Components/Icon.vue";
 
 /**
  * IconSwitcher component
  */
-@Options({
+@Component({
   components: {
     Tooltip,
     Icon

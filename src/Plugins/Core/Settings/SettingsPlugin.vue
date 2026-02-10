@@ -38,9 +38,10 @@ import { appName } from "@/Core/GlobalVars";
 import { restartAutoSaveTimer } from "@/Store/AutoSave";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { detectPlatform, HostOs } from "@/Core/HostOs";
+import { Component } from "vue-facing-decorator";
 
 /** SettingsPlugin */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -132,7 +133,6 @@ export default class SettingsPlugin extends PluginParentClass {
 
     /**
      * Get the app name.
-     *
      * @returns {string}  The app name.
      */
     get appName(): string {
@@ -143,18 +143,18 @@ export default class SettingsPlugin extends PluginParentClass {
      * Set whether the user has allowed stats collection.
      */
     setStatCollectPetition() {
-        const currentVal = this.getUserArg("allowCookies");
-        this.setUserArgEnabled("allowCookiesAlert", !currentVal);
+        const currentVal = this.userArgsMixin.getUserArg("allowCookies");
+        this.userArgsMixin.setUserArgEnabled("allowCookiesAlert", !currentVal);
     }
 
     /**
      * Runs when the user changes a user argument.
      */
     async onUserArgChange() {
-        const currentStatEnabledVal = this.getUserArg("allowCookies");
+        const currentStatEnabledVal = this.userArgsMixin.getUserArg("allowCookies");
         const savedStatEnabledVal = await isStatCollectionEnabled();
 
-        this.setUserArgEnabled("autoSaveFrequencyMinutes", currentStatEnabledVal);
+        this.userArgsMixin.setUserArgEnabled("autoSaveFrequencyMinutes", currentStatEnabledVal);
 
         if (currentStatEnabledVal !== savedStatEnabledVal) {
             if (currentStatEnabledVal) {
@@ -199,7 +199,7 @@ export default class SettingsPlugin extends PluginParentClass {
 
         for (const settingName in defaults) {
             const val = savedSettings[settingName];
-            this.setUserArg(settingName, val !== undefined ? val : defaults[settingName]);
+            this.userArgsMixin.setUserArg(settingName, val !== undefined ? val : defaults[settingName]);
         }
 
         // const maxProcs = savedSettings["maxProcs"];
@@ -210,23 +210,23 @@ export default class SettingsPlugin extends PluginParentClass {
         // // )[0]?.val;
 
         // // Update the userArgs with the saved values.
-        // this.setUserArg(
+        // this.userArgsMixin.setUserArg(
         //     "maxProcs",
         //     maxProcs ? maxProcs : defaults.maxProcs
         // );
-        // this.setUserArg(
+        // this.userArgsMixin.setUserArg(
         //     "initialCompoundsVisible",
         //     initialCompoundsVisible
         //         ? initialCompoundsVisible
         //         : defaults.initialCompoundsVisible
         // );
-        // // this.setUserArg(
+        // // this.userArgsMixin.setUserArg(
         // //     "molViewer",
         // //     molViewer ? molViewer : defaults.molViewer
         // // );
 
         const isSet = await isStatCollectionEnabled();
-        this.setUserArg("allowCookies", isSet);
+        this.userArgsMixin.setUserArg("allowCookies", isSet);
         this.setStatCollectPetition();
 
         await this.onUserArgChange();
@@ -249,18 +249,17 @@ export default class SettingsPlugin extends PluginParentClass {
 
         for (const setting in defaults) {
             const val = defaults[setting];
-            this.setUserArg(setting, val);
+            this.userArgsMixin.setUserArg(setting, val);
         }
 
         // Also, allow stat collection
-        this.setUserArg("allowCookies", true);
+        this.userArgsMixin.setUserArg("allowCookies", true);
         enableStats();
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @param {UserArg[]} args  The user arguments to pass to the "executable."
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
@@ -280,7 +279,6 @@ export default class SettingsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium tests commands.

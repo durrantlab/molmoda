@@ -47,6 +47,7 @@ import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { Component } from "vue-facing-decorator";
 
 enum SearchMode {
   Similar = "similar",
@@ -57,7 +58,7 @@ enum SearchMode {
 /**
  * PubChemFindSimilarPlugin component
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -175,7 +176,6 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
   /**
    * Check if the plugin is allowed to be used.
-   *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
   checkPluginAllowed(): string | null {
@@ -186,20 +186,19 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
    * Updates form field visibility based on search mode selection.
    */
   async onUserArgChange(): Promise<void> {
-    const searchMode = this.getUserArg("searchmode");
-    this.setUserArgEnabled("similarity", searchMode === SearchMode.Similar);
+    const searchMode = this.userArgsMixin.getUserArg("searchmode");
+    this.userArgsMixin.setUserArgEnabled("similarity", searchMode === SearchMode.Similar);
   }
 
   /**
    * Get search results from PubChem and load them into the viewer.
-   *
    * @param {any} parameterSet The parameters passed from form.
    * @returns {Promise<void>} A promise that resolves when loading is complete.
    */
   async runJobInBrowser(parameterSet: any): Promise<void> {
-    const searchMode = this.getUserArg("searchmode");
-    const maxResults = this.getUserArg("maxresults");
-    const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
+    const searchMode = this.userArgsMixin.getUserArg("searchmode");
+    const maxResults = this.userArgsMixin.getUserArg("maxresults");
+    const compounds: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
 
     // Change the names on the compounds to be a bit more pallatable
     compounds.forEach((c) => {
@@ -247,7 +246,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
       switch (searchMode) {
         case SearchMode.Similar: {
-          const similarity = this.getUserArg("similarity");
+          const similarity = this.userArgsMixin.getUserArg("similarity");
           results = await fetchSimilarCompounds(
             smiles,
             similarity,
@@ -353,7 +352,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
     // Step 3: Batch convert all structures to 3D
     const gen3D: IGen3DOptions = {
       whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-      level: this.getUserArg("gen3D"), // Use the selected level
+      level: this.userArgsMixin.getUserArg("gen3D"), // Use the selected level
     };
 
     // Converting to mol2 batch so you can add easily to tree later (which would
@@ -428,7 +427,6 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
   /**
    * Get the tests for the plugin.
-   *
    * @returns {Promise<ITest[]>} The test commands.
    */
   async getTests(): Promise<ITest[]> {

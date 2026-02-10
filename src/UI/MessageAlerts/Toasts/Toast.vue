@@ -11,8 +11,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import { IToast } from "./ToastInterfaces";
 import {
     removeToast,
@@ -27,7 +26,7 @@ import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
  * It manages its own lifecycle, including showing and hiding itself,
  * and removing itself from the global state upon dismissal.
  */
-@Options({})
+@Component({})
 export default class Toast extends Vue {
     @Prop({ required: true })
     toast!: IToast;

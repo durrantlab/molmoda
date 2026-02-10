@@ -10,10 +10,11 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { localStorageRemoveItem } from "@/Core/LocalStorage";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { layoutApi } from "@/Api/Layout";
+import { Component } from "vue-facing-decorator";
 /**
  * A plugin to reset the layout to its default configuration.
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },

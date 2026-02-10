@@ -12,13 +12,13 @@
 
 <script lang="ts">
 import { fileTypesAccepts } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import * as api from "@/Api";
 
 /**
  * DragDropFileLoad component
  */
-@Options({
+@Component({
   components: {},
 })
 export default class DragDropFileLoad extends Vue {

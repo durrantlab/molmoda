@@ -104,6 +104,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "../Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 interface IActivesOthers {
     labelScores: [number, number][];
@@ -113,7 +114,7 @@ interface IActivesOthers {
 /**
  * EvalScreenPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Chart,
@@ -176,7 +177,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * The percent of total compounds that are actives.
-     *
      * @returns {string}  The percent of total compounds that are actives.
      */
     get percentTotalActives(): string {
@@ -195,7 +195,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * The percent of top compounds that are actives.
-     *
      * @returns {string}  The percent of top compounds that are actives.
      */
     get percentTopCompoundsActive(): string {
@@ -205,9 +204,8 @@ export default class EvalScreenPlugin extends PluginParentClass {
     /**
      * Summarize a list of items, showing a few examples and using "and" for the
      * last one.
-     *
      * @param {string[] | Set<string>} items  The items to summarize.
-     * @param {number} [count=3]  The number of items to show.
+     * @param {number} [count]  The number of items to show.
      * @returns {string}  The summarized list.
      */
     examplesSummary(items: string[] | Set<string>, count = 3): string {
@@ -236,13 +234,12 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * Get the actives and others from the user arguments.
-     *
      * @returns {IActivesOthers}  The labeled scores and whether to calculate
      *                               the analysis.
      */
     getActivesOthers(): IActivesOthers {
-        const actives = this.getUserArg("activesLabel");
-        const others = this.getUserArg("otherLabel");
+        const actives = this.userArgsMixin.getUserArg("activesLabel");
+        const others = this.userArgsMixin.getUserArg("otherLabel");
 
         const matchingActives = this.dockedCompoundsWithSubstr(actives);
         const matchingOthers = this.dockedCompoundsWithSubstr(others);
@@ -349,7 +346,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * Calculate the ROC curve and AUROC.
-     *
      * @param {number[][]} labelScores  The scores and labels (1 for active, 0
      *                                  for other).
      */
@@ -477,7 +473,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * Get the docking scores for a list of compounds.
-     *
      * @param {TreeNodeList} compounds  The compounds to get scores for.
      * @returns {number[]}  The docking scores.
      */
@@ -503,7 +498,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -536,14 +530,13 @@ export default class EvalScreenPlugin extends PluginParentClass {
     /**
      * Get compounds that have docking scores and contain a substring in their
      * title.
-     *
      * @param {string} substr  The substring to search for.
      * @returns {TreeNodeList}  The compounds that have docking scores and
      *    contain the substring.
      */
     dockedCompoundsWithSubstr(substr: string): TreeNodeList {
         const compounds = this.compoundsWithDockingScores;
-        const caseInsensitive = this.getUserArg("caseInsensitive");
+        const caseInsensitive = this.userArgsMixin.getUserArg("caseInsensitive");
 
         if (caseInsensitive) {
             substr = substr.toLowerCase();
@@ -559,7 +552,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * Get compounds that have docking scores.
-     *
      * @returns {TreeNodeList}  The compounds that have docking scores.
      */
     get compoundsWithDockingScores(): TreeNodeList {
@@ -595,7 +587,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
-     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -607,7 +598,6 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {

@@ -4,7 +4,7 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+ 
 
 import {
     IContributorCredit,
@@ -24,11 +24,12 @@ import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * MergeMolsPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -68,7 +69,6 @@ export default class MergeMolsPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Will almost always need this, so requiring
      * children to define it.
-     * 
      * @param {any} payload  The payload (node id)
      */
     async onBeforePopupOpen(payload: any) {
@@ -90,12 +90,11 @@ export default class MergeMolsPlugin extends PluginParentClass {
         });
         titles.sort();
 
-        this.setUserArg("newName", titles.join("-") + ":merged");
+        this.userArgsMixin.setUserArg("newName", titles.join("-") + ":merged");
     }
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -106,7 +105,6 @@ export default class MergeMolsPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @returns {Promise<void>}  Resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -139,7 +137,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
 
                 return mergeTreeNodes(
                     onlySelectedTreeNodeList,
-                    this.getUserArg("newName")
+                    this.userArgsMixin.getUserArg("newName")
                 );
             })
             .then((mergedTreeNode: TreeNode) => {
@@ -156,7 +154,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         //     .then((treeNodeList: TreeNodeList) => {
         //         return mergeTreeNodes(
         //             treeNodeList,
-        //             this.getUserArg("newName")
+        //             this.userArgsMixin.getUserArg("newName")
         //         );
         //     })
         //     .then((mergedTreeNode: TreeNode) => {
@@ -170,7 +168,6 @@ export default class MergeMolsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

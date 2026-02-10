@@ -11,8 +11,7 @@ import * as api from "@/Api/";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 import { unbondedAtomsStyle } from "@/Core/Styling/SelAndStyleDefinitions";
-import { Vue } from "vue-class-component";
-import { Watch } from "vue-property-decorator";
+import { Vue } from "vue-facing-decorator";
 // import { ViewerNGL } from "./Viewers/ViewerNGL";
 import { Viewer3DMol } from "./Viewers/Viewer3DMol";
 import {
@@ -28,12 +27,14 @@ import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { isEqual } from 'lodash';
+import { Component, Watch } from "vue-facing-decorator";
 
 /**
  * ViewerPanel component
  */
-@Options({
+@Component({
   components: {},
+  emits: ["onViewerLoaded"],
 })
 export default class ViewerPanel extends Vue {
   containerClass = "cursor-grab";

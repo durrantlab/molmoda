@@ -37,8 +37,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment, no-case-declarations */
 
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import Section from "@/UI/Layout/Section.vue";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
@@ -59,7 +58,7 @@ import { AtomsRepresentation, BackBoneRepresentation, ISelAndStyle, Representati
  * selections) for a give molecule type (e.g., proteins). It gets used multiple
  * times, once for each molecule type. See StylesAllMolTypes.vue component.
  */
-@Options({
+@Component({
     components: {
         Section,
         FormSelect,

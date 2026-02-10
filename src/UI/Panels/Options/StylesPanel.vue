@@ -42,7 +42,7 @@
     </span>
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import FormSelect from "@/UI/Forms/FormSelect.vue";
@@ -70,7 +70,7 @@ import VizualizationsCustom from "./Styles/VizualizationsCustom.vue"; // Import 
 /**
  * StylesPanel component
  */
-@Options({
+@Component({
     components: {
         FormWrapper,
         FormInput,

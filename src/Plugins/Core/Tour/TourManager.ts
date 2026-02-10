@@ -347,7 +347,7 @@ export class TourManager {
         plugin: PluginParentClass,
         steps: any[]
     ) {
-        const allArgs = plugin.getUserArgsFlat();
+        const allArgs = plugin.userArgsMixin.getUserArgsFlat();
         let cmds: ITestCommand[] = [];
 
         if (typeof commandListFunc === "function") {

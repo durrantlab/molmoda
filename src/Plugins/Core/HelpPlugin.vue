@@ -32,7 +32,7 @@
 
 <script lang="ts">
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
-import { Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import PluginComponent from "../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "../Parents/PluginParentClass/PluginParentClass";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -46,7 +46,7 @@ import TourLauncher from "@/UI/Navigation/TourLauncher.vue";
 import * as api from "@/Api";
 
 /** HelpPlugin */
-@Options({
+@Component({
     components: {
         PluginComponent,
         PluginPathLink,

@@ -22,18 +22,18 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import { formInputDelayUpdate } from "@/Core/GlobalVars";
 
 /**
  * FormTextArea component
  */
-@Options({
+@Component({
     components: {
         FormElementDescription,
     },
+    emits: ["update:modelValue", "onChange", "onKeyDown"],
 })
 export default class FormTextArea extends Vue {
     @Prop({ required: true }) modelValue!: any;

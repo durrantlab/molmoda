@@ -108,7 +108,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import { ComponentContainer } from "golden-layout";
 import GoldenLayoutContainer from "./GoldenLayoutContainer.vue";
 import GoldenLayoutComponent from "./GoldenLayoutComponent.vue";
@@ -134,7 +134,7 @@ import { registerResetLayoutFunc } from "@/Api/Layout";
 /**
  * GoldLayout component
  */
-@Options({
+@Component({
     components: {
         GoldenLayoutContainer,
         GoldenLayoutComponent,

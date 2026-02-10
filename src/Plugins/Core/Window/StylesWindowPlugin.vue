@@ -15,11 +15,12 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { switchToGoldenLayoutPanel } from "./Common";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Component } from "vue-facing-decorator";
 
 /**
  * StylesWindowPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },

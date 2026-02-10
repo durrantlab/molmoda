@@ -12,19 +12,19 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import Icon from "./Icon.vue";
 
 /**
  * FilterInput component
  */
-@Options({
+@Component({
     components: {
         FormElementDescription,
         Icon,
     },
+    emits: ["update:modelValue", "onFilter"],
 })
 export default class FilterInput extends Vue {
     @Prop({ required: true }) list!: any[];

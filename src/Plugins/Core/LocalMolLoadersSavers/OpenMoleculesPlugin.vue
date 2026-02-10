@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component } from "vue-facing-decorator";
 import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import FormFile from "@/UI/Forms/FormFile.vue";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -34,16 +34,13 @@ import {
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { getFileType } from "@/FileSystem/FileUtils2";
-import {
-    IFormatInfo,
-    getFormatInfoGivenType,
-} from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import {getFormatInfoGivenType} from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 /**
  * OpenMoleculesPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         FormFile,
@@ -82,7 +79,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
     /**
      * Runs when the files are loaded.
-     *
      * @param {FileInfo[]} files  The files that were loaded.
      */
     onFilesLoaded(files: FileInfo[]) {
@@ -103,7 +99,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     *
      * @param {any} payload  The payload passed to the plugin.
      * @returns {Promise<boolean | void>}  If false, the popup will not open.
      */
@@ -149,7 +144,6 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     *
      * @param {FileInfo} fileInfo  Information about the molecules to save.
      * @returns {Promise<void>}  A promise that resolves when the job is
      *     done. TODO: These are wrong throughout.
@@ -161,7 +155,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-            level: this.getUserArg("gen3D"),
+            level: this.userArgsMixin.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         // MOL2 and SDF files can be both 2D and 3D.
@@ -191,18 +185,17 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         return this.addFileInfoToViewer(
             {
                 fileInfo,
-                desalt: this.getUserArg("desalt"),
+                desalt: this.userArgsMixin.getUserArg("desalt"),
                 gen3D: gen3DParams,
                 defaultTitle: "",
                 tag: this.pluginId,
             },
-            this.getUserArg("hideOnLoad")
+            this.userArgsMixin.getUserArg("hideOnLoad")
         );
     }
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

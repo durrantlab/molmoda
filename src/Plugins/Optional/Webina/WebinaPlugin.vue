@@ -65,13 +65,16 @@ import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Ty
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
+import { TestCmdList } from "@/Testing/TestCmdList";
+import { ITest } from "@/Testing/TestInterfaces";
 
 let msgOnJobsFinishedtoUse: string | undefined;
 
 /**
  * WebinaPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Alert,
@@ -311,18 +314,16 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Gets the text for the action button based on the 'score_only' setting.
-     *
      * @returns {string} The text for the action button ('Score' or 'Dock').
      */
     get actionButtonText(): string {
-        const scoreOnly = this.getUserArg("score_only") as boolean;
+        const scoreOnly = this.userArgsMixin.getUserArg("score_only") as boolean;
         return scoreOnly ? "Score" : "Dock";
     }
 
 
     /**
      * Filters a candidate max processors value.
-     *
      * @param {number} val  The value to filter.
      * @returns {number}  The filtered value.
      */
@@ -347,12 +348,11 @@ export default class WebinaPlugin extends PluginParentClass {
 
         const maxProcs = await getSetting("maxProcs");
         this.maxProcs = maxProcs;
-        this.setUserArg("cpu", this.maxProcs);
+        this.userArgsMixin.setUserArg("cpu", this.maxProcs);
     }
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -371,9 +371,9 @@ export default class WebinaPlugin extends PluginParentClass {
      */
     onUserArgChange() {
         // If score only, then no keeps only best
-        const scoreOnly = this.getUserArg("score_only");
-        this.setUserArgEnabled("keep_only_best", !scoreOnly);
-        this.setUserArgEnabled("webinaAdvancedParams", !scoreOnly);
+        const scoreOnly = this.userArgsMixin.getUserArg("score_only");
+        this.userArgsMixin.setUserArgEnabled("keep_only_best", !scoreOnly);
+        this.userArgsMixin.setUserArgEnabled("webinaAdvancedParams", !scoreOnly);
         return;
     }
 
@@ -386,7 +386,6 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Gets the data (e.g., score) from the PDBQT frame.
-     *
      * @param {string} pdbqtFrame    The pdbqt frame.
      * @param {any}    webinaParams  The webina parameters.
      * @param {string} stdOut        The standard output.
@@ -500,7 +499,6 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Converts the output pdbqt to a TreeNode.
-     *
      * @param {string} title       The title of the TreeNode.
      * @param {string} pdbqtOut    The pdbqt output.
      * @param {string} cmpdSrc     The source of the compound.
@@ -563,14 +561,13 @@ export default class WebinaPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @param {any[]} payloads  The user arguments to pass to the "executable."
      *                          Contains compound information.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(payloads: any[]): Promise<void> {
         const filePairs: IProtCmpdTreeNodePair[] =
-            this.getUserArg("makemolinputparams");
+            this.userArgsMixin.getUserArg("makemolinputparams");
 
         if (
             filePairs.length === 0 ||
@@ -583,10 +580,10 @@ export default class WebinaPlugin extends PluginParentClass {
             return;
         }
 
-        // TODO: Consider this.getUserArgsFlat() instead.
+        // TODO: Consider this.userArgsMixin.getUserArgsFlat() instead.
         let userArgs = [
             ...this.userArgs,
-            ...this.getUserArg("webinaAdvancedParams"),
+            ...this.userArgsMixin.getUserArg("webinaAdvancedParams"),
         ] as UserArg[];
 
         // Prepare Webina parameters
@@ -835,7 +832,6 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

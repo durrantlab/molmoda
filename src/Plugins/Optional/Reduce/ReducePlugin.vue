@@ -32,13 +32,14 @@ import { ReduceQueue } from "./ReduceQueue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
+import { ITest } from "@/Testing/TestInterfaces";
 
 /**
  * ReducePlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Alert,
@@ -97,7 +98,6 @@ export default class ReducePlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -109,7 +109,7 @@ export default class ReducePlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     async onPopupDone(): Promise<void> {
-        const fileInfos: FileInfo[] = this.getUserArg("makemolinputparams");
+        const fileInfos: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
 
         const distantAncestorTitles = fileInfos.map((f) => {
             if (!f.treeNode) {
@@ -144,7 +144,6 @@ export default class ReducePlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @param {any[]} payloads  The user arguments to pass to the "executable."
      *                          Contains compound information.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -220,7 +219,6 @@ export default class ReducePlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

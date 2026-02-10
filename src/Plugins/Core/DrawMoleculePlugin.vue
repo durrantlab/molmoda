@@ -43,7 +43,7 @@ import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import { isTest } from "@/Core/GlobalVars";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
 
 // See
 // https://partridgejiang.github.io/Kekule.js/documents/tutorial/content/composer.html
@@ -52,7 +52,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 /**
  * DrawMoleculePlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         FormInput,
@@ -108,7 +108,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     *
      * @param {any} payload  The payload (if editing existing molecule)
      */
     async onBeforePopupOpen(payload: any) {
@@ -117,7 +116,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         if (payload) {
             this.title = "Edit Molecule";
             this.currentSmiles = payload.smiles;
-            this.setUserArg("drawMolName", payload.name);
+            this.userArgsMixin.setUserArg("drawMolName", payload.name);
         } else {
             this.title = "Draw Molecule";
         }
@@ -220,7 +219,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
     /**
      * Loads a smiles string into the editor.
-     *
      * @param {string} smi  The smiles string.
      * @returns {Promise<void>}  A promise that resolves when the smiles string
      *                           is loaded.
@@ -343,11 +341,11 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
         if (treeNodeList && treeNodeList.length > 0) {
             const node = treeNodeList.get(0);
-            node.title = this.getUserArg("drawMolName");
+            node.title = this.userArgsMixin.getUserArg("drawMolName");
             node.type = TreeNodeType.Compound;
             const rootNode = loadHierarchicallyFromTreeNodes(
                 [node],
-                this.getUserArg("drawMolName")
+                this.userArgsMixin.getUserArg("drawMolName")
             );
             rootNode.addToMainTree(this.pluginId);
         }
@@ -359,7 +357,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
-     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -382,7 +379,6 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @returns {ITest}  The selenium test command(s).
      */
     async getTests(): Promise<ITest> {

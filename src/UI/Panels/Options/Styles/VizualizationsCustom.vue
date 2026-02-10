@@ -31,7 +31,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import Section from "@/UI/Layout/Section.vue";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import * as StyleManager from "@/Core/Styling/StyleManager";
@@ -42,7 +42,7 @@ import Icon from "@/UI/Components/Icon.vue";
 /**
  * VizualizationsCustom component for managing and displaying custom styles.
  */
-@Options({
+@Component({
   components: {
     Section,
     IconSwitcher,

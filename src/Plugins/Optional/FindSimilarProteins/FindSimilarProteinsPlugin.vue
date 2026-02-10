@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component } from "vue-facing-decorator";
 import {
     IContributorCredit,
     ISoftwareCredit,
@@ -42,13 +42,12 @@ import { alignFileInfos } from "../Align/AlignProteinsUtils";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 
 /**
  * A plugin to find proteins with similar sequences using the RCSB PDB API.
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -174,7 +173,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Checks if at least one protein is loaded.
-     *
      * @returns {string | null} An error message if no protein is loaded, otherwise null.
      */
     checkPluginAllowed(): string | null {
@@ -191,11 +189,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             TreeNodeType.Protein
         );
         const hasProteins = proteinNodes.length > 0;
-        this.setUserArgEnabled("inputType", hasProteins);
+        this.userArgsMixin.setUserArgEnabled("inputType", hasProteins);
         if (!hasProteins) {
-            this.setUserArg("inputType", "fasta");
+            this.userArgsMixin.setUserArg("inputType", "fasta");
         } else {
-            this.setUserArg("inputType", "project");
+            this.userArgsMixin.setUserArg("inputType", "project");
         }
         // Trigger onUserArgChange to update the visibility of other fields
         this.onUserArgChange();
@@ -205,16 +203,16 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      * Handles changes to user arguments to update button state.
      */
     onUserArgChange() {
-        const inputType = this.getUserArg("inputType");
+        const inputType = this.userArgsMixin.getUserArg("inputType");
         const isProject = inputType === "project";
-        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+        const downloadStructures = this.userArgsMixin.getUserArg("downloadStructures") as boolean;
 
-        this.setUserArgEnabled("protein_to_query", isProject);
-        this.setUserArgEnabled("fastaText", !isProject);
-        this.setUserArgEnabled("alignStructures", downloadStructures);
+        this.userArgsMixin.setUserArgEnabled("protein_to_query", isProject);
+        this.userArgsMixin.setUserArgEnabled("fastaText", !isProject);
+        this.userArgsMixin.setUserArgEnabled("alignStructures", downloadStructures);
 
         if (isProject) {
-            const moleculeInput: MoleculeInput = this.getUserArg("protein_to_query");
+            const moleculeInput: MoleculeInput = this.userArgsMixin.getUserArg("protein_to_query");
             if (!moleculeInput || !moleculeInput.molsToConsider) {
                 this.isActionBtnEnabled = false;
                 return;
@@ -228,24 +226,23 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             // nodeGroups contains a TreeNodeList for each top-level molecule that has matching proteins.
             this.isActionBtnEnabled = compiledMols.nodeGroups.length > 0;
         } else {
-            const fastaText = (this.getUserArg("fastaText") as string).trim();
+            const fastaText = (this.userArgsMixin.getUserArg("fastaText") as string).trim();
             this.isActionBtnEnabled = fastaText.length > 0;
         }
     }
 
     /**
      * Executes when the user clicks the "Find" button.
-     *
      * @returns {Promise<void>}
      */
     async onPopupDone(): Promise<void> {
         this.closePopup();
 
-        const evalue = this.getUserArg("evalue_cutoff");
-        const identity = (this.getUserArg("identity_cutoff") as number) / 100.0;
-        const maxResults = this.getUserArg("max_results");
-        const hasLigands = this.getUserArg("has_ligands") as boolean;
-        const inputType = this.getUserArg("inputType");
+        const evalue = this.userArgsMixin.getUserArg("evalue_cutoff");
+        const identity = (this.userArgsMixin.getUserArg("identity_cutoff") as number) / 100.0;
+        const maxResults = this.userArgsMixin.getUserArg("max_results");
+        const hasLigands = this.userArgsMixin.getUserArg("has_ligands") as boolean;
+        const inputType = this.userArgsMixin.getUserArg("inputType");
 
         // Map unique sequence string -> { identifiers: Set<string>, sources: Array<{ title: string, treeNode?: TreeNode }> }
         const uniqueSequences = new Map<string, {
@@ -268,7 +265,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         };
 
         if (inputType === "project") {
-            const proteinFileInfos: FileInfo[] = this.getUserArg("protein_to_query");
+            const proteinFileInfos: FileInfo[] = this.userArgsMixin.getUserArg("protein_to_query");
 
             if (proteinFileInfos.length === 0) {
                 messagesApi.popupError("No proteins selected to query.");
@@ -303,7 +300,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             }
         } else {
             // FASTA input
-            const fastaText = this.getUserArg("fastaText") as string;
+            const fastaText = this.userArgsMixin.getUserArg("fastaText") as string;
             const sequences = convertFastaToSeqences(fastaText);
 
             if (sequences.length === 0) {
@@ -352,7 +349,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Processes the combined results from all jobs and displays them in a table.
-     *
      * @param {any[]} allJobOutputs - The completed job outputs.
      */
     private async processAndDisplayResults(allJobOutputs: any[]): Promise<void> {
@@ -422,8 +418,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             "similar-proteins-results"
         );
 
-        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
-        const alignStructures = this.getUserArg("alignStructures") as boolean;
+        const downloadStructures = this.userArgsMixin.getUserArg("downloadStructures") as boolean;
+        const alignStructures = this.userArgsMixin.getUserArg("alignStructures") as boolean;
 
         if (downloadStructures) {
             await this._downloadAndAlignStructures(allJobOutputs, alignStructures);
@@ -432,7 +428,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Downloads and optionally aligns the structures from the search results.
-     *
      * @param {any[]} allJobOutputs - The raw output from the job queue.
      * @param {boolean} align - Whether to perform alignment.
      */
@@ -441,7 +436,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         align: boolean
     ): Promise<void> {
         const spinnerId = messagesApi.startWaitSpinner();
-        const hasLigands = this.getUserArg("has_ligands") as boolean;
+        const hasLigands = this.userArgsMixin.getUserArg("has_ligands") as boolean;
 
         // Group PDBs by the reference they should be aligned to.
         // Key: reference identifier (TreeNode.id or a PDB ID).
@@ -579,7 +574,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                     }
                 }
             }
-        } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error: any) {
             messagesApi.popupError(
                 "An unexpected error occurred while downloading and aligning structures."
             );
@@ -590,7 +586,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * This plugin does not run jobs in the browser directly; it uses a queue.
-     *
      * @returns {Promise<void>}
      */
     async runJobInBrowser(): Promise<void> {
@@ -599,7 +594,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Defines the test case for this plugin.
-     *
      * @returns {Promise<ITest[]>} The test configuration.
      */
     async getTests(): Promise<ITest[]> {

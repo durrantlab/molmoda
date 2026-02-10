@@ -27,8 +27,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";
 import { flexFixedWidthStyle } from "@/UI/Navigation/TitleBar/IconBar/IconBarUtils";
@@ -41,7 +40,7 @@ import * as api from "@/Api";
 /**
  * TreeView component
  */
-@Options({
+@Component({
     components: {
         IconSwitcher,
         IconBar,

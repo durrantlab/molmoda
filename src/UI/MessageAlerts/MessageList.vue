@@ -29,15 +29,14 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import { ISimpleMsg } from "./Popups/InterfacesAndEnums";
 import Alert from "../Layout/Alert.vue";
 
 /**
  * MessageList component
  */
-@Options({
+@Component({
     components: { Alert },
 })
 export default class MessageList extends Vue {

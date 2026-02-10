@@ -1,5 +1,5 @@
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { Vue } from "vue-class-component";
+import { Vue } from "vue-facing-decorator";
 import { fixUserArgs } from "../../UserInputUtils";
 
 /**

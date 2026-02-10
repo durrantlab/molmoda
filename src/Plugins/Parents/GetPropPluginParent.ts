@@ -118,7 +118,7 @@ export abstract class GetPropPluginParent extends PluginParentClass {
      *     popup is done.
      */
     public onPopupDone(): Promise<void> | undefined {
-        const molecules = this.getUserArg("makemolinputparams") as FileInfo[];
+        const molecules = this.userArgsMixin.getUserArg("makemolinputparams") as FileInfo[];
 
         if (molecules.length === 0) {
             messagesApi.popupError(

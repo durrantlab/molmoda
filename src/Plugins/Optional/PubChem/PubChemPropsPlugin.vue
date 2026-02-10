@@ -19,11 +19,13 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
+import { Component } from "vue-facing-decorator";
+import { ITest } from "@/Testing/TestInterfaces";
 
 /**
  * PubChemPropsPlugin
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -65,7 +67,6 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Check if the plugin is allowed to be used.
-   *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
   checkPluginAllowed(): string | null {
@@ -74,7 +75,6 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Get the properties of the molecule.
-   *
    * @param {FileInfo} molFileInfo The molecule file info.
    * @returns {Promise} The properties. Resolves to undefined if no properties
    *     found.
@@ -114,7 +114,6 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Get the tests for the plugin.
-   *
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {

@@ -9,15 +9,14 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { fetcher } from "@/Core/Fetcher";
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 
 const cachedIcons: { [key: string]: string } = {};
 
 /**
  * Icon component
  */
-@Options({
+@Component({
     components: {},
 })
 export default class Icon extends Vue {

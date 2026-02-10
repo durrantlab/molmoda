@@ -1,9 +1,12 @@
-import { Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Vue } from "vue-facing-decorator";
+import { Component, Prop, Watch } from "vue-facing-decorator";
 
 /**
  * PopupMixin
  */
+@Component({
+    emits: ["update:modelValue"],
+})
 export class PopupMixin extends Vue {
     @Prop({ required: true }) modelValue!: any; // open
 
@@ -24,7 +27,6 @@ export class PopupMixin extends Vue {
 
     /**
      * Watches the modelValue variable (whether to open modal).
-     *
      * @param {boolean} newValue  The new value of the open variable.
      */
     @Watch("modelValue")

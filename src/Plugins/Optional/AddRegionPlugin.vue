@@ -31,11 +31,12 @@ import {
 import { randomPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { Tag } from "../Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * AddRegionPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Alert,
@@ -122,14 +123,14 @@ export default class AddRegionPlugin extends PluginParentClass {
      * Detects when user arguments have changed, and updates UI accordingly.
      */
     onUserArgChange() {
-        let regionType = this.getUserArg("regionType") as string;
+        let regionType = this.userArgsMixin.getUserArg("regionType") as string;
         if (regionType === "box") {
-            this.setUserArgEnabled("dimensions", true);
-            this.setUserArgEnabled("radius", false);
+            this.userArgsMixin.setUserArgEnabled("dimensions", true);
+            this.userArgsMixin.setUserArgEnabled("radius", false);
         } else {
             // sphere
-            this.setUserArgEnabled("dimensions", false);
-            this.setUserArgEnabled("radius", true);
+            this.userArgsMixin.setUserArgEnabled("dimensions", false);
+            this.userArgsMixin.setUserArgEnabled("radius", true);
         }
     }
 
@@ -211,24 +212,23 @@ export default class AddRegionPlugin extends PluginParentClass {
                 }
             }
 
-            this.setUserArg("radius", Math.round(500 * max_dim) / 1000);
-            this.setUserArg("center", [center_x, center_y, center_z]);
-            this.setUserArg("dimensions", dimens);
+            this.userArgsMixin.setUserArg("radius", Math.round(500 * max_dim) / 1000);
+            this.userArgsMixin.setUserArg("center", [center_x, center_y, center_z]);
+            this.userArgsMixin.setUserArg("dimensions", dimens);
         }
 
-        this.setUserArg("color", randomPastelColor());
+        this.userArgsMixin.setUserArg("color", randomPastelColor());
     }
 
     /**
      * Runs when the user presses the action button and the popup closes.
-     *
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     onPopupDone(): Promise<void> {
-        const regionType = this.getUserArg("regionType");
-        const regionName = this.getUserArg("regionName");
-        const color = this.getUserArg("color");
-        const opacity = this.getUserArg("opacity");
+        const regionType = this.userArgsMixin.getUserArg("regionType");
+        const regionName = this.userArgsMixin.getUserArg("regionName");
+        const color = this.userArgsMixin.getUserArg("color");
+        const opacity = this.userArgsMixin.getUserArg("opacity");
 
         // Make a tree node
         const treeNode = new TreeNode({
@@ -237,7 +237,7 @@ export default class AddRegionPlugin extends PluginParentClass {
         } as ITreeNode);
 
         let region: any = {
-            center: this.getUserArg("center"),
+            center: this.userArgsMixin.getUserArg("center"),
             color: color,
             movable: true,
             opacity: opacity,
@@ -246,13 +246,13 @@ export default class AddRegionPlugin extends PluginParentClass {
         if (regionType === "box") {
             region = {
                 ...region,
-                dimensions: this.getUserArg("dimensions"),
+                dimensions: this.userArgsMixin.getUserArg("dimensions"),
                 type: RegionType.Box,
             };
         } else {
             region = {
                 ...region,
-                radius: this.getUserArg("radius"),
+                radius: this.userArgsMixin.getUserArg("radius"),
                 type: RegionType.Sphere,
             };
         }
@@ -265,7 +265,6 @@ export default class AddRegionPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
-     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -284,7 +283,6 @@ export default class AddRegionPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

@@ -24,7 +24,7 @@
   </div>
 </template>
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import GoldLayout from "@/UI/Layout/GoldenLayout/GoldLayout.vue";
 import Menu from "@/UI/Navigation/Menu/Menu.vue";
 import AllPlugins from "../Plugins/AllPlugins.vue";
@@ -57,7 +57,7 @@ import { isAnyPopupOpen } from "@/UI/MessageAlerts/Popups/OpenPopupList";
 /**
  * Main app component
  */
-@Options({
+@Component({
   components: {
     GoldLayout,
     Menu,

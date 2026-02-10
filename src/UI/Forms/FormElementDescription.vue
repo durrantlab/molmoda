@@ -18,15 +18,14 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
 import Alert from "@/UI/Layout/Alert.vue";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { isSentence } from "@/Core/Utils/StringUtils";
 
 /**
  * FormElementDescription component
  */
-@Options({
+@Component({
     components: {
         Alert,
     },

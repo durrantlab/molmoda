@@ -48,8 +48,7 @@
 <script lang="ts">
 /* eslint-disable @typescript-eslint/ban-types */
 
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { PopupVariant } from "./InterfacesAndEnums";
 import { dynamicImports } from "@/Core/DynamicImports";
@@ -62,8 +61,9 @@ import * as api from "@/Api";
 /**
  * Popup component
  */
-@Options({
+@Component({
   components: {},
+  emits: ["update:modelValue", "onDone", "onDone2", "onDone3", "onDone4", "onCancel", "onClosed"],
 })
 export default class Popup extends Vue {
   @Prop({ required: true }) modelValue!: any;

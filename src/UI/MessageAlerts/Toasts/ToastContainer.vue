@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import Toast from "./Toast.vue";
 import { IToast } from "./ToastInterfaces";
 import { toasts } from "./ToastManager";
@@ -13,7 +13,7 @@ import { toasts } from "./ToastManager";
 /**
  * A container component that renders all active toast notifications.
  */
-@Options({
+@Component({
     components: {
         Toast,
     },

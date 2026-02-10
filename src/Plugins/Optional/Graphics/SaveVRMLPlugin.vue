@@ -29,11 +29,13 @@ import { slugify } from "@/Core/Utils/StringUtils";
 import { saveTxtFiles } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/SaveMolModelsUtils";
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import { checkAnyMolLoaded } from "@/Plugins/CheckUseAllowedUtils";
+import { Component } from "vue-facing-decorator";
+import * as api from "@/Api"
 
 /**
  * SaveVRMLPlugin
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -78,7 +80,6 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Check if this plugin can currently be used.
-   *
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
@@ -90,12 +91,11 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
-    this.submitJobs([{ filename: this.getUserArg("filename") }]);
+    this.submitJobs([{ filename: this.userArgsMixin.getUserArg("filename") }]);
   }
 
   /**
    * Simplify the mesh.
-   *
    * @param {string[][]} vrmlData  The VRML data to simplify.
    * @param {any}        mols      The molecules to simplify.
    * @returns {Promise<string[][]>}  The simplified VRML data.
@@ -113,7 +113,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
         continue;
       }
 
-      if (this.getUserArg("simplifyMesh") === true) {
+      if (this.userArgsMixin.getUserArg("simplifyMesh") === true) {
         const worker = new Worker(
           new URL(
             "../../../Meshes/SimplifyVRML/SimplifyVRML.worker.ts",
@@ -166,8 +166,8 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
-   *
    * @param {any} parameters  Information about the VRML file to save.
+   * @returns {Promise<any>}  A promise that resolves when the job is done.
    */
   async runJobInBrowser(parameters: any): Promise<any> {
     let filename = parameters.filename;
@@ -181,7 +181,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     const mols = getMoleculesFromStore();
 
     let newVrmlData: [string, string][] = [];
-    if (this.getUserArg("simplifyMesh") === true) {
+    if (this.userArgsMixin.getUserArg("simplifyMesh") === true) {
       // Simplify meshes
       newVrmlData = await this._simplifyMesh(vrmlData, mols);
     } else {
@@ -220,7 +220,6 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Gets the test commands for the plugin. For advanced use.
-   *
    * @gooddefault
    * @document
    * @returns {ITest}  The selenium test commands.

@@ -17,11 +17,12 @@
   import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
   import { ITest } from "@/Testing/TestInterfaces";
   import { TestCmdList } from "@/Testing/TestCmdList";
+import { Component } from "vue-facing-decorator";
   
   /**
    * RenameProjectPlugin
    */
-  @Options({
+  @Component({
     components: {
    PluginComponent,
     },
@@ -49,26 +50,24 @@
   
     /**
      * Runs before the popup opens. Populates the input with the current project title.
-     *
      * @param {any} payload The payload passed to the plugin.
      * @returns {Promise<void>}
      */
     async onBeforePopupOpen(payload: any): Promise<void> {
-   this.setUserArg("newProjectTitle", this.$store.state.projectTitle);
+   this.userArgsMixin.setUserArg("newProjectTitle", this.$store.state.projectTitle);
     }
   
     /**
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-   const newTitle = this.getUserArg("newProjectTitle");
+   const newTitle = this.userArgsMixin.getUserArg("newProjectTitle");
    setStoreVar("projectTitle", newTitle);
    this.closePopup();
     }
   
     /**
      * Each plugin is associated with specific jobs. This plugin has no job to run.
-     *
      * @returns {Promise<void>}
      */
     async runJobInBrowser(): Promise<void> {
@@ -77,7 +76,6 @@
   
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest} The selenium test commands.

@@ -43,6 +43,8 @@ import { closeDownApp } from "@/Core/Utils/CloseAppUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { Component } from "vue-facing-decorator";
+import { IContributorCredit, ISoftwareCredit } from "@/Plugins/PluginInterfaces";
 
 let lastSavedFilename: string | null = null;
 
@@ -68,7 +70,7 @@ const mixedOptions = Array.from(mixedOptionsMap.values())
 /**
  * SaveMoleculesPlugin
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
   },
@@ -210,7 +212,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
   /**
    * Determine which into text to use.
-   *
    * @returns {string} The intro text to use.
    */
   get introToUse(): string {
@@ -220,7 +221,6 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
   /**
    * Check if this plugin can currently be used.
-   *
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
@@ -231,22 +231,21 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   /**
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
-   *
    * @param {boolean} payload  The payload passed to the plugin.
    */
   async onBeforePopupOpen(payload?: boolean) {
     this.appClosing = payload || false;
-    this.setUserArg("useMolModaFormat", true);
-    this.setUserArg("saveVisible", true);
-    this.setUserArg("saveSelected", true);
-    this.setUserArg("saveHiddenAndUnselected", false);
-    this.setUserArg("separateComponents", true);
+    this.userArgsMixin.setUserArg("useMolModaFormat", true);
+    this.userArgsMixin.setUserArg("saveVisible", true);
+    this.userArgsMixin.setUserArg("saveSelected", true);
+    this.userArgsMixin.setUserArg("saveHiddenAndUnselected", false);
+    this.userArgsMixin.setUserArg("separateComponents", true);
 
     if (lastSavedFilename) {
-      this.setUserArg("filename", lastSavedFilename);
+      this.userArgsMixin.setUserArg("filename", lastSavedFilename);
     } else {
       const projectTitle = this.$store.state.projectTitle;
-      this.setUserArg("filename", projectTitle || "");
+      this.userArgsMixin.setUserArg("filename", projectTitle || "");
     }
   }
 
@@ -262,7 +261,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    */
   reactToExtChange() {
     // Now try to detect extension and open/close molmoda appropriately.
-    const filename = this.getUserArg("filename");
+    const filename = this.userArgsMixin.getUserArg("filename");
     const ext = filename.indexOf(".") === -1 ? "" : filename.split(".").pop().toLowerCase();
     if (filename !== this.lastFilename) {
       const format = getFormatInfoGivenType(ext);
@@ -283,7 +282,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
           const userArgDefault = this.userArgDefaults.find(a => a.id === argId);
           const opts = (userArgDefault as IUserArgSelect).options.map(o => (o as IUserArgOption).val);
           if (opts.includes(format.primaryExt)) {
-            this.setUserArg(argId, format.primaryExt);
+            this.userArgsMixin.setUserArg(argId, format.primaryExt);
           }
         });
       }
@@ -291,7 +290,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     }
 
     // this.lastUseMolModaFormat = newUseMolModa;
-    // this.setUserArg("useMolModaFormat", newUseMolModa);
+    // this.userArgsMixin.setUserArg("useMolModaFormat", newUseMolModa);
 
     // return newUseMolModa;
   }
@@ -302,15 +301,15 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   onUserArgChange() {
     this.reactToExtChange();
 
-    const useMolModa = this.getUserArg("useMolModaFormat") as boolean;
-    const separateComponents = this.getUserArg("separateComponents") as boolean;
-    const saveHiddenAndUnselected = this.getUserArg("saveHiddenAndUnselected") as boolean;
-    const saveVisible = this.getUserArg("saveVisible") as boolean;
-    const saveSelected = this.getUserArg("saveSelected") as boolean;
+    const useMolModa = this.userArgsMixin.getUserArg("useMolModaFormat") as boolean;
+    const separateComponents = this.userArgsMixin.getUserArg("separateComponents") as boolean;
+    const saveHiddenAndUnselected = this.userArgsMixin.getUserArg("saveHiddenAndUnselected") as boolean;
+    const saveVisible = this.userArgsMixin.getUserArg("saveVisible") as boolean;
+    const saveSelected = this.userArgsMixin.getUserArg("saveSelected") as boolean;
 
-    this.setUserArgEnabled("whichMolsGroup", !useMolModa);
-    this.setUserArgEnabled("separateComponents", !useMolModa);
-    this.setUserArgEnabled("oneMolFileFormat", !separateComponents && !useMolModa);
+    this.userArgsMixin.setUserArgEnabled("whichMolsGroup", !useMolModa);
+    this.userArgsMixin.setUserArgEnabled("separateComponents", !useMolModa);
+    this.userArgsMixin.setUserArgEnabled("oneMolFileFormat", !separateComponents && !useMolModa);
 
     // Check which components are present in the selection to enable specific format dropdowns
     const componentTypes = new Set<TreeNodeType>();
@@ -361,16 +360,20 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       const argId = typeToArgId[type];
       if (argId) {
         const isPresent = componentTypes.has(type);
-        this.setUserArgEnabled(argId, separateComponents && !useMolModa && isPresent);
+        this.userArgsMixin.setUserArgEnabled(argId, separateComponents && !useMolModa && isPresent);
       }
     }
     // Always enable otherFormat if separating, just in case? No, rely on detection.
   }
 
+  /**
+   * Every plugin runs some job. This is the function that does the job running.
+   * @returns {Promise<void>}  Resolves when the job is done.
+   */
   async runJobInBrowser(): Promise<void> {
-    let filename = this.getUserArg("filename");
+    let filename = this.userArgsMixin.getUserArg("filename");
     lastSavedFilename = filename;
-    const useMolModaFormat = this.getUserArg("useMolModaFormat") as boolean;
+    const useMolModaFormat = this.userArgsMixin.getUserArg("useMolModaFormat") as boolean;
 
     if (useMolModaFormat) {
       if (!filename.toLowerCase().endsWith(".molmoda")) {
@@ -381,25 +384,25 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       return;
     }
 
-    const separateComponents = this.getUserArg("separateComponents") as boolean;
-    const oneMolFileFormat = this.getUserArg("oneMolFileFormat");
+    const separateComponents = this.userArgsMixin.getUserArg("separateComponents") as boolean;
+    const oneMolFileFormat = this.userArgsMixin.getUserArg("oneMolFileFormat");
 
     const formats: { [key in TreeNodeType]?: string } = {};
     if (separateComponents) {
-      formats[TreeNodeType.Protein] = this.getUserArg("proteinFormat");
-      formats[TreeNodeType.Compound] = this.getUserArg("compoundFormat");
-      formats[TreeNodeType.Nucleic] = this.getUserArg("nucleicFormat");
-      formats[TreeNodeType.Metal] = this.getUserArg("metalFormat");
-      formats[TreeNodeType.Ions] = this.getUserArg("ionFormat");
-      formats[TreeNodeType.Solvent] = this.getUserArg("solventFormat");
-      formats[TreeNodeType.Other] = this.getUserArg("otherFormat");
-      formats[TreeNodeType.Lipid] = this.getUserArg("lipidFormat");
+      formats[TreeNodeType.Protein] = this.userArgsMixin.getUserArg("proteinFormat");
+      formats[TreeNodeType.Compound] = this.userArgsMixin.getUserArg("compoundFormat");
+      formats[TreeNodeType.Nucleic] = this.userArgsMixin.getUserArg("nucleicFormat");
+      formats[TreeNodeType.Metal] = this.userArgsMixin.getUserArg("metalFormat");
+      formats[TreeNodeType.Ions] = this.userArgsMixin.getUserArg("ionFormat");
+      formats[TreeNodeType.Solvent] = this.userArgsMixin.getUserArg("solventFormat");
+      formats[TreeNodeType.Other] = this.userArgsMixin.getUserArg("otherFormat");
+      formats[TreeNodeType.Lipid] = this.userArgsMixin.getUserArg("lipidFormat");
     }
 
     const molsToConsider = {
-      visible: this.getUserArg("saveVisible"),
-      selected: this.getUserArg("saveSelected"),
-      hiddenAndUnselected: this.getUserArg("saveHiddenAndUnselected"),
+      visible: this.userArgsMixin.getUserArg("saveVisible"),
+      selected: this.userArgsMixin.getUserArg("saveSelected"),
+      hiddenAndUnselected: this.userArgsMixin.getUserArg("saveHiddenAndUnselected"),
     } as IMolsToConsider;
 
     const compiledMolModels = compileMolModels(molsToConsider, separateComponents);
@@ -413,6 +416,12 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     });
   }
 
+  /**
+   * Gets the test commands for the plugin. For advanced use.
+   * @gooddefault
+   * @document
+   * @returns {ITest[]}  The selenium test commands.
+   */
   async getTests(): Promise<ITest[]> {
     const molModaJob: ITest = {
       beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true).selectMoleculeInTree("Protein"),

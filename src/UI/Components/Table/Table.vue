@@ -75,8 +75,7 @@
 <script lang="ts">
 import { saveData } from "@/Core/FS/FS";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
 import Icon from "../Icon.vue";
 import { IDataRows } from "@/Core/FS/FSInterfaces";
@@ -95,7 +94,7 @@ interface ITableDataInternal {
 /**
  * Table component
  */
-@Options({
+@Component({
     components: {
         Tooltip,
         Icon,

@@ -14,8 +14,7 @@
 
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { messagesApi } from "@/Api/Messages";
 // import { fsApi } from "@/Api/FS";
 // import { FileInfo } from "@/FileSystem/FileInfo";
@@ -25,7 +24,7 @@ import ImageViewer from "./ImageViewer.vue";
 /**
  * Mol2DView component for displaying a 2D molecular structure from a SMILES string using RDKit.js.
  */
-@Options({
+@Component({
     components: {
         ImageViewer
     },

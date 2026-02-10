@@ -35,6 +35,7 @@ import { appName } from "@/Core/GlobalVars";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
 import versionsData from "@/../archive/index.json"; // Import the JSON data
 import { TestCmdList } from "@/Testing/TestCmdList";
+import { Component } from "vue-facing-decorator";
 
 interface IArchivedVersion {
     version: string;
@@ -47,7 +48,7 @@ interface IArchivedVersion {
  * ArchivedVersionsPlugin component
  * Displays a list of archived application versions with links.
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },

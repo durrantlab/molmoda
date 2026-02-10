@@ -7,14 +7,14 @@
 </template>
   
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
+import { Component, Vue } from "vue-facing-decorator";
 import { pluginToTest } from "./PluginToTest";
-//   import { Prop } from "vue-property-decorator";
+//   import { Component, Prop } from "vue-facing-decorator";
 
 /**
  * TestData
  */
-@Options({
+@Component({
   components: {},
 })
 export default class TestData extends Vue {

@@ -37,11 +37,14 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { appName } from "@/Core/GlobalVars";
 import { capitalize } from "@/Core/Utils/StringUtils";
 import { reloadPage } from "@/Core/Utils/CloseAppUtils";
+import { Component } from "vue-facing-decorator";
+import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 
 /**
  * ActivityFocusPlugin
  */
-@Options({
+@Component({
   components: {
     PluginComponent,
     Alert,
@@ -100,7 +103,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
    * Runs when the user changes an argument. Updates the selected tag.
    */
   onUserArgChange() {
-    this.selectedTag = this.getUserArg("selectedMode") as Tag;
+    this.selectedTag = this.userArgsMixin.getUserArg("selectedMode") as Tag;
   }
 
   /**
@@ -113,7 +116,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
     // Set the initial mode based on URL
     const mode = getActivityFocusMode();
     if (mode && Object.values(Tag).includes(mode as Tag)) {
-      this.setUserArg("selectedMode", mode);
+      this.userArgsMixin.setUserArg("selectedMode", mode);
       this.selectedTag = mode as Tag;
     }
   }
@@ -122,7 +125,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
    * Runs when the user closes the plugin.
    */
   onPopupDone() {
-    const selectedMode = this.getUserArg("selectedMode");
+    const selectedMode = this.userArgsMixin.getUserArg("selectedMode");
     // Create new URL with mode parameter
     const url = new URL(window.location.origin + window.location.pathname);
 

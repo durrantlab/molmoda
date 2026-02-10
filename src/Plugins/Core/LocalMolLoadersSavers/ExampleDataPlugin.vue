@@ -23,11 +23,12 @@ import { filesToFileInfos } from "@/FileSystem/FileUtils";
 import { appName } from "@/Core/GlobalVars";
 import { ResponseType, fetcher } from "@/Core/Fetcher";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * ExampleDataPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         FormFile,
@@ -120,27 +121,27 @@ export default class ExampleDataPlugin extends PluginParentClass {
      * Detects when user arguments have changed, and updates UI accordingly.
      */
     onUserArgChange() {
-        let whichExample = this.getUserArg("which_example_data") as string;
-        this.setUserArg("descript", this.exampleDescriptions[whichExample]);
+        let whichExample = this.userArgsMixin.getUserArg("which_example_data") as string;
+        this.userArgsMixin.setUserArg("descript", this.exampleDescriptions[whichExample]);
         console.log(this.exampleDescriptions[whichExample]);
-        // // this.setUserArgEnabled("molMergingGroup", !useMolModa);
-        // this.setUserArgEnabled("whichMolsGroup", !useMolModa);
-        // this.setUserArgEnabled("separateCompounds", !useMolModa);
+        // // this.userArgsMixin.setUserArgEnabled("molMergingGroup", !useMolModa);
+        // this.userArgsMixin.setUserArgEnabled("whichMolsGroup", !useMolModa);
+        // this.userArgsMixin.setUserArgEnabled("separateCompounds", !useMolModa);
 
         // // Show onemol format or protein format, depending on whether
         // // mergeAllMolecules is true.
-        // let separateCompounds = this.getUserArg("separateCompounds") as boolean;
-        // this.setUserArgEnabled(
+        // let separateCompounds = this.userArgsMixin.getUserArg("separateCompounds") as boolean;
+        // this.userArgsMixin.setUserArgEnabled(
         //     "oneMolFileFormat",
         //     !separateCompounds && !useMolModa
         // );
-        // this.setUserArgEnabled(
+        // this.userArgsMixin.setUserArgEnabled(
         //     "nonCompoundFormat",
         //     separateCompounds && !useMolModa
         // );
 
         // // If separating out compounds, show compound format.
-        // this.setUserArgEnabled(
+        // this.userArgsMixin.setUserArgEnabled(
         //     "compoundFormat",
         //     separateCompounds && !useMolModa
         // );
@@ -156,13 +157,14 @@ export default class ExampleDataPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
         // Load the example project
 
         // Fetch the file "./example.molmoda" file using fetch. It is a binary
         // file.
-        const path = this.getUserArg("which_example_data");
+        const path = this.userArgsMixin.getUserArg("which_example_data");
         const data = await fetcher(path, {
             responseType: ResponseType.ARRAY_BUFFER,
         });
@@ -190,7 +192,6 @@ export default class ExampleDataPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commandss.

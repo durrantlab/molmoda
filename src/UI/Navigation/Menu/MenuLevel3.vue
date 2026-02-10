@@ -34,7 +34,7 @@
 
 <script lang="ts">
 
-import { Prop } from "vue-property-decorator";
+import { Component, Prop } from "vue-facing-decorator";
 import MenuActionLink from "./MenuActionLink.vue";
 import { IMenuEntry, MenuLevelParent } from "./Menu";
 import { slugify } from "@/Core/Utils/StringUtils";
@@ -42,7 +42,7 @@ import { slugify } from "@/Core/Utils/StringUtils";
 /**
  * MenuLevel3 component
  */
-@Options({
+@Component({
   components: {
     MenuActionLink,
   },

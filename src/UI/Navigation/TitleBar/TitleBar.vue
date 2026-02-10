@@ -56,8 +56,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
 import * as LoadedPlugins from "@/Plugins/LoadedPlugins";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";
@@ -84,7 +83,7 @@ interface IIconsToDisplay {
 /**
  * TitleBar component
  */
-@Options({
+@Component({
     components: {
         IconSwitcher,
         IconBar,

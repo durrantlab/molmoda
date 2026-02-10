@@ -32,8 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import * as api from "@/Api";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { fetcher, ResponseType } from "@/Core/Fetcher";
@@ -45,7 +44,7 @@ type SourceType = "svg" | "png-datauri" | "png-url" | "unknown";
 /**
  * ImageViewer component for displaying SVG or PNG images with download/copy functionality.
  */
-@Options({
+@Component({
     components: {
         Alert,
     },

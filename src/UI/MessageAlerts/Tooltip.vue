@@ -13,8 +13,7 @@
 <script lang="ts">
 import { dynamicImports } from "@/Core/DynamicImports";
 import { isTest } from "@/Core/GlobalVars";
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import * as api from "@/Api";
 
 const allOpenTooltips: { [key: string]: Tooltip } = {};
@@ -22,7 +21,7 @@ const allOpenTooltips: { [key: string]: Tooltip } = {};
 /**
  * Tooltip component with enhanced flicker prevention
  */
-@Options({
+@Component({
     components: {},
 })
 export default class Tooltip extends Vue {

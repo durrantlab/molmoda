@@ -6,14 +6,13 @@
 
 <script lang="ts">
 
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import { flexFixedWidthStyle } from "./IconBarUtils";
 
 /**
  * IconBar component
  */
-@Options({
+@Component({
   components: {},
 })
 export default class IconBar extends Vue {

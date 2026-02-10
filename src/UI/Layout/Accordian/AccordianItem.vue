@@ -27,13 +27,12 @@
 
 <script lang="ts">
 
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 
 /**
  * AccordianItem component
  */
-@Options({
+@Component({
   components: {},
 })
 export default class AccordianItem extends Vue {

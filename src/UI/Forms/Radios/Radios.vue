@@ -19,19 +19,19 @@
 <script lang="ts">
 
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import Radio from "./Radio.vue";
 import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 
 /**
  * Radios component
  */
-@Options({
+@Component({
   components: {
     Radio,
     FormWrapper
   },
+  emits: ["update:modelValue", "onChange"],
 })
 export default class Radios extends Vue {
   @Prop() modelValue!: any;

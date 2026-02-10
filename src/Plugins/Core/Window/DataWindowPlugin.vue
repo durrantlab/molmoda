@@ -14,11 +14,12 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { switchToGoldenLayoutPanel } from "./Common";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /**
  * DataWindowPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
     },
@@ -44,7 +45,6 @@ export default class DataWindowPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     * 
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -54,7 +54,6 @@ export default class DataWindowPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

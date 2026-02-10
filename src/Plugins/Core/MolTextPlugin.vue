@@ -42,11 +42,12 @@ import Mol2DView from "@/UI/Components/Mol2DView.vue"; // Import the new compone
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { Component } from "vue-facing-decorator";
+import { FileInfo } from "@/FileSystem/FileInfo";
 
 /**
  * A function that returns the options and validate functions for the available
  * molecular formats.
- *
  * @returns {any}  An object with two keys: options and validateFuncs
  */
 function getFormatInfos(): { [key: string]: any[] } {
@@ -85,7 +86,6 @@ function getFormatInfos(): { [key: string]: any[] } {
 
 /**
  * Detects the file type from the contents of the file.
- *
  * @param {string} contents  The contents of the file.
  * @returns {string}  The file extension.
  */
@@ -103,7 +103,7 @@ function detectFileType(contents: string): string {
 /**
  * MolTextPlugin
  */
-@Options({
+@Component({
     components: {
         PluginComponent,
         Mol2DView, // Register the new component
@@ -174,7 +174,6 @@ export default class MolTextPlugin extends PluginParentClass {
     /**
      * Called when the Mol2DView component detects whether the SMILES is valid.
      * This is used to enable/disable the action button.
-     *
      * @param {boolean} isValid  Whether the SMILES is valid.
      */
     onValidImageDetect(isValid: boolean) {
@@ -186,13 +185,13 @@ export default class MolTextPlugin extends PluginParentClass {
      * when the user arguments change. Access the arguments using this.userArgs.
      */
     async onUserArgChange() {
-        const contents = this.getUserArg("molTextArea") as string;
+        const contents = this.userArgsMixin.getUserArg("molTextArea") as string;
         const detectedExt = detectFileType(contents);
-        const currentFormat = this.getUserArg("format") as string;
+        const currentFormat = this.userArgsMixin.getUserArg("format") as string;
 
         if (detectedExt !== "unknown") {
             if (currentFormat === "unknown" || currentFormat !== detectedExt) {
-                this.setUserArg("format", detectedExt);
+                this.userArgsMixin.setUserArg("format", detectedExt);
             }
             this.isActionBtnEnabled = true;
         } else {
@@ -202,7 +201,7 @@ export default class MolTextPlugin extends PluginParentClass {
 
         // Update SMILES string for preview if format is SMILES
         // Mol2DView will handle the actual rendering and error display if SMILES is invalid
-        if (this.getUserArg("format") === "smi" && contents.trim() !== "") {
+        if (this.userArgsMixin.getUserArg("format") === "smi" && contents.trim() !== "") {
             this.currentSmilesForPreview = contents.trim();
         } else {
             this.currentSmilesForPreview = "";
@@ -214,19 +213,19 @@ export default class MolTextPlugin extends PluginParentClass {
      */
     onPopupDone() {
         const fileInfo = new FileInfo({
-            name: "PastedFile" + randomID() + "." + this.getUserArg("format"),
-            contents: this.getUserArg("molTextArea"),
+            name: "PastedFile" + randomID() + "." + this.userArgsMixin.getUserArg("format"),
+            contents: this.userArgsMixin.getUserArg("molTextArea"),
         });
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-            level: this.getUserArg("gen3D"),
+            level: this.userArgsMixin.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         const treeNodePromise = parseAndLoadMoleculeFile({
             fileInfo,
             tag: this.pluginId,
-            desalt: this.getUserArg("desalt"),
+            desalt: this.userArgsMixin.getUserArg("desalt"),
             gen3D: gen3DParams,
             addToTree: false
         });
@@ -243,12 +242,12 @@ export default class MolTextPlugin extends PluginParentClass {
                     return;
                 }
                 const node = treeNodeList.get(0);
-                node.title = this.getUserArg("pastedMolName"); // "PastedFile";
+                node.title = this.userArgsMixin.getUserArg("pastedMolName"); // "PastedFile";
                 node.type = TreeNodeType.Compound;
 
                 const rootNode = loadHierarchicallyFromTreeNodes(
                     [node],
-                    this.getUserArg("pastedMolName")
+                    this.userArgsMixin.getUserArg("pastedMolName")
                 );
                 rootNode.addToMainTree(this.pluginId);
                 return;
@@ -264,7 +263,6 @@ export default class MolTextPlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
-     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -278,7 +276,6 @@ export default class MolTextPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     *
      * @param {any} payload  The payload (if any)
      */
     async onBeforePopupOpen(payload?: any) {
@@ -287,7 +284,6 @@ export default class MolTextPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {

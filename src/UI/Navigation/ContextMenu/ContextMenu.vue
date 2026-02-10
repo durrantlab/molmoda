@@ -31,14 +31,13 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import { Prop } from "vue-property-decorator";
+import { Component, Vue, Prop } from "vue-facing-decorator";
 import { IContextMenuOption } from "./ContextMenuInterfaces";
 
 /**
  * ContextMenu component
  */
-@Options({
+@Component({
     components: {},
 })
 export default class ContextMenu extends Vue {

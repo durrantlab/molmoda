@@ -48,8 +48,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 import { randomID } from "@/Core/Utils/MiscUtils";
-import { Options, Vue } from "vue-class-component";
-import { Prop, Watch } from "vue-property-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import FormVector3D from "../FormVector3D.vue";
 import FormWrapper from "../FormWrapper.vue";
@@ -86,7 +85,7 @@ const defaultVals = {
 /**
  * FormSelectRegion component
  */
-@Options({
+@Component({
     components: {
         FormElementDescription,
         FormVector3D,
@@ -95,6 +94,7 @@ const defaultVals = {
         Alert,
         FormInput,
     },
+    emits: ["update:modelValue", "onChange"],
 })
 export default class FormSelectRegion extends Vue {
     @Prop({ required: true }) modelValue!: ISphereOrBox | null | undefined;

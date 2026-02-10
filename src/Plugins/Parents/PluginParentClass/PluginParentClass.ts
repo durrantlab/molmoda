@@ -1,7 +1,7 @@
-/* eslint-disable jsdoc/check-tag-names */
+
 // Evey plugin component class must inherit this one.
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
-import { mixins } from "vue-class-component";
+import { Component, mixins, Vue } from "vue-facing-decorator";
 import {
     IContributorCredit,
     IInfoPayload,
@@ -11,15 +11,14 @@ import {
 import * as api from "@/Api";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
 import { ITest } from "@/Testing/TestInterfaces";
-import { HooksMixin } from "./Mixins/HooksMixin";
-import { PopupMixin } from "./Mixins/PopupMixin";
-import { JobMsgsMixin } from "./Mixins/JobMsgsMixin";
-import { ValidationMixin } from "./Mixins/ValidationMixin";
+import { Hooks } from "./Mixins/HooksMixin";
+// import { PopupMixin } from "./Mixins/PopupMixin";
+import { JobMsgs } from "./Mixins/JobMsgsMixin";
+import { Validation } from "./Mixins/ValidationMixin";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 // import { TestingMixin } from "./Mixins/TestingMixin";
-import { UserArgsMixin } from "./Mixins/UserArgsMixin";
+import { UserArgs } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import {
     doneInQueueStore,
     makeUniqJobId,
@@ -47,14 +46,15 @@ const runningForAWhileTimers: { [key: string]: any } = {};
 /**
  * PluginParentClass
  */
-export abstract class PluginParentClass extends mixins(
-    HooksMixin,
-    PopupMixin,
-    JobMsgsMixin,
-    ValidationMixin,
-    // TestingMixin,
-    UserArgsMixin
-) {
+@Component({
+  emits: ['onPluginSetup']
+})
+export abstract class PluginParentClass extends Vue
+// mixins(
+//     PopupMixin,
+//     // TestingMixin,
+// ) 
+{
     /**
      * The menu path for this plugin (e.g., `["[3] molmoda", "[1] About"]` or
      * `"File/Molecules/Import/[4] AlphaFold"`). Note that you can include a
@@ -63,14 +63,12 @@ export abstract class PluginParentClass extends mixins(
      *
      * The vast majority of plugins should be accessible from the menu, but set
      * `menuPath` to null if you want to create a menu-inaccessible plugin.
-     *
      * @type {string[] | string | null}
      */
     abstract menuPath: string[] | string | null;
 
     /**
      * The title of the plugin. This is shown at the top of the plugin bar.
-     *
      * @type {string}
      */
     abstract title: string;
@@ -78,21 +76,18 @@ export abstract class PluginParentClass extends mixins(
     /**
      * A list of software credits. If the plugin uses no third-party packages,
      * set this to `[]`.
-     *
      * @type {ISoftwareCredit[]}
      */
     abstract softwareCredits: ISoftwareCredit[];
 
     /**
      * A list of people to credit.
-     *
      * @type {IContributorCredit[]}
      */
     abstract contributorCredits: IContributorCredit[];
 
     /**
      * A unique id that defines the plugin. Must be lower case.
-     *
      * @type {string}
      */
     abstract pluginId: string;
@@ -102,7 +97,6 @@ export abstract class PluginParentClass extends mixins(
      * top of the plugin. Be brief. You should almost always have an intro for
      * the help system. In those rare cases where one is not needed, set
      * explicitly to null.
-     *
      * @type {string}
      */
     abstract intro: string | null;
@@ -111,7 +105,6 @@ export abstract class PluginParentClass extends mixins(
      * An expanded introduction, also shown at the top of the plugin. It should
      * describe how the program does what it does. Be brief. In very rare cases,
      * you may skip this by setting it to null.
-     *
      * @type {string}
      */
     abstract details: string | null;
@@ -121,7 +114,6 @@ export abstract class PluginParentClass extends mixins(
      * user argument values (on popup), but it is not reactive. See it as an
      * unchangable template. Modify userArgs to change the user argument values
      * reactively.
-     *
      * @type {UserArg[]}
      */
     abstract userArgDefaults: UserArg[];
@@ -137,7 +129,6 @@ export abstract class PluginParentClass extends mixins(
      * Called when the number of molecules specified by the user changes. This
      * is used with the MoleculeInput component. Override this function to react
      * when the number of proteins and compounds change.
-     *
      * @param {IProtCmpdCounts} val  The number of proteins and compounds.
      */
     public onMolCountsChanged(val: IProtCmpdCounts) {
@@ -148,7 +139,6 @@ export abstract class PluginParentClass extends mixins(
 
     /**
      * The payload to send to the plugin component via the infoPayload property.
-     *
      * @returns {IInfoPayload}  The info payload.
      */
     get infoPayload(): IInfoPayload {
@@ -177,7 +167,6 @@ export abstract class PluginParentClass extends mixins(
      * automatically, so no need to specify ctrl/command. If hotkey is not just
      * one letter (e.g., "backspace"), "ctrl+"" is not added. If a plugin has
      * multiple hotkeys, specify them as an array of strings.
-     *
      * @type {string | string[]}
      */
     hotkey: string | string[] = "";
@@ -187,7 +176,6 @@ export abstract class PluginParentClass extends mixins(
      * panel. These run in the browser (not remotely or in docker). They occur
      * immediately on the main thread, without delay. Examples include undo/redo
      * buttons. You must explicitly set this to "false" to disable logging.
-     *
      * @type {boolean}
      */
     logJob = true;
@@ -198,7 +186,6 @@ export abstract class PluginParentClass extends mixins(
      * occur immediately on the main thread, without delay. Examples include
      * undo/redo buttons. You must explicitly set this to "false" to disable
      * logging.
-     *
      * @type {boolean}
      */
     logAnalytics = true;
@@ -207,7 +194,6 @@ export abstract class PluginParentClass extends mixins(
      * The message to show when all jobs have finished. It is a string or a
      * function. If the string is "", no message is shown. If the function
      * returns undefined, no message is shown.
-     *
      * @type {string | Function}
      */
     msgOnJobsFinished: string | (() => string | undefined) = "";
@@ -216,7 +202,6 @@ export abstract class PluginParentClass extends mixins(
      * If alwaysEnabled is set to true, this plugin will always load, even if
      * the user specifies one plugin using the "plugin" url parameter. Set to
      * true for core plugins that are not optional.
-     *
      * @type {boolean}
      */
     alwaysEnabled = false;
@@ -224,7 +209,6 @@ export abstract class PluginParentClass extends mixins(
     /**
      * By default, all jobs are shown in the job queue. You can change this
      * default behavior by setting showInQueue to false.
-     *
      * @type {boolean}
      */
     showInQueue = true;
@@ -255,7 +239,6 @@ export abstract class PluginParentClass extends mixins(
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
-     *
      * @param {any} [payload]    Data to pass to the plugin. Probably only
      *                           useful when programmatically starting the
      *                           plugin without using the menu system. Optional.
@@ -275,7 +258,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
-        if ((await this.onBeforePopupOpen(payload)) === false) {
+        if ((await this.hooks.onBeforePopupOpen(payload)) === false) {
             return;
         }
 
@@ -289,7 +272,7 @@ export abstract class PluginParentClass extends mixins(
             }, delayForPopupOpenClose);
         });
 
-        this.onPopupOpen();
+        this.hooks.onPopupOpen();
 
         // Could set focus using $refs, but I think it will be easier just to
         // find the field with javascript.
@@ -313,7 +296,6 @@ export abstract class PluginParentClass extends mixins(
      * The default version submits the user arguments as a single job. Override
      * it if you want to modify those arguments before submitting to the queue,
      * or if you want to submit multiple jobs to the queue.
-     *
      * @gooddefault
      * @document
      */
@@ -325,14 +307,13 @@ export abstract class PluginParentClass extends mixins(
      * Submits multiple jobs to the queue system. `submitJobs` is typically
      * called from the `onPopupDone` function (after the user presses the
      * popup's action button).
-     *
      * @param {any[]}  [parameterSets]          A list of parameters, one per
      *                                          job. Even if your plugin submits
      *                                          only one job (most common case),
      *                                          you must still wrap the
      *                                          parameters in an array.
      *                                          Optional.
-     * @param {number} [numProcessorsPerJob=1]  The number of processors to use
+     * @param {number} [numProcessorsPerJob]  The number of processors to use
      *                                          per job. Defaults to 1.
      * @param {number} [delayBetweenJobsMS]       The number of milliseconds to
      *                                          wait between running jobs. A
@@ -460,7 +441,6 @@ export abstract class PluginParentClass extends mixins(
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
-     *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -470,7 +450,6 @@ export abstract class PluginParentClass extends mixins(
     /**
      * Wraps around runJob to log start/end messages. It is called by the job
      * queue system.
-     *
      * @param {string} [jobId]         The job id to use (optional).
      * @param {any}    [parameterSet]  The same parameterSets submitted via the
      *                                 submitJobs function, but one at a time.
@@ -491,7 +470,7 @@ export abstract class PluginParentClass extends mixins(
 
         // Log the job if appropriate.
         if (this.logJob) {
-            let startLogTxt = this.onStartJobLogMsg(this.pluginId);
+            let startLogTxt = this.jobMsgs.onStartJobLogMsg(this.pluginId);
             startLogTxt = removeTerminalPunctuation(startLogTxt);
             api.messages.log(startLogTxt, parameterSet, jobId);
         }
@@ -499,10 +478,10 @@ export abstract class PluginParentClass extends mixins(
         const startTime = new Date().getTime();
 
         await this.runJobInBrowser(parameterSet);
-  let endLogTxt = "";
+        let endLogTxt = "";
 
         if (this.logJob) {
-            endLogTxt = this.onEndJobLogMsg(this.pluginId);
+            endLogTxt = this.jobMsgs.onEndJobLogMsg(this.pluginId);
             endLogTxt = removeTerminalPunctuation(endLogTxt);
         }
 
@@ -556,7 +535,6 @@ export abstract class PluginParentClass extends mixins(
      * the plugin when it wants to update the progress of the job. The progress
      * should be a number between 0 and 1. If the progress is greater than 1, it
      * is assumed to be a percentage (e.g., 100 for 100%).
-     *
      * @param {number} progress  The progress of the job (0 to 1).
      */
     protected updateProgressInQueueStore(progress: number) {
@@ -570,7 +548,6 @@ export abstract class PluginParentClass extends mixins(
     /**
      * Called when the plugin is mounted. No plugin should define its own
      * `mounted()` function. Use `onMounted` instead.
-     *
      * @document
      */
     protected onMounted(): void {
@@ -586,7 +563,7 @@ export abstract class PluginParentClass extends mixins(
     public menuOpenPlugin(): void {
         // Could use `this.onPluginStart();`, but use api for
         // consistency's sake.
-        const msg = this.checkPluginAllowed();
+        const msg = this.validation.checkPluginAllowed();
         if (msg !== null) {
             api.messages.popupError(msg);
         } else {
@@ -595,10 +572,22 @@ export abstract class PluginParentClass extends mixins(
         }
     }
 
+    // Note that these all get overwritten in mounted() below.
+    protected validation: Validation = new Validation();
+    protected jobMsgs: JobMsgs = new JobMsgs();
+    protected hooks: Hooks = new Hooks(this);
+    public userArgsMixin: UserArgs = new UserArgs(this);
+
     /** mounted function */
     async mounted() {
+        this.validation = new Validation();
+        this.jobMsgs = new JobMsgs();
+        this.hooks = new Hooks(this);
+        this.userArgsMixin = new UserArgs(this);
+        
+
         // Do some quick validation
-        this._validatePlugin(
+        this.validation.validatePlugin(
             this.pluginId,
             this.intro,
             this.details || "",
@@ -617,7 +606,7 @@ export abstract class PluginParentClass extends mixins(
                 hotkey: this.hotkey,
                 function: this.menuOpenPlugin,
                 pluginId: this.pluginId,
-                checkPluginAllowed: this.checkPluginAllowed,
+                checkPluginAllowed: this.validation.checkPluginAllowed,
             } as IMenuItem,
             pluginId: this.pluginId,
         } as IPluginSetupInfo);
@@ -626,7 +615,7 @@ export abstract class PluginParentClass extends mixins(
         if (this.hotkey !== "") {
             registerHotkeys(this.hotkey, this.pluginId, (e: KeyboardEvent) => {
                 e.preventDefault();
-                const msg = this.checkPluginAllowed();
+                const msg = this.validation.checkPluginAllowed();
                 if (msg !== null) {
                     api.messages.popupError(msg);
                 } else {
@@ -649,10 +638,9 @@ export abstract class PluginParentClass extends mixins(
      * The runJobInBrowser() function receives a fileInfo object. Often, you
      * want to create a molecule from this object and add it to the main tree.
      * This is a helper function to do that.
-     *
      * @param {ILoadMolParams} params              The parameters for loading
      *                                             the molecule.
-     * @param {boolean}        [hideOnLoad=false]  Whether to make the molecule
+     * @param {boolean}        [hideOnLoad]  Whether to make the molecule
      *                                             visible or not. Defaults to
      *                                             false.
      * @returns {Promise<void>}  A promise that resolves when the molecule is
@@ -663,15 +651,15 @@ export abstract class PluginParentClass extends mixins(
         hideOnLoad = false
     ): Promise<void> {
         params.hideOnLoad = hideOnLoad;
-  return parseAndLoadMoleculeFile(params)
+        return parseAndLoadMoleculeFile(params)
             .then((newTreeNodeList) => {
                 // Note: If loading molmoda file, newTreeNodeList will be
                 // undefined.
                 if (newTreeNodeList) {
-     // The logic for adding to the main tree, hiding, renaming, and
-     // showing warnings is now handled within parseAndLoadMoleculeFile
-     // via TreeNodeList.loadFromFileInfo logic consolidation.
-     // So we don't need to do anything else here.
+                    // The logic for adding to the main tree, hiding, renaming, and
+                    // showing warnings is now handled within parseAndLoadMoleculeFile
+                    // via TreeNodeList.loadFromFileInfo logic consolidation.
+                    // So we don't need to do anything else here.
                     return;
                 }
                 return;
@@ -689,7 +677,6 @@ export abstract class PluginParentClass extends mixins(
     /**
      * Makes the userArgs reactive. Do not overwrite this funciton. If you wish
      * to react when the user arguments change, use onUserArgChange instead.
-     *
      * @param {UserArg[]} newUserArgs  The new userArgs.
      */
     onUserArgChanged(newUserArgs: UserArg[]) {
@@ -699,11 +686,53 @@ export abstract class PluginParentClass extends mixins(
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {Promise<ITest[] | ITest>}  The selenium test command(s). If null,
      * skips test (rarely used).
      */
     abstract getTests(): Promise<ITest[] | ITest>;
+
+
+
+
+
+
+    // ============================== 
+    
+        open = false;
+
+    // Occasionally, you might need a plugin that doesn't require a popup (e.g.,
+    // undo/redo). In that case, set this to true.
+    public noPopup = false;
+
+    /**
+     * Closes the popup.
+     * @helper
+     * @document
+     */
+    closePopup(): void {
+        console.warn("DUPLICATE CODE, THIS WHOLE SECTION!!!!!")
+        this.open = false;
+        // this.$emit("update:modelValue", false);
+    }
+
+    /**
+     * Opens the popup.
+     * @helper
+     * @document
+     */
+    public openPopup(): void {
+        this.open = true;
+
+        // If no popup, don't change open and just submit jobs automatically.
+        if (this.noPopup) {
+            this.open = false;
+
+            // Note: (this as any) is ugly.
+            (this as any).onPopupDone();
+        }
+
+        // this.$emit("update:modelValue", true);
+    }
 }

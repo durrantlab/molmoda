@@ -22,9 +22,10 @@ import { checkOneMolSelected } from "../../CheckUseAllowedUtils";
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { Component } from "vue-facing-decorator";
 
 /** CloneMolPlugin */
-@Options({
+@Component({
     components: {
         FormInput,
         FormWrapper,
@@ -66,7 +67,6 @@ export default class CloneMolPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
-     * 
      * @param {any} payload  The payload (node id)
      */
     async onBeforePopupOpen(payload: any) {
@@ -79,12 +79,11 @@ export default class CloneMolPlugin extends PluginParentClass {
             .getAncestry(this.$store.state.molecules)
             .get(0).title;
 
-        this.setUserArg("newName", title + ":cloned");
+        this.userArgsMixin.setUserArg("newName", title + ":cloned");
     }
 
     /**
      * Check if this plugin can currently be used.
-     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -94,7 +93,6 @@ export default class CloneMolPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -107,7 +105,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         return cloneMolsWithAncestry(this.nodesToActOn, true)
             .then((treeNodeList: TreeNodeList) => {
                 const node = treeNodeList.get(0);
-                node.title = this.getUserArg("newName");
+                node.title = this.userArgsMixin.getUserArg("newName");
                 treeNodeList.addToMainTree(this.pluginId);
                 // this.$store.commit("pushToMolecules", node);
                 return;
@@ -178,7 +176,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         //     }
 
         //     // Update title of new node tree.
-        //     topNode.title = this.getUserArg("newName");
+        //     topNode.title = this.userArgsMixin.getUserArg("newName");
 
         //     this.$store.commit("pushToMolecules", topNode);
         //     return;
@@ -190,7 +188,6 @@ export default class CloneMolPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
-     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commandss.
