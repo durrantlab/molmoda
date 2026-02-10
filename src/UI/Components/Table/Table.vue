@@ -134,11 +134,12 @@ export default class Table extends Vue {
                 if (rowVal === undefined) {
                     // If the value is undefined, just use an empty string.
                     rowVal = { val: "" };
-                }
+  } else if (typeof rowVal === "string" || typeof rowVal === "number") {
 
-                // Convert the val to ICellValue.
-                if (typeof rowVal === "string" || typeof rowVal === "number") {
                     rowVal = { val: rowVal };
+  } else {
+  // Shallow copy to prevent mutating the prop
+  rowVal = { ...rowVal };
                 }
 
                 // If it's a number but not an integer, round it to the precision.
