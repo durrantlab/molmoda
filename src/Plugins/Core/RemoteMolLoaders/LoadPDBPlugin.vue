@@ -112,7 +112,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        const pdbId = this.userArgsMixin.getUserArg("pdbId");
+        const pdbId = this.getUserArg("pdbId");
         this.submitJobs([pdbId]);
     }
 

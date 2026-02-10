@@ -235,17 +235,17 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    */
   async onBeforePopupOpen(payload?: boolean) {
     this.appClosing = payload || false;
-    this.userArgsMixin.setUserArg("useMolModaFormat", true);
-    this.userArgsMixin.setUserArg("saveVisible", true);
-    this.userArgsMixin.setUserArg("saveSelected", true);
-    this.userArgsMixin.setUserArg("saveHiddenAndUnselected", false);
-    this.userArgsMixin.setUserArg("separateComponents", true);
+    this.setUserArg("useMolModaFormat", true);
+    this.setUserArg("saveVisible", true);
+    this.setUserArg("saveSelected", true);
+    this.setUserArg("saveHiddenAndUnselected", false);
+    this.setUserArg("separateComponents", true);
 
     if (lastSavedFilename) {
-      this.userArgsMixin.setUserArg("filename", lastSavedFilename);
+      this.setUserArg("filename", lastSavedFilename);
     } else {
       const projectTitle = this.$store.state.projectTitle;
-      this.userArgsMixin.setUserArg("filename", projectTitle || "");
+      this.setUserArg("filename", projectTitle || "");
     }
   }
 
@@ -261,7 +261,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    */
   reactToExtChange() {
     // Now try to detect extension and open/close molmoda appropriately.
-    const filename = this.userArgsMixin.getUserArg("filename");
+    const filename = this.getUserArg("filename");
     const ext = filename.indexOf(".") === -1 ? "" : filename.split(".").pop().toLowerCase();
     if (filename !== this.lastFilename) {
       const format = getFormatInfoGivenType(ext);
@@ -282,7 +282,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
           const userArgDefault = this.userArgDefaults.find(a => a.id === argId);
           const opts = (userArgDefault as IUserArgSelect).options.map(o => (o as IUserArgOption).val);
           if (opts.includes(format.primaryExt)) {
-            this.userArgsMixin.setUserArg(argId, format.primaryExt);
+            this.setUserArg(argId, format.primaryExt);
           }
         });
       }
@@ -290,7 +290,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
     }
 
     // this.lastUseMolModaFormat = newUseMolModa;
-    // this.userArgsMixin.setUserArg("useMolModaFormat", newUseMolModa);
+    // this.setUserArg("useMolModaFormat", newUseMolModa);
 
     // return newUseMolModa;
   }
@@ -301,11 +301,11 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   onUserArgChange() {
     this.reactToExtChange();
 
-    const useMolModa = this.userArgsMixin.getUserArg("useMolModaFormat") as boolean;
-    const separateComponents = this.userArgsMixin.getUserArg("separateComponents") as boolean;
-    const saveHiddenAndUnselected = this.userArgsMixin.getUserArg("saveHiddenAndUnselected") as boolean;
-    const saveVisible = this.userArgsMixin.getUserArg("saveVisible") as boolean;
-    const saveSelected = this.userArgsMixin.getUserArg("saveSelected") as boolean;
+    const useMolModa = this.getUserArg("useMolModaFormat") as boolean;
+    const separateComponents = this.getUserArg("separateComponents") as boolean;
+    const saveHiddenAndUnselected = this.getUserArg("saveHiddenAndUnselected") as boolean;
+    const saveVisible = this.getUserArg("saveVisible") as boolean;
+    const saveSelected = this.getUserArg("saveSelected") as boolean;
 
     this.userArgsMixin.setUserArgEnabled("whichMolsGroup", !useMolModa);
     this.userArgsMixin.setUserArgEnabled("separateComponents", !useMolModa);
@@ -371,9 +371,9 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
    * @returns {Promise<void>}  Resolves when the job is done.
    */
   async runJobInBrowser(): Promise<void> {
-    let filename = this.userArgsMixin.getUserArg("filename");
+    let filename = this.getUserArg("filename");
     lastSavedFilename = filename;
-    const useMolModaFormat = this.userArgsMixin.getUserArg("useMolModaFormat") as boolean;
+    const useMolModaFormat = this.getUserArg("useMolModaFormat") as boolean;
 
     if (useMolModaFormat) {
       if (!filename.toLowerCase().endsWith(".molmoda")) {
@@ -384,25 +384,25 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
       return;
     }
 
-    const separateComponents = this.userArgsMixin.getUserArg("separateComponents") as boolean;
-    const oneMolFileFormat = this.userArgsMixin.getUserArg("oneMolFileFormat");
+    const separateComponents = this.getUserArg("separateComponents") as boolean;
+    const oneMolFileFormat = this.getUserArg("oneMolFileFormat");
 
     const formats: { [key in TreeNodeType]?: string } = {};
     if (separateComponents) {
-      formats[TreeNodeType.Protein] = this.userArgsMixin.getUserArg("proteinFormat");
-      formats[TreeNodeType.Compound] = this.userArgsMixin.getUserArg("compoundFormat");
-      formats[TreeNodeType.Nucleic] = this.userArgsMixin.getUserArg("nucleicFormat");
-      formats[TreeNodeType.Metal] = this.userArgsMixin.getUserArg("metalFormat");
-      formats[TreeNodeType.Ions] = this.userArgsMixin.getUserArg("ionFormat");
-      formats[TreeNodeType.Solvent] = this.userArgsMixin.getUserArg("solventFormat");
-      formats[TreeNodeType.Other] = this.userArgsMixin.getUserArg("otherFormat");
-      formats[TreeNodeType.Lipid] = this.userArgsMixin.getUserArg("lipidFormat");
+      formats[TreeNodeType.Protein] = this.getUserArg("proteinFormat");
+      formats[TreeNodeType.Compound] = this.getUserArg("compoundFormat");
+      formats[TreeNodeType.Nucleic] = this.getUserArg("nucleicFormat");
+      formats[TreeNodeType.Metal] = this.getUserArg("metalFormat");
+      formats[TreeNodeType.Ions] = this.getUserArg("ionFormat");
+      formats[TreeNodeType.Solvent] = this.getUserArg("solventFormat");
+      formats[TreeNodeType.Other] = this.getUserArg("otherFormat");
+      formats[TreeNodeType.Lipid] = this.getUserArg("lipidFormat");
     }
 
     const molsToConsider = {
-      visible: this.userArgsMixin.getUserArg("saveVisible"),
-      selected: this.userArgsMixin.getUserArg("saveSelected"),
-      hiddenAndUnselected: this.userArgsMixin.getUserArg("saveHiddenAndUnselected"),
+      visible: this.getUserArg("saveVisible"),
+      selected: this.getUserArg("saveSelected"),
+      hiddenAndUnselected: this.getUserArg("saveHiddenAndUnselected"),
     } as IMolsToConsider;
 
     const compiledMolModels = compileMolModels(molsToConsider, separateComponents);

@@ -317,7 +317,7 @@ export default class WebinaPlugin extends PluginParentClass {
      * @returns {string} The text for the action button ('Score' or 'Dock').
      */
     get actionButtonText(): string {
-        const scoreOnly = this.userArgsMixin.getUserArg("score_only") as boolean;
+        const scoreOnly = this.getUserArg("score_only") as boolean;
         return scoreOnly ? "Score" : "Dock";
     }
 
@@ -348,7 +348,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
         const maxProcs = await getSetting("maxProcs");
         this.maxProcs = maxProcs;
-        this.userArgsMixin.setUserArg("cpu", this.maxProcs);
+        this.setUserArg("cpu", this.maxProcs);
     }
 
     /**
@@ -371,7 +371,7 @@ export default class WebinaPlugin extends PluginParentClass {
      */
     onUserArgChange() {
         // If score only, then no keeps only best
-        const scoreOnly = this.userArgsMixin.getUserArg("score_only");
+        const scoreOnly = this.getUserArg("score_only");
         this.userArgsMixin.setUserArgEnabled("keep_only_best", !scoreOnly);
         this.userArgsMixin.setUserArgEnabled("webinaAdvancedParams", !scoreOnly);
         return;
@@ -567,7 +567,7 @@ export default class WebinaPlugin extends PluginParentClass {
      */
     async runJobInBrowser(payloads: any[]): Promise<void> {
         const filePairs: IProtCmpdTreeNodePair[] =
-            this.userArgsMixin.getUserArg("makemolinputparams");
+            this.getUserArg("makemolinputparams");
 
         if (
             filePairs.length === 0 ||
@@ -583,7 +583,7 @@ export default class WebinaPlugin extends PluginParentClass {
         // TODO: Consider this.userArgsMixin.getUserArgsFlat() instead.
         let userArgs = [
             ...this.userArgs,
-            ...this.userArgsMixin.getUserArg("webinaAdvancedParams"),
+            ...this.getUserArg("webinaAdvancedParams"),
         ] as UserArg[];
 
         // Prepare Webina parameters

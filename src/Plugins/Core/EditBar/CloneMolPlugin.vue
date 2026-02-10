@@ -79,7 +79,7 @@ export default class CloneMolPlugin extends PluginParentClass {
             .getAncestry(this.$store.state.molecules)
             .get(0).title;
 
-        this.userArgsMixin.setUserArg("newName", title + ":cloned");
+        this.setUserArg("newName", title + ":cloned");
     }
 
     /**
@@ -105,7 +105,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         return cloneMolsWithAncestry(this.nodesToActOn, true)
             .then((treeNodeList: TreeNodeList) => {
                 const node = treeNodeList.get(0);
-                node.title = this.userArgsMixin.getUserArg("newName");
+                node.title = this.getUserArg("newName");
                 treeNodeList.addToMainTree(this.pluginId);
                 // this.$store.commit("pushToMolecules", node);
                 return;
@@ -176,7 +176,7 @@ export default class CloneMolPlugin extends PluginParentClass {
         //     }
 
         //     // Update title of new node tree.
-        //     topNode.title = this.userArgsMixin.getUserArg("newName");
+        //     topNode.title = this.getUserArg("newName");
 
         //     this.$store.commit("pushToMolecules", topNode);
         //     return;

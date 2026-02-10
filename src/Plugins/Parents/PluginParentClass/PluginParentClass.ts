@@ -2,12 +2,7 @@
 // Evey plugin component class must inherit this one.
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
 import { Component, mixins, Vue } from "vue-facing-decorator";
-import {
-    IContributorCredit,
-    IInfoPayload,
-    IPluginSetupInfo,
-    ISoftwareCredit,
-} from "../../PluginInterfaces";
+import { IContributorCredit, IInfoPayload, IPluginSetupInfo, ISoftwareCredit, } from "../../PluginInterfaces";
 import * as api from "@/Api";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
 import { ITest } from "@/Testing/TestInterfaces";
@@ -19,12 +14,7 @@ import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
 // import { TestingMixin } from "./Mixins/TestingMixin";
 import { UserArgs } from "./Mixins/UserArgsMixin";
 import { registerHotkeys } from "@/Core/HotKeys";
-import {
-    doneInQueueStore,
-    makeUniqJobId,
-    startInQueueStore,
-    updateProgressInQueueStore,
-} from "@/Queue/QueueStore";
+import { doneInQueueStore, makeUniqJobId, startInQueueStore, updateProgressInQueueStore, } from "@/Queue/QueueStore";
 import { copyUserArgs } from "../UserInputUtils";
 import { logEvent } from "@/Core/Analytics";
 import { delayForPopupOpenClose } from "@/Core/GlobalVars";
@@ -47,7 +37,7 @@ const runningForAWhileTimers: { [key: string]: any } = {};
  * PluginParentClass
  */
 @Component({
-  emits: ['onPluginSetup']
+    emits: ['onPluginSetup']
 })
 export abstract class PluginParentClass extends Vue
 // mixins(
@@ -226,6 +216,11 @@ export abstract class PluginParentClass extends Vue
     private jobId = "";
 
     /**
+     * The initial value of noPopup, captured during mount. Used to reset state.
+     */
+    private _initialNoPopup = false;
+
+    /**
      * Sets the jobId if it's not already set.
      */
     private setJobIdIfNeeded() {
@@ -233,6 +228,25 @@ export abstract class PluginParentClass extends Vue
         if (this.jobId === "") {
             this.jobId = makeUniqJobId(this.pluginId);
         }
+    }
+
+    /**
+     * Helper to get user argument value by ID. Delegates to userArgsMixin.
+     * This allows direct access from the template.
+     * @param {string} id The argument ID.
+     * @returns {any} The value.
+     */
+    public getUserArg(id: string): any {
+        return this.userArgsMixin.getUserArg(id);
+    }
+
+    /**
+     * Helper to set user argument value by ID. Delegates to userArgsMixin.
+     * @param {string} id The argument ID.
+     * @param {any} val The value.
+     */
+    public setUserArg(id: string, val: any): void {
+        this.userArgsMixin.setUserArg(id, val);
     }
 
     /**
@@ -255,6 +269,10 @@ export abstract class PluginParentClass extends Vue
 
         // Reset userArgs to defaults.
         this.userArgs = copyUserArgs(this.userArgDefaults);
+
+        // Reset noPopup to its initial state to ensure correct behavior on subsequent runs
+        this.noPopup = this._initialNoPopup;
+
 
         // Check if the plugin opening should be cancelled based on what the
         // onBeforePopupOpen hook returns.
@@ -584,7 +602,7 @@ export abstract class PluginParentClass extends Vue
         this.jobMsgs = new JobMsgs();
         this.hooks = new Hooks(this);
         this.userArgsMixin = new UserArgs(this);
-        
+
 
         // Do some quick validation
         this.validation.validatePlugin(
@@ -594,6 +612,9 @@ export abstract class PluginParentClass extends Vue
             this.menuPath,
             this.title
         );
+
+        // Capture the initial noPopup state from the child class
+        this._initialNoPopup = this.noPopup;
 
         registerLoadedPlugin(this);
 
@@ -699,8 +720,8 @@ export abstract class PluginParentClass extends Vue
 
 
     // ============================== 
-    
-        open = false;
+
+    open = false;
 
     // Occasionally, you might need a plugin that doesn't require a popup (e.g.,
     // undo/redo). In that case, set this to true.

@@ -291,7 +291,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
         return this.addFileInfoToViewer({
             fileInfo,
-            desalt: this.userArgsMixin.getUserArg("desalt"),
+            desalt: this.getUserArg("desalt"),
             tag: this.pluginId,
         });
 
@@ -304,7 +304,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
         //             return this.addFileInfoToViewer(
         //                 fileInfo,
         //                 undefined,
-        //                 this.userArgsMixin.getUserArg("desalt")
+        //                 this.getUserArg("desalt")
         //             );
         //         })
         //         // eslint-disable-next-line @typescript-eslint/no-unused-vars

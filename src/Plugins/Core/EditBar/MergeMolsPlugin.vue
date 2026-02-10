@@ -90,7 +90,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         });
         titles.sort();
 
-        this.userArgsMixin.setUserArg("newName", titles.join("-") + ":merged");
+        this.setUserArg("newName", titles.join("-") + ":merged");
     }
 
     /**
@@ -137,7 +137,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
 
                 return mergeTreeNodes(
                     onlySelectedTreeNodeList,
-                    this.userArgsMixin.getUserArg("newName")
+                    this.getUserArg("newName")
                 );
             })
             .then((mergedTreeNode: TreeNode) => {
@@ -154,7 +154,7 @@ export default class MergeMolsPlugin extends PluginParentClass {
         //     .then((treeNodeList: TreeNodeList) => {
         //         return mergeTreeNodes(
         //             treeNodeList,
-        //             this.userArgsMixin.getUserArg("newName")
+        //             this.getUserArg("newName")
         //         );
         //     })
         //     .then((mergedTreeNode: TreeNode) => {

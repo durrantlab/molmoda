@@ -238,8 +238,8 @@ export default class EvalScreenPlugin extends PluginParentClass {
      *                               the analysis.
      */
     getActivesOthers(): IActivesOthers {
-        const actives = this.userArgsMixin.getUserArg("activesLabel");
-        const others = this.userArgsMixin.getUserArg("otherLabel");
+        const actives = this.getUserArg("activesLabel");
+        const others = this.getUserArg("otherLabel");
 
         const matchingActives = this.dockedCompoundsWithSubstr(actives);
         const matchingOthers = this.dockedCompoundsWithSubstr(others);
@@ -536,7 +536,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
      */
     dockedCompoundsWithSubstr(substr: string): TreeNodeList {
         const compounds = this.compoundsWithDockingScores;
-        const caseInsensitive = this.userArgsMixin.getUserArg("caseInsensitive");
+        const caseInsensitive = this.getUserArg("caseInsensitive");
 
         if (caseInsensitive) {
             substr = substr.toLowerCase();

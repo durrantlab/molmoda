@@ -123,7 +123,7 @@ export default class AddRegionPlugin extends PluginParentClass {
      * Detects when user arguments have changed, and updates UI accordingly.
      */
     onUserArgChange() {
-        let regionType = this.userArgsMixin.getUserArg("regionType") as string;
+        let regionType = this.getUserArg("regionType") as string;
         if (regionType === "box") {
             this.userArgsMixin.setUserArgEnabled("dimensions", true);
             this.userArgsMixin.setUserArgEnabled("radius", false);
@@ -212,12 +212,12 @@ export default class AddRegionPlugin extends PluginParentClass {
                 }
             }
 
-            this.userArgsMixin.setUserArg("radius", Math.round(500 * max_dim) / 1000);
-            this.userArgsMixin.setUserArg("center", [center_x, center_y, center_z]);
-            this.userArgsMixin.setUserArg("dimensions", dimens);
+            this.setUserArg("radius", Math.round(500 * max_dim) / 1000);
+            this.setUserArg("center", [center_x, center_y, center_z]);
+            this.setUserArg("dimensions", dimens);
         }
 
-        this.userArgsMixin.setUserArg("color", randomPastelColor());
+        this.setUserArg("color", randomPastelColor());
     }
 
     /**
@@ -225,10 +225,10 @@ export default class AddRegionPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     onPopupDone(): Promise<void> {
-        const regionType = this.userArgsMixin.getUserArg("regionType");
-        const regionName = this.userArgsMixin.getUserArg("regionName");
-        const color = this.userArgsMixin.getUserArg("color");
-        const opacity = this.userArgsMixin.getUserArg("opacity");
+        const regionType = this.getUserArg("regionType");
+        const regionName = this.getUserArg("regionName");
+        const color = this.getUserArg("color");
+        const opacity = this.getUserArg("opacity");
 
         // Make a tree node
         const treeNode = new TreeNode({
@@ -237,7 +237,7 @@ export default class AddRegionPlugin extends PluginParentClass {
         } as ITreeNode);
 
         let region: any = {
-            center: this.userArgsMixin.getUserArg("center"),
+            center: this.getUserArg("center"),
             color: color,
             movable: true,
             opacity: opacity,
@@ -246,13 +246,13 @@ export default class AddRegionPlugin extends PluginParentClass {
         if (regionType === "box") {
             region = {
                 ...region,
-                dimensions: this.userArgsMixin.getUserArg("dimensions"),
+                dimensions: this.getUserArg("dimensions"),
                 type: RegionType.Box,
             };
         } else {
             region = {
                 ...region,
-                radius: this.userArgsMixin.getUserArg("radius"),
+                radius: this.getUserArg("radius"),
                 type: RegionType.Sphere,
             };
         }

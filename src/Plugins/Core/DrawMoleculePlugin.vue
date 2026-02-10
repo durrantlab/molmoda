@@ -116,7 +116,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
         if (payload) {
             this.title = "Edit Molecule";
             this.currentSmiles = payload.smiles;
-            this.userArgsMixin.setUserArg("drawMolName", payload.name);
+            this.setUserArg("drawMolName", payload.name);
         } else {
             this.title = "Draw Molecule";
         }
@@ -341,11 +341,11 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
         if (treeNodeList && treeNodeList.length > 0) {
             const node = treeNodeList.get(0);
-            node.title = this.userArgsMixin.getUserArg("drawMolName");
+            node.title = this.getUserArg("drawMolName");
             node.type = TreeNodeType.Compound;
             const rootNode = loadHierarchicallyFromTreeNodes(
                 [node],
-                this.userArgsMixin.getUserArg("drawMolName")
+                this.getUserArg("drawMolName")
             );
             rootNode.addToMainTree(this.pluginId);
         }

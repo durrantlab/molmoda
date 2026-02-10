@@ -129,14 +129,14 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     async onPopupDone(): Promise<void> {
-        const compounds: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
+        const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
-        const pH = this.userArgsMixin.getUserArg("pH");
-        // const regen3DCoords = this.userArgsMixin.getUserArg("regen3DCoords");
+        const pH = this.getUserArg("pH");
+        // const regen3DCoords = this.getUserArg("regen3DCoords");
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.All,
-            level: this.userArgsMixin.getUserArg("gen3D"),
+            level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         const molTexts = (await convertFileInfosOpenBabel(

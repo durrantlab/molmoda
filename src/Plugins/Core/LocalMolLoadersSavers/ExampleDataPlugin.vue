@@ -121,8 +121,8 @@ export default class ExampleDataPlugin extends PluginParentClass {
      * Detects when user arguments have changed, and updates UI accordingly.
      */
     onUserArgChange() {
-        let whichExample = this.userArgsMixin.getUserArg("which_example_data") as string;
-        this.userArgsMixin.setUserArg("descript", this.exampleDescriptions[whichExample]);
+        let whichExample = this.getUserArg("which_example_data") as string;
+        this.setUserArg("descript", this.exampleDescriptions[whichExample]);
         console.log(this.exampleDescriptions[whichExample]);
         // // this.userArgsMixin.setUserArgEnabled("molMergingGroup", !useMolModa);
         // this.userArgsMixin.setUserArgEnabled("whichMolsGroup", !useMolModa);
@@ -130,7 +130,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
 
         // // Show onemol format or protein format, depending on whether
         // // mergeAllMolecules is true.
-        // let separateCompounds = this.userArgsMixin.getUserArg("separateCompounds") as boolean;
+        // let separateCompounds = this.getUserArg("separateCompounds") as boolean;
         // this.userArgsMixin.setUserArgEnabled(
         //     "oneMolFileFormat",
         //     !separateCompounds && !useMolModa
@@ -164,7 +164,7 @@ export default class ExampleDataPlugin extends PluginParentClass {
 
         // Fetch the file "./example.molmoda" file using fetch. It is a binary
         // file.
-        const path = this.userArgsMixin.getUserArg("which_example_data");
+        const path = this.getUserArg("which_example_data");
         const data = await fetcher(path, {
             responseType: ResponseType.ARRAY_BUFFER,
         });

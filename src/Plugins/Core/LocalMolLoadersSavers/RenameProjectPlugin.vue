@@ -54,14 +54,14 @@ import { Component } from "vue-facing-decorator";
      * @returns {Promise<void>}
      */
     async onBeforePopupOpen(payload: any): Promise<void> {
-   this.userArgsMixin.setUserArg("newProjectTitle", this.$store.state.projectTitle);
+   this.setUserArg("newProjectTitle", this.$store.state.projectTitle);
     }
   
     /**
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-   const newTitle = this.userArgsMixin.getUserArg("newProjectTitle");
+   const newTitle = this.getUserArg("newProjectTitle");
    setStoreVar("projectTitle", newTitle);
    this.closePopup();
     }

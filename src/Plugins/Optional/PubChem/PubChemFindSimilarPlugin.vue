@@ -186,7 +186,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
    * Updates form field visibility based on search mode selection.
    */
   async onUserArgChange(): Promise<void> {
-    const searchMode = this.userArgsMixin.getUserArg("searchmode");
+    const searchMode = this.getUserArg("searchmode");
     this.userArgsMixin.setUserArgEnabled("similarity", searchMode === SearchMode.Similar);
   }
 
@@ -196,9 +196,9 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
    * @returns {Promise<void>} A promise that resolves when loading is complete.
    */
   async runJobInBrowser(parameterSet: any): Promise<void> {
-    const searchMode = this.userArgsMixin.getUserArg("searchmode");
-    const maxResults = this.userArgsMixin.getUserArg("maxresults");
-    const compounds: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
+    const searchMode = this.getUserArg("searchmode");
+    const maxResults = this.getUserArg("maxresults");
+    const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
 
     // Change the names on the compounds to be a bit more pallatable
     compounds.forEach((c) => {
@@ -246,7 +246,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
       switch (searchMode) {
         case SearchMode.Similar: {
-          const similarity = this.userArgsMixin.getUserArg("similarity");
+          const similarity = this.getUserArg("similarity");
           results = await fetchSimilarCompounds(
             smiles,
             similarity,
@@ -352,7 +352,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
     // Step 3: Batch convert all structures to 3D
     const gen3D: IGen3DOptions = {
       whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-      level: this.userArgsMixin.getUserArg("gen3D"), // Use the selected level
+      level: this.getUserArg("gen3D"), // Use the selected level
     };
 
     // Converting to mol2 batch so you can add easily to tree later (which would

@@ -236,7 +236,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     async onPopupDone(): Promise<void> {
-        const pdbFiles: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
+        const pdbFiles: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const userArgsNotFpocketArgs = [
             "providePseudoAtoms",

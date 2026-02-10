@@ -93,7 +93,7 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        let uniprot = this.userArgsMixin.getUserArg("uniprot");
+        let uniprot = this.getUserArg("uniprot");
         this.submitJobs([uniprot]);
     }
 

@@ -185,13 +185,13 @@ export default class MolTextPlugin extends PluginParentClass {
      * when the user arguments change. Access the arguments using this.userArgs.
      */
     async onUserArgChange() {
-        const contents = this.userArgsMixin.getUserArg("molTextArea") as string;
+        const contents = this.getUserArg("molTextArea") as string;
         const detectedExt = detectFileType(contents);
-        const currentFormat = this.userArgsMixin.getUserArg("format") as string;
+        const currentFormat = this.getUserArg("format") as string;
 
         if (detectedExt !== "unknown") {
             if (currentFormat === "unknown" || currentFormat !== detectedExt) {
-                this.userArgsMixin.setUserArg("format", detectedExt);
+                this.setUserArg("format", detectedExt);
             }
             this.isActionBtnEnabled = true;
         } else {
@@ -201,7 +201,7 @@ export default class MolTextPlugin extends PluginParentClass {
 
         // Update SMILES string for preview if format is SMILES
         // Mol2DView will handle the actual rendering and error display if SMILES is invalid
-        if (this.userArgsMixin.getUserArg("format") === "smi" && contents.trim() !== "") {
+        if (this.getUserArg("format") === "smi" && contents.trim() !== "") {
             this.currentSmilesForPreview = contents.trim();
         } else {
             this.currentSmilesForPreview = "";
@@ -213,19 +213,19 @@ export default class MolTextPlugin extends PluginParentClass {
      */
     onPopupDone() {
         const fileInfo = new FileInfo({
-            name: "PastedFile" + randomID() + "." + this.userArgsMixin.getUserArg("format"),
-            contents: this.userArgsMixin.getUserArg("molTextArea"),
+            name: "PastedFile" + randomID() + "." + this.getUserArg("format"),
+            contents: this.getUserArg("molTextArea"),
         });
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-            level: this.userArgsMixin.getUserArg("gen3D"),
+            level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         const treeNodePromise = parseAndLoadMoleculeFile({
             fileInfo,
             tag: this.pluginId,
-            desalt: this.userArgsMixin.getUserArg("desalt"),
+            desalt: this.getUserArg("desalt"),
             gen3D: gen3DParams,
             addToTree: false
         });
@@ -242,12 +242,12 @@ export default class MolTextPlugin extends PluginParentClass {
                     return;
                 }
                 const node = treeNodeList.get(0);
-                node.title = this.userArgsMixin.getUserArg("pastedMolName"); // "PastedFile";
+                node.title = this.getUserArg("pastedMolName"); // "PastedFile";
                 node.type = TreeNodeType.Compound;
 
                 const rootNode = loadHierarchicallyFromTreeNodes(
                     [node],
-                    this.userArgsMixin.getUserArg("pastedMolName")
+                    this.getUserArg("pastedMolName")
                 );
                 rootNode.addToMainTree(this.pluginId);
                 return;

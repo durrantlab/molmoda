@@ -109,7 +109,7 @@ export default class ReducePlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     async onPopupDone(): Promise<void> {
-        const fileInfos: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
+        const fileInfos: FileInfo[] = this.getUserArg("makemolinputparams");
 
         const distantAncestorTitles = fileInfos.map((f) => {
             if (!f.treeNode) {

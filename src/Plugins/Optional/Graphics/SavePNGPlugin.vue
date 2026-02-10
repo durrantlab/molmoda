@@ -78,7 +78,7 @@ export default class SavePNGPlugin extends PluginParentClass {
      * Runs when the user presses the action button and the popup closes.
      */
     onPopupDone() {
-        this.submitJobs([{ filename: this.userArgsMixin.getUserArg("filename") }]);
+        this.submitJobs([{ filename: this.getUserArg("filename") }]);
     }
 
     /**

@@ -35,7 +35,7 @@ export class Hooks {
                 if (Object.prototype.hasOwnProperty.call(progPayload, key)) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    this.parent.userArgsMixin.setUserArg(key, progPayload[key]);
+                    this.parent.setUserArg(key, progPayload[key]);
                 }
             }
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment

@@ -103,7 +103,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
    * Runs when the user changes an argument. Updates the selected tag.
    */
   onUserArgChange() {
-    this.selectedTag = this.userArgsMixin.getUserArg("selectedMode") as Tag;
+    this.selectedTag = this.getUserArg("selectedMode") as Tag;
   }
 
   /**
@@ -116,7 +116,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
     // Set the initial mode based on URL
     const mode = getActivityFocusMode();
     if (mode && Object.values(Tag).includes(mode as Tag)) {
-      this.userArgsMixin.setUserArg("selectedMode", mode);
+      this.setUserArg("selectedMode", mode);
       this.selectedTag = mode as Tag;
     }
   }
@@ -125,7 +125,7 @@ export default class ActivityFocusPlugin extends PluginParentClass {
    * Runs when the user closes the plugin.
    */
   onPopupDone() {
-    const selectedMode = this.userArgsMixin.getUserArg("selectedMode");
+    const selectedMode = this.getUserArg("selectedMode");
     // Create new URL with mode parameter
     const url = new URL(window.location.origin + window.location.pathname);
 

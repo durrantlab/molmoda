@@ -155,7 +155,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-            level: this.userArgsMixin.getUserArg("gen3D"),
+            level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         // MOL2 and SDF files can be both 2D and 3D.
@@ -185,12 +185,12 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         return this.addFileInfoToViewer(
             {
                 fileInfo,
-                desalt: this.userArgsMixin.getUserArg("desalt"),
+                desalt: this.getUserArg("desalt"),
                 gen3D: gen3DParams,
                 defaultTitle: "",
                 tag: this.pluginId,
             },
-            this.userArgsMixin.getUserArg("hideOnLoad")
+            this.getUserArg("hideOnLoad")
         );
     }
 

@@ -91,7 +91,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
    * Runs when the user presses the action button and the popup closes.
    */
   onPopupDone() {
-    this.submitJobs([{ filename: this.userArgsMixin.getUserArg("filename") }]);
+    this.submitJobs([{ filename: this.getUserArg("filename") }]);
   }
 
   /**
@@ -113,7 +113,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
         continue;
       }
 
-      if (this.userArgsMixin.getUserArg("simplifyMesh") === true) {
+      if (this.getUserArg("simplifyMesh") === true) {
         const worker = new Worker(
           new URL(
             "../../../Meshes/SimplifyVRML/SimplifyVRML.worker.ts",
@@ -181,7 +181,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
     const mols = getMoleculesFromStore();
 
     let newVrmlData: [string, string][] = [];
-    if (this.userArgsMixin.getUserArg("simplifyMesh") === true) {
+    if (this.getUserArg("simplifyMesh") === true) {
       // Simplify meshes
       newVrmlData = await this._simplifyMesh(vrmlData, mols);
     } else {

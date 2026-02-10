@@ -155,22 +155,22 @@ export default class PastePlugin extends PluginParentClass {
 
         const gen3DParams = {
             whichMols: WhichMolsGen3D.OnlyIfLacks3D,
-            level: this.userArgsMixin.getUserArg("gen3D"),
+            level: this.getUserArg("gen3D"),
         } as IGen3DOptions;
 
         try {
             const treeNodeList = await parseAndLoadMoleculeFile({
                 fileInfo,
                 tag: this.pluginId,
-                desalt: this.userArgsMixin.getUserArg("desalt"),
-                defaultTitle: this.userArgsMixin.getUserArg("pastedMolName"),
+                desalt: this.getUserArg("desalt"),
+                defaultTitle: this.getUserArg("pastedMolName"),
                 gen3D: gen3DParams,
                 addToTree: false, // Don't add yet, need to set title
             });
 
             if (treeNodeList && treeNodeList instanceof TreeNodeList && treeNodeList.length > 0) {
                 const node = treeNodeList.get(0);
-                node.title = this.userArgsMixin.getUserArg("pastedMolName");
+                node.title = this.getUserArg("pastedMolName");
                 treeNodeList.addToMainTree(this.pluginId);
             }
 

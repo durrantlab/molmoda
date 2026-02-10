@@ -92,8 +92,8 @@ export default class AlignProteinsPlugin extends PluginParentClass {
      * Handles changes to user arguments to update button state.
      */
     onUserArgChange() {
-        const refId = this.userArgsMixin.getUserArg("referenceMolecule");
-        const moleculeInput: MoleculeInput = this.userArgsMixin.getUserArg("mobileMolecules");
+        const refId = this.getUserArg("referenceMolecule");
+        const moleculeInput: MoleculeInput = this.getUserArg("mobileMolecules");
 
         if (!moleculeInput || !moleculeInput.molsToConsider) {
             this.isActionBtnEnabled = false;

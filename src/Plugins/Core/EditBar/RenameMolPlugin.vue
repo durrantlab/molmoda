@@ -81,7 +81,7 @@ export default class RenameMolPlugin extends PluginParentClass {
      */
     async onBeforePopupOpen(payload: any) {
         setNodesToActOn(this, payload);
-        this.userArgsMixin.setUserArg("newName", this.nodesToActOn.get(0).title);
+        this.setUserArg("newName", this.nodesToActOn.get(0).title);
     }
 
     /**
@@ -91,11 +91,11 @@ export default class RenameMolPlugin extends PluginParentClass {
     runJobInBrowser(): Promise<void> {
         if (this.nodesToActOn) {
             const nodeToActOn = this.nodesToActOn.get(0);
-            nodeToActOn.title = this.userArgsMixin.getUserArg("newName");
+            nodeToActOn.title = this.getUserArg("newName");
 
             // If there is only one terminal node, update that node's title too.
             if (nodeToActOn.nodes?.terminals.length === 1) {
-                nodeToActOn.nodes.terminals.get(0).title = this.userArgsMixin.getUserArg("newName");
+                nodeToActOn.nodes.terminals.get(0).title = this.getUserArg("newName");
             }
         }
         return Promise.resolve();

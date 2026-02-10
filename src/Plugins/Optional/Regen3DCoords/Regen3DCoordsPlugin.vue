@@ -90,10 +90,10 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     async onPopupDone(): Promise<void> {
-        const compounds: FileInfo[] = this.userArgsMixin.getUserArg("makemolinputparams");
+        const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
         const gen3DParams: IGen3DOptions = {
             whichMols: WhichMolsGen3D.All, // Always regenerate for this plugin
-            level: this.userArgsMixin.getUserArg("gen3D"),
+            level: this.getUserArg("gen3D"),
         };
 
         const conversionPromises = compounds.map((compound) => {

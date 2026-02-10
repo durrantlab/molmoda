@@ -191,9 +191,9 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         const hasProteins = proteinNodes.length > 0;
         this.userArgsMixin.setUserArgEnabled("inputType", hasProteins);
         if (!hasProteins) {
-            this.userArgsMixin.setUserArg("inputType", "fasta");
+            this.setUserArg("inputType", "fasta");
         } else {
-            this.userArgsMixin.setUserArg("inputType", "project");
+            this.setUserArg("inputType", "project");
         }
         // Trigger onUserArgChange to update the visibility of other fields
         this.onUserArgChange();
@@ -203,16 +203,16 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
      * Handles changes to user arguments to update button state.
      */
     onUserArgChange() {
-        const inputType = this.userArgsMixin.getUserArg("inputType");
+        const inputType = this.getUserArg("inputType");
         const isProject = inputType === "project";
-        const downloadStructures = this.userArgsMixin.getUserArg("downloadStructures") as boolean;
+        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
 
         this.userArgsMixin.setUserArgEnabled("protein_to_query", isProject);
         this.userArgsMixin.setUserArgEnabled("fastaText", !isProject);
         this.userArgsMixin.setUserArgEnabled("alignStructures", downloadStructures);
 
         if (isProject) {
-            const moleculeInput: MoleculeInput = this.userArgsMixin.getUserArg("protein_to_query");
+            const moleculeInput: MoleculeInput = this.getUserArg("protein_to_query");
             if (!moleculeInput || !moleculeInput.molsToConsider) {
                 this.isActionBtnEnabled = false;
                 return;
@@ -226,7 +226,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             // nodeGroups contains a TreeNodeList for each top-level molecule that has matching proteins.
             this.isActionBtnEnabled = compiledMols.nodeGroups.length > 0;
         } else {
-            const fastaText = (this.userArgsMixin.getUserArg("fastaText") as string).trim();
+            const fastaText = (this.getUserArg("fastaText") as string).trim();
             this.isActionBtnEnabled = fastaText.length > 0;
         }
     }
@@ -238,11 +238,11 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     async onPopupDone(): Promise<void> {
         this.closePopup();
 
-        const evalue = this.userArgsMixin.getUserArg("evalue_cutoff");
-        const identity = (this.userArgsMixin.getUserArg("identity_cutoff") as number) / 100.0;
-        const maxResults = this.userArgsMixin.getUserArg("max_results");
-        const hasLigands = this.userArgsMixin.getUserArg("has_ligands") as boolean;
-        const inputType = this.userArgsMixin.getUserArg("inputType");
+        const evalue = this.getUserArg("evalue_cutoff");
+        const identity = (this.getUserArg("identity_cutoff") as number) / 100.0;
+        const maxResults = this.getUserArg("max_results");
+        const hasLigands = this.getUserArg("has_ligands") as boolean;
+        const inputType = this.getUserArg("inputType");
 
         // Map unique sequence string -> { identifiers: Set<string>, sources: Array<{ title: string, treeNode?: TreeNode }> }
         const uniqueSequences = new Map<string, {
@@ -265,7 +265,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         };
 
         if (inputType === "project") {
-            const proteinFileInfos: FileInfo[] = this.userArgsMixin.getUserArg("protein_to_query");
+            const proteinFileInfos: FileInfo[] = this.getUserArg("protein_to_query");
 
             if (proteinFileInfos.length === 0) {
                 messagesApi.popupError("No proteins selected to query.");
@@ -300,7 +300,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             }
         } else {
             // FASTA input
-            const fastaText = this.userArgsMixin.getUserArg("fastaText") as string;
+            const fastaText = this.getUserArg("fastaText") as string;
             const sequences = convertFastaToSeqences(fastaText);
 
             if (sequences.length === 0) {
@@ -418,8 +418,8 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             "similar-proteins-results"
         );
 
-        const downloadStructures = this.userArgsMixin.getUserArg("downloadStructures") as boolean;
-        const alignStructures = this.userArgsMixin.getUserArg("alignStructures") as boolean;
+        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+        const alignStructures = this.getUserArg("alignStructures") as boolean;
 
         if (downloadStructures) {
             await this._downloadAndAlignStructures(allJobOutputs, alignStructures);
@@ -436,7 +436,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         align: boolean
     ): Promise<void> {
         const spinnerId = messagesApi.startWaitSpinner();
-        const hasLigands = this.userArgsMixin.getUserArg("has_ligands") as boolean;
+        const hasLigands = this.getUserArg("has_ligands") as boolean;
 
         // Group PDBs by the reference they should be aligned to.
         // Key: reference identifier (TreeNode.id or a PDB ID).

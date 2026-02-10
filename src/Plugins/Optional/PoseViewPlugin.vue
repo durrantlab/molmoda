@@ -270,7 +270,7 @@ export default class PoseViewPlugin extends PluginParentClass {
    */
   async runJobInBrowser(): Promise<void> {
     try {
-      const filePairs = this.userArgsMixin.getUserArg(
+      const filePairs = this.getUserArg(
         "makemolinputparams"
       ) as IProtCmpdTreeNodePair[];
       if (filePairs.length === 0 || !filePairs[0].prot || !filePairs[0].cmpd) {

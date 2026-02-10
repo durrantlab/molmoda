@@ -143,7 +143,7 @@ export default class SettingsPlugin extends PluginParentClass {
      * Set whether the user has allowed stats collection.
      */
     setStatCollectPetition() {
-        const currentVal = this.userArgsMixin.getUserArg("allowCookies");
+        const currentVal = this.getUserArg("allowCookies");
         this.userArgsMixin.setUserArgEnabled("allowCookiesAlert", !currentVal);
     }
 
@@ -151,7 +151,7 @@ export default class SettingsPlugin extends PluginParentClass {
      * Runs when the user changes a user argument.
      */
     async onUserArgChange() {
-        const currentStatEnabledVal = this.userArgsMixin.getUserArg("allowCookies");
+        const currentStatEnabledVal = this.getUserArg("allowCookies");
         const savedStatEnabledVal = await isStatCollectionEnabled();
 
         this.userArgsMixin.setUserArgEnabled("autoSaveFrequencyMinutes", currentStatEnabledVal);
@@ -199,7 +199,7 @@ export default class SettingsPlugin extends PluginParentClass {
 
         for (const settingName in defaults) {
             const val = savedSettings[settingName];
-            this.userArgsMixin.setUserArg(settingName, val !== undefined ? val : defaults[settingName]);
+            this.setUserArg(settingName, val !== undefined ? val : defaults[settingName]);
         }
 
         // const maxProcs = savedSettings["maxProcs"];
@@ -210,23 +210,23 @@ export default class SettingsPlugin extends PluginParentClass {
         // // )[0]?.val;
 
         // // Update the userArgs with the saved values.
-        // this.userArgsMixin.setUserArg(
+        // this.setUserArg(
         //     "maxProcs",
         //     maxProcs ? maxProcs : defaults.maxProcs
         // );
-        // this.userArgsMixin.setUserArg(
+        // this.setUserArg(
         //     "initialCompoundsVisible",
         //     initialCompoundsVisible
         //         ? initialCompoundsVisible
         //         : defaults.initialCompoundsVisible
         // );
-        // // this.userArgsMixin.setUserArg(
+        // // this.setUserArg(
         // //     "molViewer",
         // //     molViewer ? molViewer : defaults.molViewer
         // // );
 
         const isSet = await isStatCollectionEnabled();
-        this.userArgsMixin.setUserArg("allowCookies", isSet);
+        this.setUserArg("allowCookies", isSet);
         this.setStatCollectPetition();
 
         await this.onUserArgChange();
@@ -249,11 +249,11 @@ export default class SettingsPlugin extends PluginParentClass {
 
         for (const setting in defaults) {
             const val = defaults[setting];
-            this.userArgsMixin.setUserArg(setting, val);
+            this.setUserArg(setting, val);
         }
 
         // Also, allow stat collection
-        this.userArgsMixin.setUserArg("allowCookies", true);
+        this.setUserArg("allowCookies", true);
         enableStats();
     }
 
