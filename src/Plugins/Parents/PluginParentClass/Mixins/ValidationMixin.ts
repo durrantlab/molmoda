@@ -110,18 +110,4 @@ export class Validation {
         //     throw new Error(`Plugin ${this.pluginId} does not define runJobInBrowser()`);
         // }
     }
-
-    /**
-     * Checks if the plugin can currently run. This function allows plugins to
-     * provide a warning message when the user has not yet loaded the data
-     * necessary to run the plugin successfully.
-     * @document
-     * @param {any} _  This parameter given only to enable reactivity
-     *                 elsewhere. Not used.
-     * @returns {string | null}  If a string, the error message to show instead
-     *     of running the plugin. If null, proceeds to run the plugin.
-     */
-    checkPluginAllowed(_?: any): string | null {
-        return null;
-    }
 }

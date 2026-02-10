@@ -1,13 +1,13 @@
 
 // Evey plugin component class must inherit this one.
 import { IMenuItem } from "@/UI/Navigation/Menu/Menu";
-import { Component, mixins, Vue } from "vue-facing-decorator";
+import { Component, Vue } from "vue-facing-decorator";
 import { IContributorCredit, IInfoPayload, IPluginSetupInfo, ISoftwareCredit, } from "../../PluginInterfaces";
 import * as api from "@/Api";
 import { registerLoadedPlugin } from "../../LoadedPlugins";
 import { ITest } from "@/Testing/TestInterfaces";
 import { Hooks } from "./Mixins/HooksMixin";
-// import { PopupMixin } from "./Mixins/PopupMixin";
+import { PopupMixin } from "./Mixins/PopupMixin";
 import { JobMsgs } from "./Mixins/JobMsgsMixin";
 import { Validation } from "./Mixins/ValidationMixin";
 import { UserArg } from "@/UI/Forms/FormFull/FormFullInterfaces";
@@ -216,9 +216,21 @@ export abstract class PluginParentClass extends Vue
     private jobId = "";
 
     /**
-     * The initial value of noPopup, captured during mount. Used to reset state.
+     * Occasionally, you might need a plugin that doesn't require a popup (e.g.,
+     * undo/redo). In that case, set this to true.
+     **/
+    public noPopup = false;
+
+    /**
+     * The initial value of noPopup, captured during mount. Used to reset state. 
      */
     private _initialNoPopup = false;
+
+    /**
+     * Whether the modal associated with the plugin is open. It is placed here
+     * so it will be reactive.
+     */
+    open = false;
 
     /**
      * Sets the jobId if it's not already set.
@@ -228,25 +240,6 @@ export abstract class PluginParentClass extends Vue
         if (this.jobId === "") {
             this.jobId = makeUniqJobId(this.pluginId);
         }
-    }
-
-    /**
-     * Helper to get user argument value by ID. Delegates to userArgsMixin.
-     * This allows direct access from the template.
-     * @param {string} id The argument ID.
-     * @returns {any} The value.
-     */
-    public getUserArg(id: string): any {
-        return this.userArgsMixin.getUserArg(id);
-    }
-
-    /**
-     * Helper to set user argument value by ID. Delegates to userArgsMixin.
-     * @param {string} id The argument ID.
-     * @param {any} val The value.
-     */
-    public setUserArg(id: string, val: any): void {
-        this.userArgsMixin.setUserArg(id, val);
     }
 
     /**
@@ -574,6 +567,20 @@ export abstract class PluginParentClass extends Vue
     }
 
     /**
+     * Checks if the plugin can currently run. This function allows plugins to
+     * provide a warning message when the user has not yet loaded the data
+     * necessary to run the plugin successfully.
+     * @document
+     * @param {any} _  This parameter given only to enable reactivity
+     *                 elsewhere. Not used.
+     * @returns {string | null}  If a string, the error message to show instead
+     *     of running the plugin. If null, proceeds to run the plugin.
+     */
+    public checkPluginAllowed(_?: any): string | null {
+        return null;
+    }
+
+    /**
      * Called by the menu to open the plugin. Can be called externally too. But
      * if you want to call a plugin programmatically with parameterws, use
      * pluginsApi.runPlugin.
@@ -581,7 +588,7 @@ export abstract class PluginParentClass extends Vue
     public menuOpenPlugin(): void {
         // Could use `this.onPluginStart();`, but use api for
         // consistency's sake.
-        const msg = this.validation.checkPluginAllowed();
+        const msg = this.checkPluginAllowed();
         if (msg !== null) {
             api.messages.popupError(msg);
         } else {
@@ -595,6 +602,7 @@ export abstract class PluginParentClass extends Vue
     protected jobMsgs: JobMsgs = new JobMsgs();
     protected hooks: Hooks = new Hooks(this);
     public userArgsMixin: UserArgs = new UserArgs(this);
+    public popupMixin = new PopupMixin(this);
 
     /** mounted function */
     async mounted() {
@@ -602,6 +610,7 @@ export abstract class PluginParentClass extends Vue
         this.jobMsgs = new JobMsgs();
         this.hooks = new Hooks(this);
         this.userArgsMixin = new UserArgs(this);
+        this.popupMixin = new PopupMixin(this);
 
 
         // Do some quick validation
@@ -627,7 +636,7 @@ export abstract class PluginParentClass extends Vue
                 hotkey: this.hotkey,
                 function: this.menuOpenPlugin,
                 pluginId: this.pluginId,
-                checkPluginAllowed: this.validation.checkPluginAllowed,
+                checkPluginAllowed: this.checkPluginAllowed.bind(this),
             } as IMenuItem,
             pluginId: this.pluginId,
         } as IPluginSetupInfo);
@@ -636,7 +645,7 @@ export abstract class PluginParentClass extends Vue
         if (this.hotkey !== "") {
             registerHotkeys(this.hotkey, this.pluginId, (e: KeyboardEvent) => {
                 e.preventDefault();
-                const msg = this.validation.checkPluginAllowed();
+                const msg = this.checkPluginAllowed();
                 if (msg !== null) {
                     api.messages.popupError(msg);
                 } else {
@@ -714,18 +723,26 @@ export abstract class PluginParentClass extends Vue
      */
     abstract getTests(): Promise<ITest[] | ITest>;
 
+    // HELPER FUNCTIONS TO ACCESS FUNCTIONS STORED IN SUB-CLASSES (MIXINS)
 
+    /**
+     * Helper to get user argument value by ID. Delegates to userArgsMixin.
+     * This allows direct access from the template.
+     * @param {string} id The argument ID.
+     * @returns {any} The value.
+     */
+    public getUserArg(id: string): any {
+        return this.userArgsMixin.getUserArg(id);
+    }
 
-
-
-
-    // ============================== 
-
-    open = false;
-
-    // Occasionally, you might need a plugin that doesn't require a popup (e.g.,
-    // undo/redo). In that case, set this to true.
-    public noPopup = false;
+    /**
+     * Helper to set user argument value by ID. Delegates to userArgsMixin.
+     * @param {string} id The argument ID.
+     * @param {any} val The value.
+     */
+    public setUserArg(id: string, val: any): void {
+        this.userArgsMixin.setUserArg(id, val);
+    }
 
     /**
      * Closes the popup.
@@ -733,9 +750,7 @@ export abstract class PluginParentClass extends Vue
      * @document
      */
     closePopup(): void {
-        console.warn("DUPLICATE CODE, THIS WHOLE SECTION!!!!!")
-        this.open = false;
-        // this.$emit("update:modelValue", false);
+        this.popupMixin.closePopup();
     }
 
     /**
@@ -744,16 +759,6 @@ export abstract class PluginParentClass extends Vue
      * @document
      */
     public openPopup(): void {
-        this.open = true;
-
-        // If no popup, don't change open and just submit jobs automatically.
-        if (this.noPopup) {
-            this.open = false;
-
-            // Note: (this as any) is ugly.
-            (this as any).onPopupDone();
-        }
-
-        // this.$emit("update:modelValue", true);
+        this.popupMixin.openPopup();
     }
 }

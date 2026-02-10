@@ -1,15 +1,10 @@
- 
-import { Vue } from "vue-facing-decorator";
+import type { PluginParentClass } from "../PluginParentClass";
 
 /**
  * PopupMixin
  */
-export class PopupMixin extends Vue {
-    open = false;
-
-    // Occasionally, you might need a plugin that doesn't require a popup (e.g.,
-    // undo/redo). In that case, set this to true.
-    public noPopup = false;
+export class PopupMixin {
+    protected parent: PluginParentClass;
 
     /**
      * Closes the popup.
@@ -17,7 +12,7 @@ export class PopupMixin extends Vue {
      * @document
      */
     closePopup(): void {
-        this.open = false;
+        this.parent.open = false;
         // this.$emit("update:modelValue", false);
     }
 
@@ -27,16 +22,24 @@ export class PopupMixin extends Vue {
      * @document
      */
     public openPopup(): void {
-        this.open = true;
+        this.parent.open = true;
 
         // If no popup, don't change open and just submit jobs automatically.
-        if (this.noPopup) {
-            this.open = false;
+        if (this.parent.noPopup) {
+            this.parent.open = false;
 
-            // Note: (this as any) is ugly.
-            (this as any).onPopupDone();
+            this.parent.onPopupDone();
         }
 
         // this.$emit("update:modelValue", true);
+    }
+
+    /**
+     * Constructor
+     * @param {PluginParentClass} parent The parent plugin class instance, used
+     *     to access shared state and functions.
+     */
+    constructor(parent: PluginParentClass) {
+        this.parent = parent;
     }
 }
