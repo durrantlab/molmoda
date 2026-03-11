@@ -66,9 +66,15 @@ export function expandAndShowAllMolsInTree() {
 
     // setTimeout(() => {
     getMoleculesFromStore().flattened.forEach((mol) => {
-        mol.treeExpanded = true;
-        mol.visible = true;
-        mol.selected = SelectedType.False;
+        if (!mol.treeExpanded) {
+            mol.treeExpanded = true;
+        }
+        if (!mol.visible) {
+            mol.visible = true;
+        }
+        if (mol.selected !== SelectedType.False) {
+            mol.selected = SelectedType.False;
+        }
     });
     // }, 500);
 }

@@ -29,15 +29,8 @@ function onInitialClick() {
     hotkeyslibPromise()
         .then((hotkeys) => {
             hotkeys("*", { keyup: true }, (event: any) => {
-                if (hotkeys.shift) {
-                    shiftKeyDown = event.type === "keydown";
-                }
-                if (hotkeys.ctrl) {
-                    controlKeyDown = event.type === "keydown";
-                }
-                if (hotkeys.command) {
-                    controlKeyDown = event.type === "keydown";
-                }
+        shiftKeyDown = event.shiftKey;
+        controlKeyDown = event.ctrlKey || event.metaKey;
             });
             // Remove the listener after it has run once.
             document.removeEventListener("click", onInitialClick);

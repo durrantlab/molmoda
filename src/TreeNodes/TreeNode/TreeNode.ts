@@ -1,20 +1,8 @@
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
-import {
-    getMoleculesFromStore,
-    pushToStoreList,
-    setStoreVar,
-} from "@/Store/StoreExternalAccess";
+import { getMoleculesFromStore, pushToStoreList, setStoreVar, } from "@/Store/StoreExternalAccess";
 import type { GLModel } from "@/UI/Panels/Viewer/GLModelType";
-import {
-    TreeNodeType,
-    SelectedType,
-    ITreeNodeData,
-    IAtom,
-    IRegion,
-    IBox,
-    RegionType,
-} from "../../UI/Navigation/TreeView/TreeInterfaces";
+import { TreeNodeType, SelectedType, ITreeNodeData, IAtom, IRegion, IBox, RegionType, } from "../../UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "../TreeNodeList/TreeNodeList";
 import { newTreeNodeList, setupMakerFuncs } from "../TreeNodeMakers";
 import { TreeNodeAncestry } from "./_Ancestry";
@@ -24,7 +12,7 @@ import { visualizationApi } from "@/Api/Visualization";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
+// import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
@@ -138,9 +126,11 @@ export class TreeNode {
     set selected(val: SelectedType) {
         // Set to dirty to trigger rerender of molecule (with yellow outline to
         // indicate selected).
-        this.viewerDirty = true;
+        if (this._selected !== val) {
+            this.viewerDirty = true;
 
-        this._selected = val;
+            this._selected = val;
+        }
     }
 
     /**
@@ -201,10 +191,12 @@ export class TreeNode {
      */
     public set visible(val: boolean) {
         // Make this one visible as well as all its children.
-        this.nodes?.flattened.forEach((nd) => {
-            nd._visible = val;
-        });
-        this._visible = val;
+        if (this._visible !== val) {
+            this.nodes?.flattened.forEach((nd) => {
+                nd._visible = val;
+            });
+            this._visible = val;
+        }
     }
 
     /**
@@ -270,7 +262,7 @@ export class TreeNode {
                     obj["model"] = JSON.parse(JSON.stringify(this.model));
                 }
             } else {
-                const element = this[key];
+                const element = this[key as keyof this];
                 if (element !== undefined) {
                     if (key.startsWith("_")) {
                         // Skip this one
@@ -295,7 +287,7 @@ export class TreeNode {
     public shallowCopy(): TreeNode {
         const prop: { [key: string]: any } = {};
         for (const key in this) {
-            prop[key] = this[key];
+            prop[key] = this[key as keyof this];
         }
 
         if (prop.nodes) {
@@ -587,9 +579,8 @@ export class TreeNode {
             this.nodes &&
             this.nodes.terminals.length === 1
         ) {
-            this.nodes.terminals.get(0).title = `${this.title}:${
-                this.nodes.terminals.get(0).title
-            }`;
+            this.nodes.terminals.get(0).title = `${this.title}:${this.nodes.terminals.get(0).title
+                }`;
         }
 
         pushToStoreList("molecules", this);
