@@ -22,6 +22,7 @@ export interface IMoleculeInputParams {
     // molecule pairs in batches. If not specified, batching not applied (just
     // flat list of molecules). If set to null, batches according to nprocs.
     batchSize?: number | null | undefined;
+    flattenAll?: boolean;
 }
 
 export interface IProtCmpdTreeNodePair {
@@ -60,10 +61,10 @@ export class MoleculeInput {
     // To identify this object as a molecule input, even when it's turned into a
     // JSON.
     isMoleculeInput = true;
+    flattenAll = false;
 
     /**
      * The constructor for the MoleculeInput class.
-     *
      * @param {IMoleculeInputParams} params  The parameters of the MoleculeInput
      *     object.
      */
@@ -112,17 +113,21 @@ export class MoleculeInput {
         if (params.batchSize !== undefined) {
             this.batchSize = params.batchSize;
         }
+        if (params.flattenAll !== undefined) {
+            this.flattenAll = params.flattenAll;
+        }
     }
 
     /**
-     * Given a list of molecules, makes all pairs of proteins + compounds.
-     *
-     * @returns {Promise<IProtCmpdTreeNodePair[]>}  The protein, compound pairs.
+     * Given a list of molecules, makes all pairs of proteins + compounds,
+     * or returns a flat list of all molecules when flattenAll is true.
+     * @returns {Promise<IProtCmpdTreeNodePair[] | FileInfo[]>} The protein,
+     *     compound pairs, or a flat list of FileInfo objects.
      */
     public getProtAndCompoundPairs(): Promise<
         IProtCmpdTreeNodePair[] | FileInfo[]
-        // | IProtCmpdTreeNodePair[][]
-        // | FileInfo[][]
+    // | IProtCmpdTreeNodePair[][]
+    // | FileInfo[][]
     > {
         // let proteins: IFileInfo[] = [];
         // let proteinsPromise: Promise<IFileInfo[]> = Promise.resolve([]);
@@ -135,8 +140,13 @@ export class MoleculeInput {
         if (!this.considerProteins) {
             compiledMols.nodeGroups = [];
         }
+
         if (!this.considerCompounds) {
             compiledMols.compoundsNodes = new TreeNodeList();
+        }
+
+        if (this.flattenAll) {
+            return this._getFlattenedFileInfos(compiledMols);
         }
 
         const protFileInfoPromises = compiledMols.nodeGroups.map(
@@ -237,4 +247,61 @@ export class MoleculeInput {
 
     //     return batchify(lst, this.batchSize);
     // }
+
+
+    /**
+     * Returns all protein and compound molecules as a flat FileInfo array,
+     * each converted individually. Used when flattenAll is true, so that
+     * proteins and compounds are not cross-paired but instead returned as
+     * independent entries.
+     * @param {ReturnType<typeof compileMolModels>} compiledMols The compiled
+     *     molecule groups from the store.
+     * @returns {Promise<FileInfo[]>} A flat array of FileInfo objects for
+     *     every molecule.
+     */
+    private async _getFlattenedFileInfos(
+        compiledMols: ReturnType<typeof compileMolModels>
+    ): Promise<FileInfo[]> {
+        const allFileInfos: FileInfo[] = [];
+
+        for (const prots of compiledMols.nodeGroups) {
+            let filteredProts = prots;
+
+            if (!this.includeMetalsAsProtein) {
+                filteredProts = filteredProts.filter(
+                    (p: TreeNode) =>
+                        p.type !== TreeNodeType.Metal &&
+                        p.type !== TreeNodeType.Ions
+                );
+            }
+            if (!this.includeSolventAsProtein) {
+                filteredProts = filteredProts.filter(
+                    (p: TreeNode) => p.type !== TreeNodeType.Solvent
+                );
+            }
+            if (!this.includeNucleicAsProtein) {
+                filteredProts = filteredProts.filter(
+                    (p: TreeNode) => p.type !== TreeNodeType.Nucleic
+                );
+            }
+
+            const protFileInfos = await getConvertedTxts(
+                filteredProts,
+                this.proteinFormat,
+                true
+            );
+            allFileInfos.push(...protFileInfos.filter((f) => f !== undefined));
+        }
+
+        if (compiledMols.compoundsNodes && compiledMols.compoundsNodes.length > 0) {
+            const cmpdFileInfos = await getConvertedTxts(
+                compiledMols.compoundsNodes,
+                this.compoundFormat,
+                false
+            );
+            allFileInfos.push(...cmpdFileInfos.filter((f) => f !== undefined));
+        }
+
+        return allFileInfos;
+    }
 }

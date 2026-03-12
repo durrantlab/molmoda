@@ -113,9 +113,13 @@ export default class MoleculeInputParams extends Vue {
    * Determines whether to use "compounds" or "molecules" in the UI text.
    * Uses "compounds" if only compounds are being considered, "molecules" otherwise.
    *
-   * @returns {string} Either "compounds" or "molecules"
+     * @returns {string} Either "compounds", "proteins", "molecules", or
+     *     "protein/compound pairs".
    */
   get molNameToUse(): string {
+        if (this.val.flattenAll) {
+            return "molecules";
+        }
     if (this.val.considerCompounds && !this.val.considerProteins) {
       return "compounds";
     }
@@ -149,7 +153,9 @@ export default class MoleculeInputParams extends Vue {
    */
   get summary(): string {
     let actsOn = "";
-    if (this.val.considerCompounds && this.val.considerProteins) {
+        if (this.val.flattenAll) {
+            actsOn = "molecules";
+        } else if (this.val.considerCompounds && this.val.considerProteins) {
       actsOn = "protein/compound pairs";
     } else if (this.val.considerCompounds) {
       actsOn = "compounds";
@@ -184,11 +190,16 @@ export default class MoleculeInputParams extends Vue {
     if (this.val.considerCompounds) {
       prts.push(numAndNoun(compoundsNodesCount, "compound"));
     }
-
     let components = prts.join(" and ");
+
     let numRuns = "";
     let warningClass = "";
-    if (this.val.considerCompounds && this.val.considerProteins) {
+
+        if (this.val.flattenAll) {
+            const total = nodeGroupsCount + compoundsNodesCount;
+            numRuns = `${total} times (once for each molecule)`;
+            if (total === 0) warningClass = "text-danger fw-bold";
+        } else if (this.val.considerCompounds && this.val.considerProteins) {
       const total = nodeGroupsCount * compoundsNodesCount;
       numRuns = `${total} (${nodeGroupsCount} x ${compoundsNodesCount}) times`;
       if (total === 0) warningClass = "text-danger fw-bold";

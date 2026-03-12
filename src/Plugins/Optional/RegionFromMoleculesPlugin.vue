@@ -70,6 +70,7 @@ export default class RegionFromMoleculesPlugin extends PluginParentClass {
             val: new MoleculeInput({
                 considerProteins: true,
                 considerCompounds: true,
+                flattenAll: true,
                 proteinFormat: "pdb",
                 compoundFormat: "mol2",
                 includeSolventAsProtein: false,
