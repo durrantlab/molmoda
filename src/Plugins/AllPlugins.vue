@@ -76,6 +76,7 @@ system uses these to autopopulate with plugins. -->
     <PubChemPropsPlugin @onPluginSetup="onPluginSetup"></PubChemPropsPlugin>
     <ReducePlugin @onPluginSetup="onPluginSetup"></ReducePlugin>
     <Regen3DCoordsPlugin @onPluginSetup="onPluginSetup"></Regen3DCoordsPlugin>
+    <RegionFromMoleculesPlugin @onPluginSetup="onPluginSetup"></RegionFromMoleculesPlugin>
     <SavePNGPlugin @onPluginSetup="onPluginSetup"></SavePNGPlugin>
     <SaveVRMLPlugin @onPluginSetup="onPluginSetup"></SaveVRMLPlugin>
     <WebinaPlugin @onPluginSetup="onPluginSetup"></WebinaPlugin>
@@ -167,6 +168,7 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
     PubChemPropsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PubChem/PubChemPropsPlugin.vue")),
     ReducePlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Reduce/ReducePlugin.vue")),
     Regen3DCoordsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Regen3DCoords/Regen3DCoordsPlugin.vue")),
+    RegionFromMoleculesPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/RegionFromMoleculesPlugin.vue")),
     SavePNGPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Graphics/SavePNGPlugin.vue")),
     SaveVRMLPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Graphics/SaveVRMLPlugin.vue")),
     WebinaPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Webina/WebinaPlugin.vue")),

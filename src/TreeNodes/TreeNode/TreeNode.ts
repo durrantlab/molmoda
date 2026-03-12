@@ -518,6 +518,7 @@ export class TreeNode {
         if (reassignIds) {
             this.reassignAllIds();
         }
+
         if (isTest) {
             // If it's a test, open it with all nodes expanded.
             expandAndShowAllMolsInTree();
@@ -540,20 +541,19 @@ export class TreeNode {
         }
 
         if (resetVisibilityAndSelection) {
-            // Set visibility to true for this node and all its non-terminal children.
             allNodesInSubtree.forEach((node) => {
                 if (node.nodes) {
                     // It's a container node
                     node.visible = true;
                 }
             });
+
             this.visible = true;
 
             // For terminal nodes, make only the first few visible.
             const terminalNodes = this.nodes
                 ? this.nodes.terminals
                 : new TreeNodeList([]);
-
             if (this.model) {
                 // This node is a terminal node itself.
                 terminalNodes.push(this);
@@ -583,6 +583,14 @@ export class TreeNode {
                 }`;
         }
 
+    // Clear focus on all existing molecules before adding the new one,
+    // so the viewer knows to zoom to the newly added molecule.
+    const existingMols = getMoleculesFromStore();
+    existingMols.flattened.forEach((node) => {
+      node.focused = false;
+    });
+    this.focused = true;
+
         pushToStoreList("molecules", this);
 
         if (store.state.projectTitle === "") {
@@ -598,7 +606,6 @@ export class TreeNode {
         const viewer = await visualizationApi.viewer;
         // Set the style according to the current user specs.
         updateStylesInViewer();
-
         viewer.zoomOnFocused();
     }
 

@@ -578,6 +578,15 @@ export default class ViewerPanel extends Vue {
 
     await Promise.all(surfacePromises);
 
+  // Zoom to any focused molecule after all models are added and styled.
+  // This ensures the viewer camera moves to newly loaded molecules.
+  const hasFocusedNode = treeNodes.some(
+   (treeNode: TreeNode) => treeNode.focused && treeNode.visible
+  );
+  if (hasFocusedNode) {
+   viewer.zoomOnFocused();
+  }
+
     api.messages.stopWaitSpinner(spinnerId);
 
     return visibleTerminalNodeModelsIds;
