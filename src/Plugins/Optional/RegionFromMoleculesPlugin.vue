@@ -24,13 +24,12 @@ import {
     IUserArgOption,
     IUserArgText,
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { MoleculeInput } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
+import { MoleculeInput, ProcessingMode } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import {
     IAtom,
     IBox,
     ISphere,
     RegionType,
-    SelectedType,
     TreeNodeType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { randomPastelColor } from "@/Core/Styling/Colors/ColorUtils";
@@ -53,8 +52,8 @@ import { Component } from "vue-facing-decorator";
     },
 })
 export default class RegionFromMoleculesPlugin extends PluginParentClass {
-    menuPath = "Regions/Region from Molecules...";
-    title = "Region from Molecules";
+    menuPath = "Regions/[7] From Molecule(s)...";
+    title = "From Molecule(s)";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "regionfrommolecules";
@@ -71,6 +70,7 @@ export default class RegionFromMoleculesPlugin extends PluginParentClass {
                 considerProteins: true,
                 considerCompounds: true,
                 considerAllMoleculeTypes: true,
+                processingMode: ProcessingMode.Together,
                 proteinFormat: "pdb",
                 compoundFormat: "mol2",
                 includeSolventAsProtein: false,
@@ -312,7 +312,6 @@ export default class RegionFromMoleculesPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin.
-     *
      * @returns {Promise<ITest[]>} The test definitions.
      */
     async getTests(): Promise<ITest[]> {

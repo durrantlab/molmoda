@@ -63,7 +63,7 @@ system uses these to autopopulate with plugins. -->
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
     <YesNoPlugin @onPluginSetup="onPluginSetup"></YesNoPlugin>
 
-    <AddRegionPlugin @onPluginSetup="onPluginSetup"></AddRegionPlugin>
+    <NewRegionPlugin @onPluginSetup="onPluginSetup"></NewRegionPlugin>
     <AlignProteinsPlugin @onPluginSetup="onPluginSetup"></AlignProteinsPlugin>
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
@@ -155,7 +155,7 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
     ViewerWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/ViewerWindowPlugin.vue")),
     YesNoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/YesNoPlugin.vue")),
 
-    AddRegionPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/AddRegionPlugin.vue")),
+    NewRegionPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/NewRegionPlugin.vue")),
     AlignProteinsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Align/AlignProteinsPlugin.vue")),
     EvalScreenPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/EvalScreenPlugin.vue")),
     FPocketWebPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/FPocketWeb/FPocketWebPlugin.vue")),

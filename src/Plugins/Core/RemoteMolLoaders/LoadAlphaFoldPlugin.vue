@@ -170,7 +170,10 @@ export default class LoadAlphaFoldPlugin extends PluginParentClass {
                 ),
                 afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                     "#navigator",
-                    "P86927"
+                    "AF-"
+                ).waitUntilRegex(
+                    "#navigator",
+                    "-model"
                 ),
 
                 // .waitUntilRegex("#styles", "Protein")
