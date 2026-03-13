@@ -109,15 +109,15 @@ export default class MoleculeInputParams extends Vue {
     return this.$store.state.molecules;
   }
 
-  /**
-   * Determines whether to use "compounds" or "molecules" in the UI text.
-   * Uses "compounds" if only compounds are being considered, "molecules" otherwise.
-   *
+   /**
+     * Determines the noun to use in the UI text based on what molecule types
+     * are being considered.
+     *
      * @returns {string} Either "compounds", "proteins", "molecules", or
      *     "protein/compound pairs".
    */
   get molNameToUse(): string {
-        if (this.val.flattenAll) {
+        if (this.val.considerAllMoleculeTypes) {
             return "molecules";
         }
     if (this.val.considerCompounds && !this.val.considerProteins) {
@@ -146,14 +146,13 @@ export default class MoleculeInputParams extends Vue {
 
   /**
    * Generates a detailed summary of what molecules will be processed.
-   * Includes counts of proteins and compounds, total number of calculations that will run,
-   * and warnings about previously processed molecules.
+     * Includes counts and warnings about previously processed molecules.
    *
    * @returns {string} HTML-formatted summary string
    */
   get summary(): string {
     let actsOn = "";
-        if (this.val.flattenAll) {
+        if (this.val.considerAllMoleculeTypes) {
             actsOn = "molecules";
         } else if (this.val.considerCompounds && this.val.considerProteins) {
       actsOn = "protein/compound pairs";
@@ -184,22 +183,53 @@ export default class MoleculeInputParams extends Vue {
     } as IProtCmpdCounts);
 
     let prts: string[] = [];
+        let numRuns = "";
+        let warningClass = "";
+
+        if (this.val.considerAllMoleculeTypes) {
+            // Count only leaf (terminal) nodes with models that match the
+            // visibility/selection criteria. Using terminals rather than
+            // the full flattened list avoids counting container nodes.
+            const allMols = this.$store.state.molecules as TreeNodeList;
+            let terminals = allMols.terminals;
+
+            if (
+                this.val.molsToConsider.visible &&
+                !this.val.molsToConsider.hiddenAndUnselected
+            ) {
+                terminals = terminals.filters.keepVisible(true);
+            } else if (
+                this.val.molsToConsider.selected &&
+                !this.val.molsToConsider.hiddenAndUnselected
+            ) {
+                terminals = terminals.filters.keepSelected(true);
+            }
+
+            const matchingTerminals = terminals.filter(
+                (node) => !!node.model
+            );
+            const terminalCount = matchingTerminals.length;
+
+            // Log included terminal node names for debugging
+            console.log(
+                "[MoleculeInputParams] Matching terminal nodes:",
+                matchingTerminals.map((n) => n.title)
+            );
+
+            prts.push(numAndNoun(terminalCount, "molecule"));
+            // All matching molecules are considered together as a group,
+            // not processed individually.
+            numRuns = `once (considering all ${terminalCount} together)`;
+            if (terminalCount === 0) warningClass = "text-danger fw-bold";
+        } else {
     if (this.val.considerProteins) {
       prts.push(numAndNoun(nodeGroupsCount, "protein"));
     }
     if (this.val.considerCompounds) {
       prts.push(numAndNoun(compoundsNodesCount, "compound"));
     }
-    let components = prts.join(" and ");
 
-    let numRuns = "";
-    let warningClass = "";
-
-        if (this.val.flattenAll) {
-            const total = nodeGroupsCount + compoundsNodesCount;
-            numRuns = `${total} times (once for each molecule)`;
-            if (total === 0) warningClass = "text-danger fw-bold";
-        } else if (this.val.considerCompounds && this.val.considerProteins) {
+            if (this.val.considerCompounds && this.val.considerProteins) {
       const total = nodeGroupsCount * compoundsNodesCount;
       numRuns = `${total} (${nodeGroupsCount} x ${compoundsNodesCount}) times`;
       if (total === 0) warningClass = "text-danger fw-bold";
@@ -208,15 +238,19 @@ export default class MoleculeInputParams extends Vue {
       if (nodeGroupsCount === 0) warningClass = "text-danger fw-bold";
     } else if (this.val.considerCompounds) {
       numRuns = `${compoundsNodesCount} times (once for each compound)`;
-      if (compoundsNodesCount === 0) warningClass = "text-danger fw-bold";
+                if (compoundsNodesCount === 0)
+                    warningClass = "text-danger fw-bold";
     } else {
       numRuns = "0 times";
       warningClass = "text-danger fw-bold";
     }
+        }
+
+        let components = prts.join(" and ");
 
     let msg = `This calculation acts on ${actsOn}. Among ${whichMols} molecules, I found <b>${components}</b>, <span class="${warningClass}">so this calculation will run <b>${numRuns}</b>.</span>`;
 
-    // Check for existing tags
+        // Tag-based warnings for previously processed molecules
     let numProtsAlreadyWithTag = 0;
     for (const nodeGroup of nodeGroups) {
       for (const nd of nodeGroup.terminals.nodes) {
@@ -236,7 +270,9 @@ export default class MoleculeInputParams extends Vue {
     if (numProtsAlreadyWithTag > 0 || numCompsAlreadyWithTag > 0) {
       const compsAlreadyWithTag = [];
       if (numProtsAlreadyWithTag > 0) {
-        compsAlreadyWithTag.push(numAndNoun(numProtsAlreadyWithTag, "protein"));
+                compsAlreadyWithTag.push(
+                    numAndNoun(numProtsAlreadyWithTag, "protein")
+                );
       }
       if (numCompsAlreadyWithTag > 0) {
         compsAlreadyWithTag.push(
@@ -245,9 +281,13 @@ export default class MoleculeInputParams extends Vue {
       }
       const compsAlreadyWithTagStr = compsAlreadyWithTag.join(" and ");
       const pronoun =
-        numProtsAlreadyWithTag + numCompsAlreadyWithTag > 1 ? "them" : "it";
+                numProtsAlreadyWithTag + numCompsAlreadyWithTag > 1
+                    ? "them"
+                    : "it";
       const were =
-        numProtsAlreadyWithTag + numCompsAlreadyWithTag > 1 ? "were" : "was";
+                numProtsAlreadyWithTag + numCompsAlreadyWithTag > 1
+                    ? "were"
+                    : "was";
       msg += ` <span class="text-danger fw-bold">Warning: Of these molecules, ${compsAlreadyWithTagStr} ${were} created with this same plugin. Are you sure you want to include ${pronoun} again?</span>`;
     }
 

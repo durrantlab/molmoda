@@ -5,6 +5,7 @@ import { getConvertedTxts } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 export interface IMoleculeInputParams {
     molsToConsider?: IMolsToConsider;
@@ -22,7 +23,7 @@ export interface IMoleculeInputParams {
     // molecule pairs in batches. If not specified, batching not applied (just
     // flat list of molecules). If set to null, batches according to nprocs.
     batchSize?: number | null | undefined;
-    flattenAll?: boolean;
+    considerAllMoleculeTypes?: boolean;
 }
 
 export interface IProtCmpdTreeNodePair {
@@ -61,7 +62,14 @@ export class MoleculeInput {
     // To identify this object as a molecule input, even when it's turned into a
     // JSON.
     isMoleculeInput = true;
-    flattenAll = false;
+
+    /**
+     * When true, all terminal molecule types (proteins, compounds, nucleic
+     * acids, metals, solvent, ions, lipids, etc.) are gathered into a single
+     * flat list of FileInfo objects rather than being cross-paired as
+     * protein/compound combinations.
+     */
+    considerAllMoleculeTypes = false;
 
     /**
      * The constructor for the MoleculeInput class.
@@ -113,14 +121,15 @@ export class MoleculeInput {
         if (params.batchSize !== undefined) {
             this.batchSize = params.batchSize;
         }
-        if (params.flattenAll !== undefined) {
-            this.flattenAll = params.flattenAll;
+        if (params.considerAllMoleculeTypes !== undefined) {
+            this.considerAllMoleculeTypes = params.considerAllMoleculeTypes;
         }
     }
 
     /**
      * Given a list of molecules, makes all pairs of proteins + compounds,
-     * or returns a flat list of all molecules when flattenAll is true.
+     * or returns a flat list of all molecules when considerAllMoleculeTypes
+     * is true.
      * @returns {Promise<IProtCmpdTreeNodePair[] | FileInfo[]>} The protein,
      *     compound pairs, or a flat list of FileInfo objects.
      */
@@ -145,13 +154,12 @@ export class MoleculeInput {
             compiledMols.compoundsNodes = new TreeNodeList();
         }
 
-        if (this.flattenAll) {
-            return this._getFlattenedFileInfos(compiledMols);
+        if (this.considerAllMoleculeTypes) {
+            return this._getAllMoleculeTypeFileInfos(compiledMols);
         }
 
         const protFileInfoPromises = compiledMols.nodeGroups.map(
             (prots: TreeNodeList) => {
-                // Keep only protein if so specified.
                 if (!this.includeMetalsAsProtein) {
                     prots = prots.filter(
                         (p: TreeNode) =>
@@ -170,20 +178,16 @@ export class MoleculeInput {
                     );
                 }
 
-                // return getConvertedTxts(prots, "pdb", true).then(
                 return getConvertedTxts(prots, this.proteinFormat, true).then(
                     (fileInfos: FileInfo[]) => {
-                        // There's only one
                         return fileInfos[0];
                     }
                 );
             }
         );
 
-        // let cmpdFileInfoPromises: Promise<FileInfo>[] = [];
         let cmpdFileInfoPromise: Promise<any> = Promise.resolve();
         if (compiledMols.compoundsNodes) {
-            // cmpdFileInfoPromise = getConvertedTxts(compiledMols.compoundsNodes, "pdb", false);
             cmpdFileInfoPromise = getConvertedTxts(
                 compiledMols.compoundsNodes,
                 this.compoundFormat,
@@ -233,36 +237,26 @@ export class MoleculeInput {
             });
     }
 
-    // /**
-    //  * Given a list of items, divide the list into batches.
-    //  *
-    //  * @param {any[]} lst  The list of items.
-    //  * @returns {any[] | any[][]}  The list of items, divided into batches.
-    //  */
-    // private _makeBatches<Type>(lst: Type[]): Type[] | Type[][] {
-    //     if (this.batchSize === undefined) {
-    //         // No batching
-    //         return lst;
-    //     }
-
-    //     return batchify(lst, this.batchSize);
-    // }
-
-
     /**
-     * Returns all protein and compound molecules as a flat FileInfo array,
-     * each converted individually. Used when flattenAll is true, so that
-     * proteins and compounds are not cross-paired but instead returned as
-     * independent entries.
+     * Returns all molecules as a flat FileInfo array. In addition to proteins
+     * and compounds from compileMolModels, this also gathers any other
+     * terminal node types (nucleic acids, metals, solvent, ions, lipids) that
+     * match the molsToConsider visibility/selection criteria, so that
+     * "molecules" truly means all molecule types.
+     *
      * @param {ReturnType<typeof compileMolModels>} compiledMols The compiled
      *     molecule groups from the store.
      * @returns {Promise<FileInfo[]>} A flat array of FileInfo objects for
      *     every molecule.
      */
-    private async _getFlattenedFileInfos(
+    private async _getAllMoleculeTypeFileInfos(
         compiledMols: ReturnType<typeof compileMolModels>
     ): Promise<FileInfo[]> {
         const allFileInfos: FileInfo[] = [];
+
+        // Collect IDs of nodes already handled by compileMolModels so we
+        // don't duplicate them when we sweep for "other" node types below.
+        const handledIds = new Set<string>();
 
         for (const prots of compiledMols.nodeGroups) {
             let filteredProts = prots;
@@ -285,6 +279,11 @@ export class MoleculeInput {
                 );
             }
 
+            // Track which nodes are being handled
+            filteredProts.forEach((p: TreeNode) => {
+                if (p.id) handledIds.add(p.id);
+            });
+
             const protFileInfos = await getConvertedTxts(
                 filteredProts,
                 this.proteinFormat,
@@ -293,7 +292,14 @@ export class MoleculeInput {
             allFileInfos.push(...protFileInfos.filter((f) => f !== undefined));
         }
 
-        if (compiledMols.compoundsNodes && compiledMols.compoundsNodes.length > 0) {
+        if (
+            compiledMols.compoundsNodes &&
+            compiledMols.compoundsNodes.length > 0
+        ) {
+            compiledMols.compoundsNodes.forEach((c: TreeNode) => {
+                if (c.id) handledIds.add(c.id);
+            });
+
             const cmpdFileInfos = await getConvertedTxts(
                 compiledMols.compoundsNodes,
                 this.compoundFormat,
@@ -301,6 +307,50 @@ export class MoleculeInput {
             );
             allFileInfos.push(...cmpdFileInfos.filter((f) => f !== undefined));
         }
+
+        // Gather remaining terminal nodes (nucleic, metal, solvent, ions,
+        // lipid, other) that compileMolModels did not already include.
+        const allMols = getMoleculesFromStore();
+        let candidates = allMols.flattened;
+
+        if (
+            this.molsToConsider.visible &&
+            !this.molsToConsider.hiddenAndUnselected
+        ) {
+            candidates = candidates.filters.keepVisible(true);
+        } else if (
+            this.molsToConsider.selected &&
+            !this.molsToConsider.hiddenAndUnselected
+        ) {
+            candidates = candidates.filters.keepSelected(true);
+        }
+
+        const remainingTerminals = candidates.filters.onlyTerminal.filter(
+            (node: TreeNode) => {
+                if (!node.id || handledIds.has(node.id)) return false;
+                if (!node.model) return false;
+                return true;
+            }
+        );
+
+        if (remainingTerminals.length > 0) {
+            // Convert these "other" nodes to PDB format (a safe default
+            // that can represent any atom type).
+            const otherFileInfos = await getConvertedTxts(
+                remainingTerminals,
+                "pdb",
+                false
+            );
+            allFileInfos.push(
+                ...otherFileInfos.filter((f) => f !== undefined)
+            );
+        }
+
+        // Log included terminal node names for debugging
+        console.log(
+            "[MoleculeInput] Included terminal nodes:",
+            allFileInfos.map((fi) => fi.treeNode?.title ?? fi.name)
+        );
 
         return allFileInfos;
     }
