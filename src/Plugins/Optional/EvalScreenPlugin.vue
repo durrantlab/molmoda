@@ -19,9 +19,11 @@
                 <h6>Receiver Operating Characteristic (ROC) Curve</h6>
 
                 <!-- title="Receiver Operating Characteristic Curve" -->
-                <Chart xAxisLabel="False Positive Rate" yAxisLabel="True Positive Rate" xAxisLabelHover="FPR"
-                    yAxisLabelHover="TPR" xAxisUnits="" yAxisUnits="" :chartData="rocData" chartType="scatter"
-                    :ratio="ratio" :smooth="false" :fillUnderLine="true" downloadFilenameBase="roc-curve"></Chart>
+                <div id="roc-chart-wrapper">
+                    <Chart xAxisLabel="False Positive Rate" yAxisLabel="True Positive Rate" xAxisLabelHover="FPR"
+                        yAxisLabelHover="TPR" xAxisUnits="" yAxisUnits="" :chartData="rocData" chartType="scatter"
+                        :ratio="ratio" :smooth="false" :fillUnderLine="true" downloadFilenameBase="roc-curve"></Chart>
+                </div>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -44,10 +46,12 @@
 
                 <h6>Enrichment Factors (EF)</h6>
                 <!-- title="Enrichment Factor" -->
-                <Chart xAxisLabel="Number of Top Compounds Considered" yAxisLabel="Enrichment Factor"
-                    xAxisLabelHover="Top Compounds" yAxisLabelHover="EF" :xPrecision="0" xAxisUnits="" yAxisUnits=""
-                    :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"
-                    downloadFilenameBase="enrichment-factors"></Chart>
+                <div id="ef-chart-wrapper">
+                    <Chart xAxisLabel="Number of Top Compounds Considered" yAxisLabel="Enrichment Factor"
+                        xAxisLabelHover="Top Compounds" yAxisLabelHover="EF" :xPrecision="0" xAxisUnits="" yAxisUnits=""
+                        :chartData="efData" chartType="scatter" :ratio="ratio" :smooth="false"
+                        downloadFilenameBase="enrichment-factors"></Chart>
+                </div>
                 <!-- :axisPaddingPercent="5" -->
 
                 <Alert type="info" extraClasses="mt-3">
@@ -67,7 +71,7 @@
                         <strong>{{ bestEFCutoff }}</strong> best-scoring compounds,
                         <strong>{{ percentTopCompoundsActive }}%</strong>
                         (<strong>{{ numActivesAtBestEF }}</strong> {{ numActivesAtBestEF === 1 ? "compound" :
-                        "compounds" }})
+                            "compounds" }})
                         were active, giving an enrichment factor of
                         <strong>{{
                             parseFloat(percentTopCompoundsActive) /
@@ -612,7 +616,15 @@ export default class EvalScreenPlugin extends PluginParentClass {
                     new TestCmdList()
                         .setUserArg("activesLabel", "active", this.pluginId)
                         .setUserArg("otherLabel", "other", this.pluginId)
-                        .waitUntilRegex("#modal-evalscreen", "0.871"),
+                        .waitUntilRegex("#modal-evalscreen", "0.871")
+                        .tourNote(
+                            "The ROC (Receiver Operating Characteristic) curve plots the true positive rate against the false positive rate at various score thresholds. A curve that hugs the upper-left corner indicates strong discrimination between actives and decoys. The area under this curve (AUROC) summarizes overall performance, where 1.0 is perfect and 0.5 is random.",
+                            "#roc-chart-wrapper"
+                        )
+                        .tourNote(
+                            "The Enrichment Factor (EF) curve shows how effectively docking concentrates known actives among the top-scoring compounds. A high enrichment factor at low cutoffs means the best-scoring compounds are disproportionately enriched with true actives.",
+                            "#ef-chart-wrapper"
+                        ),
                 closePlugin: () =>
                     new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
                 afterPluginCloses: () => new TestCmdList(),

@@ -98,72 +98,70 @@ export function injectDriverCss(): void {
 }
 
 /**
- * Handles the rendering of the popover by applying Bootstrap classes.
+ * Handles wait steps by hiding the popover and polling until the condition is met.
  *
- * @param {PopoverDOM} popover - The popover DOM object from driver.js.
- * @param {any} state - The current state of the tour step.
- * @param {any} driver - The driver.js instance.
- * @param {() => void} onCompleted - Callback when the tour is marked as completed via "Done" button.
+ * @param {PopoverDOM} popover The popover DOM object.
+ * @param {any} state The current tour state.
+ * @param {any} driver The driver.js instance.
+ * @returns {boolean} True if this was a wait step (caller should return early).
  */
-export function handlePopoverRender(
+function handleWaitStep(
     popover: PopoverDOM,
-    { state }: { state: any },
-    driver: any,
-    onCompleted: () => void
-): void {
-    if (isLocalHost) {
-        console.log(`[Tour Debug] handlePopoverRender called, activeStep:`, {
-            element: state.activeStep?.element,
-            isWaitStep: state.activeStep?.isWaitStep,
-            isClickStep: state.activeStep?.isClickStep,
-            isNoteStep: state.activeStep?.isNoteStep,
-            isMenuItem: state.activeStep?.isMenuItem,
-            tourDebugInfo: state.activeStep?.tourDebugInfo,
-        });
+    state: any,
+    driver: any
+): boolean {
+    if (!state.activeStep.isWaitStep) {
+        return false;
     }
 
     const popoverEl = popover.wrapper?.closest(
         ".driver-popover"
     ) as HTMLElement;
 
-    if (state.activeStep.isWaitStep) {
-        if (popoverEl) {
-            popoverEl.style.display = "none";
-        }
-
-        setTimeout(() => {
-            waitForCondition(state.activeStep.waitCondition)
-                .then(() => {
-                    if (
-                        driver &&
-                        driver.getActiveStep() === state.activeStep
-                    ) {
-                        driver.moveNext();
-                    }
-                    return null;
-                })
-                .catch((err: any) => {
-                    throw new Error(
-                        "TourManager: Error in waitForCondition:" +
-                        err.message
-                    );
-                });
-        }, 0);
-        return;
+    if (popoverEl) {
+        popoverEl.style.display = "none";
     }
 
-    if (!popoverEl) return;
+    setTimeout(() => {
+        waitForCondition(state.activeStep.waitCondition)
+            .then(() => {
+                if (
+                    driver &&
+                    driver.getActiveStep() === state.activeStep
+                ) {
+                    driver.moveNext();
+                }
+                return null;
+            })
+            .catch((err: any) => {
+                throw new Error(
+                    "TourManager: Error in waitForCondition:" +
+                    err.message
+                );
+            });
+    }, 0);
 
-    // For menu items, hide the popover initially - it will be shown after repositioning
-    // Check if this is the first render (before repositioning to parent li)
-    const elementSelector = state.activeStep?.element || "";
+    return true;
+}
+
+/**
+ * Handles visibility of menu item popovers during repositioning to parent elements.
+ *
+ * @param {HTMLElement} popoverEl The popover HTML element.
+ * @param {any} activeStep The current active step.
+ */
+function handleMenuItemVisibility(
+    popoverEl: HTMLElement,
+    activeStep: any
+): void {
+    const elementSelector = activeStep?.element || "";
     const isRepositioned = typeof elementSelector === "string" && elementSelector.includes("data-tour-menu-highlight");
-    
+
     if (isLocalHost) {
-        console.log(`[Tour Debug] Menu item check: isMenuItem=${state.activeStep?.isMenuItem}, elementSelector="${elementSelector}", isRepositioned=${isRepositioned}`);
+        console.log(`[Tour Debug] Menu item check: isMenuItem=${activeStep?.isMenuItem}, elementSelector="${elementSelector}", isRepositioned=${isRepositioned}`);
     }
-    
-    if (state.activeStep?.isMenuItem && !isRepositioned) {
+
+    if (activeStep?.isMenuItem && !isRepositioned) {
         popoverEl.classList.add("tour-menu-item-hidden");
         if (isLocalHost) {
             console.log(`[Tour Debug] Hiding popover for menu item repositioning`);
@@ -171,14 +169,26 @@ export function handlePopoverRender(
     } else {
         // Either not a menu item, or it's been repositioned - make sure it's visible
         popoverEl.classList.remove("tour-menu-item-hidden");
-        if (state.activeStep?.isMenuItem && isLocalHost) {
+        if (activeStep?.isMenuItem && isLocalHost) {
             console.log(`[Tour Debug] Showing popover after menu item repositioning`);
         }
     }
+}
 
-    // If the step has no element target (like a modal wait step), force it to be centered.
-    const isConclusion = state.activeStep.tourDebugInfo === "Conclusion";
-    if (!state.activeStep.element || isConclusion) {
+/**
+ * Centers the popover on screen for steps with no target element (e.g., conclusion steps).
+ *
+ * @param {HTMLElement} popoverEl The popover HTML element.
+ * @param {PopoverDOM} popover The popover DOM object.
+ * @param {any} activeStep The current active step.
+ */
+function handleCenterPositioning(
+    popoverEl: HTMLElement,
+    popover: PopoverDOM,
+    activeStep: any
+): void {
+    const isConclusion = activeStep.tourDebugInfo === "Conclusion";
+    if (!activeStep.element || isConclusion) {
         popoverEl.style.setProperty("position", "fixed", "important");
         popoverEl.style.setProperty("top", "50%", "important");
         popoverEl.style.setProperty("left", "50%", "important");
@@ -192,7 +202,18 @@ export function handlePopoverRender(
             popover.arrow.style.display = "none";
         }
     }
+}
 
+/**
+ * Applies Bootstrap card styling to the popover and its subcomponents.
+ *
+ * @param {HTMLElement} popoverEl The popover HTML element.
+ * @param {PopoverDOM} popover The popover DOM object.
+ */
+function applyBootstrapStyling(
+    popoverEl: HTMLElement,
+    popover: PopoverDOM
+): void {
     popoverEl.classList.add("card", "shadow-lg", "p-0");
 
     if (popover.title) {
@@ -216,59 +237,6 @@ export function handlePopoverRender(
             "drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.3))";
     }
 
-    if (popover.description) {
-        popover.description.classList.add("card-body", "p-3");
-
-        // Enhance generic click messages by including the text of the target element.
-        if (
-            state.activeStep?.isClickStep &&
-            popover.description.innerText.trim() === "Please click here to continue."
-        ) {
-            const selector = state.activeStep.element;
-            if (typeof selector === "string") {
-                const element = document.querySelector(selector) as HTMLElement;
-                if (element) {
-                    const text = getElementLabel(element);
-                    // Update the message if we found a reasonable short label
-                    if (text.length > 0 && text.length < 30) {
-                        popover.description.innerHTML = `Please click "<b>${text}</b>" to continue.`;
-                    }
-                }
-            }
-        }
-
-        // Logic for input/select steps where the value is already set correctly
-        const selector = state.activeStep.element;
-        if (state.activeStep?.expectedValue !== undefined && typeof selector === "string") {
-            const element = document.querySelector(selector) as HTMLElement;
-            
-            if (isElementValueCorrect(element, state.activeStep.expectedValue)) {
-                const originalDesc = popover.description.innerHTML;
-
-                // Rewrite the description to indicate the value is already correct
-                const prefixRegex = /^(For .*, (?:enter|select) ".*"\.)/;
-                const match = originalDesc.match(prefixRegex);
-
-                if (match) {
-                    const originalSentence = match[1];
-                    // Extract the field label and value from the original sentence
-                    const partsMatch = originalSentence.match(/^For (.*), (?:enter|select) "(.*)"\./);
-                    if (partsMatch) {
-                        const fieldLabel = partsMatch[1];
-                        const value = partsMatch[2];
-                        const newSentence = `${fieldLabel} is currently set to "${value}". For this tour, we will leave it as is.`;
-                        popover.description.innerHTML = originalDesc.replace(originalSentence, newSentence);
-                    }
-                } else {
-                    // Fallback if the regex doesn't match the standard description pattern
-                    if (!originalDesc.includes("leave it as is")) {
-                        popover.description.innerHTML += ` <br>This value is already set correctly. For this tour, we will leave it as is.`;
-                    }
-                }
-            }
-        }
-    }
-
     if (popover.footer) {
         popover.footer.classList.add(
             "card-footer",
@@ -280,7 +248,89 @@ export function handlePopoverRender(
         );
         popover.footer.classList.remove("driver-popover-footer");
     }
+}
 
+/**
+ * Enhances the popover description for click steps by including the target element's label,
+ * and rewrites descriptions for input steps where the value is already correct.
+ *
+ * @param {PopoverDOM} popover The popover DOM object.
+ * @param {any} activeStep The current active step.
+ */
+function enhanceDescription(
+    popover: PopoverDOM,
+    activeStep: any
+): void {
+    if (!popover.description) {
+        return;
+    }
+
+    popover.description.classList.add("card-body", "p-3");
+
+    // Enhance generic click messages by including the text of the target element.
+    if (
+        activeStep?.isClickStep &&
+        popover.description.innerText.trim() === "Please click here to continue."
+    ) {
+        const selector = activeStep.element;
+        if (typeof selector === "string") {
+            const element = document.querySelector(selector) as HTMLElement;
+            if (element) {
+                const text = getElementLabel(element);
+                // Update the message if we found a reasonable short label
+                if (text.length > 0 && text.length < 30) {
+                    popover.description.innerHTML = `Please click "<b>${text}</b>" to continue.`;
+                }
+            }
+        }
+    }
+
+    // Rewrite description for input/select steps where the value is already correct.
+    const selector = activeStep.element;
+    if (activeStep?.expectedValue !== undefined && typeof selector === "string") {
+        const element = document.querySelector(selector) as HTMLElement;
+
+        if (isElementValueCorrect(element, activeStep.expectedValue)) {
+            const originalDesc = popover.description.innerHTML;
+
+            // Rewrite the description to indicate the value is already correct
+            const prefixRegex = /^(For .*, (?:enter|select) ".*"\.)/;
+            const match = originalDesc.match(prefixRegex);
+
+            if (match) {
+                const originalSentence = match[1];
+                // Extract the field label and value from the original sentence
+                const partsMatch = originalSentence.match(/^For (.*), (?:enter|select) "(.*)"\./);
+                if (partsMatch) {
+                    const fieldLabel = partsMatch[1];
+                    const value = partsMatch[2];
+                    const newSentence = `${fieldLabel} is currently set to "${value}". For this tour, we will leave it as is.`;
+                    popover.description.innerHTML = originalDesc.replace(originalSentence, newSentence);
+                }
+            } else {
+                // Fallback if the regex doesn't match the standard description pattern
+                if (!originalDesc.includes("leave it as is")) {
+                    popover.description.innerHTML += ` <br>This value is already set correctly. For this tour, we will leave it as is.`;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Configures the navigation buttons (Next/Done, Previous, Close) for the popover.
+ *
+ * @param {PopoverDOM} popover The popover DOM object.
+ * @param {any} activeStep The current active step.
+ * @param {any} driver The driver.js instance.
+ * @param {() => void} onCompleted Callback when the tour is completed via "Done".
+ */
+function configureButtons(
+    popover: PopoverDOM,
+    activeStep: any,
+    driver: any,
+    onCompleted: () => void
+): void {
     if (popover.previousButton) {
         popover.previousButton.style.display = "none";
     }
@@ -301,41 +351,13 @@ export function handlePopoverRender(
             });
         }
 
-        // Determine if we should show the "Next" button
-        let showNext = true;
-
-        if (
-            state.activeStep?.isClickStep ||
-            state.activeStep?.isWaitStep
-        ) {
-            // Usually we hide "Next" for click or wait steps
-            showNext = false;
-        } else if (state.activeStep?.onHighlightStarted) {
-            // It's likely an interactive step (input/upload).
-            // Default to hidden, requiring interaction.
-            showNext = false;
-
-            // If it's an input step and the value is already correct, allow Next.
-            if (state.activeStep.expectedValue !== undefined) {
-                const selector = state.activeStep.element;
-                if (typeof selector === "string") {
-                    const element = document.querySelector(selector) as HTMLElement;
-                    if (isElementValueCorrect(element, state.activeStep.expectedValue)) {
-                        showNext = true;
-                    }
-                }
-            }
-        }
-
-        if (state.activeStep?.isNoteStep) {
-            showNext = true;
-        }
+        const showNext = shouldShowNextButton(activeStep);
 
         if (!showNext) {
             popover.nextButton.style.display = "none";
         } else {
             popover.nextButton.style.display = "inline-block";
-            if (state.activeStep?.isNoteStep || (showNext && state.activeStep?.expectedValue !== undefined)) {
+            if (activeStep?.isNoteStep || (showNext && activeStep?.expectedValue !== undefined)) {
                 setTimeout(() => {
                     popover.nextButton.focus();
                 }, FOCUS_DELAY);
@@ -359,4 +381,81 @@ export function handlePopoverRender(
             (document.activeElement as HTMLElement).blur();
         }
     }, FOCUS_DELAY);
+}
+
+/**
+ * Determines whether the "Next" button should be visible for the current step.
+ * Click and wait steps hide it (they advance automatically), input steps hide it
+ * unless the value is already correct, and note steps always show it.
+ *
+ * @param {any} activeStep The current active step.
+ * @returns {boolean} True if the Next button should be shown.
+ */
+function shouldShowNextButton(activeStep: any): boolean {
+    if (activeStep?.isNoteStep) {
+        return true;
+    }
+
+    if (activeStep?.isClickStep || activeStep?.isWaitStep) {
+        return false;
+    }
+
+    if (activeStep?.onHighlightStarted) {
+        // Interactive step (input/upload). Hidden by default.
+        if (activeStep.expectedValue !== undefined) {
+            const selector = activeStep.element;
+            if (typeof selector === "string") {
+                const element = document.querySelector(selector) as HTMLElement;
+                if (isElementValueCorrect(element, activeStep.expectedValue)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Handles the rendering of the popover by applying Bootstrap classes,
+ * enhancing descriptions, and configuring navigation buttons.
+ *
+ * @param {PopoverDOM} popover The popover DOM object from driver.js.
+ * @param {any} state The current state of the tour step.
+ * @param {any} driver The driver.js instance.
+ * @param {() => void} onCompleted Callback when the tour is marked as completed via "Done" button.
+ */
+export function handlePopoverRender(
+    popover: PopoverDOM,
+    { state }: { state: any },
+    driver: any,
+    onCompleted: () => void
+): void {
+    if (isLocalHost) {
+        console.log(`[Tour Debug] handlePopoverRender called, activeStep:`, {
+            element: state.activeStep?.element,
+            isWaitStep: state.activeStep?.isWaitStep,
+            isClickStep: state.activeStep?.isClickStep,
+            isNoteStep: state.activeStep?.isNoteStep,
+            isMenuItem: state.activeStep?.isMenuItem,
+            tourDebugInfo: state.activeStep?.tourDebugInfo,
+        });
+    }
+
+    if (handleWaitStep(popover, state, driver)) {
+        return;
+    }
+
+    const popoverEl = popover.wrapper?.closest(
+        ".driver-popover"
+    ) as HTMLElement;
+
+    if (!popoverEl) return;
+
+    handleMenuItemVisibility(popoverEl, state.activeStep);
+    handleCenterPositioning(popoverEl, popover, state.activeStep);
+    applyBootstrapStyling(popoverEl, popover);
+    enhanceDescription(popover, state.activeStep);
+    configureButtons(popover, state.activeStep, driver, onCompleted);
 }

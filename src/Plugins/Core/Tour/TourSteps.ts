@@ -394,7 +394,7 @@ export function createInputStep(
     if (userArg) {
         if (userArg.description) {
             descriptionParts.push(
-                `<br><br><em>${userArg.description}</em>`
+                `<br><br><strong>Brief description:</strong> <em>${userArg.description}</em>`
             );
         }
         if (userArg.warningFunc) {
@@ -568,7 +568,7 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
         mainText = `Set ${label}.`;
     }
     const description = arg.description
-        ? `<br><br><em>${arg.description}</em>`
+        ? `<br><br><strong>Brief description:</strong> <em>${arg.description}</em>`
         : "";
 
     return {
