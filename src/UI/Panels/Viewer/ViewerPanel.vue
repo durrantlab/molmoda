@@ -41,6 +41,45 @@ export default class ViewerPanel extends Vue {
   containerClass = "cursor-grab";
   switchToGrabCursorTimer: any = undefined;
 
+  private _styleUpdateCoalescer: AsyncTaskCoalescer | null = null;
+
+  /** Returns the coalescer, creating it on first access when `this` is live. */
+  private _getStyleUpdateCoalescer(): AsyncTaskCoalescer {
+    if (!this._styleUpdateCoalescer) {
+      this._styleUpdateCoalescer = new AsyncTaskCoalescer(async (): Promise<void> => {
+        await this.loadViewer();
+        // You now have the viewer. Set the view-change callback.
+        // TODO: Is this registered multiple times?
+        api.visualization.viewerObj?.registerViewChangeCallback(
+          (view: number[]) => {
+            this.$store.commit("setVar", {
+              name: "viewerVantagePoint",
+              val: view,
+            });
+          }
+        );
+
+
+        // if (allMolecules.length === 0) {
+        //     // No molecules present
+        //     api.visualization.viewerObj?.clearCache();
+        //     return;
+        // }
+
+        // Update styles and zoom
+        await this._updateStyleChanges();
+        if (this.treeview.length === 0) {
+          // No molecules present. Perhaps not necessary, but let's clear
+          // the cache just in case.
+          api.visualization.viewerObj?.clearCache();
+        }
+      });
+    }
+    return this._styleUpdateCoalescer;
+  }
+
+
+
   /**
    * Get the molecules from the store. All viewers of any type will need to
    * react to changes in the molecules.
@@ -145,41 +184,11 @@ export default class ViewerPanel extends Vue {
    * Note: To help with code searching, this might be another way to describe
    * this function: @Watch("molecules")
    *
-   * @param {TreeNodeList} allMolecules  The new molecules.
+   * @param {TreeNodeList} _allMolecules  The new molecules.
    */
   @Watch("treeview", { immediate: false, deep: true })
-  async onTreeviewChanged(allMolecules: TreeNodeList) {
-    setTimeout(async () => {
-      await this.loadViewer();
-
-      // You now have the viewer. Set the view-change callback.
-      // TODO: Is this registered multiple times?
-      api.visualization.viewerObj?.registerViewChangeCallback(
-        (view: number[]) => {
-          this.$store.commit("setVar", {
-            name: "viewerVantagePoint",
-            val: view,
-          });
-        }
-      );
-
-      // if (allMolecules.length === 0) {
-      //     // No molecules present
-      //     api.visualization.viewerObj?.clearCache();
-      //     return;
-      // }
-
-      // Update styles and zoom
-      const updatedStyles = this._updateStyleChanges();
-
-      if (allMolecules.length === 0) {
-        // No molecules present. Perhaps not necessary, but let's clear
-        // the cache just in case.
-        api.visualization.viewerObj?.clearCache();
-      }
-
-      return updatedStyles;
-    }, 0);
+  async onTreeviewChanged(_allMolecules: TreeNodeList) {
+    this._getStyleUpdateCoalescer().request();
   }
 
   /**
@@ -579,14 +588,14 @@ export default class ViewerPanel extends Vue {
 
     await Promise.all(surfacePromises);
 
-  // Zoom to any focused molecule after all models are added and styled.
-  // This ensures the viewer camera moves to newly loaded molecules.
-  const hasFocusedNode = treeNodes.some(
-   (treeNode: TreeNode) => treeNode.focused && treeNode.visible
-  );
-  if (hasFocusedNode) {
-   viewer.zoomOnFocused();
-  }
+    // Zoom to any focused molecule after all models are added and styled.
+    // This ensures the viewer camera moves to newly loaded molecules.
+    const hasFocusedNode = treeNodes.some(
+      (treeNode: TreeNode) => treeNode.focused && treeNode.visible
+    );
+    if (hasFocusedNode) {
+      viewer.zoomOnFocused();
+    }
 
     api.messages.stopWaitSpinner(spinnerId);
 
