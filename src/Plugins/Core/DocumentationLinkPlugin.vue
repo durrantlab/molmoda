@@ -74,9 +74,9 @@ export default class DocumentationLinkPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: () => new TestCmdList()
-                .loadExampleMolecule()
-                .selectMoleculeInTree("Protein"),
+            beforePluginOpens: () => new TestCmdList(),
+                // .loadExampleMolecule()
+                // .selectMoleculeInTree("Protein"),
             afterPluginCloses: () => new TestCmdList(),
         };
     }

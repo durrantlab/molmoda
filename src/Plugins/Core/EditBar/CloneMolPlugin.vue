@@ -203,11 +203,18 @@ export default class CloneMolPlugin extends PluginParentClass {
                 afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "Cloned Protein")
                     .wait(0.5)
-
+                    .tourNote(
+                        "The protein was cloned by accessing the plugin via the menu. You can also clone a molecule by clicking the clone icon directly in the navigator. Let's try that next.",
+                        "#navigator"
+                    )
                     // Also check clicking in title bar
                     .selectMoleculeInTree("Compounds")
                     .wait(0.5)
-                    .click('#navigator div[data-label="Compounds"] span.cloneextract')
+                    .click(
+                        '#navigator div[data-label="Compounds"] span.cloneextract',
+                        false,
+                        "clone it"
+                    )
                     .text("#newName-clonemol-item", "Compounds-cloned")
                     .pressPopupButton(".action-btn", this.pluginId)
                     .wait(2)

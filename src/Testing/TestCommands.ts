@@ -47,30 +47,34 @@ export abstract class TestCmdParent {
 export class TestClick extends TestCmdParent {
     private selector: string;
     private shiftPressed: boolean;
-
+  private tourMessage: string | undefined;
     /**
      * Creates an instance of TestClick.
      *
-     * @param  {string}  selector     The selector to click.
-     * @param  {boolean} [shiftPressed=false]  If true, the shift key will be
-     *           pressed while clicking.
+   * @param {string} selector   The selector to click.
+   * @param {boolean} [shiftPressed=false] If true, the shift key will be
+   *      pressed while clicking.
+   * @param {string} [tourMessage] Optional custom message for tour steps,
+   *      overriding the default "select it" phrasing.
      */
-    constructor(selector: string, shiftPressed = false) {
+  constructor(selector: string, shiftPressed = false, tourMessage?: string) {
         super();
         this.selector = selector;
         this.shiftPressed = shiftPressed;
+    this.tourMessage = tourMessage;
     }
 
     /**
      * Generates the command to click the selector.
      *
-     * @returns {ITestCommand}  The command to click the selector.
+   * @returns {ITestCommand} The command to click the selector.
      */
     get cmd(): ITestCommand {
         return {
             selector: this.selector,
             cmd: TestCommand.Click,
             data: this.shiftPressed,
+            tourMessage: this.tourMessage,
         };
     }
 }

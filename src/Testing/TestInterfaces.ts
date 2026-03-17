@@ -16,6 +16,8 @@ export interface ITestCommand {
     selector?: string;
     cmd: TestCommand;
     data?: any;
+  /** Optional custom message for tour display, used by click steps. */
+  tourMessage?: string;
 }
 
 export interface ITest {

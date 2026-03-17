@@ -161,7 +161,14 @@ export function createClickStep(
     );
     if (selectMoleculeMatch) {
         const moleculeName = selectMoleculeMatch[1];
-        popover.description = `Please click on "${moleculeName}" in the Navigator panel to select it.`;
+        const action = command.tourMessage || "select it";
+        popover.description = `Please click on this "${moleculeName}" item in the Navigator panel to ${action}.`;
+    }
+
+    // If a custom tour message is provided and no molecule match was found,
+    // use it as the full description override.
+    if (!selectMoleculeMatch && command.tourMessage) {
+        popover.description = command.tourMessage;
     }
 
     // Detect if this is a menu item selector (inside dropdown menus or nav items)
@@ -435,11 +442,13 @@ export function createInputStep(
  *
  * @param {ITestCommand} command The wait command.
  * @param {PluginParentClass} plugin The plugin instance.
+ * @param {ITourContext} context The tour context.
  * @returns {any} A driver.js step object.
  */
 export function createWaitStep(
     command: ITestCommand,
-    plugin: PluginParentClass
+    plugin: PluginParentClass,
+    context: ITourContext
 ): any {
     return {
         popover: {
@@ -452,6 +461,30 @@ export function createWaitStep(
             if (!el) return false;
             const textToCheck = (el.value !== undefined && el.value !== "") ? el.value : el.innerHTML;
             return new RegExp(command.data).test(textToCheck || "");
+        },
+        /**
+         * Polls the wait condition and auto-advances the tour when satisfied.
+         * @param {HTMLElement} _element The highlighted element (unused for wait steps).
+         */
+        onHighlighted: (_element: HTMLElement) => {
+            const pollInterval = setInterval(() => {
+                // Stop polling if the tour was destroyed
+                if (!context.manager.driver) {
+                    clearInterval(pollInterval);
+                    return;
+                }
+
+                const activeStep = context.manager.driver.getActiveStep();
+                if (!activeStep || !activeStep.waitCondition) {
+                    clearInterval(pollInterval);
+                    return;
+                }
+
+                if (activeStep.waitCondition()) {
+                    clearInterval(pollInterval);
+                    context.manager.driver.moveNext();
+                }
+            }, 500);
         },
     };
 }
@@ -521,7 +554,10 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
                 }
             }
         }
-        mainText = `Use this widget to choose which <b>${targetDescription}</b> to include. You can select <b>visible</b> (default), <b>selected</b>, or <b>all</b> molecules. The summary text below updates to indicate exactly what will be processed.`;
+        if (!targetDescription.endsWith("s")) {
+            targetDescription += "s";
+        }
+        mainText = `Use this widget to choose which <b>${targetDescription}</b> to include. You can select <b>visible</b> (default), <b>selected</b>, or <b>all</b> molecules. The summary text below updates to indicate exactly what will be processed. For this tour, simply press the "Next" button below to continue.`;
     }
 
     const label = arg.label || "Parameter";

@@ -3,6 +3,7 @@ import { getUrlParam } from "./UrlParams";
 import { sanitizeHtml } from "./Security/Sanitize";
 // Putting isTest here to avoid circular dependencies with other modules
 export const isTest = getUrlParam("test") !== null;
+export const isTour = getUrlParam("tour") !== null;
 
 // localhost or 127.0.0.1 means that the app is running locally.
 let _isLocalHost = false;

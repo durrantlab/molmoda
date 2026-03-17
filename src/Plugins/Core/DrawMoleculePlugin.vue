@@ -3,7 +3,7 @@
         @onPopupDone="onPopupDone" modalWidth="xl" :isActionBtnEnabled="isActionBtnEnabled"
         @onMolCountsChanged="onMolCountsChanged">
         <template #afterForm>
-            <div ref="chemComposer" style="width: 100%; height: 400px" class="mt-4"></div>
+            <div ref="chemComposer" id="chem-composer" style="width: 100%; height: 400px" class="mt-4"></div>
             <!-- @click="onWidgetUpdated" -->
             <!-- @keyup="onWidgetUpdated" -->
             <!-- v-model="molName"
@@ -40,7 +40,7 @@ import FormWrapper from "@/UI/Forms/FormWrapper.vue";
 import { convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel/OpenBabel";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Tag } from "./ActivityFocus/ActivityFocusUtils";
-import { isTest } from "@/Core/GlobalVars";
+import { isTest, isTour } from "@/Core/GlobalVars";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { Component } from "vue-facing-decorator";
@@ -194,8 +194,8 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                 //         this.kekule.Render.HydrogenDisplayLevel.NONE
                 //     );
 
-                // If it's a test, throw in a methane for testing.
-                if (isTest) {
+                // If it's a test or tour, throw in a methane for testing.
+                if (isTest || isTour) {
                     const cmlData = `<?xml version="1.0"?><molecule xmlns="http://www.xml-cml.org/schema"><atomArray><atom id="a1" elementType="C" hydrogenCount="4"/></atomArray></molecule>`;
                     const testMol = this.kekule.IO.loadFormatData(
                         cmlData,
@@ -388,13 +388,13 @@ export default class DrawMoleculePlugin extends PluginParentClass {
                 new TestCmdList()
                     .tourNote(
                         "This is the molecular editor. For this tour, we have pre-drawn methane for you.",
-                        `[ref="chemComposer"]`
+                        "#chem-composer"
                     )
-                    .setUserArg("drawMolName", "Methane", this.pluginId)
-                    .tourNote(
-                        "You can name your new molecule here.",
-                        `#drawMolName-${this.pluginId}-item`
-                    ),
+                    .setUserArg("drawMolName", "Methane", this.pluginId),
+                    // .tourNote(
+                    //     "You can name your new molecule here.",
+                    //     `#drawMolName-${this.pluginId}-item`
+                    // ),
             afterPluginCloses: () =>
                 new TestCmdList().waitUntilRegex("#navigator", "Methane"),
         };

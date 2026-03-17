@@ -105,7 +105,13 @@ export default class EditCompoundPlugin extends PluginParentClass {
                     .waitUntilRegex("#navigator", "TOU"),
 
                 // Wait for plugin to open (slower on beta, play it safe with 15 seconds)
-                pluginOpen: () => new TestCmdList().wait(15).text("#draw-smiles", "OOOO"),
+                pluginOpen: () => new TestCmdList()
+                    .wait(15)
+                    .tourNote(
+                        "The molecular editor lets you easily edit the compound's structure. But for this tour, we'll instead demonstrate editing by typing a SMILES string into the text field below.",
+                        "#chem-composer"
+                    )
+                    .text("#draw-smiles", "OOOO"),
                 closePlugin: () => new TestCmdList().click("#modal-drawmoleculeplugin .action-btn"),
                 afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "TOU:101:edited")

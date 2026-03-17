@@ -1,12 +1,6 @@
 <template>
-    <PluginComponent
-        v-model="open"
-        :infoPayload="infoPayload"
-        actionBtnTxt="Delete"
-        @onPopupDone="onPopupDone"
-        @onUserArgChanged="onUserArgChanged"
-        @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" actionBtnTxt="Delete" @onPopupDone="onPopupDone"
+        @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
 </template>
 
 <script lang="ts">
@@ -47,7 +41,7 @@ export default class DeleteMolPlugin extends PluginParentClass {
     tags = [Tag.All];
 
     nodesToActOn = new TreeNodeList([getDefaultNodeToActOn()]);
-    
+
     logJob = false;
     hotkey = ["backspace", "delete"];
     logAnalytics = false;
@@ -141,21 +135,36 @@ export default class DeleteMolPlugin extends PluginParentClass {
                 // Also test clicking on the navigator to delete.
                 afterPluginCloses: () => new TestCmdList()
                     .wait(2)
-
+                    .tourNote(
+                        "The Protein was deleted by accessing the plugin via the menu. You can also delete a molecule by clicking the delete icon in the navigator, or by pressing Backspace/Delete. Let's try the first method.",
+                        "#navigator"
+                    )
                     // Also check clicking in title bar
                     .selectMoleculeInTree("Compounds")
-                    .click('#navigator div[data-label="Compounds"] span.delete')
+                    .click(
+                        '#navigator div[data-label="Compounds"] span.delete',
+                        false,
+                        "delete it"
+                    )
                     .pressPopupButton(".action-btn", this.pluginId)
-                    .wait(2)
+            },
 
+            // Also test clicking on the navigator to delete.
+            {
+                beforePluginOpens: () => new TestCmdList()
+                    .loadExampleMolecule(true)
+                    .selectMoleculeInTree("Protein"),
+                afterPluginCloses: () => new TestCmdList()
+                    .wait(2)
                     // Also check pressing backspace
                     .selectMoleculeInTree("Solvent")
                     .text("body", "BACKSPACE")
                     .pressPopupButton(".action-btn", this.pluginId)
                     .wait(2)
-                    .waitUntilNotRegex("#navigator", "Compounds")
                     .waitUntilNotRegex("#navigator", "Solvent"),
             },
+
+
             // Also test deleting a root node.
             {
                 beforePluginOpens: () => new TestCmdList()

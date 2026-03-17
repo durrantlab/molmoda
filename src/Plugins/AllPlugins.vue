@@ -63,11 +63,11 @@ system uses these to autopopulate with plugins. -->
     <ViewerWindowPlugin @onPluginSetup="onPluginSetup"></ViewerWindowPlugin>
     <YesNoPlugin @onPluginSetup="onPluginSetup"></YesNoPlugin>
 
-    <NewRegionPlugin @onPluginSetup="onPluginSetup"></NewRegionPlugin>
     <AlignProteinsPlugin @onPluginSetup="onPluginSetup"></AlignProteinsPlugin>
     <EvalScreenPlugin @onPluginSetup="onPluginSetup"></EvalScreenPlugin>
     <FPocketWebPlugin @onPluginSetup="onPluginSetup"></FPocketWebPlugin>
     <FindSimilarProteinsPlugin @onPluginSetup="onPluginSetup"></FindSimilarProteinsPlugin>
+    <NewRegionPlugin @onPluginSetup="onPluginSetup"></NewRegionPlugin>
     <PoseViewPlugin @onPluginSetup="onPluginSetup"></PoseViewPlugin>
     <ProtonateCompoundsPlugin @onPluginSetup="onPluginSetup"></ProtonateCompoundsPlugin>
     <PubChemBioassaysPlugin @onPluginSetup="onPluginSetup"></PubChemBioassaysPlugin>
@@ -155,11 +155,11 @@ import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass
     ViewerWindowPlugin: defineAsyncComponent(() => import("@/Plugins/Core/Window/ViewerWindowPlugin.vue")),
     YesNoPlugin: defineAsyncComponent(() => import("@/Plugins/Core/YesNoPlugin.vue")),
 
-    NewRegionPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/NewRegionPlugin.vue")),
     AlignProteinsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/Align/AlignProteinsPlugin.vue")),
     EvalScreenPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/EvalScreenPlugin.vue")),
     FPocketWebPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/FPocketWeb/FPocketWebPlugin.vue")),
     FindSimilarProteinsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/FindSimilarProteins/FindSimilarProteinsPlugin.vue")),
+    NewRegionPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/NewRegionPlugin.vue")),
     PoseViewPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PoseViewPlugin.vue")),
     ProtonateCompoundsPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/ProtonateCompounds/ProtonateCompoundsPlugin.vue")),
     PubChemBioassaysPlugin: defineAsyncComponent(() => import("@/Plugins/Optional/PubChem/PubChemBioassaysPlugin.vue")),

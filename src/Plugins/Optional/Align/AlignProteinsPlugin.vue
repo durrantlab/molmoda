@@ -71,10 +71,10 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 proteinFormat: "pdb",
                 includeMetalsAsProtein: true,
                 includeSolventAsProtein: true,
-    includeNucleicAsProtein: true,
-    allowUserToToggleIncludeMetalsAsProtein: false,
-    allowUserToToggleIncludeSolventAsProtein: false,
-    allowUserToToggleIncludeNucleicAsProtein: false,
+                includeNucleicAsProtein: true,
+                allowUserToToggleIncludeMetalsAsProtein: false,
+                allowUserToToggleIncludeSolventAsProtein: false,
+                allowUserToToggleIncludeNucleicAsProtein: false,
             }),
             label: "Proteins to align",
         } as IUserArgMoleculeInputParams,
@@ -218,14 +218,14 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                     continue;
                 }
                 const originalTopLevelNode = newFileInfo.treeNode;
-    const loadedNodeContainerList = await parseAndLoadMoleculeFile({
+                const loadedNodeContainerList = await parseAndLoadMoleculeFile({
                     fileInfo: newFileInfo,
                     tag: this.pluginId,
-     addToTree: false
+                    addToTree: false
                 });
 
-    if (loadedNodeContainerList) {
-     const loadedNodeContainer = loadedNodeContainerList.get(0);
+                if (loadedNodeContainerList) {
+                    const loadedNodeContainer = loadedNodeContainerList.get(0);
                     loadedNodeContainer.title = `${originalTopLevelNode.title}-aligned`;
                     loadedNodeContainer.addToMainTree(this.pluginId);
                 }
@@ -253,7 +253,15 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                     .setUserArg("referenceMolecule", "1XDN", this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
                     .waitUntilRegex("#navigator", "1XDN-aligned")
-                    .waitUntilRegex("#navigator", "1S68-aligned"),
+                    .waitUntilRegex("#navigator", "1S68-aligned")
+                    .collapseNavItem("1XDN")
+                    .collapseNavItem("1S68")
+                    .hideNavItem("1XDN")
+                    .hideNavItem("1S68")
+                    .tourNote(
+                        "The aligned proteins (1XDN-aligned and 1S68-aligned) have been added to the viewer. The original structures are now hidden so you can see the alignment result clearly.",
+                        "#navigator"
+                    ),
             },
         ];
     }

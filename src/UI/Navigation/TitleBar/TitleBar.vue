@@ -32,7 +32,7 @@
             <IconBar :width="24 * Object.keys(iconsToDisplay).length" extraClasses="me-2 selected"
                 style="margin-right: 8px">
                 <!-- the eye icon should always be farthest to the right, so list it first -->
-                <IconSwitcher class="title-element clickable" :useFirst="treeDatum.visible" :iconID1="visibleIconToUse"
+                <IconSwitcher class="title-element clickable visible-icon" :useFirst="treeDatum.visible" :iconID1="visibleIconToUse"
                     :iconID2="visibleIconToUse" :icon2Style="{ color: 'lightgray' }" :width="22"
                     @click="toggleVisible(treeDatumID)" title="Visible" />
                 <IconSwitcher v-if="iconsToDisplay.focused" class="title-element clickable"

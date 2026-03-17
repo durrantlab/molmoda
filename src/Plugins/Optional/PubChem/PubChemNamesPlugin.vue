@@ -179,7 +179,12 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
         ),
       afterPluginCloses: () => new TestCmdList()
         .waitUntilRegex("#modal-tabledatapopup", "aspirin")
-        .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found"),
+        .waitUntilRegex("#modal-tabledatapopup", "PubChem compound not found")
+        .tourNote(
+          "The names of the compounds have been retrieved from PubChem and are displayed in a table. You can click on the CID link to view more details about the compound on the PubChem website.",
+          "#modal-tabledatapopup .subtle-box"
+        )
+        .click("#modal-tabledatapopup .cancel-btn"),
     };
   }
 }

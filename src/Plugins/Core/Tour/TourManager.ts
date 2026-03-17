@@ -62,13 +62,13 @@ export class TourManager {
              */
             onNextClick: () => {
                 const activeStep = this.driver.getActiveStep();
-                
+
                 if (activeStep) {
                     // Allow moving next if it's a note step
                     if (activeStep.isNoteStep) {
-                    this.driver.moveNext();
-                    return;
-                }
+                        this.driver.moveNext();
+                        return;
+                    }
 
                     // Allow moving next if it's an input step and the value is already correct
                     if (activeStep.expectedValue !== undefined) {
@@ -233,6 +233,31 @@ export class TourManager {
             }
             originalMoveNext();
             this.isMoving = false;
+
+            // For wait steps without an element, onHighlighted won't fire
+            // because driver.js has nothing to highlight. Start polling here.
+            if (nextStep.isWaitStep && nextStep.waitCondition) {
+                if (isLocalHost) {
+                    console.log(`[Tour Debug] Starting wait step polling for step: ${nextStep.tourDebugInfo}`);
+                }
+                const pollInterval = setInterval(() => {
+                    if (!this.driver) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+
+                    const activeStep = this.driver.getActiveStep();
+                    if (!activeStep || !activeStep.waitCondition) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+
+                    if (activeStep.waitCondition()) {
+                        clearInterval(pollInterval);
+                        this.driver.moveNext();
+                    }
+                }, 500);
+            }
         }
     }
 
@@ -531,7 +556,7 @@ export class TourManager {
                 step = createInputStep(cmdForStep, plugin, context);
                 break;
             case TestCommand.WaitUntilRegex:
-                step = createWaitStep(command, plugin);
+                step = createWaitStep(command, plugin, context);
                 break;
             case TestCommand.TourNote:
                 step = createNoteStep(cmdForStep, plugin);

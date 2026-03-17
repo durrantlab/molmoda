@@ -156,14 +156,14 @@ export default class ActivityFocusPlugin extends PluginParentClass {
       name: "Full Tour of Activity Focus",
       pluginOpen: () =>
         new TestCmdList()
-          .tourNote(
-            "This plugin lets you customize the user interface to focus on a specific activity, like 'Docking' or 'Visualization', hiding less relevant tools.",
-            `#modal-${this.pluginId} .modal-body`
-          )
-          .tourNote(
-            "Select an activity from this dropdown. For this tour, let's select 'Docking'.",
-            `#selectedMode-${this.pluginId}-item`
-          )
+          // .tourNote(
+          //   "This plugin lets you customize the user interface to focus on a specific activity, like 'Docking' or 'Visualization', hiding less relevant tools.",
+          //   `#modal-${this.pluginId} .modal-body`
+          // )
+          // .tourNote(
+          //   "Select an activity from this dropdown. For this tour, let's select 'Docking'.",
+          //   `#selectedMode-${this.pluginId}-item`
+          // )
           .setUserArg("selectedMode", Tag.Docking, this.pluginId)
           .waitUntilRegex(
             `#modal-${this.pluginId} .alert-info`,

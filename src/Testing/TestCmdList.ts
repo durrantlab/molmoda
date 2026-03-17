@@ -40,12 +40,17 @@ export class TestCmdList {
      *
      * @param {string}  selector              The CSS selector for the button.
      * @param {boolean} [shiftPressed=false]  Whether the shift key was pressed.
+     * @param {string} [tourMessage] Optional custom message for tour display,
+     *     overriding the default phrasing (e.g., "collapse it" instead of
+     *     "select it").
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
-    public click(selector: string, shiftPressed = false): TestCmdList {
-        this.tests.push(new TestClick(selector, shiftPressed));
+    public click(selector: string, shiftPressed = false, tourMessage?: string): TestCmdList {
+        this.tests.push(new TestClick(selector, shiftPressed, tourMessage));
         return this;
     }
+
+
 
     /**
      * Wait for a specified number of seconds.
@@ -479,6 +484,40 @@ export class TestCmdList {
      */
     public pressPopupButton(selector: string, pluginId: string): TestCmdList {
         this.click(`#modal-${pluginId} ${selector}`);
+        return this;
+    }
+
+
+    /**
+     * Collapses an already-expanded molecule entry in the navigator tree.
+     * Clicks the expand/collapse toggle icon, which acts as a toggle.
+     *
+     * @param {string} label The data-label of the molecule to collapse.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public collapseNavItem(label: string): TestCmdList {
+        this.click(
+            `#navigator div[data-label="${label}"] .expand-icon`,
+            false,
+            "collapse it"
+        );
+        this.wait(0.5);
+        return this;
+    }
+
+    /**
+     * Hides a molecule in the navigator by clicking its visibility toggle.
+     *
+     * @param {string} label The data-label of the molecule to hide.
+     * @returns {TestCmdList} This TestCmdList (for chaining).
+     */
+    public hideNavItem(label: string): TestCmdList {
+        this.click(
+            `#navigator div[data-label="${label}"] .visible-icon`,
+            false,
+            "hide it"
+        );
+        this.wait(0.5);
         return this;
     }
 }
