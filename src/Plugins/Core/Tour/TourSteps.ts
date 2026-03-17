@@ -438,7 +438,8 @@ export function createInputStep(
 }
 
 /**
- * Creates a driver.js step for a wait command.
+ * Creates a driver.js step for a wait command. During a tour, the step
+ * polls the wait condition and auto-advances when satisfied.
  *
  * @param {ITestCommand} command The wait command.
  * @param {PluginParentClass} plugin The plugin instance.
@@ -457,13 +458,15 @@ export function createWaitStep(
         },
         isWaitStep: true,
         waitCondition: () => {
-            const el = document.querySelector(command.selector!) as any;
+            const el = document.querySelector(command.selector!) as HTMLElement;
             if (!el) return false;
-            const textToCheck = (el.value !== undefined && el.value !== "") ? el.value : el.innerHTML;
-            return new RegExp(command.data).test(textToCheck || "");
+            const textToCheck = el.textContent || el.innerHTML || "";
+            return new RegExp(command.data).test(textToCheck);
         },
         /**
          * Polls the wait condition and auto-advances the tour when satisfied.
+         * This fires when the step has an element to highlight. For steps
+         * without an element, polling is started in TourManager.moveToNextStepWithRetry.
          * @param {HTMLElement} _element The highlighted element (unused for wait steps).
          */
         onHighlighted: (_element: HTMLElement) => {

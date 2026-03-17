@@ -245,21 +245,24 @@ export function handlePopoverRender(
             if (isElementValueCorrect(element, state.activeStep.expectedValue)) {
                 const originalDesc = popover.description.innerHTML;
 
-                // Try to rewrite "For X, enter Y" -> "X is set to Y"
+                // Rewrite the description to indicate the value is already correct
                 const prefixRegex = /^(For .*, (?:enter|select) ".*"\.)/;
                 const match = originalDesc.match(prefixRegex);
 
                 if (match) {
                     const originalSentence = match[1];
-                    const newSentence = originalSentence
-                        .replace(/^For (.*), (?:enter|select) "(.*)"\.$/, '$1 is set to "$2".')
-                        .replace(/^For (.*), (?:enter|select) "(.*)"\./, '$1 is set to "$2".');
-
-                    popover.description.innerHTML = originalDesc.replace(originalSentence, `${newSentence} <span class="text-success">(Correct)</span>`);
+                    // Extract the field label and value from the original sentence
+                    const partsMatch = originalSentence.match(/^For (.*), (?:enter|select) "(.*)"\./);
+                    if (partsMatch) {
+                        const fieldLabel = partsMatch[1];
+                        const value = partsMatch[2];
+                        const newSentence = `${fieldLabel} is currently set to "${value}". For this tour, we will leave it as is.`;
+                        popover.description.innerHTML = originalDesc.replace(originalSentence, newSentence);
+                    }
                 } else {
                     // Fallback if the regex doesn't match the standard description pattern
-                    if (!originalDesc.includes("(Correct)")) {
-                        popover.description.innerHTML += ` <br><span class="text-success">(Already set correctly)</span>`;
+                    if (!originalDesc.includes("leave it as is")) {
+                        popover.description.innerHTML += ` <br>This value is already set correctly. For this tour, we will leave it as is.`;
                     }
                 }
             }

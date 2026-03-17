@@ -237,22 +237,14 @@ export class TourManager {
             // For wait steps without an element, onHighlighted won't fire
             // because driver.js has nothing to highlight. Start polling here.
             if (nextStep.isWaitStep && nextStep.waitCondition) {
-                if (isLocalHost) {
-                    console.log(`[Tour Debug] Starting wait step polling for step: ${nextStep.tourDebugInfo}`);
-                }
+                const condition = nextStep.waitCondition;
                 const pollInterval = setInterval(() => {
                     if (!this.driver) {
                         clearInterval(pollInterval);
                         return;
                     }
 
-                    const activeStep = this.driver.getActiveStep();
-                    if (!activeStep || !activeStep.waitCondition) {
-                        clearInterval(pollInterval);
-                        return;
-                    }
-
-                    if (activeStep.waitCondition()) {
+                    if (condition()) {
                         clearInterval(pollInterval);
                         this.driver.moveNext();
                     }

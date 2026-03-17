@@ -604,7 +604,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         return [
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(
-                    true,
+                    false,  // Need to be false, not true, for tour to work!
                     "./TGFR1_docked.molmoda",
                     "docking_box"
                 ),
