@@ -30,6 +30,7 @@ export let loadViewerLibPromise: Promise<any> | undefined = undefined;
 import { toRaw } from "vue";
 import { IFileInfo } from "@/FileSystem/Types";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
+import { createAnimationFrameCoalescer, createLeadingEdgeThrottle } from "@/Core/Utils/CoalescedTask";
 
 /**
  * Sets the loadViewerLibPromise variable.
@@ -60,6 +61,44 @@ export abstract class ViewerParent {
   // viewer. For example, to change the style on the cursor depending on
   // whether you're hovering over an atom.
   updateViewerDivClassCallback: undefined | ((classes: string) => void);
+
+  /**
+   * Coalesces multiple render requests within the same animation frame into
+   * a single repaint, avoiding redundant GPU work when many state changes
+   * occur in quick succession (e.g., bulk show/hide, style updates).
+   */
+  private _renderAnimFrameCoalescer = createAnimationFrameCoalescer(() => {
+    this._renderAll();
+  });
+
+  /**
+   * Coalesces multiple render requests into a single call at most once every
+   * 500ms. This is a leading-edge throttle, so the first call happens
+   * immediately, and subsequent calls within 500ms are suppressed.
+   */
+  private _renderAllCoalescer = createLeadingEdgeThrottle(() => {
+    console.log("MOOSE")
+    this._renderAnimFrameCoalescer.invoke();
+  }, 1000);
+
+  /**
+   * Subclasses implement the actual library-specific render call.
+   * Called at most once per animation frame via the coalescer.
+   */
+  public abstract _renderAll(): Promise<void>;
+
+  /**
+   * Schedule a render for the next animation frame. Multiple calls
+   * between frames are coalesced into a single repaint.
+   *
+   * @returns {Promise<void>} Resolves immediately; the actual render
+   *     is deferred to the next animation frame.
+   */
+  public renderAll(): Promise<void> {
+    // this._renderAnimFrameCoalescer.invoke();
+    this._renderAllCoalescer.invoke();
+    return Promise.resolve();
+  }
 
   /**
    * Removes a model from the viewer.
@@ -542,13 +581,6 @@ export abstract class ViewerParent {
   }
 
   /**
-   * Render all the molecules and surfaces currently added to the viewer.
-   *
-   * @returns Promise<void>
-   */
-  abstract renderAll(): Promise<void>;
-
-  /**
    * Zoom in on a set of models.
    *
    * @param  {string[]} ids  The ids of the models to zoom in on.
@@ -728,6 +760,7 @@ export abstract class ViewerParent {
    * Unloads the viewer and removes it from api.
    */
   public unLoadViewer() {
+    this._renderAnimFrameCoalescer.cancel();
     // Remove from api
     api.visualization.viewerObj = undefined;
     loadViewerLibPromise = undefined;
@@ -751,9 +784,9 @@ export abstract class ViewerParent {
   /**
    * Unloads the viewer (from the DOM, etc.).
    *
-   * @returns any
+   * @returns void
    */
-  abstract unLoad(): any;
+  abstract unLoad(): void;
 
   /**
    * Gets a PNG URI of the current view.
@@ -858,7 +891,7 @@ export abstract class ViewerParent {
    */
   abstract makeAtomsClickable(
     model: GenericModelType,
-    callBack: (x: number, y: number, z: number) => any,
+    callBack: (x: number, y: number, z: number) => void,
   ): void;
 
   /**
@@ -873,8 +906,8 @@ export abstract class ViewerParent {
    */
   abstract makeAtomsHoverable(
     model: GenericModelType,
-    onHoverInCallBack: (x: number, y: number, z: number) => any,
-    onHoverOutCallBack: () => any,
+    onHoverInCallBack: (x: number, y: number, z: number) => void,
+    onHoverOutCallBack: () => void,
   ): void;
 
   /**

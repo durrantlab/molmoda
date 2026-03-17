@@ -28,6 +28,7 @@ import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 // @ts-ignore
 import { isEqual } from 'lodash';
 import { Component, Watch } from "vue-facing-decorator";
+import { AsyncTaskCoalescer } from "@/Core/Utils/CoalescedTask";
 
 /**
  * ViewerPanel component

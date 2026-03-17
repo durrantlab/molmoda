@@ -494,15 +494,16 @@ export class Viewer3DMol extends ViewerParent {
    *
    * @returns {Promise<void>} A promise that resolves immediately.
    */
-  public renderAll(): Promise<void> {
+  public _renderAll(): Promise<void> {
     if (this._mol3dObj) {
-      if (this._renderRequest) {
-        cancelAnimationFrame(this._renderRequest);
-      }
-      this._renderRequest = requestAnimationFrame(() => {
-        this._mol3dObj.render();
-        this._renderRequest = null;
-      });
+      // if (this._renderRequest) {
+      //   cancelAnimationFrame(this._renderRequest);
+      // }
+      // this._renderRequest = requestAnimationFrame(() => {
+      //   this._mol3dObj.render();
+      //   this._renderRequest = null;
+      // });
+      this._mol3dObj.render();
     }
 
     return Promise.resolve();
