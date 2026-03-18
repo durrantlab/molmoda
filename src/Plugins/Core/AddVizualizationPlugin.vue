@@ -641,8 +641,8 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * Updates the options for residue name and ID selection dropdowns based on
    * currently visible molecules.
    */
-  private updateResidueOptions(): void {
-    const { names, ids } = getUniqueResiduesFromVisibleMolecules();
+  private async updateResidueOptions(): Promise<void> {
+    const { names, ids } = await getUniqueResiduesFromVisibleMolecules();
 
     // Create macro options for the dropdown
     const macroOptions: IUserArgOption[] = Object.keys(this.residueMacros).map(macro => ({

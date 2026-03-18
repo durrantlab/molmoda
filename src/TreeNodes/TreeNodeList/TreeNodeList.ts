@@ -10,7 +10,10 @@ import { TreeNodeListCopies } from "./_Copy";
 import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
 import { randomID } from "@/Core/Utils/MiscUtils";
-
+import { pushToStoreListBulk, getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
+import { visualizationApi } from "@/Api/Visualization";
+import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
+import { store } from "@/Store";
 /**
  * TreeNodeList class
  */
@@ -491,20 +494,43 @@ export class TreeNodeList {
      *            when loading a saved session where these
      *            properties should be preserved.
      */
-    public addToMainTree(
+    public async addToMainTree(
         tag: string | null,
         reassignIds = true,
         terminalNodeTitleRevisable = true,
         resetVisibilityAndSelection = true
     ) {
+        // Prepare all nodes first without touching the store, then add in bulk.
+        const preparedNodes: TreeNode[] = [];
         for (const node of this._nodes) {
-            node.addToMainTree(
+            node.prepareForMainTree(
                 tag,
                 reassignIds,
                 terminalNodeTitleRevisable,
                 resetVisibilityAndSelection
             );
+                        preparedNodes.push(node);
         }
+
+        // Single bulk push triggers reactivity only once.
+        if (preparedNodes.length > 0) {
+            pushToStoreListBulk("molecules", preparedNodes);
+        }
+
+        // Set the project title from the first node if not already set.
+        if (store.state.projectTitle === "" && preparedNodes.length > 0) {
+            const topAncestor = preparedNodes[0].getAncestry(
+                getMoleculesFromStore()
+            ).get(0);
+            if (topAncestor && topAncestor.title) {
+                setStoreVar("projectTitle", topAncestor.title);
+            }
+        }
+
+        // Update viewer: apply styles and zoom to the newly added molecules.
+        const viewer = await visualizationApi.viewer;
+        updateStylesInViewer();
+        viewer.zoomOnFocused();
     }
 
     /**

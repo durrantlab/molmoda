@@ -10,6 +10,10 @@ import { TreeNodeDescriptions } from "./_Descriptions";
 import { store } from "@/Store";
 import { visualizationApi } from "@/Api/Visualization";
 import { expandAndShowAllMolsInTree } from "@/Testing/SetupTests";
+import {
+    EasyParserWorkerClient,
+    WORKER_ATOM_THRESHOLD,
+} from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserWorkerClient";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 // import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
@@ -18,6 +22,7 @@ import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Core/GlobalVars";
 import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
+import { toRaw } from "vue";
 
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
@@ -487,6 +492,82 @@ export class TreeNode {
     }
 
     /**
+     * Prepares this node for insertion into the main tree without actually
+     * pushing it to the store. This avoids triggering reactivity per-node
+     * during batch loads. The caller is responsible for the final store push.
+     *
+     * @param {string | null} tag       The tag to add to this node.
+     * @param {boolean} [reassignIds]    Whether to reassign IDs.
+     * @param {boolean} [terminalNodeTitleRevisable] Whether the terminal node
+     *                                               title should be revisable.
+     * @param {boolean} [resetVisibilityAndSelection] Whether to reset
+     *                                                visibility and selection.
+     */
+    public prepareForMainTree(
+        tag: string | null,
+        reassignIds = true,
+        terminalNodeTitleRevisable = true,
+        resetVisibilityAndSelection = true
+    ): void {
+        if (reassignIds) {
+            this.reassignAllIds();
+        }
+
+        if (isTest) {
+            expandAndShowAllMolsInTree();
+        }
+
+        const allNodesInSubtree = new TreeNodeList([this]).flattened;
+
+        if (tag) {
+            allNodesInSubtree.forEach((node) => {
+                if (node.tags === undefined) {
+                    node.tags = [];
+                }
+                if (!node.tags.includes(tag)) {
+                    node.tags.push(tag);
+                }
+            });
+        }
+
+        if (resetVisibilityAndSelection) {
+            allNodesInSubtree.forEach((node) => {
+                if (node.nodes) {
+                    node.visible = true;
+                }
+            });
+            this.visible = true;
+
+            const terminalNodes = this.nodes
+                ? this.nodes.terminals
+                : new TreeNodeList([]);
+            if (this.model) {
+                terminalNodes.push(this);
+            }
+
+            // Use a synchronous default; the caller can adjust visibility
+            // thresholds after the batch insert if needed.
+            const defaultInitialVisible = 20;
+            terminalNodes.forEach((node, i) => {
+                node.visible = i < defaultInitialVisible;
+            });
+
+            allNodesInSubtree.forEach((node) => {
+                node.selected = SelectedType.False;
+            });
+        }
+
+        if (
+            terminalNodeTitleRevisable &&
+            this.nodes &&
+            this.nodes.terminals.length === 1
+        ) {
+            this.nodes.terminals.get(0).title = `${this.title}:${this.nodes.terminals.get(0).title
+                }`;
+        }
+    }
+
+    /**
      * A helper function. Adds this node to the molecules in the vuex store.
      * @param {string | null} tag       The tag to add to this
      *             node.
@@ -547,7 +628,6 @@ export class TreeNode {
                     node.visible = true;
                 }
             });
-
             this.visible = true;
 
             // For terminal nodes, make only the first few visible.
@@ -583,13 +663,13 @@ export class TreeNode {
                 }`;
         }
 
-    // Clear focus on all existing molecules before adding the new one,
-    // so the viewer knows to zoom to the newly added molecule.
-    const existingMols = getMoleculesFromStore();
-    existingMols.flattened.forEach((node) => {
-      node.focused = false;
-    });
-    this.focused = true;
+        // Clear focus on all existing molecules before adding the new one,
+        // so the viewer knows to zoom to the newly added molecule.
+        const existingMols = getMoleculesFromStore();
+        existingMols.flattened.forEach((node) => {
+            node.focused = false;
+        });
+        this.focused = true;
 
         pushToStoreList("molecules", this);
 
@@ -604,6 +684,7 @@ export class TreeNode {
 
         // If you add new molecules to the tree, focus on everything.
         const viewer = await visualizationApi.viewer;
+
         // Set the style according to the current user specs.
         updateStylesInViewer();
         viewer.zoomOnFocused();
@@ -683,6 +764,199 @@ export class TreeNode {
                 maxZ - minZ + padding,
             ],
         } as IBox;
+    }
+
+    /**
+     * Gets the box surrounding the model. Uses the EasyParser webworker for
+     * large molecules to avoid blocking the main thread during bounding box
+     * computation.
+     *
+     * @param  {number} [padding]  The padding to add to the box.
+     * @returns {Promise<IBox>}  A promise resolving to the box region.
+     */
+    public async getBoxRegionAsync(padding = 3.4): Promise<IBox> {
+        // Note 3.4 is approximate vdw diameter of carbon.
+        const nodesWithModels = newTreeNodeList([this]).filters.keepModels(
+            true,
+            true
+        ).nodes;
+
+        // Classify nodes by atom count to route small models synchronously
+        // and large models through the worker.
+        const smallModels: TreeNode[] = [];
+        const largeModels: TreeNode[] = [];
+
+        for (let i = 0; i < nodesWithModels.length; i++) {
+            const node = nodesWithModels[i];
+            const atomCount = this._estimateAtomCount(node.model);
+            if (atomCount >= WORKER_ATOM_THRESHOLD) {
+                largeModels.push(node);
+            } else {
+                smallModels.push(node);
+            }
+        }
+
+        let minX = Infinity;
+        let minY = Infinity;
+        let minZ = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        let maxZ = -Infinity;
+
+        // Process small models synchronously.
+        for (const node of smallModels) {
+            const model = node.model as GLModel;
+            const { atoms } = makeEasyParser(model);
+            for (const atom of atoms) {
+                if (atom.x !== undefined) {
+                    minX = Math.min(minX, atom.x as number);
+                    maxX = Math.max(maxX, atom.x as number);
+                }
+                if (atom.y !== undefined) {
+                    minY = Math.min(minY, atom.y as number);
+                    maxY = Math.max(maxY, atom.y as number);
+                }
+                if (atom.z !== undefined) {
+                    minZ = Math.min(minZ, atom.z as number);
+                    maxZ = Math.max(maxZ, atom.z as number);
+                }
+            }
+        }
+
+        // Process large models via the worker in parallel.
+        if (largeModels.length > 0) {
+            const client = EasyParserWorkerClient.getInstance();
+            const handles: string[] = [];
+
+            try {
+                const createPromises = largeModels.map((node) => {
+                    return this._createWorkerParser(client, node.model);
+                });
+                const createdHandles = await Promise.all(createPromises);
+                handles.push(...createdHandles);
+
+                const boundsPromises = handles.map((h) =>
+                    client.getBounds(h)
+                );
+                const boundsResults = await Promise.all(boundsPromises);
+
+                for (const bounds of boundsResults) {
+                    if (bounds) {
+                        minX = Math.min(minX, bounds.minX);
+                        minY = Math.min(minY, bounds.minY);
+                        minZ = Math.min(minZ, bounds.minZ);
+                        maxX = Math.max(maxX, bounds.maxX);
+                        maxY = Math.max(maxY, bounds.maxY);
+                        maxZ = Math.max(maxZ, bounds.maxZ);
+                    }
+                }
+            } finally {
+                await Promise.all(
+                    handles.map((h) => client.destroyParser(h))
+                );
+            }
+        }
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+        const centerZ = (minZ + maxZ) / 2;
+
+        // Try to get color of this node from its styles.
+        let color: string | undefined = undefined;
+        if (this.styles && this.styles.length > 0) {
+            for (const style of this.styles) {
+                const colors = [
+                    style.surface?.color,
+                    style.sphere?.color,
+                    style.cartoon?.color,
+                    style.stick?.color,
+                    style.line?.color,
+                ];
+                color = colors.find((c: string | undefined) => c !== undefined);
+                if (color !== undefined) {
+                    break;
+                }
+            }
+        }
+
+        if (color === undefined) {
+            color = "red";
+        }
+
+        return {
+            type: RegionType.Box,
+            center: [centerX, centerY, centerZ],
+            opacity: 0.5,
+            color: color,
+            movable: true,
+            dimensions: [
+                maxX - minX + padding,
+                maxY - minY + padding,
+                maxZ - minZ + padding,
+            ],
+        } as IBox;
+    }
+
+    /**
+     * Estimates the atom count for a model without fully parsing it. Used to
+     * decide whether to route computation to the webworker or handle it
+     * synchronously on the main thread.
+     *
+     * @param {IAtom[] | GLModel | IFileInfo | undefined} model  The model.
+     * @returns {number}  Estimated atom count.
+     */
+    private _estimateAtomCount(
+        model: IAtom[] | GLModel | IFileInfo | undefined
+    ): number {
+        if (model === undefined) {
+            return 0;
+        }
+        if (Array.isArray(model)) {
+            return (model as IAtom[]).length;
+        }
+        if ((model as GLModel).selectedAtoms !== undefined) {
+            return (model as GLModel).selectedAtoms({}).length;
+        }
+        // IFileInfo: use the sync parser constructor which only splits lines
+        // (cheap) to get a count.
+        const parser = makeEasyParser(model as IFileInfo);
+        return parser.length;
+    }
+
+    /**
+     * Creates a worker-backed parser from a model, handling the three possible
+     * storage formats (IAtom[], GLModel, IFileInfo). Strips Vue reactivity
+     * proxies and extracts only serializable data to avoid DataCloneError
+     * during postMessage to the worker.
+     *
+     * @param {EasyParserWorkerClient} client  The worker client.
+     * @param {IAtom[] | GLModel | IFileInfo | undefined} model  The model data.
+     * @returns {Promise<string>}  The worker parser handle.
+     */
+    private async _createWorkerParser(
+        client: EasyParserWorkerClient,
+        model: IAtom[] | GLModel | IFileInfo | undefined
+    ): Promise<string> {
+        if (model === undefined) {
+            // Create an empty parser in the worker.
+            return client.createParserFromAtoms([]);
+        }
+
+        const raw = toRaw(model);
+
+        if (Array.isArray(raw)) {
+            return client.createParserFromAtoms(raw as IAtom[]);
+        }
+        if ((raw as GLModel).selectedAtoms !== undefined) {
+            const atoms = (raw as GLModel).selectedAtoms({}) as IAtom[];
+            return client.createParserFromAtoms(atoms);
+        }
+        // IFileInfo: create a plain object with only serializable properties.
+        const fileInfo = raw as IFileInfo;
+        return client.createParser({
+            name: fileInfo.name,
+            contents: fileInfo.contents,
+        } as IFileInfo);
     }
 }
 

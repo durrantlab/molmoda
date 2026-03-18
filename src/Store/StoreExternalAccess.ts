@@ -42,6 +42,18 @@ export function pushToStoreList(name: string, value: any) {
 }
 
 /**
+ * Adds multiple values to the molecules list in a single commit, triggering
+ * Vue reactivity only once. This avoids O(n^2) shallow-copy overhead when
+ * loading many molecules in sequence.
+ *
+ * @param  {string} name    The name of the list (should be "molecules").
+ * @param  {any[]}  values  The values to push to the list.
+ */
+export function pushToStoreListBulk(name: string, values: any[]) {
+    store.commit("pushToMoleculesBulk", values);
+}
+
+/**
  * Gets a store.state variable.
  *
  * @param  {string} name         The name of the variable to get.

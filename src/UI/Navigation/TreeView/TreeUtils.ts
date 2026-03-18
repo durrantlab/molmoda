@@ -5,10 +5,24 @@ import { SelectedType, TreeNodeType } from "./TreeInterfaces";
 import { TreeNodeList } from "../../../TreeNodes/TreeNodeList/TreeNodeList";
 import { treeNodeDeepClone } from "../../../TreeNodes/Deserializers";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import {
+    makeEasyParserAsync,
+    isWorkerParser,
+    WorkerParserHandle,
+    AsyncParserResult,
+} from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
+import {
+    EasyParserWorkerClient,
+    WORKER_ATOM_THRESHOLD,
+} from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserWorkerClient";
+import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
+import { GLModel } from "@/UI/Panels/Viewer/GLModelType";
+import { IFileInfo } from "@/FileSystem/Types";
 import * as api from "@/Api";
 import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { toRaw } from "vue";
 
 /**
  * Selects nodes in a list based on a condition function.
@@ -73,6 +87,43 @@ export function getTerminalNodesToConsider(
     molsToKeep = molsToKeep.filters.onlyUnique;
 
     return molsToKeep;
+}
+
+/**
+ * Extracts an IAtom array from a TreeNode model, handling the three possible
+ * storage formats (IAtom[], GLModel, IFileInfo). Returns only plain,
+ * serializable data safe for postMessage to a web worker (strips Vue
+ * reactivity proxies and GLModel methods).
+ *
+ * @param {IAtom[] | GLModel | IFileInfo | undefined} model  The model data.
+ * @returns {IAtom[] | IFileInfo | undefined}  An atom array, file info, or
+ *     undefined if the model is empty.
+ */
+function extractModelData(
+    model: IAtom[] | GLModel | IFileInfo | undefined
+): IAtom[] | IFileInfo | undefined {
+    if (model === undefined) {
+        return undefined;
+    }
+
+    // Strip Vue reactivity proxy to get the raw underlying object.
+    const raw = toRaw(model);
+
+    if (Array.isArray(raw)) {
+        return raw as IAtom[];
+    }
+    if ((raw as GLModel).selectedAtoms !== undefined) {
+        // GLModel has methods and DOM refs that can't be cloned.
+        // Extract a plain atom array instead.
+        return (raw as GLModel).selectedAtoms({}) as IAtom[];
+    }
+    // It's IFileInfo. Create a plain object with only the serializable
+    // properties to avoid cloning Vue proxies or treeNode references.
+    const fileInfo = raw as IFileInfo;
+    return {
+        name: fileInfo.name,
+        contents: fileInfo.contents,
+    } as IFileInfo;
 }
 
 /**
@@ -190,91 +241,110 @@ export function mergeTreeNodes(
         .catch((err: Error) => {
             throw err;
         });
-
-    // const treeNode = nodeList.get(0);
-
-    // // Keep going through the nodes of each container and merge them into the
-    // // first container.
-    // for (let i = 1; i < nodeList.length; i++) {
-    //     const treeNode = nodeList.get(i);
-
-    //     // Get the terminal nodes
-    //     const terminalNodes = new TreeNodeList([treeNode]).filters
-    //         .onlyTerminal;
-
-    //     // Get ancestry of each terminal node
-    //     terminalNodes.forEach((terminalNode) => {
-    //         const ancestry = terminalNode.getAncestry(
-    //             new TreeNodeList([treeNode])
-    //         );
-
-    //         // Remove first one, which is the root node
-    //         ancestry.shift();
-
-    //         let treeNodePointer = treeNode;
-    //         const mergedMolNodesTitles = treeNodePointer.nodes?.map(
-    //             (node: TreeNode) => node.title
-    //         ) as string[];
-
-    //         while (
-    //             mergedMolNodesTitles?.indexOf(ancestry.get(0).title) !== -1
-    //         ) {
-    //             if (!mergedTreeNodePointer.nodes) {
-    //                 // When does this happen?
-    //                 break;
-    //             }
-
-    //             // Update the pointer
-    //             mergedTreeNodePointer =
-    //                 mergedTreeNodePointer.nodes.find(
-    //                     (node: TreeNode) => node.title === ancestry.get(0).title
-    //                 ) as TreeNode;
-
-    //             // Remove the first node from the ancestry
-    //             ancestry.shift();
-    //         }
-
-    //         // You've reached the place where the node should be added. First,
-    //         // update its parentId.
-    //         const nodeToAdd = ancestry.get(0);
-    //         nodeToAdd.parentId = mergedTreeNodePointer.id;
-
-    //         // And add it
-    //         mergedTreeNodePointer.nodes?.push(nodeToAdd);
-    //     });
-    // }
-
-    // mergedTreeNode.title = newName;
-
-    // return mergedTreeNode;
 }
 
 /**
  * Retrieves unique residue names and IDs from all currently visible terminal
- * molecular models.
+ * molecular models. Uses the EasyParser webworker for large molecules to
+ * avoid blocking the main thread during UI-triggered residue queries.
  *
- * @returns {{ names: string[], ids: number[] }} An object containing an
- *  alphabetically sorted array of unique residue names and a numerically
+ * @returns {Promise<{ names: string[], ids: number[] }>} An object containing
+ *  an alphabetically sorted array of unique residue names and a numerically
  *  sorted array of unique residue IDs.
  */
-export function getUniqueResiduesFromVisibleMolecules(): {
+export async function getUniqueResiduesFromVisibleMolecules(): Promise<{
     names: string[];
     ids: number[];
-} {
+}> {
     const allMolecules: TreeNodeList = getMoleculesFromStore();
     const visibleTerminalNodes: TreeNodeList =
         allMolecules.filters.onlyTerminal.filters.keepVisible();
+
     const allResidueNames = new Set<string>();
     const allResidueIds = new Set<number>();
+
+    // Separate nodes into small (sync) and large (worker) groups to minimize
+    // overhead for small molecules while offloading large ones.
+    const smallNodes: TreeNode[] = [];
+    const largeNodes: TreeNode[] = [];
+
     visibleTerminalNodes.forEach((node: TreeNode) => {
-        if (node.model) {
-            const parser: EasyParserParent = makeEasyParser(node.model);
-            const { names: nodeResNames, ids: nodeResIds } =
-                parser.getUniqueResidues();
-            nodeResNames.forEach((name) => allResidueNames.add(name));
-            nodeResIds.forEach((id) => allResidueIds.add(id));
+        if (!node.model) {
+            return;
+        }
+        const data = extractModelData(node.model);
+        if (data === undefined) {
+            return;
+        }
+        // Estimate atom count for routing. For IAtom arrays we know the
+        // length directly; for IFileInfo we use the sync parser to get a
+        // cheap line count (the sync constructor only splits lines, it
+        // doesn't parse atoms).
+        let atomCount: number;
+        if (Array.isArray(data)) {
+            atomCount = (data as IAtom[]).length;
+        } else {
+            const quickParser = makeEasyParser(data as IFileInfo);
+            atomCount = quickParser.length;
+        }
+
+        if (atomCount >= WORKER_ATOM_THRESHOLD) {
+            largeNodes.push(node);
+        } else {
+            smallNodes.push(node);
         }
     });
+
+    // Process small molecules synchronously (no worker round-trip overhead).
+    for (const node of smallNodes) {
+        const parser: EasyParserParent = makeEasyParser(node.model);
+        const { names, ids } = parser.getUniqueResidues();
+        names.forEach((name) => allResidueNames.add(name));
+        ids.forEach((id) => allResidueIds.add(id));
+    }
+
+    // Process large molecules via the worker in parallel.
+    if (largeNodes.length > 0) {
+        const client = EasyParserWorkerClient.getInstance();
+        const handles: string[] = [];
+
+        try {
+            // Create all parsers in the worker.
+            const createPromises = largeNodes.map(async (node) => {
+                const data = extractModelData(node.model);
+                if (data === undefined) {
+                    return client.createParserFromAtoms([]);
+                }
+                if (Array.isArray(data)) {
+                    return client.createParserFromAtoms(data as IAtom[]);
+                }
+                // IFileInfo — already stripped of non-serializable properties
+                // by extractModelData.
+                return client.createParser(data as IFileInfo);
+            });
+            const createdHandles = await Promise.all(createPromises);
+            handles.push(...createdHandles);
+
+            // Query unique residues from all handles in parallel.
+            const residuePromises = handles.map((h) =>
+                client.getUniqueResidues(h)
+            );
+            const residueResults = await Promise.all(residuePromises);
+
+            for (const result of residueResults) {
+                result.names.forEach((name: string) =>
+                    allResidueNames.add(name)
+                );
+                result.ids.forEach((id: number) => allResidueIds.add(id));
+            }
+        } finally {
+            // Always clean up worker-side parsers.
+            await Promise.all(
+                handles.map((h) => client.destroyParser(h))
+            );
+        }
+    }
+
     return {
         names: Array.from(allResidueNames).sort(),
         ids: Array.from(allResidueIds).sort((a, b) => a - b),

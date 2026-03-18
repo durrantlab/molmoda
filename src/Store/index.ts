@@ -73,6 +73,33 @@ const _commonMutations = {
     },
 
     /**
+     * Adds multiple TreeNode objects to the molecules list in a single
+     * mutation, producing only one shallow copy and one reactivity trigger.
+     * This is critical for batch loading where per-node pushes cause O(n^2)
+     * copy overhead and redundant cache invalidations.
+     *
+     * @param {any}        state  The state.
+     * @param {TreeNode[]} nodes  The nodes to add.
+     */
+    pushToMoleculesBulk(state: any, nodes: TreeNode[]) {
+        const molecules = state.molecules as TreeNodeList;
+
+        // Clear focus on existing molecules so the viewer zooms to the
+        // newly added batch.
+        molecules.flattened.forEach((node: TreeNode) => {
+            node.focused = false;
+        });
+
+        for (const node of nodes) {
+            node.focused = true;
+            molecules.push(node);
+        }
+
+        // Single shallow copy triggers Vue reactivity exactly once.
+        state.molecules = molecules.copy.shallow;
+    },
+
+    /**
      * Adds a property (value) to an object in the state.
      *
      * @param {any}         state    The state.
@@ -143,7 +170,6 @@ export function setupVueXStore(): Store<any> {
         getters: {},
         mutations: {
             ..._commonMutations,
-
             /**
              * Clear the molecule that's the focus of the viewer.
              *

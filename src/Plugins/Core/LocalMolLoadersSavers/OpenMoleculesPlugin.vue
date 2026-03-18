@@ -36,7 +36,7 @@ import {
 import { getFileType } from "@/FileSystem/FileUtils2";
 import {getFormatInfoGivenType} from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { makeEasyParser, makeEasyParserAsync } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 /**
  * OpenMoleculesPlugin
  */
@@ -148,7 +148,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * @returns {Promise<void>}  A promise that resolves when the job is
      *     done. TODO: These are wrong throughout.
      */
-    runJobInBrowser(fileInfo: FileInfo): Promise<void> {
+    async runJobInBrowser(fileInfo: FileInfo): Promise<void> {
         // It's not a molmoda file (e.g., a PDB file). NOTE: When loading a
         // multi-frame file, this fileInfo contains all frames (not yet
         // separated).
@@ -167,7 +167,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             // force 3D coordinate generation.
             if (frmt && !frmt.lacks3D) {
                 try {
-                    const parser = makeEasyParser(fileInfo);
+                    const parser = await makeEasyParserAsync(fileInfo);
                     if (parser.isFlat()) {
                         gen3DParams.whichMols = WhichMolsGen3D.All;
                     }

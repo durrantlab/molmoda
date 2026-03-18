@@ -77,9 +77,8 @@ export abstract class ViewerParent {
    * immediately, and subsequent calls within 500ms are suppressed.
    */
   private _renderAllCoalescer = createLeadingEdgeThrottle(() => {
-    console.log("MOOSE")
     this._renderAnimFrameCoalescer.invoke();
-  }, 500);
+  }, 1000);
 
   /**
    * Subclasses implement the actual library-specific render call.
