@@ -34,7 +34,7 @@ import {
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
 import { getFileType } from "@/FileSystem/FileUtils2";
-import {getFormatInfoGivenType} from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser, makeEasyParserAsync } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 /**
@@ -88,11 +88,22 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     /**
      * Runs when the user presses the action button and the popup closes.
      */
-    onPopupDone() {
+    async onPopupDone() {
         this.closePopup();
 
         if (this.filesToLoad.length > 0) {
-            this.submitJobs(this.filesToLoad);
+            // Show the first one immediately (responsiveness)
+            const firstOnly = this.filesToLoad.slice(0, 1);
+            await this.submitJobs(firstOnly);
+
+            if (this.filesToLoad.length > 1) {
+                // Wait a moment before showing the rest to give the viewer a chance to update and show the first file. This can help with perceived responsiveness, especially for large files.
+                await new Promise((resolve) => setTimeout(resolve, 1000)); // Give the viewer a moment to update and show the first file before starting the batch load of the remaining files. This can help with perceived responsiveness, especially for large files.
+
+                // Show the remaining all at once (speed)
+                const remaining = this.filesToLoad.slice(1);
+                await this.submitJobs(remaining);
+            }
         }
     }
 
