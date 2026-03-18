@@ -50,6 +50,8 @@ import { getUniqueResiduesFromVisibleMolecules } from "@/UI/Navigation/TreeView/
 import { Component, Watch } from "vue-facing-decorator";
 // import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 // import { IColorScheme } from "@/Core/Styling/Colors/ColorInterfaces"; // Potentially needed
+import { createTrailingEdgeDebounce } from "@/Core/Utils/CoalescedTask";
+
 
 interface AddVizPayload {
   styleNameToEdit?: string;
@@ -94,6 +96,16 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   contributorCredits: IContributorCredit[] = [];
   currentSelectionRepType: Representation | null = null;
   currentRepresentationStyle: ISelAndStyle = {};
+
+      /**
+     * Debounced residue option updater. Avoids re-parsing all visible
+     * molecules on every rapid store mutation (e.g., when batch-loading
+     * molecules triggers many sequential tree updates).
+     */
+    private _residueUpdateDebounce = createTrailingEdgeDebounce(() => {
+        this.updateResidueOptions();
+    }, 500);
+
 
   private lastProgrammaticStyleName = "";
   private rawVals = {
@@ -632,10 +644,11 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * Watches for changes in the global molecules store and updates residue
    * options.
    */
-  @Watch("$store.state.molecules", { deep: true })
-  onMoleculesChanged() {
-    this.updateResidueOptions();
-  }
+    @Watch("$store.state.molecules", { deep: true })
+    onMoleculesChanged() {
+        // Debounce rather than running immediately on every deep mutation.
+        this._residueUpdateDebounce.invoke();
+    }
 
   /**
    * Updates the options for residue name and ID selection dropdowns based on

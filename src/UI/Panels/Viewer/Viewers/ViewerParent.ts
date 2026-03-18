@@ -124,23 +124,31 @@ export abstract class ViewerParent {
    */
   abstract _removeRegion(id: string): void;
 
-  /**
-   * Removes multiple objects (models or regions).
-   *
-   * @param {string[]} remainingMolIds  The ids of the models that remain.
-   */
-  removeObjects(remainingMolIds: string[]) {
+    /**
+     * Remove all cached objects whose ids are not in the provided set of
+     * remaining molecule ids.
+     *
+     * @param {Set<string> | string[]} remainingMolIds  The ids of molecules
+     *     that should be kept. Accepts a Set for O(1) lookups when the
+     *     caller already has one, or an array for backward compatibility.
+     */
+    removeObjects(remainingMolIds: Set<string> | string[]) {
+        const idSet = remainingMolIds instanceof Set
+            ? remainingMolIds
+            : new Set(remainingMolIds);
+
     // Find the ids that are still present in the cache. These should be
     // removed.
     const idsOfMolsOrRegionsToDelete: string[] = [];
+
     for (const molCacheId in this.molCache) {
-      if (remainingMolIds.indexOf(molCacheId) === -1) {
-        // There's an id in the cache that isn't in the tree.
+            if (!idSet.has(molCacheId)) {
         idsOfMolsOrRegionsToDelete.push(molCacheId);
       }
     }
+
     for (const regionCacheId in this.regionCache) {
-      if (remainingMolIds.indexOf(regionCacheId) === -1) {
+      if (!idSet.has(regionCacheId)) {
         // There's an id in the cache that isn't in the tree.
         idsOfMolsOrRegionsToDelete.push(regionCacheId);
       }

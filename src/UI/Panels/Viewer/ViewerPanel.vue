@@ -218,14 +218,12 @@ export default class ViewerPanel extends Vue {
    * @param {TreeNodeList} terminalNodes  The terminal nodes of the treeview.
    */
   private _removeOldModels(terminalNodes: TreeNodeList) {
-    // Remove any molecules not presently in the terminal nodes.
-
-    // Get the ids of the actual terminal nodes (should have deleted element
-    // already removed)
-    const idsOfTerminalNodes = terminalNodes.map(
-      (node: TreeNode) => node.id
-    ) as string[];
-
+    // Build a Set for O(1) lookups instead of O(n) indexOf on every
+    // cached model id. This matters when there are hundreds of terminal
+    // nodes and hundreds of cached models.
+    const idsOfTerminalNodes = new Set<string>(
+      terminalNodes.map((node: TreeNode) => node.id) as string[]
+    );
     api.visualization.viewerObj?.removeObjects(idsOfTerminalNodes);
   }
 

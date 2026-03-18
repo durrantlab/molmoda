@@ -85,37 +85,49 @@ export class TreeNodeListNodeActions {
     }
 
     /**
-     * Gets all the nodes, whether terminal or not. I ended up prefering this
-     * version to the ones below because it preserves order.
+     * Returns a flat list of all nodes in the tree, depth-first.
+     * Uses an iterative stack-based approach to avoid recursion overhead,
+     * and leverages a version-stamped cache to avoid recomputation when
+     * the tree hasn't changed.
      *
-     * @returns {TreeNodeList}  The flat array of all nodes.
+     * @returns {TreeNodeList}  A flat list containing every node in the
+     *     hierarchy.
      */
     public get flattened(): TreeNodeList {
         const cached = getFlattenedFromCache(this.parentTreeNodeList);
         if (cached) {
             return cached;
         }
-        const resultNodes: TreeNode[] = [];
-        // Use a stack for iterative traversal to avoid recursion limits and improve performance.
-        const stack: TreeNode[] = [];
+
         const rootNodes = this.parentTreeNodeList.nodes;
-        // Initialize stack with root nodes in reverse order so they are popped in the correct order.
+        // Pre-allocate with a rough capacity estimate to reduce
+        // array resizing during large molecule loads.
+        const resultNodes: TreeNode[] = [];
+        const stack: TreeNode[] = new Array(rootNodes.length);
+
+        // Push in reverse so the first root node is processed first.
         for (let i = rootNodes.length - 1; i >= 0; i--) {
-            stack.push(rootNodes[i]);
+            stack[rootNodes.length - 1 - i] = rootNodes[i];
         }
-        while (stack.length > 0) {
-            const node = stack.pop();
-            if (node) {
+
+        let stackLen = rootNodes.length;
+
+        while (stackLen > 0) {
+            const node = stack[--stackLen];
                 resultNodes.push(node);
                 if (node.nodes && node.nodes.length > 0) {
                     const children = node.nodes.nodes;
-                    // Push children in reverse order to maintain Pre-order traversal
+                // Ensure stack has capacity.
+                const needed = stackLen + children.length;
+                if (needed > stack.length) {
+                    stack.length = needed;
+                }
                     for (let i = children.length - 1; i >= 0; i--) {
-                        stack.push(children[i]);
-                    }
+                    stack[stackLen++] = children[i];
                 }
             }
         }
+
         const result = this.parentTreeNodeList.newTreeNodeList(resultNodes);
         setFlattenedInCache(this.parentTreeNodeList, result);
         return result;

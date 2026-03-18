@@ -214,6 +214,10 @@ export class BatchRenderGate {
         return this._batchActive && this._hasFiredImmediate;
     }
 
+    public get deferredCount(): number {
+        return this._deferredCount;
+    }
+
     /**
      * Forces the deferred render to fire immediately and resets the gate.
      * Useful when you know the batch is complete and don't want to wait
@@ -260,4 +264,37 @@ export class BatchRenderGate {
         this._batchActive = false;
         this._clearQuietTimer();
     }
+}
+
+/**
+ * Debounces a function so it only fires after a quiet period with no calls.
+ * Unlike leading-edge throttle, this only fires on the trailing edge.
+ *
+ * @param {() => void} fn         The function to debounce.
+ * @param {number}     delayMs    The quiet period in milliseconds.
+ * @returns {{ invoke: () => void; cancel: () => void }}  Control object.
+ */
+export function createTrailingEdgeDebounce(
+    fn: () => void,
+    delayMs: number,
+): { invoke: () => void; cancel: () => void } {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    return {
+        invoke(): void {
+            if (timer !== null) {
+                clearTimeout(timer);
+            }
+            timer = setTimeout(() => {
+                timer = null;
+                fn();
+            }, delayMs);
+        },
+        cancel(): void {
+            if (timer !== null) {
+                clearTimeout(timer);
+                timer = null;
+            }
+        },
+    };
 }
