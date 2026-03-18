@@ -90,11 +90,14 @@ export function _convertTreeNodeList(
                 })
         );
     } else {
-        // If the models are already IFileInfos (and no merging), just use them.
+        // Create new FileInfo objects from the frozen IFileInfo models
+        // instead of mutating the originals (which may be Object.frozen).
         fileInfos = mols.map((mol: IFileInfo, idx: number) => {
-            const {ext} = getFileNameParts(mol.name);
-            mol.name = `tmpmol${idx}.${ext}`;
-            return new FileInfo(mol)
+            const { ext } = getFileNameParts(mol.name);
+            return new FileInfo({
+                name: `tmpmol${idx}.${ext}`,
+                contents: mol.contents,
+            });
         });
     }
 
