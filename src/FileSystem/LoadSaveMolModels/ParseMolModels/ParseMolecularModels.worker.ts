@@ -75,36 +75,112 @@ function getAtomRadius(atom: IAtom): number {
     const elem = atom.elem ? atom.elem.toUpperCase() : "";
     return COVALENT_RADII[elem] || DEFAULT_COVALENT_RADIUS;
 }
+
 /**
- * Checks if two groups of atoms are bonded.
+ * Check whether two atom groups are bonded by testing if any pair of atoms
+ * (one from each group) is within covalent bonding distance. Uses a fast
+ * bounding-box pre-check to skip distant groups entirely, avoiding the
+ * overhead of creating EasyParser instances for every residue group.
  *
- * @param {EasyParserParent} group1 The first group.
- * @param {EasyParserParent} group2 The second group.
- * @returns {boolean} True if bonded.
+ * @param {IAtom[]} atoms1  The first group of atoms.
+ * @param {IAtom[]} atoms2  The second group of atoms.
+ * @returns {boolean}  True if any atom pair across groups is within bonding distance.
  */
-function areGroupsBonded(group1: EasyParserParent, group2: EasyParserParent): boolean {
-    // Optimization: Check bounding boxes with a generous cutoff first
-    // Max bond dist roughly 2.5A (S-S + tolerance).
-    if (!group1.isWithinDistance(group2, 3.0)) {
+function areAtomGroupsBonded(atoms1: IAtom[], atoms2: IAtom[]): boolean {
+    // Quick bounding-box rejection at 3.0 A (generous upper bound for
+    // any covalent bond plus tolerance).
+    const CUTOFF = 3.0;
+
+    let min1x = Infinity, min1y = Infinity, min1z = Infinity;
+    let max1x = -Infinity, max1y = -Infinity, max1z = -Infinity;
+    for (let i = 0; i < atoms1.length; i++) {
+        const a = atoms1[i];
+        if (a.x === undefined || a.y === undefined || a.z === undefined) continue;
+        if (a.x < min1x) min1x = a.x;
+        if (a.x > max1x) max1x = a.x;
+        if (a.y < min1y) min1y = a.y;
+        if (a.y > max1y) max1y = a.y;
+        if (a.z < min1z) min1z = a.z;
+        if (a.z > max1z) max1z = a.z;
+    }
+
+    let min2x = Infinity, min2y = Infinity, min2z = Infinity;
+    let max2x = -Infinity, max2y = -Infinity, max2z = -Infinity;
+    for (let i = 0; i < atoms2.length; i++) {
+        const a = atoms2[i];
+        if (a.x === undefined || a.y === undefined || a.z === undefined) continue;
+        if (a.x < min2x) min2x = a.x;
+        if (a.x > max2x) max2x = a.x;
+        if (a.y < min2y) min2y = a.y;
+        if (a.y > max2y) max2y = a.y;
+        if (a.z < min2z) min2z = a.z;
+        if (a.z > max2z) max2z = a.z;
+    }
+
+    if (
+        max1x < min2x - CUTOFF || min1x > max2x + CUTOFF ||
+        max1y < min2y - CUTOFF || min1y > max2y + CUTOFF ||
+        max1z < min2z - CUTOFF || min1z > max2z + CUTOFF
+    ) {
         return false;
     }
-    for (let i = 0; i < group1.length; i++) {
-        const a1 = group1.getAtom(i);
+
+    // Detailed pairwise check using covalent radii.
+    for (let i = 0; i < atoms1.length; i++) {
+        const a1 = atoms1[i];
         if (a1.x === undefined || a1.y === undefined || a1.z === undefined) continue;
         const r1 = getAtomRadius(a1);
-        for (let j = 0; j < group2.length; j++) {
-            const a2 = group2.getAtom(j);
+
+        for (let j = 0; j < atoms2.length; j++) {
+            const a2 = atoms2[j];
             if (a2.x === undefined || a2.y === undefined || a2.z === undefined) continue;
-            const r2 = getAtomRadius(a2);
-            const distSq = (a1.x - a2.x) ** 2 + (a1.y - a2.y) ** 2 + (a1.z - a2.z) ** 2;
-            const threshold = r1 + r2 + BONDING_TOLERANCE;
-            if (distSq <= threshold * threshold) {
+
+            const threshold = r1 + getAtomRadius(a2) + BONDING_TOLERANCE;
+            const dx = a1.x - a2.x;
+            const dy = a1.y - a2.y;
+            const dz = a1.z - a2.z;
+
+            if (dx * dx + dy * dy + dz * dz <= threshold * threshold) {
                 return true;
             }
         }
     }
+
     return false;
 }
+
+/**
+ * Compute an axis-aligned bounding box for an array of atoms, without
+ * wrapping them in an EasyParser instance.
+ *
+ * @param {IAtom[]} atoms  The atoms to bound.
+ * @returns {{ minX: number; minY: number; minZ: number;
+ *             maxX: number; maxY: number; maxZ: number } | null}
+ *     The bounding box, or null if no atoms have coordinates.
+ */
+function getAtomBounds(atoms: IAtom[]): {
+    minX: number; minY: number; minZ: number;
+    maxX: number; maxY: number; maxZ: number;
+} | null {
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    let found = false;
+
+    for (let i = 0; i < atoms.length; i++) {
+        const a = atoms[i];
+        if (a.x === undefined || a.y === undefined || a.z === undefined) continue;
+        found = true;
+        if (a.x < minX) minX = a.x;
+        if (a.x > maxX) maxX = a.x;
+        if (a.y < minY) minY = a.y;
+        if (a.y > maxY) maxY = a.y;
+        if (a.z < minZ) minZ = a.z;
+        if (a.z > maxZ) maxZ = a.z;
+    }
+
+    return found ? { minX, minY, minZ, maxX, maxY, maxZ } : null;
+}
+
 /**
  * Helper function to generate default mol container (used throughout).
  *
@@ -498,7 +574,6 @@ function dividePDBAtomsIntoDistinctComponents(
         data.fileInfo.contents,
         molFormatInfo
     );
-
     const molName = getFileNameParts(data.fileInfo.name).basename;
     const frameTitles = frames.map((f, i) => {
         return `${getNameFromContent(f, molFormatInfo)}:${molName}:${i + 1}`;
@@ -509,6 +584,7 @@ function dividePDBAtomsIntoDistinctComponents(
     for (let frameIdx = 0; frameIdx < frames.length; frameIdx++) {
         const frame = frames[frameIdx];
         const frameTitle = frameTitles[frameIdx];
+
         const molWithAtomsToDivide = makeEasyParser({
             contents: frame,
             name: `tmp.${data.format}`,
@@ -520,6 +596,7 @@ function dividePDBAtomsIntoDistinctComponents(
         }
         // Create a flat list of terminal nodes
         const terminalNodes = new TreeNodeList();
+
         const componentSels: [any, TreeNodeType, boolean][] = [
             [proteinSel, TreeNodeType.Protein, false],
             [nucleicSel, TreeNodeType.Nucleic, false],
@@ -528,6 +605,7 @@ function dividePDBAtomsIntoDistinctComponents(
             [ionSel, TreeNodeType.Ions, true],
             [lipidSel, TreeNodeType.Lipid, false],
         ];
+
         for (const [sel, type, flatten] of componentSels) {
             let selToUse = {};
             if (sel.or) {
@@ -538,6 +616,7 @@ function dividePDBAtomsIntoDistinctComponents(
             } else {
                 selToUse = sel;
             }
+
             const atoms = molWithAtomsToDivide.selectedAtoms(selToUse, true);
             if (atoms.length > 0) {
                 if (flatten) {
@@ -578,7 +657,10 @@ function dividePDBAtomsIntoDistinctComponents(
                 }
             }
         }
-        // Everything else is a compound, grouped by residue
+
+        // Process remaining (unclassified) atoms: group by residue, then
+        // use spatial connectivity to merge covalently bonded residues
+        // into single compound nodes.
         const remainingAtoms = molWithAtomsToDivide.atoms;
         if (remainingAtoms.length > 0) {
             // 1. Group by residue ID
@@ -592,30 +674,34 @@ function dividePDBAtomsIntoDistinctComponents(
                 }
                 atomsByResidue[resId].push(atom);
             });
-            // 2. Create parsers for each group to use optimization features
+
+            // Build lightweight group objects. We store the raw atom array
+            // and a precomputed bounding box instead of wrapping each
+            // group in an EasyParser, which avoids per-group allocation
+            // overhead for molecules with hundreds of residue fragments.
             const groups = resKeys.map((key) => ({
                 key,
                 atoms: atomsByResidue[key],
-                parser: makeEasyParser(atomsByResidue[key]),
+                bounds: getAtomBounds(atomsByResidue[key]),
                 merged: false,
-                connectedTo: [] as number[], // indices of other groups
+                connectedTo: [] as number[],
             }));
-            // 3. Build connectivity graph optimized with spatial hashing
-            const GRID_SIZE = 5.0; // Angstroms
-            const CUTOFF = 3.0; // Matches areGroupsBonded check distance threshold
+
+            // Spatial grid for fast neighbor-pair enumeration.
+            const GRID_SIZE = 5.0;
+            const CUTOFF = 3.0;
             const grid = new Map<string, number[]>();
 
             // Add groups to grid based on their bounding box
             groups.forEach((g, idx) => {
-                const bounds = g.parser.getBounds();
-                if (!bounds) return;
-                const margin = CUTOFF / 2; // Expand bounds by half the cutoff on each side
-                const iMin = Math.floor((bounds.minX - margin) / GRID_SIZE);
-                const iMax = Math.floor((bounds.maxX + margin) / GRID_SIZE);
-                const jMin = Math.floor((bounds.minY - margin) / GRID_SIZE);
-                const jMax = Math.floor((bounds.maxY + margin) / GRID_SIZE);
-                const kMin = Math.floor((bounds.minZ - margin) / GRID_SIZE);
-                const kMax = Math.floor((bounds.maxZ + margin) / GRID_SIZE);
+                if (!g.bounds) return;
+                const margin = CUTOFF / 2;
+                const iMin = Math.floor((g.bounds.minX - margin) / GRID_SIZE);
+                const iMax = Math.floor((g.bounds.maxX + margin) / GRID_SIZE);
+                const jMin = Math.floor((g.bounds.minY - margin) / GRID_SIZE);
+                const jMax = Math.floor((g.bounds.maxY + margin) / GRID_SIZE);
+                const kMin = Math.floor((g.bounds.minZ - margin) / GRID_SIZE);
+                const kMax = Math.floor((g.bounds.maxZ + margin) / GRID_SIZE);
                 for (let i = iMin; i <= iMax; i++) {
                     for (let j = jMin; j <= jMax; j++) {
                         for (let k = kMin; k <= kMax; k++) {
@@ -640,17 +726,20 @@ function dividePDBAtomsIntoDistinctComponents(
                     }
                 }
             }
-            // Check bonds only for spatially adjacent groups
+
+            // Bonding check using raw atom arrays directly instead of
+            // going through EasyParser.isWithinDistance.
             for (const pairKey of potentialPairs) {
                 const [s1, s2] = pairKey.split(",");
                 const i = parseInt(s1);
                 const j = parseInt(s2);
-                if (areGroupsBonded(groups[i].parser, groups[j].parser)) {
+                if (areAtomGroupsBonded(groups[i].atoms, groups[j].atoms)) {
                     groups[i].connectedTo.push(j);
                     groups[j].connectedTo.push(i);
                 }
             }
-            // 4. Traverse graph to find connected components
+
+            // Connected-component traversal to merge bonded residues.
             for (let i = 0; i < groups.length; i++) {
                 if (groups[i].merged) continue;
                 const componentIndices: number[] = [i];
@@ -677,7 +766,9 @@ function dividePDBAtomsIntoDistinctComponents(
                     // Use the first atom's info for the title part
                     titles.push(`${g.atoms[0].resn}:${g.atoms[0].resi}`);
                 }
+
                 const mergedTitle = titles.join("-");
+
                 terminalNodes.push(
                     new TreeNode({
                         title: mergedTitle,

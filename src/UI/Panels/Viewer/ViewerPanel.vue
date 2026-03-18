@@ -498,11 +498,14 @@ export default class ViewerPanel extends Vue {
     this._setSurfaceStyle(treeNode, surfaceStyles, surfacePromises);
     return true;
   }
+
   /**
-   * Updates any style changes.
+   * Reconciles the 3D viewer state with the current molecule tree. Adds
+   * new models, removes stale ones, and applies styles to dirty nodes.
+   * Pre-filters dirty nodes before awaiting model-add promises so that
+   * only nodes requiring viewer work go through the style pipeline.
    *
-   * @returns {Promise<string[]>}  A promise that resolves the ids of the
-   *     molecules that are visible.
+   * @returns {Promise<string[]>}  The ids of visible terminal node models.
    */
   private async _updateStyleChanges(): Promise<string[]> {
     const spinnerId = api.messages.startWaitSpinner();
@@ -514,42 +517,55 @@ export default class ViewerPanel extends Vue {
     // Add all the models and put them in the cache. This also hides the
     // regions if visible == false on the node.
     const viewer = await api.visualization.viewer;
-    const addMolPromises = viewer.addTreeNodeList(terminalNodes) || [];
 
-    const treeNodes: TreeNode[] = await Promise.all(addMolPromises);
+    // Partition terminal nodes into those already cached (resolved
+    // synchronously) and those needing async model creation. This lets
+    // us skip awaiting promises for cached nodes and process their
+    // dirty-state immediately.
+    const alreadyCached: TreeNode[] = [];
+    const needsAddPromises: Promise<TreeNode>[] = [];
+
+    const addPromises = viewer.addTreeNodeList(terminalNodes) || [];
+    for (let i = 0; i < terminalNodes.length; i++) {
+      const node = terminalNodes.get(i);
+      const id = node.id as string;
+      // If the viewer already has this node cached, the promise from
+      // addTreeNodeList is a resolved Promise.resolve(treeNode). We
+      // can process it synchronously by checking the cache directly.
+      if (viewer.molCache[id] || viewer.regionCache[id]) {
+        alreadyCached.push(node);
+      } else {
+        needsAddPromises.push(addPromises[i]);
+      }
+    }
+
+    // Wait only for the genuinely async model additions.
+    const newlyAdded: TreeNode[] = await Promise.all(needsAddPromises);
+    const allTreeNodes = alreadyCached.concat(newlyAdded);
 
     const surfacePromises: Promise<any>[] = [];
 
-    // Keep track of visible molecules so you can zoom on them
-    // later.
-    let visibleTerminalNodeModelsIds = treeNodes
+    // Collect visible ids from the full set.
+    const visibleTerminalNodeModelsIds = allTreeNodes
       .filter((treeNode: TreeNode) => treeNode.visible)
       .map((treeNode: TreeNode) => treeNode.id as string);
 
-    // Get only the dirty nodes. If the node isn't dirty, there's no
-    // need to apply a new style.
-    const dirtyNodes = treeNodes.filter(
-      (treeNode: TreeNode) => treeNode.viewerDirty
-    );
-    // You're about to update the style, so mark it for not dirty.
-    dirtyNodes.forEach((treeNode: TreeNode) => {
+    // Process only dirty nodes, partitioned by visibility. Clearing
+    // the dirty flag eagerly prevents re-processing on the next tick.
+    const visibleDirtyNodes: TreeNode[] = [];
+    const invisibleDirtyNodes: TreeNode[] = [];
+
+    for (const treeNode of allTreeNodes) {
+      if (!treeNode.viewerDirty) continue;
       treeNode.viewerDirty = false;
-    });
+      if (treeNode.visible) {
+        visibleDirtyNodes.push(treeNode);
+      } else {
+        invisibleDirtyNodes.push(treeNode);
+      }
+    }
 
-    const visibleDirtyNodes = dirtyNodes.filter(
-      (treeNode: TreeNode) => treeNode.visible
-    );
-    const invisibleDirtyNodes = dirtyNodes.filter(
-      (treeNode: TreeNode) => !treeNode.visible
-    );
-
-    // Make sure invisible ones are really invisible.
-    for (let treeNode of invisibleDirtyNodes) {
-      // Since not supposed to be visible, we won't keep
-      // it in the list. But make sure it's hidden here.
-
-      // hide it.
-      // console.log("Hiding:" + treeNode.id);
+    for (const treeNode of invisibleDirtyNodes) {
       viewer.hideObject(treeNode.id as string);
 
       // Clear any surfaces associated with this molecule.
@@ -588,7 +604,7 @@ export default class ViewerPanel extends Vue {
 
     // Zoom to any focused molecule after all models are added and styled.
     // This ensures the viewer camera moves to newly loaded molecules.
-    const hasFocusedNode = treeNodes.some(
+    const hasFocusedNode = allTreeNodes.some(
       (treeNode: TreeNode) => treeNode.focused && treeNode.visible
     );
     if (hasFocusedNode) {
