@@ -113,42 +113,42 @@ export default class LoadPDBPlugin extends PluginParentClass {
      */
     onPopupDone() {
         const pdbId = this.getUserArg("pdbId");
-        this.submitJobs([pdbId]);
+
+        // TODO: With a little effort, you could refactor this so downloads all
+        // pdbs in parallel. Currently in serial.
+
+        let pdbIdList = pdbId.trim().split(" ");
+
+        // remove duplicates
+        pdbIdList = pdbIdList.filter((v: any, i: any, a: any) => a.indexOf(v) === i);
+
+        this.submitJobs(pdbIdList, undefined, undefined, true);
     }
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
-     * @param {string} pdbIds  The PDB IDs to load (separated by space).
+     * @param {string} pdbId  The PDB ID to load.
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
-    async runJobInBrowser(pdbIds: string): Promise<void> {
-        // TODO: With a little effort, you could refactor this so downloads all
-        // pdbs in parallel. Currentl in serial.
+    async runJobInBrowser(pdbId: string): Promise<void> {
 
-        let pdbIdList = pdbIds.trim().split(" ");
-
-        // remove duplicates
-        pdbIdList = pdbIdList.filter((v, i, a) => a.indexOf(v) === i);
-
-        for (const pdbId of pdbIdList) {
-            const spinnerId = api.messages.startWaitSpinner();
-            try {
-                const fileInfo = await loadPdbIdToFileInfo(pdbId);
-                await this.addFileInfoToViewer({
-                    fileInfo,
-                    tag: this.pluginId,
-                });
+        const spinnerId = api.messages.startWaitSpinner();
+        try {
+            const fileInfo = await loadPdbIdToFileInfo(pdbId);
+            await this.addFileInfoToViewer({
+                fileInfo,
+                tag: this.pluginId,
+            });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (err: any) {
-                // Failed a second time! Probably not a valid PDB.
-                api.messages.popupError(
-                    "Could not load PDB ID " +
-                    pdbId +
-                    ". Are you sure this ID is valid?"
-                );
-            } finally {
-                api.messages.stopWaitSpinner(spinnerId);
-            }
+        } catch (err: any) {
+            // Failed a second time! Probably not a valid PDB.
+            api.messages.popupError(
+                "Could not load PDB ID " +
+                pdbId +
+                ". Are you sure this ID is valid?"
+            );
+        } finally {
+            api.messages.stopWaitSpinner(spinnerId);
         }
     }
 

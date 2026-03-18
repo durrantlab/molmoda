@@ -315,6 +315,45 @@ export abstract class PluginParentClass extends Vue
     }
 
     /**
+     * Helper function for submitJobs to submit the first job separately for
+     * better perceived responsiveness. The first job is shown immediately,
+     * while the rest are shown after a delay.
+     * 
+     * @param {any[]}  parameterSets        A list of parameters, one per job.
+     * @param {number} numProcessorsPerJob  The number of processors to use per job.
+     * @param {number} [delayBetweenJobsMS] The number of milliseconds to wait
+     *                                      between running jobs. A modal
+     *                                      appears during this time giving the
+     *                                      user the opportunity to cancel all
+     *                                      jobs. Optional.
+     * @returns {Promise<void>} A promise that resolves when all jobs have been submitted.
+     */
+    private async _subJobsFirstJobSeparately(
+        parameterSets: any[],
+        numProcessorsPerJob = 1,
+        delayBetweenJobsMS?: number
+    ) {
+        // Show the first one immediately (responsiveness)
+        const firstOnly = parameterSets.slice(0, 1);
+        await this.submitJobs(firstOnly, numProcessorsPerJob, delayBetweenJobsMS, false);
+
+        if (parameterSets.length > 1) {
+            // Wait a moment before showing the rest to give the viewer a chance
+            // to update and show the first file. This can help with perceived
+            // responsiveness, especially for large files.
+
+            // Give the viewer a moment to update and show the first file before
+            // starting the batch load of the remaining files. This can help
+            // with perceived responsiveness, especially for large files.
+            await new Promise((resolve) => setTimeout(resolve, 1000)); 
+
+            // Show the remaining all at once (speed)
+            const remaining = parameterSets.slice(1);
+            await this.submitJobs(remaining, numProcessorsPerJob, delayBetweenJobsMS, false);
+        }
+    }
+
+    /**
      * Submits multiple jobs to the queue system. `submitJobs` is typically
      * called from the `onPopupDone` function (after the user presses the
      * popup's action button).
@@ -331,14 +370,32 @@ export abstract class PluginParentClass extends Vue
      *                                          modal appears during this time
      *                                          giving the user the opportunity
      *                                          to cancel all jobs. Optional.
+     * @param {boolean} [firstJobSeparately] If true, the first job is submitted
+     *                                         separately and immediately,
+     *                                         without waiting for the
+     *                                         delayBetweenJobsMS. This can help
+     *                                         with perceived responsiveness,
+     *                                         especially when the first job
+     *                                         takes a long time to start.
+     *                                         Optional.
      * @helper
      * @document
      */
     protected async submitJobs(
         parameterSets?: any[],
         numProcessorsPerJob = 1,
-        delayBetweenJobsMS?: number
+        delayBetweenJobsMS?: number,
+        firstJobSeparately?: boolean
     ) {
+        if (firstJobSeparately && parameterSets && parameterSets.length > 0) {
+            await this._subJobsFirstJobSeparately(
+                parameterSets,
+                numProcessorsPerJob,
+                delayBetweenJobsMS
+            );
+            return;
+        }
+
         if (!this.skipLongRunningJobMsg) {
             if (runningForAWhileTimers[this.pluginId] !== undefined) {
                 clearTimeout(runningForAWhileTimers[this.pluginId]);

@@ -92,18 +92,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         this.closePopup();
 
         if (this.filesToLoad.length > 0) {
-            // Show the first one immediately (responsiveness)
-            const firstOnly = this.filesToLoad.slice(0, 1);
-            await this.submitJobs(firstOnly);
-
-            if (this.filesToLoad.length > 1) {
-                // Wait a moment before showing the rest to give the viewer a chance to update and show the first file. This can help with perceived responsiveness, especially for large files.
-                await new Promise((resolve) => setTimeout(resolve, 1000)); // Give the viewer a moment to update and show the first file before starting the batch load of the remaining files. This can help with perceived responsiveness, especially for large files.
-
-                // Show the remaining all at once (speed)
-                const remaining = this.filesToLoad.slice(1);
-                await this.submitJobs(remaining);
-            }
+            this.submitJobs(this.filesToLoad, undefined, undefined, true);
         }
     }
 
