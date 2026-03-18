@@ -1,5 +1,7 @@
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { NameValPair } from "./StoreInterfaces";
+import { beginBatchTreeUpdate, endBatchTreeUpdate } from "@/TreeNodes/TreeCache";
+import { type TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 let store: any;
 
@@ -42,15 +44,20 @@ export function pushToStoreList(name: string, value: any) {
 }
 
 /**
- * Adds multiple values to the molecules list in a single commit, triggering
- * Vue reactivity only once. This avoids O(n^2) shallow-copy overhead when
- * loading many molecules in sequence.
+ * Push multiple tree nodes to the store in a single batch, deferring
+ * tree cache invalidation until all nodes have been added. This avoids
+ * O(n^2) cache recomputation when loading many molecules at once.
  *
- * @param  {string} name    The name of the list (should be "molecules").
- * @param  {any[]}  values  The values to push to the list.
+ * @param {string}     name    The store variable name (should be "molecules").
+ * @param {TreeNode[]} values  The tree nodes to add.
  */
-export function pushToStoreListBulk(name: string, values: any[]) {
-    store.commit("pushToMoleculesBulk", values);
+export function pushToStoreListBulk(name: string, values: TreeNode[]) {
+    beginBatchTreeUpdate();
+    try {
+        store.commit("pushToMoleculesBulk", values);
+    } finally {
+        endBatchTreeUpdate();
+    }
 }
 
 /**
