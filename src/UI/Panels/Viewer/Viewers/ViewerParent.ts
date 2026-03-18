@@ -31,6 +31,7 @@ import { toRaw } from "vue";
 import { IFileInfo } from "@/FileSystem/Types";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { createAnimationFrameCoalescer, createLeadingEdgeThrottle } from "@/Core/Utils/CoalescedTask";
+import { isRenderDeferred } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
 /**
  * Sets the loadViewerLibPromise variable.
@@ -73,12 +74,12 @@ export abstract class ViewerParent {
 
   /**
    * Coalesces multiple render requests into a single call at most once every
-   * 500ms. This is a leading-edge throttle, so the first call happens
-   * immediately, and subsequent calls within 500ms are suppressed.
+   * 500ms. During batch molecule loading, renderAll() is a no-op (guarded
+   * by isRenderDeferred), so this throttle only governs interactive use.
    */
   private _renderAllCoalescer = createLeadingEdgeThrottle(() => {
     this._renderAnimFrameCoalescer.invoke();
-  }, 1000);
+  }, 500);
 
   /**
    * Subclasses implement the actual library-specific render call.
@@ -88,13 +89,21 @@ export abstract class ViewerParent {
 
   /**
    * Schedule a render for the next animation frame. Multiple calls
-   * between frames are coalesced into a single repaint.
+   * between frames are coalesced into a single repaint. During batch
+   * molecule loading (when the BatchRenderGate is active), render
+   * requests are suppressed entirely to avoid expensive intermediate
+   * 3Dmol.js work that will be immediately invalidated.
    *
    * @returns {Promise<void>} Resolves immediately; the actual render
    *     is deferred to the next animation frame.
    */
   public renderAll(): Promise<void> {
-    // this._renderAnimFrameCoalescer.invoke();
+    // During batch loading, suppress intermediate renders. The
+    // BatchRenderGate will call updateStylesInViewer (which calls
+    // renderAll) once when loading settles.
+    if (isRenderDeferred()) {
+      return Promise.resolve();
+    }
     this._renderAllCoalescer.invoke();
     return Promise.resolve();
   }
@@ -453,7 +462,10 @@ export abstract class ViewerParent {
   }
 
   /**
-   * Adds a list of tree nodes to the viewer.
+   * Adds a list of tree nodes to the viewer. During batch loading, this
+   * may be called once with many nodes (when the deferred render fires)
+   * rather than once per molecule, significantly reducing 3Dmol.js
+   * addModel overhead.
    *
    * @param {TreeNodeList} treeNodeList   The list of molecules to add.
    * @returns {Promise<TreeNode>[]}  A list of promises that resolve when the
@@ -760,6 +772,7 @@ export abstract class ViewerParent {
    */
   public unLoadViewer() {
     this._renderAnimFrameCoalescer.cancel();
+    this._renderAllCoalescer.cancel();
     // Remove from api
     api.visualization.viewerObj = undefined;
     loadViewerLibPromise = undefined;

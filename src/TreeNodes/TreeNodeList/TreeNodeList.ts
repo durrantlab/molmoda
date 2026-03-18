@@ -14,6 +14,39 @@ import { pushToStoreListBulk, getMoleculesFromStore, setStoreVar } from "@/Store
 import { visualizationApi } from "@/Api/Visualization";
 import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { store } from "@/Store";
+import { BatchRenderGate } from "@/Core/Utils/CoalescedTask";
+
+// Shared gate that coordinates render deferral across multiple concurrent
+// parseAndLoadMoleculeFile calls. The first molecule renders immediately;
+// subsequent molecules batch their render into a single pass once loading
+// settles.
+const _renderGate = new BatchRenderGate(async () => {
+    const viewer = await visualizationApi.viewer;
+    updateStylesInViewer();
+    viewer.zoomOnFocused();
+}, 300);
+
+/**
+ * Returns whether the shared render gate is currently deferring renders.
+ * The viewer component should check this before triggering expensive
+ * 3Dmol.js re-renders in response to molecule store changes. When true,
+ * the gate will fire a single batched render once loading settles.
+ *
+ * @returns {boolean}  True if renders are being deferred.
+ */
+export function isRenderDeferred(): boolean {
+    return _renderGate.isDeferring;
+}
+
+/**
+ * Forces any pending deferred render to fire immediately. Call this when
+ * you know a batch load is complete and want the viewer to update without
+ * waiting for the quiet period to elapse.
+ */
+export function flushRenderGate(): void {
+    _renderGate.flush();
+}
+
 /**
  * TreeNodeList class
  */
@@ -494,7 +527,7 @@ export class TreeNodeList {
      *            when loading a saved session where these
      *            properties should be preserved.
      */
-    public async addToMainTree(
+    public addToMainTree(
         tag: string | null,
         reassignIds = true,
         terminalNodeTitleRevisable = true,
@@ -527,10 +560,21 @@ export class TreeNodeList {
             }
         }
 
-        // Update viewer: apply styles and zoom to the newly added molecules.
-        const viewer = await visualizationApi.viewer;
-        updateStylesInViewer();
-        viewer.zoomOnFocused();
+        // Notify the render gate that molecules were added. On the first
+        // call, this triggers an immediate render (so the user sees the
+        // first molecule right away). Subsequent calls within the quiet
+        // period are deferred into a single render pass once loading
+        // settles, avoiding redundant 3Dmol.js work.
+        _renderGate.notifyMoleculeAdded();
+    }
+
+    /**
+     * Forces any pending deferred render to fire immediately. Call this when
+     * you know a batch load is complete and want the viewer to update without
+     * waiting for the quiet period to elapse.
+     */
+    public static flushRenderGate(): void {
+        _renderGate.flush();
     }
 
     /**

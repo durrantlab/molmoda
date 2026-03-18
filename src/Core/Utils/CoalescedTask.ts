@@ -143,3 +143,121 @@ export function createAnimationFrameCoalescer(
         },
     };
 }
+
+/**
+ * Manages batch loading of molecules with render deferral. The first molecule
+ * in a batch renders immediately for perceived responsiveness; subsequent
+ * molecules are accumulated and rendered in a single 3Dmol.js pass once the
+ * batch completes or a quiet period elapses.
+ *
+ * Usage:
+ *   const gate = new BatchRenderGate(renderFn);
+ *   gate.notifyMoleculeAdded();  // first call: renders immediately
+ *   gate.notifyMoleculeAdded();  // subsequent: deferred
+ *   gate.notifyMoleculeAdded();  // subsequent: deferred
+ *   // after quietPeriodMs with no new calls, renderFn fires once for all deferred molecules.
+ *
+ * The gate auto-resets after the deferred render fires, so the next molecule
+ * added after a quiet period will again render immediately.
+ */
+export class BatchRenderGate {
+    private _renderFn: () => void | Promise<void>;
+    private _quietPeriodMs: number;
+    private _hasFiredImmediate = false;
+    private _deferredCount = 0;
+    private _quietTimer: ReturnType<typeof setTimeout> | null = null;
+    private _batchActive = false;
+
+    /**
+     * @param {() => void | Promise<void>} renderFn  The function that triggers
+     *                                               a full render cycle. May
+     *                                               be sync or async.
+     * @param {number} [quietPeriodMs=300]  How long to wait (ms) after the
+     *                                      last molecule add before firing
+     *                                      the deferred render. Tune this
+     *                                      to balance responsiveness vs.
+     *                                      batching efficiency.
+     */
+    constructor(renderFn: () => void | Promise<void>, quietPeriodMs = 300) {
+        this._renderFn = renderFn;
+        this._quietPeriodMs = quietPeriodMs;
+    }
+
+    /**
+     * Call this each time a molecule is added to the store. The first call
+     * triggers an immediate render; subsequent calls within the quiet period
+     * are deferred into a single render.
+     */
+    public notifyMoleculeAdded(): void {
+        if (!this._hasFiredImmediate) {
+            // First molecule in the batch: render immediately for
+            // perceived responsiveness.
+            this._hasFiredImmediate = true;
+            this._batchActive = true;
+            this._renderFn();
+        } else {
+            this._deferredCount++;
+        }
+
+        // Reset the quiet timer. Each new molecule extends the window,
+        // so we only fire the deferred render once loading settles.
+        this._resetQuietTimer();
+    }
+
+    /**
+     * Whether the gate is currently deferring renders (i.e., we're in the
+     * middle of a batch load after the first molecule has rendered).
+     *
+     * @returns {boolean}  True if renders should be suppressed by the caller.
+     */
+    public get isDeferring(): boolean {
+        return this._batchActive && this._hasFiredImmediate;
+    }
+
+    /**
+     * Forces the deferred render to fire immediately and resets the gate.
+     * Useful when you know the batch is complete and don't want to wait
+     * for the quiet period.
+     */
+    public flush(): void {
+        this._clearQuietTimer();
+        this._fireDeferredRender();
+    }
+
+    /**
+     * Resets the gate without firing a deferred render. Useful for cleanup
+     * or cancellation.
+     */
+    public cancel(): void {
+        this._clearQuietTimer();
+        this._reset();
+    }
+
+    private _resetQuietTimer(): void {
+        this._clearQuietTimer();
+        this._quietTimer = setTimeout(() => {
+            this._fireDeferredRender();
+        }, this._quietPeriodMs);
+    }
+
+    private _clearQuietTimer(): void {
+        if (this._quietTimer !== null) {
+            clearTimeout(this._quietTimer);
+            this._quietTimer = null;
+        }
+    }
+
+    private _fireDeferredRender(): void {
+        if (this._deferredCount > 0) {
+            this._renderFn();
+        }
+        this._reset();
+    }
+
+    private _reset(): void {
+        this._hasFiredImmediate = false;
+        this._deferredCount = 0;
+        this._batchActive = false;
+        this._clearQuietTimer();
+    }
+}

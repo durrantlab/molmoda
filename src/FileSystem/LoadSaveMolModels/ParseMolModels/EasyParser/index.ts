@@ -191,8 +191,15 @@ export async function makeEasyParserAsync(
         return localParser;
     }
 
-    // Large molecule: offload to the worker.
+    // Large molecule: offload to the worker. Create a plain object with
+    // only serializable properties to avoid DataCloneError when posting
+    // to the worker (FileInfo class instances have methods and possibly
+    // Vue reactivity proxies that cannot be cloned).
     const client = EasyParserWorkerClient.getInstance();
-    const handle = await client.createParser(src);
+    const plainFileInfo: IFileInfo = {
+        name: src.name,
+        contents: src.contents,
+    };
+    const handle = await client.createParser(plainFileInfo);
     return new WorkerParserHandle(handle, client);
 }
