@@ -420,8 +420,8 @@ export default class FPocketWebPlugin extends PluginParentClass {
             nodes: new TreeNodeList([]),
         });
 
-        pseudoAtomNodes?.forEach((node: TreeNode, idx: number) => {
-            const box = node.getBoxRegion();
+        pseudoAtomNodes?.forEach(async (node: TreeNode, idx: number) => {
+            const box = await node.getBoxRegionAsync();
             box.opacity = 0.9;
             box.color = randomPastelColor();
 

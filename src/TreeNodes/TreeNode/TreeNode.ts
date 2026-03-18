@@ -690,81 +690,82 @@ export class TreeNode {
         viewer.zoomOnFocused();
     }
 
-    /**
-     * Gets the box surrounding the model.
-     * @param  {number} [padding]  The padding to add to the box.
-     * @returns {IBox}  The box.
-     */
-    public getBoxRegion(padding = 3.4): IBox {
-        // Note 3.4 is approximate vdw diameter of carbon.
+    // Commenting out below because always async now.
+    // /**
+    //  * Gets the box surrounding the model.
+    //  * @param  {number} [padding]  The padding to add to the box.
+    //  * @returns {IBox}  The box.
+    //  */
+    // public getBoxRegion(padding = 3.4): IBox {
+    //     // Note 3.4 is approximate vdw diameter of carbon.
 
-        // Get all the nodes and subnodes with models (including this one).
-        const nodesWithModels = newTreeNodeList([this]).filters.keepModels(
-            true,
-            true
-        ).nodes;
-        const xs: number[] = [];
-        const ys: number[] = [];
-        const zs: number[] = [];
-        nodesWithModels.forEach((node: TreeNode) => {
-            const model = node.model as GLModel;
-            // Get atoms
-            const { atoms } = makeEasyParser(model);
-            xs.push(...atoms.map((atom: IAtom) => atom.x as number));
-            ys.push(...atoms.map((atom: IAtom) => atom.y as number));
-            zs.push(...atoms.map((atom: IAtom) => atom.z as number));
-        });
+    //     // Get all the nodes and subnodes with models (including this one).
+    //     const nodesWithModels = newTreeNodeList([this]).filters.keepModels(
+    //         true,
+    //         true
+    //     ).nodes;
+    //     const xs: number[] = [];
+    //     const ys: number[] = [];
+    //     const zs: number[] = [];
+    //     nodesWithModels.forEach((node: TreeNode) => {
+    //         const model = node.model as GLModel;
+    //         // Get atoms
+    //         const { atoms } = makeEasyParser(model);
+    //         xs.push(...atoms.map((atom: IAtom) => atom.x as number));
+    //         ys.push(...atoms.map((atom: IAtom) => atom.y as number));
+    //         zs.push(...atoms.map((atom: IAtom) => atom.z as number));
+    //     });
 
-        // Get min and max x, y, and z
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
-        const minZ = Math.min(...zs);
-        const maxZ = Math.max(...zs);
+    //     // Get min and max x, y, and z
+    //     const minX = Math.min(...xs);
+    //     const maxX = Math.max(...xs);
+    //     const minY = Math.min(...ys);
+    //     const maxY = Math.max(...ys);
+    //     const minZ = Math.min(...zs);
+    //     const maxZ = Math.max(...zs);
 
-        // Get box center
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
-        const centerZ = (minZ + maxZ) / 2;
+    //     // Get box center
+    //     const centerX = (minX + maxX) / 2;
+    //     const centerY = (minY + maxY) / 2;
+    //     const centerZ = (minZ + maxZ) / 2;
 
-        // Try to get color of this node if you can find it.
-        let color: string | undefined = undefined;
-        if (this.styles && this.styles.length > 0) {
-            for (const style of this.styles) {
-                const colors = [
-                    style.surface?.color,
-                    style.sphere?.color,
-                    style.cartoon?.color,
-                    style.stick?.color,
-                    style.line?.color,
-                ];
-                // Get first color in colors that is not undefined
-                color = colors.find((c: string | undefined) => c !== undefined);
-                if (color !== undefined) {
-                    break;
-                }
-            }
-        }
+    //     // Try to get color of this node if you can find it.
+    //     let color: string | undefined = undefined;
+    //     if (this.styles && this.styles.length > 0) {
+    //         for (const style of this.styles) {
+    //             const colors = [
+    //                 style.surface?.color,
+    //                 style.sphere?.color,
+    //                 style.cartoon?.color,
+    //                 style.stick?.color,
+    //                 style.line?.color,
+    //             ];
+    //             // Get first color in colors that is not undefined
+    //             color = colors.find((c: string | undefined) => c !== undefined);
+    //             if (color !== undefined) {
+    //                 break;
+    //             }
+    //         }
+    //     }
 
-        if (color === undefined) {
-            // If none of the styles can a color attribute set, just use red.
-            color = "red";
-        }
+    //     if (color === undefined) {
+    //         // If none of the styles can a color attribute set, just use red.
+    //         color = "red";
+    //     }
 
-        return {
-            type: RegionType.Box,
-            center: [centerX, centerY, centerZ],
-            opacity: 0.5,
-            color: color,
-            movable: true,
-            dimensions: [
-                maxX - minX + padding,
-                maxY - minY + padding,
-                maxZ - minZ + padding,
-            ],
-        } as IBox;
-    }
+    //     return {
+    //         type: RegionType.Box,
+    //         center: [centerX, centerY, centerZ],
+    //         opacity: 0.5,
+    //         color: color,
+    //         movable: true,
+    //         dimensions: [
+    //             maxX - minX + padding,
+    //             maxY - minY + padding,
+    //             maxZ - minZ + padding,
+    //         ],
+    //     } as IBox;
+    // }
 
     /**
      * Gets the box surrounding the model. Uses the EasyParser webworker for

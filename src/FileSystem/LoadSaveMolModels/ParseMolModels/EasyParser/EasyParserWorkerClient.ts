@@ -277,76 +277,81 @@ export class EasyParserWorkerClient {
 
     // ── Bulk convenience methods ────────────────────────────────────
 
-    /**
-     * Creates multiple parsers from IFileInfo sources in parallel, returning
-     * all handles once every parser is ready. Each parser is created via a
-     * separate worker command, but all commands are dispatched concurrently
-     * so the worker processes them back-to-back.
-     *
-     * @param {IFileInfo[]} sources  The file info objects to parse.
-     * @returns {Promise<string[]>}  The handles, one per source, in order.
-     */
-    public async createParsersFromFiles(
-        sources: IFileInfo[]
-    ): Promise<string[]> {
-        const promises = sources.map((src) => this.createParser(src));
-        return Promise.all(promises);
-    }
+    // Not called from anywhere.
+    // /**
+    //  * Creates multiple parsers from IFileInfo sources in parallel, returning
+    //  * all handles once every parser is ready. Each parser is created via a
+    //  * separate worker command, but all commands are dispatched concurrently
+    //  * so the worker processes them back-to-back.
+    //  *
+    //  * @param {IFileInfo[]} sources  The file info objects to parse.
+    //  * @returns {Promise<string[]>}  The handles, one per source, in order.
+    //  */
+    // public async createParsersFromFiles(
+    //     sources: IFileInfo[]
+    // ): Promise<string[]> {
+    //     const promises = sources.map((src) => this.createParser(src));
+    //     return Promise.all(promises);
+    // }
 
-    /**
-     * Creates multiple parsers from IAtom arrays in parallel.
-     *
-     * @param {IAtom[][]} atomArrays  The atom arrays to register.
-     * @returns {Promise<string[]>}  The handles, one per array, in order.
-     */
-    public async createParsersFromAtomArrays(
-        atomArrays: IAtom[][]
-    ): Promise<string[]> {
-        const promises = atomArrays.map((atoms) =>
-            this.createParserFromAtoms(atoms)
-        );
-        return Promise.all(promises);
-    }
+    // Not called from anywhere.
+    // /**
+    //  * Creates multiple parsers from IAtom arrays in parallel.
+    //  *
+    //  * @param {IAtom[][]} atomArrays  The atom arrays to register.
+    //  * @returns {Promise<string[]>}  The handles, one per array, in order.
+    //  */
+    // public async createParsersFromAtomArrays(
+    //     atomArrays: IAtom[][]
+    // ): Promise<string[]> {
+    //     const promises = atomArrays.map((atoms) =>
+    //         this.createParserFromAtoms(atoms)
+    //     );
+    //     return Promise.all(promises);
+    // }
 
-    /**
-     * Retrieves bounds for multiple parser handles in parallel.
-     *
-     * @param {string[]} handles  The parser handles.
-     * @param {number}   [stride]  Optional sampling stride.
-     * @returns {Promise<(BoundsResult | null)[]>}  Bounds per handle, in order.
-     */
-    public async getBoundsMultiple(
-        handles: string[],
-        stride?: number
-    ): Promise<(BoundsResult | null)[]> {
-        const promises = handles.map((h) => this.getBounds(h, stride));
-        return Promise.all(promises);
-    }
+    // Not called from anywhere
+    // /**
+    //  * Retrieves bounds for multiple parser handles in parallel.
+    //  *
+    //  * @param {string[]} handles  The parser handles.
+    //  * @param {number}   [stride]  Optional sampling stride.
+    //  * @returns {Promise<(BoundsResult | null)[]>}  Bounds per handle, in order.
+    //  */
+    // public async getBoundsMultiple(
+    //     handles: string[],
+    //     stride?: number
+    // ): Promise<(BoundsResult | null)[]> {
+    //     const promises = handles.map((h) => this.getBounds(h, stride));
+    //     return Promise.all(promises);
+    // }
 
-    /**
-     * Retrieves unique residues for multiple parser handles in parallel.
-     *
-     * @param {string[]} handles  The parser handles.
-     * @returns {Promise<UniqueResiduesResult[]>}  Results per handle, in order.
-     */
-    public async getUniqueResiduesMultiple(
-        handles: string[]
-    ): Promise<UniqueResiduesResult[]> {
-        const promises = handles.map((h) => this.getUniqueResidues(h));
-        return Promise.all(promises);
-    }
+    // Not called from anywhere.
+    // /**
+    //  * Retrieves unique residues for multiple parser handles in parallel.
+    //  *
+    //  * @param {string[]} handles  The parser handles.
+    //  * @returns {Promise<UniqueResiduesResult[]>}  Results per handle, in order.
+    //  */
+    // public async getUniqueResiduesMultiple(
+    //     handles: string[]
+    // ): Promise<UniqueResiduesResult[]> {
+    //     const promises = handles.map((h) => this.getUniqueResidues(h));
+    //     return Promise.all(promises);
+    // }
 
-    /**
-     * Destroys multiple parser handles in parallel. Errors are suppressed
-     * to ensure cleanup completes for all handles even if one fails.
-     *
-     * @param {string[]} handles  The parser handles to destroy.
-     */
-    public async destroyParsers(handles: string[]): Promise<void> {
-        await Promise.allSettled(
-            handles.map((h) => this.destroyParser(h))
-        );
-    }
+    // Not called from anywhere
+    // /**
+    //  * Destroys multiple parser handles in parallel. Errors are suppressed
+    //  * to ensure cleanup completes for all handles even if one fails.
+    //  *
+    //  * @param {string[]} handles  The parser handles to destroy.
+    //  */
+    // public async destroyParsers(handles: string[]): Promise<void> {
+    //     await Promise.allSettled(
+    //         handles.map((h) => this.destroyParser(h))
+    //     );
+    // }
 
     // ── Batch API (advanced) ────────────────────────────────────────
 
