@@ -11,45 +11,11 @@ import { EasyCriterion, TreeNodeListFilters } from "./_Filters";
 import { TreeNodeListNodeActions } from "./_NodeActions";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { pushToStoreListBulk, getMoleculesFromStore, setStoreVar } from "@/Store/StoreExternalAccess";
+import { isVisualizationDeferred } from "@/Core/Utils/CoalescedTask";
 import { visualizationApi } from "@/Api/Visualization";
 import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { store } from "@/Store";
-import { BatchRenderGate } from "@/Core/Utils/CoalescedTask";
 
-// Shared gate that coordinates render deferral across multiple concurrent
-// parseAndLoadMoleculeFile calls. The first molecule renders immediately;
-// subsequent molecules batch their render into a single pass once loading
-// settles.
-const _renderGate = new BatchRenderGate(async () => {
-    const viewer = await visualizationApi.viewer;
-    updateStylesInViewer();
-    viewer.zoomOnFocused();
-}, 300);
-
-/**
- * Returns whether the shared render gate is currently deferring renders.
- * The viewer component should check this before triggering expensive
- * 3Dmol.js re-renders in response to molecule store changes. When true,
- * the gate will fire a single batched render once loading settles.
- *
- * @returns {boolean}  True if renders are being deferred.
- */
-export function isRenderDeferred(): boolean {
-    return _renderGate.isDeferring;
-}
-
-/**
- * Forces any pending deferred render to fire immediately. Call this when
- * you know a batch load is complete and want the viewer to update without
- * waiting for the quiet period to elapse.
- */
-export function flushRenderGate(): void {
-    _renderGate.flush();
-}
-
-/**
- * TreeNodeList class
- */
 export class TreeNodeList {
     public _nodes: TreeNode[] = [];
     private _filters: TreeNodeListFilters;
@@ -507,27 +473,17 @@ export class TreeNodeList {
     }
 
     /**
-     * A helper function tht adds all the nodes in this list to the molecules in
-     * the vuex store.
+     * Prepare and add all nodes in this list to the main molecule tree.
+     * If visualization is deferred (via deferVisualization()), the
+     * render is skipped here; the deferVisualization wrapper handles it.
+     * Otherwise, a render is triggered after adding.
      *
-     * @param {string | null} tag  The tag to add to the main tree.
-     * @param {boolean} [reassignIds=true] Whether to reassign IDs to the new
-     *    nodes to avoid collisions. Set to false
-     *    when loading a saved session.
-     * @param {boolean} [terminalNodeTitleRevisable=true] Whether the title of
-     *             the terminal node
-     *             should be revisable.
-     *             Revised if there is
-     *             only one terminal
-     *             node. If you're adding
-     *             nodes incrementally,
-     *             good to set to false.
-     * @param {boolean} [resetVisibilityAndSelection=true] Whether to make the molecule
-     *            visible and unselected. Set to false
-     *            when loading a saved session where these
-     *            properties should be preserved.
+     * @param {string | null} tag                         Plugin tag.
+     * @param {boolean}       [reassignIds=true]          Reassign node ids.
+     * @param {boolean}       [terminalNodeTitleRevisable=true]  Allow title revision.
+     * @param {boolean}       [resetVisibilityAndSelection=true] Reset vis/sel state.
      */
-    public addToMainTree(
+    public async addToMainTree(
         tag: string | null,
         reassignIds = true,
         terminalNodeTitleRevisable = true,
@@ -535,6 +491,7 @@ export class TreeNodeList {
     ) {
         // Prepare all nodes first without touching the store, then add in bulk.
         const preparedNodes: TreeNode[] = [];
+
         for (const node of this._nodes) {
             node.prepareForMainTree(
                 tag,
@@ -560,30 +517,14 @@ export class TreeNodeList {
             }
         }
 
-        // Notify the render gate that molecules were added. On the first
-        // call, this triggers an immediate render (so the user sees the
-        // first molecule right away). Subsequent calls within the quiet
-        // period are deferred into a single render pass once loading
-        // settles, avoiding redundant 3Dmol.js work.
-        _renderGate.notifyMoleculeAdded();
+        if (!isVisualizationDeferred()) {
+            updateStylesInViewer();
+            const viewer = await visualizationApi.viewer;
+            await viewer.renderImmediate();
+            viewer.zoomOnFocused();
+        }
     }
 
-    /**
-     * Forces any pending deferred render to fire immediately. Call this when
-     * you know a batch load is complete and want the viewer to update without
-     * waiting for the quiet period to elapse.
-     */
-    public static flushRenderGate(): void {
-        _renderGate.flush();
-    }
-
-    /**
-     * A helper function that creates a new TreeNodeList. This is useful for
-     * avoiding circular dependencies.
-     *
-     * @param  {TreeNode[]} [nodes=[]]  The nodes to add to the new list.
-     * @returns {TreeNodeList}  The new list.
-     */
     public newTreeNodeList(nodes: TreeNode[] = []): TreeNodeList {
         // To avoid circular dependencies
         return new TreeNodeList(nodes);

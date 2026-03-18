@@ -27,6 +27,7 @@ import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { deferVisualization } from "@/Core/Utils/CoalescedTask";
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
 // export type RunJobReturn = Promise<void>;
@@ -315,25 +316,21 @@ export abstract class PluginParentClass extends Vue
     }
 
     /**
-     * Helper function for submitJobs to submit the first job separately for
-     * better perceived responsiveness. The first job is shown immediately,
-     * while the rest are shown after a delay.
-     * 
+     * Submit the first job immediately (so the user sees something fast),
+     * then run remaining jobs with visualization deferred so they render
+     * together in a single batch at the end.
+     *
      * @param {any[]}  parameterSets        A list of parameters, one per job.
-     * @param {number} numProcessorsPerJob  The number of processors to use per job.
-     * @param {number} [delayBetweenJobsMS] The number of milliseconds to wait
-     *                                      between running jobs. A modal
-     *                                      appears during this time giving the
-     *                                      user the opportunity to cancel all
-     *                                      jobs. Optional.
-     * @returns {Promise<void>} A promise that resolves when all jobs have been submitted.
+     * @param {number} numProcessorsPerJob  Processors per job.
+     * @param {number} [delayBetweenJobsMS] Delay between jobs.
+     * @returns {Promise<void>}
      */
     private async _subJobsFirstJobSeparately(
         parameterSets: any[],
         numProcessorsPerJob = 1,
         delayBetweenJobsMS?: number
     ) {
-        // Show the first one immediately (responsiveness)
+        // Show the first one immediately (responsiveness).
         const firstOnly = parameterSets.slice(0, 1);
         await this.submitJobs(firstOnly, numProcessorsPerJob, delayBetweenJobsMS, false);
 
@@ -349,7 +346,13 @@ export abstract class PluginParentClass extends Vue
 
             // Show the remaining all at once (speed)
             const remaining = parameterSets.slice(1);
+
+            // Defer all visualization updates while loading the remaining
+            // molecules. deferVisualization() suppresses intermediate
+            // renders and forces a single batch render when done.
+            await deferVisualization(async () => {
             await this.submitJobs(remaining, numProcessorsPerJob, delayBetweenJobsMS, false);
+            });
         }
     }
 

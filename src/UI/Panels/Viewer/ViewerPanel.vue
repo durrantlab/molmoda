@@ -29,7 +29,7 @@ import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { isEqual } from 'lodash';
 import { Component, Watch } from "vue-facing-decorator";
 import { AsyncTaskCoalescer } from "@/Core/Utils/CoalescedTask";
-
+import { isVisualizationDeferred } from "@/Core/Utils/CoalescedTask";
 /**
  * ViewerPanel component
  */
@@ -59,15 +59,12 @@ export default class ViewerPanel extends Vue {
           }
         );
 
-
-        // if (allMolecules.length === 0) {
-        //     // No molecules present
-        //     api.visualization.viewerObj?.clearCache();
-        //     return;
-        // }
-
-        // Update styles and zoom
+        // Skip the full style-update pass while visualization is
+        // deferred; deferVisualization() will trigger a render when done.
+        if (!isVisualizationDeferred()) {
         await this._updateStyleChanges();
+        }
+
         if (this.treeview.length === 0) {
           // No molecules present. Perhaps not necessary, but let's clear
           // the cache just in case.
@@ -501,9 +498,8 @@ export default class ViewerPanel extends Vue {
 
   /**
    * Reconciles the 3D viewer state with the current molecule tree. Adds
-   * new models, removes stale ones, and applies styles to dirty nodes.
-   * Pre-filters dirty nodes before awaiting model-add promises so that
-   * only nodes requiring viewer work go through the style pipeline.
+   * new models, removes stale ones, applies styles to dirty nodes, and
+   * forces a canvas render at the end.
    *
    * @returns {Promise<string[]>}  The ids of visible terminal node models.
    */
@@ -602,8 +598,9 @@ export default class ViewerPanel extends Vue {
 
     await Promise.all(surfacePromises);
 
-    // Zoom to any focused molecule after all models are added and styled.
-    // This ensures the viewer camera moves to newly loaded molecules.
+    // Always force a render at the end of a style-update pass.
+      await viewer.renderImmediate();
+
     const hasFocusedNode = allTreeNodes.some(
       (treeNode: TreeNode) => treeNode.focused && treeNode.visible
     );
@@ -612,7 +609,6 @@ export default class ViewerPanel extends Vue {
     }
 
     api.messages.stopWaitSpinner(spinnerId);
-
     return visibleTerminalNodeModelsIds;
   }
 

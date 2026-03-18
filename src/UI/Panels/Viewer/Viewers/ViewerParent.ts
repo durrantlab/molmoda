@@ -6,7 +6,6 @@ import {
   IArrow,
   ICylinder,
   IAtom,
-  SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import {
   GenericModelType,
@@ -31,7 +30,7 @@ import { toRaw } from "vue";
 import { IFileInfo } from "@/FileSystem/Types";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { createAnimationFrameCoalescer, createLeadingEdgeThrottle } from "@/Core/Utils/CoalescedTask";
-import { isRenderDeferred } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { isVisualizationDeferred } from "@/Core/Utils/CoalescedTask";
 
 /**
  * Sets the loadViewerLibPromise variable.
@@ -88,24 +87,32 @@ export abstract class ViewerParent {
   public abstract _renderAll(): Promise<void>;
 
   /**
-   * Schedule a render for the next animation frame. Multiple calls
-   * between frames are coalesced into a single repaint. During batch
-   * molecule loading (when the BatchRenderGate is active), render
-   * requests are suppressed entirely to avoid expensive intermediate
-   * 3Dmol.js work that will be immediately invalidated.
+   * Request a viewer render, coalesced via a leading-edge throttle and
+     * requestAnimationFrame. Skipped entirely while visualization is
+     * deferred.
    *
-   * @returns {Promise<void>} Resolves immediately; the actual render
-   *     is deferred to the next animation frame.
+     * @returns {Promise<void>}
    */
   public renderAll(): Promise<void> {
     // During batch loading, suppress intermediate renders. The
     // BatchRenderGate will call updateStylesInViewer (which calls
     // renderAll) once when loading settles.
-    if (isRenderDeferred()) {
+    if (isVisualizationDeferred()) {
       return Promise.resolve();
     }
     this._renderAllCoalescer.invoke();
     return Promise.resolve();
+  }
+
+  /**
+   * Force an immediate render, bypassing the throttle and coalescer.
+     * Used by deferVisualization() after the deferred work completes,
+     * and by _updateStyleChanges at the end of a style-update pass.
+   *
+   * @returns {Promise<void>}
+   */
+  public renderImmediate(): Promise<void> {
+    return this._renderAll();
   }
 
   /**
@@ -124,25 +131,25 @@ export abstract class ViewerParent {
    */
   abstract _removeRegion(id: string): void;
 
-    /**
-     * Remove all cached objects whose ids are not in the provided set of
-     * remaining molecule ids.
-     *
-     * @param {Set<string> | string[]} remainingMolIds  The ids of molecules
-     *     that should be kept. Accepts a Set for O(1) lookups when the
-     *     caller already has one, or an array for backward compatibility.
-     */
-    removeObjects(remainingMolIds: Set<string> | string[]) {
-        const idSet = remainingMolIds instanceof Set
-            ? remainingMolIds
-            : new Set(remainingMolIds);
+  /**
+   * Remove all cached objects whose ids are not in the provided set of
+   * remaining molecule ids.
+   *
+   * @param {Set<string> | string[]} remainingMolIds  The ids of molecules
+   *     that should be kept. Accepts a Set for O(1) lookups when the
+   *     caller already has one, or an array for backward compatibility.
+   */
+  removeObjects(remainingMolIds: Set<string> | string[]) {
+    const idSet = remainingMolIds instanceof Set
+      ? remainingMolIds
+      : new Set(remainingMolIds);
 
     // Find the ids that are still present in the cache. These should be
     // removed.
     const idsOfMolsOrRegionsToDelete: string[] = [];
 
     for (const molCacheId in this.molCache) {
-            if (!idSet.has(molCacheId)) {
+      if (!idSet.has(molCacheId)) {
         idsOfMolsOrRegionsToDelete.push(molCacheId);
       }
     }

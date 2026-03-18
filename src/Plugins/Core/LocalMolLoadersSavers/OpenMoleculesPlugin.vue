@@ -37,6 +37,8 @@ import { getFileType } from "@/FileSystem/FileUtils2";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser, makeEasyParserAsync } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
+import { deferVisualization } from "@/Core/Utils/CoalescedTask";
+
 /**
  * OpenMoleculesPlugin
  */
@@ -92,7 +94,12 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         this.closePopup();
 
         if (this.filesToLoad.length > 0) {
-            this.submitJobs(this.filesToLoad, undefined, undefined, true);
+            await this.submitJobs(
+                this.filesToLoad,
+                1,
+                undefined,
+                true  // firstJobSeparately: render first molecule immediately
+            );
         }
     }
 
