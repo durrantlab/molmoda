@@ -79,7 +79,7 @@ export abstract class ViewerParent {
   private _renderAllCoalescer = createLeadingEdgeThrottle(() => {
     console.log("MOOSE")
     this._renderAnimFrameCoalescer.invoke();
-  }, 1000);
+  }, 500);
 
   /**
    * Subclasses implement the actual library-specific render call.
@@ -145,8 +145,8 @@ export abstract class ViewerParent {
         // Never did figure out why.
         this.hideObject(id);
         this.removeObject(id);
-        this.renderAll();
       });
+      this.renderAll();
     }
   }
 
