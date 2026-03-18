@@ -1,6 +1,8 @@
+import { type IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import type { ITreeNode, TreeNode } from "./TreeNode/TreeNode";
 import type { TreeNodeList } from "./TreeNodeList/TreeNodeList";
 import { newTreeNode, newTreeNodeList } from "./TreeNodeMakers";
+import { type IFileInfo } from "@/FileSystem/Types";
 
 // NOTE: I wanted these to be class variables on TreeNode and TreeNodeList, but
 // caused circular dependencies. So these must be called separately. You might
@@ -19,26 +21,25 @@ import { newTreeNode, newTreeNodeList } from "./TreeNodeMakers";
 async function _treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
     const newNode = newTreeNode(nodeSerial as TreeNode);
     
-    // Below no longer necessary. Viewer now uses IAtom[] instead of 3Dmol model.
-    // // Deserialize and model if it is not a 3Dmol model or an IFileInfo.
-    // const $3Dmol = await dynamicImports.mol3d.module;
-    // if (nodeSerial.model && !(nodeSerial.model as any).name && !(nodeSerial.model as any).content) {
-    //     const model = new $3Dmol.GLModel();
-    //     model.addAtoms(nodeSerial.model);
-    //     newNode.model = model;
-
-    //     // The model should not be reactive or alterable after loaded.
-    //     // Note that this dramatically improves performance in vue, but
-    //     // any changes to the model will require recreating it entirely.
-    //     Object.freeze(newNode.model);
-    // }
-
-    // The model should not be reactive or alterable after loaded. Note that
-    // this dramatically improves performance in vue (especially when using old
-    // biotite format), but any changes to the model will require recreating it
-    // entirely.
-    if (nodeSerial.model && !(nodeSerial.model as any).name && !(nodeSerial.model as any).content) {
+    // Freeze model data (atom arrays or file-info objects) to prevent
+    // Vue from wrapping tens of thousands of atom objects in reactive
+    // proxies. These are treated as immutable read-only data once parsed;
+    // any "modification" is done by replacing the model wholesale.
+    if (newNode.model) {
+        if (Array.isArray(newNode.model)) {
+            // IAtom[] : freeze the array and each atom object.
+            for (let i = 0; i < (newNode.model as IAtom[]).length; i++) {
+                Object.freeze((newNode.model as IAtom[])[i]);
+            }
+            Object.freeze(newNode.model);
+        } else if (
+            (newNode.model as IFileInfo).name !== undefined &&
+            (newNode.model as IFileInfo).contents !== undefined
+        ) {
+            // IFileInfo: freeze the file-info object. Its contents string
+            // is immutable after parsing.
         Object.freeze(newNode.model);
+        }
     }
 
     // Deserialize nodes.
@@ -49,6 +50,7 @@ async function _treeNodeDeserialize(nodeSerial: ITreeNode): Promise<TreeNode> {
     if (nodes !== undefined) {
         newNode.nodes = nodes;
     }
+
     return newNode;
 
     // return dynamicImports.mol3d.module

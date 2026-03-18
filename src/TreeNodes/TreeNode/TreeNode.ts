@@ -238,10 +238,9 @@ export class TreeNode {
         const obj: { [key: string]: any } = {};
         for (const key in this) {
             if (key === "nodes" && this.nodes) {
-                obj["nodes"] =
-                    (this.nodes as TreeNodeList).serialize !== undefined
-                        ? (this.nodes as TreeNodeList).serialize()
-                        : this.nodes;
+                obj["nodes"] = (this.nodes as TreeNodeList).serialize !== undefined
+                    ? (this.nodes as TreeNodeList).serialize()
+                    : this.nodes;
             } else if (key === "model" && this.model) {
                 // If stored as GLModel (depreciated), convert to IAtom[] so
                 // serializable.
@@ -263,6 +262,11 @@ export class TreeNode {
                         }
                         return atom;
                     });
+                } else if (Object.isFrozen(this.model)) {
+                    // Frozen models (IFileInfo or IAtom[]) are immutable,
+                    // so we can reference them directly during serialization
+                    // instead of paying for a deep JSON clone.
+                    obj["model"] = this.model;
                 } else {
                     obj["model"] = JSON.parse(JSON.stringify(this.model));
                 }

@@ -5,10 +5,12 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { IFileInfo } from "@/FileSystem/Types";
 
 /**
- * Convert IAtoms to IFileInfo PDB.
- * 
- * @param {IAtom[]} atoms The atoms to convert.
- * @returns {IFileInfo} The converted atoms.
+ * Convert an array of IAtom objects to a PDB-format IFileInfo. The
+ * returned object is frozen to prevent Vue reactivity overhead, since
+ * model data is treated as immutable after creation.
+ *
+ * @param {IAtom[]} atoms  The atoms to convert to PDB text.
+ * @returns {IFileInfo}  A frozen file-info object containing PDB text.
  */
 export function convertIAtomsToIFileInfoPDB(atoms: IAtom[]): IFileInfo {
     // I found myself often needing this conversion.
@@ -28,8 +30,10 @@ export function convertIAtomsToIFileInfoPDB(atoms: IAtom[]): IFileInfo {
         false
     )[0];
 
-    return {
+    const fileInfo: IFileInfo = {
         name: "tmpmol.pdb",
         contents: pdbTxt,
-    } as IFileInfo;
+    };
+    Object.freeze(fileInfo);
+    return fileInfo;
 }

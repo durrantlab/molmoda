@@ -926,6 +926,7 @@ waitForDataFromMainThread()
         }
 
         let organizedAtomsFramesFixed = new TreeNodeList();
+
         organizedAtomsFrames.forEach((organizedAtoms: TreeNode) => {
             organizedAtoms.id = randomID();
 
@@ -982,18 +983,26 @@ waitForDataFromMainThread()
             }
         );
 
+        // Convert terminal atom arrays to IFileInfo (PDB text) and freeze
+        // the resulting model objects. Freezing here, at the point of final
+        // assignment before serialization, ensures the deserialized tree
+        // nodes carry frozen models from the start, skipping Vue reactivity
+        // proxy wrapping on potentially tens of thousands of atom objects.
         organizedAtomsFramesFixed.terminals.forEach((node: TreeNode) => {
             // If node.model is a list, it's a list of atoms that need to be
             // converted to pdb.
             if (Array.isArray(node.model)) {
-                // Convert to pdb
-                node.model = convertIAtomsToIFileInfoPDB(node.model);
+                const fileInfo = convertIAtomsToIFileInfoPDB(node.model);
+                Object.freeze(fileInfo);
+                node.model = fileInfo;
             } else {
                 // It's mol2, already in text format.
-                node.model = {
+                const fileInfo = {
                     name: "tmp.mol2",
                     contents: (node.model as IFileInfo).contents,
                 } as IFileInfo;
+                Object.freeze(fileInfo);
+                node.model = fileInfo;
             }
         });
 
