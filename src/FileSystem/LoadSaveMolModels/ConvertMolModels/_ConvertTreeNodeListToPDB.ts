@@ -121,35 +121,38 @@ function _alignAtomName(atomName: string, element?: string): string {
  * @returns {string}  The PDB line.
  */
 function _createPDBLine(isProt: boolean, atom: IAtom): string {
-    // Add defaults to atom
-    atom.serial = atom.serial === undefined ? 0 : atom.serial;
-    atom.atom = atom.atom === undefined ? "C" : atom.atom;
-    atom.elem = atom.elem === undefined ? "C" : atom.elem;
-    atom.altLoc = atom.altLoc === undefined ? " " : atom.altLoc;
-    atom.resn = atom.resn === undefined ? "MOL" : atom.resn;
-    atom.chain = atom.chain === undefined ? "A" : atom.chain;
-    atom.resi = atom.resi === undefined ? 1 : atom.resi;
-    atom.x = atom.x === undefined ? 0 : atom.x;
-    atom.y = atom.y === undefined ? 0 : atom.y;
-    atom.z = atom.z === undefined ? 0 : atom.z;
-    atom.b = atom.b === undefined ? 0 : atom.b;
+    // Shallow copy to avoid mutating frozen atom objects.
+    const a: IAtom = { ...atom };
+
+    a.serial = a.serial === undefined ? 0 : a.serial;
+    a.atom = a.atom === undefined ? "C" : a.atom;
+    a.elem = a.elem === undefined ? "C" : a.elem;
+    a.altLoc = a.altLoc === undefined ? " " : a.altLoc;
+    a.resn = a.resn === undefined ? "MOL" : a.resn;
+    a.chain = a.chain === undefined ? "A" : a.chain;
+    a.resi = a.resi === undefined ? 1 : a.resi;
+    a.x = a.x === undefined ? 0 : a.x;
+    a.y = a.y === undefined ? 0 : a.y;
+    a.z = a.z === undefined ? 0 : a.z;
+    a.b = a.b === undefined ? 0 : a.b;
 
     let pdbLine = _ljust(isProt ? "ATOM" : "HETATM", 6);
-    pdbLine += _rjust((atom.serial as number).toString(), 5);
+    pdbLine += _rjust((a.serial as number).toString(), 5);
     pdbLine += " ";
-    pdbLine += _alignAtomName(atom.atom as string, atom.elem);
-    pdbLine += atom.altLoc; // altloc
-    pdbLine += _rjust(atom.resn, 3);
-    pdbLine += _rjust(atom.chain, 2);
-    pdbLine += _rjust(atom.resi.toString(), 4);
-    pdbLine += " "; // atom.ins?
-    pdbLine += _rjust((atom.x as number).toFixed(3), 11);
-    pdbLine += _rjust((atom.y as number).toFixed(3), 8);
-    pdbLine += _rjust((atom.z as number).toFixed(3), 8);
-    pdbLine += _rjust("1.00", 6); // occupancy
-    pdbLine += _rjust((atom.b ? (atom.b as number) : 0).toFixed(2), 6);
-    pdbLine += _rjust(" ", 10); // Segment identifier is obsolete
-    pdbLine += _rjust(atom.elem?.toUpperCase() as string, 2);
+    pdbLine += _alignAtomName(a.atom as string, a.elem);
+    pdbLine += a.altLoc;
+    pdbLine += _rjust(a.resn, 3);
+    pdbLine += _rjust(a.chain, 2);
+    pdbLine += _rjust(a.resi.toString(), 4);
+    pdbLine += " ";
+    pdbLine += _rjust((a.x as number).toFixed(3), 11);
+    pdbLine += _rjust((a.y as number).toFixed(3), 8);
+    pdbLine += _rjust((a.z as number).toFixed(3), 8);
+    pdbLine += _rjust("1.00", 6);
+    pdbLine += _rjust((a.b ? (a.b as number) : 0).toFixed(2), 6);
+    pdbLine += _rjust(" ", 10);
+    pdbLine += _rjust(a.elem?.toUpperCase() as string, 2);
+
     return pdbLine;
 }
 
@@ -199,6 +202,8 @@ function _mergeMols(mols: GLModel[] | IAtom[][] | IFileInfo[]): IAtom[] {
         const firstIndex = curIdx;
 
         for (const atom of atoms) {
+            // Shallow copy so we can assign chain/serial/index/bonds
+            // without mutating potentially frozen originals.
             const atomCopy: IAtom = { ...atom };
             atomCopy.chain = curChain;
             atomCopy.serial = curSerial;

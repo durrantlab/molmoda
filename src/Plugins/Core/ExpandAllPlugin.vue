@@ -74,7 +74,12 @@ export default class ExpandAllPlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: () => new TestCmdList()
+                .loadExampleMolecule(true)
+                .collapseNavItem("4WP4"),
+            afterPluginCloses: () => new TestCmdList()
+                .waitUntilRegex("#navigator", "Protein")
+                .waitUntilRegex("#navigator", "Compounds"),
         };
     }
 }
