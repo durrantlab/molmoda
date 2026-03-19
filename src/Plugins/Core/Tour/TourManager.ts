@@ -200,7 +200,9 @@ export class TourManager {
 
         if (typeof nextStep.element === "string") {
             try {
-                const element = await waitForElement(nextStep.element);
+                // No timeout for tours: the user controls the pace, so we
+                // wait indefinitely for the element to appear.
+                const element = await waitForElement(nextStep.element, Infinity);
                 if (isLocalHost) {
                     console.log(`[Tour Debug] moveToNextStepWithRetry: element found for "${nextStep.element}"`);
                 }
@@ -233,23 +235,6 @@ export class TourManager {
             }
             originalMoveNext();
             this.isMoving = false;
-
-            // For wait steps without an element, onHighlighted won't fire
-            // because driver.js has nothing to highlight. Start polling here.
-            if (nextStep.isWaitStep && nextStep.waitCondition) {
-                const condition = nextStep.waitCondition;
-                const pollInterval = setInterval(() => {
-                    if (!this.driver) {
-                        clearInterval(pollInterval);
-                        return;
-                    }
-
-                    if (condition()) {
-                        clearInterval(pollInterval);
-                        this.driver.moveNext();
-                    }
-                }, 500);
-            }
         }
     }
 
