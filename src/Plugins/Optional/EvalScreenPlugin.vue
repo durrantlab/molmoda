@@ -616,15 +616,11 @@ export default class EvalScreenPlugin extends PluginParentClass {
                     new TestCmdList()
                         .setUserArg("activesLabel", "active", this.pluginId)
                         .setUserArg("otherLabel", "other", this.pluginId)
-                        .waitUntilRegex("#modal-evalscreen", "0.871")
-                        .tourNote(
-                            "The ROC (Receiver Operating Characteristic) curve plots the true positive rate against the false positive rate at various score thresholds. A curve that hugs the upper-left corner indicates strong discrimination between actives and decoys. The area under this curve (AUROC) summarizes overall performance, where 1.0 is perfect and 0.5 is random.",
-                            "#roc-chart-wrapper"
-                        )
-                        .tourNote(
-                            "The Enrichment Factor (EF) curve shows how effectively docking concentrates known actives among the top-scoring compounds. A high enrichment factor at low cutoffs means the best-scoring compounds are disproportionately enriched with true actives.",
-                            "#ef-chart-wrapper"
-                        ),
+                        .waitUntilRegex("#modal-evalscreen", "0.871"),
+                        // .tourNote(
+                        //     "Scroll down in this window to see two charts. The <b>ROC curve</b> (Receiver Operating Characteristic) plots the true positive rate against the false positive rate; a curve hugging the upper-left corner indicates strong discrimination, and the area under it (AUROC) summarizes overall performance (1.0 = perfect, 0.5 = random). The <b>Enrichment Factor curve</b> shows how effectively docking concentrates known actives among the top-scoring compounds; a high value at low cutoffs means the best-scoring compounds are disproportionately enriched with true actives.",
+                        //     `#modal-${this.pluginId} .modal-body`
+                        // ),
                 closePlugin: () =>
                     new TestCmdList().pressPopupButton(".cancel-btn", this.pluginId),
                 afterPluginCloses: () => new TestCmdList(),

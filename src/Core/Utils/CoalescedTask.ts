@@ -1,3 +1,6 @@
+import { visualizationApi } from "@/Api/Visualization";
+import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
+
 /**
  * Coalesces overlapping async task executions. When `request()` is called
  * while the task is already running, the task will re-run exactly once after
@@ -201,8 +204,8 @@ export async function deferVisualization(fn: () => Promise<void>): Promise<void>
     } finally {
         _visualizationDeferred = false;
         // Lazy import to avoid circular dependency at module load time.
-        const { visualizationApi } = await import("@/Api/Visualization");
-        const { updateStylesInViewer } = await import("@/Core/Styling/StyleManager");
+        // const { visualizationApi } = await i_mport("@/Api/Visualization");
+        // const { updateStylesInViewer } = await i_mport("@/Core/Styling/StyleManager");
         updateStylesInViewer();
         const viewer = await visualizationApi.viewer;
         await viewer.renderImmediate();

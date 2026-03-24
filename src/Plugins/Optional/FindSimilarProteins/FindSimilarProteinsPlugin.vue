@@ -78,7 +78,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
     pluginId = "findsimilarproteins";
     intro = "Find proteins with similar sequences using the RCSB PDB sequence search.";
     details =
-        "This tool uses US-align to perform structural alignment. Aligned structures will be added to the project.";
+        "This tool also uses US-align to perform structural alignment. Aligned structures will be added to the project.";
     tags = [Tag.Modeling];
     isActionBtnEnabled = false;
 

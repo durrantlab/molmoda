@@ -19,6 +19,57 @@ export interface ITourContext {
 }
 
 /**
+ * Builds an HTML ordered list of available options for a Select user argument.
+ * Returns an empty string if the argument is not a Select type or has no options.
+ *
+ * @param {UserArg | undefined} userArg The user argument to extract options from.
+ * @returns {string} An HTML string with the options list, or empty string.
+ */
+function buildSelectOptionsHtml(userArg: UserArg | undefined): string {
+    if (!userArg || userArg.type !== UserArgType.Select) {
+        return "";
+    }
+    const options = (userArg as IUserArgSelect).options;
+    if (!options || options.length === 0) {
+        return "";
+    }
+    const listItems = options.map((opt) => {
+        const label = typeof opt === "string" ? opt : opt.description;
+        return `<li>${label}</li>`;
+    }).join("");
+    return `<div class="mt-3 mb-0"><strong>Available options:</strong><ol class="mb-0">${listItems}</ol></div>`;
+}
+
+/**
+ * Builds an HTML string for the description and warning of a user argument.
+ * Returns an empty string if the argument has neither.
+ *
+ * @param {UserArg | undefined} userArg The user argument.
+ * @param {any} [currentValue] The current value, used for warningFunc evaluation.
+ * @returns {string} An HTML string with description and/or warning.
+ */
+function buildArgDetailsHtml(userArg: UserArg | undefined, currentValue?: any): string {
+    if (!userArg) {
+        return "";
+    }
+    const parts: string[] = [];
+    if (userArg.description) {
+        parts.push(
+            `<div class="mt-3 mb-0"><strong>Brief description:</strong> <em>${userArg.description}</em></div>`
+        );
+    }
+    if (userArg.warningFunc) {
+        const warning = userArg.warningFunc(currentValue);
+        if (warning) {
+            parts.push(
+                `<br><br><strong class="text-danger">Warning:</strong> ${warning}`
+            );
+        }
+    }
+    return parts.join("");
+}
+
+/**
  * Finds the user argument corresponding to a selector and refines the selector to target the specific input element.
  *
  * @param {ITestCommand} command The test command containing the base selector.
@@ -391,21 +442,8 @@ export function createInputStep(
     const descriptionParts = [
         `For ${fieldLabel}, ${actionVerb} "${valueForDisplay}".`,
     ];
-    if (userArg) {
-        if (userArg.description) {
-            descriptionParts.push(
-                `<br><br><strong>Brief description:</strong> <em>${userArg.description}</em>`
-            );
-        }
-        if (userArg.warningFunc) {
-            const warning = userArg.warningFunc(command.data);
-            if (warning) {
-                descriptionParts.push(
-                    `<br><br><strong class="text-danger">Warning:</strong> ${warning}`
-                );
-            }
-        }
-    }
+    descriptionParts.push(buildSelectOptionsHtml(userArg));
+    descriptionParts.push(buildArgDetailsHtml(userArg, command.data));
     popover.description = descriptionParts.join("");
 
     return {
@@ -567,8 +605,11 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
     if (mainText === "") {
         mainText = `Set ${label}.`;
     }
+
+    mainText += buildSelectOptionsHtml(arg);
+
     const description = arg.description
-        ? `<br><br><strong>Brief description:</strong> <em>${arg.description}</em>`
+        ? `<div class="mt-3 mb-0"><strong>Brief description:</strong> <em>${arg.description}</em></div>`
         : "";
 
     return {
