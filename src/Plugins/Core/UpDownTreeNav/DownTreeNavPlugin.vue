@@ -43,7 +43,7 @@ export default class DownTreeNavPlugin extends PluginParentClass {
 
     intro =
         "Toggle visibility and focus with the molecule below the selected one.";
-        details = "This plugin provides a keyboard-friendly way to navigate through molecules in the 3D viewer.";
+        details = "This plugin provides a keyboard-friendly way to navigate through molecules one by one in the 3D viewer.";
     hotkey = "]";
     tags = [Tag.All];
 

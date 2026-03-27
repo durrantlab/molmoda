@@ -359,47 +359,39 @@ export class TourManager {
             }
         }
 
-        const processedCmdIndices = new Set<number>();
+        const processedArgIds = new Set<string>();
 
+        // First, process all explicit commands in the order defined by the test.
+        // This preserves the intended tour flow.
+        cmds.forEach((cmd, index) => {
+            const step = this._commandToDriverStep(cmd, plugin, `pluginOpen cmd #${index}`);
+            if (step) {
+                steps.push(step);
+            }
+
+            // Track which args were covered by explicit commands
+            const { userArg } = findUserArgAndRefineSelector(cmd, plugin);
+            if (userArg) {
+                processedArgIds.add(userArg.id);
+            }
+        });
+
+        // Then, append default steps for any user arguments not covered above.
         for (const arg of allArgs) {
             // Skip alerts and disabled args
             if (arg.type === UserArgType.Alert || arg.enabled === false) {
                 continue;
             }
+            if (processedArgIds.has(arg.id)) {
+                continue;
+            }
 
-            // Find commands targeting this arg
-            const matchingCmdIndices: number[] = [];
-            cmds.forEach((cmd, index) => {
-                if (processedCmdIndices.has(index)) return;
-                const { userArg } = findUserArgAndRefineSelector(cmd, plugin);
-                if (userArg && userArg.id === arg.id) {
-                    matchingCmdIndices.push(index);
-                }
-            });
-
-            if (matchingCmdIndices.length > 0) {
-                // Add steps for existing commands
-                for (const idx of matchingCmdIndices) {
-                    const step = this._commandToDriverStep(cmds[idx], plugin, `pluginOpen cmd #${idx} (arg: ${arg.id})`);
-                    if (step) steps.push(step);
-                    processedCmdIndices.add(idx);
-                }
-            } else {
-                const step = createDefaultArgStep(arg, plugin);
-                if (step) {
-                    step.tourDebugInfo = `Default step for arg: ${arg.id}`;
-                    steps.push(step);
-                }
+            const step = createDefaultArgStep(arg, plugin);
+            if (step) {
+                step.tourDebugInfo = `Default step for arg: ${arg.id}`;
+                steps.push(step);
             }
         }
-
-        // Append remaining commands
-        cmds.forEach((cmd, index) => {
-            if (!processedCmdIndices.has(index)) {
-                const step = this._commandToDriverStep(cmd, plugin, `pluginOpen cmd #${index} (unused by args)`);
-                if (step) steps.push(step);
-            }
-        });
     }
 
     /**
@@ -411,22 +403,22 @@ export class TourManager {
      * @private
      */
     private _processCommandList(
-        commandListFunc: (() => TestCmdList) | undefined,
-        plugin: PluginParentClass,
-        steps: any[],
-        listName = "Command List"
-    ) {
-        if (typeof commandListFunc !== "function") return;
-        const testCmdList = commandListFunc();
-        if (testCmdList instanceof TestCmdList) {
-            testCmdList.cmds.forEach((command, index) => {
-                const step = this._commandToDriverStep(command, plugin, `${listName} cmd #${index}`);
-                if (step) {
-                    steps.push(step);
-                }
-            });
-        }
+    commandListFunc: (() => TestCmdList) | undefined,
+    plugin: PluginParentClass,
+    steps: any[],
+    listName = "Command List"
+) {
+    if (typeof commandListFunc !== "function") return;
+    const testCmdList = commandListFunc();
+    if (testCmdList instanceof TestCmdList) {
+        testCmdList.cmds.forEach((command, index) => {
+            const step = this._commandToDriverStep(command, plugin, `${listName} cmd #${index}`);
+            if (step) {
+                steps.push(step);
+            }
+        });
     }
+}
 
     /**
      * Adds the steps required to open a plugin from the menu.
@@ -435,61 +427,61 @@ export class TourManager {
      * @private
      */
     private _addPluginOpeningSteps(plugin: PluginParentClass, steps: any[]) {
-        const openCmds = openPluginCmds(plugin);
+    const openCmds = openPluginCmds(plugin);
 
-        // Get original menu path info
-        const originalMenuPathInfo = processMenuPath(plugin.menuPath);
-        if (!originalMenuPathInfo) {
-            return;
-        }
+    // Get original menu path info
+    const originalMenuPathInfo = processMenuPath(plugin.menuPath);
+    if (!originalMenuPathInfo) {
+        return;
+    }
 
-        // Replicate the logic from openPluginCmds to get the path that corresponds to actual clicks
-        const tempPathForLogic = [...originalMenuPathInfo];
-        const lastItem = tempPathForLogic.pop();
-        if (tempPathForLogic.length > 1) {
-            tempPathForLogic.splice(1, 1);
-        }
-        const clickedPathInfo = [...tempPathForLogic, lastItem].filter(
-            Boolean
-        ) as IMenuPathInfo[];
+    // Replicate the logic from openPluginCmds to get the path that corresponds to actual clicks
+    const tempPathForLogic = [...originalMenuPathInfo];
+    const lastItem = tempPathForLogic.pop();
+    if (tempPathForLogic.length > 1) {
+        tempPathForLogic.splice(1, 1);
+    }
+    const clickedPathInfo = [...tempPathForLogic, lastItem].filter(
+        Boolean
+    ) as IMenuPathInfo[];
 
-        const menuTexts = clickedPathInfo.map((info) =>
-            info.text.replace(/(\.\.\.|_)/g, "").trim()
-        );
+    const menuTexts = clickedPathInfo.map((info) =>
+        info.text.replace(/(\.\.\.|_)/g, "").trim()
+    );
 
-        let menuTextIndex = 0;
+    let menuTextIndex = 0;
 
-        openCmds.forEach((command, index) => {
-            const step = this._commandToDriverStep(command, plugin, `Menu Navigation cmd #${index}`);
-            if (step) {
-                if (step.popover) {
-                    // console.log(
-                    //  `Tour Step: Open Plugin - Selector: ${command.selector}`
-                    // );
-                    // Only create descriptions for click commands
-                    if (command.cmd === TestCommand.Click) {
-                        if (command.selector === "#hamburger-button") {
-                            step.popover.description = `Please click here to open the menu.`;
-                            // Do not increment menuTextIndex for the hamburger button
-                        } else if (
-                            menuTexts.length > 0 &&
-                            menuTextIndex < menuTexts.length
-                        ) {
-                            step.popover.description = `Click the "${menuTexts[menuTextIndex]}" menu item.`;
-                            menuTextIndex++;
-                        } else {
-                            // Fallback for any other clicks (e.g., if openPluginCmds is buggy)
-                            step.popover.description = `Please click here to continue the tour.`;
-                        }
+    openCmds.forEach((command, index) => {
+        const step = this._commandToDriverStep(command, plugin, `Menu Navigation cmd #${index}`);
+        if (step) {
+            if (step.popover) {
+                // console.log(
+                //  `Tour Step: Open Plugin - Selector: ${command.selector}`
+                // );
+                // Only create descriptions for click commands
+                if (command.cmd === TestCommand.Click) {
+                    if (command.selector === "#hamburger-button") {
+                        step.popover.description = `Please click here to open the menu.`;
+                        // Do not increment menuTextIndex for the hamburger button
+                    } else if (
+                        menuTexts.length > 0 &&
+                        menuTextIndex < menuTexts.length
+                    ) {
+                        step.popover.description = `Click the "${menuTexts[menuTextIndex]}" menu item.`;
+                        menuTextIndex++;
                     } else {
-                        // For any non-click commands (though none are expected here from openPluginCmds)
+                        // Fallback for any other clicks (e.g., if openPluginCmds is buggy)
                         step.popover.description = `Please click here to continue the tour.`;
                     }
+                } else {
+                    // For any non-click commands (though none are expected here from openPluginCmds)
+                    step.popover.description = `Please click here to continue the tour.`;
                 }
-                steps.push(step);
             }
-        });
-    }
+            steps.push(step);
+        }
+    });
+}
 
     /**
      * Converts a single ITestCommand into a driver.js step object by dispatching to helper methods.
@@ -500,66 +492,66 @@ export class TourManager {
      * @private
      */
     private _commandToDriverStep(
-        command: ITestCommand,
-        plugin: PluginParentClass,
-        debugInfo?: string
-    ): any | null {
-        let step: any = null;
+    command: ITestCommand,
+    plugin: PluginParentClass,
+    debugInfo ?: string
+): any | null {
+    let step: any = null;
 
-        // Improve highlighting for SVG wrappers
-        let selector = command.selector;
-        if (selector && selector.endsWith(".svg-wrapper")) {
-            // Attempt to target the inner SVG first, falling back to the wrapper
-            selector += " > svg, " + selector;
-        }
-        const cmdForStep = { ...command, selector };
-
-        const context: ITourContext = {
-            manager: this,
-            /**
-             * Marks the tour as completed.
-             */
-            markCompleted: () => {
-                this.isTourCompleted = true;
-            }
-        };
-
-        switch (command.cmd) {
-            case TestCommand.Click:
-                step = createClickStep(cmdForStep, plugin, context);
-                break;
-            case TestCommand.Text:
-            case TestCommand.Upload:
-                step = createInputStep(cmdForStep, plugin, context);
-                break;
-            case TestCommand.WaitUntilRegex:
-                step = createWaitStep(command, plugin, context);
-                break;
-            case TestCommand.TourNote:
-                step = createNoteStep(cmdForStep, plugin);
-                break;
-            default:
-                // Commands like Wait are not interactive and can be skipped in a user tour.
-                return null;
-        }
-
-        if (step && debugInfo) {
-            step.tourDebugInfo = debugInfo;
-        }
-        return step;
+    // Improve highlighting for SVG wrappers
+    let selector = command.selector;
+    if (selector && selector.endsWith(".svg-wrapper")) {
+        // Attempt to target the inner SVG first, falling back to the wrapper
+        selector += " > svg, " + selector;
     }
+    const cmdForStep = { ...command, selector };
+
+    const context: ITourContext = {
+        manager: this,
+        /**
+         * Marks the tour as completed.
+         */
+        markCompleted: () => {
+            this.isTourCompleted = true;
+        }
+    };
+
+    switch (command.cmd) {
+        case TestCommand.Click:
+            step = createClickStep(cmdForStep, plugin, context);
+            break;
+        case TestCommand.Text:
+        case TestCommand.Upload:
+            step = createInputStep(cmdForStep, plugin, context);
+            break;
+        case TestCommand.WaitUntilRegex:
+            step = createWaitStep(command, plugin, context);
+            break;
+        case TestCommand.TourNote:
+            step = createNoteStep(cmdForStep, plugin);
+            break;
+        default:
+            // Commands like Wait are not interactive and can be skipped in a user tour.
+            return null;
+    }
+
+    if (step && debugInfo) {
+        step.tourDebugInfo = debugInfo;
+    }
+    return step;
+}
 
     /**
      * Shows the completion message in a standard modal.
      * @private
      */
     private showCompletionMessage() {
-        messagesApi.popupMessage(
-            "Tour Complete!",
-            `You have completed the tour for the "${this.currentPluginTitle}" plugin.`,
-            PopupVariant.Success
-        );
-    }
+    messagesApi.popupMessage(
+        "Tour Complete!",
+        `You have completed the tour for the "${this.currentPluginTitle}" plugin.`,
+        PopupVariant.Success
+    );
+}
 }
 
 export const tourManager = new TourManager();

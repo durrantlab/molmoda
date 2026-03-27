@@ -39,7 +39,7 @@ export default class QuitPlugin extends PluginParentClass {
     userArgDefaults: UserArg[] = [];
 
     logJob = false;
-    intro = "Quits " + appName + ".";
+    intro = "Quit " + appName + ".";
     details = "This plugin provides allows the user to save their work before closing the application.";
     tags = [Tag.All];
     skipLongRunningJobMsg = true;
