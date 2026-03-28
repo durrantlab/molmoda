@@ -34,15 +34,11 @@ import {
     convertFileInfosOpenBabel,
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
-import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { Component } from "vue-facing-decorator";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
+import { convertMolTextsToCompoundTree } from "../CompoundProcessingUtils";
 
 /**
  * ProtonateCompoundsPlugin
@@ -146,53 +142,10 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             pH
         )) as string[];
 
-        // Make new fileinfos with protonated files
-        // const treeNodes: TreeNode[] = [];
-  const treeNodePromises: Promise<void | TreeNodeList>[] = [];
-
-        for (let i = 0; i < molTexts.length; i++) {
-            const fileInfo = new FileInfo({
-                name: compounds[i].name,
-                contents: molTexts[i],
-                auxData: compounds[i].treeNode?.title,
-                // treeNode: compounds[i].treeNode,
-            });
-
-   const treeNodeListPromise = parseAndLoadMoleculeFile({
-                fileInfo,
-                tag: this.pluginId,
-    addToTree: false
-            });
-   treeNodePromises.push(treeNodeListPromise);
-        }
-
-  let treeNodeLists = (await Promise.all(
-            treeNodePromises
-  )) as (void | TreeNodeList)[];
-
-  const treeNodes = treeNodeLists.map((n) => {
-   if (!n) {
-                return undefined;
-            }
-   const node = n.get(0);
-   if (node.nodes) {
-                // Should have only one terminal
-    return node.nodes.terminals.get(0);
-            }
-   node.type = TreeNodeType.Compound;
-   const compound = compounds.find((c) => c.auxData === node?.title);
-            if (compound && compound.treeNode !== undefined) {
-    node.title = compound.treeNode.title;
-            }
-   return node;
-        });
-
-        const onlyTreeNodes = treeNodes.filter(
-            (tn) => tn !== undefined
-        ) as TreeNode[];
-
-        const rootNode = loadHierarchicallyFromTreeNodes(
-            onlyTreeNodes,
+        const rootNode = await convertMolTextsToCompoundTree(
+            molTexts,
+            compounds,
+            this.pluginId,
             "Compounds:protonated"
         );
         rootNode.addToMainTree(this.pluginId);

@@ -4,7 +4,7 @@
     </PluginComponent>
 </template>
 <script lang="ts">
-import PluginComponent from "../../Parents/PluginComponent/PluginComponent.vue";
+import PluginComponent from "../../../Parents/PluginComponent/PluginComponent.vue";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import {
     IContributorCredit,
@@ -26,14 +26,11 @@ import {
     convertFileInfosOpenBabel,
     getGen3DUserArg,
 } from "@/FileSystem/OpenBabel/OpenBabel";
-import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
-import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
-import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { Component } from "vue-facing-decorator";
+import { convertMolTextsToCompoundTree } from "../CompoundProcessingUtils";
 
 /**
  * Regen3DCoordsPlugin
@@ -111,52 +108,17 @@ export default class Regen3DCoordsPlugin extends PluginParentClass {
         });
 
         const conversionResults = await Promise.all(conversionPromises);
-        const molTexts = conversionResults.flat(); // Flatten the array of arrays
+        const molTexts = conversionResults.flat();
 
-        const treeNodePromises: Promise<void | TreeNodeList>[] = [];
-        for (let i = 0; i < molTexts.length; i++) {
-            const fileInfo = new FileInfo({
-                name: compounds[i].name,
-                contents: molTexts[i],
-                auxData: compounds[i].treeNode?.title,
-            });
-
-            const treeNodeList = parseAndLoadMoleculeFile({
-                fileInfo,
-                tag: this.pluginId,
+        const rootNode = await convertMolTextsToCompoundTree(
+            molTexts,
+            compounds,
+            this.pluginId,
+            "Compounds:3D",
+            {
                 desalt: false,
-                gen3D: {
-                    whichMols: WhichMolsGen3D.None, // Already generated
-                },
-                addToTree: false
-                // surpressMsgs: true,
-            });
-            treeNodePromises.push(treeNodeList);
-        }
-
-        let treeNodeLists = (await Promise.all(
-            treeNodePromises
-        )) as (void | TreeNodeList)[];
-
-        const onlyTreeNodes = treeNodeLists
-            .filter((tl) => tl !== undefined)
-            .map((tl) => {
-                let n = (tl as TreeNodeList).get(0);
-                if (n.nodes) {
-                    // Should have only one terminal
-                    n = n.nodes.terminals.get(0);
-                }
-                n.type = TreeNodeType.Compound;
-                const compound = compounds.find((c) => c.auxData === n?.title);
-                if (compound && compound.treeNode !== undefined) {
-                    n.title = compound.treeNode.title;
-                }
-                return n;
-            });
-
-        const rootNode = loadHierarchicallyFromTreeNodes(
-            onlyTreeNodes,
-            "Compounds:3D"
+                gen3D: { whichMols: WhichMolsGen3D.None },
+            }
         );
         rootNode.addToMainTree(this.pluginId);
         return;

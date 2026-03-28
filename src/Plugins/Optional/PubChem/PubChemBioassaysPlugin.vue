@@ -12,21 +12,19 @@
 </template>
   
 <script lang="ts">
-import { fetchActiveAssays, fetchCid } from "./PubChemAPI";
+import { fetchActiveAssays } from "./PubChemAPI";
 import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   IContributorCredit,
-  ISoftwareCredit,
-  Licenses,
 } from "@/Plugins/PluginInterfaces";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 import { Component } from "vue-facing-decorator";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ITest } from "@/Testing/TestInterfaces";
+import { pubchemCredit, lookupCid } from "./PubChemCommon";
 
 /**
  * PubChemBioassaysPlugin
@@ -39,24 +37,7 @@ import { ITest } from "@/Testing/TestInterfaces";
 export default class PubChemBioassaysPlugin extends GetPropPluginParent {
   menuPath = "Compounds/Information/[7] Bioassays...";
   title = "PubChem Bioassays";
-  softwareCredits: ISoftwareCredit[] = [
-    {
-      name: "PubChem",
-      url: "https://pubchem.ncbi.nlm.nih.gov/",
-      license: Licenses.PUBLICDOMAIN,
-      citations: [
-        {
-          title: "PubChem 2023 update",
-          authors: ["Kim, S", "Chen, J"],
-          journal: "Nucleic Acids Res.",
-          volume: 51,
-          issue: "D1",
-          pages: "D1373-D1380",
-          year: 2023,
-        },
-      ],
-    },
-  ];
+  softwareCredits = [pubchemCredit];
 
   dataSetTitle = "PubChemBioassays";
   contributorCredits: IContributorCredit[] = [
@@ -86,25 +67,17 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
    */
   async getMoleculeDetails(
     molFileInfo: FileInfo
-  ): Promise<{ [key: string]: any } | undefined> {
+  ): Promise<{ [key: string]: string } | undefined> {
     if (!molFileInfo.treeNode) {
       return;
     }
-
-    
-    const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
-    const cid = await fetchCid(smiles);
-    if (cid === "0") {
-      return {
-        CID: `PubChem compound not found! <a href="https://pubchem.ncbi.nlm.nih.gov/#query=${easyNeutralizeSMILES(smiles)}" target="_blank">Search?</a>`,
-      };
+    const lookup = await lookupCid(molFileInfo);
+    if (!lookup.found) {
+      return { CID: lookup.notFoundHtml };
     }
-
-    const bioassayData = await fetchActiveAssays(cid);
+    const bioassayData = await fetchActiveAssays(lookup.cid);
     if (bioassayData.error) {
-      return {
-        CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>: ${bioassayData.error}`
-      };
+      return { CID: `${lookup.cidLink}: ${bioassayData.error}` };
     }
 
     const activeAssays = bioassayData.ActiveAssays; // .slice(0, 10); // Get top 10 bioassays
@@ -114,21 +87,19 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
       // Neuraminidase" But Target might not be given, so only add if
       // it is not "".
 
-      let assayDesc = `${assay["Assay Name"]}. AID: <a href="https://pubchem.ncbi.nlm.nih.gov/bioassay/${assay["AID"]}#section=Data-Table" target="_blank">${assay["AID"]}</a>.`;
+      let assayDesc = `${assay["Assay Name"]}. AID: <a href="https://pubchem.ncbi.nlm.nih.gov/bioassay/${assay["AID"]}" target="_blank">${assay["AID"]}</a>.`;
       if (assay["Assay Type"]) {
         assayDesc += ` Assay type: ${assay["Assay Type"].toLowerCase()}.`;
       }
 
       return assayDesc;
     });
-
-    const formattedAssays: { [key: string]: any } = {
-      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>`,
+    const formattedAssays: { [key: string]: string } = {
+      CID: lookup.cidLink,
     };
     for (let i = 0; i < assayDescriptions.length; i++) {
       formattedAssays[`Assay ${i + 1}`] = assayDescriptions[i];
     }
-
     return formattedAssays;
   }
 

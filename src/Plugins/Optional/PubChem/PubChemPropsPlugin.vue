@@ -6,21 +6,19 @@
 </template>
 
 <script lang="ts">
-import { fetchCompoundsProperties, fetchCid } from "./PubChemAPI";
+import { fetchCompoundsProperties } from "./PubChemAPI";
 import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
   IContributorCredit,
-  ISoftwareCredit,
-  Licenses,
 } from "@/Plugins/PluginInterfaces";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
-import { easyNeutralizeSMILES } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 import { Component } from "vue-facing-decorator";
 import { ITest } from "@/Testing/TestInterfaces";
+import { pubchemCredit, lookupCid } from "./PubChemCommon";
 
 /**
  * PubChemPropsPlugin
@@ -33,24 +31,7 @@ import { ITest } from "@/Testing/TestInterfaces";
 export default class PubChemPropsPlugin extends GetPropPluginParent {
   menuPath = "Compounds/Information/[6] Properties...";
   title = "PubChem Properties";
-  softwareCredits: ISoftwareCredit[] = [
-    {
-      name: "PubChem",
-      url: "https://pubchem.ncbi.nlm.nih.gov/",
-      license: Licenses.PUBLICDOMAIN,
-      citations: [
-        {
-          title: "PubChem 2023 update",
-          authors: ["Kim, S", "Chen, J"],
-          journal: "Nucleic Acids Res.",
-          volume: 51,
-          issue: "D1",
-          pages: "D1373-D1380",
-          year: 2023,
-        },
-      ],
-    },
-  ];
+  softwareCredits = [pubchemCredit];
 
   contributorCredits: IContributorCredit[] = [
     {
@@ -81,31 +62,21 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
    */
   async getMoleculeDetails(
     molFileInfo: FileInfo
-  ): Promise<{ [key: string]: any } | undefined> {
+  ): Promise<{ [key: string]: string } | undefined> {
     if (!molFileInfo.treeNode) {
       return;
     }
-
-    const smiles = molFileInfo.contents.split(" ")[0].split("\t")[0];
-    const cid = await fetchCid(smiles);
-    if (cid === "0") {
-      return {
-        CID: `PubChem compound not found! <a href="https://pubchem.ncbi.nlm.nih.gov/#query=${easyNeutralizeSMILES(smiles)}" target="_blank">Search?</a>`,
-      };
+    const lookup = await lookupCid(molFileInfo);
+    if (!lookup.found) {
+      return { CID: lookup.notFoundHtml };
     }
-    let properties = await fetchCompoundsProperties(cid);
+    let properties = await fetchCompoundsProperties(lookup.cid);
     if (properties.error) {
-      return {
-        CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Biological-Test-Results" target="_blank">${cid}</a>: ${properties.error}`
-      }
-
-      // return {
-      //   CID: "PubChem compound not found!",
-      // };
+      return { CID: `${lookup.cidLink}: ${properties.error}` };
     }
 
     properties = {
-      CID: `<a href="https://pubchem.ncbi.nlm.nih.gov/compound/${cid}#section=Chemical-and-Physical-Properties" target="_blank">${cid}</a>`,
+      CID: lookup.cidLink,
       ...properties,
     };
 
