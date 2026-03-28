@@ -50,6 +50,83 @@ export interface ITreeNode {
 }
 
 /**
+ * Shared options for preparing a TreeNode before insertion into the main
+ * tree. Used by both the synchronous `prepareForMainTree` (batch loads)
+ * and the async `addToMainTree` (interactive loads) to avoid duplicating
+ * tag assignment, visibility, selection, and title-revision logic.
+ */
+interface IPrepareTreeOptions {
+    tag: string | null;
+    reassignIds: boolean;
+    terminalNodeTitleRevisable: boolean;
+    resetVisibilityAndSelection: boolean;
+    /** Max number of terminal nodes initially visible. */
+    initialVisibleCount: number;
+}
+
+/**
+ * Mutable bounding-box accumulator. Collects min/max coordinates across
+ * multiple atom sources so callers don't repeat the six-variable pattern.
+ */
+interface IBoundsAccumulator {
+    minX: number;
+    minY: number;
+    minZ: number;
+    maxX: number;
+    maxY: number;
+    maxZ: number;
+}
+
+/**
+ * Creates a fresh bounds accumulator initialised to +/-Infinity so the
+ * first real coordinate always wins.
+ *
+ * @returns {IBoundsAccumulator}  An accumulator ready for use.
+ */
+function createBoundsAccumulator(): IBoundsAccumulator {
+    return {
+        minX: Infinity,
+        minY: Infinity,
+        minZ: Infinity,
+        maxX: -Infinity,
+        maxY: -Infinity,
+        maxZ: -Infinity,
+    };
+}
+
+/**
+ * Expands an accumulator with a single point.
+ *
+ * @param {IBoundsAccumulator} acc  The accumulator to update in place.
+ * @param {number} x  X coordinate.
+ * @param {number} y  Y coordinate.
+ * @param {number} z  Z coordinate.
+ */
+function expandBounds(acc: IBoundsAccumulator, x: number, y: number, z: number): void {
+    if (x < acc.minX) acc.minX = x;
+    if (x > acc.maxX) acc.maxX = x;
+    if (y < acc.minY) acc.minY = y;
+    if (y > acc.maxY) acc.maxY = y;
+    if (z < acc.minZ) acc.minZ = z;
+    if (z > acc.maxZ) acc.maxZ = z;
+}
+
+/**
+ * Merges a second bounds result (e.g. from a worker) into the accumulator.
+ *
+ * @param {IBoundsAccumulator} acc     The accumulator to update in place.
+ * @param {IBoundsAccumulator} other   The bounds to merge in.
+ */
+function mergeBounds(acc: IBoundsAccumulator, other: IBoundsAccumulator): void {
+    if (other.minX < acc.minX) acc.minX = other.minX;
+    if (other.maxX > acc.maxX) acc.maxX = other.maxX;
+    if (other.minY < acc.minY) acc.minY = other.minY;
+    if (other.maxY > acc.maxY) acc.maxY = other.maxY;
+    if (other.minZ < acc.minZ) acc.minZ = other.minZ;
+    if (other.maxZ > acc.maxZ) acc.maxZ = other.maxZ;
+}
+
+/**
  * TreeNode class.
  */
 export class TreeNode {
@@ -496,6 +573,70 @@ export class TreeNode {
     }
 
     /**
+     * Core logic shared by both `prepareForMainTree` and `addToMainTree`.
+     * Handles ID reassignment, tag propagation, visibility/selection reset,
+     * and single-terminal title revision.
+     *
+     * @param {IPrepareTreeOptions} opts  Configuration for the preparation.
+     */
+    private _applyTreePreparation(opts: IPrepareTreeOptions): void {
+        if (opts.reassignIds) {
+            this.reassignAllIds();
+        }
+
+        if (isTest) {
+            expandAndShowAllMolsInTree();
+        }
+
+        const allNodesInSubtree = new TreeNodeList([this]).flattened;
+
+        if (opts.tag) {
+            allNodesInSubtree.forEach((node) => {
+                if (node.tags === undefined) {
+                    node.tags = [];
+                }
+                if (!node.tags.includes(opts.tag!)) {
+                    node.tags.push(opts.tag!);
+                }
+            });
+        }
+
+        if (opts.resetVisibilityAndSelection) {
+            allNodesInSubtree.forEach((node) => {
+                if (node.nodes) {
+                    node.visible = true;
+                }
+            });
+            this.visible = true;
+
+            const terminalNodes = this.nodes
+                ? this.nodes.terminals
+                : new TreeNodeList([]);
+            if (this.model) {
+                terminalNodes.push(this);
+            }
+
+            terminalNodes.forEach((node, i) => {
+                node.visible = i < opts.initialVisibleCount;
+            });
+
+            allNodesInSubtree.forEach((node) => {
+                node.selected = SelectedType.False;
+            });
+        }
+
+        if (
+            opts.terminalNodeTitleRevisable &&
+            this.nodes &&
+            this.nodes.terminals.length === 1
+        ) {
+            this.nodes.terminals.get(0).title = `${this.title}:${
+                this.nodes.terminals.get(0).title
+            }`;
+        }
+    }
+
+    /**
      * Prepares this node for insertion into the main tree without actually
      * pushing it to the store. This avoids triggering reactivity per-node
      * during batch loads. The caller is responsible for the final store push.
@@ -513,62 +654,13 @@ export class TreeNode {
         terminalNodeTitleRevisable = true,
         resetVisibilityAndSelection = true
     ): void {
-        if (reassignIds) {
-            this.reassignAllIds();
-        }
-
-        if (isTest) {
-            expandAndShowAllMolsInTree();
-        }
-
-        const allNodesInSubtree = new TreeNodeList([this]).flattened;
-
-        if (tag) {
-            allNodesInSubtree.forEach((node) => {
-                if (node.tags === undefined) {
-                    node.tags = [];
-                }
-                if (!node.tags.includes(tag)) {
-                    node.tags.push(tag);
-                }
-            });
-        }
-
-        if (resetVisibilityAndSelection) {
-            allNodesInSubtree.forEach((node) => {
-                if (node.nodes) {
-                    node.visible = true;
-                }
-            });
-            this.visible = true;
-
-            const terminalNodes = this.nodes
-                ? this.nodes.terminals
-                : new TreeNodeList([]);
-            if (this.model) {
-                terminalNodes.push(this);
-            }
-
-            // Use a synchronous default; the caller can adjust visibility
-            // thresholds after the batch insert if needed.
-            const defaultInitialVisible = 20;
-            terminalNodes.forEach((node, i) => {
-                node.visible = i < defaultInitialVisible;
-            });
-
-            allNodesInSubtree.forEach((node) => {
-                node.selected = SelectedType.False;
-            });
-        }
-
-        if (
-            terminalNodeTitleRevisable &&
-            this.nodes &&
-            this.nodes.terminals.length === 1
-        ) {
-            this.nodes.terminals.get(0).title = `${this.title}:${this.nodes.terminals.get(0).title
-                }`;
-        }
+        this._applyTreePreparation({
+            tag,
+            reassignIds,
+            terminalNodeTitleRevisable,
+            resetVisibilityAndSelection,
+            initialVisibleCount: 20,
+        });
     }
 
     /**
@@ -600,68 +692,17 @@ export class TreeNode {
         terminalNodeTitleRevisable = true,
         resetVisibilityAndSelection = true
     ) {
-        if (reassignIds) {
-            this.reassignAllIds();
-        }
-
-        if (isTest) {
-            // If it's a test, open it with all nodes expanded.
-            expandAndShowAllMolsInTree();
-        }
-
-        // Get all nodes in the subtree to set selection and tags.
-        const allNodesInSubtree = new TreeNodeList([this]).flattened;
-
-        // Add tag if provided.
-        if (tag) {
-            allNodesInSubtree.forEach((node) => {
-                if (node.tags === undefined) {
-                    node.tags = [];
-                }
-                // Avoid adding duplicate tags.
-                if (!node.tags.includes(tag)) {
-                    node.tags.push(tag);
-                }
-            });
-        }
-
-if (resetVisibilityAndSelection) {
-            allNodesInSubtree.forEach((node) => {
-                if (node.nodes) {
-                    node.visible = true;
-                }
-            });
-            this.visible = true;
-
-            const terminalNodes = this.nodes
-                ? this.nodes.terminals
-                : new TreeNodeList([]);
-            if (this.model) {
-                terminalNodes.push(this);
-            }
-
             const initialCompoundsVisible = await getSetting(
                 "initialCompoundsVisible"
             );
-            terminalNodes.forEach((node, i) => {
-                node.visible = i < initialCompoundsVisible;
-            });
 
-            allNodesInSubtree.forEach((node) => {
-                node.selected = SelectedType.False;
-            });
-        }
-
-        // If this node has only one terminal node, and that terminal, prepend
-        // the top-level title to the title of the terminal node.
-        if (
-            terminalNodeTitleRevisable &&
-            this.nodes &&
-            this.nodes.terminals.length === 1
-        ) {
-            this.nodes.terminals.get(0).title = `${this.title}:${this.nodes.terminals.get(0).title
-                }`;
-        }
+        this._applyTreePreparation({
+            tag,
+            reassignIds,
+            terminalNodeTitleRevisable,
+            resetVisibilityAndSelection,
+            initialVisibleCount: initialCompoundsVisible,
+        });
 
         // Clear focus on all existing molecules before adding the new one,
         // so the viewer knows to zoom to the newly added molecule.
@@ -801,29 +842,15 @@ if (resetVisibilityAndSelection) {
             }
         }
 
-        let minX = Infinity;
-        let minY = Infinity;
-        let minZ = Infinity;
-        let maxX = -Infinity;
-        let maxY = -Infinity;
-        let maxZ = -Infinity;
+        const bounds = createBoundsAccumulator();
 
         // Process small models synchronously.
         for (const node of smallModels) {
             const model = node.model as GLModel;
             const { atoms } = makeEasyParser(model);
             for (const atom of atoms) {
-                if (atom.x !== undefined) {
-                    minX = Math.min(minX, atom.x as number);
-                    maxX = Math.max(maxX, atom.x as number);
-                }
-                if (atom.y !== undefined) {
-                    minY = Math.min(minY, atom.y as number);
-                    maxY = Math.max(maxY, atom.y as number);
-                }
-                if (atom.z !== undefined) {
-                    minZ = Math.min(minZ, atom.z as number);
-                    maxZ = Math.max(maxZ, atom.z as number);
+                if (atom.x !== undefined && atom.y !== undefined && atom.z !== undefined) {
+                    expandBounds(bounds, atom.x as number, atom.y as number, atom.z as number);
                 }
             }
         }
@@ -845,14 +872,9 @@ if (resetVisibilityAndSelection) {
                 );
                 const boundsResults = await Promise.all(boundsPromises);
 
-                for (const bounds of boundsResults) {
-                    if (bounds) {
-                        minX = Math.min(minX, bounds.minX);
-                        minY = Math.min(minY, bounds.minY);
-                        minZ = Math.min(minZ, bounds.minZ);
-                        maxX = Math.max(maxX, bounds.maxX);
-                        maxY = Math.max(maxY, bounds.maxY);
-                        maxZ = Math.max(maxZ, bounds.maxZ);
+                for (const workerBounds of boundsResults) {
+                    if (workerBounds) {
+                        mergeBounds(bounds, workerBounds);
                     }
                 }
             } finally {
@@ -862,31 +884,11 @@ if (resetVisibilityAndSelection) {
             }
         }
 
-        const centerX = (minX + maxX) / 2;
-        const centerY = (minY + maxY) / 2;
-        const centerZ = (minZ + maxZ) / 2;
+        const centerX = (bounds.minX + bounds.maxX) / 2;
+        const centerY = (bounds.minY + bounds.maxY) / 2;
+        const centerZ = (bounds.minZ + bounds.maxZ) / 2;
 
-        // Try to get color of this node from its styles.
-        let color: string | undefined = undefined;
-        if (this.styles && this.styles.length > 0) {
-            for (const style of this.styles) {
-                const colors = [
-                    style.surface?.color,
-                    style.sphere?.color,
-                    style.cartoon?.color,
-                    style.stick?.color,
-                    style.line?.color,
-                ];
-                color = colors.find((c: string | undefined) => c !== undefined);
-                if (color !== undefined) {
-                    break;
-                }
-            }
-        }
-
-        if (color === undefined) {
-            color = "red";
-        }
+        const color = this._extractStyleColor() ?? "red";
 
         return {
             type: RegionType.Box,
@@ -895,11 +897,35 @@ if (resetVisibilityAndSelection) {
             color: color,
             movable: true,
             dimensions: [
-                maxX - minX + padding,
-                maxY - minY + padding,
-                maxZ - minZ + padding,
+                bounds.maxX - bounds.minX + padding,
+                bounds.maxY - bounds.minY + padding,
+                bounds.maxZ - bounds.minZ + padding,
             ],
         } as IBox;
+    }
+
+    /**
+     * Extracts the first defined color from this node's styles array.
+     * Returns undefined if no color is found, letting callers supply a
+     * fallback.
+     *
+     * @returns {string | undefined}  The first color found, or undefined.
+     */
+    private _extractStyleColor(): string | undefined {
+        if (!this.styles || this.styles.length === 0) {
+            return undefined;
+        }
+        for (const style of this.styles) {
+            const color = style.surface?.color
+                ?? style.sphere?.color
+                ?? style.cartoon?.color
+                ?? style.stick?.color
+                ?? style.line?.color;
+            if (color !== undefined) {
+                return color;
+            }
+        }
+        return undefined;
     }
 
     /**
