@@ -487,24 +487,30 @@ export function organizeNodesIntoHierarchy(
  * @returns {string} The chain.
  */
 function getChain(treeNode: TreeNode, availableChains: string[]): string {
+    // Extracts the chain identifier from the first atom in a tree node's model.
+    // Falls back to the next available chain letter if parsing fails.
     let chain: string | undefined = undefined;
     if (!treeNode.model) {
         // If there's no model, use first available chain from the fallback list.
         chain = availableChains.shift();
     } else {
-        const firstAtom = makeEasyParser(treeNode.model).getAtom(0);
-        if (!firstAtom) {
-            // If there are no atoms in the model, use first available chain.
-            chain = availableChains.shift();
-        } else {
-            const firstAtomChain = firstAtom.chain;
-            if (firstAtomChain === "" || firstAtomChain === undefined) {
-                // If the first atom has no chain, use first available chain.
+        try {
+            const firstAtom = makeEasyParser(treeNode.model).getAtom(0);
+            if (!firstAtom) {
+                // If there are no atoms in the model, use first available chain.
                 chain = availableChains.shift();
             } else {
-                // Use the actual chain from the molecule.
-                chain = firstAtomChain;
+                const firstAtomChain = firstAtom.chain;
+                if (firstAtomChain === "" || firstAtomChain === undefined) {
+                    // If the first atom has no chain, use first available chain.
+                    chain = availableChains.shift();
+                } else {
+                    // Use the actual chain from the molecule.
+                    chain = firstAtomChain;
+                }
             }
+        } catch {
+            chain = availableChains.shift();
         }
     }
     return chain || "A"; // Fallback to 'A' if everything else fails

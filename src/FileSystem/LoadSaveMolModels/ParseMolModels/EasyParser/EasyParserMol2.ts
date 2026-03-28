@@ -22,6 +22,7 @@ export class EasyParserMol2 extends EasyParserParent {
         if (src.contents.indexOf("@<TRIPOS>ATOM") === -1) {
             throw new Error("MOL2 file does not contain @<TRIPOS>ATOM section. Incorrect format?");
         }
+
         const prts = src.contents.split("@<TRIPOS>ATOM");
         let atoms = prts[1].split("@<TRIPOS>")[0];
 
@@ -33,7 +34,8 @@ export class EasyParserMol2 extends EasyParserParent {
         // Trim the right side.
         atoms = atoms.trimRight();
 
-        this._atoms = atoms.split("\n").map((atom: string) => atom.trim());
+        const atomLines = atoms.split("\n").map((atom: string) => atom.trim());
+        this._atoms = atomLines.filter((line: string) => line.length > 0);
     }
 
     /**
@@ -43,25 +45,39 @@ export class EasyParserMol2 extends EasyParserParent {
      * @param {number} [atomParserIndex] Optional: The 0-based index of this atom in the parser's internal list.
      * @returns {IAtom} The parsed atom.
      */
-    _parseAtomStr(atomStr: string, atomParserIndex?: number): IAtom {
+    _parseAtomStr(atomStr: string, atomParserIndex?: number): IAtom | undefined {
         // Atom looks like this:
         // "     31  C4        39.2670   22.5690   13.2440 C.ar  501  ATP501      0.1692"
 
+        if (!atomStr || atomStr.trim().length === 0) {
+            return undefined;
+        }
+        
+        const parts = atomStr.split(/\s+/);
+        if (parts.length < 8) {
+            return undefined;
+        }
+        
         // Split by spaces.
-        const [serialOrig, atomName, xOrig, yOrig, zOrig, elemOrig, resiOrig, resn, bOrig] = atomStr.split(/\s+/);
+
+        const [serialOrig, atomName, xOrig, yOrig, zOrig, elemOrig, resiOrig, resn, bOrig] = parts;
         const serial = parseInt(serialOrig);
         const x = parseFloat(xOrig);
         const y = parseFloat(yOrig);
         const z = parseFloat(zOrig);
         const elem = elemOrig.split(".")[0]
         const resi = parseInt(resiOrig);
-        const b = parseFloat(bOrig);
+        const b = bOrig !== undefined ? parseFloat(bOrig) : 0;
         
         // In this context, b is the charge.
 
         // Some not specified
         const chain = "A";
         const altLoc = " ";
+
+        if (isNaN(x) || isNaN(y) || isNaN(z)) {
+            return undefined;
+        }
 
         return {
             resn,

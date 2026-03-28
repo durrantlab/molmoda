@@ -499,7 +499,7 @@ export class TreeNodeList {
                 terminalNodeTitleRevisable,
                 resetVisibilityAndSelection
             );
-                        preparedNodes.push(node);
+            preparedNodes.push(node);
         }
 
         // Single bulk push triggers reactivity only once.
@@ -518,10 +518,14 @@ export class TreeNodeList {
         }
 
         if (!isVisualizationDeferred()) {
-            updateStylesInViewer();
-            const viewer = await visualizationApi.viewer;
-            await viewer.renderImmediate();
-            viewer.zoomOnFocused();
+            try {
+                updateStylesInViewer();
+                const viewer = await visualizationApi.viewer;
+                await viewer.renderImmediate();
+                viewer.zoomOnFocused();
+            } catch (err) {
+                console.warn("Viewer zoom failed after adding to tree:", err);
+            }
         }
     }
 

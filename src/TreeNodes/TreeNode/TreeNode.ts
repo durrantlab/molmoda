@@ -625,21 +625,18 @@ export class TreeNode {
             });
         }
 
-        if (resetVisibilityAndSelection) {
+if (resetVisibilityAndSelection) {
             allNodesInSubtree.forEach((node) => {
                 if (node.nodes) {
-                    // It's a container node
                     node.visible = true;
                 }
             });
             this.visible = true;
 
-            // For terminal nodes, make only the first few visible.
             const terminalNodes = this.nodes
                 ? this.nodes.terminals
                 : new TreeNodeList([]);
             if (this.model) {
-                // This node is a terminal node itself.
                 terminalNodes.push(this);
             }
 
@@ -650,7 +647,6 @@ export class TreeNode {
                 node.visible = i < initialCompoundsVisible;
             });
 
-            // Ensure nodes are not selected when added.
             allNodesInSubtree.forEach((node) => {
                 node.selected = SelectedType.False;
             });
@@ -687,11 +683,15 @@ export class TreeNode {
         }
 
         // If you add new molecules to the tree, focus on everything.
-        const viewer = await visualizationApi.viewer;
+        try {
+            const viewer = await visualizationApi.viewer;
 
         // Set the style according to the current user specs.
         updateStylesInViewer();
         viewer.zoomOnFocused();
+        } catch (err) {
+            console.warn("Viewer zoom failed after adding to tree:", err);
+        }
     }
 
     // Commenting out below because always async now.

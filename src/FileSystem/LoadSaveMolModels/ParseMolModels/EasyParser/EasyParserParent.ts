@@ -34,6 +34,7 @@ export abstract class EasyParserParent {
             this._load(src);
         }
     }
+
     protected _atoms: (string | IAtom)[] = [];
 
     /**
@@ -66,12 +67,16 @@ export abstract class EasyParserParent {
      */
     getAtom(idx: number): IAtom {
         const atom = this._atoms[idx];
+        if (atom === undefined || atom === null) {
+            throw new Error(`No atom entry at index ${idx}.`);
+        }
 
         // If it's not a string, it's already been parsed.
         if (typeof atom !== "string") {
             return atom as IAtom;
         }
-        const parsedAtom = this._parseAtomStr(atom as string, idx); // Pass the index here
+
+        const parsedAtom = this._parseAtomStr(atom as string, idx);
         if (parsedAtom === undefined) {
             throw new Error("Failed to parse atom.");
         }
@@ -487,13 +492,18 @@ export abstract class EasyParserParent {
         const residueNames = new Set<string>();
         const residueIds = new Set<number>();
         for (let i = 0; i < this.length; i++) {
-            const atom = this.getAtom(i);
-            if (atom.resn) {
-                residueNames.add(atom.resn);
-            }
-            if (atom.resi !== undefined) {
-                // Assuming resi is a number. If it could be a string, adjust accordingly.
-                residueIds.add(atom.resi);
+            try {
+                const atom = this.getAtom(i);
+                if (atom.resn) {
+                    residueNames.add(atom.resn);
+                }
+                if (atom.resi !== undefined) {
+                    // Assuming resi is a number. If it could be a string, adjust accordingly.
+                    residueIds.add(atom.resi);
+                }
+            } catch {
+                // Skip atoms that fail to parse
+                continue;
             }
         }
         return { names: residueNames, ids: residueIds };

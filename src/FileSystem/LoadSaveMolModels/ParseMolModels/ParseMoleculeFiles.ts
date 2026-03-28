@@ -1,7 +1,7 @@
 // You can load some molecule files using 3Dmol.js directly, without requiring
 // any conversion. See https://3dmol.csb.pitt.edu/doc/types.html#FileFormats
 import { messagesApi } from "@/Api/Messages";
-import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { parseUsing3DMolJs } from "./_ParseUsing3DMolJs";
 import { parseUsingOpenBabel } from "./_ParseUsingOpenBabel";
 import { parseUsingMolModa } from "./_ParseUsingMolModa";
@@ -13,6 +13,9 @@ import { isAnyPopupOpen } from "@/UI/MessageAlerts/Popups/OpenPopupList";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { beginBatchTreeUpdate, endBatchTreeUpdate } from "@/TreeNodes/TreeCache";
+import { makeEasyParser } from "./EasyParser";
+import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+
 // import { parseUsingJsZip } from "./ParseUsingJsZip";
 
 // TODO: Might want to load other data too. Could add here. Perhaps a hook that
@@ -141,6 +144,7 @@ export function parseAndLoadMoleculeFile(
                     stopAllWaitSpinners();
                     return treeNodeList;
                 }
+
                 let msg =
                     "<p>File contained no valid molecules. Are you certain it's correctly formatted?</p>";
 
@@ -169,6 +173,7 @@ export function parseAndLoadMoleculeFile(
             const topLevelName = getFileNameParts(
                 params.fileInfo.name
             ).basename;
+
             const mergedTreeNodeList = treeNodeList.merge(topLevelName);
 
             // Make sure all molecules have a title. A title of a
@@ -182,11 +187,90 @@ export function parseAndLoadMoleculeFile(
             // Get all the terminal nodes to process titles and visibility.
             const terminalNodes = mergedTreeNodeList.terminals;
 
-            // Rename the nodes in treeNodeList and make some of them
-            // invisible.
+            // Validate each terminal node's model. Collect references to
+            // nodes that are empty or unparseable so they can be pruned
+            // before adding to the tree.
+            let hasValidModel = false;
+            const invalidNodes: TreeNode[] = [];
             for (let i = 0; i < terminalNodes.length; i++) {
                 const node = terminalNodes.get(i);
-                // If "undefined" in title, rename based on filename
+                if (node.model) {
+                    try {
+                        const parser = makeEasyParser(node.model);
+                        if (parser.length > 0) {
+                            parser.getAtom(0);
+                            hasValidModel = true;
+                            continue;
+                        }
+                    } catch {
+                        // Model is present but unparseable
+                    }
+                }
+                invalidNodes.push(node);
+            }
+            
+            if (!hasValidModel) {
+                messagesApi.stopWaitSpinner(spinnerId);
+                messagesApi.popupError(
+                    `<p>Could not read any valid molecules from "${params.fileInfo.name}". ` +
+                    `The file may not be properly formatted.</p>`
+                );
+                return undefined;
+            }
+
+            // Remove invalid terminal nodes from the tree so they never
+            // reach the viewer or appear in the navigation panel.
+            if (invalidNodes.length > 0) {
+                for (const badNode of invalidNodes) {
+                    mergedTreeNodeList.flattened.forEach((parent: TreeNode) => {
+                        if (parent.nodes) {
+                            parent.nodes.removeNode(badNode);
+                        }
+                    });
+                }
+
+                // Prune any container nodes left empty after removing
+                // invalid terminals. Repeat until no more empty
+                // containers remain (handles nested single-child chains).
+                let pruned = true;
+                while (pruned) {
+                    pruned = false;
+                    mergedTreeNodeList.flattened.forEach((parent: TreeNode) => {
+                        if (parent.nodes) {
+                            const before = parent.nodes.length;
+                            parent.nodes = parent.nodes.filter(
+                                (child: TreeNode) => {
+                                    // Keep terminal nodes (they survived
+                                    // validation) and containers that still
+                                    // have children.
+                                    if (child.model) return true;
+                                    if (child.nodes && child.nodes.length > 0) return true;
+                                    return false;
+                                }
+                            );
+                            if (parent.nodes.length < before) {
+                                pruned = true;
+                            }
+                    }
+                });
+                }
+            }
+
+            // Re-query terminals after pruning.
+            const validTerminalNodes = mergedTreeNodeList.terminals;
+
+            // If pruning removed everything, show an error.
+            if (validTerminalNodes.length === 0) {
+                messagesApi.stopWaitSpinner(spinnerId);
+                messagesApi.popupError(
+                    `<p>Could not read any valid molecules from "${params.fileInfo.name}". ` +
+                    `The file may not be properly formatted.</p>`
+                );
+                return mergedTreeNodeList;
+            }
+
+            for (let i = 0; i < validTerminalNodes.length; i++) {
+                const node = validTerminalNodes.get(i);
                 if (node.title.indexOf("undefined") >= 0) {
                     const { basename } = getFileNameParts(params.fileInfo.name);
                     node.title = basename + ":" + (i + 1).toString();
@@ -222,10 +306,10 @@ export function parseAndLoadMoleculeFile(
                     const initialCompoundsVisible = await getSetting(
                         "initialCompoundsVisible"
                     );
-                    if (terminalNodes.length > initialCompoundsVisible) {
+                    if (validTerminalNodes.length > initialCompoundsVisible) {
                         messagesApi.popupMessage(
                             "Some Molecules not Visible",
-                            `The ${params.fileInfo.name} file contained ${terminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
+                            `The ${params.fileInfo.name} file contained ${validTerminalNodes.length} molecules. Only ${initialCompoundsVisible} are initially shown for performance's sake. Use the Navigator to toggle the visibility of the remaining molecules.`,
                             PopupVariant.Info,
                             undefined,
                             false,
@@ -240,6 +324,11 @@ export function parseAndLoadMoleculeFile(
         })
         .catch((err) => {
             messagesApi.stopWaitSpinner(spinnerId);
-            throw err;
+            const fileName = params.fileInfo.name || "unknown file";
+            messagesApi.popupError(
+                `<p>Failed to load "<b>${fileName}</b>". The file may not be properly formatted.</p>` +
+                `<p>Error: ${err.message || String(err)}</p>`
+            );
+            return undefined;
         });
 }

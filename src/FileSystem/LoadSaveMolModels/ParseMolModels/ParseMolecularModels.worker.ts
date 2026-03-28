@@ -816,7 +816,16 @@ async function divideMol2AtomsIntoDistinctComponents(
     const molNode = _getDefaultTreeNode(molName, NodesOrModel.Model);
     molNode.model = data.fileInfo;
     molNode.type = TreeNodeType.Compound;
-    const rootNode = organizeNodesIntoHierarchy([molNode], molName);
+
+    let rootNode: TreeNode;
+    try {
+        rootNode = organizeNodesIntoHierarchy([molNode], molName);
+    } catch (err) {
+        throw new Error(
+            `Failed to parse molecule "${molName}". The file may be incorrectly formatted or corrupted.`
+        );
+    }
+
     return new TreeNodeList([rootNode]);
 }
 

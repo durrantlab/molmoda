@@ -53,10 +53,17 @@ export class EasyParserSDF extends EasyParserParent {
         this._parsedBonds = [];
         this._atomOrderToSdfIndex.clear();
         this._sdfIndexToAtomOrder.clear();
+
         if (this._isV3000) {
             this._parseV3000(lines);
         } else {
             this._parseV2000(lines);
+        }
+
+        if (this._atoms.length === 0) {
+            throw new Error(
+                "SDF file contained no parseable atoms. The file may be malformed or empty."
+            );
         }
     }
 
@@ -443,7 +450,7 @@ export class EasyParserSDF extends EasyParserParent {
         const parsedAtom = this._parseAtomStr(atomEntry as string, idx);
         if (parsedAtom === undefined) {
             throw new Error(
-                `Failed to parse SDF atom line at index ${idx}: "${atomEntry}"`
+                `Failed to parse SDF atom at index ${idx}. The file may be incorrectly formatted.`
             );
         }
 

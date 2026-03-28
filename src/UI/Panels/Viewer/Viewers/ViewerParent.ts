@@ -521,8 +521,10 @@ export abstract class ViewerParent {
               return treeNode;
             })
             .catch((err) => {
-              throw err;
-              // return treeNode;
+              console.warn(
+                `Skipping model for node "${treeNode.title}": ${err.message}`
+              );
+              return treeNode;
             });
         } else if (treeNode.region) {
           // Make the region as pending because otherwise sometimes a
@@ -544,7 +546,10 @@ export abstract class ViewerParent {
             },
           );
         } else {
-          throw new Error("TreeNode must have either a model or a region.");
+          console.warn(
+            `Skipping node "${treeNode.title}": no model or region.`
+          );
+          addObjPromise = Promise.resolve(treeNode);
         }
       }
       addMolPromises.push(addObjPromise);
