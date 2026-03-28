@@ -12,7 +12,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
     IContributorCredit,
@@ -32,6 +31,7 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
+import { registerClipboardListeners } from "./ClipboardPluginUtils";
 import { Component } from "vue-facing-decorator";
 
 /** CopyPlugin */
@@ -178,29 +178,7 @@ export default class CopyPlugin extends PluginParentClass {
             this.compounds = new TreeNodeList([]);
         }
 
-        // Add click event listener to button with selection sel. Doing this
-        // because it must happen immediately.
-        document
-            .querySelector(`#modal-${this.pluginId} .action-btn`)
-            ?.addEventListener("click", () => {
-                this.copy();
-                document
-                    .querySelector(`#modal-${this.pluginId} .action-btn`)
-                    ?.removeEventListener("click", () => {
-                        return;
-                    });
-            });
-
-        // Similarly for "enter" key. (Can't use existing system because it
-        // must happen immediately).
-        document.addEventListener("keydown", (e: any) => {
-            if (e.key === "Enter") {
-                this.copy();
-                document.removeEventListener("keydown", () => {
-                    return;
-                });
-            }
-        });
+        registerClipboardListeners(this, () => this.copy());
     }
 
     /**

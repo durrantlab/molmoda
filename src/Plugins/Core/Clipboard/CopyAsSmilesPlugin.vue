@@ -28,6 +28,7 @@ import Alert from "@/UI/Layout/Alert.vue";
 import PluginPathLink from "@/UI/Navigation/PluginPathLink.vue";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
+import { registerClipboardListeners } from "./ClipboardPluginUtils";
 import { Component } from "vue-facing-decorator";
 
 /** CopyPlugin */
@@ -114,29 +115,7 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
      * Runs after the popup opens. Good for setting focus in text elements.
      */
     onPopupOpen() {
-        // Add click event listener to button with selection sel. Doing this
-        // because it must happen immediately.
-        document
-            .querySelector(`#modal-${this.pluginId} .action-btn`)
-            ?.addEventListener("click", () => {
-                this.copy();
-                document
-                    .querySelector(`#modal-${this.pluginId} .action-btn`)
-                    ?.removeEventListener("click", () => {
-                        return;
-                    });
-            });
-
-        // Similarly for "enter" key. (Can't use existing system because it
-        // must happen immediately).
-        document.addEventListener("keydown", (e: any) => {
-            if (e.key === "Enter") {
-                this.copy();
-                document.removeEventListener("keydown", () => {
-                    return;
-                });
-            }
-        });
+        registerClipboardListeners(this, () => this.copy());
     }
 
     /**
