@@ -10,6 +10,8 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { messagesApi } from "@/Api/Messages";
 import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
+import { waitForCondition } from "@/Core/Utils/MiscUtils";
+import { loadedPlugins } from "@/Plugins/LoadedPlugins";
 
 let timerId: any = undefined;
 
@@ -78,6 +80,15 @@ async function loadSessionFromLocalStorage() {
     // Cookies are allowed. Check to see if existing autosave.
     const existingAutoSave = await localStorageGetItem("autoSave");
     if (existingAutoSave !== null) {
+        // The YesNo plugin registers itself during its mounted() hook, which
+        // may not have fired yet because AllPlugins uses defineAsyncComponent.
+        // Wait for it to be available before attempting to show the prompt.
+        await waitForCondition(
+            () => !!loadedPlugins["yesnomsg"],
+            100,
+            10000
+        );
+
         const resp = await messagesApi.popupYesNo(
             "You have unsaved changes from your last session. Would you like to restore them?",
             "Restore Unsaved Changes?",

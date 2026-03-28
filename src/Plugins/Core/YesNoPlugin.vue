@@ -9,7 +9,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
 
 import Popup from "@/UI/MessageAlerts/Popups/Popup.vue";
 import { IContributorCredit, ISoftwareCredit } from "../PluginInterfaces";
