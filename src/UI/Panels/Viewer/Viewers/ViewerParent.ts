@@ -524,6 +524,10 @@ export abstract class ViewerParent {
               console.warn(
                 `Skipping model for node "${treeNode.title}": ${err.message}`
               );
+                            // Intentionally not rethrowing: a single failed
+                            // model should not abort loading the remaining
+                            // molecules in the batch.
+                            // throw err;
               return treeNode;
             });
         } else if (treeNode.region) {

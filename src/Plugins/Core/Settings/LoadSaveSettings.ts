@@ -18,7 +18,7 @@ export async function defaultSettings(): Promise<any> {
 
     return {
         maxProcs: procsToRecommend,
-        initialCompoundsVisible: 50,
+        initialCompoundsVisible: 20,
         molViewer: "3dmol",
         allowCookies: allowCookies,
         allowExternalWebAccess: false,

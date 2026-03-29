@@ -489,15 +489,14 @@ export class TreeNodeList {
         terminalNodeTitleRevisable = true,
         resetVisibilityAndSelection = true
     ) {
-        // Prepare all nodes first without touching the store, then add in bulk.
         const preparedNodes: TreeNode[] = [];
 
         for (const node of this._nodes) {
-            node.prepareForMainTree(
+            await node.prepareForMainTree(
                 tag,
                 reassignIds,
                 terminalNodeTitleRevisable,
-                resetVisibilityAndSelection
+                resetVisibilityAndSelection,
             );
             preparedNodes.push(node);
         }

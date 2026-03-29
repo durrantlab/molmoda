@@ -648,18 +648,23 @@ export class TreeNode {
      * @param {boolean} [resetVisibilityAndSelection] Whether to reset
      *                                                visibility and selection.
      */
-    public prepareForMainTree(
+    public async prepareForMainTree(
         tag: string | null,
         reassignIds = true,
         terminalNodeTitleRevisable = true,
         resetVisibilityAndSelection = true
-    ): void {
+    ): Promise<void> {
+
+        const initialCompoundsVisible = await getSetting(
+            "initialCompoundsVisible"
+        );
+
         this._applyTreePreparation({
             tag,
             reassignIds,
             terminalNodeTitleRevisable,
             resetVisibilityAndSelection,
-            initialVisibleCount: 20,
+            initialVisibleCount: initialCompoundsVisible,
         });
     }
 

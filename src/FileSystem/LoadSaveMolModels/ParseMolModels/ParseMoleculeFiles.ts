@@ -323,6 +323,10 @@ export function parseAndLoadMoleculeFile(
             return mergedTreeNodeList;
         })
         .catch((err) => {
+            // Intentionally not rethrowing: this is the top-level entry point
+            // for molecule loading, so the error is reported to the user via
+            // the popup above. Callers receive `undefined` to indicate failure.
+            // throw err;
             messagesApi.stopWaitSpinner(spinnerId);
             const fileName = params.fileInfo.name || "unknown file";
             messagesApi.popupError(
