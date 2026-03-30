@@ -64,7 +64,9 @@ export default class SelectInvisiblePlugin extends PluginParentClass {
      */
     async getTests(): Promise<ITest> {
         return {
-            beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
+            beforePluginOpens: () => new TestCmdList()
+                .loadExampleMolecule(true)
+                .hideNavItem("Protein"),
         };
     }
 }

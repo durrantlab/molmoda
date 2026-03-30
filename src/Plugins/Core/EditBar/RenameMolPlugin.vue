@@ -122,7 +122,11 @@ export default class RenameMolPlugin extends PluginParentClass {
 
                 // Also check clicking in title bar
                 .selectMoleculeInTree("Compounds")
-                .click('#navigator div[data-label="Compounds"] span.rename')
+                .click(
+                    '#navigator div[data-label="Compounds"] span.rename',
+                    false,
+                    "rename it"
+                )
                 .text("#newName-renamemol-item", "Compounds2")
                 .pressPopupButton(".action-btn", this.pluginId)
                 .wait(2)

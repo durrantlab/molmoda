@@ -498,8 +498,15 @@ export function createWaitStep(
         waitCondition: () => {
             const el = document.querySelector(command.selector!) as HTMLElement;
             if (!el) return false;
-            const textToCheck = el.textContent || el.innerHTML || "";
-            return new RegExp(command.data).test(textToCheck);
+            const regex = new RegExp(command.data);
+            // Check both textContent (for plain text matches) and innerHTML
+            // (for markup-based matches like SVG icon attributes). textContent
+            // strips tags, so regexes targeting HTML/SVG structure would fail
+            // if only textContent were checked.
+            const textContent = el.textContent || "";
+            if (regex.test(textContent)) return true;
+            const htmlContent = el.innerHTML || "";
+            return regex.test(htmlContent);
         },
         /**
          * Polls the wait condition and auto-advances the tour when satisfied.

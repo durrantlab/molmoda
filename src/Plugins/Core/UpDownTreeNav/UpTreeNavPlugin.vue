@@ -77,6 +77,8 @@ export default class UpTreeNavPlugin extends PluginParentClass {
         return {
             beforePluginOpens: () => new TestCmdList()
                 .loadExampleMolecule(true)
+                .hideNavItem("Protein")
+                .hideNavItem("Solvent")
                 .selectMoleculeInTree("Compounds"),
             afterPluginCloses: () => new TestCmdList().waitUntilRegex(
                 "#navigator",
