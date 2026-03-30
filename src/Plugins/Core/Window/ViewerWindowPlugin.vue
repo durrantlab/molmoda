@@ -16,6 +16,7 @@ export default createWindowPlugin({
 });
 
 // BELOW TO PASS VALIDATION
+// pluginId = "viewerwindow";
 // getTests()
 // noPopup = true;
 // tags = [Tag.All];
