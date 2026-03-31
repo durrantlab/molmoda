@@ -20,6 +20,93 @@ export function isElementInViewport(el: HTMLElement): boolean {
 }
 
 /**
+ * Finds the nearest scrollable ancestor of an element (e.g., a modal body).
+ * An ancestor is considered scrollable if its scroll height exceeds its client
+ * height and its overflow style permits scrolling.
+ *
+ * @param {HTMLElement} element The element to find the scrollable parent for.
+ * @returns {HTMLElement | null} The scrollable parent, or null if none found.
+ */
+export function findScrollableParent(element: HTMLElement): HTMLElement | null {
+    let parent = element.parentElement;
+    while (parent) {
+        const style = getComputedStyle(parent);
+        const overflowY = style.overflowY;
+        const isScrollable =
+            (overflowY === "auto" || overflowY === "scroll") &&
+            parent.scrollHeight > parent.clientHeight;
+        if (isScrollable) {
+            return parent;
+        }
+        parent = parent.parentElement;
+    }
+    return null;
+}
+
+/**
+ * Checks if an element is visible within its nearest scrollable ancestor.
+ *
+ * @param {HTMLElement} el The element to check.
+ * @param {HTMLElement} scrollParent The scrollable ancestor container.
+ * @returns {boolean} True if the element is visible within the scroll container.
+ */
+export function isElementVisibleInScrollParent(
+    el: HTMLElement,
+    scrollParent: HTMLElement
+): boolean {
+    const elRect = el.getBoundingClientRect();
+    const parentRect = scrollParent.getBoundingClientRect();
+    return (
+        elRect.top >= parentRect.top &&
+        elRect.bottom <= parentRect.bottom
+    );
+}
+
+/**
+ * Smoothly scrolls an element into view within its nearest scrollable
+ * ancestor (e.g., a modal body) and waits for the scroll to complete.
+ *
+ * @param {HTMLElement} element The element to scroll into view.
+ * @param {HTMLElement} scrollParent The scrollable ancestor container.
+ * @returns {Promise<void>} A promise that resolves when scrolling is complete.
+ */
+export function smoothScrollInScrollParent(
+    element: HTMLElement,
+    scrollParent: HTMLElement
+): Promise<void> {
+    return new Promise((resolve) => {
+        const elRect = element.getBoundingClientRect();
+        const parentRect = scrollParent.getBoundingClientRect();
+        // Calculate the offset needed to center the element within the
+        // scroll container, then apply it as a smooth scroll.
+        const elCenter = elRect.top + elRect.height / 2;
+        const parentCenter = parentRect.top + parentRect.height / 2;
+        const offset = elCenter - parentCenter;
+        scrollParent.scrollBy({ top: offset, behavior: "smooth" });
+
+        // Wait for the scroll position to stabilize.
+        let lastScrollTop = scrollParent.scrollTop;
+        let stableFrames = 0;
+        const checkStability = () => {
+            if (Math.abs(scrollParent.scrollTop - lastScrollTop) < 1) {
+                stableFrames++;
+            } else {
+                stableFrames = 0;
+            }
+            lastScrollTop = scrollParent.scrollTop;
+            if (stableFrames > 15) {
+                resolve();
+            } else {
+                requestAnimationFrame(checkStability);
+            }
+        };
+        requestAnimationFrame(checkStability);
+        // Fallback timeout
+        setTimeout(resolve, 2000);
+    });
+}
+
+/**
  * Smoothly scrolls an element into view and waits for the scroll to complete.
  * Uses position stability check to ensure animations/scrolls are finished.
  *

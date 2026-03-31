@@ -9,7 +9,7 @@ import { messagesApi } from "@/Api/Messages";
 import { isLocalHost } from "@/Core/GlobalVars";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { injectDriverCss, handlePopoverRender } from "./TourStyles";
-import { isElementInViewport, smoothScrollIntoView, waitForElementStability, waitForElement, isElementValueCorrect } from "./TourUtils";
+import { isElementInViewport, smoothScrollIntoView, waitForElementStability, waitForElement, isElementValueCorrect, findScrollableParent, isElementVisibleInScrollParent, smoothScrollInScrollParent } from "./TourUtils";
 import { ITourContext, findUserArgAndRefineSelector, createClickStep, createInputStep, createWaitStep, createNoteStep, createDefaultArgStep } from "./TourSteps";
 
 /**
@@ -214,12 +214,29 @@ export class TourManager {
                 // 3. Any CSS transitions are still running
                 await waitForElementStability(element);
 
+                // Scroll within any nested scrollable container (e.g., a modal
+                // body) so the element is visible inside its parent.
+                const scrollParent = findScrollableParent(element);
+                if (scrollParent && !isElementVisibleInScrollParent(element, scrollParent)) {
+                    await smoothScrollInScrollParent(element, scrollParent);
+                    // Re-check stability after the inner scroll completes.
+                    await waitForElementStability(element);
+                }
+
                 if (!isElementInViewport(element)) {
                     await smoothScrollIntoView(element);
                 }
                 window.dispatchEvent(new Event("resize"));
 
                 originalMoveNext();
+
+                // After driver.js highlights and renders the popover, it may
+                // recompute layout and snap the scroll container back to its
+                // original position. Schedule a deferred re-scroll to ensure
+                // the element remains visible after all driver.js rendering
+                // (including the delayed driver.refresh() in onHighlighted).
+                this._ensureElementVisibleAfterRender(nextStep.element);
+
             } catch (error) {
                 console.error(error);
                 messagesApi.popupError(
@@ -237,6 +254,47 @@ export class TourManager {
             this.isMoving = false;
         }
     }
+
+    /**
+     * Ensures the highlighted element remains visible after driver.js finishes
+     * rendering. Checks multiple times over ~1.5 seconds to catch scroll resets
+     * caused by popover positioning and the delayed driver.refresh() call.
+     * @param {string} selector The CSS selector of the target element.
+     * @private
+     */
+    private _ensureElementVisibleAfterRender(selector: string): void {
+        // Check at intervals that cover the initial render and the 1-second
+        // delayed driver.refresh() in createClickStep's onHighlighted.
+        const checkTimes = [100, 500, 1200];
+        for (const delay of checkTimes) {
+            setTimeout(() => {
+                // Bail out if the tour has moved on or been destroyed.
+                if (!this.driver) return;
+                const el = document.querySelector(selector) as HTMLElement;
+                if (!el) return;
+                const scrollParent = findScrollableParent(el);
+                if (scrollParent && !isElementVisibleInScrollParent(el, scrollParent)) {
+                    if (isLocalHost) {
+                        console.log(`[Tour Debug] _ensureElementVisibleAfterRender: re-scrolling at ${delay}ms for "${selector}"`);
+                    }
+                    const elRect = el.getBoundingClientRect();
+                    const parentRect = scrollParent.getBoundingClientRect();
+                    const elCenter = elRect.top + elRect.height / 2;
+                    const parentCenter = parentRect.top + parentRect.height / 2;
+                    scrollParent.scrollBy({ top: elCenter - parentCenter, behavior: "smooth" });
+
+                    // After re-scrolling, refresh driver.js so the highlight
+                    // and popover reposition to match.
+                    setTimeout(() => {
+                        if (this.driver && this.driver.refresh) {
+                            this.driver.refresh();
+                        }
+                    }, 300);
+                }
+            }, delay);
+        }
+    }
+
 
     /**
      * Starts a tour for a given plugin.
@@ -313,7 +371,7 @@ export class TourManager {
                             command.selector?.includes(".action-btn")
                         ) {
                             // It's a click on an action button. Let's make the message more specific.
-                            step.popover.description = `Click here to run the "${plugin.title}" plugin.`;
+                            step.popover.description = `Click here to run the <b>${plugin.title}</b> plugin.`;
                         }
                         steps.push(step);
                     }
@@ -484,7 +542,7 @@ export class TourManager {
                         menuTexts.length > 0 &&
                         menuTextIndex < menuTexts.length
                     ) {
-                        step.popover.description = `Click the "${menuTexts[menuTextIndex]}" menu item.`;
+                        step.popover.description = `Click the <b>${menuTexts[menuTextIndex]}</b> menu item.`;
                         menuTextIndex++;
                     } else {
                         // Fallback for any other clicks (e.g., if openPluginCmds is buggy)
@@ -565,7 +623,7 @@ export class TourManager {
     private showCompletionMessage() {
     messagesApi.popupMessage(
         "Tour Complete!",
-        `You have completed the tour for the "${this.currentPluginTitle}" plugin.`,
+        `You have completed the tour for the <b>${this.currentPluginTitle}</b> plugin.`,
         PopupVariant.Success
     );
 }
