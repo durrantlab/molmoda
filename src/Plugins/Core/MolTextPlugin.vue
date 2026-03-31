@@ -287,6 +287,20 @@ export default class MolTextPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {
+        // The first test is intentionally simple and tour-friendly: it pastes
+        // a short SMILES string so the guided tour can walk through the plugin
+        // without waiting for heavy file content or SVG rendering.
+        const tourTest: ITest = {
+            pluginOpen: () =>
+                new TestCmdList()
+                    // .setUserArg("pastedMolName", "Aspirin", this.pluginId)
+                    // .setUserArg("molTextArea", "CC(=O)Oc1ccccc1C(=O)O", this.pluginId),
+                    .setUserArg("pastedMolName", "Benzene", this.pluginId)
+                    .setUserArg("molTextArea", "c1ccccc1", this.pluginId),
+            afterPluginCloses: () =>
+                new TestCmdList().waitUntilRegex("#navigator", "Benzene"),
+        };
+
         const urls = [
             "testmols/example.can",
             "testmols/example.sdf",
@@ -301,7 +315,9 @@ export default class MolTextPlugin extends PluginParentClass {
         const promises = urls.map((url) => fetcher(url));
         const txts = await Promise.all(promises);
 
-        const tests = txts.map((txt: string) => {
+        const tests: ITest[] = [tourTest];
+
+        txts.forEach((txt: string) => {
             const fileInfo = new FileInfo({
                 name: "tmp.smi",
                 contents: txt,
@@ -324,11 +340,11 @@ export default class MolTextPlugin extends PluginParentClass {
                     .waitUntilRegex("#modal-moltextplugin .svg-wrapper", "<svg");
             }
 
-            return {
+            tests.push({
                 pluginOpen: () => pluginOpenCmds,
                 afterPluginCloses: () =>
                     new TestCmdList().waitUntilRegex("#navigator", "PastedMol"),
-            };
+            });
         });
 
         // Final test to verify error catching

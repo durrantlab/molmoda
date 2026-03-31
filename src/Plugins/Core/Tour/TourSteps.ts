@@ -201,7 +201,7 @@ export function createClickStep(
     context: ITourContext
 ): any {
     const selector = command.selector || "";
-
+    const isShiftClick = command.data === true;
     const popover: any = {
         title: plugin.title,
         description: "Please click here to continue.",
@@ -213,7 +213,11 @@ export function createClickStep(
     if (selectMoleculeMatch) {
         const moleculeName = selectMoleculeMatch[1];
         const action = command.tourMessage || "select it";
+        if (isShiftClick) {
+            popover.description = `Hold <b>Shift</b> and click on this "${moleculeName}" item in the Navigator panel to add it to the selection.`;
+        } else {
         popover.description = `Please click on this "${moleculeName}" item in the Navigator panel to ${action}.`;
+        }
     }
 
     // If a custom tour message is provided and no molecule match was found,
@@ -563,6 +567,10 @@ export function createNoteStep(
 
 /**
  * Creates a default driver.js step for a user argument that isn't modified in the test.
+ * Since the test doesn't change this argument, the tour presents it as an
+ * informational step, instructing the user to leave the current value as is.
+ * The input element is temporarily disabled to prevent accidental changes that
+ * could break the tour flow.
  *
  * @param {UserArg} arg The user argument.
  * @param {PluginParentClass} plugin The plugin instance.
@@ -610,7 +618,7 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
 
     const label = arg.label || "Parameter";
     if (mainText === "") {
-        mainText = `Set ${label}.`;
+        mainText = `This is the <b>${label}</b> field. For this tour, leave it at its current value and press "Next" to continue.`;
     }
 
     mainText += buildSelectOptionsHtml(arg);
@@ -628,6 +636,25 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
         isNoteStep: true,
         onHighlighted: (element: HTMLElement) => {
             setFocus(element);
+            // Temporarily disable the input to prevent changes that could
+            // break the tour. The element is re-enabled when the step is
+            // deselected (the user advances).
+            if (element) {
+                const inputEl = element as HTMLInputElement | HTMLSelectElement;
+                if (typeof inputEl.disabled !== "undefined") {
+                    inputEl.disabled = true;
+                }
+            }
+        },
+        onDeselected: (element: HTMLElement) => {
+            // Re-enable the input when leaving this step so the form
+            // remains functional after the tour.
+            if (element) {
+                const inputEl = element as HTMLInputElement | HTMLSelectElement;
+                if (typeof inputEl.disabled !== "undefined") {
+                    inputEl.disabled = false;
+                }
+            }
         },
     };
 }
