@@ -338,7 +338,10 @@ export class TourManager {
     }
 
     /**
-     * Adds steps for the plugin modal, ensuring all user arguments are visited.
+     * Adds steps for the plugin modal, ensuring all user arguments are visited
+     * in their defined order. Explicit test commands are matched to their
+     * corresponding arguments and placed at the correct position; remaining
+     * arguments receive default informational steps.
      * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
@@ -359,37 +362,51 @@ export class TourManager {
             }
         }
 
-        const processedArgIds = new Set<string>();
+        // Map each explicit command to its corresponding user argument ID.
+        const cmdsByArgId = new Map<string, ITestCommand[]>();
+        const unmatchedCmds: ITestCommand[] = [];
+        for (const cmd of cmds) {
+            const { userArg } = findUserArgAndRefineSelector(cmd, plugin);
+            if (userArg) {
+                if (!cmdsByArgId.has(userArg.id)) {
+                    cmdsByArgId.set(userArg.id, []);
+                }
+                cmdsByArgId.get(userArg.id)!.push(cmd);
+            } else {
+                unmatchedCmds.push(cmd);
+            }
+        }
 
-        // First, process all explicit commands in the order defined by the test.
-        // This preserves the intended tour flow.
-        cmds.forEach((cmd, index) => {
-            const step = this._commandToDriverStep(cmd, plugin, `pluginOpen cmd #${index}`);
+        // Emit unmatched commands first (they don't correspond to a known arg).
+        unmatchedCmds.forEach((cmd, index) => {
+            const step = this._commandToDriverStep(cmd, plugin, `pluginOpen unmatched cmd #${index}`);
             if (step) {
                 steps.push(step);
             }
-
-            // Track which args were covered by explicit commands
-            const { userArg } = findUserArgAndRefineSelector(cmd, plugin);
-            if (userArg) {
-                processedArgIds.add(userArg.id);
-            }
         });
 
-        // Then, append default steps for any user arguments not covered above.
+        // Walk through arguments in their defined order, emitting either the
+        // explicit command(s) or a default step for each one.
         for (const arg of allArgs) {
             // Skip alerts and disabled args
             if (arg.type === UserArgType.Alert || arg.enabled === false) {
                 continue;
             }
-            if (processedArgIds.has(arg.id)) {
-                continue;
-            }
 
-            const step = createDefaultArgStep(arg, plugin);
-            if (step) {
-                step.tourDebugInfo = `Default step for arg: ${arg.id}`;
-                steps.push(step);
+            const explicitCmds = cmdsByArgId.get(arg.id);
+            if (explicitCmds && explicitCmds.length > 0) {
+                explicitCmds.forEach((cmd, index) => {
+                    const step = this._commandToDriverStep(cmd, plugin, `pluginOpen cmd for arg ${arg.id} #${index}`);
+                    if (step) {
+                        steps.push(step);
+                    }
+                });
+            } else {
+                const step = createDefaultArgStep(arg, plugin);
+                if (step) {
+                    step.tourDebugInfo = `Default step for arg: ${arg.id}`;
+                    steps.push(step);
+                }
             }
         }
     }
@@ -403,22 +420,22 @@ export class TourManager {
      * @private
      */
     private _processCommandList(
-    commandListFunc: (() => TestCmdList) | undefined,
-    plugin: PluginParentClass,
-    steps: any[],
-    listName = "Command List"
-) {
-    if (typeof commandListFunc !== "function") return;
-    const testCmdList = commandListFunc();
-    if (testCmdList instanceof TestCmdList) {
-        testCmdList.cmds.forEach((command, index) => {
-            const step = this._commandToDriverStep(command, plugin, `${listName} cmd #${index}`);
-            if (step) {
-                steps.push(step);
-            }
-        });
+        commandListFunc: (() => TestCmdList) | undefined,
+        plugin: PluginParentClass,
+        steps: any[],
+        listName = "Command List"
+    ) {
+        if (typeof commandListFunc !== "function") return;
+        const testCmdList = commandListFunc();
+        if (testCmdList instanceof TestCmdList) {
+            testCmdList.cmds.forEach((command, index) => {
+                const step = this._commandToDriverStep(command, plugin, `${listName} cmd #${index}`);
+                if (step) {
+                    steps.push(step);
+                }
+            });
+        }
     }
-}
 
     /**
      * Adds the steps required to open a plugin from the menu.

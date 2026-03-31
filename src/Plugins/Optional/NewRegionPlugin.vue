@@ -292,15 +292,16 @@ export default class NewRegionPlugin extends PluginParentClass {
             beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true),
             pluginOpen: () =>
                 new TestCmdList()
+                    .setUserArg("regionType", "box", this.pluginId)
                     .setUserArg("regionName", "Binding Site", this.pluginId)
                     // .setUserArg("regionType", "box", this.pluginId)
-                    .text(`#x-dimensions-newregion-item`, "15")
-                    .text(`#y-dimensions-newregion-item`, "15")
-                    .text(`#z-dimensions-newregion-item`, "15")
+                    .text(`#x-dimensions-newregion-item`, "17")
+                    .text(`#y-dimensions-newregion-item`, "16")
+                    .text(`#z-dimensions-newregion-item`, "22")
                     .text(`#x-center-newregion-item`, "10")
                     .text(`#y-center-newregion-item`, "10")
                     .text(`#z-center-newregion-item`, "10")
-                    .tourNote('You can adjust the color of the region here, but we will skip this step.', `#color-newregion-item`) // Red
+                    .tourNote('You can adjust the color of the region here, but we will skip this step.', `#color-newregion-item`)
                     .text(`#opacity-newregion-item`, "0.5"),
             closePlugin: () =>
                 new TestCmdList().pressPopupButton(".action-btn", this.pluginId),
