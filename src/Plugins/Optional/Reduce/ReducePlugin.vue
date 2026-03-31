@@ -48,7 +48,7 @@ import { ITest } from "@/Testing/TestInterfaces";
 export default class ReducePlugin extends PluginParentClass {
     // Note _ will be removed from display text. Needed to distinguish from
     // Compounds/Protonate in menu ids.
-    menuPath = "Proteins/Protonation_...";
+    menuPath = "Proteins/Protein Protonation_...";
     title = "Protonate/Deprotonate Proteins";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.reduce.credit];
     contributorCredits: IContributorCredit[] = [

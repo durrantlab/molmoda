@@ -267,7 +267,7 @@ export class TourManager {
         // delayed driver.refresh() in createClickStep's onHighlighted.
         const checkTimes = [100, 500, 1200];
         for (const delay of checkTimes) {
-            setTimeout(() => {
+            setTimeout(async () => {
                 // Bail out if the tour has moved on or been destroyed.
                 if (!this.driver) return;
                 const el = document.querySelector(selector) as HTMLElement;
@@ -277,19 +277,17 @@ export class TourManager {
                     if (isLocalHost) {
                         console.log(`[Tour Debug] _ensureElementVisibleAfterRender: re-scrolling at ${delay}ms for "${selector}"`);
                     }
-                    const elRect = el.getBoundingClientRect();
-                    const parentRect = scrollParent.getBoundingClientRect();
-                    const elCenter = elRect.top + elRect.height / 2;
-                    const parentCenter = parentRect.top + parentRect.height / 2;
-                    scrollParent.scrollBy({ top: elCenter - parentCenter, behavior: "smooth" });
+                    await smoothScrollInScrollParent(el, scrollParent);
 
-                    // After re-scrolling, refresh driver.js so the highlight
-                    // and popover reposition to match.
-                    setTimeout(() => {
+                    // Wait for the element position to fully stabilize after
+                    // scrolling before refreshing driver.js. Without this,
+                    // driver.js reads the element's position mid-animation and
+                    // the highlight ends up vertically offset.
+                    await waitForElementStability(el);
+
                         if (this.driver && this.driver.refresh) {
                             this.driver.refresh();
                         }
-                    }, 300);
                 }
             }, delay);
         }
@@ -385,7 +383,7 @@ export class TourManager {
             };
             const step = this._commandToDriverStep(defaultCloseCommand, plugin, "Default closePlugin action");
             if (step) {
-                step.popover.description = `Click here to run the "${plugin.title}" plugin.`;
+                step.popover.description = `Click here to run the <b>${plugin.title}</b> plugin.`;
                 steps.push(step);
             }
         }

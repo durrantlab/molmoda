@@ -279,7 +279,7 @@ function enhanceDescription(
                 const text = getElementLabel(element);
                 // Update the message if we found a reasonable short label
                 if (text.length > 0 && text.length < 30) {
-                    popover.description.innerHTML = `Please click "<b>${text}</b>" to continue.`;
+                    popover.description.innerHTML = `Please click <b>${text}</b> to continue.`;
                 }
             }
         }
@@ -304,7 +304,7 @@ function enhanceDescription(
                 if (partsMatch) {
                     const fieldLabel = partsMatch[1];
                     const value = partsMatch[2];
-                    const newSentence = `${fieldLabel} is currently set to "${value}". For this tour, we will leave it as is.`;
+                    const newSentence = `${fieldLabel} is currently set to <b>${value}</b>. For this tour, we will leave it as is.`;
                     popover.description.innerHTML = originalDesc.replace(originalSentence, newSentence);
                 }
             } else {

@@ -41,7 +41,7 @@ import { Component } from "vue-facing-decorator";
     },
 })
 export default class AlignProteinsPlugin extends PluginParentClass {
-    menuPath = "Proteins/[8] Align...";
+    menuPath = "Proteins/[8] Align Proteins...";
     title = "Align Proteins";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.usalign.credit]
     contributorCredits: IContributorCredit[] = [];

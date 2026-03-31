@@ -41,8 +41,8 @@ import { convertMolTextsToCompoundTree } from "../CompoundProcessingUtils";
     },
 })
 export default class Regen3DCoordsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Build/[3] Regenerate 3D...";
-    title = "Regenerate 3D Coordinates";
+    menuPath = "Compounds/Build/[3] Rebuild Compounds...";
+    title = "Rebuild Compound Coordinates";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "regen3dcoords";

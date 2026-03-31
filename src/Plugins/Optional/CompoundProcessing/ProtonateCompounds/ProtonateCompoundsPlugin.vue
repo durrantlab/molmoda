@@ -50,7 +50,7 @@ import { convertMolTextsToCompoundTree } from "../CompoundProcessingUtils";
     },
 })
 export default class ProtonateCompoundsPlugin extends PluginParentClass {
-    menuPath = "Compounds/Build/[2] Protonation...";
+    menuPath = "Compounds/Build/[2] Compound Protonation...";
     title = "Protonate/Deprotonate Compounds";
     softwareCredits: ISoftwareCredit[] = [dynamicImports.obabelwasm.credit];
     contributorCredits: IContributorCredit[] = [

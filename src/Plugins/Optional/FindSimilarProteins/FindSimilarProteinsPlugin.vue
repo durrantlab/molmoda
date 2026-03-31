@@ -53,7 +53,7 @@ import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMo
     },
 })
 export default class FindSimilarProteinsPlugin extends PluginParentClass {
-    menuPath = "Proteins/[8] Search/Find Similar...";
+    menuPath = "Proteins/[8] Search/Find Similar Proteins...";
     title = "Find Similar Proteins";
     softwareCredits: ISoftwareCredit[] = [
         {

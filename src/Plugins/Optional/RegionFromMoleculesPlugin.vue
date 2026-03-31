@@ -52,8 +52,8 @@ import { Component } from "vue-facing-decorator";
     },
 })
 export default class RegionFromMoleculesPlugin extends PluginParentClass {
-    menuPath = "Regions/[7] From Molecule(s)...";
-    title = "From Molecule(s)";
+    menuPath = "Regions/[7] Region From Molecule(s)...";
+    title = "Region From Molecule(s)";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "regionfrommolecules";

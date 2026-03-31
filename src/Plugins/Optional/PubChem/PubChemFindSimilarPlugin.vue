@@ -64,7 +64,7 @@ enum SearchMode {
   },
 })
 export default class PubChemFindSimilarPlugin extends PluginParentClass {
-  menuPath = "Compounds/[8] Create Library/[2] Find Similar...";
+  menuPath = "Compounds/[8] Create Library/[2] Find Similar Compounds...";
   title = "Find Similar Compounds";
   softwareCredits: ISoftwareCredit[] = [
     {

@@ -29,7 +29,7 @@ import { pubchemCredit, lookupCid } from "./PubChemCommon";
   },
 })
 export default class PubChemPropsPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/Information/[6] Properties...";
+  menuPath = "Compounds/Information/[6] Compound Properties...";
   title = "PubChem Properties";
   softwareCredits = [pubchemCredit];
 

@@ -38,7 +38,7 @@ import { pubchemCredit, lookupCid } from "./PubChemCommon";
   },
 })
 export default class PubChemNamesPlugin extends GetPropPluginParent {
-  menuPath = "Compounds/[5] Information/[5] Names...";
+  menuPath = "Compounds/[5] Information/[5] Compound Names...";
   title = "Compound Names";
   softwareCredits = [pubchemCredit];
   contributorCredits: IContributorCredit[] = [

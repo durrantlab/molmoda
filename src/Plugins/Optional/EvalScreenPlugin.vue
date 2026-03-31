@@ -126,7 +126,7 @@ interface IActivesOthers {
     },
 })
 export default class EvalScreenPlugin extends PluginParentClass {
-    menuPath = "Binding/Docking/Evaluate Performance...";
+    menuPath = "Binding/Docking/Evaluate Docking...";
     softwareCredits: ISoftwareCredit[] = [];
     contributorCredits: IContributorCredit[] = [];
     pluginId = "evalscreen";
