@@ -145,6 +145,28 @@ function handleWaitStep(
 }
 
 /**
+ * Handle upload steps by hiding the popover during the async file-load
+ * wait, similar to how wait steps are handled.
+ *
+ * @param {PopoverDOM} popover  The driver.js popover DOM references.
+ * @param {any}        state    The driver.js state object.
+ * @returns {boolean}  True if this was an upload step and was handled.
+ */
+function handleUploadStep(
+    popover: PopoverDOM,
+    state: any
+): boolean {
+    if (!state.activeStep.isUploadStep) {
+        return false;
+    }
+    // Upload steps manage their own advancement via polling in
+    // onHighlighted, so we just need to ensure the popover is visible
+    // and the next button is hidden (handled by shouldShowNextButton).
+    return false;
+}
+
+
+/**
  * Handles visibility of menu item popovers during repositioning to parent elements.
  *
  * @param {HTMLElement} popoverEl The popover HTML element.
@@ -399,7 +421,11 @@ function shouldShowNextButton(activeStep: any): boolean {
     if (activeStep?.isClickStep || activeStep?.isWaitStep) {
         return false;
     }
-
+    // Upload steps manage advancement via polling; hide the next button
+    // so the user cannot skip ahead before the file is processed.
+    if (activeStep?.isUploadStep) {
+        return false;
+    }
     if (activeStep?.onHighlightStarted) {
         // Interactive step (input/upload). Hidden by default.
         if (activeStep.expectedValue !== undefined) {
@@ -439,6 +465,7 @@ export function handlePopoverRender(
             isClickStep: state.activeStep?.isClickStep,
             isNoteStep: state.activeStep?.isNoteStep,
             isMenuItem: state.activeStep?.isMenuItem,
+            isUploadStep: state.activeStep?.isUploadStep,
             tourDebugInfo: state.activeStep?.tourDebugInfo,
         });
     }
@@ -446,6 +473,8 @@ export function handlePopoverRender(
     if (handleWaitStep(popover, state, driver)) {
         return;
     }
+
+    handleUploadStep(popover, state);
 
     const popoverEl = popover.wrapper?.closest(
         ".driver-popover"

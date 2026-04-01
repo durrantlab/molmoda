@@ -7,7 +7,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { ITestCommand, TestCommand } from "@/Testing/TestInterfaces";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { isLocalHost } from "@/Core/GlobalVars";
-import { setFocus, isElementValueCorrect } from "./TourUtils";
+import { setFocus, isElementValueCorrect, waitForElement } from "./TourUtils";
 import { TourManager } from "./TourManager";
 
 /**
@@ -395,6 +395,7 @@ export function createInputStep(
         command,
         plugin
     );
+
     const fieldLabel = buildFieldLabel(
         userArg,
         command.selector!,
@@ -407,10 +408,12 @@ export function createInputStep(
     };
 
     if (command.cmd === TestCommand.Upload) {
-        popover.description = `Please upload the required file for ${fieldLabel}. For this tour, we cannot automate file selection, so we will proceed automatically after a brief pause.`;
+        popover.description = `Please upload the required file for ${fieldLabel}. The tour will advance automatically once the file is loaded and processed.`;
+
         return {
             element: specificSelector,
             popover,
+            isUploadStep: true,
             onHighlighted: (element: HTMLElement) => {
                 if (!element) {
                     console.error(
@@ -419,7 +422,57 @@ export function createInputStep(
                     context.manager.driver.moveNext();
                     return;
                 }
-                setTimeout(() => context.manager.driver.moveNext(), 3000);
+
+                // Poll for file upload completion by watching the input
+                // element and downstream indicators (e.g., action button
+                // becoming enabled, or navigator content updating).
+                const pollForUploadCompletion = (): void => {
+                    const maxWaitMs = 60000;
+                    const pollIntervalMs = 500;
+                    const startTime = Date.now();
+
+                    const actionBtnSelector = `#modal-${plugin.pluginId} .action-btn`;
+
+                    const checkReady = (): void => {
+                        if (!context.manager.driver) {
+                            return;
+                        }
+
+                        // Check if the action button is now enabled,
+                        // indicating files have been loaded and the plugin
+                        // is ready to proceed.
+                        const actionBtn = document.querySelector(actionBtnSelector) as HTMLButtonElement;
+                        const actionBtnEnabled = actionBtn && !actionBtn.disabled;
+
+                        // Also check the file input itself for files.
+                        const fileInput = element.tagName.toLowerCase() === 'input'
+                            ? element as HTMLInputElement
+                            : element.querySelector('input[type="file"]') as HTMLInputElement;
+                        const hasFiles = fileInput && fileInput.files && fileInput.files.length > 0;
+
+                        if (hasFiles && actionBtnEnabled) {
+                            if (isLocalHost) {
+                                console.log(`[Tour Debug] Upload complete: files detected and action button enabled.`);
+                            }
+                            context.manager.driver.moveNext();
+                            return;
+                        }
+
+                        if (Date.now() - startTime > maxWaitMs) {
+                            console.warn(
+                                `TourManager: Upload wait timed out after ${maxWaitMs}ms. Advancing tour.`
+                            );
+                            context.manager.driver.moveNext();
+                            return;
+                        }
+
+                        setTimeout(checkReady, pollIntervalMs);
+                    };
+
+                    checkReady();
+                };
+
+                pollForUploadCompletion();
             },
         };
     }
@@ -610,6 +663,7 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
                 }
             }
         }
+
         const targetDescParts = targetDescription.split(" ");
         if (!targetDescParts[0].endsWith("s")) {
             // targetDescription += "s";
@@ -625,10 +679,10 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
     }
 
     const label = arg.label || "Parameter";
+
     if (mainText === "") {
         mainText = `This is the <b>${label}</b> field. For this tour, leave it at its current value and press "Next" to continue.`;
     }
-
     mainText += buildSelectOptionsHtml(arg);
 
     const description = arg.description

@@ -198,6 +198,15 @@ export class TourManager {
             console.log(`[Tour Debug] moveToNextStepWithRetry: activeIndex=${activeIndex}, nextStep element="${nextStep?.element}", debugInfo="${nextStep?.tourDebugInfo}"`);
         }
 
+        // For upload steps that just completed, wait briefly for the
+        // plugin to finish processing the uploaded file before moving
+        // to the next step. This prevents race conditions where the
+        // tour advances before onFilesLoaded has fired.
+        const currentStep = steps[activeIndex];
+        if (currentStep?.isUploadStep) {
+            await this._waitForUploadProcessing(currentStep);
+        }
+
         if (typeof nextStep.element === "string") {
             try {
                 // No timeout for tours: the user controls the pace, so we
@@ -226,6 +235,7 @@ export class TourManager {
                 if (!isElementInViewport(element)) {
                     await smoothScrollIntoView(element);
                 }
+
                 window.dispatchEvent(new Event("resize"));
 
                 originalMoveNext();
@@ -253,6 +263,21 @@ export class TourManager {
             originalMoveNext();
             this.isMoving = false;
         }
+    }
+
+    /**
+     * After an upload step completes, wait for any async file processing
+     * to finish. This gives plugins like OpenMoleculesPlugin time to run
+     * onFilesLoaded and update their internal state before the tour
+     * moves on to interact with the next UI element.
+     *
+     * @param {any} _uploadStep  The upload tour step that just completed.
+     * @returns {Promise<void>}  Resolves once processing appears settled.
+     */
+    private async _waitForUploadProcessing(_uploadStep: any): Promise<void> {
+        // Allow microtasks and short async chains to settle (e.g.,
+        // FileReader callbacks, Vue reactivity updates).
+        await new Promise<void>((resolve) => setTimeout(resolve, 500));
     }
 
     /**
