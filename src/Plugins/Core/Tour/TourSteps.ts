@@ -610,10 +610,18 @@ export function createDefaultArgStep(arg: UserArg, plugin: PluginParentClass): a
                 }
             }
         }
-        if (!targetDescription.endsWith("s")) {
-            targetDescription += "s";
+        const targetDescParts = targetDescription.split(" ");
+        if (!targetDescParts[0].endsWith("s")) {
+            // targetDescription += "s";
+            targetDescription = targetDescParts[0] + "s " + targetDescParts.slice(1).join(" ");
         }
-        mainText = `Use this widget to choose which <b>${targetDescription}</b> to include. You can select <b>visible</b> (default), <b>selected</b>, or <b>all</b> molecules. The summary text below updates to indicate exactly what will be processed. For this tour, simply press the "Next" button below to continue.`;
+
+        // Unless description contains " to ", add " to include" to clarify the purpose of the selection
+        if (!targetDescription.includes(" to ")) {
+            targetDescription += " to include";
+        }
+
+        mainText = `Use this widget to choose which <b>${targetDescription}</b>. You can select <b>visible</b> (default), <b>selected</b>, or <b>all</b> molecules. The summary text below updates to indicate exactly what will be processed. For this tour, simply press the "Next" button below to continue.`;
     }
 
     const label = arg.label || "Parameter";
