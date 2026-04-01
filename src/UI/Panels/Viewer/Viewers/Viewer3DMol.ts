@@ -382,6 +382,7 @@ export class Viewer3DMol extends ViewerParent {
       },
       radius: region.radius,
       color: region.color,
+      opacity: region.opacity ?? 0.8,
     });
     return this._setRegionOpacity(sphere, region?.opacity).then(() => sphere);
   }
@@ -408,6 +409,7 @@ export class Viewer3DMol extends ViewerParent {
         d: dimens[2],
       },
       color: region.color,
+      opacity: region.opacity ?? 0.8,
     });
     return this._setRegionOpacity(box, region?.opacity).then(() => box);
   }
@@ -433,6 +435,7 @@ export class Viewer3DMol extends ViewerParent {
       radius: region.radius,
       color: region.color,
       radiusRatio: region.radiusRatio,
+      opacity: region.opacity ?? 0.8,
     });
     return this._setRegionOpacity(arrow, region?.opacity).then(() => arrow);
   }
@@ -460,6 +463,7 @@ export class Viewer3DMol extends ViewerParent {
       fromCap: 2,
       toCap: 2,
       dashed: region.dashed,
+      opacity: region.opacity ?? 0.8,
     });
     return this._setRegionOpacity(cylinder, region?.opacity).then(
       () => cylinder,
@@ -467,7 +471,9 @@ export class Viewer3DMol extends ViewerParent {
   }
 
   /**
-   * Sets the opacity of a region.
+   * Sets the opacity of a region after creation. Uses setTimeout because
+   * 3Dmol.js requires a tick before opacity updates take effect on an
+   * already-added shape.
    *
    * @param {any}                region    The region to set the opacity of.
    * @param {number | undefined} opacity  The opacity to set.
@@ -481,7 +487,7 @@ export class Viewer3DMol extends ViewerParent {
       setTimeout(() => {
         // Not sure why, but this needs to be in a setTimeout for the
         // opacity to actually change.
-        region.opacity = opacity || 0.8;
+        region.opacity = opacity ?? 0.8;
         this.renderAll();
         resolve();
       }, 0);
@@ -1139,7 +1145,7 @@ C ${maxX} ${maxY} ${maxZ}`;
     if (treeNode.selected !== SelectedType.False) {
       // yellow
       regionStyle.color = "#ffff00";
-      regionStyle.opacity = 0.75;
+      regionStyle.opacity = regionStyle.opacity ?? 0.75;
     }
     // Always remove any old regions.
     this.addRegion(regionStyle)
