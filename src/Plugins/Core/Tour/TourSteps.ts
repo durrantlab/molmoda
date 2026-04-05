@@ -202,6 +202,7 @@ export function createClickStep(
 ): any {
     const selector = command.selector || "";
     const isShiftClick = command.data === true;
+
     const popover: any = {
         title: plugin.title,
         description: "Please click here to continue.",
@@ -226,13 +227,33 @@ export function createClickStep(
         popover.description = command.tourMessage;
     }
 
+    // If the click targets a user arg (e.g., a checkbox), look up its
+    // label so the popover says something meaningful instead of the
+    // generic "Please click here to continue."
+    if (!selectMoleculeMatch && !command.tourMessage) {
+        const { userArg } = findUserArgAndRefineSelector(command, plugin);
+        if (userArg) {
+            const label = userArg.label || userArg.id;
+            if (userArg.type === UserArgType.Checkbox) {
+                popover.description = `Click to toggle <b>${label}</b>.`;
+                if (userArg.description) {
+                    popover.description += ` <div class="mt-3 mb-0"><strong>Brief description:</strong> <em>${userArg.description}</em></div>`;
+                }
+            } else {
+                popover.description = `Please click <b>${label}</b> to continue.`;
+            }
+        }
+    }
+
+
     // Detect if this is a menu item selector (inside dropdown menus or nav items)
     // These are typically positioned near the left edge and benefit from right-side popovers
     // Patterns to detect:
     // - .dropdown-menu, .dropdown-item, .nav-link (class-based)
     // - .navbar #menu1-xxx (top-level navbar menus)
     // - Selectors containing #menu followed by digits (menu item IDs)
-    const isMenuItem = selector.includes(".dropdown-menu") ||
+    const isMenuItem =
+        selector.includes(".dropdown-menu") ||
         selector.includes(".dropdown-item") ||
         selector.includes(".nav-link") ||
         selector.includes(".navbar") ||
@@ -408,7 +429,7 @@ export function createInputStep(
     };
 
     if (command.cmd === TestCommand.Upload) {
-        popover.description = `Please upload the required file for ${fieldLabel}. The tour will advance automatically once the file is loaded and processed.`;
+        popover.description = `Please click to upload a required file for ${fieldLabel}. The tour will advance automatically once the file is loaded and processed.`;
 
         return {
             element: specificSelector,

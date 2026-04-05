@@ -234,7 +234,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ["flat.mol2", "flat"],
         ];
 
-        const tests = filesToTest.map((fileToTest, idx) => {
+        const tests: ITest[] = filesToTest.map((fileToTest, idx) => {
             const name = fileToTest[0];
             // const titles = fileToTest[1] as string[];
             // const count = (fileToTest[2] as number) - 1;
@@ -249,7 +249,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             // Make some invisible to test that functionality, though molmoda
             // files define their own visibility.
             // debugger
-            if ((idx % 2 === 0) && (fileToTest[0].indexOf(".molmoda") === -1)) {
+            if (((idx + 1) % 2 === 0) && (fileToTest[0].indexOf(".molmoda") === -1)) {
                 pluginOpenCmdList.click("#hideOnLoad-openmolecules-item");
                 navSubstrng = 'eye-slash'; // To check invisible.
                 stylesSubstrng = 'No molecules are currently visible.';
@@ -284,6 +284,14 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ),
             // .expandMoleculesTree(titles)
             // .waitUntilRegex("#navigator", substrng),
+        });
+
+        // Tour-only test: demonstrates the plugin UI without requiring an
+        // actual file upload, so afterPluginCloses wait conditions that
+        // depend on loaded molecules are omitted.
+        tests.push({
+            name: "tour",
+            pluginOpen: () => new TestCmdList(),
         });
 
         return tests;

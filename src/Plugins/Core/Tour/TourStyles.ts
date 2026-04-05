@@ -121,10 +121,13 @@ function handleWaitStep(
     if (popoverEl) {
         popoverEl.style.display = "none";
     }
-
+    console.log("[Tour Debug] handleWaitStep: starting waitForCondition polling");
+    console.log("[Tour Debug] handleWaitStep: immediate condition result =", state.activeStep.waitCondition?.());
     setTimeout(() => {
+        console.log("[Tour Debug] handleWaitStep: inside setTimeout, about to call waitForCondition");
         waitForCondition(state.activeStep.waitCondition)
             .then(() => {
+                console.log("[Tour Debug] handleWaitStep: condition met! driver exists:", !!driver, "activeStep matches:", driver?.getActiveStep() === state.activeStep);
                 if (
                     driver &&
                     driver.getActiveStep() === state.activeStep
@@ -134,6 +137,7 @@ function handleWaitStep(
                 return null;
             })
             .catch((err: any) => {
+                console.error("[Tour Debug] handleWaitStep: waitForCondition error:", err.message);
                 throw new Error(
                     "TourManager: Error in waitForCondition:" +
                     err.message

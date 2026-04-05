@@ -102,6 +102,8 @@ export class TourManager {
              * Called when the tour is destroyed.
              */
             onDestroyed: () => {
+                console.log(`[Tour Debug] onDestroyed called. isTourCompleted=${this.isTourCompleted}, isRunning=${this.isRunning}, driver=${!!this.driver}`);
+                console.trace("[Tour Debug] onDestroyed stack trace");
                 this.lastHighlightedElement = null;
                 this.isRunning = false;
 
