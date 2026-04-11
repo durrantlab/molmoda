@@ -429,7 +429,7 @@ export function createInputStep(
     };
 
     if (command.cmd === TestCommand.Upload) {
-        popover.description = `Please click to upload a required file for ${fieldLabel}. The tour will advance automatically once the file is loaded and processed.`;
+        popover.description = `Please click to upload a file for ${fieldLabel}. The tour will advance automatically once the file is loaded and processed.`;
 
         return {
             element: specificSelector,

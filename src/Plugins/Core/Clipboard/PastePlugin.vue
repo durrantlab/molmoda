@@ -22,7 +22,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import Alert from "@/UI/Layout/Alert.vue";
 import { molFormatInformation } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import * as api from "@/Api";
-import { isTest } from "@/Core/GlobalVars";
+import { isTest, isTour } from "@/Core/GlobalVars";
 import { getDesaltUserArg } from "@/UI/Forms/FormFull/FormFullCommonEntries";
 import { fetcher } from "@/Core/Fetcher";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
@@ -110,12 +110,12 @@ export default class PastePlugin extends PluginParentClass {
      */
     async paste(): Promise<void> {
         let txt = "";
-        if (navigator.clipboard && !isTest) {
+        if (navigator.clipboard && !isTest && !isTour) {
             txt = await navigator.clipboard.readText();
             // if (txt.indexOf(" ") === -1 && txt.indexOf("\t") === -1) {
             //     txt = txt + " PastedMol";
             // }
-        } else if (isTest) {
+        } else if (isTest || isTour) {
             // Get value of index from the url
             const url = new URL(window.location.href);
             const index = url.searchParams.get("index");

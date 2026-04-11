@@ -16,6 +16,7 @@ import {
   GenericStyleType,
   GenericLabelType,
   GenericRegionType,
+  GenericModelType,
 } from "./Types";
 import { IFileInfo } from "@/FileSystem/Types";
 import { FileInfo } from "@/FileSystem/FileInfo";
@@ -47,6 +48,20 @@ export class Viewer3DMol extends ViewerParent {
 
   // Track mouse down position to prevent click events on drag
   private _mouseDownPosition: { x: number; y: number } | null = null;
+
+  /**
+   * Timer handle for removing the temporary dummy model used during
+   * region-inclusive zooms. Tracked so it can be cancelled when a newer
+   * zoom supersedes the current one.
+   */
+  private _zoomTempModelTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * Reference to the temporary 3Dmol model created for region bounding
+   * box zooms, kept so a superseding zoom can remove it immediately
+   * instead of waiting for the timer.
+   */
+  private _zoomTempModel: GenericModelType | null = null;
 
   /**
    * Removes a model from the viewer.
@@ -514,20 +529,48 @@ export class Viewer3DMol extends ViewerParent {
 
     return Promise.resolve();
   }
+
   /**
-   * Zoom in on a set of models.
+   * Immediately cleans up any temporary model and timer left over from
+   * a previous zoom, so they don't linger when a new zoom supersedes.
+   */
+  private _cleanupPreviousZoom(): void {
+    if (this._zoomTempModelTimer !== null) {
+      clearTimeout(this._zoomTempModelTimer);
+      this._zoomTempModelTimer = null;
+    }
+    if (this._zoomTempModel !== null) {
+      this._mol3dObj.removeModel(this._zoomTempModel);
+      this._zoomTempModel = null;
+    }
+  }
+
+  /**
+   * Zoom in on a set of models. Captures the current zoom generation from
+   * the parent so that if a newer zoom is requested while the 750ms
+   * animation is in flight, the temporary model cleanup from this zoom
+   * is handled correctly and the animation is effectively superseded.
    *
    * @param  {string[]} ids  The models to zoom in on.
    */
   async zoomToModels(ids: string[]) {
-    // This zooming is quite expensive. Use a timeout to avoid doing it
-    // too often.
+    // Capture the generation at the time this zoom was requested.
+    const myGeneration = this._zoomGeneration;
+
+    // Clean up any leftover temp model from a previous zoom that was
+    // superseded before its cleanup timer fired.
+    this._cleanupPreviousZoom();
 
     let models: GLModel[] = [];
     let regions: IRegion[] = [];
     const startTime = performance.now();
-
     await waitForCondition(() => {
+      // If a newer zoom was requested while we were waiting for models
+      // to appear, abandon this zoom entirely.
+      if (this._zoomGeneration !== myGeneration) {
+        return true;
+      }
+
       models = [];
       regions = [];
       for (const id of ids) {
@@ -545,13 +588,16 @@ export class Viewer3DMol extends ViewerParent {
       return foundSomething || elapsedTime > 5000; // Wait for five seconds max.
     }, 100);
 
-    if (models.length === 0 && regions.length === 0) {
+    // Bail out if this zoom has been superseded.
+    if (this._zoomGeneration !== myGeneration) {
       return;
     }
 
+    if (models.length === 0 && regions.length === 0) {
+      return;
+    }
     const modelIdsToZoom = models.map((m) => m.id);
     let tempModel: any = null;
-
     // If regions are present, we calculate their bounding box and create a
     // temporary invisible model to encompass them, so we can zoom to it.
     if (regions.length > 0) {
@@ -561,11 +607,9 @@ export class Viewer3DMol extends ViewerParent {
       let maxX = -Infinity;
       let maxY = -Infinity;
       let maxZ = -Infinity;
-
       for (const region of regions) {
         let rMinX, rMinY, rMinZ, rMaxX, rMaxY, rMaxZ;
         const c = region.center;
-
         if (region.type === RegionType.Sphere) {
           const r = (region as ISphere).radius || 0;
           rMinX = c[0] - r;
@@ -638,12 +682,28 @@ C ${maxX} ${maxY} ${maxZ}`;
       }
     }
 
+    // Final generation check right before issuing the animation, in case
+    // a newer zoom was requested during region bounding box computation.
+    if (this._zoomGeneration !== myGeneration) {
+      if (tempModel) {
+        this._mol3dObj.removeModel(tempModel);
+      }
+      return;
+    }
+
     this._mol3dObj.zoomTo({ model: modelIdsToZoom }, 750, true);
 
     if (tempModel) {
-      // Remove the temporary model after the zoom animation is likely finished
-      setTimeout(() => {
-        this._mol3dObj.removeModel(tempModel);
+      // Track the temp model so a superseding zoom can remove it
+      // immediately rather than waiting for the timer.
+      this._zoomTempModel = tempModel;
+      this._zoomTempModelTimer = setTimeout(() => {
+        // Only clean up if this zoom is still the current one.
+        if (this._zoomGeneration === myGeneration) {
+          this._mol3dObj.removeModel(tempModel);
+        }
+        this._zoomTempModel = null;
+        this._zoomTempModelTimer = null;
       }, 800);
     }
   }

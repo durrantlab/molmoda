@@ -63,6 +63,14 @@ export abstract class ViewerParent {
   updateViewerDivClassCallback: undefined | ((classes: string) => void);
 
   /**
+   * Monotonically increasing generation counter used to cancel stale zoom
+   * animations. Each call to zoomOnFocused increments this; the concrete
+   * zoomToModels implementation checks it to abort if a newer zoom has
+   * been requested.
+   */
+  protected _zoomGeneration = 0;
+
+  /**
    * Coalesces multiple render requests within the same animation frame into
    * a single repaint, avoiding redundant GPU work when many state changes
    * occur in quick succession (e.g., bulk show/hide, style updates).
@@ -624,7 +632,9 @@ export abstract class ViewerParent {
   abstract zoomToModels(ids: string[]): void;
 
   /**
-   * Zoom in on the focused molecules.
+   * Zoom in on the focused molecules. Increments the zoom generation
+   * counter so that any previously in-flight animated zoom is
+   * effectively cancelled by the concrete viewer implementation.
    *
    * @param {string[]} visibleTerminalNodeModelsIds  The visible models. If no
    *                                                 tree nodes are labeled as
@@ -637,6 +647,10 @@ export abstract class ViewerParent {
    *                                                 terminal.
    */
   public zoomOnFocused(visibleTerminalNodeModelsIds?: string[]) {
+    // Increment generation so any in-flight zoom animation from a
+    // previous call is treated as stale and cancelled.
+    this._zoomGeneration++;
+
     let molsToFocusIds: string[] = [];
     const allMols = getMoleculesFromStore();
     const flatNodes = allMols.flattened;
@@ -655,7 +669,6 @@ export abstract class ViewerParent {
         break;
       }
     }
-
     if (molsToFocusIds.length === 0) {
       // If nothing specified, focus on all visible molecules at once.
       if (visibleTerminalNodeModelsIds === undefined) {
@@ -665,7 +678,6 @@ export abstract class ViewerParent {
       }
       molsToFocusIds = visibleTerminalNodeModelsIds;
     }
-
     // this.renderAll();
     if (store.state["updateZoom"]) {
       this.zoomToModels(molsToFocusIds);

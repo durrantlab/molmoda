@@ -211,7 +211,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         const filesToTest = [
             // File, title-clicks,
             // ["two_files.zip", ["ligs"ompounds", "A"], "UNL:1"],
-            ["four_mols.zip", ":ligs"],
+            ["four_mols.zip", "title-element"],  // ":ligs"],
             // ["ligs.smi.zip", "ligs.smi:3"],
             ["ligs.can", ":ligs"],
             ["test_old_format.molmoda", "ATP:501"],
