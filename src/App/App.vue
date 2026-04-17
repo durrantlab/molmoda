@@ -85,6 +85,10 @@ export default class App extends Vue {
       name: "Center for Research Computing (University of Pittsburgh)",
       url: "https://crc.pitt.edu/",
     },
+    {
+      name: "Jacob D. Durrant",
+      url: "http://durrantlab.com/",
+    }
   ];
 
   // Triggers error modal with this message.

@@ -46,9 +46,17 @@ function buildSelectOptionsHtml(userArg: UserArg | undefined): string {
  *
  * @param {UserArg | undefined} userArg The user argument.
  * @param {any} [currentValue] The current value, used for warningFunc evaluation.
+ * @param {boolean} [skipWarning] If true, skip the warningFunc call. Used
+ *   when the command targets a sub-field of a composite arg (e.g., a single
+ *   axis of a SelectRegion), where the scalar value doesn't satisfy the
+ *   warningFunc's expected shape.
  * @returns {string} An HTML string with description and/or warning.
  */
-function buildArgDetailsHtml(userArg: UserArg | undefined, currentValue?: any): string {
+function buildArgDetailsHtml(
+    userArg: UserArg | undefined,
+    currentValue?: any,
+    skipWarning = false
+): string {
     if (!userArg) {
         return "";
     }
@@ -58,12 +66,24 @@ function buildArgDetailsHtml(userArg: UserArg | undefined, currentValue?: any): 
             `<div class="mt-3 mb-0"><strong>Brief description:</strong> <em>${userArg.description}</em></div>`
         );
     }
-    if (userArg.warningFunc) {
+    if (userArg.warningFunc && !skipWarning) {
+        try {
         const warning = userArg.warningFunc(currentValue);
         if (warning) {
             parts.push(
                 `<br><br><strong class="text-danger">Warning:</strong> ${warning}`
             );
+            }
+        } catch (err) {
+            // warningFunc may expect a specific shape (e.g., an object
+            // with .center and .dimensions) that doesn't match the scalar
+            // currentValue when this command targets a sub-field. Silently
+            // skip the warning in that case rather than crashing the tour.
+            if (isLocalHost) {
+                console.log(
+                    `[Tour Debug] buildArgDetailsHtml: warningFunc threw for arg "${userArg.id}", skipping. Error: ${(err as Error).message}`
+                );
+            }
         }
     }
     return parts.join("");
@@ -71,18 +91,21 @@ function buildArgDetailsHtml(userArg: UserArg | undefined, currentValue?: any): 
 
 /**
  * Finds the user argument corresponding to a selector and refines the selector to target the specific input element.
+ * Also reports whether the command targets a sub-field of a composite arg
+ * (e.g., one axis of a SelectRegion), which is useful for deciding whether
+ * to invoke the arg's warningFunc (which expects the whole composite value).
  *
  * @param {ITestCommand} command The test command containing the base selector.
  * @param {PluginParentClass} plugin The plugin instance.
- * @returns {{ userArg: UserArg | undefined, specificSelector: string }} The found user argument and the refined selector.
+ * @returns {{ userArg: UserArg | undefined, specificSelector: string, isCompositeSubField: boolean }} The found user argument, the refined selector, and whether this is a sub-field of a composite arg.
  */
 export function findUserArgAndRefineSelector(
     command: ITestCommand,
     plugin: PluginParentClass
-): { userArg: UserArg | undefined; specificSelector: string } {
+): { userArg: UserArg | undefined; specificSelector: string; isCompositeSubField: boolean } {
     let specificSelector = command.selector!;
     let foundUserArg: UserArg | undefined;
-
+    let isCompositeSubField = false;
     if (command.selector) {
         const selectorParts = command.selector.split(" ");
         const lastSelectorPart = selectorParts[selectorParts.length - 1];
@@ -93,11 +116,8 @@ export function findUserArgAndRefineSelector(
 
         if (selectorStr.endsWith(suffix)) {
             const argId = selectorStr.slice(0, -suffix.length);
-            foundUserArg = plugin
-                .userArgsMixin
-                .getUserArgsFlat()
-                .find((arg) => arg.id === argId);
-
+            const allArgs = plugin.userArgsMixin.getUserArgsFlat();
+            foundUserArg = allArgs.find((arg) => arg.id === argId);
             if (foundUserArg) {
                 let tagName = "";
                 switch (foundUserArg.type) {
@@ -122,20 +142,37 @@ export function findUserArgAndRefineSelector(
                     specificSelector = `${modalSelectorPart} ${tagName}${lastSelectorPart}`;
                 }
             } else {
-                // No direct match, check for vector components (e.g., x-dimensions)
+                // No direct id match. Handle composite ids like
+                // "x-center-region", "y-dimens-region", etc. These target
+                // sub-fields of a larger compound arg (e.g., a SelectRegion
+                // whose id is just "region"). We look for a real arg whose
+                // id matches a *suffix* of the composite id, which lets us
+                // correctly attribute the command to its parent arg so UI
+                // ordering is preserved during tours.
                 const axisMatch = argId.match(/^([xyz])-/);
                 if (axisMatch) {
                     specificSelector = `${modalSelectorPart} input${lastSelectorPart}`;
-                    const baseId = argId.substring(2);
-                    foundUserArg = plugin
-                        .userArgsMixin
-                        .getUserArgsFlat()
-                        .find((arg) => arg.id === baseId);
+                    // Try progressively shorter suffixes. For
+                    // "x-center-region", try "center-region", then "region".
+                    // The longest matching real arg id wins so that a
+                    // hypothetical "center-region" arg would be preferred
+                    // over a bare "region" arg if both existed.
+                    const withoutAxis = argId.substring(2);
+                    const parts = withoutAxis.split("-");
+                    for (let startIdx = 0; startIdx < parts.length; startIdx++) {
+                        const candidate = parts.slice(startIdx).join("-");
+                        const match = allArgs.find((arg) => arg.id === candidate);
+                        if (match) {
+                            foundUserArg = match;
+                            isCompositeSubField = true;
+                            break;
+                        }
+                    }
                 }
             }
         }
     }
-    return { userArg: foundUserArg, specificSelector };
+    return { userArg: foundUserArg, specificSelector, isCompositeSubField };
 }
 
 /**
@@ -412,7 +449,7 @@ export function createInputStep(
     plugin: PluginParentClass,
     context: ITourContext
 ): any {
-    const { userArg, specificSelector } = findUserArgAndRefineSelector(
+    const { userArg, specificSelector, isCompositeSubField } = findUserArgAndRefineSelector(
         command,
         plugin
     );
@@ -518,10 +555,10 @@ export function createInputStep(
     }
 
     const descriptionParts = [
-        `For ${fieldLabel}, ${actionVerb} "${valueForDisplay}".`,
+        `For ${fieldLabel}, ${actionVerb} "<span class="value-to-display">${valueForDisplay}</span>".`,
     ];
     descriptionParts.push(buildSelectOptionsHtml(userArg));
-    descriptionParts.push(buildArgDetailsHtml(userArg, command.data));
+    descriptionParts.push(buildArgDetailsHtml(userArg, command.data, isCompositeSubField));
     popover.description = descriptionParts.join("");
 
     return {

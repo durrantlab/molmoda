@@ -58,14 +58,14 @@ export default class AboutPlugin extends PluginParentClass {
   title = "About";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [
-    {
-      name: "Jacob D. Durrant",
-      url: "http://durrantlab.com/",
-    },
+    // {
+    //   name: "Jacob D. Durrant",
+    //   url: "http://durrantlab.com/",
+    // },
   ];
   pluginId = "about";
-  intro = appIntro;
-  details = appDetails;
+  intro = "Get to know " + appName + ".";
+  details = appIntro + " " + appDetails;
   userArgDefaults: UserArg[] = [];
 
   logJob = false;

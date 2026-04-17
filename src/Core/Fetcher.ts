@@ -2,7 +2,7 @@
 
 import { dynamicImports } from "./DynamicImports";
 import * as pluginsApi from "@/Api/Plugins";
-import { appName, delayForPopupOpenClose, isLocalHost, isTest } from "./GlobalVars";
+import { appName, delayForPopupOpenClose, isLocalHost, isTest, isTour } from "./GlobalVars";
 import { localStorageSetItem } from "./LocalStorage";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { messagesApi } from "@/Api/Messages";
@@ -93,7 +93,7 @@ export async function fetcher(
 
     let permissionResp = "allowed"; // for internal urls (!isExternal).
 
-    if (isExternal && !isTest) {
+    if (isExternal && !isTest && !isTour) {
         if (allowExternalWebAccess) {
             // User has already allowed access. Show a toast.
             const settingsPath =

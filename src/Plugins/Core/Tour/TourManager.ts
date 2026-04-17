@@ -421,10 +421,17 @@ export class TourManager {
     }
 
     /**
-     * Adds steps for the plugin modal, ensuring all user arguments are visited
-     * in their defined order. Explicit test commands are matched to their
-     * corresponding arguments and placed at the correct position; remaining
-     * arguments receive default informational steps.
+     * Adds steps for the plugin modal. Args are presented in UI order (the
+     * order they appear in the modal). Non-arg commands from the test (e.g.,
+     * waitUntilRegex, clicks on selectors that don't map to an arg) are
+     * anchored to their test-order position relative to the surrounding arg
+     * commands: they are emitted immediately after the arg command they
+     * follow in the original test. Non-arg commands that appear before any
+     * arg command are emitted first.
+     *
+     * This preserves UI order for parameter steps while keeping
+     * inter-command dependencies intact (e.g., a waitUntilRegex that depends
+     * on a prior setUserArg having taken effect).
      * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
@@ -444,32 +451,65 @@ export class TourManager {
                 cmds = [...testCmdList.cmds];
             }
         }
-
-        // Map each explicit command to its corresponding user argument ID.
+        // Partition commands into arg-targeted and non-arg, preserving
+        // original test order within each group. Each non-arg command is
+        // tagged with the index of the arg command that immediately precedes
+        // it in the test (or -1 if none), so we can re-emit it in the right
+        // place after arg commands have been reordered by UI position.
         const cmdsByArgId = new Map<string, ITestCommand[]>();
-        const unmatchedCmds: ITestCommand[] = [];
-        for (const cmd of cmds) {
+        // Maps an arg command's position in `cmds` to the arg id it targets.
+        // Used to know, for each non-arg command, which arg command it came
+        // "after" in the original test.
+        const argCmdPositions: Array<{ argId: string; cmdIndex: number }> = [];
+        const nonArgCmds: Array<{
+            cmd: ITestCommand;
+            // Index into argCmdPositions of the arg command this non-arg
+            // command immediately follows in the test. -1 means it came
+            // before any arg command.
+            afterArgCmdPosIndex: number;
+            // Position within the run of non-arg commands that share the
+            // same afterArgCmdPosIndex, to preserve their relative order.
+            orderWithinRun: number;
+        }> = [];
+        let currentArgCmdPosIndex = -1;
+        let runCounter = 0;
+        cmds.forEach((cmd, idx) => {
             const { userArg } = findUserArgAndRefineSelector(cmd, plugin);
             if (userArg) {
                 if (!cmdsByArgId.has(userArg.id)) {
                     cmdsByArgId.set(userArg.id, []);
                 }
                 cmdsByArgId.get(userArg.id)!.push(cmd);
+                argCmdPositions.push({ argId: userArg.id, cmdIndex: idx });
+                currentArgCmdPosIndex = argCmdPositions.length - 1;
+                runCounter = 0;
             } else {
-                unmatchedCmds.push(cmd);
+                nonArgCmds.push({
+                    cmd,
+                    afterArgCmdPosIndex: currentArgCmdPosIndex,
+                    orderWithinRun: runCounter++,
+                });
             }
-        }
-
-        // Emit unmatched commands first (they don't correspond to a known arg).
-        unmatchedCmds.forEach((cmd, index) => {
-            const step = this._commandToDriverStep(cmd, plugin, `pluginOpen unmatched cmd #${index}`);
+        });
+        // Emit any non-arg commands that appeared before the first arg
+        // command in the test (afterArgCmdPosIndex === -1).
+        const leadingNonArgCmds = nonArgCmds
+            .filter((n) => n.afterArgCmdPosIndex === -1)
+            .sort((a, b) => a.orderWithinRun - b.orderWithinRun);
+        leadingNonArgCmds.forEach((n, idx) => {
+            const step = this._commandToDriverStep(
+                n.cmd,
+                plugin,
+                `pluginOpen leading non-arg cmd #${idx}`
+            );
             if (step) {
                 steps.push(step);
             }
         });
-
-        // Walk through arguments in their defined order, emitting either the
-        // explicit command(s) or a default step for each one.
+        // Walk args in UI order. For each touched arg, emit its explicit
+        // command(s), then any non-arg commands that were anchored to this
+        // arg's *last* command in the original test. For untouched args,
+        // emit a default step.
         for (const arg of allArgs) {
             // Skip alerts and disabled args
             if (arg.type === UserArgType.Alert || arg.enabled === false) {
@@ -486,11 +526,44 @@ export class TourManager {
             if (cmdsByArgId.has(arg.id)) {
                 const argCmds = cmdsByArgId.get(arg.id)!;
                 argCmds.forEach((cmd, idx) => {
-                    const step = this._commandToDriverStep(cmd, plugin, `pluginOpen cmd for arg: ${arg.id} #${idx}`);
+                    const step = this._commandToDriverStep(
+                        cmd,
+                        plugin,
+                        `pluginOpen cmd for arg: ${arg.id} #${idx}`
+                    );
                     if (step) {
                         steps.push(step);
                     }
                 });
+                // Find the arg-command position index corresponding to this
+                // arg's last command in the original test, and emit any
+                // non-arg commands anchored to it.
+                let lastPosIndexForArg = -1;
+                argCmdPositions.forEach((pos, posIdx) => {
+                    if (pos.argId === arg.id) {
+                        lastPosIndexForArg = posIdx;
+                    }
+                });
+                if (lastPosIndexForArg !== -1) {
+                    const anchored = nonArgCmds
+                        .filter(
+                            (n) =>
+                                n.afterArgCmdPosIndex === lastPosIndexForArg
+                        )
+                        .sort(
+                            (a, b) => a.orderWithinRun - b.orderWithinRun
+                        );
+                    anchored.forEach((n, idx) => {
+                        const step = this._commandToDriverStep(
+                            n.cmd,
+                            plugin,
+                            `pluginOpen non-arg cmd after arg: ${arg.id} #${idx}`
+                        );
+                        if (step) {
+                            steps.push(step);
+                        }
+                    });
+                }
             } else {
                 // No explicit command for this arg; create a default step.
                 const step = createDefaultArgStep(arg, plugin);
@@ -500,6 +573,32 @@ export class TourManager {
                 }
             }
         }
+        // Safety net: if any non-arg commands were anchored to an arg
+        // position whose arg isn't in allArgs (shouldn't happen, but guard
+        // against it), emit them at the end so they aren't silently dropped.
+        const emittedPosIndexes = new Set<number>();
+        for (const arg of allArgs) {
+            argCmdPositions.forEach((pos, posIdx) => {
+                if (pos.argId === arg.id) {
+                    emittedPosIndexes.add(posIdx);
+                }
+            });
+        }
+        const orphaned = nonArgCmds.filter(
+            (n) =>
+                n.afterArgCmdPosIndex !== -1 &&
+                !emittedPosIndexes.has(n.afterArgCmdPosIndex)
+        );
+        orphaned.forEach((n, idx) => {
+            const step = this._commandToDriverStep(
+                n.cmd,
+                plugin,
+                `pluginOpen orphaned non-arg cmd #${idx}`
+            );
+            if (step) {
+                steps.push(step);
+            }
+        });
     }
 
     /**

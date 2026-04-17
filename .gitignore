@@ -76,3 +76,5 @@ compiled_versions
 vrml_optimize/*
 
 grid_test/*
+
+*.pyc

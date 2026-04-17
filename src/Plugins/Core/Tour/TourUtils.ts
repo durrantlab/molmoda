@@ -234,7 +234,13 @@ export function waitForElement(
                 (element.offsetWidth > 0 ||
                     element.offsetHeight > 0 ||
                     element.getClientRects().length > 0);
-
+            // Debug: log each poll attempt so we can see when an element
+            // is missing vs. present-but-hidden, and detect repeated calls.
+            if (isLocalHost) {
+                console.log(
+                    `[waitForElement] selector="${selector}", found=${!!element}, visible=${!!isVisible}`
+                );
+            }
             if (isVisible) {
                 resolve(element);
             } else if (Date.now() - startTime > timeout) {
