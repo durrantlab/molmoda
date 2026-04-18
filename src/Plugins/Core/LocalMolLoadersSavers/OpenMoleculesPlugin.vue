@@ -38,6 +38,43 @@ import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/Mol
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { makeEasyParser, makeEasyParserAsync } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { deferVisualization } from "@/Core/Utils/CoalescedTask";
+import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
+
+/**
+ * File extensions whose loaders ignore the hideOnLoad parameter because the
+ * file format carries its own embedded visibility state. See
+ * parseAndLoadMoleculeFile: the MolModaFormat branch returns before the
+ * hideOnLoad block runs, so checking the box has no effect for these files.
+ */
+const VISIBILITY_SELF_DEFINED_EXTS = ["molmoda", "biotite"];
+
+
+/**
+ * Describes a single file-based test case for the OpenMoleculesPlugin.
+ *
+ * Making each case an explicit object (rather than a positional tuple with
+ * an implicit parity rule) keeps the test's intent local to its entry: you
+ * can see at a glance which files are loaded hidden and which are loaded
+ * visibly, and reordering the array no longer silently flips expectations.
+ */
+interface IFileTestCase {
+    /** Filename under src/Testing/mols/ to upload. */
+    file: string;
+    /**
+     * Substring expected to appear in the navigator after the file loads.
+     * For visible loads this is typically a residue/atom label; for hidden
+     * loads it is the eye-slash icon marker.
+     */
+    navSubstring: string;
+    /**
+     * When true, the test clicks the hideOnLoad checkbox before submitting,
+     * and asserts the styles panel reports no visible molecules. Defaults
+     * to false (molecule loads visibly). Should not be set on .molmoda
+     * files, since those carry their own embedded visibility state and
+     * the checkbox has no effect on them.
+     */
+    hideOnLoad?: boolean;
+}
 
 /**
  * OpenMoleculesPlugin
@@ -85,6 +122,39 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      */
     onFilesLoaded(files: FileInfo[]) {
         this.filesToLoad = files;
+        this._updateHideOnLoadAvailability(files);
+    }
+
+    /**
+     * Enables or disables the hideOnLoad checkbox based on the selected
+     * files. Formats whose loaders ignore hideOnLoad (currently .molmoda and
+     * .biotite, both handled by parseUsingMolModa) cause the checkbox to be
+     * disabled and reset to false, so the UI state matches the effective
+     * behavior rather than silently ignoring a checked box.
+     *
+     * @param {FileInfo[]} files  The currently selected files.
+     */
+    private _updateHideOnLoadAvailability(files: FileInfo[]) {
+        const hasSelfDefinedVisibility = files.some((f) => {
+            const ext = getFileNameParts(f.name).ext.toLowerCase();
+            return VISIBILITY_SELF_DEFINED_EXTS.indexOf(ext) !== -1;
+        });
+        // Locate the hideOnLoad arg in the reactive userArgs array and
+        // toggle its enabled flag. Mutating userArgs (rather than
+        // userArgDefaults) is what keeps the change reactive; defaults
+        // are a template only.
+        const hideArg = this.userArgs.find((a) => a.id === "hideOnLoad") as
+            | IUserArgCheckbox
+            | undefined;
+        if (!hideArg) {
+            return;
+        }
+        if (hasSelfDefinedVisibility) {
+            hideArg.enabled = false;
+            hideArg.val = false;
+        } else {
+            hideArg.enabled = true;
+        }
     }
 
     /**
@@ -208,59 +278,48 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const filesToTest = [
-            // File, title-clicks,
-            // ["two_files.zip", ["ligs"ompounds", "A"], "UNL:1"],
-            ["four_mols.zip", "title-element"],  // ":ligs"],
-            // ["ligs.smi.zip", "ligs.smi:3"],
-            ["ligs.can", ":ligs"],
-            ["test_old_format.molmoda", "ATP:501"],
-            ["test_old_format.biotite", "ATP:501"],
-            ["test_new_format.molmoda", "ATP:501"],
-
+        // Order matters: pluginTestIndex (the CLI sub-index) keys into this
+        // array, so reordering will change which test a given index runs.
+        const filesToTest: IFileTestCase[] = [
+            { file: "four_mols.zip", navSubstring: "title-element" },
+            { file: "ligs.can", navSubstring: ":ligs" },
+            { file: "test_old_format.molmoda", navSubstring: "ATP:501" },
+            // .molmoda and .biotite files are parsed through parseUsingMolModa,
+            // which returns before parseAndLoadMoleculeFile reaches the
+            // hideOnLoad branch. Both formats carry their own embedded
+            // visibility state, so the hideOnLoad checkbox has no effect.
+            { file: "test_old_format.biotite", navSubstring: "ATP:501" },
+            { file: "test_new_format.molmoda", navSubstring: "ATP:501" },
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
-            ["ligs.cif", "UNL:1"],
-
-            ["ligs.mol2", "frame3"],
-            ["ligs.pdb", "UN3:1"],
-            ["ligs.pdbqt", "UN3:1"],
-            ["ligs.sdf", ":ligs"],
-            ["ligs.smi", ":ligs"],
-            ["4WP4.pdb", "TOU:101"],
-            ["4WP4.pdb.zip", "TOU:101"],
-            ["4WP4.pdbqt", "A"],
-            ["4WP4.pqr", "TOU:101"], //
-            ["4WP4.xyz", "4WP4"], //
-            ["flat.mol2", "flat"],
+            { file: "ligs.cif", navSubstring: "UNL:1", hideOnLoad: true },
+            { file: "ligs.mol2", navSubstring: "frame3" },
+            { file: "ligs.pdb", navSubstring: "UN3:1", hideOnLoad: true },
+            { file: "ligs.pdbqt", navSubstring: "UN3:1" },
+            { file: "ligs.sdf", navSubstring: ":ligs", hideOnLoad: true },
+            { file: "ligs.smi", navSubstring: ":ligs" },
+            { file: "4WP4.pdb", navSubstring: "TOU:101", hideOnLoad: true },
+            { file: "4WP4.pdb.zip", navSubstring: "TOU:101" },
+            { file: "4WP4.pdbqt", navSubstring: "A", hideOnLoad: true },
+            { file: "4WP4.pqr", navSubstring: "TOU:101" },
+            { file: "4WP4.xyz", navSubstring: "4WP4", hideOnLoad: true },
+            { file: "flat.mol2", navSubstring: "flat" },
         ];
-
-        const tests: ITest[] = filesToTest.map((fileToTest, idx) => {
-            const name = fileToTest[0];
-            // const titles = fileToTest[1] as string[];
-            // const count = (fileToTest[2] as number) - 1;
-            let navSubstrng = fileToTest[1] as string;
-            let stylesSubstrng = "Atoms";
+        const tests: ITest[] = filesToTest.map((testCase) => {
             const pluginOpenCmdList = new TestCmdList().setUserArg(
                 "formFile",
-                "file://./src/Testing/mols/" + name,
+                "file://./src/Testing/mols/" + testCase.file,
                 this.pluginId
             );
-
-            // Make some invisible to test that functionality, though molmoda
-            // files define their own visibility.
-            // debugger
-            if (((idx + 1) % 2 === 0) && (fileToTest[0].indexOf(".molmoda") === -1)) {
+            let navSubstrng = testCase.navSubstring;
+            let stylesSubstrng = "Atoms";
+            if (testCase.hideOnLoad) {
                 pluginOpenCmdList.click("#hideOnLoad-openmolecules-item");
-                navSubstrng = 'eye-slash'; // To check invisible.
-                stylesSubstrng = 'No molecules are currently visible.';
+                // When hidden, the navigator shows the eye-slash icon
+                // instead of the molecule's residue label, and the styles
+                // panel reports no visible molecules.
+                navSubstrng = "eye-slash";
+                stylesSubstrng = "No molecules are currently visible.";
             }
-
-            // if (fileToTest[0].indexOf(".molmoda") !== -1) {
-            //     // It's a molmoda file, so the filename won't appear in the
-            //     // title. Pick something else what will.
-            //     navSubstrng = "ATP:501";
-            // }
-
             return {
                 pluginOpen: () => pluginOpenCmdList,
                 afterPluginCloses: () =>
@@ -287,12 +346,13 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
         });
 
         // Tour-only test: demonstrates the plugin UI without requiring an
-        // actual file upload, so afterPluginCloses wait conditions that
-        // depend on loaded molecules are omitted.
-        tests.push({
-            name: "tour",
-            pluginOpen: () => new TestCmdList(),
-        });
+        // actual file upload, so afterPluginCloses wait conditions that depend
+        // on loaded molecules are omitted. JACOB: Can't for the life of me
+        // remember why I ever included this test...
+        // tests.push({
+        //     name: "tour",
+        //     pluginOpen: () => new TestCmdList(),
+        // });
 
         return tests;
     }
