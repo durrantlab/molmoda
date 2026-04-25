@@ -33,6 +33,7 @@ import { compileMolModels } from "@/FileSystem/LoadSaveMolModels/SaveMolModels/S
 import FormCheckBox from "../FormCheckBox.vue";
 import { IProtCmpdCounts, MoleculeInput, ProcessingMode } from "./MoleculeInput";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import { SelectedType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
  * Returns a string with the number and noun, pluralizing the noun if necessary.
@@ -68,6 +69,17 @@ export default class MoleculeInputParams extends Vue {
 
   val: MoleculeInput = new MoleculeInput();
   selectionMode = "visible";
+
+  /**
+   * Tracks the MoleculeInput instance we've already applied the
+   * selection-aware default to. Prevents re-running the default on every
+   * deep mutation of modelValue (which would cause an infinite update
+   * loop via the val/modelValue watchers), while still re-running when
+   * the plugin reopens with a fresh MoleculeInput instance from
+   * copyUserArgs.
+   */
+  private defaultAppliedFor: MoleculeInput | null = null;
+
 
   /**
    * Gets the text to use in the UI. If the text prop is empty, uses a default
@@ -358,22 +370,39 @@ export default class MoleculeInputParams extends Vue {
   }
 
   /**
-   * Updates the component when the model value changes.
+   * Updates the component when the model value changes. Re-applies the
+   * selection-aware default only when the model value is a new
+   * MoleculeInput instance (i.e. a plugin reopen), not on every deep
+   * mutation, to avoid a watcher feedback loop.
    *
-   * @param {MoleculeInput} newVal The new model value
+   * @param {MoleculeInput} newVal The new model value.
    */
   @Watch("modelValue", { deep: true })
   onModelValueChanged(newVal: MoleculeInput) {
+    const isNewInstance = this.defaultAppliedFor !== newVal;
     this.val = newVal;
+    if (isNewInstance) {
+    this.applySelectionAwareDefault();
+      this.defaultAppliedFor = newVal;
+    }
   }
 
   /**
-   * Initializes the component when mounted.
-   * Sets the initial molecule selection mode based on the existing molsToConsider configuration.
+   * If the user has pre-selected molecules in the Navigator, default the
+   * selection mode to "selected" so that selection is honored. Otherwise
+   * derive the mode from the existing molsToConsider configuration.
    */
-  mounted() {
-    this.val = this.modelValue;
-    // Set initial selection mode based on molsToConsider
+  private applySelectionAwareDefault(): void {
+    const anySelected = (this.$store.state.molecules as TreeNodeList)
+      .flattened.filters.keepSelected(SelectedType.True).length > 0;
+
+    if (anySelected) {
+      // Setting selectionMode triggers onSelectionModeChange, which
+      // writes molsToConsider for us. No need to set it again here.
+      this.selectionMode = "selected";
+      return;
+    }
+
     if (this.val.molsToConsider.hiddenAndUnselected) {
       this.selectionMode = "all";
     } else if (this.val.molsToConsider.selected) {
@@ -381,6 +410,15 @@ export default class MoleculeInputParams extends Vue {
     } else {
       this.selectionMode = "visible";
     }
+  }
+
+  /**
+   * Initializes the component when mounted.
+   */
+  mounted() {
+    this.val = this.modelValue;
+    this.applySelectionAwareDefault();
+    this.defaultAppliedFor = this.modelValue;
   }
 }
 </script>

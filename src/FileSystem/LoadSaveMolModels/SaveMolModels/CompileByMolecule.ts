@@ -3,7 +3,6 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { getTerminalNodesToConsider } from "@/UI/Navigation/TreeView/TreeUtils";
 import { IMolsToConsider, ICompiledNodes } from "./Types";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
-import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 
 /**
  * Runs the job when the user wants to save in a non-molmoda format, by
