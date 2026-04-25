@@ -25,6 +25,7 @@ import type {
     BoundsResult,
     UniqueResiduesResult,
 } from "./EasyParserWorkerTypes";
+import { createEasyParserWorker } from "./EasyParserWorkerFactory";
 
 /**
  * Atom-count threshold above which parsing is offloaded to the worker.
@@ -42,9 +43,10 @@ export class EasyParserWorkerClient {
     private _pending = new Map<number, PendingResolve>();
 
     private constructor() {
-        this._worker = new Worker(
-            new URL("./EasyParser.worker", import.meta.url)
-        );
+        // Worker instantiation is delegated to an isolated factory module so
+        // that the `import.meta.url` reference (invalid under ts-jest's
+        // CommonJS resolution) lives in a single file that Jest can mock.
+        this._worker = createEasyParserWorker();
         this._worker.onmessage = this._onMessage.bind(this);
     }
 

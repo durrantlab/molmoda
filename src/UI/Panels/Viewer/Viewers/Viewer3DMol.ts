@@ -596,7 +596,22 @@ export class Viewer3DMol extends ViewerParent {
     if (models.length === 0 && regions.length === 0) {
       return;
     }
-    const modelIdsToZoom = models.map((m) => m.id);
+
+    // Resolve each model's ID via getID() when available, falling back to
+    // .id. 3Dmol's zoomTo dereferences these IDs internally via
+    // getAtomsFromSel; an undefined entry causes a TypeError deep in the
+    // library, so we filter aggressively here.
+    const modelIdsToZoom: any[] = [];
+    for (const m of models) {
+      const resolvedId =
+        typeof (m as any).getID === "function"
+          ? (m as any).getID()
+          : (m as any).id;
+      if (resolvedId !== undefined && resolvedId !== null) {
+        modelIdsToZoom.push(resolvedId);
+      }
+    }
+
     let tempModel: any = null;
     // If regions are present, we calculate their bounding box and create a
     // temporary invisible model to encompass them, so we can zoom to it.
@@ -678,7 +693,9 @@ C ${maxX} ${maxY} ${maxZ}`;
           typeof tempModel.getID === "function"
             ? tempModel.getID()
             : tempModel.id;
-        modelIdsToZoom.push(id);
+        if (id !== undefined && id !== null) {
+          modelIdsToZoom.push(id);
+        }
       }
     }
 
@@ -691,7 +708,29 @@ C ${maxX} ${maxY} ${maxZ}`;
       return;
     }
 
-    this._mol3dObj.zoomTo({ model: modelIdsToZoom }, 750, true);
+    // If every resolved ID was invalid, there is nothing 3Dmol can zoom
+    // to. Skip the call entirely rather than let it crash in
+    // getAtomsFromSel.
+    if (modelIdsToZoom.length === 0) {
+      if (tempModel) {
+        this._mol3dObj.removeModel(tempModel);
+      }
+      return;
+    }
+
+    try {
+      this._mol3dObj.zoomTo({ model: modelIdsToZoom }, 750, true);
+    } catch (err) {
+      // 3Dmol's zoomTo can throw if a referenced model was removed
+      // between lookup and invocation (e.g. a concurrent removeObjects).
+      // Swallow here so a transient race does not surface as an
+      // uncaught TypeError to the user.
+      console.warn("zoomTo failed; skipping zoom animation.", err);
+      if (tempModel) {
+        this._mol3dObj.removeModel(tempModel);
+        tempModel = null;
+      }
+    }
 
     if (tempModel) {
       // Track the temp model so a superseding zoom can remove it
