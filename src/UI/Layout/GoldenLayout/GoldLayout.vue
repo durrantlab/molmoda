@@ -289,6 +289,20 @@ export default class GoldLayout extends Vue {
 
         const myLayout = makeGoldenLayout(glContainer);
 
+        // Golden Layout v2 registers its own window 'unload' listener that
+        // calls destroy() on the layout, ripping every content item out of
+        // the DOM. Modern Chrome can fire 'unload' even when the user cancels
+        // a beforeunload prompt, which leaves the user staring at an empty
+        // #golden-layout div. We defuse that by removing the listener: when
+        // the page truly unloads the browser tears everything down anyway,
+        // so the listener has no useful work to do.
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore - _windowUnloadListener is private in the typings.
+        const unloadListener = (myLayout as any)._windowUnloadListener;
+        if (unloadListener) {
+            window.removeEventListener("unload", unloadListener);
+        }
+
         myLayout.registerComponentFactoryFunction(
             "component",
             (container: ComponentContainer, componentState: any) => {
@@ -354,6 +368,8 @@ export default class GoldLayout extends Vue {
     }
     /** mounted function */
     async mounted() {
+        console.trace("GoldLayout MOUNTED at", new Date().toISOString());
+
         let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
         let config: any;
 
@@ -406,6 +422,10 @@ export default class GoldLayout extends Vue {
                 console.error("Error fetching or parsing messages.json:", error);
             }
         }
+    }
+    /** Lifecycle: called when component is being unmounted */
+    beforeUnmount() {
+        console.trace("GoldLayout UNMOUNTING at", new Date().toISOString());
     }
     /**
      * Called when the viewer is loaded.

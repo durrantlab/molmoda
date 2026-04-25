@@ -4,7 +4,34 @@ import { GoldenLayout, Stack, Tab } from "golden-layout";
 import { layoutApi } from "@/Api/Layout";
 import { isMobile } from "@/Core/GlobalVars";
 export let goldenLayout: GoldenLayout;
-
+/**
+ * Removes Golden Layout's internal beforeunload listener.
+ *
+ * Golden Layout v2 attaches a 'beforeunload' listener in its constructor that
+ * calls layout.destroy(), tearing every panel out of the DOM. Because
+ * beforeunload fires *before* the user decides whether to leave the page,
+ * cancelling the browser's "Leave site?" prompt leaves the app with a fully
+ * destroyed layout (an empty #golden-layout div). We remove that listener so
+ * the layout survives a cancelled close. When the page truly unloads, the
+ * browser tears everything down regardless, so the listener has no useful
+ * work to do.
+ *
+ * The listener is held in the private _windowUnloadListener field. If a
+ * future Golden Layout version renames it, we fall back to wrapping
+ * addEventListener around construction (handled by the caller).
+ *
+ * @param {GoldenLayout} layout  The layout instance to defuse.
+ * @returns {boolean}  True if the listener was found and removed.
+ */
+function _removeBeforeUnloadListener(layout: GoldenLayout): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const listener = (layout as any)._windowUnloadListener;
+    if (typeof listener !== "function") {
+        return false;
+    }
+    window.removeEventListener("beforeunload", listener);
+    return true;
+}
 /**
  * Creates the golden layout and stores it in a global variable for reference
  * elsewhere.
@@ -15,6 +42,11 @@ export let goldenLayout: GoldenLayout;
  */
 export function makeGoldenLayout(glContainer: HTMLElement): GoldenLayout {
     goldenLayout = new GoldenLayout(glContainer);
+    if (!_removeBeforeUnloadListener(goldenLayout)) {
+        console.warn(
+            "Golden Layout's _windowUnloadListener not found. The layout may be destroyed when the user cancels a tab-close prompt. Check for a Golden Layout version change."
+        );
+    }
     // (window as any).gl = goldenLayout;
 
     // const savedLayout = store.state.goldenLayout;
