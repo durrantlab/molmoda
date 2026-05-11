@@ -303,6 +303,27 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             { file: "4WP4.pqr", navSubstring: "TOU:101" },
             { file: "4WP4.xyz", navSubstring: "4WP4", hideOnLoad: true },
             { file: "flat.mol2", navSubstring: "flat" },
+            
+            // The below are designed to test molecules files that have been
+            // problematic in the past. They should work now, but keeping here
+            // so they will be regularly tested.
+            { file: "problem_files/paste_into_mol_text_components_missing.pdb", navSubstring: "paste_into_mol_text_components_missing" },
+            { file: "problem_files/1xdn_compounds_a_atp-501.pdbqtlig", navSubstring: "1xdn_compounds_a_atp-501" },
+            { file: "problem_files/1xdn_protein_a.pdbqt", navSubstring: "1xdn_protein_a" },
+            { file: "problem_files/6ZNC.pdb.aligned.pdb", navSubstring: "6ZNC.pdb.aligned" },
+            { file: "problem_files/P47169_dock_into_this_one.molmoda", navSubstring: "P47169_dock_into_this_one" },
+            { file: "problem_files/pred.rank_0.fixed_now.cif", navSubstring: "pred.rank_0.fixed_now" },
+            
+            // These fail:
+            // 19, 20, 22, 
+            // 
+
+            // 1xdn_compounds_a_atp-501.pdbqtlig
+            // 1xdn_protein_a.pdbqt
+            // 6ZNC.pdb.aligned.pdb
+            // AF-P47169_dock_into_this_one.molmoda
+            // pred.rank_0.fixed_now.cif
+
         ];
         const tests: ITest[] = filesToTest.map((testCase) => {
             const pluginOpenCmdList = new TestCmdList().setUserArg(
