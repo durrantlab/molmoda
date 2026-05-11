@@ -13,6 +13,7 @@ import {
 } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Core/GlobalVars";
+import { getFileType } from "../FileUtils2";
 
 export enum WhichMolsGen3D {
     All,
@@ -157,7 +158,6 @@ async function runOpenBabel(
     }
 
     const maxProcs = (await getSetting("maxProcs")) as number;
-
     return await new OpenBabelQueue(appId, payloads, maxProcs).done;
 }
 
@@ -236,14 +236,24 @@ async function separateFiles(
     // incur some overhead by shuttling the split file back to main thread only
     // to be redistributed to multiple web workers, but it's the best approach
     // in terms of speed.
-
-    const separateFileCmds = srcFileInfos.map((srcFileInfo, i) => [
-        srcFileInfo.name,
-        "-m",
-        "-O",
-        `tmp${i}.${srcFileInfo.getFormatInfo()?.primaryExt}`,
-    ]);
-
+    const separateFileCmds = srcFileInfos.map((srcFileInfo, i) => {
+        const inFmt = srcFileInfo.getFormatInfo();
+        const cmds: string[] = [srcFileInfo.name];
+        // When our internal extension differs from OpenBabel's known format
+        // names (e.g., .pdbqtlig is our label for ligand PDBQT), declare
+        // both input and output formats explicitly. The output extension
+        // alone is not enough: OpenBabel infers output format from the -O
+        // filename's extension, and an unknown extension yields "Missing
+        // or unknown output file or format spec". We keep the .pdbqtlig
+        // extension on disk so downstream stages re-resolve to the same
+        // format entry, and use -o to tell OpenBabel the actual format.
+        if (inFmt?.obabelFormatName) {
+            cmds.push("-i", inFmt.obabelFormatName);
+            cmds.push("-o", inFmt.obabelFormatName);
+        }
+        cmds.push("-m", "-O", `tmp${i}.${inFmt?.primaryExt}`);
+        return cmds;
+    });
     const fileContentsFromInputs = await runOpenBabel(
         "convertPrep",
         separateFileCmds,
@@ -299,8 +309,18 @@ async function convertToNewFormat(
     surpressMsgs = false
 ): Promise<string[]> {
     const cmdsList = fileInfos.map((fileInfo: FileInfo) => {
-        const cmds = [fileInfo.name, "-m"]; // Note always dividing into multiple files.
-
+        const cmds = [fileInfo.name];
+        // Declare the input format when our extension isn't one OpenBabel
+        // recognizes natively. fileInfo may be a plain IFileInfo object
+        // here (e.g., outputs of separateFiles), not a FileInfo class
+        // instance, so we resolve the format via the standalone helpers
+        // rather than calling fileInfo.getFormatInfo().
+        const inTyp = getFileType(fileInfo);
+        const inFmt = inTyp ? getFormatInfoGivenType(inTyp) : undefined;
+        if (inFmt?.obabelFormatName) {
+            cmds.push("-i", inFmt.obabelFormatName);
+        }
+        cmds.push("-m");
         if (desalt) {
             cmds.push(...["-r"]);
         }
