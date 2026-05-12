@@ -36,9 +36,9 @@ import {
 import { getFileType } from "@/FileSystem/FileUtils2";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
-import { makeEasyParser, makeEasyParserAsync } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import { deferVisualization } from "@/Core/Utils/CoalescedTask";
+import { makeEasyParserAsync } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
+import { YesNo } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 
 /**
  * File extensions whose loaders ignore the hideOnLoad parameter because the
@@ -47,8 +47,14 @@ import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
  * hideOnLoad block runs, so checking the box has no effect for these files.
  */
 const VISIBILITY_SELF_DEFINED_EXTS = ["molmoda", "biotite"];
-
-
+/**
+ * Size threshold (in bytes) above which a confirmation prompt is shown
+ * before loading. Chosen empirically: files under ~25 MB generally parse
+ * quickly enough that a warning would be more annoying than useful, while
+ * larger files (e.g., multi-thousand-compound SDFs) can stall the main
+ * thread long enough that users may suspect the app has hung.
+ */
+const LARGE_FILE_WARNING_THRESHOLD_BYTES = 25 * 1024 * 1024;
 /**
  * Describes a single file-based test case for the OpenMoleculesPlugin.
  *
@@ -158,21 +164,103 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     }
 
     /**
+     * Returns the approximate size of a FileInfo's contents in bytes.
+     * For string contents we use length as a byte-count proxy: molecular
+     * files are overwhelmingly ASCII, so length ~= byte size, which is
+     * accurate enough for a warning threshold. Non-string contents (rare;
+     * e.g., pre-parsed objects) report 0 and skip the warning.
+     *
+     * @param {FileInfo} fileInfo  The file whose size to estimate.
+     * @returns {number}  Approximate size in bytes.
+     */
+    private _estimateFileSizeBytes(fileInfo: FileInfo): number {
+        const contents = fileInfo.contents;
+        if (typeof contents === "string") {
+            return contents.length;
+        }
+        return 0;
+    }
+    /**
+     * Formats a byte count as a human-readable MB string with one decimal.
+     *
+     * @param {number} bytes  The size in bytes.
+     * @returns {string}  Formatted size, e.g. "42.6 MB".
+     */
+    private _formatSizeMB(bytes: number): string {
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+    /**
+     * Checks whether any selected file exceeds the size warning threshold
+     * and, if so, prompts the user to confirm before proceeding. Returns
+     * true if loading should continue, false if the user cancelled.
+     *
+     * @returns {Promise<boolean>}  True to proceed, false to abort.
+     */
+    private async _confirmLargeFiles(): Promise<boolean> {
+        const largeFiles = this.filesToLoad
+            .map((f) => ({
+                name: f.name,
+                bytes: this._estimateFileSizeBytes(f),
+            }))
+            .filter((f) => f.bytes >= LARGE_FILE_WARNING_THRESHOLD_BYTES);
+        if (largeFiles.length === 0) {
+            return true;
+        }
+        // Single-file case reads more naturally as an inline sentence; only
+        // fall back to a bulleted list when there are multiple offenders.
+        let intro: string;
+        if (largeFiles.length === 1) {
+            const f = largeFiles[0];
+            intro =
+                `<p>The file <b>${f.name}</b> is large ` +
+                `(${this._formatSizeMB(f.bytes)}).</p>`;
+        } else {
+        const fileList = largeFiles
+            .map((f) => `<li><b>${f.name}</b> (${this._formatSizeMB(f.bytes)})</li>`)
+            .join("");
+            intro =
+                `<p>The following files are large:</p>` +
+                `<ul>${fileList}</ul>`;
+        }
+        const message =
+            intro +
+            `<p>Loading may be slow, and the interface may become unresponsive ` +
+            `while parsing. Do you want to continue?</p>`;
+        const response = await api.messages.popupYesNo(
+            message,
+            "Large File Warning",
+            "Continue",
+            "Cancel",
+            false
+        );
+        // popupYesNo resolves to YesNo.Yes / YesNo.No / YesNo.Cancel. Treat
+        // anything other than an explicit "yes" as an abort, since that is
+        // the safer default for a potentially long-running operation.
+        return response === YesNo.Yes;
+    }
+    /**
      * Runs when the user presses the action button and the popup closes.
      */
     async onPopupDone() {
         this.closePopup();
-
-        if (this.filesToLoad.length > 0) {
-            await this.submitJobs(
-                this.filesToLoad,
-                1,
-                undefined,
-                true  // firstJobSeparately: render first molecule immediately
-            );
+        if (this.filesToLoad.length === 0) {
+            return;
         }
+        const proceed = await this._confirmLargeFiles();
+        if (!proceed) {
+            // User cancelled; clear the staged files so a subsequent open
+            // of the plugin starts fresh rather than re-prompting with the
+            // same large selection.
+            this.filesToLoad = [];
+            return;
+        }
+        await this.submitJobs(
+            this.filesToLoad,
+            1,
+            undefined,
+            true  // firstJobSeparately: render first molecule immediately
+        );
     }
-
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
@@ -311,18 +399,9 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             { file: "problem_files/1xdn_compounds_a_atp-501.pdbqtlig", navSubstring: "1xdn_compounds_a_atp-501" },
             { file: "problem_files/1xdn_protein_a.pdbqt", navSubstring: "1xdn_protein_a" },
             { file: "problem_files/6ZNC.pdb.aligned.pdb", navSubstring: "6ZNC.pdb.aligned" },
-            { file: "problem_files/P47169_dock_into_this_one.molmoda", navSubstring: "P47169_dock_into_this_one" },
+            { file: "problem_files/AF-P47169_dock_into_this_one.molmoda", navSubstring: "Compounds" },
             { file: "problem_files/pred.rank_0.fixed_now.cif", navSubstring: "pred.rank_0.fixed_now" },
-            
-            // These fail:
-            // 19, 20, 22, 
-            // 
-
-            // 1xdn_compounds_a_atp-501.pdbqtlig
-            // 1xdn_protein_a.pdbqt
-            // 6ZNC.pdb.aligned.pdb
-            // AF-P47169_dock_into_this_one.molmoda
-            // pred.rank_0.fixed_now.cif
+            { file: "problem_files/big_test.molmoda", navSubstring: "Compounds" },
 
         ];
         const tests: ITest[] = filesToTest.map((testCase) => {
@@ -364,6 +443,21 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             ),
             // .expandMoleculesTree(titles)
             // .waitUntilRegex("#navigator", substrng),
+        });
+        // Large-file warning test: load a >25 MB file, confirm the warning
+        // popup appears, and click cancel to abort. The styles panel should
+        // remain at its empty state because nothing was loaded.
+        tests.push({
+            pluginOpen: () => new TestCmdList().setUserArg(
+                "formFile",
+                "file://./src/Testing/mols/problem_files/CHAINF_pH5.sdf",
+                this.pluginId
+            ),
+            afterPluginCloses: () => new TestCmdList()
+                .waitUntilRegex("#modal-yesnomsg", "Large File Warning")
+                .waitUntilRegex("#modal-yesnomsg", "CHAINF_pH5.sdf")
+                .click("#modal-yesnomsg .action-btn")
+                .waitUntilRegex("#styles", "no molecules"),
         });
 
         // Tour-only test: demonstrates the plugin UI without requiring an

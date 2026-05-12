@@ -65,6 +65,12 @@ function _fixTitle(title: string, defaultTitle: string): string {
 export function parseAndLoadMoleculeFile(
     params: ILoadMolParams
 ): Promise<void | TreeNodeList> {
+console.log("parseAndLoadMoleculeFile:", {
+    name: params.fileInfo.name,
+    format: params.fileInfo.getFormatInfo()?.primaryExt,
+    loader: params.fileInfo.getFormatInfo()?.loader,
+});
+
     params = addDefaultLoadMolParams(params);
 
     const spinnerId = messagesApi.startWaitSpinner();

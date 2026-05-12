@@ -44,6 +44,23 @@ export interface IGen3DOptions {
 }
 
 /**
+ * Detects whether a PDBQT file contains ligand-flexibility records (ROOT,
+ * BRANCH, or TORSDOF). Ligand PDBQT — whether one molecule or many — always
+ * has these markers. Rigid receptor PDBQT never does. Used to decide
+ * whether OpenBabel's -m can be trusted to split the file: it works for
+ * ligand PDBQT, but turns rigid receptors into nonsense by forcing
+ * torsion generation on output.
+ *
+ * @param {string} contents  The raw PDBQT file contents.
+ * @returns {boolean}  True if the file looks like ligand PDBQT.
+ */
+function pdbqtHasLigandFlexibility(contents: string): boolean {
+    // Anchor to line start so we don't match these tokens inside REMARK
+    // text (e.g., "BRANCH" appearing in a comment).
+    return /^(?:ROOT|BRANCH|TORSDOF)\b/m.test(contents);
+}
+
+/**
  * Gets the user argument select for specifying how to generate 3D coordinates.
  *
  * @param {string}  label              The label for the argument.
@@ -132,6 +149,7 @@ async function runOpenBabel(
     inputFiles: FileInfo[] | IFileInfo[],
     surpressMsgs = false
 ): Promise<any> {
+    debugger
     // Quick validation to make sure argsLists is in right format.
     if (argsLists.length > 0 && !Array.isArray(argsLists[0])) {
         throw new Error("argsLists must be an array of arrays.");
@@ -158,6 +176,12 @@ async function runOpenBabel(
     }
 
     const maxProcs = (await getSetting("maxProcs")) as number;
+    const result = await new OpenBabelQueue(appId, payloads, maxProcs).done;
+    (window as any).__lastObabel = (window as any).__lastObabel || [];
+    (window as any).__lastObabel.push(result);
+    console.log("OBABEL call #" + (window as any).__lastObabel.length, "completed");
+    return result;
+
     return await new OpenBabelQueue(appId, payloads, maxProcs).done;
 }
 
@@ -422,17 +446,23 @@ export async function convertFileInfosOpenBabel(
 ): Promise<string[]> {
     // Get info about the file
     const formatInfos = srcFileInfos.map((f) => f.getFormatInfo());
-
     const msgTimer = considerThreeDNeededWarning(formatInfos);
-
-    // If the format is CIF or MCIF, do not separate files. This is because
-    // the intermediate CIF writing by Open Babel can be lossy (stripping
-    // polymer entity info), causing the subsequent PDB conversion to fail
-    // to identify chains correctly.
-    const skipSeparation = formatInfos.some(
-        (f) => f?.primaryExt === "cif" || f?.primaryExt === "mcif"
-    );
-
+    // Skip the separateFiles step for formats where the round-trip through
+    // OpenBabel is lossy or otherwise problematic. CIF/MCIF strip polymer
+    // entity info on intermediate writes. PDBQT receptors get rewritten as
+    // flexible ligands (OpenBabel forces torsion generation on .pdbqt
+    // output and produces a single ~29 MB file with bogus torsions instead
+    // of cleanly splitting), so we skip separation when the PDBQT lacks
+    // ligand flexibility records. Multi-ligand PDBQT still goes through
+    // separateFiles, which works correctly for it.
+    const skipSeparation = srcFileInfos.some((f, i) => {
+        const ext = formatInfos[i]?.primaryExt;
+        if (ext === "cif" || ext === "mcif") return true;
+        if (ext === "pdbqt") {
+            return !pdbqtHasLigandFlexibility(f.contents);
+        }
+        return false;
+    });
     let fileInfos: FileInfo[];
     if (skipSeparation) {
         fileInfos = srcFileInfos;

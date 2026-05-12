@@ -4,7 +4,7 @@
         @onClosed="onClosed" @onUserArgChanged="onUserArgChanged" :styleBtn1AsCancel="!showCancelBtn"
         :prohibitCancel="!showCancelBtn" @onCancel="onCancel" @onMolCountsChanged="onMolCountsChanged">
         <!-- :variant="variantToUse" -->
-        {{ message }}
+         <span v-html="message"></span>
     </PluginComponent>
 </template>
 
