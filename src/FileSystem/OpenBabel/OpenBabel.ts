@@ -14,6 +14,7 @@ import {
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Core/GlobalVars";
 import { getFileType } from "../FileUtils2";
+import { randomID } from "@/Core/Utils/MiscUtils";
 
 export enum WhichMolsGen3D {
     All,
@@ -149,7 +150,6 @@ async function runOpenBabel(
     inputFiles: FileInfo[] | IFileInfo[],
     surpressMsgs = false
 ): Promise<any> {
-    debugger
     // Quick validation to make sure argsLists is in right format.
     if (argsLists.length > 0 && !Array.isArray(argsLists[0])) {
         throw new Error("argsLists must be an array of arrays.");
@@ -254,12 +254,13 @@ async function separateFiles(
     srcFileInfos: FileInfo[],
     formatInfos: (IFormatInfo | undefined)[]
 ): Promise<FileInfo[]> {
-    // Note that the approach here is to divide the file into multiple files
-    // (since one input SDF can have multiple molecules), and then to separate
-    // the individual models into grousp to run on separate webworkers. You
-    // incur some overhead by shuttling the split file back to main thread only
-    // to be redistributed to multiple web workers, but it's the best approach
-    // in terms of speed.
+    // Use a per-call random prefix for intermediate files so they never
+    // collide with user-supplied filenames. The worker's safety check
+    // (which rejects input/output pairs with similar names) used to
+    // throw "Input and output file names must be sufficiently different"
+    // whenever a user file happened to be named `tmp.<ext>`. A random
+    // prefix removes the entire collision class.
+    const intermediatePrefix = `molmoda_intermediate_${randomID()}_`;
     const separateFileCmds = srcFileInfos.map((srcFileInfo, i) => {
         const inFmt = srcFileInfo.getFormatInfo();
         const cmds: string[] = [srcFileInfo.name];
@@ -275,7 +276,7 @@ async function separateFiles(
             cmds.push("-i", inFmt.obabelFormatName);
             cmds.push("-o", inFmt.obabelFormatName);
         }
-        cmds.push("-m", "-O", `tmp${i}.${inFmt?.primaryExt}`);
+        cmds.push("-m", "-O", `${intermediatePrefix}${i}.${inFmt?.primaryExt}`);
         return cmds;
     });
     const fileContentsFromInputs = await runOpenBabel(
@@ -298,7 +299,7 @@ async function separateFiles(
                 fileInfoIdx++;
                 const ext = srcFileInfos[i].getFormatInfo()?.primaryExt;
                 return {
-                    name: `tmp${fileInfoIdx}.${ext}`,
+                    name: `${intermediatePrefix}${fileInfoIdx}.${ext}`,
                     contents: f,
                     auxData: formatInfos[i],
                 } as IFileInfo;
@@ -422,6 +423,38 @@ async function convertToNewFormat(
 }
 
 /**
+ * Splits a multi-molecule CIF file into per-molecule CIF strings. OpenBabel's
+ * CIF reader treats a .cif as a single crystallographic structure and stops
+ * after the first `data_` block, so multi-molecule CIFs lose all molecules
+ * after the first unless we split them ourselves before invoking OpenBabel.
+ *
+ * @param {string} contents  The full CIF file contents.
+ * @returns {string[]}  One CIF block per molecule, each beginning with `data_`.
+ *     Returns the original contents as a single-element array if no split is
+ *     needed (i.e., zero or one `data_` blocks).
+ */
+function splitMultiMoleculeCif(contents: string): string[] {
+    // Locate every `data_` block start. We look for `data_` at column 0 to
+    // avoid matching the substring inside comments or values.
+    const blocks: string[] = [];
+    const lines = contents.split("\n");
+    let current: string[] = [];
+    for (const line of lines) {
+        if (line.startsWith("data_") && current.length > 0) {
+            blocks.push(current.join("\n"));
+            current = [];
+        }
+        current.push(line);
+    }
+    if (current.length > 0) {
+        blocks.push(current.join("\n"));
+    }
+    // Filter out leading non-data preamble (anything before the first
+    // `data_` line) if it accidentally became its own block.
+    return blocks.filter((b) => b.split("\n").some((l) => l.startsWith("data_")));
+}
+
+/**
  * Converts a molecule to another format using OpenBabel.
  *
  * @param  {FileInfo[]}  srcFileInfos          The information about the file to
@@ -444,6 +477,30 @@ export async function convertFileInfosOpenBabel(
     surpressMsgs = false
     // debug?: boolean
 ): Promise<string[]> {
+    // Expand multi-molecule CIF inputs into one FileInfo per `data_` block.
+    // OpenBabel's CIF reader only consumes the first block, so without this
+    // pre-split, all molecules after the first are silently dropped. TODO:
+    // Hackish? Might be nice if there was a generic preprocess system for any
+    // filetype that defines it.
+    const expandedSrcFileInfos: FileInfo[] = [];
+    for (const f of srcFileInfos) {
+        const ext = f.getFormatInfo()?.primaryExt;
+        if (ext === "cif" || ext === "mcif") {
+            const blocks = splitMultiMoleculeCif(f.contents);
+            if (blocks.length > 1) {
+                blocks.forEach((blockContents, i) => {
+                    expandedSrcFileInfos.push(new FileInfo({
+                        name: f.name,
+                        contents: blockContents,
+                    }));
+                });
+                continue;
+            }
+        }
+        expandedSrcFileInfos.push(f);
+    }
+    srcFileInfos = expandedSrcFileInfos;
+
     // Get info about the file
     const formatInfos = srcFileInfos.map((f) => f.getFormatInfo());
     const msgTimer = considerThreeDNeededWarning(formatInfos);

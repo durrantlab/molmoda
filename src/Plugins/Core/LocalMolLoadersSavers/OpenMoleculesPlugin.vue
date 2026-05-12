@@ -379,7 +379,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             { file: "test_old_format.biotite", navSubstring: "ATP:501" },
             { file: "test_new_format.molmoda", navSubstring: "ATP:501" },
             // NOTE: OpenBabel parser a bit broken here. Only keeps first frame.
-            { file: "ligs.cif", navSubstring: "UNL:1", hideOnLoad: true },
+            { file: "ligs.cif", navSubstring: "(1 / 3)", hideOnLoad: true },
             { file: "ligs.mol2", navSubstring: "frame3" },
             { file: "ligs.pdb", navSubstring: "UN3:1", hideOnLoad: true },
             { file: "ligs.pdbqt", navSubstring: "UN3:1" },
@@ -402,6 +402,8 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             { file: "problem_files/AF-P47169_dock_into_this_one.molmoda", navSubstring: "Compounds" },
             { file: "problem_files/pred.rank_0.fixed_now.cif", navSubstring: "pred.rank_0.fixed_now" },
             { file: "problem_files/big_test.molmoda", navSubstring: "Compounds" },
+            { file: "problem_files/tmp.can", navSubstring: "tmp" },
+            
 
         ];
         const tests: ITest[] = filesToTest.map((testCase) => {
