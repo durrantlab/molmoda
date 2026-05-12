@@ -236,3 +236,35 @@ export const easyNeutralizeSMILES = memoize(function (
 
     return neutralized;
 });
+
+/**
+ * Strips all stereochemistry markers from a SMILES string: tetrahedral
+ * chirality (`@`, `@@`, including those inside bracketed atoms like
+ * `[C@H]` → `[CH]`) and E/Z double-bond geometry (`/`, `\`). Built on top
+ * of easyNeutralizeSMILES so charge/salt handling stays consistent.
+ *
+ * Used for PubChem broader-compound searches (similarity, substructure,
+ * superstructure), where stereochemistry is intentionally ignored to
+ * keep the search simple and to maximize recall: PubChem's fast 2D
+ * indexes don't reliably honor stereo anyway, and users searching for
+ * "broader" compounds rarely care about a specific enantiomer.
+ *
+ * @param {string} smilesStr  Input SMILES string.
+ * @returns {string}  SMILES with @/@@ and /\ markers removed.
+ */
+export const easyStripStereoSMILES = memoize(function (
+    smilesStr: string
+): string {
+    if (!smilesStr) {
+        return smilesStr;
+    }
+    // First run the standard neutralization, which already drops E/Z
+    // slashes and normalizes charges.
+    let stripped = easyNeutralizeSMILES(smilesStr);
+    // Remove chirality markers inside bracketed atoms (e.g., [C@H] →
+    // [CH], [C@@H] → [CH]). Do @@ first so the @ pass doesn't eat half
+    // of it.
+    stripped = stripped.replace(/@@/g, "");
+    stripped = stripped.replace(/@/g, "");
+    return stripped;
+});

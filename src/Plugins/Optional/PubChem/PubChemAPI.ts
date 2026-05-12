@@ -4,6 +4,7 @@ import {
     easyCountHeavyAtomsSmiles,
     easyDesaltSMILES,
     easyNeutralizeSMILES,
+    easyStripStereoSMILES,
 } from "../../../FileSystem/LoadSaveMolModels/ParseMolModels/EasySmilesUtils";
 
 // Prevent calls to PubChem that are too frequent. They prefer 5 calls per
@@ -540,10 +541,15 @@ export async function fetchSimilarCompounds(
     // I don't want to just get all the smiles, because that seems
     // wasteful/needlessly intense.
 
+    // Stereochemistry (chirality and E/Z) is intentionally stripped before
+    // querying PubChem. The fast 2D similarity index doesn't reliably
+    // honor stereo, and ignoring it gives users a simpler, higher-recall
+    // search for broader compounds. The UI tells the user this is
+    // happening so the behavior isn't surprising.
     try {
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/smiles/${encodeURIComponent(
-                easyNeutralizeSMILES(smiles)
+                easyStripStereoSMILES(smiles)
             )}/cids/JSON?Threshold=${threshold}`,
             maxRecords
         );
@@ -615,10 +621,11 @@ export async function fetchSubstructureCompounds(
     smiles: string,
     maxRecords = 100
 ): Promise<any> {
+    // See fetchSimilarCompounds for rationale on stripping stereochemistry.
     try {
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsubstructure/smiles/${encodeURIComponent(
-                easyNeutralizeSMILES(smiles)
+                easyStripStereoSMILES(smiles)
             )}/cids/JSON?MatchIsotopes=false`,
             maxRecords
         );
@@ -678,11 +685,12 @@ export async function fetchSuperstructureCompounds(
     smiles: string,
     maxRecords = 100
 ): Promise<any> {
+    // See fetchSimilarCompounds for rationale on stripping stereochemistry.
     try {
         // https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest#section=Substructure-Superstructure
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsuperstructure/smiles/${encodeURIComponent(
-                easyNeutralizeSMILES(smiles)
+                easyStripStereoSMILES(smiles)
             )}/cids/JSON?MatchIsotopes=false&ChainsMatchRings=false`,
             maxRecords
         );

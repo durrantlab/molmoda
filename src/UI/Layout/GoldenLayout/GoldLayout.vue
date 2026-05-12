@@ -368,7 +368,7 @@ export default class GoldLayout extends Vue {
     }
     /** mounted function */
     async mounted() {
-        console.trace("GoldLayout MOUNTED at", new Date().toISOString());
+        // console.trace("GoldLayout MOUNTED at", new Date().toISOString());
 
         let dataDOM = this.$refs["golden-layout-data"] as HTMLElement;
         let config: any;

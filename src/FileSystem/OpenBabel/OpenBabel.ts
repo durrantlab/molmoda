@@ -176,12 +176,6 @@ async function runOpenBabel(
     }
 
     const maxProcs = (await getSetting("maxProcs")) as number;
-    const result = await new OpenBabelQueue(appId, payloads, maxProcs).done;
-    (window as any).__lastObabel = (window as any).__lastObabel || [];
-    (window as any).__lastObabel.push(result);
-    console.log("OBABEL call #" + (window as any).__lastObabel.length, "completed");
-    return result;
-
     return await new OpenBabelQueue(appId, payloads, maxProcs).done;
 }
 

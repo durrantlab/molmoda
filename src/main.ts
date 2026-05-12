@@ -109,7 +109,7 @@ async function main() {
     // custom logging system does not.
     logEvent("page", "load");
 
-    console.warn("BELOW IS PLAYING WITH REACTION");
+    // console.warn("BELOW IS PLAYING WITH REACTION");
 
 //     const t = async function () {
 //         const reactor = new Reactor();

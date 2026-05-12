@@ -43,7 +43,7 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
         false,
         false
     );
-    console.log(`[cookiesAllowed] canCollect=${canCollect}, showWarning=${showWarning}, now-last=${new Date().getTime() - lastCookieMsgTime}ms`);
+    // console.log(`[cookiesAllowed] canCollect=${canCollect}, showWarning=${showWarning}, now-last=${new Date().getTime() - lastCookieMsgTime}ms`);
 
     // Show msg if appropriate. Prevents multiple messages in quick succession.
     if (!canCollect) {
@@ -54,7 +54,7 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
         // passed since last warning.
         const now = new Date().getTime();
         if (showWarning && now - lastCookieMsgTime > 1000) {
-            console.log("[cookiesAllowed] about to fire popupMessage");
+            // console.log("[cookiesAllowed] about to fire popupMessage");
             lastCookieMsgTime = now;
 
             messagesApi.popupMessage(
@@ -65,7 +65,7 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
                     pluginsApi.runPlugin("statcollection");
                 }
             );
-            console.log("[cookiesAllowed] popupMessage returned");
+            // console.log("[cookiesAllowed] popupMessage returned");
 
             // This popup was causing a circular dependency. Replaced with a console warning.
             // The user will be prompted to enable cookies by the StatCollectionPlugin anyway.
@@ -73,7 +73,7 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
             //     "Cookies Disallowed! Your settings will be lost when you reload this page. Consider enabling cookies via Help > Plugin Info > StatCollection."
             // );
         } else if (showWarning) {
-            console.log(`[cookiesAllowed] SUPPRESSED: within 1000ms window (${now - lastCookieMsgTime}ms since last)`);
+            // console.log(`[cookiesAllowed] SUPPRESSED: within 1000ms window (${now - lastCookieMsgTime}ms since last)`);
         }
     }
     return canCollect;

@@ -110,7 +110,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
       label: "PubChem compounds to retrieve",
       val: SearchMode.Similar,
       enabled: true,
-      description: "Choose what kinds of molecules to retrieve from PubChem.",
+      description: "Choose what kinds of molecules to retrieve from PubChem. Stereochemistry (chirality and E/Z double-bond geometry) is ignored.",
       options: [
         {
           description: "Similar Compounds",
@@ -166,6 +166,12 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
       false, // includeNoneOption = false
       // Gen3DLevel.Better
     ),
+    // {
+    //   id: "stereoinfo",
+    //   type: UserArgType.Alert,
+    //   val: "Stereochemistry (chirality and E/Z double-bond geometry) is ignored when searching PubChem.",
+    //   alertType: "info",
+    // } as IUserArgAlert,
     {
       id: "warning",
       type: UserArgType.Alert,
