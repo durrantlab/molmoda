@@ -46,6 +46,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import {
     ISphereOrBox,
     ITreeNodeData,
+    SelectedType,
     TableHeaderSort,
     TreeNodeDataType,
     TreeNodeType,
@@ -755,6 +756,14 @@ export default class WebinaPlugin extends PluginParentClass {
                     continue;
                 }
                 const node = dockedTreeNode as TreeNode;
+                // Clear the selected state explicitly. addToMainTree clears
+                // selection on the first pose per protein via its reset
+                // logic, but subsequent poses go through mergeInto, which
+                // is a structural-only operation and leaves whatever
+                // selected value the parser produced. Without this, poses
+                // beyond the first appear selected (yellow outline) in the
+                // tree view.
+                node.selected = SelectedType.False;
                 // Hide once we've already shown enough poses. Using a
                 // running counter (rather than jobIndex) ensures the cap
                 // applies to the actual count of poses being added to the
