@@ -9,7 +9,7 @@
                     <div class="residues-on-line">
                         <span class="aa-let" v-for="residue in line.residues" :key="residue.atomIndex"
                             :ref="(el) => registerResidueRef(residue, el as HTMLElement | null)"
-                            :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`, { 'clicked-residue': residue.atomIndex === clickedResidueAtomIndex }]"
+                            :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`, { 'clicked-residue': residue.atomIndex === clickedResidueAtomIndex, 'pulse-residue': residue.atomIndex === pulsingResidueAtomIndex }]"
                             :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
                             @click="residueClicked(residue)" :title="`${residue.threeLetterCode} ${residue.resi}`"
                             data-bs-toggle="tooltip" data-bs-placement="top">
@@ -79,6 +79,16 @@ export default class ProteinSequenceViewer extends Vue {
     private clickedResidueAtomIndex: number | null | undefined = null;
 
     /**
+     * Tracks which residue is currently mid-pulse. Cleared by a timer so
+     * the pulse animation runs once per selection event. Separate from
+     * `clickedResidueAtomIndex` so the persistent halo and the transient
+     * pulse can be toggled independently.
+     */
+    private pulsingResidueAtomIndex: number | null | undefined = null;
+    /** Timer handle for clearing the pulse class. */
+    private pulseTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /**
      * Map of "chain:resi" -> residue DOM element. Populated by template
      * refs and consulted when scrolling the sequence to a clicked atom's
      * residue. Stored as a plain map (not reactive) since DOM nodes
@@ -91,6 +101,37 @@ export default class ProteinSequenceViewer extends Vue {
      * navigations.
      */
     private unsubscribeAtomClicked: (() => void) | null = null;
+
+    /**
+     * Triggers a one-shot pulse animation on the given residue. The pulse
+     * is implemented purely via CSS `transform` (which is paint-only and
+     * does not reflow siblings). Re-triggering before the previous pulse
+     * finishes restarts the animation cleanly.
+     *
+     * @param {number | undefined} atomIndex  The residue's atomIndex, used
+     *                                        as its identity in the template.
+     */
+    private triggerPulse(atomIndex: number | undefined): void {
+        if (atomIndex === undefined) {
+            return;
+        }
+        if (this.pulseTimer !== null) {
+            clearTimeout(this.pulseTimer);
+            this.pulseTimer = null;
+        }
+        // Clear first so Vue re-applies the class even if the same
+        // residue is clicked twice in a row (otherwise the animation
+        // wouldn't restart).
+        this.pulsingResidueAtomIndex = null;
+        // Re-apply on the next frame so the class toggle is observed.
+        requestAnimationFrame(() => {
+            this.pulsingResidueAtomIndex = atomIndex;
+            this.pulseTimer = setTimeout(() => {
+                this.pulsingResidueAtomIndex = null;
+                this.pulseTimer = null;
+            }, 1500); // Matches the animation duration in CSS (3 pulses x 500ms).
+        });
+    }
 
     /**
      * Registers (or unregisters) a residue's DOM element by its
@@ -140,6 +181,7 @@ export default class ProteinSequenceViewer extends Vue {
             return;
         }
         this.clickedResidueAtomIndex = match.atomIndex;
+        this.triggerPulse(match.atomIndex);
         this.scrollResidueIntoView(match);
     }
     /**
@@ -247,11 +289,12 @@ export default class ProteinSequenceViewer extends Vue {
 
     /**
      * Handles click on a residue.
-     * 
+     *
      * @param {ResidueInfo} residue The clicked residue.
      */
     async residueClicked(residue: ResidueInfo) {
-        this.clickedResidueAtomIndex = residue.atomIndex; // ADD THIS LINE
+        this.clickedResidueAtomIndex = residue.atomIndex;
+        this.triggerPulse(residue.atomIndex);
 
         if (!this.treeNode || !this.treeNode.id || residue.atomIndex === undefined) {
             return;
@@ -528,7 +571,11 @@ export default class ProteinSequenceViewer extends Vue {
      * tooltips and resize observer to prevent memory leaks.
      */
     beforeUnmount() {
-        this.disposeTooltips(); // Ensure tooltips are cleaned up
+        this.disposeTooltips();
+        if (this.pulseTimer !== null) {
+            clearTimeout(this.pulseTimer);
+            this.pulseTimer = null;
+        }
         if (this.unsubscribeAtomClicked) {
             this.unsubscribeAtomClicked();
             this.unsubscribeAtomClicked = null;
@@ -600,16 +647,38 @@ export default class ProteinSequenceViewer extends Vue {
     user-select: none;
     font-weight: normal;
     box-sizing: border-box;
+    position: relative;
+    // Fade the background toward white with a translucent white overlay
+    // painted via inset box-shadow. The letter sits on top, so its color
+    // is unaffected. Adjust the alpha (0.0-1.0) to tune how strong the
+    // fade is.
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.6);
 }
 
 .residue.clicked-residue {
-    outline: 2px solid black;
-    outline-offset: -2px;
-    /* Draws the outline slightly inside the border to avoid layout shift */
-    /* If you prefer a box-shadow for a softer effect: */
-    /* box-shadow: 0 0 0 1.5px #007bff inset; */
+    // Selected cell: no white overlay (so the true category color shows
+    // through), plus the inset black halo.
+    box-shadow: inset 0 0 0 2px #000000;
 }
-
+.residue.pulse-residue {
+    // Pulse via transform; transforms don't participate in layout, so
+    // neighbors are unaffected. z-index lifts the scaled cell above
+    // siblings during the animation so the halo isn't clipped.
+    z-index: 2;
+    animation: residue-pulse 450ms ease-out 2;
+    will-change: transform;
+}
+@keyframes residue-pulse {
+    0% {
+        transform: scale(1);
+    }
+    40% {
+        transform: scale(1.6);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
 .no-sequence-message {
     display: flex;
     justify-content: center;
