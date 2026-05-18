@@ -684,7 +684,16 @@ export default class WebinaPlugin extends PluginParentClass {
         );
 
         const newTreeNodesByInputProt: { [key: string]: TreeNode } = {};
-
+        // Count cumulatively across all jobs, not per-job. With
+        // keep_only_best=false, a single compound produces multiple pose
+        // frames; gating visibility on jobIndex alone (the previous
+        // behavior) allowed every pose of the first N compounds to render
+        // visibly, blowing past the initialCompoundsVisible cap whenever
+        // num_modes > 1. Tracking poses added lets the cap honor poses,
+        // not just compounds, which matches what the setting promises
+        // ("Compounds initially visible") for the docking case where each
+        // pose is the unit the user sees in the viewer.
+        let visiblePosesAdded = 0;
         const onJobDoneFunc = async (webinaOut: any, jobIndex: number) => {
             const origProtTreeNode = origAssociatedTreeNodes[jobIndex][0];
             const origCmpdTreeNode = origAssociatedTreeNodes[
@@ -746,10 +755,15 @@ export default class WebinaPlugin extends PluginParentClass {
                     continue;
                 }
                 const node = dockedTreeNode as TreeNode;
-
-                // Hide if not first few
-                if (jobIndex >= initialCompoundsVisible) {
+                // Hide once we've already shown enough poses. Using a
+                // running counter (rather than jobIndex) ensures the cap
+                // applies to the actual count of poses being added to the
+                // viewer, regardless of how many poses each compound
+                // produces.
+                if (visiblePosesAdded >= initialCompoundsVisible) {
                     node.visible = false;
+                } else {
+                    visiblePosesAdded++;
                 }
 
                 // Get the top title of the protein. Because things have been
