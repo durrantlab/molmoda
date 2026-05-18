@@ -52,7 +52,11 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
   },
 })
 export default class ActivityFocusPlugin extends PluginParentClass {
-  menuPath = "View/[9] Activity/Activity Focus...";
+  // Hidden from the menu system. The plugin remains registered and can still
+  // be invoked programmatically via api.plugins.runPlugin(pluginId).
+  menuPath = null;
+  // menuPath = "View/[9] Activity/Activity Focus...";
+
   title = "Activity Focus";
   softwareCredits: ISoftwareCredit[] = [];
   contributorCredits: IContributorCredit[] = [];
