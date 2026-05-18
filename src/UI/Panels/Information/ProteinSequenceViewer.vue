@@ -8,6 +8,7 @@
                     </span>
                     <div class="residues-on-line">
                         <span class="aa-let" v-for="residue in line.residues" :key="residue.atomIndex"
+                            :ref="(el) => registerResidueRef(residue, el as HTMLElement | null)"
                             :class="['residue', `residue-chain-${residue.chain.replace(/[^a-zA-Z0-9]/g, '')}`, { 'clicked-residue': residue.atomIndex === clickedResidueAtomIndex }]"
                             :style="{ backgroundColor: getResidueColor(residue.oneLetterCode), color: getResidueTextColor(residue.oneLetterCode) }"
                             @click="residueClicked(residue)" :title="`${residue.threeLetterCode} ${residue.resi}`"
@@ -43,6 +44,7 @@ import { colorNameToHex } from "@/Core/Styling/Colors/ColorUtils";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { pluginsApi } from "@/Api/Plugins";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { IClickedAtomInfo } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { isEqual } from 'lodash';
@@ -75,6 +77,93 @@ export default class ProteinSequenceViewer extends Vue {
     processedSequenceLines: ProcessedLine[] = [];
     private currentRootContainerWidthPx = 0;
     private clickedResidueAtomIndex: number | null | undefined = null;
+
+    /**
+     * Map of "chain:resi" -> residue DOM element. Populated by template
+     * refs and consulted when scrolling the sequence to a clicked atom's
+     * residue. Stored as a plain map (not reactive) since DOM nodes
+     * should not be tracked by Vue's reactivity system.
+     */
+    private residueElementMap: Map<string, HTMLElement> = new Map();
+    /**
+     * Unsubscribe handle for the viewer's atom-click subscription.
+     * Stored so we can detach in beforeUnmount and avoid leaks across
+     * navigations.
+     */
+    private unsubscribeAtomClicked: (() => void) | null = null;
+
+    /**
+     * Registers (or unregisters) a residue's DOM element by its
+     * chain:resi key. Called from the template ref so we can later scroll
+     * the right element into view when an atom is clicked in 3D.
+     *
+     * @param {ResidueInfo} residue  The residue this element represents.
+     * @param {HTMLElement | null} el  The element, or null on unmount.
+     */
+    registerResidueRef(residue: ResidueInfo, el: HTMLElement | null): void {
+        const key = `${residue.chain}:${residue.resi}`;
+        if (el) {
+            this.residueElementMap.set(key, el);
+        } else {
+            this.residueElementMap.delete(key);
+        }
+    }
+    /**
+     * Handles an atom click event fired by the 3D viewer. If the atom
+     * belongs to the currently displayed protein and matches a residue in
+     * the sequence, highlights that residue and scrolls it into view.
+     *
+     * Only same-protein clicks are honored: clicking a ligand or a
+     * different protein leaves the sequence viewer untouched.
+     *
+     * @param {IClickedAtomInfo} info  The clicked atom's metadata.
+     */
+    private onAtomClickedFromViewer(info: IClickedAtomInfo): void {
+        if (!this.treeNode || !this.treeNode.id) {
+            return;
+        }
+        if (info.moleculeId !== this.treeNode.id) {
+            // Click was on a different molecule (e.g. ligand or another
+            // protein). Don't disturb this viewer's state.
+            return;
+        }
+        if (info.resi === undefined || info.chain === undefined) {
+            return;
+        }
+        // Find the matching residue in the displayed sequence. Match on
+        // chain + resi rather than relying on atomIndex, because the
+        // clicked atom is typically not the residue's "first" atom.
+        const match = this.sequence.find(
+            (r) => r.chain === info.chain && r.resi === info.resi
+        );
+        if (!match) {
+            return;
+        }
+        this.clickedResidueAtomIndex = match.atomIndex;
+        this.scrollResidueIntoView(match);
+    }
+    /**
+     * Scrolls the sequence viewer so the given residue's element is
+     * visible. Uses the residue's DOM element registered via the template
+     * ref. Falls back silently if the element isn't found (e.g. the
+     * sequence hasn't finished laying out yet).
+     *
+     * @param {ResidueInfo} residue  The residue to scroll to.
+     */
+    private scrollResidueIntoView(residue: ResidueInfo): void {
+        const key = `${residue.chain}:${residue.resi}`;
+        const el = this.residueElementMap.get(key);
+        if (!el) {
+            return;
+        }
+        // `nearest` keeps the parent panel from jumping if the residue is
+        // already visible; `smooth` is gentle when it does scroll.
+        el.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+        });
+    }
 
     /**
      * Gets the background color for a residue based on its one-letter code.
@@ -418,6 +507,20 @@ export default class ProteinSequenceViewer extends Vue {
         this.setupResizeObserver();
         this.currentRootContainerWidthPx = (this.$refs.rootContainer as HTMLElement)?.offsetWidth || 0;
         await this.calculateLines();
+        // Subscribe to 3D viewer atom-click events. Done here (rather
+        // than in a watcher) so the subscription lives for the entire
+        // lifetime of this component instance. The viewer is loaded
+        // lazily, so we await it before subscribing.
+        try {
+            const viewer = await api.visualization.viewer;
+            if (viewer && typeof viewer.onAtomClicked === "function") {
+                this.unsubscribeAtomClicked = viewer.onAtomClicked(
+                    (info: IClickedAtomInfo) => this.onAtomClickedFromViewer(info)
+                );
+            }
+        } catch (err) {
+            console.warn("Failed to subscribe to viewer atom clicks:", err);
+        }
         // initializeTooltips is handled by the watcher on processedSequenceLines or calculateLines
     }
     /**
@@ -426,6 +529,10 @@ export default class ProteinSequenceViewer extends Vue {
      */
     beforeUnmount() {
         this.disposeTooltips(); // Ensure tooltips are cleaned up
+        if (this.unsubscribeAtomClicked) {
+            this.unsubscribeAtomClicked();
+            this.unsubscribeAtomClicked = null;
+        }
         if (this.resizeObserver) {
             const container = this.$refs.rootContainer as HTMLElement;
             if (container) this.resizeObserver.unobserve(container);

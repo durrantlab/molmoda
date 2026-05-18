@@ -33,6 +33,30 @@ import { createAnimationFrameCoalescer, createLeadingEdgeThrottle } from "@/Core
 import { isVisualizationDeferred } from "@/Core/Utils/CoalescedTask";
 
 /**
+ * Information about an atom that was clicked in the 3D viewer. Passed to
+ * subscribers of `onAtomClicked` so they can react without needing to
+ * re-query the underlying model.
+ */
+export interface IClickedAtomInfo {
+    /** Molecule id (TreeNode id) of the clicked atom's parent model. */
+    moleculeId: string;
+    /** Chain identifier (e.g. "A"). May be empty for ligands/ions. */
+    chain?: string;
+    /** Residue index (resi) within the chain. */
+    resi?: number;
+    /** Three-letter residue name (e.g. "ALA", "HIS"). */
+    resn?: string;
+    /** Atom name (e.g. "CA", "N"). */
+    atomName?: string;
+    /** Cartesian coordinates of the clicked atom. */
+    x: number;
+    y: number;
+    z: number;
+}
+/** Callback signature for atom-click subscribers. */
+export type AtomClickedCallback = (info: IClickedAtomInfo) => void;
+
+/**
  * Sets the loadViewerLibPromise variable.
  *
  * @param  {Promise<any>} val  The promise to set.
@@ -570,6 +594,46 @@ export abstract class ViewerParent {
     return addMolPromises;
   }
 
+    /**
+   * Subscribers notified when any atom is clicked in the 3D viewer.
+   * Maintained here (not in subclasses) so the subscription API is
+   * uniform across viewer implementations.
+   */
+  private _atomClickedSubscribers: AtomClickedCallback[] = [];
+  /**
+   * Subscribe to atom-click events. The returned function unsubscribes.
+   * Consumers (e.g. ProteinSequenceViewer) use this to react to 3D
+   * clicks regardless of which concrete viewer is active.
+   *
+   * @param {AtomClickedCallback} callback  Invoked with atom metadata.
+   * @returns {() => void}  Unsubscribe function.
+   */
+  public onAtomClicked(callback: AtomClickedCallback): () => void {
+    this._atomClickedSubscribers.push(callback);
+    return () => {
+      const idx = this._atomClickedSubscribers.indexOf(callback);
+      if (idx !== -1) {
+        this._atomClickedSubscribers.splice(idx, 1);
+      }
+    };
+  }
+  /**
+   * Fires the atom-click event to all subscribers. Subclasses call this
+   * from their viewer-specific click handler. Errors in subscribers are
+   * caught so one bad listener cannot break the others.
+   *
+   * @param {IClickedAtomInfo} info  Metadata about the clicked atom.
+   */
+  protected _fireAtomClicked(info: IClickedAtomInfo): void {
+    for (const cb of this._atomClickedSubscribers) {
+      try {
+        cb(info);
+      } catch (err) {
+        console.warn("Atom click subscriber threw:", err);
+      }
+    }
+  }
+  
   /**
    * Makes atoms NOT responsive to mouse hovering and clicking.
    *
@@ -592,7 +656,11 @@ export abstract class ViewerParent {
     model: GenericModelType,
     modelID: string,
   ) {
-    this.makeAtomsClickable(model, (x: number, y: number, z: number) => {
+    this.makeAtomsClickable(model, (info: IClickedAtomInfo) => {
+      // Fan out to any external subscribers (e.g. the sequence viewer)
+      // before running the default selection behavior. Subscribers
+      // receive full atom metadata, not just coordinates.
+      this._fireAtomClicked({ ...info, moleculeId: modelID });
       // Determine if any of the currently selected items are regions.
       const selectedRegions = getMoleculesFromStore()
         .filters.keepSelected(true, true)
@@ -604,7 +672,7 @@ export abstract class ViewerParent {
         setStoreVar("clearFocusedMolecule", false);
       } else {
         // region is selected
-        api.plugins.runPlugin("moveregionsonclick", [x, y, z]);
+        api.plugins.runPlugin("moveregionsonclick", [info.x, info.y, info.z]);
       }
     });
 
@@ -933,13 +1001,15 @@ export abstract class ViewerParent {
    * Makes atoms react when clicked.
    *
    * @param {GenericModelType} model     The model to make clickable.
-   * @param {Function}         callBack  Function that runs when atom is
-   *                                     clicked. The function is passed the
-   *                                     x, y, and z coordinates of the atom.
+   * @param {Function}         callBack  Function that runs when an atom is
+   *                                     clicked. Receives the atom's chain,
+   *                                     resi, resn, atom name, and
+   *                                     coordinates. The `moleculeId` field
+   *                                     is populated by the caller.
    */
   abstract makeAtomsClickable(
     model: GenericModelType,
-    callBack: (x: number, y: number, z: number) => void,
+    callBack: (info: IClickedAtomInfo) => void,
   ): void;
 
   /**

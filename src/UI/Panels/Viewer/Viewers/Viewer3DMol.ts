@@ -1,5 +1,4 @@
 import { GLModel } from "../GLModelType";
-import { ViewerParent } from "./ViewerParent";
 import { dynamicImports } from "@/Core/DynamicImports";
 import {
   IArrow,
@@ -31,6 +30,7 @@ import {
 } from "@/Core/Styling/SelAndStyleInterfaces";
 import { getNamedPastelColor } from "@/Core/Styling/Colors/ColorUtils";
 import { waitForCondition } from "@/Core/Utils/MiscUtils";
+import { ViewerParent, IClickedAtomInfo } from "./ViewerParent";
 
 /**
  * Viewer3DMol
@@ -979,13 +979,13 @@ C ${maxX} ${maxY} ${maxZ}`;
    * Makes atoms react when clicked.
    *
    * @param {GLModel}  model     The model to make clickable.
-   * @param {Function} callBack  Function that runs when atom is clicked. The
-   *                             function is passed the x, y, and z
-   *                             coordinates of the atom.
+   * @param {Function} callBack  Function that runs when atom is clicked.
+   *                             Receives the clicked atom's chain, resi,
+   *                             resn, name, and coordinates.
    */
   makeAtomsClickable(
     model: GLModel,
-    callBack: (x: number, y: number, z: number) => any,
+    callBack: (info: IClickedAtomInfo) => void,
   ) {
     // Remove existing clickable
     this.makeAtomsNotClickable(model);
@@ -1000,10 +1000,22 @@ C ${maxX} ${maxY} ${maxZ}`;
         }, 200);
 
         this.centerOnPoint(atom.x, atom.y, atom.z);
+        // Capture atom metadata now; the 3Dmol atom object may be mutated
+        // before the delayed callback fires.
+        const info: IClickedAtomInfo = {
+          moleculeId: "", // populated by caller (ViewerParent)
+          chain: atom.chain,
+          resi: atom.resi,
+          resn: atom.resn,
+          atomName: atom.atom,
+          x: atom.x,
+          y: atom.y,
+          z: atom.z,
+        };
         setTimeout(() => {
           // Delay the callback so that the centering has time to
           // finish.
-          callBack(atom.x, atom.y, atom.z);
+          callBack(info);
         }, 1000);
       },
     );
