@@ -25,7 +25,7 @@ export function parseUsingOpenBabel(
     gen3D?: IGen3DOptions,
     surpressMsgs?: boolean
 ): Promise<TreeNodeList> {
-    console.log("parseUsingOpenBabel called for:", fileInfo.name, "format:", formatInfo.primaryExt, "desalt:", desalt);
+    // console.log("parseUsingOpenBabel called for:", fileInfo.name, "format:", formatInfo.primaryExt, "desalt:", desalt);
 
     const targetFormat = formatInfo.hasBondOrders ? "mol2" : "pdb";
 

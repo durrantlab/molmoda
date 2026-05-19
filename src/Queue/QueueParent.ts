@@ -57,6 +57,17 @@ export abstract class QueueParent {
     private _onJobAfterQueueDone: boolean;
 
     /**
+     * Whether the queue has been requested to cancel. Subclasses can poll this
+     * during long-running batches (e.g. WASM modules that don't naturally
+     * yield) to abort in-flight work and clean up resources promptly.
+     *
+     * @returns {boolean} True if cancellation has been requested.
+     */
+    public get isCancelling(): boolean {
+        return this.jobsCancelling;
+    }
+
+    /**
      * The class constructor.
      *
      * @param {string|undefined} jobTypeId                   A string that

@@ -65,11 +65,11 @@ function _fixTitle(title: string, defaultTitle: string): string {
 export function parseAndLoadMoleculeFile(
     params: ILoadMolParams
 ): Promise<void | TreeNodeList> {
-console.log("parseAndLoadMoleculeFile:", {
-    name: params.fileInfo.name,
-    format: params.fileInfo.getFormatInfo()?.primaryExt,
-    loader: params.fileInfo.getFormatInfo()?.loader,
-});
+    // console.log("parseAndLoadMoleculeFile:", {
+    //     name: params.fileInfo.name,
+    //     format: params.fileInfo.getFormatInfo()?.primaryExt,
+    //     loader: params.fileInfo.getFormatInfo()?.loader,
+    // });
 
     params = addDefaultLoadMolParams(params);
 
@@ -214,7 +214,7 @@ console.log("parseAndLoadMoleculeFile:", {
                 }
                 invalidNodes.push(node);
             }
-            
+
             if (!hasValidModel) {
                 messagesApi.stopWaitSpinner(spinnerId);
                 messagesApi.popupError(
@@ -257,8 +257,8 @@ console.log("parseAndLoadMoleculeFile:", {
                             if (parent.nodes.length < before) {
                                 pruned = true;
                             }
-                    }
-                });
+                        }
+                    });
                 }
             }
 

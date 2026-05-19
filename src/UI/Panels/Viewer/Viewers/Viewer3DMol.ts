@@ -173,7 +173,7 @@ export class Viewer3DMol extends ViewerParent {
   createRegionLabel(id: string, text: string) {
     const region = this.lookup(id);
     if (region && typeof region !== "string") {
-      console.log("CREATE: ", id, text);
+      // console.log("CREATE: ", id, text);
 
       // Delete old label
       this.destroyRegionLabel(id);

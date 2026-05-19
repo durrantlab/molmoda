@@ -11,6 +11,66 @@ import { prepForErrorCustomMsg } from "./WebinaErrors";
 export class WebinaQueue extends QueueParent {
     private _jobCounter = 0;
 
+    // Tracks the currently-running Emscripten instance so cancellation can
+    // reach into the WASM runtime and terminate its pthread workers. Webina
+    // is compiled with pthreads, which means the Emscripten module spawns
+    // dedicated Web Workers for parallel docking. Calling abort() on the
+    // main thread does NOT terminate those workers — we must explicitly
+    // terminate them via Module.PThread.
+    private _activeWebinaInstance: any = null;
+
+    /**
+     * Forcibly terminates all pthread workers spawned by a Webina Emscripten
+     * instance. Without this, cancelling a docking run leaves the underlying
+     * Web Workers running in the background until they finish their current
+     * task — wasting CPU and memory long after the user has cancelled.
+     *
+     * Defends against multiple Emscripten layouts (PThread.terminateAllThreads,
+     * PThread.runningWorkers, PThread.unusedWorkers) because the exact shape
+     * varies by Emscripten version.
+     *
+     * @param {any} instance  The Emscripten module instance to tear down.
+     */
+    private _terminatePthreadWorkers(instance: any): void {
+        if (!instance) return;
+        const pthread = instance.PThread;
+        if (!pthread) return;
+
+        // Preferred path (modern Emscripten): one call that handles
+        // bookkeeping for running and unused workers.
+        if (typeof pthread.terminateAllThreads === "function") {
+            try {
+                pthread.terminateAllThreads();
+                return;
+            } catch (_e) {
+                // Fall through to manual termination if the helper throws
+                // (e.g. because the runtime is already partially torn down).
+            }
+        }
+
+        // Fallback: walk the worker pools directly. Older Emscripten builds
+        // expose runningWorkers and unusedWorkers as plain arrays.
+        const pools: any[][] = [
+            pthread.runningWorkers,
+            pthread.unusedWorkers,
+            pthread.pthreads,
+        ].filter((p) => Array.isArray(p));
+
+        for (const pool of pools) {
+            for (const worker of pool) {
+                try {
+                    if (worker && typeof worker.terminate === "function") {
+                        worker.terminate();
+                    }
+                } catch (_e) {
+                    // Ignore individual termination failures; keep going so
+                    // we kill as many workers as possible.
+                }
+            }
+            pool.length = 0;
+        }
+    }
+    
     /**
      * Make a webina instance.
      * @param {*} WEBINA_MODULE  The webina module.
@@ -22,15 +82,25 @@ export class WebinaQueue extends QueueParent {
         let stdOut = "";
         let stdErr = "";
         let fileCheckingTimer: any = null;
-
-        let _onQueueDoneCallbackFunc: (webinaOuts: string[]) => void; // the resolve from below
+        let _onQueueDoneCallbackFunc: (webinaOuts: string[]) => void;
         let _onJobDoneCallbackFunc: (webinaOut: any, jobIndex: number) => void;
+        // Capture queue reference so the polling-timer callback (which runs
+        // with `this` bound to the Emscripten module) can still consult
+        // queue-level cancellation state and reach the worker-termination
+        // helper.
+        const queueRef = this;
+
         // const jobInfoPayload = {} as IJobInfo; // TODO: Eventually, not const
 
         // https://emscripten.org/docs/api_reference/module.html
 
         const allOutputs: any[] = [];
         let allJobInfos: (IJobInfo | undefined)[] = [];
+
+        // Tracks whether cancellation has already been handled for this run so
+        // we don't resolve the promise twice or terminate workers more than
+        // once.
+        let cancellationHandled = false;
 
         /**
          * Updates the progress by one job.
@@ -51,10 +121,39 @@ export class WebinaQueue extends QueueParent {
             // preInit() { console.log("Pre-init"); },
 
             /**
-             * A function that runs when a Webina output file is complete. It
-             * reads the output file and updates the job info.
+             * Runs every 250ms while a batch is docking. Two jobs: (1) drain
+             * any newly-completed *.out files into the queue's output list,
+             * and (2) act as the cancellation polling site. The pthread
+             * termination happens here because this is the only main-thread
+             * code that runs while callMain() is blocking.
              */
             processCompleteOutFiles: function () {
+                // Cancellation check first. We do the heavy lifting here
+                // (terminating workers, resolving the promise) and let the
+                // surrounding callMain unwind on its own.
+                if (queueRef.isCancelling && !cancellationHandled) {
+                    cancellationHandled = true;
+                    clearInterval(fileCheckingTimer);
+
+                    // Kill the pthread workers FIRST, before doing anything
+                    // else. This is the whole point of the cancel feature
+                    // working correctly — without this the workers keep
+                    // grinding even after we resolve the queue promise.
+                    queueRef._terminatePthreadWorkers(this);
+
+                    // Now abort the main-thread runtime to unwind callMain.
+                    try {
+                        if (typeof (this as any).abort === "function") {
+                            (this as any).abort("cancelled by user");
+                        }
+                    } catch (_e) {
+                        // abort() throws by design; swallow.
+                    }
+
+                    _onQueueDoneCallbackFunc(allOutputs);
+                    return;
+                }
+
                 // Get all the *.out files
                 const outFiles = this.FS.readdir("/").filter(
                     (filename: string) => filename.endsWith(".out")
@@ -152,6 +251,7 @@ export class WebinaQueue extends QueueParent {
                         ligandFilenames.push(ligandPDBQTFilename);
                         filesAlreadySaved.add(ligandPDBQTFilename);
                     }
+
                     const receptorPDBQTFilename =
                         jobInfo.input.pdbFiles.prot.name;
                     if (!filesAlreadySaved.has(receptorPDBQTFilename)) {
@@ -231,6 +331,31 @@ export class WebinaQueue extends QueueParent {
              * A function that runs when the program exits.
              */
             onExit(/* code */) {
+                // If we already handled cancellation via the polling timer,
+                // the queue promise has been resolved and the runtime is
+                // being torn down — don't double-process.
+                if (cancellationHandled) {
+                    // Pthread workers and the promise were handled in the
+                    // polling timer. Just clean up the virtual filesystem if
+                    // still accessible.
+                    try {
+                        const allFiles = this.FS.readdir("/");
+                        for (const filename of allFiles) {
+                            if (
+                                filename.endsWith(".pdbqt") ||
+                                filename.endsWith(".txt") ||
+                                filename.endsWith(".out")
+                            ) {
+                                this.FS.unlink(filename);
+                            }
+                        }
+                    } catch (_e) {
+                        // Filesystem may already be torn down; ignore.
+                    }
+                    clearInterval(fileCheckingTimer);
+                    return;
+                }
+
                 this.processCompleteOutFiles();
 
                 // Delete any files that end in pdbqt or txt. Now cleaning up.
@@ -258,6 +383,12 @@ export class WebinaQueue extends QueueParent {
              * @param {string} text  The text written to stdout.
              */
             print(text: string) {
+                // Suppress stdout during cancellation. Don't throw — the
+                // polling timer handles termination cleanly.
+                if (queueRef.isCancelling) {
+                    return;
+                }
+
                 // Keep only ones that start with ERROR RUN:
                 if (!text.startsWith("ERROR RUN:")) {
                     console.log(text);
@@ -288,7 +419,7 @@ export class WebinaQueue extends QueueParent {
                 // Below is just dummy. Replace with useful values
                 _onJobDoneCallbackFunc(jobInfoPayload.output, jobIdx);
                 allOutputs.push(jobInfoPayload);
-                allJobInfos[jobIdx] = undefined; // Done with this jobinfo
+                allJobInfos[jobIdx] = undefined;
             },
 
             /**
@@ -296,6 +427,12 @@ export class WebinaQueue extends QueueParent {
              * @param {string} text  The text written to stderr.
              */
             printErr(text: string) {
+                // Suppress stderr during cancellation to avoid spurious
+                // error popups from runtime teardown noise.
+                if (queueRef.isCancelling) {
+                    return;
+                }
+
                 // Strangly, the warning "WARNING: At low exhaustiveness, it may
                 // be impossible to utilize all CPUs." registers as an error,
                 // but it shouldn't be one.
@@ -332,9 +469,18 @@ export class WebinaQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        // Honor cancellation requested before this batch even begins.
+        if (this.isCancelling) {
+            return [];
+        }
+
         // Load webina dynamically.
         let WEBINA_MODULE = await dynamicImports.webina.module;
         let webinaInstance = await this._makeWebinaInstance(WEBINA_MODULE);
+
+        // Expose the active instance so cancellation paths outside the
+        // Emscripten callbacks (e.g. future external aborts) can reach it.
+        this._activeWebinaInstance = webinaInstance;
 
         const onJobDone = (this as WebinaQueue)._callbacks?.onJobDone;
 
@@ -345,12 +491,33 @@ export class WebinaQueue extends QueueParent {
 
         const outputs = await new Promise((resolve) => {
             webinaInstance.setupRun(inputBatch, resolve, onJobDone);
-            return webinaInstance.callMain(argsList);
+            try {
+                webinaInstance.callMain(argsList);
+            } catch (e) {
+                // callMain throws when we abort the runtime. The polling
+                // timer has already resolved the promise and terminated the
+                // pthread workers; just swallow the abort exception.
+                if (this.isCancelling) {
+                    // Promise was already resolved by the polling timer;
+                    // this resolve() is a no-op safeguard.
+                    resolve([] as any);
+                } else {
+                    throw e;
+                }
+            }
         });
+
+        // Belt-and-suspenders: if cancellation happened, make sure no
+        // pthread workers survived the abort. This is a no-op in the happy
+        // path because the polling timer already terminated them.
+        if (this.isCancelling) {
+            this._terminatePthreadWorkers(webinaInstance);
+        }
 
         webinaInstance.wasmMemory = null;
         webinaInstance = null;
         WEBINA_MODULE = null;
+        this._activeWebinaInstance = null;
 
         return outputs as IJobInfo[];
     }
