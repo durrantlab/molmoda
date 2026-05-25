@@ -32,3 +32,13 @@ export function registerLoadedPlugin(plugin: PluginParentClass) {
 
     loadedPlugins[plugin.pluginId] = plugin;
 }
+
+// Test-only: expose the registry on window when ?test= is present, so the
+// screenshot/docs-capture infrastructure can read plugin metadata.  Gated on
+// the URL parameter so production sessions never see this.
+if (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).has("test")
+) {
+    (window as any).__molmodaLoadedPlugins = loadedPlugins;
+}
