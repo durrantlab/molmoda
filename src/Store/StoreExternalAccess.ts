@@ -17,9 +17,9 @@ export function setupExternalStoreAccess(_store: any) {
 /**
  * Sets a state variable.
  *
- * @param  {string} name         The name of the variable to set.
- * @param  {any}    value        The value to set.
- * @param  {string} [module=""]  The module. Optional.
+ * @param  {string} name      The name of the variable to set.
+ * @param  {any}    value     The value to set.
+ * @param  {string} [module]  The module. Optional. Default is "".
  */
 export function setStoreVar(name: string, value: any, module = "") {
     if (module === "") {
@@ -63,8 +63,8 @@ export function pushToStoreListBulk(name: string, values: TreeNode[]) {
 /**
  * Gets a store.state variable.
  *
- * @param  {string} name         The name of the variable to get.
- * @param  {string} [module=""]  The module. Optional.
+ * @param  {string} name      The name of the variable to get.
+ * @param  {string} [module]  The module. Optional. Default is "".
  * @returns {any}  The value of the variable.
  */
 function getStoreVar(name: string, module = ""): any {

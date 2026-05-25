@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { store } from "@/Store";
 import { treeNodeListDeepClone } from "@/TreeNodes/Deserializers";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";

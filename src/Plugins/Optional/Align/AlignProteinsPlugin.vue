@@ -82,6 +82,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
 
     /**
      * Checks if the plugin is allowed to be used.
+     *
      * @returns {string | null} An error message if not allowed, otherwise null.
      */
     checkPluginAllowed(): string | null {
@@ -133,6 +134,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
 
     /**
      * The main alignment logic.
+     *
      * @param {UserArg[]} userArgs The user arguments from the form.
      * @returns {Promise<void>}
      */
@@ -239,6 +241,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]} The selenium test commands.

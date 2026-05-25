@@ -18,6 +18,8 @@ export class FindSimilarProteinsQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        void procs; // Not used in this implementation, but part of the interface
+
         const promises = inputBatch.map((jobInfo) =>
             this.runSingleJob(jobInfo)
         );

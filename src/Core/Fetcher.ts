@@ -24,6 +24,7 @@ interface IFetcherOptions {
 
 /**
  * Introduce a random delay. Only used for testing on localhost.
+ *
  * @returns {Promise<void>} A promise that resolves after the delay.
  */
 async function _introduceRandomDelayForTesting(): Promise<void> {
@@ -37,10 +38,11 @@ async function _introduceRandomDelayForTesting(): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-export const failingUrlSubstrings: Set<string> = new Set();
+const failingUrlSubstrings: Set<string> = new Set();
 
 /**
  * Adds a URL substring to the set of URLs that should fail during tests.
+ *
  * @param {string} substring The substring to match in URLs.
  */
 export function addFailingUrlSubstring(substring: string) {
@@ -51,6 +53,7 @@ export function addFailingUrlSubstring(substring: string) {
 
 /**
  * Fetch a file from a remote URL.
+ *
  * @param {string} url  The URL of the file to fetch.
  * @param {IFetcherOptions} [options]  The options for the fetch.
  * @returns {Promise<any>} A promise that resolves the fetched file.
@@ -202,6 +205,7 @@ export class RateLimitedFetcherQueue {
 
     /**
      * Creates a new RateLimitedFetcherQueue instance.
+     *
      * @param {number}       requestsPerSecond     Maximum number of requests
      *                                             allowed per second
      * @param {object}       options               Configuration options for the
@@ -224,6 +228,7 @@ export class RateLimitedFetcherQueue {
     /**
      * Adds a URL to the fetch queue. The request will be processed according to
      * the rate limits configured for the queue.
+     *
      * @param {string} url - The URL to fetch
      * @returns {Promise<any>} A promise that resolves with the fetch response
      *                        or rejects if the fetch fails
@@ -238,6 +243,7 @@ export class RateLimitedFetcherQueue {
     /**
      * Processes the queue while respecting rate limits. This method is called
      * automatically when new items are added to the queue.
+     *
      * @private
      * @returns {Promise<void>}
      */
@@ -283,6 +289,7 @@ export class RateLimitedFetcherQueue {
 
     /**
      * Processes a single fetch request and handles its resolution or rejection.
+     *
      * @private
      * @param {QueueItem} item - The queue item containing the URL and promise handlers
      * @returns {Promise<void>}
@@ -299,6 +306,7 @@ export class RateLimitedFetcherQueue {
     /**
      * Checks if a new request can be made based on the configured rate limit.
      * Takes into account the number of requests completed in the last second.
+     *
      * @private
      * @returns {boolean} True if a new request can be made, false otherwise
      */
@@ -317,6 +325,7 @@ export class RateLimitedFetcherQueue {
 
     /**
      * Gets the current number of items waiting in the queue.
+     *
      * @returns {number} The number of queued items
      */
     public get length(): number {

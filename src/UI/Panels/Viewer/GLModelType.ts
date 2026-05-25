@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 export interface GLModel {
     selectedAtoms: Function;
     removeAtoms: Function;

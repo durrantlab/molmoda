@@ -4,6 +4,7 @@ Delegates entirely to the molmoda_tests package.
 """
 
 from molmoda_tests.scripts.run_tests import main
+from molmoda_tests.scripts.test_tours import main as main2
 
 # NOTE: If this ever starts running really slow, you probably aren't
 # using arm64-compiled version of chrome.
@@ -15,3 +16,5 @@ from molmoda_tests.scripts.run_tests import main
 
 if __name__ == "__main__":
     main()
+    if input("Check tours? (y/n) ").lower() == "y":
+        main2()

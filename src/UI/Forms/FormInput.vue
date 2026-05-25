@@ -21,8 +21,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";

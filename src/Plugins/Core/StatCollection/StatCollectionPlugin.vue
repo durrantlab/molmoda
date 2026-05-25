@@ -87,6 +87,7 @@ export default class StatCollectionPlugin extends PluginParentClass {
 
     /**
      * The name of the application.
+     *
      * @returns {string} The name of the application.
      */
     get appName(): string {
@@ -115,17 +116,21 @@ export default class StatCollectionPlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
+     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      *     Return void if there's nothing to return.
      */
     runJobInBrowser(args: any): Promise<void> {
+        void args;
+        
         return Promise.resolve();
     }
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {

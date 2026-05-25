@@ -11,7 +11,7 @@ try {
     _isLocalHost =
         window.location.href.includes("localhost") ||
         window.location.href.includes("127.0.0.1");
-} catch (error) {
+} catch {
     _isLocalHost = false;
 }
 export const isLocalHost = _isLocalHost;
@@ -20,7 +20,7 @@ export const isLocalHost = _isLocalHost;
 let _isBeta = false;
 try {
     _isBeta = window.location.href.includes("beta");
-} catch (error) {
+} catch {
     _isBeta = false;
 }
 export const isBeta = _isBeta;

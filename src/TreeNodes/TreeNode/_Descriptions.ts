@@ -62,10 +62,11 @@ export class TreeNodeDescriptions {
     /**
      * Gets the name of the molecule in path-like format.
      *
-     * @param {string}        [separator=">"]   The separator to use.
-     * @param {number}        [maxLength=20]    Abbreviate to no longer than
+     * @param {string}        [separator]       The separator to use. Defaults
+     *                                          to ">".
+     * @param {number}        [maxLength]       Abbreviate to no longer than
      *                                          this length. If 0 or less, don't
-     *                                          abbreviate.
+     *                                          abbreviate. Defaults to 20.
      * @param {TreeNodeList}  [molsToConsider]  The molecules to consider when
      *                                          determining the path. If not
      *                                          specified, uses all molecules

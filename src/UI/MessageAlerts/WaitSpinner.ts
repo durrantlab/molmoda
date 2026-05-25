@@ -50,7 +50,7 @@ export function stopAllWaitSpinners() {
 /**
  * Starts a wait spinner. Returns an id that can be used to stop the spinner.
  *
- * @param {number} [timeOut=30000]  The timeout in milliseconds.
+ * @param {number} [timeOut]  The timeout in milliseconds. Defaults to 30000.
  * @returns {string}  The id of the spinner.
  */
 export function startWaitSpinner(timeOut = 30000): string {

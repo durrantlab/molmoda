@@ -26,7 +26,6 @@ import {
     nucleicSel,
     proteinSel,
     solventSel,
-    standardProteinResidues,
 } from "../Types/ComponentSelections";
 import { IFormatInfo, getFormatInfoGivenType } from "../Types/MolFormats";
 import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
@@ -34,7 +33,7 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { IFileInfo } from "@/FileSystem/Types";
 import { makeEasyParser } from "./EasyParser";
-import { EasyParserParent } from "./EasyParser/EasyParserParent";
+// import { EasyParserParent } from "./EasyParser/EasyParserParent";
 import { convertIAtomsToIFileInfoPDB } from "../ConvertMolModels/_ConvertIAtoms";
 import { ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
 import { organizeNodesIntoHierarchy } from "@/UI/Navigation/TreeView/TreeUtils";
@@ -184,10 +183,9 @@ function getAtomBounds(atoms: IAtom[]): {
 /**
  * Helper function to generate default mol container (used throughout).
  *
- * @param  {string}       molName                            The name of the
- *                                                           container.
- * @param  {NodesOrModel} [nodesOrModel=NodesOrModel.NODES]  Whether to generate
- *                                                           nodes or model.
+ * @param  {string}       molName         The name of the container.
+ * @param  {NodesOrModel} [nodesOrModel]  Whether to generate nodes or model.
+ *                                        Default is NodesOrModel.NODES.
  * @returns {TreeNode}  The default mol container.
  */
 function _getDefaultTreeNode(
@@ -213,158 +211,158 @@ function _getDefaultTreeNode(
     return new TreeNode(obj);
 }
 
-/**
- * Divides a molecule into chains.
- *
- * @param  {any}     sel           The selection to divide (e.g., a selection
- *                                 that gets all protein atoms).
- * @param  {EasyParserParent} mol  The molecule with the atoms. Note that the
- *                                 atoms specified by sel end up getting
- *                                 removed, because the function moves them into
- *                                 their own molecules.
- * @param  {string}  molName       The name of the entry.
- * @returns {TreeNode} The molecule with the chains.
- */
-function organizeSelByChain(
-    sel: any,
-    mol: EasyParserParent,
-    molName: string
-): TreeNode {
-    let selectedAtoms = mol.selectedAtoms(sel, true);
+// /**
+//  * Divides a molecule into chains.
+//  *
+//  * @param  {any}     sel           The selection to divide (e.g., a selection
+//  *                                 that gets all protein atoms).
+//  * @param  {EasyParserParent} mol  The molecule with the atoms. Note that the
+//  *                                 atoms specified by sel end up getting
+//  *                                 removed, because the function moves them into
+//  *                                 their own molecules.
+//  * @param  {string}  molName       The name of the entry.
+//  * @returns {TreeNode} The molecule with the chains.
+//  */
+// function organizeSelByChain(
+//     sel: any,
+//     mol: EasyParserParent,
+//     molName: string
+// ): TreeNode {
+//     let selectedAtoms = mol.selectedAtoms(sel, true);
 
-    // If chain is " " for any atom, set it to "X"
-    selectedAtoms = selectedAtoms.map((atom: IAtom) => {
-        if (atom.chain === " ") {
-            atom.chain = "X";
-        }
-        return atom;
-    });
+//     // If chain is " " for any atom, set it to "X"
+//     selectedAtoms = selectedAtoms.map((atom: IAtom) => {
+//         if (atom.chain === " ") {
+//             atom.chain = "X";
+//         }
+//         return atom;
+//     });
 
-    const treeNode = _getDefaultTreeNode(molName);
-    let lastChainID = "";
-    selectedAtoms.forEach((atom: IAtom) => {
-        const nodeList = treeNode.nodes as TreeNodeList;
-        if (atom.chain !== lastChainID) {
-            nodeList.push(
-                new TreeNode({
-                    title: atom.chain,
-                    model: [],
-                    viewerDirty: true,
-                    treeExpanded: false,
-                    visible: true,
-                    selected: SelectedType.False,
-                    focused: false,
-                })
-            );
-            lastChainID = atom.chain;
-        }
+//     const treeNode = _getDefaultTreeNode(molName);
+//     let lastChainID = "";
+//     selectedAtoms.forEach((atom: IAtom) => {
+//         const nodeList = treeNode.nodes as TreeNodeList;
+//         if (atom.chain !== lastChainID) {
+//             nodeList.push(
+//                 new TreeNode({
+//                     title: atom.chain,
+//                     model: [],
+//                     viewerDirty: true,
+//                     treeExpanded: false,
+//                     visible: true,
+//                     selected: SelectedType.False,
+//                     focused: false,
+//                 })
+//             );
+//             lastChainID = atom.chain;
+//         }
 
-        (nodeList.get(nodeList.length - 1).model as IAtom[]).push(atom);
-    });
-    // mol.removeAtoms(selectedAtoms);
+//         (nodeList.get(nodeList.length - 1).model as IAtom[]).push(atom);
+//     });
+//     // mol.removeAtoms(selectedAtoms);
 
-    return treeNode;
-}
+//     return treeNode;
+// }
 
-/**
- * Some molecular components don't need chains (e.g., solvents and ions). This
- * function flattens chains.
- *
- * @param  {TreeNode} treeNode The molecule (with chains) to flatten.
- * @returns {TreeNode} The flattened molecule.
- */
-function flattenChains(treeNode: TreeNode): TreeNode {
-    if (!treeNode.nodes) {
-        throw new Error("No nodes found in treeNode.");
-    }
+// /**
+//  * Some molecular components don't need chains (e.g., solvents and ions). This
+//  * function flattens chains.
+//  *
+//  * @param  {TreeNode} treeNode The molecule (with chains) to flatten.
+//  * @returns {TreeNode} The flattened molecule.
+//  */
+// function flattenChains(treeNode: TreeNode): TreeNode {
+//     if (!treeNode.nodes) {
+//         throw new Error("No nodes found in treeNode.");
+//     }
 
-    const flattened = _getDefaultTreeNode(treeNode.title, NodesOrModel.Model);
+//     const flattened = _getDefaultTreeNode(treeNode.title, NodesOrModel.Model);
 
-    treeNode.nodes.forEach((chain: TreeNode) => {
-        if (!chain.model) {
-            throw new Error("No atoms found in chain.");
-        }
+//     treeNode.nodes.forEach((chain: TreeNode) => {
+//         if (!chain.model) {
+//             throw new Error("No atoms found in chain.");
+//         }
 
-        (flattened.model as IAtom[]).push(...(chain.model as IAtom[]));
-    });
-    return flattened;
-}
+//         (flattened.model as IAtom[]).push(...(chain.model as IAtom[]));
+//     });
+//     return flattened;
+// }
 
-/**
- * Gets an id of a given atom (string representation).
- *
- * @param  {IAtom} atom The atom to get the id of.
- * @returns {string} The id of the atom.
- */
-function residueID(atom: IAtom): string {
-    return atom.resn + ":" + atom.resi;
-}
+// /**
+//  * Gets an id of a given atom (string representation).
+//  *
+//  * @param  {IAtom} atom The atom to get the id of.
+//  * @returns {string} The id of the atom.
+//  */
+// function residueID(atom: IAtom): string {
+//     return atom.resn + ":" + atom.resi;
+// }
 
-/**
- * In some cases, it's useful to further divide chains into residues (e.g.,
- * small-molecule compounds).
- *
- * @param  {TreeNode} treeNode The molecule to divide.
- * @returns {TreeNode} The divided molecule.
- */
-function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
-    if (!treeNode.nodes) {
-        return treeNode;
-    }
+// /**
+//  * In some cases, it's useful to further divide chains into residues (e.g.,
+//  * small-molecule compounds).
+//  *
+//  * @param  {TreeNode} treeNode The molecule to divide.
+//  * @returns {TreeNode} The divided molecule.
+//  */
+// function divideChainsIntoResidues(treeNode: TreeNode): TreeNode {
+//     if (!treeNode.nodes) {
+//         return treeNode;
+//     }
 
-    const dividedMolEntry = _getDefaultTreeNode(treeNode.title);
+//     const dividedMolEntry = _getDefaultTreeNode(treeNode.title);
 
-    let lastChainID = "";
-    treeNode.nodes.forEach((chain: TreeNode) => {
-        if (!chain.model) {
-            // Already divided apparently.
-            return;
-        }
+//     let lastChainID = "";
+//     treeNode.nodes.forEach((chain: TreeNode) => {
+//         if (!chain.model) {
+//             // Already divided apparently.
+//             return;
+//         }
 
-        if (chain.title === "" || chain.title === undefined) {
-            // Default to chain A if not specified
-            chain.title = "A";
-        }
+//         if (chain.title === "" || chain.title === undefined) {
+//             // Default to chain A if not specified
+//             chain.title = "A";
+//         }
 
-        if (chain.title !== lastChainID) {
-            dividedMolEntry.nodes?.push(_getDefaultTreeNode(chain.title));
-            lastChainID = chain.title;
-        }
+//         if (chain.title !== lastChainID) {
+//             dividedMolEntry.nodes?.push(_getDefaultTreeNode(chain.title));
+//             lastChainID = chain.title;
+//         }
 
-        let lastResidueID = "";
-        (chain.model as IAtom[]).forEach((atom: IAtom) => {
-            const chains = dividedMolEntry.nodes;
-            if (!chains) {
-                throw new Error("No chains found in dividedMolEntry.");
-            }
-            const residues = chains.get(chains.length - 1).nodes;
-            if (!residues) {
-                // Always exists. This here for typechecker.
-                throw new Error("No residues found in dividedMolEntry.");
-            }
+//         let lastResidueID = "";
+//         (chain.model as IAtom[]).forEach((atom: IAtom) => {
+//             const chains = dividedMolEntry.nodes;
+//             if (!chains) {
+//                 throw new Error("No chains found in dividedMolEntry.");
+//             }
+//             const residues = chains.get(chains.length - 1).nodes;
+//             if (!residues) {
+//                 // Always exists. This here for typechecker.
+//                 throw new Error("No residues found in dividedMolEntry.");
+//             }
 
-            const newKey = residueID(atom);
-            if (newKey !== lastResidueID) {
-                residues.push(_getDefaultTreeNode(newKey, NodesOrModel.Model));
-                lastResidueID = newKey;
-            }
-            const atoms = residues.get(residues.length - 1).model as IAtom[];
-            if (atoms) {
-                atoms.push(atom);
-            }
-        });
-    });
-    return dividedMolEntry;
-}
+//             const newKey = residueID(atom);
+//             if (newKey !== lastResidueID) {
+//                 residues.push(_getDefaultTreeNode(newKey, NodesOrModel.Model));
+//                 lastResidueID = newKey;
+//             }
+//             const atoms = residues.get(residues.length - 1).model as IAtom[];
+//             if (atoms) {
+//                 atoms.push(atom);
+//             }
+//         });
+//     });
+//     return dividedMolEntry;
+// }
 
 /**
  * If any molecule has a list of 1 submolecules, collapse it so one molecule,
  * merging the titles.
  *
- * @param  {TreeNode} treeNode            The molecule to collapse.
- * @param  {boolean}       [childTitleFirst=false] When creating the merged
- *                                                 title, but the name of the
- *                                                 child molecule first.
+ * @param  {TreeNode} treeNode           The molecule to collapse.
+ * @param  {boolean}  [childTitleFirst]  When creating the merged title, but the
+ *                                       name of the child molecule first.
+ *                                       Default is false.
  * @returns {TreeNode} The collapsed molecule.
  */
 function collapseSingles(
@@ -820,7 +818,7 @@ async function divideMol2AtomsIntoDistinctComponents(
     let rootNode: TreeNode;
     try {
         rootNode = organizeNodesIntoHierarchy([molNode], molName);
-    } catch (err) {
+    } catch {
         throw new Error(
             `Failed to parse molecule "${molName}". The file may be incorrectly formatted or corrupted.`
         );

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { runWorker } from "@/Core/WebWorkers/RunWorker";
 import type { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";

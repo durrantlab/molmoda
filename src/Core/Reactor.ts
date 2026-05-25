@@ -115,13 +115,13 @@ export class Reactor {
      * reactant class index does not exist, new classes are created up to the
      * specified index.
      *
-     * @param {string} reactantSmiles       The SMILES string of the reactant
-     *                                      molecule.
-     * @param {number} [reactantClassIdx=0] The index of the reactant class to
-     *                                      which this reactant belongs.
-     *                                      Corresponds to the order of
-     *                                      reactants in the reaction SMARTS
-     *                                      (e.g., R1, R2).
+     * @param {string} reactantSmiles     The SMILES string of the reactant
+     *                                    molecule.
+     * @param {number} [reactantClassIdx] The index of the reactant class to
+     *                                    which this reactant belongs.
+     *                                    Corresponds to the order of
+     *                                    reactants in the reaction SMARTS
+     *                                    (e.g., R1, R2). Default is 0.
      */
     addReactant(reactantSmiles: string, reactantClassIdx = 0) {
         this._checkSetup();

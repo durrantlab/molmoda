@@ -22,8 +22,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Component, Vue, Prop } from "vue-facing-decorator";
 import { IMenuItem } from "./Menu";
 import { dynamicImports } from "@/Core/DynamicImports";

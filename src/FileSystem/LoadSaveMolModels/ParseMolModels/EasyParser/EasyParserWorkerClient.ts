@@ -35,6 +35,9 @@ export const WORKER_ATOM_THRESHOLD = 1_000;
 
 type PendingResolve = (resp: EasyParserWorkerResponse) => void;
 
+/**
+ * Client for communicating with the EasyParser web worker.
+ */
 export class EasyParserWorkerClient {
     private static _instance: EasyParserWorkerClient | null = null;
 
@@ -42,6 +45,9 @@ export class EasyParserWorkerClient {
     private _nextRequestId = 0;
     private _pending = new Map<number, PendingResolve>();
 
+    /**
+     * Private constructor.
+     */
     private constructor() {
         // Worker instantiation is delegated to an isolated factory module so
         // that the `import.meta.url` reference (invalid under ts-jest's
@@ -229,7 +235,8 @@ export class EasyParserWorkerClient {
      * Check if the molecule is flat (all coords zero in one dimension).
      *
      * @param {string} handle  The parser handle.
-     * @returns {Promise<boolean>}
+     * @returns {Promise<boolean>} True if all atoms have zero X or all have
+     *     zero Y or all have zero Z.
      */
     public async isFlat(handle: string): Promise<boolean> {
         const resp = await this._send([{ op: "isFlat", handle }]);
@@ -240,7 +247,7 @@ export class EasyParserWorkerClient {
      * Check if any atom is hydrogen.
      *
      * @param {string} handle  The parser handle.
-     * @returns {Promise<boolean>}
+     * @returns {Promise<boolean>}  True if at least one hydrogen atom exists.
      */
     public async hasHydrogens(handle: string): Promise<boolean> {
         const resp = await this._send([
@@ -253,7 +260,7 @@ export class EasyParserWorkerClient {
      * Get unique residue names and IDs.
      *
      * @param {string} handle  The parser handle.
-     * @returns {Promise<UniqueResiduesResult>}
+     * @returns {Promise<UniqueResiduesResult>} Unique residue names and IDs.
      */
     public async getUniqueResidues(
         handle: string

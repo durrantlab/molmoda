@@ -173,6 +173,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Checks if at least one protein is loaded.
+     *
      * @returns {string | null} An error message if no protein is loaded, otherwise null.
      */
     checkPluginAllowed(): string | null {
@@ -233,6 +234,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Executes when the user clicks the "Find" button.
+     *
      * @returns {Promise<void>}
      */
     async onPopupDone(): Promise<void> {
@@ -349,6 +351,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Processes the combined results from all jobs and displays them in a table.
+     *
      * @param {any[]} allJobOutputs - The completed job outputs.
      */
     private async processAndDisplayResults(allJobOutputs: any[]): Promise<void> {
@@ -428,6 +431,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Downloads and optionally aligns the structures from the search results.
+     *
      * @param {any[]} allJobOutputs - The raw output from the job queue.
      * @param {boolean} align - Whether to perform alignment.
      */
@@ -586,6 +590,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * This plugin does not run jobs in the browser directly; it uses a queue.
+     *
      * @returns {Promise<void>}
      */
     async runJobInBrowser(): Promise<void> {
@@ -594,6 +599,7 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
     /**
      * Defines the test case for this plugin.
+     *
      * @returns {Promise<ITest[]>} The test configuration.
      */
     async getTests(): Promise<ITest[]> {

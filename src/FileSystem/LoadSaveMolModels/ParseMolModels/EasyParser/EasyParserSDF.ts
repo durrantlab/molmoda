@@ -24,6 +24,7 @@ export class EasyParserSDF extends EasyParserParent {
 
     /**
      * Constructor for EasyParserSDF.
+     *
      * @param {IFileInfo | GLModel | IAtom[]} src The source to parse.
      */
     constructor(src: IFileInfo | GLModel | IAtom[]) {
@@ -34,6 +35,7 @@ export class EasyParserSDF extends EasyParserParent {
 
     /**
      * Load the source.
+     *
      * @param {IFileInfo | GLModel | IAtom[]} src  The source to parse.
      */
     _load(src: IFileInfo | GLModel | IAtom[]): void {
@@ -69,6 +71,7 @@ export class EasyParserSDF extends EasyParserParent {
 
     /**
      * Parses a V3000 formatted SDF file from an array of lines.
+     *
      * @param {string[]} lines The lines of the SDF file.
      * @private
      */
@@ -135,6 +138,7 @@ export class EasyParserSDF extends EasyParserParent {
 
     /**
      * Parses a V2000 formatted SDF file from an array of lines.
+     *
      * @param {string[]} lines The lines of the SDF file.
      * @private
      */
@@ -246,6 +250,7 @@ export class EasyParserSDF extends EasyParserParent {
     /**
      * Parse an atom line string from SDF into an IAtom object. This method is
      * called by the `getAtom` method of the parent class.
+     *
      * @param {string} atomStr The atom line string.
      * @param {number} [atomParserIndex] The 0-based index of this atom in the
      *                                   parser's `_atoms` list. This parameter
@@ -266,6 +271,7 @@ export class EasyParserSDF extends EasyParserParent {
 
     /**
      * Parses a V3000 atom line string into an IAtom object.
+     *
      * @param {string} atomStr The V3000 atom line string.
      * @param {number} [atomParserIndex] The 0-based index of this atom.
      * @returns {IAtom | undefined} The parsed atom.
@@ -331,6 +337,7 @@ export class EasyParserSDF extends EasyParserParent {
 
     /**
      * Parses a V2000 atom line string into an IAtom object.
+     *
      * @param {string} atomStr The V2000 atom line string.
      * @param {number} [atomParserIndex] The 0-based index of this atom.
      * @returns {IAtom | undefined} The parsed atom.
@@ -434,6 +441,7 @@ export class EasyParserSDF extends EasyParserParent {
     /**
      * Get the atom at the given 0-based index.
      * Overrides parent to pass the index to `_parseAtomStr` for context.
+     *
      * @param {number} idx  The 0-based index of the atom in the internal list.
      * @returns {IAtom} The parsed atom object.
      * @throws {Error} if parsing fails.

@@ -81,10 +81,13 @@ export function deleteCustomStyle(name: string): void {
 /**
  * Adds a new custom style to the application.
  *
- * @param {string} name The name of the custom style.
- * @param {ISelAndStyle} style The custom style object.
- * @param {boolean} [overwrite=false] Whether to overwrite if a style with the same name exists.
- * @returns {boolean} True if the style was added/updated, false if a name collision occurred and overwrite was false.
+ * @param {string} name          The name of the custom style.
+ * @param {ISelAndStyle} style   The custom style object.
+ * @param {boolean} [overwrite]  Whether to overwrite if a style with the same
+ *                               name exists. Default is false.
+ * @returns {boolean}            True if the style was added/updated, false if a
+ *                               name collision occurred and overwrite was
+ *                               false.
  */
 export function addCustomStyle(
     name: string,

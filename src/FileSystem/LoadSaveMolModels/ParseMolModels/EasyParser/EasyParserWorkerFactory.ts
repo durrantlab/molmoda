@@ -8,6 +8,11 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: import.meta.url is handled by webpack at build time
 // but is invalid under Jest's CommonJS module resolution.
+/**
+ * Factory function to create an EasyParser web worker.
+ *
+ * @returns {Worker} A new instance of the EasyParser web worker.
+ */
 export function createEasyParserWorker(): Worker {
     return new Worker(new URL("./EasyParser.worker", import.meta.url));
 }

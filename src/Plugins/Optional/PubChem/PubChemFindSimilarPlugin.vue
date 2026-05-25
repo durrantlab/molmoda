@@ -182,6 +182,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
   /**
    * Check if the plugin is allowed to be used.
+   *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
   checkPluginAllowed(): string | null {
@@ -198,10 +199,13 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
   /**
    * Get search results from PubChem and load them into the viewer.
+   *
    * @param {any} parameterSet The parameters passed from form.
    * @returns {Promise<void>} A promise that resolves when loading is complete.
    */
   async runJobInBrowser(parameterSet: any): Promise<void> {
+    void parameterSet; // Not used directly, but required by interface
+    
     const searchMode = this.getUserArg("searchmode");
     const maxResults = this.getUserArg("maxresults");
     const compounds: FileInfo[] = this.getUserArg("makemolinputparams");
@@ -433,6 +437,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
 
   /**
    * Get the tests for the plugin.
+   *
    * @returns {Promise<ITest[]>} The test commands.
    */
   async getTests(): Promise<ITest[]> {

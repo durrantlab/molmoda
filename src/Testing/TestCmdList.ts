@@ -11,7 +11,6 @@ import {
     TestWait,
     TestWaitUntilNotRegex,
     TestWaitUntilRegex,
-    addTestsToCmdList,
     TestTourNote,
 } from "./TestCommands";
 import { pluginsApi } from "@/Api/Plugins";
@@ -38,11 +37,13 @@ export class TestCmdList {
     /**
      * Click a button as if the user had clicked it.
      *
-     * @param {string}  selector              The CSS selector for the button.
-     * @param {boolean} [shiftPressed=false]  Whether the shift key was pressed.
-     * @param {string} [tourMessage] Optional custom message for tour display,
-     *     overriding the default phrasing (e.g., "collapse it" instead of
-     *     "select it").
+     * @param {string}  selector        The CSS selector for the button.
+     * @param {boolean} [shiftPressed]  Whether the shift key was pressed.
+     *                                  Default is false.
+     * @param {string}  [tourMessage]   Optional custom message for tour
+     *                                  display, overriding the default phrasing
+     *                                  (e.g., "collapse it" instead of "select
+     *                                  it").
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public click(selector: string, shiftPressed = false, tourMessage?: string): TestCmdList {
@@ -55,7 +56,8 @@ export class TestCmdList {
     /**
      * Wait for a specified number of seconds.
      *
-     * @param {number} [durationInSecs=1]  The number of seconds to wait.
+     * @param {number} [durationInSecs]  The number of seconds to wait. Default
+     *                                   is 1.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public wait(durationInSecs = 1): TestCmdList {
@@ -149,8 +151,8 @@ export class TestCmdList {
     }
 
     /**
-  * Opens a plugin programmatically by queuing clicks on the menu items.
-  * This allows the plugin to be opened during the test execution sequence.
+     * Opens a plugin programmatically by queuing clicks on the menu items.
+     * This allows the plugin to be opened during the test execution sequence.
      *
      * @param {string} pluginId The ID of the plugin to open.
      * @returns {TestCmdList} This TestCmdList (for chaining).
@@ -225,9 +227,9 @@ export class TestCmdList {
 
     /**
      * Opens a plugin with a specific payload. This bypasses the menu system.
-  * Note: This still executes immediately during test construction, as there
-  * is no standard UI mechanism to pass arbitrary payloads via clicks.
-  * Use with caution in test sequences.
+     * Note: This still executes immediately during test construction, as there
+     * is no standard UI mechanism to pass arbitrary payloads via clicks.
+     * Use with caution in test sequences.
      *
      * @param {string} pluginId The ID of the plugin to open.
      * @param {any} payload The payload to pass to the plugin's onPluginStart method.
@@ -254,15 +256,15 @@ export class TestCmdList {
      * Adds a test to load a sample molecule (small protein and ligand) for
      * testing.
      *
-     * @param {boolean} [expandInMoleculeTree=false]  Whether to expand the
-     *                                                molecule tree to show the
-     *                                                molecule.
-     * @param {string}  [url="4WP4.pdb"]              The URL of the molecule to
-     *                                                load.
-     * @param {string}  [expectedTitle]               The expected title of the
-     *                                                molecule in the navigator.
-     *                                                If not provided, derived
-     *                                                from the filename.
+     * @param {boolean} [expandInMoleculeTree]  Whether to expand the molecule
+     *                                          tree to show the molecule.
+     *                                          Default is false.
+     * @param {string}  [url]                   The URL of the molecule to load.
+     *                                          Default is "4WP4.pdb".
+     * @param {string}  [expectedTitle]         The expected title of the
+     *                                          molecule in the navigator. If
+     *                                          not provided, derived from the
+     *                                          filename.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public loadExampleMolecule(
@@ -319,10 +321,13 @@ export class TestCmdList {
     /**
      * Adds a test to load a molecule from a SMILES string for testing.
      *
-     * @param {string}  smilesString          The SMILES string of the molecule to load
-     * @param {boolean} [expandInMoleculeTree=false]  Whether to expand the molecule tree
-     *                                               to show the molecule
-     * @param {string}  [name="molecule.smi"]  The name of the file to load.
+     * @param {string}  smilesString            The SMILES string of the
+     *                                          molecule to load
+     * @param {boolean} [expandInMoleculeTree]  Whether to expand the molecule
+     *                                          tree to show the molecule.
+     *                                          Default is false.
+     * @param {string}  [name]                  The name of the file to load.
+     *                                          Default is "molecule.smi".
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public loadSMILESMolecule(
@@ -414,10 +419,10 @@ export class TestCmdList {
      * If running a selenium test, this function will generate the command to
      * select a given molecule in the tree view.
      *
-     * @param {string}  treeTitle             The title of the molecule to
-     *                                        select in the molecule tree.
-     * @param {boolean} [shiftPressed=false]  Whether the shift key should be
-     *                                        pressed.
+     * @param {string}  treeTitle       The title of the molecule to select in
+     *                                  the molecule tree.
+     * @param {boolean} [shiftPressed]  Whether the shift key should be pressed.
+     *                                  Default is false.
      * @returns {TestCmdList} This TestCmdList (for chaining).
      */
     public selectMoleculeInTree(

@@ -107,8 +107,9 @@ export abstract class EasyParserParent {
     /**
      * Get the selected atoms.
      *
-     * @param {object}  sel              The selection.
-     * @param {boolean} [extract=false]  Whether to extract the selected atoms.
+     * @param {object}  sel        The selection.
+     * @param {boolean} [extract]  Whether to extract the selected atoms.
+     *                             Default is false.
      * @returns {IAtom[]} The selected atoms.
      */
     selectedAtoms(sel: { [key: string]: string[] }, extract = false): IAtom[] {
@@ -141,6 +142,7 @@ export abstract class EasyParserParent {
 
             /**
              * The filter function for the current key.
+             * 
              * @param {IAtom} atom The atom to check.
              * @returns {boolean} True if the atom matches the selection, false otherwise.
              */
@@ -150,6 +152,7 @@ export abstract class EasyParserParent {
                 case "resn":
                     /**
                      * Filter function for residue names.
+                     * 
                      * @param {IAtom} atom The atom to check.
                      * @returns {boolean} True if the atom's residue name is in
                      *     the selection, false otherwise.
@@ -159,6 +162,7 @@ export abstract class EasyParserParent {
                 case "chain":
                     /**
                      * Filter function for chain identifiers.
+                     *
                      * @param {IAtom} atom The atom to check.
                      * @returns {boolean} True if the atom's chain identifier is
                      *     in the selection, false otherwise.
@@ -168,6 +172,7 @@ export abstract class EasyParserParent {
                 case "elem":
                     /**
                      * Filter function for element symbols.
+                     *
                      * @param {IAtom} atom The atom to check.
                      * @returns {boolean} True if the atom's element symbol is
                      *     in the selection, false otherwise.
@@ -218,8 +223,10 @@ export abstract class EasyParserParent {
     /**
      * Calculates the bounding box of the atoms in this parser, considering the stride.
      *
-     * @param {number} [stride=1] The step size for iterating through atoms. Must be >= 1.
-     * @returns {IBounds | null} The bounding box, or null if no atoms with coordinates are found.
+     * @param {number} [stride]  The step size for iterating through atoms. Must
+     *                           be >= 1. Default is 1 (consider all atoms).
+     * @returns {IBounds | null} The bounding box, or null if no atoms with
+     *                           coordinates are found.
      */
     getBounds(stride = 1): IBounds | null {
         if (stride < 1) {
@@ -288,12 +295,12 @@ export abstract class EasyParserParent {
         return allXZero || allYZero || allZZero;
     }
     /**
- * Builds a spatial grid for the atoms in this parser.
- *
- * @param {number} stride The stride to use when iterating atoms.
- * @param {number} cellSize The size of each grid cell (should match query distance).
- * @returns {Map<string, number[]>} A map where keys are "x,y,z" indices and values are arrays of atom indices.
- */
+     * Builds a spatial grid for the atoms in this parser.
+     *
+     * @param {number} stride The stride to use when iterating atoms.
+     * @param {number} cellSize The size of each grid cell (should match query distance).
+     * @returns {Map<string, number[]>} A map where keys are "x,y,z" indices and values are arrays of atom indices.
+     */
     private _buildSpatialGrid(stride: number, cellSize: number): Map<string, number[]> {
         const grid = new Map<string, number[]>();
         for (let i = 0; i < this.length; i += stride) {
@@ -321,14 +328,21 @@ export abstract class EasyParserParent {
      * in another parser, optionally using strides to speed up the check.
      * Optimized with bounding box check and early exit for distance components.
      *
-     * @param {EasyParserParent} otherParser The other parser to compare against.
-     * @param {number}           distance    The distance threshold in Angstroms.
-     * @param {number}           [selfStride=1] The step size for iterating through
-     *                           atoms in this parser. Must be >= 1.
-     * @param {number}           [otherStride=1] The step size for iterating through
-     *                           atoms in the other parser. Must be >= 1.
-     * @returns {boolean} True if at least one pair of atoms (one from each parser,
-     *          considering strides) is within the specified distance, false otherwise.
+     * @param {EasyParserParent} otherParser    The other parser to compare
+     *                                          against.
+     * @param {number}           distance       The distance threshold in
+     *                                          Angstroms.
+     * @param {number}           [selfStride]   The step size for iterating
+     *                                          through atoms in this parser.
+     *                                          Must be >= 1. Default is 1
+     *                                          (consider all atoms).
+     * @param {number}           [otherStride]  The step size for iterating
+     *                                          through atoms in the other
+     *                                          parser. Must be >= 1. Default is
+     *                                          1 (consider all atoms).
+     * @returns {boolean} True if at least one pair of atoms (one from each
+     *          parser, considering strides) is within the specified distance,
+     *          false otherwise.
      */
     isWithinDistance(
         otherParser: EasyParserParent,

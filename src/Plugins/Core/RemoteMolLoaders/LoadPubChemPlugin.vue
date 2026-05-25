@@ -89,6 +89,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Filters text to match desired format.
+     *
      * @param {string} val  The text to assess.
      * @returns {string} The filtered text.
      */
@@ -100,6 +101,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Get the name of the app.
+     *
      * @returns {string} The name of the app.
      */
     get appName(): string {
@@ -116,6 +118,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
     /**
      * If text is a properly formatted UniProt accession, enable the button.
      * Otherwise, disabled.
+     *
      * @returns {boolean} Whether to disable the button.
      */
     isBtnEnabled(): boolean {
@@ -161,6 +164,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Loads the 1D molecule (SMILES) from PubChem.
+     *
      * @param {string} filename  The filename to use.
      * @param {boolean} [getIsomeric]  Whether to get isomeric SMILES.
      *     If false, will get regular SMILES.
@@ -185,6 +189,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Loads the 2D molecule from PubChem. Used if 3D molecule isn't available.
+     *
      * @param {string} filename  The filename to use.
      * @returns {Promise<FileInfo | void>} A promise that resolves when it is
      *     loaded.
@@ -206,6 +211,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Loads the 3D molecule from PubChem. Returns undefined
+     *
      * @param {string} filename  The filename to use.
      * @returns {Promise<FileInfo | void>} A promise that resolves when it is
      *     loaded.
@@ -254,6 +260,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     *
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
     async runJobInBrowser(): Promise<void> {
@@ -318,6 +325,7 @@ export default class LoadPubChemPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

@@ -1,4 +1,4 @@
-<template>
+    <template>
     <PluginComponent :infoPayload="infoPayload" v-model="open" cancelBtnTxt="Deny" actionBtnTxt="Allow"
         actionBtnTxt2="Allow All" @onDone="onAllow" @onDone2="onAllowAll" @onCancel="onDeny" @onClosed="onClosed"
         variant="warning" @onUserArgChanged="onUserArgChanged" @onPopupDone="onPopupDone"
@@ -79,6 +79,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
      * in a popup, this function would open the popup.
+     *
      * @param {any} [payload]  Information about the message to display.
      * @returns {Promise<void>}       Promise that resolves when the plugin is
      *                                finished starting.
@@ -109,6 +110,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -117,6 +119,7 @@ export default class FetcherPermissionPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

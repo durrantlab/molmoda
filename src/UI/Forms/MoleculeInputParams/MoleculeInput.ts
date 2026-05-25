@@ -98,6 +98,7 @@ export class MoleculeInput {
 
     /**
      * The constructor for the MoleculeInput class.
+     * 
      * @param {IMoleculeInputParams} params  The parameters of the MoleculeInput
      *     object.
      */

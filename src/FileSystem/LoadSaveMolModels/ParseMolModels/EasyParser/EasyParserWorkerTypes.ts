@@ -12,7 +12,7 @@ import { IFileInfo } from "@/FileSystem/Types";
 
 // ── Handle lifecycle ────────────────────────────────────────────────
 
-export interface CreateParserCmd {
+interface CreateParserCmd {
     op: "createParser";
     /** Caller-chosen handle that subsequent commands reference. */
     handle: string;
@@ -20,43 +20,43 @@ export interface CreateParserCmd {
     src: IFileInfo;
 }
 
-export interface DestroyParserCmd {
+interface DestroyParserCmd {
     op: "destroyParser";
     handle: string;
 }
 
 // ── Query commands (do not mutate the parser) ───────────────────────
 
-export interface GetAtomsCmd {
+interface GetAtomsCmd {
     op: "getAtoms";
     handle: string;
 }
 
-export interface GetAtomCmd {
+interface GetAtomCmd {
     op: "getAtom";
     handle: string;
     index: number;
 }
 
-export interface GetLengthCmd {
+interface GetLengthCmd {
     op: "getLength";
     handle: string;
 }
 
-export interface GetBoundsCmd {
+interface GetBoundsCmd {
     op: "getBounds";
     handle: string;
     stride?: number;
 }
 
-export interface SelectedAtomsCmd {
+interface SelectedAtomsCmd {
     op: "selectedAtoms";
     handle: string;
     sel: { [key: string]: string[] };
     extract?: boolean;
 }
 
-export interface IsWithinDistanceCmd {
+interface IsWithinDistanceCmd {
     op: "isWithinDistance";
     handle: string;
     /** Handle of the *other* parser already in the registry. */
@@ -66,22 +66,22 @@ export interface IsWithinDistanceCmd {
     otherStride?: number;
 }
 
-export interface IsFlatCmd {
+interface IsFlatCmd {
     op: "isFlat";
     handle: string;
 }
 
-export interface HasHydrogensCmd {
+interface HasHydrogensCmd {
     op: "hasHydrogens";
     handle: string;
 }
 
-export interface GetUniqueResiduesCmd {
+interface GetUniqueResiduesCmd {
     op: "getUniqueResidues";
     handle: string;
 }
 
-export interface AppendAtomsCmd {
+interface AppendAtomsCmd {
     op: "appendAtoms";
     handle: string;
     atoms: IAtom | IAtom[];
@@ -92,7 +92,7 @@ export interface AppendAtomsCmd {
  * Useful when the main thread already has parsed atoms (e.g., from
  * selectedAtoms extract results) and wants to push them into the worker.
  */
-export interface CreateParserFromAtomsCmd {
+interface CreateParserFromAtomsCmd {
     op: "createParserFromAtoms";
     handle: string;
     atoms: IAtom[];

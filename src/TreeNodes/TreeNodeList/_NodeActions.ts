@@ -48,7 +48,6 @@ export class TreeNodeListNodeActions {
         // that too, up the tree (because these are not terminal nodes, and if a
         // non-terminal node doens't have any children, there's no reason for it to
         // exist).
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             if (!curNode) {
                 // Parent node does not exist. Something's wrong.

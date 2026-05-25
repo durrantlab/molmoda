@@ -426,10 +426,10 @@ export class TreeNodeList {
     /**
      * Convert this TreeNodeList to a specified molecular format.
      *
-     * @param  {string}          targetExt      The extension of the format to
-     *                                          convert to.
-     * @param  {boolean}         [merge=true]  Whether to merge the models into
-     *                                          a single PDB string.
+     * @param  {string}          targetExt  The extension of the format to
+     *                                      convert to.
+     * @param  {boolean}         [merge]    Whether to merge the models into a
+     *                                      single PDB string. Default is true.
      * @returns {FileInfo[]} The text-formatted (e.g., PDB, MOL2) strings.
      */
     public async toFileInfos(
@@ -473,15 +473,20 @@ export class TreeNodeList {
     }
 
     /**
-     * Prepare and add all nodes in this list to the main molecule tree.
-     * If visualization is deferred (via deferVisualization()), the
-     * render is skipped here; the deferVisualization wrapper handles it.
-     * Otherwise, a render is triggered after adding.
+     * Prepare and add all nodes in this list to the main molecule tree. If
+     * visualization is deferred (via deferVisualization()), the render is
+     * skipped here; the deferVisualization wrapper handles it. Otherwise, a
+     * render is triggered after adding.
      *
-     * @param {string | null} tag                         Plugin tag.
-     * @param {boolean}       [reassignIds=true]          Reassign node ids.
-     * @param {boolean}       [terminalNodeTitleRevisable=true]  Allow title revision.
-     * @param {boolean}       [resetVisibilityAndSelection=true] Reset vis/sel state.
+     * @param {string | null} tag                            Plugin tag.
+     * @param {boolean}       [reassignIds]                  Reassign node ids.
+     *                                                       Default is true.
+     * @param {boolean}       [terminalNodeTitleRevisable]   Allow title
+     *                                                       revision. Default
+     *                                                       is true.
+     * @param {boolean}       [resetVisibilityAndSelection]  Reset vis/sel
+     *                                                       state. Default is
+     *                                                       true.
      */
     public async addToMainTree(
         tag: string | null,
@@ -528,6 +533,13 @@ export class TreeNodeList {
         }
     }
 
+    /**
+     * Creates a new TreeNodeList with the specified nodes.
+     * 
+     * @param  {TreeNode[]} [nodes] The nodes to include in the new list.
+     *                              Default is an empty array.
+     * @returns {TreeNodeList}  The new TreeNodeList.
+     */
     public newTreeNodeList(nodes: TreeNode[] = []): TreeNodeList {
         // To avoid circular dependencies
         return new TreeNodeList(nodes);
@@ -537,9 +549,9 @@ export class TreeNodeList {
      * Merges all the nodes in this list into a single node. This is useful for
      * converting a list of molecules into a single molecule.
      *
-     * @param  {string} [topLevelTitle=undefined]  The title of the top-level
-     *                                             node. If undefined, the title
-     *                                             of the first node is used.
+     * @param  {string} [topLevelTitle]  The title of the top-level node. If
+     *                                   undefined, the title of the first node
+     *                                   is used. Default is undefined.
      * @returns {TreeNodeList}  The new list.
      */
     public merge(topLevelTitle?: string): TreeNodeList {

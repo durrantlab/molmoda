@@ -110,10 +110,10 @@ export default class HelpPlugin extends PluginParentClass {
     }
 
     /**
- * Starts a tour for the given plugin.
- *
- * @param {PluginParentClass} plugin The plugin for which to start a tour.
- */
+     * Starts a tour for the given plugin.
+     *
+     * @param {PluginParentClass} plugin The plugin for which to start a tour.
+     */
     startTour(plugin: PluginParentClass) {
         this.closePopup();
         setTimeout(() => {

@@ -37,11 +37,13 @@ export function unregisterToastInstance(id: string) {
 /**
  * Adds a new toast to the list of active toasts.
  *
- * @param {string} title The title of the toast.
- * @param {string} message The message body of the toast.
- * @param {PopupVariant} [variant=PopupVariant.Info] The color variant of the toast.
- * @param {Function} [callBack] The function to call when the toast is closed.
- * @param {IToastOptions} [options] Additional options for the toast.
+ * @param {string} title             The title of the toast.
+ * @param {string} message           The message body of the toast.
+ * @param {PopupVariant} [variant]   The color variant of the toast. Defaults to
+ *                                   PopupVariant.Info.
+ * @param {Function} [callBack]      The function to call when the toast is
+ *                                   closed.
+ * @param {IToastOptions} [options]  Additional options for the toast.
  */
 export function addToast(
     title: string,

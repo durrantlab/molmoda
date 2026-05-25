@@ -27,10 +27,10 @@ import { getFileNameParts } from "@/FileSystem/FilenameManipulation";
  * Don't call this function directly. Instead, use TreeNodeList.toFileInfos().
  *
  * @param  {TreeNodeList}  treeNodeList  The list of mol containers.
- * @param  {string}        targetExt      The extension of the format to convert
- *                                        to.
- * @param  {boolean}      [merge=false]   Whether to merge the models into a
- *                                        single PDB string.
+ * @param  {string}        targetExt     The extension of the format to convert
+ *                                       to.
+ * @param  {boolean}      [merge]        Whether to merge the models into a
+ *                                       single PDB string. Default is false.
  * @returns {FileInfo[]}  The text-formatted (e.g., PDB, MOL2) strings.
  */
 export function _convertTreeNodeList(

@@ -70,49 +70,45 @@ export abstract class QueueParent {
     /**
      * The class constructor.
      *
-     * @param {string|undefined} jobTypeId                   A string that
-     *                                                       identifies the type
-     *                                                       of job.
-     * @param {any[]}            inputs                      An flat array of
-     *                                                       inputs to be
-     *                                                       processed.
-     * @param {number}           maxProcs                    The maximum number
-     *                                                       of processors that
-     *                                                       can be used by the
-     *                                                       queue.
-     * @param {IQueueCallbacks}  [callbacks=undefined]       The callbacks to be
-     *                                                       used by the queue,
-     *                                                       if any.
-     * @param {number}           [procsPerJobBatch=1]        The number of
-     *                                                       processors that can
-     *                                                       be used by each
-     *                                                       batch of jobs.
-     * @param {number}           [simulBatches=undefined]    The max number of
-     *                                                       batches to run
-     *                                                       simultaneously. If
-     *                                                       undefined,
-     *                                                       calculated as
-     *                                                       maxProcs /
-     *                                                       procsPerJobBatch
-     *                                                       (to run as many
-     *                                                       batches at same
-     *                                                       time as possible). 
-     * @param {number}           [batchSize=undefined]       The number of jobs
-     *                                                       per batch. If
-     *                                                       undefined,
-     *                                                       calculated as
-     *                                                       inputs.length /
-     *                                                       simulBatches.
-     * @param {boolean}          [showInQueue=true]          Whether to show
-     *                                                       this job in the
-     *                                                       queue.
-     * @param {boolean}          [onJobAfterQueueDone=true]  Whether to run the
-     *                                                       onJobDone callback
-     *                                                       after the queue is
-     *                                                       done. Set to false
-     *                                                       if you want to run
-     *                                                       the onJobDone
-     *                                                       callback yourself.
+     * @param {string|undefined} jobTypeId              A string that identifies
+     *                                                  the type of job.
+     * @param {any[]}            inputs                 An flat array of inputs
+     *                                                  to be processed.
+     * @param {number}           maxProcs               The maximum number of
+     *                                                  processors that can be
+     *                                                  used by the queue.
+     * @param {IQueueCallbacks}  [callbacks]            The callbacks to be used
+     *                                                  by the queue, if any.
+     *                                                  Default is undefined.
+     * @param {number}           [procsPerJobBatch]     The number of processors
+     *                                                  that can be used by each
+     *                                                  batch of jobs. Default
+     *                                                  is 1.
+     * @param {number}           [simulBatches]         The max number of
+     *                                                  batches to run
+     *                                                  simultaneously. If
+     *                                                  undefined, calculated as
+     *                                                  maxProcs /
+     *                                                  procsPerJobBatch (to run
+     *                                                  as many batches at same
+     *                                                  time as possible).
+     *                                                  Default is undefined.
+     * @param {number}           [batchSize]            The number of jobs per
+     *                                                  batch. If undefined,
+     *                                                  calculated as
+     *                                                  inputs.length /
+     *                                                  simulBatches. Default is
+     *                                                  undefined.
+     * @param {boolean}          [showInQueue]          Whether to show this job
+     *                                                  in the queue. Default is
+     *                                                  true.
+     * @param {boolean}          [onJobAfterQueueDone]  Whether to run the
+     *                                                  onJobDone callback after
+     *                                                  the queue is done. Set
+     *                                                  to false if you want to
+     *                                                  run the onJobDone
+     *                                                  callback yourself.
+     *                                                  Default is true.
      */
     constructor(
         jobTypeId: string,
@@ -243,8 +239,6 @@ export abstract class QueueParent {
      * function is called every so often by a timer.
      */
     private _fillQueueToCapacity() {
-        // Start jobs until the queue is full or there are no more jobs.
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             // Cancel in progress
             if (this.jobsCancelling) {

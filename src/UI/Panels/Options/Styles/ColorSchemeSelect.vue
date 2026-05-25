@@ -53,6 +53,7 @@ export default class ColorSchemeSelect extends Vue {
 
   /**
    * Gets the color form.
+   *
    * @returns {any[]}  The color form.
    */
   get constructedColorForm(): any[] {
@@ -120,6 +121,7 @@ export default class ColorSchemeSelect extends Vue {
 
   /**
    * Get the constructed color form.
+   *
    * @param {UserArg[]} val  The color form.
    */
   set constructedColorForm(val: UserArg[]) {
@@ -158,6 +160,7 @@ export default class ColorSchemeSelect extends Vue {
   /**
    * Add default values to the style object if it is missing. Acts in place, so
    * returns nothing.
+   *
    * @param {ISelAndStyle} style  The style. Looks something like
    *                        {"cartoon":{"color":"spectrum"}}.
    */
@@ -172,7 +175,7 @@ export default class ColorSchemeSelect extends Vue {
       styleAsObjForRef = JSON.parse(JSON.stringify(style)) as {
         [key: string]: IColorScheme;
       };
-    } catch (e) {
+    } catch {
       debugger;
       return;
     }

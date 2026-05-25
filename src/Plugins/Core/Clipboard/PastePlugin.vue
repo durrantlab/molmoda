@@ -88,9 +88,12 @@ export default class PastePlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     *
      * @param {any} payload  The payload (node id)
      */
     async onBeforePopupOpen(payload: any) {
+        void payload;
+        
         let formatMsg = `${appName} recognizes text pasted in any of the following formats: `;
 
         for (const formatID in molFormatInformation) {
@@ -198,7 +201,10 @@ export default class PastePlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
         return Promise.resolve();
@@ -206,6 +212,7 @@ export default class PastePlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

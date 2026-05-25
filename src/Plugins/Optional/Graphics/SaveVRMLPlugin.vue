@@ -80,6 +80,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Check if this plugin can currently be used.
+   *
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
@@ -96,6 +97,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Simplify the mesh.
+   *
    * @param {string[][]} vrmlData  The VRML data to simplify.
    * @param {any}        mols      The molecules to simplify.
    * @returns {Promise<string[][]>}  The simplified VRML data.
@@ -166,6 +168,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
+   *
    * @param {any} parameters  Information about the VRML file to save.
    * @returns {Promise<any>}  A promise that resolves when the job is done.
    */
@@ -220,6 +223,7 @@ export default class SaveVRMLPlugin extends PluginParentClass {
 
   /**
    * Gets the test commands for the plugin. For advanced use.
+   *
    * @gooddefault
    * @document
    * @returns {ITest}  The selenium test commands.

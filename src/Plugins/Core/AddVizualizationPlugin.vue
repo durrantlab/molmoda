@@ -97,14 +97,14 @@ export default class AddVizualizationPlugin extends PluginParentClass {
   currentSelectionRepType: Representation | null = null;
   currentRepresentationStyle: ISelAndStyle = {};
 
-      /**
-     * Debounced residue option updater. Avoids re-parsing all visible
-     * molecules on every rapid store mutation (e.g., when batch-loading
-     * molecules triggers many sequential tree updates).
-     */
-    private _residueUpdateDebounce = createTrailingEdgeDebounce(() => {
-        this.updateResidueOptions();
-    }, 500);
+  /**
+   * Debounced residue option updater. Avoids re-parsing all visible
+   * molecules on every rapid store mutation (e.g., when batch-loading
+   * molecules triggers many sequential tree updates).
+   */
+  private _residueUpdateDebounce = createTrailingEdgeDebounce(() => {
+    this.updateResidueOptions();
+  }, 500);
 
 
   private lastProgrammaticStyleName = "";
@@ -644,11 +644,11 @@ export default class AddVizualizationPlugin extends PluginParentClass {
    * Watches for changes in the global molecules store and updates residue
    * options.
    */
-    @Watch("$store.state.molecules", { deep: true })
-    onMoleculesChanged() {
-        // Debounce rather than running immediately on every deep mutation.
-        this._residueUpdateDebounce.invoke();
-    }
+  @Watch("$store.state.molecules", { deep: true })
+  onMoleculesChanged() {
+    // Debounce rather than running immediately on every deep mutation.
+    this._residueUpdateDebounce.invoke();
+  }
 
   /**
    * Updates the options for residue name and ID selection dropdowns based on

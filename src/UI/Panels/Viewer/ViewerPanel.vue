@@ -43,7 +43,11 @@ export default class ViewerPanel extends Vue {
 
   private _styleUpdateCoalescer: AsyncTaskCoalescer | null = null;
 
-  /** Returns the coalescer, creating it on first access when `this` is live. */
+  /** 
+   * Returns the coalescer, creating it on first access when `this` is live. 
+   *
+   * @returns {AsyncTaskCoalescer} The coalescer for style updates.
+   */
   private _getStyleUpdateCoalescer(): AsyncTaskCoalescer {
     if (!this._styleUpdateCoalescer) {
       this._styleUpdateCoalescer = new AsyncTaskCoalescer(async (): Promise<void> => {
@@ -185,6 +189,8 @@ export default class ViewerPanel extends Vue {
    */
   @Watch("treeview", { immediate: false, deep: true })
   async onTreeviewChanged(_allMolecules: TreeNodeList) {
+    void _allMolecules;
+    
     this._getStyleUpdateCoalescer().request();
   }
 

@@ -312,6 +312,7 @@ export default class RegionFromMoleculesPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin.
+     *
      * @returns {Promise<ITest[]>} The test definitions.
      */
     async getTests(): Promise<ITest[]> {

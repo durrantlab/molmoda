@@ -25,7 +25,7 @@ export const pubchemCredit: ISoftwareCredit = {
 };
 
 /** Result of a CID lookup, providing both the CID and a pre-built HTML link. */
-export interface ICidLookupResult {
+interface ICidLookupResult {
     cid: string;
     found: boolean;
     cidLink: string;

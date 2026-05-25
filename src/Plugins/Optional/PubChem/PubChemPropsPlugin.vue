@@ -48,6 +48,7 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Check if the plugin is allowed to be used.
+   *
    * @returns {string | null} Error message if not allowed, null if allowed.
    */
   checkPluginAllowed(): string | null {
@@ -56,6 +57,7 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Get the properties of the molecule.
+   *
    * @param {FileInfo} molFileInfo The molecule file info.
    * @returns {Promise} The properties. Resolves to undefined if no properties
    *     found.
@@ -85,6 +87,7 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
 
   /**
    * Get the tests for the plugin.
+   *
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {

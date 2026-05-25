@@ -1,7 +1,7 @@
 /**
  * Create a random id.
  *
- * @param  {number} [l=13] The length of the id.
+ * @param  {number} [l] The length of the id. Default is 13.
  * @returns {string} The random id.
  */
 export function randomID(l = 13): string {
@@ -17,12 +17,12 @@ export function randomID(l = 13): string {
 /**
  * Wait for a condition to be true.
  *
- * @param {() => boolean} conditionFunc         The function that returns the
- *                                              condition.
- * @param {number}        [checkFrequency=100]  The frequency to check the
- *                                              condition.
- * @param {number}        [timeout=0]           The maximum time to wait in ms.
- *                                              If 0, waits indefinitely.
+ * @param {() => boolean} conditionFunc     The function that returns the
+ *                                          condition.
+ * @param {number}        [checkFrequency]  The frequency to check the
+ *                                          condition. Default is 100.
+ * @param {number}        [timeout]         The maximum time to wait in ms. If
+ *                                          0, waits indefinitely. Default is 0.
  * @returns {Promise<void>}  A promise that resolves when the condition is true,
  *  or rejects if it times out.
  */

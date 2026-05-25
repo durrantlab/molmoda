@@ -5,12 +5,6 @@ import { SelectedType, TreeNodeType } from "./TreeInterfaces";
 import { TreeNodeList } from "../../../TreeNodes/TreeNodeList/TreeNodeList";
 import { treeNodeDeepClone } from "../../../TreeNodes/Deserializers";
 import { makeEasyParser } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
-import {
-    makeEasyParserAsync,
-    isWorkerParser,
-    WorkerParserHandle,
-    AsyncParserResult,
-} from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser";
 import { EasyParserParent } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/EasyParser/EasyParserParent";
 import {
     EasyParserWorkerClient,
@@ -131,9 +125,10 @@ function extractModelData(
  * all children. Also assigns new ids, etc. Can't be under TreeNodeList because
  * it calls treeNodeDeepClone (circular dependencies).
  *
- * @param  {TreeNodeList} treeNodeList        The list of molecules to clone.
- * @param  {boolean}  [includeAncestors=true]  If true, includes the ancestors
- *                                             of the molecules in the clone.
+ * @param  {TreeNodeList} treeNodeList    The list of molecules to clone.
+ * @param  {boolean}  [includeAncestors]  If true, includes the ancestors of the
+ *                                        molecules in the clone. Default is
+ *                                        true.
  * @returns {Promise<TreeNodeList>}  A promise that resolves the cloned list of
  *     molecules.
  */
@@ -215,9 +210,9 @@ export function cloneMolsWithAncestry(
 /**
  * Merges a list of molecules into a single molecule.
  *
- * @param  {TreeNodeList} nodeList               The list of molecules to merge.
- * @param  {string}       [newName="mergedMol"]  The name of the new merged
- *                                               molecule.
+ * @param  {TreeNodeList} nodeList   The list of molecules to merge.
+ * @param  {string}       [newName]  The name of the new merged molecule.
+ *                                   Default is "mergedMol".
  * @returns {Promise<TreeNode>}  A promise that resolves the merged molecule.
  */
 export function mergeTreeNodes(
@@ -355,9 +350,12 @@ export async function getUniqueResiduesFromVisibleMolecules(): Promise<{
 /**
  * Organizes a flat list of terminal TreeNode objects into a standard hierarchical structure.
  *
- * @param {TreeNode[]} treeNodes The flat list of terminal nodes to organize.
- * @param {string} rootTitle The title for the root node of the new hierarchy.
- * @param {boolean} [divideCompoundsByChain=true] Whether to group compounds by chain.
+ * @param {TreeNode[]} treeNodes              The flat list of terminal nodes to
+ *                                            organize.
+ * @param {string} rootTitle                  The title for the root node of the
+ *                                            new hierarchy.
+ * @param {boolean} [divideCompoundsByChain]  Whether to group compounds by
+ *                                            chain. Default is true.
  * @returns {TreeNode} The new root TreeNode containing the organized hierarchy.
  */
 export function organizeNodesIntoHierarchy(
@@ -519,9 +517,11 @@ function getChain(treeNode: TreeNode, availableChains: string[]): string {
 /**
  * Given a list of tree nodes, flattens them to terminals and organizes them into a standard hierarchy.
  *
- * @param {TreeNode[]} treeNodes The tree nodes to organize.
- * @param {string} rootNodeTitle The title for the root node of the new hierarchy.
- * @param {boolean} [divideCompoundsByChain=true] Whether to divide compounds by chain.
+ * @param {TreeNode[]} treeNodes              The tree nodes to organize.
+ * @param {string} rootNodeTitle              The title for the root node of the
+ *                                            new hierarchy.
+ * @param {boolean} [divideCompoundsByChain]  Whether to divide compounds by
+ *                                            chain. Default is true.
  * @returns {TreeNode} The root tree node of the loaded tree.
  */
 export function loadHierarchicallyFromTreeNodes(

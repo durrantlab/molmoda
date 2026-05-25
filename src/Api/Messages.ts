@@ -25,6 +25,7 @@ import { sanitizeHtml } from "@/Core/Security/Sanitize";
 export const messagesApi = {
     /**
      * Displays a popup message or a toast notification.
+     * 
      * @param  {string}        title                        The title of the
      *                                                      popup.
      * @param  {string}        message                      The message to
@@ -92,6 +93,7 @@ export const messagesApi = {
 
     /**
      * Displays an error popup.
+     * 
      * @param  {string}   message     The error message.
      * @param  {Function} [callBack]  A function to call when the popup is
      *                                closed.
@@ -113,6 +115,7 @@ export const messagesApi = {
 
     /**
      * Displays a Yes-No popup message.
+     * 
      * @param  {string}  message          The message to display.
      * @param  {string}  [title]          The title of the popup.
      * @param  {string}  [yesBtnTxt]      The text to use for the yes button.
@@ -135,6 +138,7 @@ export const messagesApi = {
                     message,
                     /**
                      * Callback function to handle the user's response.
+                     * 
                      * @param {YesNo} val - The user's response (Yes, No, or Cancel).
                      * @returns {void}
                      */
@@ -154,6 +158,7 @@ export const messagesApi = {
 
     /**
      * Displays a popup message.
+     * 
      * @param  {string}       title                  The title of the popup.
      * @param  {string}       message                The message to display.
      * @param  {ITableData}   tableData              The table data to display.
@@ -187,6 +192,7 @@ export const messagesApi = {
 
     /**
      * Starts a wait spinner. Returns an id that can be used to stop the spinner.
+     * 
      * @param {number} [timeOut]  The timeout in milliseconds.
      * @returns {string}  The id of the spinner.
      */
@@ -196,6 +202,7 @@ export const messagesApi = {
 
     /**
      * Stops a wait spinner.
+     * 
      * @param {string} id  The id of the spinner.
      */
     stopWaitSpinner: function (id: string) {
@@ -211,6 +218,7 @@ export const messagesApi = {
 
     /**
      * Logs a message. Appears in the log at the bottom of the screen.
+     * 
      * @param {string} message       The message to log.
      * @param {any}    [parameters]  The parameters associated with this log, if
      *                               any.

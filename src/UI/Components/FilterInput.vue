@@ -10,8 +10,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
 import Icon from "./Icon.vue";

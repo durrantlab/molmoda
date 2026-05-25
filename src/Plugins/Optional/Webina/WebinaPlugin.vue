@@ -315,6 +315,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Gets the text for the action button based on the 'score_only' setting.
+     *
      * @returns {string} The text for the action button ('Score' or 'Dock').
      */
     get actionButtonText(): string {
@@ -325,6 +326,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Filters a candidate max processors value.
+     *
      * @param {number} val  The value to filter.
      * @returns {number}  The filtered value.
      */
@@ -354,6 +356,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
+     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -387,6 +390,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Gets the data (e.g., score) from the PDBQT frame.
+     *
      * @param {string} pdbqtFrame    The pdbqt frame.
      * @param {any}    webinaParams  The webina parameters.
      * @param {string} stdOut        The standard output.
@@ -403,6 +407,8 @@ export default class WebinaPlugin extends PluginParentClass {
         keepOnlyBest: boolean,
         time?: number
     ): [{ [key: string]: ITreeNodeData }, string, string] {
+        void time; // Not used currently, but may be in the future.
+
         const scoreOnly = webinaParams["score_only"];
         const pdbqtOutLines = pdbqtFrame.split("\n");
 
@@ -500,6 +506,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Converts the output pdbqt to a TreeNode.
+     *
      * @param {string} title       The title of the TreeNode.
      * @param {string} pdbqtOut    The pdbqt output.
      * @param {string} cmpdSrc     The source of the compound.
@@ -562,11 +569,14 @@ export default class WebinaPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @param {any[]} payloads  The user arguments to pass to the "executable."
      *                          Contains compound information.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     async runJobInBrowser(payloads: any[]): Promise<void> {
+        void payloads; // Not used directly, but required by interface
+
         const filePairs: IProtCmpdTreeNodePair[] =
             this.getUserArg("makemolinputparams");
 
@@ -788,7 +798,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
                 if (isTest) {
                     // If testing, append ":testdock" to all new molecules so
-                    // you can watch for them. #TODO: This is a little hacky.
+                    // you can watch for them. TODO: This is a little hacky.
                     rootNode.nodes?.terminals.forEach((node) => {
                         node.title += ":testdock";
                     });
@@ -855,6 +865,7 @@ export default class WebinaPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

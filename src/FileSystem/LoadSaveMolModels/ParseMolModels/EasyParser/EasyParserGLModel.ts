@@ -36,6 +36,9 @@ export class EasyParserGLModel extends EasyParserParent {
         atomStr: string,
         atomParserIndex?: number
     ): IAtom | undefined {
+        void atomStr;
+        void atomParserIndex;
+        
         return undefined;
     }
 }

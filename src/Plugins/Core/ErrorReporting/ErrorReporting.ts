@@ -140,7 +140,7 @@ async function sendErrorToServer(errorData: IErrorData) {
 /**
  * Report an error to the server.
  *
- * @param {string} [errTxt=""]  The error message.
+ * @param {string} [errTxt]  The error message. Default is "".
  */
 export async function reportErrorToServer(errTxt = "") {
     // Use AJAX (e.g., fetch, Axios, etc.) to send errorData to your PHP server.
@@ -153,9 +153,11 @@ export async function reportErrorToServer(errTxt = "") {
 /**
  * Trigger an error popup.
  *
- * @param {string}  errTxt                  The error message.
- * @param {boolean} [informServer=true]     Whether to inform the server.
- * @param {boolean} [simpleErrorMsg=false]  Whether to use a simple error message.
+ * @param {string}  errTxt            The error message.
+ * @param {boolean} [informServer]    Whether to inform the server. Default is
+ *                                    true.
+ * @param {boolean} [simpleErrorMsg]  Whether to use a simple error message.
+ *                                    Default is false.
  */
 export function triggerErrorPopup(
     errTxt: string,

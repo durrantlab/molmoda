@@ -25,8 +25,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Component, Vue, Prop } from "vue-facing-decorator";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 import IconBar from "@/UI/Navigation/TitleBar/IconBar/IconBar.vue";

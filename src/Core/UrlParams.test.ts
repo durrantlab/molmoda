@@ -6,6 +6,7 @@ describe("getUrlParam", () => {
 
     /**
      * Mocks the window.location with a given search string.
+     * 
      * @param {string} search The search string to set in the mocked location.
      */
     const mockLocation = (search: string) => {

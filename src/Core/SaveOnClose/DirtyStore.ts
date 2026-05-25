@@ -1,5 +1,3 @@
-import { pluginsApi } from "@/Api/Plugins";
-
 export let storeIsDirty = false;
 
 /**
@@ -17,11 +15,11 @@ export function setStoreIsDirty(val: boolean) {
  * @param {boolean} [preventCloseSaveModal=true]  Whether to prevent closing the
  *                                                save modal. Default is true.
  */
-export function openSavePluginIfStoreDirty(preventCloseSaveModal = true) {
-    if (storeIsDirty) {
-        setTimeout(() => {
-            // The true means the app is closing.
-            pluginsApi.runPlugin("savemolecules", preventCloseSaveModal);
-        }, 0);
-    }
-}
+// export function openSavePluginIfStoreDirty(preventCloseSaveModal = true) {
+//     if (storeIsDirty) {
+//         setTimeout(() => {
+//             // The true means the app is closing.
+//             pluginsApi.runPlugin("savemolecules", preventCloseSaveModal);
+//         }, 0);
+//     }
+// }

@@ -127,6 +127,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     *
      * @param {string} pdbId  The PDB ID to load.
      * @returns {Promise<void>}  A promise that resolves the file object.
      */
@@ -154,6 +155,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

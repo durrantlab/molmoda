@@ -17,8 +17,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
@@ -40,7 +38,7 @@ export default class FormVector3D extends Vue {
     @Prop({ default: false }) disabled!: boolean;
     @Prop({}) description!: string;
     @Prop({ default: false }) readonly!: boolean;
-    @Prop({ required: false }) filterFunc!: Function;
+    @Prop({ required: false }) filterFunc!: ((val: any) => any) | undefined;
     @Prop({ required: false }) warningFunc!: (val: any) => string;
     @Prop({ default: "" }) cls!: string;
     @Prop({ default: "" }) styl!: string;

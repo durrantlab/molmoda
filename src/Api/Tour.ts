@@ -5,6 +5,7 @@ import { pluginsApi } from "@/Api/Plugins";
 export const tourApi = {
     /**
      * Starts a tour for a given plugin.
+     * 
      * @param {PluginParentClass} plugin The plugin to start the tour for.
      * @param {number} [testIndex] The index of the test to use for the tour.
      */
@@ -17,6 +18,7 @@ export const tourApi = {
 
     /**
      * Checks if a tour is currently running.
+     * 
      * @returns {boolean} True if a tour is running, false otherwise.
      */
     isTourRunning(): boolean {

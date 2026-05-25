@@ -17,10 +17,12 @@ export class AsyncTaskCoalescer {
     private _task: () => Promise<void>;
 
     /**
-     * @param {() => Promise<void>} task  The async function to coalesce.
-     * @param {boolean} [immediate=false] If true, the task is executed once
-     *                                    immediately upon construction, before
-     *                                    any explicit `request()` call.
+     * @param {() => Promise<void>} task         The async function to coalesce.
+     * @param {boolean}             [immediate]  If true, the task is executed
+     *                                           once immediately upon
+     *                                           construction, before any
+     *                                           explicit `request()` call.
+     *                                           Default is false.
      */
     constructor(task: () => Promise<void>, immediate = false) {
         this._task = task;
@@ -30,8 +32,8 @@ export class AsyncTaskCoalescer {
     }
 
     /**
-   * Request the task to run. If the task is idle, it starts immediately.
-   * If already running, a single re-run is queued for after completion.
+     * Request the task to run. If the task is idle, it starts immediately.
+     * If already running, a single re-run is queued for after completion.
      */
     public request(): void {
         if (this._running) {
@@ -41,6 +43,13 @@ export class AsyncTaskCoalescer {
         this._run();
     }
 
+    /**
+     * Internal method to execute the task. Manages the running state and
+     * pending re-run flag to ensure correct coalescing behavior.
+     *
+     * @returns {Promise<void>} Resolves when the task (and any immediate
+     *     re-run) completes.
+     */
     private async _run(): Promise<void> {
         this._running = true;
         this._pendingRerun = false;
@@ -73,6 +82,12 @@ export function createLeadingEdgeThrottle(
     let lastInvoked = 0;
 
     return {
+        /**
+         * Invoke the throttled function. If the cooldown period has passed
+         * since the last invocation, the function is called immediately.
+         * Otherwise, the call is suppressed but a timer is (re)started to
+         * ensure a trailing call occurs after the cooldown.
+         */
         invoke(): void {
             const now = Date.now();
             const elapsed = now - lastInvoked;
@@ -96,6 +111,9 @@ export function createLeadingEdgeThrottle(
                 lastInvoked = Date.now();
             }, delayMs);
         },
+        /**
+         * Cancel any pending trailing call and reset the throttle state.
+         */
         cancel(): void {
             if (timer !== null) {
                 clearTimeout(timer);
@@ -117,6 +135,11 @@ export function createAnimationFrameCoalescer(
     let frameId: number | null = null;
 
     return {
+        /**
+         * Request the function to be called on the next animation frame. If
+         * already requested and waiting, does nothing (coalesces into the
+         * pending call).
+         */
         invoke(): void {
             if (frameId !== null) {
                 cancelAnimationFrame(frameId);
@@ -126,6 +149,9 @@ export function createAnimationFrameCoalescer(
                 fn();
             });
         },
+        /**
+         * Cancel any pending animation frame callback.
+         */
         cancel(): void {
             if (frameId !== null) {
                 cancelAnimationFrame(frameId);
@@ -151,6 +177,11 @@ export function createTrailingEdgeDebounce(
     let timer: ReturnType<typeof setTimeout> | null = null;
 
     return {
+        /**
+         * Invoke the debounced function. If called again within the quiet
+         * period, the timer resets. The function only fires after calls have
+         * stopped for delayMs.
+         */
         invoke(): void {
             if (timer !== null) {
                 clearTimeout(timer);
@@ -160,6 +191,9 @@ export function createTrailingEdgeDebounce(
                 fn();
             }, delayMs);
         },
+        /**
+         * Cancel any pending call and reset the debounce state.
+         */
         cancel(): void {
             if (timer !== null) {
                 clearTimeout(timer);
@@ -187,16 +221,16 @@ export function isVisualizationDeferred(): boolean {
 }
 
 /**
-* Run a callback with viewer rendering suppressed. While the callback
-* executes, all renderAll() calls and style-update render passes are
-* skipped. After the callback completes (or throws), the flag is
-* cleared and a single forced render is triggered so that all
-* accumulated changes appear at once.
-*
-* @param {() => Promise<void>} fn  The async work to perform while
-*     visualization is deferred (e.g., loading multiple molecules).
-* @returns {Promise<void>}
-*/
+ * Run a callback with viewer rendering suppressed. While the callback
+ * executes, all renderAll() calls and style-update render passes are
+ * skipped. After the callback completes (or throws), the flag is
+ * cleared and a single forced render is triggered so that all
+ * accumulated changes appear at once.
+ *
+ * @param {() => Promise<void>} fn  The async work to perform while
+ *     visualization is deferred (e.g., loading multiple molecules).
+ * @returns {Promise<void>}
+ */
 export async function deferVisualization(fn: () => Promise<void>): Promise<void> {
     _visualizationDeferred = true;
     try {

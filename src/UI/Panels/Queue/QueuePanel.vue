@@ -6,9 +6,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable no-unreachable */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Vue } from "vue-facing-decorator";
 
 // import JobManager from "@/Queue/JobManagers/JobManager.vue";

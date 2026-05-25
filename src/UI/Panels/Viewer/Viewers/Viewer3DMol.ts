@@ -222,12 +222,12 @@ export class Viewer3DMol extends ViewerParent {
   /**
    * Sets the style of a molecule. TODO: good to not use any type for selection.
    *
-   * @param  {string}     id           The id of the model to set the style of.
-   * @param  {any}        selection    The selection to apply the style to.
-   * @param  {GenericStyleType}  style        The style to apply.
-   * @param  {boolean}    [add=false]  Whether to add the style to the existing
-   *                                   styles. If false, replaces the existing
-   *                                   style.
+   * @param  {string}     id            The id of the model to set the style of.
+   * @param  {any}        selection     The selection to apply the style to.
+   * @param  {GenericStyleType}  style  The style to apply.
+   * @param  {boolean}    [add]         Whether to add the style to the existing
+   *                                    styles. If false, replaces the existing
+   *                                    style. Defaults to false.
    */
   setMolecularStyle(
     id: string,
@@ -761,14 +761,15 @@ C ${maxX} ${maxY} ${maxZ}`;
   /**
    * Adds a label to the viewer
    *
-   * @param  {string} lblTxt                      The text of the label.
-   * @param  {number} x                           The x coordinate.
-   * @param  {number} y                           The y coordinate.
-   * @param  {number} z                           The z coordinate.
-   * @param  {string} [alignment="bottomCenter"]  The alignment of the label.
-   * @param  {number} [fontSize=18]               The font size of the label.
-   * @param  {boolean} [inFront=true]             Whether the label should be
-   *                                              in front of the molecule.
+   * @param  {string} lblTxt       The text of the label.
+   * @param  {number} x            The x coordinate.
+   * @param  {number} y            The y coordinate.
+   * @param  {number} z            The z coordinate.
+   * @param  {string} [alignment]  The alignment of the label. Defaults to
+   *                               "bottomCenter".
+   * @param  {number} [fontSize]   The font size of the label. Defaults to 18.
+   * @param  {boolean} [inFront]   Whether the label should be in front of the
+   *                               molecule. Defaults to true.
    * @returns {GenericLabelType}  The label.
    */
   addLabel(
@@ -873,6 +874,8 @@ C ${maxX} ${maxY} ${maxZ}`;
     }
 
     return Object.entries(obj).some(([_, value]) => {
+      void _;
+      
       if (value === "@byMolecule") {
         return true;
       }
@@ -1114,7 +1117,7 @@ C ${maxX} ${maxY} ${maxZ}`;
   /**
    * Exports the VRML for each model in the viewer.
    *
-   * @param {boolean} [simplify=false]  Whether to simplify the VRML.
+   * @param {boolean} [simplify]  Whether to simplify the VRML. Defaults to false.
    * @returns {string[][]}  The VRML for each model.
    */
   async exportVRMLPerModel(simplify = false): Promise<[string, string][]> {

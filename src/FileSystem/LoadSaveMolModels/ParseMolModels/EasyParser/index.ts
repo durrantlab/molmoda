@@ -80,6 +80,15 @@ export class WorkerParserHandle {
     public readonly handle: string;
     private readonly _client: EasyParserWorkerClient;
 
+    /**
+     * Create a new WorkerParserHandle.
+     *
+     * @param {string}                 handle  The opaque handle referencing the
+     *                                         parser inside the worker.
+     * @param {EasyParserWorkerClient} client  The EasyParserWorkerClient
+     *                                         instance to use for delegating
+     *                                         operations.
+     */
     constructor(handle: string, client: EasyParserWorkerClient) {
         this.handle = handle;
         this._client = client;
@@ -90,22 +99,59 @@ export class WorkerParserHandle {
         await this._client.destroyParser(this.handle);
     }
 
+    /**
+     * Get all atoms from the parser.
+     * 
+     * @returns {Promise<IAtom[]>} A promise that resolves to the list of atoms.
+     */
     async getAtoms(): Promise<IAtom[]> {
         return this._client.getAtoms(this.handle);
     }
 
+    /**
+     * Get a single atom by index.
+     * 
+     * @param {number} index The 0-based index of the atom to retrieve.
+     * @returns {Promise<IAtom>} A promise that resolves to the requested atom.
+     */
     async getAtom(index: number): Promise<IAtom> {
         return this._client.getAtom(this.handle, index);
     }
 
+    /**
+     * Get the number of atoms in the parser.
+     *
+     * @returns {Promise<number>} A promise that resolves to the number of
+     *     atoms.
+     */
     async getLength(): Promise<number> {
         return this._client.getLength(this.handle);
     }
 
+    /**
+     * Get the bounding box of the atoms.
+     * 
+     * @param {number} [stride] Optional stride to use when iterating atoms for
+     *                          bounding box calculation (e.g. for performance).
+     * @returns {Promise<BoundsResult | null>} A promise that resolves to the
+     *     bounding box result or null if no atoms are present.
+     */
     async getBounds(stride?: number): Promise<BoundsResult | null> {
         return this._client.getBounds(this.handle, stride);
     }
 
+    /**
+     * Get atoms matching the selection criteria.
+     *
+     * @param {object} sel         Selection criteria as a mapping of property
+     *                             names to arrays of accepted values (e.g. {
+     *                             chain: ["A", "B"] }).
+     * @param {boolean} [extract]  Whether to return only the selected atoms
+     *                             (true) or all atoms with a "selected" flag
+     *                             (false). Default is false.
+     * @returns {Promise<IAtom[]>} A promise that resolves to the list of
+     *     selected atoms.
+     */
     async selectedAtoms(
         sel: { [key: string]: string[] },
         extract = false
@@ -113,6 +159,22 @@ export class WorkerParserHandle {
         return this._client.selectedAtoms(this.handle, sel, extract);
     }
 
+    /**
+     * Check if any atom in this parser is within a certain distance of any atom
+     * in another parser.
+     *
+     * @param {WorkerParserHandle} otherHandle  The handle of the other parser
+     *                                          to compare against.
+     * @param {number} distance                 The distance threshold.
+     * @param {number} [selfStride]             Optional stride for iterating
+     *                                          this parser's atoms (e.g. for
+     *                                          performance).
+     * @param {number} [otherStride]            Optional stride for iterating
+     *                                          the other parser's atoms.
+     * @returns {Promise<boolean>} A promise that resolves to true if any atom
+     *     pairs are within the specified distance,
+     *     false otherwise.
+     */
     async isWithinDistance(
         otherHandle: WorkerParserHandle,
         distance: number,
@@ -128,18 +190,41 @@ export class WorkerParserHandle {
         );
     }
 
+    /**
+     * Check if the molecule is flat (all coords zero in one dimension).
+     *
+     * @returns {Promise<boolean>} True if all atoms have zero X or all have
+     *     zero Y or all have zero Z.
+     */
     async isFlat(): Promise<boolean> {
         return this._client.isFlat(this.handle);
     }
 
+    /**
+     * Check if any atom is hydrogen.
+     *
+     * @returns {Promise<boolean>}  True if at least one hydrogen atom exists.
+     */
     async hasHydrogens(): Promise<boolean> {
         return this._client.hasHydrogens(this.handle);
     }
 
+    /**
+     * Get unique residue names and IDs.
+     *
+     * @returns {Promise<UniqueResiduesResult>} Unique residue names and IDs.
+     */
     async getUniqueResidues(): Promise<UniqueResiduesResult> {
         return this._client.getUniqueResidues(this.handle);
     }
 
+    /**
+     * Append atoms to the parser.
+     *
+     * @param {IAtom | IAtom[]} atoms  The atom or atoms to append.
+     * @returns {Promise<void>} A promise that resolves when the operation is
+     *     complete.
+     */
     async appendAtoms(atoms: IAtom | IAtom[]): Promise<void> {
         return this._client.appendAtoms(this.handle, atoms);
     }

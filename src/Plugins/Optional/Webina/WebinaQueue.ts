@@ -42,7 +42,7 @@ export class WebinaQueue extends QueueParent {
             try {
                 pthread.terminateAllThreads();
                 return;
-            } catch (_e) {
+            } catch {
                 // Fall through to manual termination if the helper throws
                 // (e.g. because the runtime is already partially torn down).
             }
@@ -62,7 +62,7 @@ export class WebinaQueue extends QueueParent {
                     if (worker && typeof worker.terminate === "function") {
                         worker.terminate();
                     }
-                } catch (_e) {
+                } catch {
                     // Ignore individual termination failures; keep going so
                     // we kill as many workers as possible.
                 }
@@ -73,6 +73,7 @@ export class WebinaQueue extends QueueParent {
     
     /**
      * Make a webina instance.
+     *
      * @param {*} WEBINA_MODULE  The webina module.
      * @returns {Promise<any>}  Resolves with the webina instance.
      */
@@ -88,6 +89,7 @@ export class WebinaQueue extends QueueParent {
         // with `this` bound to the Emscripten module) can still consult
         // queue-level cancellation state and reach the worker-termination
         // helper.
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const queueRef = this;
 
         // const jobInfoPayload = {} as IJobInfo; // TODO: Eventually, not const
@@ -146,7 +148,7 @@ export class WebinaQueue extends QueueParent {
                         if (typeof (this as any).abort === "function") {
                             (this as any).abort("cancelled by user");
                         }
-                    } catch (_e) {
+                    } catch {
                         // abort() throws by design; swallow.
                     }
 
@@ -215,6 +217,7 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A function that runs before the program starts.
+             *
              * @param {IJobInfo[]} jobInfos   The job infos.
              * @param {Function} onQueueDone  The callback function to call when
              *                                the job is done.
@@ -318,6 +321,7 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A helper function to locate WASM files.
+             *
              * @param {string} path  The requested path.
              * @returns {string}  The actual path to the WASM file.
              */
@@ -349,7 +353,7 @@ export class WebinaQueue extends QueueParent {
                                 this.FS.unlink(filename);
                             }
                         }
-                    } catch (_e) {
+                    } catch {
                         // Filesystem may already be torn down; ignore.
                     }
                     clearInterval(fileCheckingTimer);
@@ -380,6 +384,7 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A function that runs when stdout is written to.
+             *
              * @param {string} text  The text written to stdout.
              */
             print(text: string) {
@@ -424,6 +429,7 @@ export class WebinaQueue extends QueueParent {
 
             /**
              * A function that runs when stderr is written to.
+             *
              * @param {string} text  The text written to stderr.
              */
             printErr(text: string) {
@@ -461,6 +467,7 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Run a batch of jobs.
+     *
      * @param {IJobInfo[]} inputBatch  The input batch.
      * @param {number}     procs       The number of processors to use.
      * @returns {Promise<IJobInfo[]>}  The output batch.
@@ -469,6 +476,8 @@ export class WebinaQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        void procs; // Not used in this implementation, but part of the interface
+        
         // Honor cancellation requested before this batch even begins.
         if (this.isCancelling) {
             return [];
@@ -524,6 +533,7 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Make the argument list for the webina wasm binary.
+     *
      * @param {IJobInfo[]} jobInfos  The job infos.
      * @returns {string[]}  The argument list.
      */
@@ -592,6 +602,7 @@ export class WebinaQueue extends QueueParent {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

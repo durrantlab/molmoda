@@ -133,6 +133,7 @@ export default class SettingsPlugin extends PluginParentClass {
 
     /**
      * Get the app name.
+     *
      * @returns {string}  The app name.
      */
     get appName(): string {
@@ -260,6 +261,7 @@ export default class SettingsPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @param {UserArg[]} args  The user arguments to pass to the "executable."
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
@@ -279,6 +281,7 @@ export default class SettingsPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium tests commands.

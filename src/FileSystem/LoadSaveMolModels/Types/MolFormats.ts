@@ -133,6 +133,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         neverDesalt: true,
         /**
          * Validates the contents of a PDB file.
+         * 
          * @param {string} contents The contents of the file.
          * @returns {boolean} True if the contents are valid for a PDB file,
          *     false otherwise.
@@ -170,6 +171,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         extractMolNameRegex: [/^@<TRIPOS>MOLECULE\n(.+)$/gm],
         /**
          * Validates the contents of a MOL2 file.
+         *
          * @param {string} contents The contents of the file.
          * @returns {boolean} True if the contents are valid for a MOL2 file,
          *     false otherwise.
@@ -181,6 +183,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         },
         /**
          * Updates the molecule name in MOL2 file contents.
+         *
          * @param {string} contents The original contents of the MOL2 file.
          * @param {string} newName The new molecule name.
          * @returns {string} The updated contents with the new molecule name.
@@ -222,6 +225,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         ],
         /**
          * Validates the contents of an SDF file.
+         *
          * @param {string} contents The contents of the file.
          * @returns {boolean} True if the contents are valid for an SDF file,
          *     false otherwise.
@@ -279,6 +283,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
         lacks3D: true,
         /**
          * Validates the contents of a SMILES file.
+         *
          * @param {string} contents The contents of the file.
          * @returns {boolean} True if the contents are valid for a SMILES file,
          *     false otherwise.
@@ -410,6 +415,7 @@ export const molFormatInformation: { [key: string]: IFormatInfo } = {
 
 /**
  * Pre-process SMILES strings to remove any leading or trailing spaces.
+ *
  * @param  {string} text  The text to pre-process.
  * @returns {string}  The pre-processed text.
  */
@@ -430,6 +436,7 @@ function smiPreProcessor(text: string): string {
 /**
  * Get the descriptions of the available formats (for use in saving-molecule
  * modals).
+ *
  * @param  {boolean|undefined} [hasbondOrders]  Whether to only return those
  *                                              formats that do or do not
  *                                              support bond orders. Ignored if
@@ -459,6 +466,7 @@ export function getFormatDescriptions(
 
 /**
  * Get information about a format given its extension.
+ *
  * @param  {string} typ  The type (as returned by getFileType).
  * @returns {IFormatInfo | undefined}  Information about the format, or
  *     undefined if the extension is not recognised.

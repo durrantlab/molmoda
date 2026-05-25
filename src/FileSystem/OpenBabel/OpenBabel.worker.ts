@@ -20,6 +20,7 @@ let stdErr = "";
 
 /**
  * Runs the Open Babel command line program.
+ *
  * @param {string[]}   args        The arguments to pass to Open Babel.
  * @param {FileInfo[]} inputFiles  The input files.
  * @returns {Promise<any>}  A promise that resolves to an object that describes
@@ -34,6 +35,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
              * A helper function that binds the fsHelperFuncs functions to the
              * Module object. This is so you can use "this" rather than pass it
              * the Module object.
+             *
              * @param {any} Module  The Module object.
              * @returns {void}
              */
@@ -49,6 +51,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * Helper function that creates a directory of the Open Babel file system.
+             *
              * @param {string} path  The path to the directory to create.
              */
             mkdir(path: string) {
@@ -57,6 +60,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * A helper function that creates a file in the Open Babel file system.
+             *
              * @param {string} path    The path to the text file to create.
              * @param {string} text    The text to write to the file.
              */
@@ -69,6 +73,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * A helper function that reads a file on the Open Babel file system.
+             *
              * @param {string} path    The path to the file to read.
              * @returns {string}  The text in the file.
              */
@@ -81,6 +86,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             /**
              * A helper function that lists the file in a directory on the Open Babel file
              * system.
+             *
              * @param {string} path    The path to the directory to read.
              * @returns {string[]}   The files in the directory.
              */
@@ -91,6 +97,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             /**
              * A helper function that changes the permissions of a file on the Open Babel
              * file system.
+             *
              * @param {string} path  The path to the file to change.
              * @param {string} mode  The mode to change to.
              */
@@ -100,6 +107,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * A helper function that deletes a file on the Open Babel file system.
+             *
              * @param {string} path  The path to the file to delete.
              */
             unlink(path: string) {
@@ -108,6 +116,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
 
             /**
              * A helper function that deletes a directory on the Open Babel file system.
+             *
              * @param {string} path  The path to the directory to delete.
              */
             rmdir(path: string) {
@@ -126,6 +135,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             // noExitRuntime: true,
             /**
              * A function that locates files for Open Babel.
+             *
              * @param {string} path  The path to the file.
              * @returns {string} The located file path.
              */
@@ -134,6 +144,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             },
             /**
              * A function that handles printing to stdout and stderr.
+             *
              * @param {string} text  The text to print.
              */
             print: (text: string) => {
@@ -141,6 +152,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             },
             /**
              * A function that handles printing errors to stderr.
+             *
              * @param {string} text  The error text to print.
              */
             printErr: (text: string) => {
@@ -151,6 +163,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 /**
                  * A function that sets the BABEL_DATADIR environment variable
                  * before Open Babel runs.
+                 *
                  * @param {any} This  The Module object.
                  */
                 function (This: any) {
@@ -312,6 +325,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
  * If the input is a PDB file, and the output is a PDB file, then OpenBabel is
  * not needed. This function checks for that case, and if so, returns the output
  * files.
+ *
  * @param {string[]}   args        The arguments that would be passed to Open
  *                                 Babel.
  * @param {FileInfo[]} inputFiles  The input files.
@@ -378,6 +392,7 @@ let currentlyRunning = false;
 
 /**
  * The webworker onmessage handler.
+ *
  * @param {MessageEvent} params  The message event.
  * @returns {void}
  */

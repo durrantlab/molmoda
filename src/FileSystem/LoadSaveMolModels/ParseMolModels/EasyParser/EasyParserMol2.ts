@@ -48,6 +48,7 @@ export class EasyParserMol2 extends EasyParserParent {
     _parseAtomStr(atomStr: string, atomParserIndex?: number): IAtom | undefined {
         // Atom looks like this:
         // "     31  C4        39.2670   22.5690   13.2440 C.ar  501  ATP501      0.1692"
+        void atomParserIndex;
 
         if (!atomStr || atomStr.trim().length === 0) {
             return undefined;

@@ -47,27 +47,28 @@ export abstract class TestCmdParent {
 export class TestClick extends TestCmdParent {
     private selector: string;
     private shiftPressed: boolean;
-  private tourMessage: string | undefined;
+    private tourMessage: string | undefined;
     /**
      * Creates an instance of TestClick.
      *
-   * @param {string} selector   The selector to click.
-   * @param {boolean} [shiftPressed=false] If true, the shift key will be
-   *      pressed while clicking.
-   * @param {string} [tourMessage] Optional custom message for tour steps,
-   *      overriding the default "select it" phrasing.
+     * @param {string} selector         The selector to click.
+     * @param {boolean} [shiftPressed]  If true, the shift key will be pressed
+     *                                  while clicking. Defaults to false.
+     * @param {string} [tourMessage]    Optional custom message for tour steps,
+     *                                  overriding the default "select it"
+     *                                  phrasing.
      */
-  constructor(selector: string, shiftPressed = false, tourMessage?: string) {
+    constructor(selector: string, shiftPressed = false, tourMessage?: string) {
         super();
         this.selector = selector;
         this.shiftPressed = shiftPressed;
-    this.tourMessage = tourMessage;
+        this.tourMessage = tourMessage;
     }
 
     /**
      * Generates the command to click the selector.
      *
-   * @returns {ITestCommand} The command to click the selector.
+     * @returns {ITestCommand} The command to click the selector.
      */
     get cmd(): ITestCommand {
         return {
@@ -89,7 +90,8 @@ export class TestWait extends TestCmdParent {
     /**
      * Creates an instance of TestWait.
      *
-     * @param  {number} [durationInSecs=1]  The duration to wait, in seconds.
+     * @param  {number} [durationInSecs]  The duration to wait, in seconds.
+     *                                    Defaults to 1.
      */
     constructor(durationInSecs = 1) {
         super();
@@ -196,7 +198,6 @@ export class TestWaitUntilNotRegex extends TestCmdParent {
      * @param  {string} selector  The selector to monitor.
      * @param  {string} regex  The regex to wait for.
      */
-    // eslint-disable-next-line sonarjs/no-identical-functions
     constructor(selector: string, regex: string) {
         super();
         this.selector = selector;
@@ -241,7 +242,7 @@ export class TestUpload extends TestCmdParent {
         }
         this.filePath = filePath;
     }
-    
+
     /**
      * Generates the command to upload the specified file to the specified
      * selector.

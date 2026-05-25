@@ -19,8 +19,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { Component, Vue, Prop } from "vue-facing-decorator";
 import FormElementDescription from "@/UI/Forms/FormElementDescription.vue";
@@ -40,7 +38,7 @@ export default class FormTextArea extends Vue {
     @Prop({ default: randomID() }) id!: string;
     @Prop({ default: "placeholder" }) placeHolder!: string;
     @Prop({ default: false }) disabled!: boolean;
-    @Prop({ required: false }) filterFunc!: Function;
+    @Prop({ required: false }) filterFunc!: ((val: string) => string) | undefined;
     @Prop({}) description!: string;
     @Prop({ default: formInputDelayUpdate })
     delayBetweenChangesDetected!: number;

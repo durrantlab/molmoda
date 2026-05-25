@@ -27,6 +27,7 @@ export class TourManager {
 
     /**
      * Checks if a tour is currently running.
+     *
      * @returns {boolean} True if a tour is active, false otherwise.
      */
     public get isTourRunning(): boolean {
@@ -35,6 +36,7 @@ export class TourManager {
 
     /**
      * Configures and returns the hooks for the driver.js instance.
+     *
      * @returns {object} An object containing all the lifecycle hooks for driver.js.
      * @private
      */
@@ -42,6 +44,7 @@ export class TourManager {
         return {
             /**
              * Called when a step is highlighted.
+             *
              * @param {HTMLElement} element The highlighted element.
              * @param {any} step The current step data.
              */
@@ -117,6 +120,7 @@ export class TourManager {
             },
             /**
              * Called when a popover is rendered.
+             *
              * @param {any} popover The popover element.
              * @param {object} param1 An object containing the state.
              * @param {any} param1.state The state object.
@@ -131,6 +135,7 @@ export class TourManager {
 
     /**
      * Initializes the TourManager, loading driver.js and configuring it.
+     *
      * @return {Promise<void>} A promise that resolves when driver.js is loaded.
      */
     private async initializeDriver(): Promise<void> {
@@ -162,6 +167,7 @@ export class TourManager {
 
     /**
      * Asynchronously moves to the next tour step, waiting for the element to appear if necessary.
+     *
      * @param {() => void} originalMoveNext The original moveNext function from the driver instance.
      * @private
      */
@@ -277,6 +283,8 @@ export class TourManager {
      * @returns {Promise<void>}  Resolves once processing appears settled.
      */
     private async _waitForUploadProcessing(_uploadStep: any): Promise<void> {
+        void _uploadStep;
+
         // Allow microtasks and short async chains to settle (e.g.,
         // FileReader callbacks, Vue reactivity updates).
         await new Promise<void>((resolve) => setTimeout(resolve, 500));
@@ -286,6 +294,7 @@ export class TourManager {
      * Ensures the highlighted element remains visible after driver.js finishes
      * rendering. Checks multiple times over ~1.5 seconds to catch scroll resets
      * caused by popover positioning and the delayed driver.refresh() call.
+     *
      * @param {string} selector The CSS selector of the target element.
      * @private
      */
@@ -323,6 +332,7 @@ export class TourManager {
 
     /**
      * Starts a tour for a given plugin.
+     *
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {number} [testIndex] The index of the test to use for the tour.
      * @return {Promise<void>} A promise that resolves when the tour starts.
@@ -369,6 +379,7 @@ export class TourManager {
 
     /**
      * Converts an ITest object into an array of driver.js steps.
+     *
      * @param {ITest} test The test definition.
      * @param {PluginParentClass} plugin The plugin instance.
      * @returns {Promise<any[]>} A promise resolving to an array of driver.js steps.
@@ -432,6 +443,7 @@ export class TourManager {
      * This preserves UI order for parameter steps while keeping
      * inter-command dependencies intact (e.g., a waitUntilRegex that depends
      * on a prior setUserArg having taken effect).
+     *
      * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
@@ -603,6 +615,7 @@ export class TourManager {
 
     /**
      * Processes a command list function, converting its commands to tour steps.
+     *
      * @param {Function | undefined} commandListFunc The function that returns a TestCmdList.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
@@ -630,6 +643,7 @@ export class TourManager {
     /**
      * Checks whether a user argument is nested inside a group that starts
      * collapsed or is disabled.
+     *
      * @param {UserArg} arg The argument to check.
      * @param {PluginParentClass} plugin The plugin instance.
      * @returns {boolean} True if the arg should be skipped in the tour.
@@ -652,6 +666,7 @@ export class TourManager {
 
     /**
      * Adds the steps required to open a plugin from the menu.
+     *
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {any[]} steps The array of steps to populate.
      * @private
@@ -715,6 +730,7 @@ export class TourManager {
 
     /**
      * Converts a single ITestCommand into a driver.js step object by dispatching to helper methods.
+     *
      * @param {ITestCommand} command The test command.
      * @param {PluginParentClass} plugin The plugin instance.
      * @param {string} [debugInfo] Optional info for debugging the tour step.
@@ -773,6 +789,7 @@ export class TourManager {
 
     /**
      * Shows the completion message in a standard modal.
+     *
      * @private
      */
     private showCompletionMessage() {

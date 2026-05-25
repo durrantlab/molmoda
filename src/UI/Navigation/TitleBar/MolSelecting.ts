@@ -105,7 +105,7 @@ function _selectControlDown(nodeLastSelected: TreeNode) {
  *
  * @param  {string}        idLastSelected  The id of the last node selected.
  * @param  {TreeNodeList}  molTreeData     The molecule tree data.
- * @param  {string}        [filterStr=""]  The filter string.
+ * @param  {string}        [filterStr]     The filter string. Default is "".
  */
 export function doSelecting(
     idLastSelected: string,
@@ -167,9 +167,9 @@ function unselectAll(flattenedNodes: TreeNodeList) {
 /**
  * Sets the selected property of a node and its children.
  *
- * @param  {TreeNode} node                          The node to set.
- * @param  {SelectedType}  [selected=SelectedType.True]  The selected property
- *                                                       to set.
+ * @param  {TreeNode} node             The node to set.
+ * @param  {SelectedType}  [selected]  The selected property to set. Default is
+ *                                     SelectedType.True.
  */
 function setSelectWithChildren(node: TreeNode, selected = SelectedType.True) {
     node.selected = selected;

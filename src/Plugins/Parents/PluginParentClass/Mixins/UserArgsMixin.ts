@@ -14,6 +14,7 @@ export class UserArgs {
      * by id (helper function). Allows you to modify one `userArgs` enabled
      * value based on the value of another (see also `<PluginComponent>`'s
      * `onUserArgChange` function).
+     *
      * @param {string}                id          The id of the user argument to
      *                                            update.
      * @param {boolean}               val         The new value of the enabled
@@ -37,6 +38,7 @@ export class UserArgs {
      * Note that userArgs is reactive, so you can just modify it directly. But
      * it is a list, not an object, so you can't easily update based on the id.
      * This is a helper function to do that.
+     *
      * @param {string} id   The id of the user argument to update.
      * @param {any}    val  The new value of the user argument.
      */
@@ -57,6 +59,7 @@ export class UserArgs {
     /**
      * Given a list of user arguments, find the one with the specified name and
      * return its value. A helper function.
+     *
      * @param  {string}                id        The name of the user argument
      *                                           to find.
      * @returns {any}  The value of the user argument with the specified name.
@@ -84,6 +87,7 @@ export class UserArgs {
     /**
      * Given a list of user arguments, return a flattened version (so groups removed).
      * A helper function.
+     *
      * @param {UserArg[]} userArgs  The user arguments.
      * @returns {UserArg[]}  The flattened user arguments.
      */
@@ -107,6 +111,7 @@ export class UserArgs {
 
     /**
      * Constructor
+     *
      * @param {PluginParentClass} parent  The parent plugin class.
      */
     constructor(parent: PluginParentClass) {

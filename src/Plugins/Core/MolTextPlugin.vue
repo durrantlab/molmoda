@@ -48,6 +48,7 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 /**
  * A function that returns the options and validate functions for the available
  * molecular formats.
+ *
  * @returns {any}  An object with two keys: options and validateFuncs
  */
 function getFormatInfos(): { [key: string]: any[] } {
@@ -86,6 +87,7 @@ function getFormatInfos(): { [key: string]: any[] } {
 
 /**
  * Detects the file type from the contents of the file.
+ *
  * @param {string} contents  The contents of the file.
  * @returns {string}  The file extension.
  */
@@ -174,6 +176,7 @@ export default class MolTextPlugin extends PluginParentClass {
     /**
      * Called when the Mol2DView component detects whether the SMILES is valid.
      * This is used to enable/disable the action button.
+     *
      * @param {boolean} isValid  Whether the SMILES is valid.
      */
     onValidImageDetect(isValid: boolean) {
@@ -263,12 +266,16 @@ export default class MolTextPlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
+     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      *     Return void if there's nothing to return.
      */
     runJobInBrowser(args: any): Promise<void> {
+        
+        void args;
+
         // console.log("MolTextPlugin: runJobInBrowser: arg: ", arg);
         return Promise.resolve();
     }
@@ -276,14 +283,18 @@ export default class MolTextPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     *
      * @param {any} payload  The payload (if any)
      */
     async onBeforePopupOpen(payload?: any) {
+        void payload;
+
         this.currentSmilesForPreview = ""; // Reset preview on open
     }
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {

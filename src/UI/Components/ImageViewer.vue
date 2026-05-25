@@ -127,6 +127,8 @@ export default class ImageViewer extends Vue {
      */
     @Watch("source", { immediate: true })
     async onSourceChanged(newSource: string): Promise<void> {
+        void newSource;
+        
         this.determineSourceTypeAndEmit();
         if (this.internalSourceType === "svg") {
             this.sanitizedSvg = await sanitizeSvg(this.source);
@@ -176,7 +178,7 @@ export default class ImageViewer extends Vue {
     adjustSvgDimensions(): void {
         const svgElement = this.$refs.svgElementRef as HTMLElement;
 
-        svgElement.firstChild
+        // svgElement.firstChild
 
         if (!svgElement || !svgElement.childNodes) {
             console.warn("SVG element not found or has no children for adjustment.");
@@ -205,7 +207,7 @@ export default class ImageViewer extends Vue {
                             if (bbox.width > 0 && bbox.height > 0) {
                                 svgNode.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
                             }
-                        } catch (e) {
+                        } catch {
                             // getBBox might fail on invisible elements, set a default
                             svgNode.setAttribute('viewBox', '0 0 100 100');
                         }

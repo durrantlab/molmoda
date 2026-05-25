@@ -98,6 +98,8 @@ export async function getSetting(id: string): Promise<any> {
  * @param  {any} settings  The settings to apply.
  */
 export function applySettings(settings: { [key: string]: any }) {
+    void settings;
+    
     // NOTE: Previously this was necessary to change the molecular viewer
     // without having to reload. We're now just using one viewer, but good to
     // leave this function here in case you ever want to implement something

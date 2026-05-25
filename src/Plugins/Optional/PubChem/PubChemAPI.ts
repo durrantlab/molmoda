@@ -517,18 +517,22 @@ async function _fetchExtraCIDs(
     try {
         const data = await pubChemQueue.enqueue(url);
         return data?.IdentifierList?.CID ?? [];
-    } catch (error: any) {
+    } catch {
         return [];
     }
 }
 
 /**
- * A helper function that fetches compounds similar to the provided SMILES string.
+ * A helper function that fetches compounds similar to the provided SMILES
+ * string.
  *
- * @param {string} smiles The SMILES string.
- * @param {number} [threshold=95] The Tanimoto coefficient threshold.
- * @param {number} [maxRecords=100] The max number of records to return.
- * @returns {Promise<any>} A promise that resolves to an object containing similar compounds or an error message.
+ * @param {string} smiles        The SMILES string.
+ * @param {number} [threshold]   The Tanimoto coefficient threshold. Default is
+ *                               95.
+ * @param {number} [maxRecords]  The max number of records to return. Default is
+ *                               100.
+ * @returns {Promise<any>} A promise that resolves to an object containing
+ *     similar compounds or an error message.
  */
 export async function fetchSimilarCompounds(
     smiles: string,
@@ -611,11 +615,14 @@ export async function fetchSimilarCompounds(
 }
 
 /**
- * A helper function that fetches compounds containing the given SMILES as a substructure.
+ * A helper function that fetches compounds containing the given SMILES as a
+ * substructure.
  *
- * @param {string} smiles The SMILES string.
- * @param {number} [maxRecords=100] The max number of records to return.
- * @returns {Promise<any>} A promise that resolves to an object containing substructure compounds or an error message.
+ * @param {string} smiles        The SMILES string.
+ * @param {number} [maxRecords]  The max number of records to return. Default is
+ *                               100.
+ * @returns {Promise<any>} A promise that resolves to an object containing
+ *     substructure compounds or an error message.
  */
 export async function fetchSubstructureCompounds(
     smiles: string,
@@ -675,11 +682,14 @@ export async function fetchSubstructureCompounds(
 }
 
 /**
- * A helper function that fetches compounds for which the given SMILES is a superstructure.
+ * A helper function that fetches compounds for which the given SMILES is a
+ * superstructure.
  *
- * @param {string} smiles The SMILES string.
- * @param {number} [maxRecords=100] The max number of records to return.
- * @returns {Promise<any>} A promise that resolves to an object containing superstructure compounds or an error message.
+ * @param {string} smiles        The SMILES string.
+ * @param {number} [maxRecords]  The max number of records to return. Default is
+ *                               100.
+ * @returns {Promise<any>} A promise that resolves to an object containing
+ *     superstructure compounds or an error message.
  */
 export async function fetchSuperstructureCompounds(
     smiles: string,

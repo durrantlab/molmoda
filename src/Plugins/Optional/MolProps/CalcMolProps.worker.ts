@@ -40,7 +40,7 @@ waitForDataFromMainThread()
             let descriptors: {[key: string]: any} = {};
             try {
                 descriptors = JSON.parse(mol.get_descriptors());
-            } catch (err) {
+            } catch {
                 // This happens if bad SMILES is provided.
                 return;
             }

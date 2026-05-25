@@ -230,6 +230,7 @@ export function naturalSort<T>(
     /**
      * Helper function to split a string into an array of text and number chunks
      * for natural sorting.
+     * 
      * @param {string} str The string to split.
      * @returns {(string | number)[]} An array of strings and numbers.
      */

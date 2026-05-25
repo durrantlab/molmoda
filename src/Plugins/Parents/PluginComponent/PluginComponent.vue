@@ -259,6 +259,8 @@ export default class PluginComponent extends mixins(PopupMixin) {
      *                                   parameters).
      */
     onChange(userArgsFixed: UserArg[]) {
+        void userArgsFixed; // Not used directly, but required by interface
+        
         // Runs when the user changes any user arguments (plugin parameters).
         this.$emit("onUserArgChanged", this.userArgsFixed);
     }

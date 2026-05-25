@@ -57,6 +57,7 @@ export default class Chart extends Vue {
 
     /**
      * Get the x-axis label to use.
+     *
      * @returns {string}  The x-axis label to use.
      */
     get xAxisLabelToUse(): string {
@@ -68,6 +69,7 @@ export default class Chart extends Vue {
 
     /**
      * Get the y-axis label to use.
+     *
      * @returns {string}  The y-axis label to use.
      */
     get yAxisLabelToUse(): string {
@@ -87,6 +89,7 @@ export default class Chart extends Vue {
 
     /**
      * Download the chart as a file.
+     *
      * @param {string} format  The format to download as.
      */
     async download(format: string) {

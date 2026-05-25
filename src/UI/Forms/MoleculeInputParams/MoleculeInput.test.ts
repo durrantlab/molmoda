@@ -29,6 +29,7 @@ jest.mock(
             // to break the circular dependency at module load time.
             const {
                 TreeNodeList,
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             } = require("@/TreeNodes/TreeNodeList/TreeNodeList");
             return Promise.resolve(new TreeNodeList([]));
         }),

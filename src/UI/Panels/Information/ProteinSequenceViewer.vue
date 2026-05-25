@@ -236,7 +236,7 @@ export default class ProteinSequenceViewer extends Vue {
             const b = parseInt(hex.substring(4, 6), 16);
             const brightness = (r * 299 + g * 587 + b * 114) / 1000;
             return brightness > 125 ? 'black' : 'white';
-        } catch (e) {
+        } catch {
             return 'black'; // Fallback
         }
     }
@@ -397,7 +397,7 @@ export default class ProteinSequenceViewer extends Vue {
                     if (typeof tooltip.dispose === 'function') {
                         tooltip.dispose();
                     }
-                } catch (e) {
+                } catch {
                     // Ignore errors during disposal to prevent "Cannot read properties of null (reading 'template')"
                     // which can occur if the tooltip was in a transition state or already partially destroyed.
                     // console.warn('Error disposing tooltip:', e);

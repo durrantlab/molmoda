@@ -15,9 +15,10 @@ export class Hooks {
      * properties of the payload are mapped to the plugin's user arguments, and
      * the plugin's action is triggered without opening a popup. This function
      * can also be overwritten by child plugins (and often is).
+     * 
      * @param {any} [payload] The payload passed to the plugin, used for UI
      *        initialization or programmatic execution.
-     * @return {Promise<boolean | void>} If `false` is returned, the popup will
+     * @returns {Promise<boolean | void>} If `false` is returned, the popup will
      *         not open (abort).
      * @document
      */
@@ -50,6 +51,7 @@ export class Hooks {
 
     /**
      * Called right after the plugin popup opens.
+     * 
      * @document
      */
     public onPopupOpen(): void {
@@ -61,6 +63,7 @@ export class Hooks {
 
     /**
      * Constructor
+     * 
      * @param {PluginParentClass} parent The parent plugin class.
      */
     constructor(parent: PluginParentClass) {

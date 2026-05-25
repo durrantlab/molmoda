@@ -46,8 +46,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { PopupVariant } from "./InterfacesAndEnums";
@@ -79,8 +77,8 @@ export default class Popup extends Vue {
   @Prop({ default: false }) prohibitCancel!: boolean;
   @Prop({ default: PopupVariant.Primary }) variant!: PopupVariant;
   @Prop({ required: true }) id!: string;
-  @Prop({}) onShown!: Function;
-  @Prop({}) onBeforeShown!: Function;
+  @Prop({}) onShown!: () => void;
+  @Prop({}) onBeforeShown!: () => void;
   @Prop({ default: "default" }) modalWidth!: string;
   @Prop({ default: "" }) footerTxt!: string;
   @Prop({ default: true }) submitOnEnter!: boolean;

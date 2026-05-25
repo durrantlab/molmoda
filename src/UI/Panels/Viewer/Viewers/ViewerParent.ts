@@ -38,23 +38,23 @@ import { isVisualizationDeferred } from "@/Core/Utils/CoalescedTask";
  * re-query the underlying model.
  */
 export interface IClickedAtomInfo {
-    /** Molecule id (TreeNode id) of the clicked atom's parent model. */
-    moleculeId: string;
-    /** Chain identifier (e.g. "A"). May be empty for ligands/ions. */
-    chain?: string;
-    /** Residue index (resi) within the chain. */
-    resi?: number;
-    /** Three-letter residue name (e.g. "ALA", "HIS"). */
-    resn?: string;
-    /** Atom name (e.g. "CA", "N"). */
-    atomName?: string;
-    /** Cartesian coordinates of the clicked atom. */
-    x: number;
-    y: number;
-    z: number;
+  /** Molecule id (TreeNode id) of the clicked atom's parent model. */
+  moleculeId: string;
+  /** Chain identifier (e.g. "A"). May be empty for ligands/ions. */
+  chain?: string;
+  /** Residue index (resi) within the chain. */
+  resi?: number;
+  /** Three-letter residue name (e.g. "ALA", "HIS"). */
+  resn?: string;
+  /** Atom name (e.g. "CA", "N"). */
+  atomName?: string;
+  /** Cartesian coordinates of the clicked atom. */
+  x: number;
+  y: number;
+  z: number;
 }
 /** Callback signature for atom-click subscribers. */
-export type AtomClickedCallback = (info: IClickedAtomInfo) => void;
+type AtomClickedCallback = (info: IClickedAtomInfo) => void;
 
 /**
  * Sets the loadViewerLibPromise variable.
@@ -120,10 +120,10 @@ export abstract class ViewerParent {
 
   /**
    * Request a viewer render, coalesced via a leading-edge throttle and
-     * requestAnimationFrame. Skipped entirely while visualization is
-     * deferred.
+   * requestAnimationFrame. Skipped entirely while visualization is
+   * deferred.
    *
-     * @returns {Promise<void>}
+   * @returns {Promise<void>}
    */
   public renderAll(): Promise<void> {
     // During batch loading, suppress intermediate renders. The
@@ -138,9 +138,9 @@ export abstract class ViewerParent {
 
   /**
    * Force an immediate render, bypassing the throttle and coalescer.
-     * Used by deferVisualization() after the deferred work completes,
-     * and by _updateStyleChanges at the end of a style-update pass.
-   *
+   * Used by deferVisualization() after the deferred work completes,
+   * and by _updateStyleChanges at the end of a style-update pass.
+   * 
    * @returns {Promise<void>}
    */
   public renderImmediate(): Promise<void> {
@@ -556,10 +556,10 @@ export abstract class ViewerParent {
               console.warn(
                 `Skipping model for node "${treeNode.title}": ${err.message}`
               );
-                            // Intentionally not rethrowing: a single failed
-                            // model should not abort loading the remaining
-                            // molecules in the batch.
-                            // throw err;
+              // Intentionally not rethrowing: a single failed
+              // model should not abort loading the remaining
+              // molecules in the batch.
+              // throw err;
               return treeNode;
             });
         } else if (treeNode.region) {
@@ -594,11 +594,11 @@ export abstract class ViewerParent {
     return addMolPromises;
   }
 
-    /**
-   * Subscribers notified when any atom is clicked in the 3D viewer.
-   * Maintained here (not in subclasses) so the subscription API is
-   * uniform across viewer implementations.
-   */
+ /**
+  * Subscribers notified when any atom is clicked in the 3D viewer.
+  * Maintained here (not in subclasses) so the subscription API is
+  * uniform across viewer implementations.
+  */
   private _atomClickedSubscribers: AtomClickedCallback[] = [];
   /**
    * Subscribe to atom-click events. The returned function unsubscribes.
@@ -633,7 +633,7 @@ export abstract class ViewerParent {
       }
     }
   }
-  
+
   /**
    * Makes atoms NOT responsive to mouse hovering and clicking.
    *

@@ -8,6 +8,7 @@ export class PopupMixin {
 
     /**
      * Closes the popup.
+     *
      * @helper
      * @document
      */
@@ -18,6 +19,7 @@ export class PopupMixin {
 
     /**
      * Opens the popup.
+     *
      * @helper
      * @document
      */
@@ -36,6 +38,7 @@ export class PopupMixin {
 
     /**
      * Constructor
+     *
      * @param {PluginParentClass} parent The parent plugin class instance, used
      *     to access shared state and functions.
      */

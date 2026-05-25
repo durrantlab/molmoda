@@ -1,4 +1,3 @@
-import * as api from "@/Api";
 import { fetcher } from "@/Core/Fetcher";
 import { FileInfo } from "@/FileSystem/FileInfo";
 
@@ -35,7 +34,7 @@ export async function loadPdbIdToFileInfo(
             fileInfo.name = `${pdbIdUpper}.${downloadedExtension}`;
             // If successful, return the file info immediately
             return fileInfo;
-        } catch (error) {
+        } catch {
             // Log the failure and continue to the next URL
             console.log(`Failed to load from ${url}, trying next source.`);
         }

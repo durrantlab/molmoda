@@ -27,9 +27,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable no-unreachable */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { Component, Vue } from "vue-facing-decorator";
 
 import Table from "@/UI/Components/Table/Table.vue";

@@ -153,12 +153,15 @@ export function smoothScrollIntoView(element: HTMLElement): Promise<void> {
 }
 
 /**
- * Waits for an element's position to stabilize (stop moving).
- * This is useful for waiting for modal animations, CSS transitions, etc.
+ * Waits for an element's position to stabilize (stop moving). This is useful
+ * for waiting for modal animations, CSS transitions, etc.
  *
- * @param {HTMLElement} element The element to monitor.
- * @param {number} [stableFramesRequired=10] Number of stable frames required (at 60fps, 10 frames ≈ 167ms).
- * @param {number} [timeout=1000] Maximum time to wait in milliseconds.
+ * @param {HTMLElement} element            The element to monitor.
+ * @param {number} [stableFramesRequired]  Number of stable frames required (at
+ *                                         60fps, 10 frames ≈ 167ms). Default is
+ *                                         10 frames.
+ * @param {number} [timeout]               Maximum time to wait in milliseconds.
+ *                                         Default is 1000ms.
  * @returns {Promise<void>} A promise that resolves when the element is stable.
  */
 export function waitForElementStability(
@@ -212,10 +215,13 @@ export function waitForElementStability(
 /**
  * Waits for a DOM element to appear and be visible, retrying every 250ms for up to 2 seconds.
  *
- * @param {string} selector The CSS selector for the element.
- * @param {number} [timeout=2000] The total time to wait in milliseconds.
- * @param {number} [interval=250] The time between retries in milliseconds.
- * @returns {Promise<HTMLElement>} A promise that resolves with the element or rejects with an error.
+ * @param {string} selector    The CSS selector for the element.
+ * @param {number} [timeout]   The total time to wait in milliseconds. Default
+ *                             is 2000.
+ * @param {number} [interval]  The time between retries in milliseconds. Default
+ *                             is 250.
+ * @returns {Promise<HTMLElement>} A promise that resolves with the element or
+ *     rejects with an error.
  */
 export function waitForElement(
     selector: string,
@@ -314,7 +320,6 @@ export function isElementValueCorrect(element: HTMLElement, expectedValue: any):
     // Check 'value' property (inputs, selects)
     // Use loose equality to match how inputs often store numbers as strings
     const val = (element as HTMLInputElement).value;
-    // eslint-disable-next-line eqeqeq
     if (val == expectedValue) return true;
 
     // For Select elements, also check the text of the selected option
@@ -324,7 +329,6 @@ export function isElementValueCorrect(element: HTMLElement, expectedValue: any):
             const selectedOption = select.options[select.selectedIndex];
             if (selectedOption) {
                 const text = selectedOption.text.trim();
-                 // eslint-disable-next-line eqeqeq
                 if (text == expectedValue) return true;
             }
         }

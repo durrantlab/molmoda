@@ -23,11 +23,11 @@ import { isAnyPopupOpen } from "@/UI/MessageAlerts/Popups/OpenPopupList";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { removeTerminalPunctuation } from "@/Core/Utils/StringUtils";
 import { timeDiffDescription } from "@/Core/Utils/TimeUtils";
-import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { IProtCmpdCounts } from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import { createTestCmdsIfTestSpecified } from "@/Testing/TestCmd";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { deferVisualization } from "@/Core/Utils/CoalescedTask";
+import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 // export type RunJob = FileInfo[] | FileInfo | undefined | void;
 // export type RunJobReturn = Promise<RunJob> | RunJob;
 // export type RunJobReturn = Promise<void>;
@@ -54,12 +54,14 @@ export abstract class PluginParentClass extends Vue
      *
      * The vast majority of plugins should be accessible from the menu, but set
      * `menuPath` to null if you want to create a menu-inaccessible plugin.
+     *
      * @type {string[] | string | null}
      */
     abstract menuPath: string[] | string | null;
 
     /**
      * The title of the plugin. This is shown at the top of the plugin bar.
+     *
      * @type {string}
      */
     abstract title: string;
@@ -67,18 +69,21 @@ export abstract class PluginParentClass extends Vue
     /**
      * A list of software credits. If the plugin uses no third-party packages,
      * set this to `[]`.
+     *
      * @type {ISoftwareCredit[]}
      */
     abstract softwareCredits: ISoftwareCredit[];
 
     /**
      * A list of people to credit.
+     *
      * @type {IContributorCredit[]}
      */
     abstract contributorCredits: IContributorCredit[];
 
     /**
      * A unique id that defines the plugin. Must be lower case.
+     *
      * @type {string}
      */
     abstract pluginId: string;
@@ -88,6 +93,7 @@ export abstract class PluginParentClass extends Vue
      * top of the plugin. Be brief. You should almost always have an intro for
      * the help system. In those rare cases where one is not needed, set
      * explicitly to null.
+     *
      * @type {string}
      */
     abstract intro: string | null;
@@ -96,6 +102,7 @@ export abstract class PluginParentClass extends Vue
      * An expanded introduction, also shown at the top of the plugin. It should
      * describe how the program does what it does. Be brief. In very rare cases,
      * you may skip this by setting it to null.
+     *
      * @type {string}
      */
     abstract details: string | null;
@@ -105,6 +112,7 @@ export abstract class PluginParentClass extends Vue
      * user argument values (on popup), but it is not reactive. See it as an
      * unchangable template. Modify userArgs to change the user argument values
      * reactively.
+     *
      * @type {UserArg[]}
      */
     abstract userArgDefaults: UserArg[];
@@ -120,9 +128,11 @@ export abstract class PluginParentClass extends Vue
      * Called when the number of molecules specified by the user changes. This
      * is used with the MoleculeInput component. Override this function to react
      * when the number of proteins and compounds change.
+     *
      * @param {IProtCmpdCounts} val  The number of proteins and compounds.
      */
     public onMolCountsChanged(val: IProtCmpdCounts) {
+        void val; // Not used directly, but required by interface
         // Override this function to react when the number of proteins and
         // compounds change.
         // alert(JSON.stringify(val));
@@ -130,6 +140,7 @@ export abstract class PluginParentClass extends Vue
 
     /**
      * The payload to send to the plugin component via the infoPayload property.
+     *
      * @returns {IInfoPayload}  The info payload.
      */
     get infoPayload(): IInfoPayload {
@@ -158,6 +169,7 @@ export abstract class PluginParentClass extends Vue
      * automatically, so no need to specify ctrl/command. If hotkey is not just
      * one letter (e.g., "backspace"), "ctrl+"" is not added. If a plugin has
      * multiple hotkeys, specify them as an array of strings.
+     *
      * @type {string | string[]}
      */
     hotkey: string | string[] = "";
@@ -167,6 +179,7 @@ export abstract class PluginParentClass extends Vue
      * panel. These run in the browser (not remotely or in docker). They occur
      * immediately on the main thread, without delay. Examples include undo/redo
      * buttons. You must explicitly set this to "false" to disable logging.
+     *
      * @type {boolean}
      */
     logJob = true;
@@ -177,6 +190,7 @@ export abstract class PluginParentClass extends Vue
      * occur immediately on the main thread, without delay. Examples include
      * undo/redo buttons. You must explicitly set this to "false" to disable
      * logging.
+     *
      * @type {boolean}
      */
     logAnalytics = true;
@@ -185,6 +199,7 @@ export abstract class PluginParentClass extends Vue
      * The message to show when all jobs have finished. It is a string or a
      * function. If the string is "", no message is shown. If the function
      * returns undefined, no message is shown.
+     *
      * @type {string | Function}
      */
     msgOnJobsFinished: string | (() => string | undefined) = "";
@@ -193,6 +208,7 @@ export abstract class PluginParentClass extends Vue
      * If alwaysEnabled is set to true, this plugin will always load, even if
      * the user specifies one plugin using the "plugin" url parameter. Set to
      * true for core plugins that are not optional.
+     *
      * @type {boolean}
      */
     alwaysEnabled = false;
@@ -200,6 +216,7 @@ export abstract class PluginParentClass extends Vue
     /**
      * By default, all jobs are shown in the job queue. You can change this
      * default behavior by setting showInQueue to false.
+     *
      * @type {boolean}
      */
     showInQueue = true;
@@ -219,7 +236,7 @@ export abstract class PluginParentClass extends Vue
     /**
      * Occasionally, you might need a plugin that doesn't require a popup (e.g.,
      * undo/redo). In that case, set this to true.
-     **/
+     */
     public noPopup = false;
 
     /**
@@ -247,6 +264,7 @@ export abstract class PluginParentClass extends Vue
      * Runs when the user first starts the plugin. Called when the user clicks
      * the plugin from the menu. Can also be called directly using the api
      * (advanced/rare use).
+     *
      * @param {any} [payload]    Data to pass to the plugin. Probably only
      *                           useful when programmatically starting the
      *                           plugin without using the menu system. Optional.
@@ -308,6 +326,7 @@ export abstract class PluginParentClass extends Vue
      * The default version submits the user arguments as a single job. Override
      * it if you want to modify those arguments before submitting to the queue,
      * or if you want to submit multiple jobs to the queue.
+     *
      * @gooddefault
      * @document
      */
@@ -360,6 +379,7 @@ export abstract class PluginParentClass extends Vue
      * Submits multiple jobs to the queue system. `submitJobs` is typically
      * called from the `onPopupDone` function (after the user presses the
      * popup's action button).
+     *
      * @param {any[]}  [parameterSets]          A list of parameters, one per
      *                                          job. Even if your plugin submits
      *                                          only one job (most common case),
@@ -512,6 +532,7 @@ export abstract class PluginParentClass extends Vue
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
+     *
      * @param {any} [parameterSet]  One of the parameterSets items submitted via
      *                              the `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -521,6 +542,7 @@ export abstract class PluginParentClass extends Vue
     /**
      * Wraps around runJob to log start/end messages. It is called by the job
      * queue system.
+     *
      * @param {string} [jobId]         The job id to use (optional).
      * @param {any}    [parameterSet]  The same parameterSets submitted via the
      *                                 submitJobs function, but one at a time.
@@ -606,6 +628,7 @@ export abstract class PluginParentClass extends Vue
      * the plugin when it wants to update the progress of the job. The progress
      * should be a number between 0 and 1. If the progress is greater than 1, it
      * is assumed to be a percentage (e.g., 100 for 100%).
+     *
      * @param {number} progress  The progress of the job (0 to 1).
      */
     protected updateProgressInQueueStore(progress: number) {
@@ -619,6 +642,7 @@ export abstract class PluginParentClass extends Vue
     /**
      * Called when the plugin is mounted. No plugin should define its own
      * `mounted()` function. Use `onMounted` instead.
+     *
      * @document
      */
     protected onMounted(): void {
@@ -630,6 +654,7 @@ export abstract class PluginParentClass extends Vue
      * Checks if the plugin can currently run. This function allows plugins to
      * provide a warning message when the user has not yet loaded the data
      * necessary to run the plugin successfully.
+     *
      * @document
      * @param {any} _  This parameter given only to enable reactivity
      *                 elsewhere. Not used.
@@ -637,6 +662,8 @@ export abstract class PluginParentClass extends Vue
      *     of running the plugin. If null, proceeds to run the plugin.
      */
     public checkPluginAllowed(_?: any): string | null {
+        void _; // Not used, but allows for reactivity dependencies. For example, if
+        
         return null;
     }
 
@@ -728,6 +755,7 @@ export abstract class PluginParentClass extends Vue
      * The runJobInBrowser() function receives a fileInfo object. Often, you
      * want to create a molecule from this object and add it to the main tree.
      * This is a helper function to do that.
+     *
      * @param {ILoadMolParams} params              The parameters for loading
      *                                             the molecule.
      * @param {boolean}        [hideOnLoad]  Whether to make the molecule
@@ -767,6 +795,7 @@ export abstract class PluginParentClass extends Vue
     /**
      * Makes the userArgs reactive. Do not overwrite this funciton. If you wish
      * to react when the user arguments change, use onUserArgChange instead.
+     *
      * @param {UserArg[]} newUserArgs  The new userArgs.
      */
     onUserArgChanged(newUserArgs: UserArg[]) {
@@ -776,6 +805,7 @@ export abstract class PluginParentClass extends Vue
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {Promise<ITest[] | ITest>}  The selenium test command(s). If null,
@@ -788,6 +818,7 @@ export abstract class PluginParentClass extends Vue
     /**
      * Helper to get user argument value by ID. Delegates to userArgsMixin.
      * This allows direct access from the template.
+     *
      * @param {string} id The argument ID.
      * @returns {any} The value.
      */
@@ -797,6 +828,7 @@ export abstract class PluginParentClass extends Vue
 
     /**
      * Helper to set user argument value by ID. Delegates to userArgsMixin.
+     *
      * @param {string} id The argument ID.
      * @param {any} val The value.
      */
@@ -806,6 +838,7 @@ export abstract class PluginParentClass extends Vue
 
     /**
      * Closes the popup.
+     *
      * @helper
      * @document
      */
@@ -815,6 +848,7 @@ export abstract class PluginParentClass extends Vue
 
     /**
      * Opens the popup.
+     *
      * @helper
      * @document
      */

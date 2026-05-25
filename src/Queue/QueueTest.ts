@@ -17,6 +17,8 @@ export class QueueTest extends QueueParent {
         procs: number
         // onBatchDone: (outputBatch: IJobInfo[]) => void
     ): Promise<IJobInfo[]> {
+        void procs; // Not used in this implementation, but part of the interface
+        
         // TODO: Children must define this. Defining it here only for debugging.
 
         // Start a new job.

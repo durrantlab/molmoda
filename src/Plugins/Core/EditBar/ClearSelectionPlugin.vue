@@ -50,6 +50,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
+     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -60,6 +61,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @returns {Promise<void>}  Resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -75,6 +77,7 @@ export default class ClearSelectionPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

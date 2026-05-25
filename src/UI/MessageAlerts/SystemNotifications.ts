@@ -25,7 +25,9 @@ export async function showSystemNotification(title: string, body: string) {
             icon: logoPath,
         });
         /**
-         * Add an event listener to focus the window when the notification is clicked.
+         * Add an event listener to focus the window when the notification is
+         * clicked.
+         * 
          * @returns {void}
          */
         notification.onclick = () => {

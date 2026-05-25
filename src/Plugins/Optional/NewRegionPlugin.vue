@@ -222,6 +222,7 @@ export default class NewRegionPlugin extends PluginParentClass {
 
     /**
      * Runs when the user presses the action button and the popup closes.
+     *
      * @returns {Promise<void>}  A promise that resolves when the popup is done.
      */
     onPopupDone(): Promise<void> {
@@ -265,6 +266,7 @@ export default class NewRegionPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(): Promise<void> {
@@ -283,6 +285,7 @@ export default class NewRegionPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest}  The selenium test commands.

@@ -212,6 +212,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
   /**
    * Determine which into text to use.
+   *
    * @returns {string} The intro text to use.
    */
   get introToUse(): string {
@@ -221,6 +222,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
   /**
    * Check if this plugin can currently be used.
+   *
    * @returns {string | null}  If it returns a string, show that as an error
    *     message. If null, proceed to run the plugin.
    */
@@ -231,6 +233,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
   /**
    * Runs before the popup opens. Good for initializing/resenting variables
    * (e.g., clear inputs from previous open).
+   *
    * @param {boolean} payload  The payload passed to the plugin.
    */
   async onBeforePopupOpen(payload?: boolean) {
@@ -368,6 +371,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
   /**
    * Every plugin runs some job. This is the function that does the job running.
+   *
    * @returns {Promise<void>}  Resolves when the job is done.
    */
   async runJobInBrowser(): Promise<void> {
@@ -418,6 +422,7 @@ export default class SaveMoleculesPlugin extends PluginParentClass {
 
   /**
    * Gets the test commands for the plugin. For advanced use.
+   *
    * @gooddefault
    * @document
    * @returns {ITest[]}  The selenium test commands.

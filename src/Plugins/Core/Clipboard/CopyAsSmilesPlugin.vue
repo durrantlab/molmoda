@@ -11,7 +11,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
     IContributorCredit,
@@ -127,7 +126,10 @@ export default class CopyAsSmilesPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
         return Promise.resolve();

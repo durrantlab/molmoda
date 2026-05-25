@@ -52,6 +52,8 @@ export default class YesNoPlugin extends PluginParentClass {
     yesBtnTxt = "";
     noBtnTxt = "";
     callBack = (val: YesNo) => {
+        void val;
+
         return;
     };
     showCancelBtn = true;

@@ -12,7 +12,6 @@
 import { makeEasyParser } from "./index";
 import { EasyParserParent } from "./EasyParserParent";
 import { EasyParserIAtomList } from "./EasyParserIAtomList";
-import { IAtom } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { IFileInfo } from "@/FileSystem/Types";
 import type {
     EasyParserWorkerRequest,

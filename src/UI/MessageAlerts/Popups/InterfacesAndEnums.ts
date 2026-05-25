@@ -25,8 +25,7 @@ export interface ISimpleMsg {
     message: string;
     datetime?: string;
     variant?: PopupVariant;
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    callBack?: Function;
+    callBack?: (() => void) | undefined;
     neverClose?: boolean;
     open?: boolean; // Whether to open or close
 }

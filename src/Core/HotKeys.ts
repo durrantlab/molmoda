@@ -10,6 +10,7 @@ export let controlKeyDown = false;
 
 /**
  * Check if text is selected.
+ *
  * @returns {boolean}  Whether text is selected.
  */
 function isTextSelected(): boolean {
@@ -60,6 +61,7 @@ export function setupGlobalKeyListeners() {
 
 /**
  * Get the hotkeys object (library). If it is not yet loaded, load it.
+ *
  * @returns {Promise<any>}  A promise that resolves to the hotkeys object.
  */
 function hotkeyslibPromise(): Promise<any> {
@@ -73,6 +75,7 @@ function hotkeyslibPromise(): Promise<any> {
 
 /**
  * Adds a hotkey to the hotkey list.
+ *
  * @param {string | string[]}  hotkeys   The hotkeys to add.
  * @param {string}             pluginId  The plugin ID.
  * @param {Function}           callback  The function to run when the hotkey is
@@ -85,6 +88,7 @@ export function registerHotkeys(
 ) {
     /**
      * Wrapper to avoid triggering hotkey when text is selected.
+     *
      * @param {KeyboardEvent} e The keyboard event.
      */
     const callBackWrapper = (e: KeyboardEvent) => {

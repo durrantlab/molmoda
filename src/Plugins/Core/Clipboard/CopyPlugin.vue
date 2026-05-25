@@ -93,6 +93,8 @@ export default class CopyPlugin extends PluginParentClass {
      * @param {any} payload  The payload (node id)
      */
     async onBeforePopupOpen(payload: any) {
+        void payload;
+        
         this.formatMsg = "Your molecules will be copied as...";
     }
 
@@ -190,7 +192,10 @@ export default class CopyPlugin extends PluginParentClass {
     }
 
     /**
-     * Every plugin runs some job. This is the function that does the job running.
+     * Every plugin runs some job. This is the function that does the job
+     * running.
+     *
+     * @returns {Promise<void>}  Resolves when the job is done.
      */
     async runJobInBrowser(): Promise<void> {
         return Promise.resolve();

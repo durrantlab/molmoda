@@ -225,6 +225,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Check if this plugin can currently be used.
+     *
      * @returns {string | null}  If it returns a string, show that as an error
      *     message. If null, proceed to run the plugin.
      */
@@ -303,6 +304,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @param {any} payload     The user arguments to pass to the "executable."
      *                          Contains compound information.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
@@ -397,6 +399,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Adds boxes surrounding the pockets to the tree.
+     *
      * @param {TreeNode} outPdbFileTreeNode    The tree node to add the boxes to.
      * @param {any[]} pocketProps              The properties of the pockets.
      */
@@ -460,6 +463,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Processes the pseudo atoms in the tree.
+     *
      * @param {TreeNode} outPdbFileTreeNode    The tree node to process.
      * @param {boolean} providePseudoAtoms     Whether to provide pseudo atoms.
      */
@@ -505,7 +509,6 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
         pseudoAtomNodeTree.nodes.get(1).title = "Pocket Pseudo Atoms";
 
-        // eslint-disable-next-line sonarjs/no-empty-collection
         pseudoAtomNodeTree.nodes
             .get(1)
             .nodes?.forEach((node: TreeNode, idx: number) => {
@@ -533,6 +536,7 @@ export default class FPocketWebPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

@@ -56,6 +56,7 @@ export default tseslint.config(
                 },
             ],
             "jsdoc/check-tag-names": "off",
+            "jsdoc/tag-lines": ['warn', 'any', { startLines: 1 }]  // "off"
         },
     },
 

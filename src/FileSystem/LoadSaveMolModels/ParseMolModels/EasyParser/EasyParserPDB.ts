@@ -39,6 +39,8 @@ export class EasyParserPDB extends EasyParserParent {
      * @returns {IAtom} The parsed atom.
      */
     _parseAtomStr(atomStr: string, atomParserIndex?: number): IAtom {
+        void atomParserIndex;
+        
         // You must parse it.
         const atomName = atomStr.slice(12, 16).trim();
         const serial = parseInt(atomStr.slice(6, 11).trim());

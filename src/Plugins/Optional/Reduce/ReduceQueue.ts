@@ -17,6 +17,8 @@ export class ReduceQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        void procs; // Not used in this implementation, but part of the interface
+        
         const outputs: IJobInfo[] = [];
         for (const jobInfo of inputBatch) {
             // NOTE: Choosing to do this one protein at a time. TODO: Could

@@ -18,6 +18,8 @@ export class OpenBabelQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        void procs;
+
         const inputs = inputBatch.map((jobInfo) => jobInfo.input);
 
         // Remove any tree node (to avoid serialization issues).

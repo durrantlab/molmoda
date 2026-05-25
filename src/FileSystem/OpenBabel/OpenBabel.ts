@@ -36,6 +36,7 @@ export enum Gen3DLevel {
     // O[C@@H]1[C@@H](CO[P@@](=O)(O[P@](=O)(OP(=O)(O)O)O)O)O[C@H]([C@@H]1O)n1cnc2c1ncnc2N
 
     // Default = "medium",
+    // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
     Default = "best",
 }
 
@@ -140,7 +141,8 @@ export function getGen3DUserArg(
  *                                               file), requires string[][].
  * @param {FileInfo[] | IFileInfo[]} inputFiles  The input files to pass to
  *                                               OpenBabel.
- * @param {boolean}      [surpressMsgs=false]    Whether to surpress messages.
+ * @param {boolean}      [surpressMsgs]          Whether to surpress messages.
+ *                                               Default is false.
  * @returns {Promise<any>}  A promise that resolves to the output of the
  *     program. Void if there is an error?
  */
@@ -313,9 +315,9 @@ async function separateFiles(
  * @param  {number | null} [pH]                  The pH to use for protonation.
  *                                               If null, removes hydrogen
  *                                               atoms.
- * @param  {boolean}       [desalt=false]        Whether to desalt the
+ * @param  {boolean}       [desalt]        Whether to desalt the
  *                                               molecules.
- * @param  {boolean}       [surpressMsgs=false]  Whether to surpress messages.
+ * @param  {boolean}       [surpressMsgs]  Whether to surpress messages.
  * @returns {Promise<string[]>}  A promise that resolves to the converted
  *    molecules.
  */
@@ -457,8 +459,8 @@ function splitMultiMoleculeCif(contents: string): string[] {
  * @param  {boolean}     [gen3D]               Whether to assign 3D coordinates.
  * @param  {number}      [pH]                  The pH to use for protonation. If
  *                                             null, removes hydrogens (-d).
- * @param  {boolean}     [desalt=false]        Whether to desalt the molecules.
- * @param  {boolean}     [surpressMsgs=false]  Whether to surpress messages.
+ * @param  {boolean}     [desalt]        Whether to desalt the molecules.
+ * @param  {boolean}     [surpressMsgs]  Whether to surpress messages.
  * @returns {Promise<string>}  A promise that resolves to the converted
  *     molecule.
  */
@@ -482,7 +484,7 @@ export async function convertFileInfosOpenBabel(
         if (ext === "cif" || ext === "mcif") {
             const blocks = splitMultiMoleculeCif(f.contents);
             if (blocks.length > 1) {
-                blocks.forEach((blockContents, i) => {
+                blocks.forEach((blockContents) => {
                     expandedSrcFileInfos.push(new FileInfo({
                         name: f.name,
                         contents: blockContents,

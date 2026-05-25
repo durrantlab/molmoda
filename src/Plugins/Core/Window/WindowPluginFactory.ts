@@ -31,6 +31,9 @@ interface IWindowPluginConfig {
  * @returns {typeof PluginParentClass}  A decorated Vue component class.
  */
 export function createWindowPlugin(config: IWindowPluginConfig): typeof PluginParentClass {
+    /**
+     * A plugin that simply switches to a specified GoldenLayout panel.
+     */
     @Component({
         components: {
             PluginComponent,
@@ -49,11 +52,23 @@ export function createWindowPlugin(config: IWindowPluginConfig): typeof PluginPa
         details = config.details;
         tags = [Tag.All];
 
+        /**
+         * Every plugin runs some job. This is the function that does the job running.
+         *
+         * @returns {Promise<void>}  Resolves when the job is done.
+         */
         runJobInBrowser(): Promise<void> {
             switchToGoldenLayoutPanel(config.panelName);
             return Promise.resolve();
         }
 
+        /**
+         * Gets the test commands for the plugin. For advanced use.
+         *
+         * @gooddefault
+         * @document
+         * @returns {ITest}  The selenium test commands.
+         */
         async getTests(): Promise<ITest[]> {
             if (config.getTestsFn) {
                 return config.getTestsFn();

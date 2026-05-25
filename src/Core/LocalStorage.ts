@@ -29,10 +29,10 @@ async function createDatabaseIfNeeded(): Promise<any> {
 /**
  * Checks if cookies are allowed.
  *
- * @param {boolean} [showWarning=true]  Whether to show a warning message if
- *                                     cookies are not allowed.
- * @returns {Promise<boolean>}  A promise that resolves to true if cookies are
- *                              allowed, false otherwise.
+ * @param {boolean} [showWarning]  Whether to show a warning message if cookies
+ *                                 are not allowed. Default is true.
+ * @returns {Promise<boolean>}     A promise that resolves to true if cookies
+ *                                 are allowed, false otherwise.
  */
 async function cookiesAllowed(showWarning = true): Promise<boolean> {
     // NOTE: Intentionally not using isStatCollectionEnabled() here to avoid
@@ -93,16 +93,16 @@ async function getItemFromDB(key: string) {
 /**
  * Gets an item from local storage.
  *
- * @param  {string}  key                           The key of the item.
- * @param  {any}     [defaultVal]                  The default value of the
- *                                                 item, if any. If not
- *                                                 specified, returns null.
- * @param  {boolean} [checkIfCookiesAllowed=true]  Whether to check if cookies
- *                                                 are allowed. Should almost
- *                                                 always be true. Only set to
- *                                                 false in rare circumstances
- *                                                 when you need to avoid stack
- *                                                 overflow.
+ * @param  {string}  key                      The key of the item.
+ * @param  {any}     [defaultVal]             The default value of the item, if
+ *                                            any. If not specified, returns
+ *                                            null.
+ * @param  {boolean} [checkIfCookiesAllowed]  Whether to check if cookies are
+ *                                            allowed. Should almost always be
+ *                                            true. Only set to false in rare
+ *                                            circumstances when you need to
+ *                                            avoid stack overflow. Default is
+ *                                            true.
  * @returns {any | null}  The item.
  */
 export async function localStorageGetItem(
@@ -146,8 +146,8 @@ export async function localStorageGetItem(
  * @param {string} key             The key of the item.
  * @param {string} value           The value of the item.
  * @param {number} [daysToExpire]  The number of days until the item expires.
- * @param {boolean} [showWarning=true]  Whether to show a warning message if
- *                                      cookies are not allowed.
+ * @param {boolean} [showWarning]  Whether to show a warning message if cookies
+ *                                 are not allowed. Default is true.
  */
 export async function localStorageSetItem(
     key: string,

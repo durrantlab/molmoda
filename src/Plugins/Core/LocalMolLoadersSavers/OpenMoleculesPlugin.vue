@@ -124,6 +124,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
     /**
      * Runs when the files are loaded.
+     *
      * @param {FileInfo[]} files  The files that were loaded.
      */
     onFilesLoaded(files: FileInfo[]) {
@@ -264,6 +265,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     *
      * @param {any} payload  The payload passed to the plugin.
      * @returns {Promise<boolean | void>}  If false, the popup will not open.
      */
@@ -309,6 +311,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
     /**
      * Every plugin runs some job. This is the function that does the job running.
+     *
      * @param {FileInfo} fileInfo  Information about the molecules to save.
      * @returns {Promise<void>}  A promise that resolves when the job is
      *     done. TODO: These are wrong throughout.
@@ -361,6 +364,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

@@ -6,8 +6,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import { fetcher } from "@/Core/Fetcher";
 import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 

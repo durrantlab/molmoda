@@ -3,6 +3,7 @@ import { toRaw, isReactive } from "vue";
 
 /**
  * Runs a webworker.
+ * 
  * @param  {Worker}  worker                The webworker to run.
  * @param  {any}     data                  The data to send to the webworker.
  * @param  {boolean} [autoTerminate]  Whether to terminate the webworker
@@ -26,6 +27,7 @@ export function runWorker(
 
         /**
          * Handles messages from the webworker.
+         * 
          * @param {MessageEvent} resp The message event from the webworker.
          */
         worker.onmessage = (resp: MessageEvent) => {

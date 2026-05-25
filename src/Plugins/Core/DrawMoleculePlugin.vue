@@ -108,6 +108,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
     /**
      * Runs before the popup opens. Good for initializing/resenting variables
      * (e.g., clear inputs from previous open).
+     *
      * @param {any} payload  The payload (if editing existing molecule)
      */
     async onBeforePopupOpen(payload: any) {
@@ -219,6 +220,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
     /**
      * Loads a smiles string into the editor.
+     *
      * @param {string} smi  The smiles string.
      * @returns {Promise<void>}  A promise that resolves when the smiles string
      *                           is loaded.
@@ -357,11 +359,14 @@ export default class DrawMoleculePlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
+     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      */
     runJobInBrowser(args: any): Promise<void> {
+        void args;
+        
         return Promise.resolve();
     }
 
@@ -379,6 +384,7 @@ export default class DrawMoleculePlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @returns {ITest}  The selenium test command(s).
      */
     async getTests(): Promise<ITest> {

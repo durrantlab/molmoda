@@ -87,6 +87,7 @@ const iAtomListContent: IAtom[] = [
 const mockGLModel: GLModel = {
     /**
      * Returns the list of atoms in the GLModel.
+     * 
      * @returns {IAtom[]} The list of atoms.
      */
     selectedAtoms: () => iAtomListContent,

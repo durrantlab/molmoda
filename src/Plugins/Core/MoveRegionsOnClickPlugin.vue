@@ -67,6 +67,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     /**
      * Checks if the plugin is allowed to run. Returns true if allowed, false if
      * not allowed, or a string if not allowed and there's a user message.
+     *
      * @returns {string | null}  Null if allowed, or a message if not allowed.
      */
     checkPluginAllowed(): string | null {
@@ -78,6 +79,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
 
     /**
      * Called right before the plugin popup opens.
+     *
      * @param {number[]} payload  The payload from the event (new box center).
      * @return {boolean | void}  If false, the popup will not open (abort).
      *                            Anything else, and the popup will open.
@@ -90,6 +92,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
 
     /**
      * Get the selected regions.
+     *
      * @returns {TreeNodeList}  The selected regions.
      */
     get selectedRegions(): TreeNodeList {
@@ -105,6 +108,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
 
     /**
      * Get the titles of the selected regions.
+     *
      * @returns {string[]}  The titles of the selected regions.
      */
     get selectedRegionsTitles(): string[] {
@@ -124,6 +128,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
     /**
      * Every plugin runs some job. This is the function that does the job
      * running.
+     *
      * @param {TreeNode} treeNode  The molecule container associated with the
      *                             region.
      * @returns {Promise<void>}  Resolves when the job is done.
@@ -141,6 +146,7 @@ export default class MoveRegionsOnClickPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commands.

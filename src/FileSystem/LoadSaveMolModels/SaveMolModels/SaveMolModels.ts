@@ -29,13 +29,13 @@ export function compileMolModels(
  * Converts compiled models to file infos.
  *
  * @param  {ICompiledNodes} compiledNodes   The compiled models.
- * @param  {{ [key in TreeNodeType]?: string }}   formats  Map of formats for each component type.
+ * @param  {Partial<Record<TreeNodeType, string>>}   formats  Map of formats for each component type.
  * @param  {string} fallbackFormat Format to use if specific type not in map (or for mixed).
  * @returns {Promise<ICmpdNonCmpdFileInfos>}  The file infos.
  */
 export function convertCompiledMolModelsToIFileInfos(
     compiledNodes: ICompiledNodes,
- formats: { [key in TreeNodeType]?: string },
+ formats: Partial<Record<TreeNodeType, string>>,
  fallbackFormat: string
 ): Promise<ICmpdNonCmpdFileInfos> {
  

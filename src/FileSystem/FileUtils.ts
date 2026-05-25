@@ -62,6 +62,7 @@ export function filesToFileInfos(
 
                 /**
                  * Handles the file load event.
+                 * 
                  * @param {ProgressEvent} e The progress event.
                  */
                 reader.onload = (e: ProgressEvent) => {
@@ -97,6 +98,7 @@ export function filesToFileInfos(
 
                 /**
                  * Handles file read errors.
+                 * 
                  * @param {ProgressEvent} e The progress event.
                  */
                 reader.onerror = (e: any) => {

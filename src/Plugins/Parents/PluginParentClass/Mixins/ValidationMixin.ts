@@ -7,6 +7,7 @@ export class Validation {
     /**
      * Validates the plugin to make sure all children define what they should,
      * etc.
+     * 
      * @param {string} pluginId  The plugin ID.
      * @param {string|null} intro     The plugin intro.
      * @param {string} details   The plugin details.

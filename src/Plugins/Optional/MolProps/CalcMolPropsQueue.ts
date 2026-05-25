@@ -17,6 +17,8 @@ export class CalcMolPropsQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        void procs;
+        
         const inputs = inputBatch.map((jobInfo) => jobInfo.input);
 
         const inputs2 = {

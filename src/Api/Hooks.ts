@@ -7,6 +7,7 @@ export const allHooks = {
 export const hooksApi = {
     /**
      * Adds a function to the onMoleculesChanged hook.
+     * 
      * @param  {Function} func  The function to add.
      */
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type

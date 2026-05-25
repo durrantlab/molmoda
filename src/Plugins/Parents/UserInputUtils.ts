@@ -18,6 +18,7 @@ import {
 /**
  * Fix the user arguments. Infers the types if not given, and adds in default
  * values if not given. 
+ *
  * @param {UserArg[]} userArgs  The user arguments.
  * @returns {UserArg[]} The user arguments, fixed.
  */
@@ -32,6 +33,7 @@ export function fixUserArgs(userArgs: UserArg[]): UserArg[] {
  * at/infer/detect the types if not. I suspect users will not generally
  * define types, so this must be robust. Note that modifies the user
  * argument in place, so no need to return anything.
+ *
  * @param  {UserArg[]} userArgs  The user arguments.
  */
 function _inferUserInputTypes(userArgs: UserArg[]) {
@@ -102,6 +104,7 @@ function _inferUserInputTypes(userArgs: UserArg[]) {
  * Add in some of the userArg values that might be missing (e.g., default
  * filter and validation functions). Doens't add in type if missing, because
  * that is determined elsewhere. This is done in place, so returns nothing.
+ *
  * @param {UserArg[]} userArgs  The user arguments.
  */
 function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
@@ -115,6 +118,7 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
         ) {
             /**
              * The default filterFunc is empty.
+             *
              * @param {any} val  The value.
              * @returns {any} The value.
              */
@@ -127,6 +131,7 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
                 /**
                  * The default validateFunc for numbers checks if the value is a
                  * number.
+                 *
                  * @param {number} v  The value.
                  * @returns {boolean} True if valid, false otherwise.
                  */
@@ -136,6 +141,7 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
             } else {
                 /**
                  * The default validateFunc always returns true.
+                 *
                  * @returns {boolean} Always true.
                  */
                 userArg.validateFunc = () => true;
@@ -146,6 +152,7 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
         if (userArg.warningFunc === undefined) {
             /**
              * The default warningFunc always returns an empty string.
+             *
              * @returns {string} An empty string.
              */
             userArg.warningFunc = () => "";
@@ -160,6 +167,7 @@ function _addDefaultUserInputsIfNeeded(userArgs: UserArg[]) {
 
 /**
  * Copy the user arguments.
+ *
  * @param {UserArg[]} origUserArgs  The original user arguments.
  * @returns {UserArg[]} The copied user arguments.
  */
@@ -211,6 +219,7 @@ export function copyUserArgs(origUserArgs: UserArg[]): UserArg[] {
 
 /**
  * Recursively go through userArgs looking for a userArg of a given ID.
+ *
  * @param {Function}              compareFunc  A function to run on the user
  *                                             argument to see if it's the
  *                                             right one.
@@ -255,6 +264,7 @@ export function recurseUserArgsAndAct(
 
 /**
  * Goes through userArgs and converts any MoleculeInputParams to FileInfos.
+ *
  * @param {UserArg[]} userArgs  The user arguments.
  * @returns {Promise<any>} A promise that resolves when all the
  *                         MoleculeInputParams have been converted to FileInfos.

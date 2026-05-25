@@ -122,12 +122,12 @@ export default class MoleculeInputParams extends Vue {
   }
 
   /**
-    * Determines the noun to use in the UI text based on what molecule types
-    * are being considered.
-    *
-    * @returns {string} Either "compounds", "proteins", "molecules", or
-    *     "protein/compound pairs".
-  */
+   * Determines the noun to use in the UI text based on what molecule types
+   * are being considered.
+   *
+   * @returns {string} Either "compounds", "proteins", "molecules", or
+   *     "protein/compound pairs".
+   */
   get molNameToUse(): string {
     if (this.val.considerAllMoleculeTypes) {
       return "molecules";
@@ -224,7 +224,7 @@ export default class MoleculeInputParams extends Vue {
 
   /**
    * Generates a detailed summary of what molecules will be processed.
-     * Includes counts and warnings about previously processed molecules.
+   * Includes counts and warnings about previously processed molecules.
    *
    * @returns {string} HTML-formatted summary string
    */

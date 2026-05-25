@@ -162,6 +162,7 @@ export default class GoldLayout extends Vue {
     get activityFocusModeInfo(): string[] {
         const mode = getActivityFocusMode();
         const [shortDesc, longDesc] = getActvityFocusModeDescription(mode);
+        void longDesc;
 
         return [capitalize(mode), lowerize(shortDesc)];
     }
@@ -296,8 +297,6 @@ export default class GoldLayout extends Vue {
         // #golden-layout div. We defuse that by removing the listener: when
         // the page truly unloads the browser tears everything down anyway,
         // so the listener has no useful work to do.
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore - _windowUnloadListener is private in the typings.
         const unloadListener = (myLayout as any)._windowUnloadListener;
         if (unloadListener) {
             window.removeEventListener("unload", unloadListener);
@@ -359,8 +358,6 @@ export default class GoldLayout extends Vue {
      */
     resetLayout() {
         if (this.defaultLayoutConfig && goldenLayout) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             goldenLayout.loadLayout(this.defaultLayoutConfig);
         } else {
             console.error("Default layout configuration not available for reset.");

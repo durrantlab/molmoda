@@ -48,6 +48,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
 
     /**
      * Checks if there are any molecules loaded before allowing the plugin to run.
+     *
      * @returns {string | null} An error message if no molecules are loaded, otherwise null.
      */
     checkPluginAllowed(): string | null {
@@ -68,6 +69,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
     /**
      * The main logic of the plugin. It serializes the session, sends it to a server,
      * receives a share code, generates a QR code, and displays the information in a popup.
+     *
      * @returns {Promise<void>}
      */
     async runJobInBrowser(): Promise<void> {
@@ -152,6 +154,7 @@ export default class TemporarySharePlugin extends PluginParentClass {
 
     /**
      * Provides the test commands for this plugin.
+     *
      * @returns {Promise<ITest>} A promise that resolves with the test commands.
      */
     async getTests(): Promise<ITest> {

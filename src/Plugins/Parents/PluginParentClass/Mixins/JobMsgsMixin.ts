@@ -6,6 +6,7 @@ export class JobMsgs {
     /**
      * Provides the message to log when the plugin job is submitted. Return ""
      * if you want to hide this message.
+     *
      * @param {string} pluginId  The plugin ID.
      * @document
      * @gooddefault
@@ -19,6 +20,7 @@ export class JobMsgs {
      * Provides the message to log when the plugin job starts. The parameters
      * will be automatically appended to the message, if given. Return "" if you
      * want to hide this message.
+     *
      * @param {string} pluginId  The plugin ID.
      * @document
      * @gooddefault
@@ -32,6 +34,7 @@ export class JobMsgs {
      * Provides the message to log when the plugin job finishes. The total run
      * time will be appended to the message. Return "" if you want to hide this
      * message.
+     *
      * @param {string} pluginId  The plugin ID.
      * @document
      * @gooddefault

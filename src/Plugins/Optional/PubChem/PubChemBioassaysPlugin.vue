@@ -54,6 +54,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
   /**
    * Check if the plugin is allowed to be used.
+   *
    * @returns {string | null} Error message if not allowed, else null.
    */
   checkPluginAllowed(): string | null {
@@ -62,6 +63,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
   /**
    * Get the bioassay data for the selected compound.
+   *
    * @param {FileInfo} molFileInfo The file info of the selected compound.
    * @returns {Promise} The bioassay data.
    */
@@ -105,6 +107,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
   /**
    * Get the tests for the plugin.
+   *
    * @returns {Promise<ITest>} The tests.
    */
   async getTests(): Promise<ITest> {

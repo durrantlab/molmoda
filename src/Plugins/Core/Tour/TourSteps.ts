@@ -7,7 +7,7 @@ import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginPar
 import { ITestCommand, TestCommand } from "@/Testing/TestInterfaces";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { isLocalHost } from "@/Core/GlobalVars";
-import { setFocus, isElementValueCorrect, waitForElement } from "./TourUtils";
+import { setFocus, isElementValueCorrect } from "./TourUtils";
 import { TourManager } from "./TourManager";
 
 /**
@@ -183,7 +183,7 @@ export function findUserArgAndRefineSelector(
  * @param {string} pluginId The ID of the current plugin.
  * @returns {string} The constructed field label.
  */
-export function buildFieldLabel(
+function buildFieldLabel(
     userArg: UserArg | undefined,
     commandSelector: string,
     pluginId: string
@@ -543,7 +543,6 @@ export function createInputStep(
         const options = (userArg as IUserArgSelect).options;
         const foundOption = options.find((opt) => {
             const optionVal = typeof opt === "string" ? slugify(opt) : opt.val;
-            // eslint-disable-next-line eqeqeq
             return optionVal == command.data;
         });
         if (foundOption) {
@@ -627,9 +626,12 @@ export function createWaitStep(
          * Polls the wait condition and auto-advances the tour when satisfied.
          * This fires when the step has an element to highlight. For steps
          * without an element, polling is started in TourManager.moveToNextStepWithRetry.
+         *
          * @param {HTMLElement} _element The highlighted element (unused for wait steps).
          */
         onHighlighted: (_element: HTMLElement) => {
+            void _element;
+
             const pollInterval = setInterval(() => {
                 // Stop polling if the tour was destroyed
                 if (!context.manager.driver) {

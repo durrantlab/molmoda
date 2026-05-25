@@ -12,6 +12,7 @@ from typing import Any
 
 from ..elements import el
 from ..drivers import make_driver
+from .command_dispatch import dispatch_command
 
 
 # Thread-local driver registry: maps thread id -> WebDriver instance.
@@ -113,7 +114,7 @@ def run_test(
         plugin_name, plugin_idx = plugin_id_tuple
         test_lbl = (
             f"{plugin_name}"
-            f"{f' #{plugin_idx + 1}' if plugin_idx is not None else ''}"
+            f"{f'.{plugin_idx}' if plugin_idx is not None else ''}"
         )
 
         url = f"{root_url}/?test={plugin_name}"
@@ -125,7 +126,7 @@ def run_test(
         cmds = None
         cmds_str = None
         for _ in range(4):
-            cmds_str = el("#test-cmds", driver).text
+            cmds_str = el("#cmds-element", driver).text
             try:
                 cmds = json.loads(cmds_str)
                 break
@@ -146,23 +147,10 @@ def run_test(
 
         # Execute commands one by one.
         for cmd_idx, cmd in enumerate(cmds):
-            if cmd["cmd"] == "click":
-                el(cmd["selector"], driver).click(cmd.get("data", False))
-            elif cmd["cmd"] == "text":
-                el(cmd["selector"], driver).text = cmd["data"]
-            elif cmd["cmd"] == "wait":
-                time.sleep(cmd["data"])
-            elif cmd["cmd"] == "waitUntilRegex":
-                el(cmd["selector"], driver).wait_until_contains_regex(cmd["data"])
-            elif cmd["cmd"] == "waitUntilNotRegex":
-                el(cmd["selector"], driver).wait_until_does_not_contain_regex(cmd["data"])
-            elif cmd["cmd"] == "upload":
-                el(cmd["selector"], driver).upload_file(cmd["data"])
-            elif cmd["cmd"] == "addTests":
+            # addTests is a meta-instruction handled here, not dispatched.
+            if cmd["cmd"] == "addTests":
                 return [(plugin_name, i) for i in range(cmd["data"])]
-            elif cmd["cmd"] == "checkBox":
-                el(cmd["selector"], driver).check_box(cmd["data"])
-
+            dispatch_command(driver, cmd)
             driver.save_screenshot(f"{screenshot_dir}/{test_lbl}_{cmd_idx}.png")
             check_errors(driver, browser)
 

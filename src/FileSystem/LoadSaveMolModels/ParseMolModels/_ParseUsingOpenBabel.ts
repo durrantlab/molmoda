@@ -7,13 +7,14 @@ import { IGen3DOptions, convertFileInfosOpenBabel } from "@/FileSystem/OpenBabel
 /**
  * Uses OpenBabel to parse the a molecular-model file.
  *
- * @param  {FileInfo}      fileInfo              The file to parse.
- * @param  {IFormatInfo}   formatInfo            The format of the file.
- * @param  {boolean}       [desalt=false]        Whether to desalt the
- *                                               molecules.
- * @param  {IGen3DOptions} [gen3D=undefined]     Whether and how to generate 3D
- *                                               coordinates.
- * @param  {boolean}       [surpressMsgs=false]  Whether to surpress messages.
+ * @param  {FileInfo}      fileInfo        The file to parse.
+ * @param  {IFormatInfo}   formatInfo      The format of the file.
+ * @param  {boolean}       [desalt]        Whether to desalt the molecules.
+ *                                         Default is false.
+ * @param  {IGen3DOptions} [gen3D]         Whether and how to generate 3D
+ *                                         coordinates. Default is undefined.
+ * @param  {boolean}       [surpressMsgs]  Whether to surpress messages. Default
+ *                                         is false.
  * @returns {Promise<TreeNodeList>}  A promise that resolves when the file is
  *    parsed. The promise resolves to an array of TreeNode objects, one for each
  *    frame. Can also resolve void.

@@ -105,11 +105,12 @@ function formatCredit(credit: ISoftwareCredit | IContributorCredit): string[] {
 /**
  * Get multiple citations as a string.
  *
- * @param {IInfoPayload} infoPayload             The info payload. Includes
- *                                               contributor credits and
- *                                               software credits.
- * @param {boolean}      [extraFormatting=true]  Whether to include extra
- *                                               formatting (e.g., bold, small).
+ * @param {IInfoPayload} infoPayload        The info payload. Includes
+ *                                          contributor credits and software
+ *                                          credits.
+ * @param {boolean}      [extraFormatting]  Whether to include extra formatting
+ *                                          (e.g., bold, small). Default is
+ *                                          true.
  * @returns {string} The citations as a string.
  */
 export function citationsTxt(

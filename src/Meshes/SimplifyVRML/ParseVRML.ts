@@ -32,7 +32,7 @@ import { truncateValues } from "./Math";
  *   corresponding to the merged vertices. - `normals`: Combined normal data
  *   corresponding to the merged vertices.
  */
-export function mergeChunks(
+function mergeChunks(
     chunkDatas: {
         vertices: [number, number, number][];
         indices: number[];

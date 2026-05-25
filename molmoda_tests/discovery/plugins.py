@@ -66,3 +66,97 @@ def filter_plugin_ids(
         filtered = [p for p in filtered if "documentation" not in p[0]]
 
     return filtered
+
+def _plugin_id_to_source_map(
+    src_glob: str = "./src/**/*Plugin.vue",
+) -> dict[str, str]:
+    """Map each discovered pluginId to the source text of its Vue file.
+
+    Built once per call so screenshot filtering can inspect plugin source
+    without re-globbing for every id.
+
+    Args:
+        src_glob: Glob pattern for Vue plugin source files.
+
+    Returns:
+        Dict mapping plugin_id -> full source text of the defining file.
+    """
+    id_to_source: dict[str, str] = {}
+    for ts_file in glob.glob(src_glob, recursive=True):
+        with open(ts_file) as f:
+            content = f.read()
+        match = re.search(r'[^:]\bpluginId *?= *?"(.+)"', content, re.MULTILINE)
+        if match:
+            id_to_source[match[1]] = content
+    return id_to_source
+
+
+def _has_no_popup(source: str) -> bool:
+    """Check whether a plugin source declares ``noPopup = true``.
+
+    Plugins with no popup expose nothing visual to screenshot, so they
+    should be skipped by the docs-capture pipeline. Matches the same
+    relaxed whitespace style used for pluginId detection.
+
+    Args:
+        source: Full source text of a Vue plugin file.
+
+    Returns:
+        True when the plugin disables its popup.
+    """
+    # Leading [^:] guard mirrors the pluginId regex: it prevents matches
+    # on ``this.noPopup`` / ``self.noPopup`` references elsewhere in the
+    # file, restricting the hit to the class-field declaration.
+    return bool(
+        re.search(r'[^:]\bnoPopup *?= *?true\b', source, re.MULTILINE)
+    )
+
+
+def _has_null_menu_path(source: str) -> bool:
+    """Check whether a plugin source declares ``menuPath = null``.
+
+    A null menuPath means the plugin is not user-invocable from a menu, so
+    the test infrastructure has no menu-click path to drive it open for a
+    screenshot. Skip these in the docs-capture pipeline.
+
+    Args:
+        source: Full source text of a Vue plugin file.
+
+    Returns:
+        True when the plugin has no menu path.
+    """
+    return bool(
+        re.search(r'[^:]\bmenuPath *?= *?null\b', source, re.MULTILINE)
+    )
+
+
+def filter_capturable_plugin_ids(
+    plugin_ids: list[tuple[str, int | None]],
+    src_glob: str = "./src/**/*Plugin.vue",
+) -> list[tuple[str, int | None]]:
+    """Drop plugins that cannot or should not be screenshotted.
+
+    Excludes plugins whose source sets ``noPopup = true`` (no visual widget
+    to capture) or ``menuPath = null`` (no menu entry, so the popup cannot
+    be opened by the existing test-driven flow).
+
+    Args:
+        plugin_ids: Candidate (plugin_id, sub_index) tuples.
+        src_glob: Glob pattern for Vue plugin source files.
+
+    Returns:
+        Filtered list preserving input order.
+    """
+    id_to_source = _plugin_id_to_source_map(src_glob)
+    filtered: list[tuple[str, int | None]] = []
+    for pid, sub_idx in plugin_ids:
+        source = id_to_source.get(pid)
+        if source is None:
+            # If we can't locate the source (e.g. CLI-supplied id with no
+            # matching file), keep it: the user asked for it explicitly.
+            filtered.append((pid, sub_idx))
+            continue
+        if _has_no_popup(source) or _has_null_menu_path(source):
+            continue
+        filtered.append((pid, sub_idx))
+    return filtered

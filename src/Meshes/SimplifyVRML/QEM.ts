@@ -97,7 +97,7 @@ class Quadric {
         try {
             const result = solveLinearSystem(a, b);
             return result || initialGuess;
-        } catch (e) {
+        } catch {
             return initialGuess;
         }
     }

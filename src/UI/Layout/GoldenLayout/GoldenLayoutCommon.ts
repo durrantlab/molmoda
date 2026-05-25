@@ -24,7 +24,6 @@ export let goldenLayout: GoldenLayout;
  * @returns {boolean}  True if the listener was found and removed.
  */
 function _removeBeforeUnloadListener(layout: GoldenLayout): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const listener = (layout as any)._windowUnloadListener;
     if (typeof listener !== "function") {
         return false;

@@ -158,6 +158,7 @@ export default class CloneMolPlugin extends PluginParentClass {
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     * 
      * @gooddefault
      * @document
      * @returns {ITest[]}  The selenium test commandss.

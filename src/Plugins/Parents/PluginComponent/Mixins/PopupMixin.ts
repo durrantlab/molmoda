@@ -27,6 +27,7 @@ export class PopupMixin extends Vue {
 
     /**
      * Watches the modelValue variable (whether to open modal).
+     * 
      * @param {boolean} newValue  The new value of the open variable.
      */
     @Watch("modelValue")

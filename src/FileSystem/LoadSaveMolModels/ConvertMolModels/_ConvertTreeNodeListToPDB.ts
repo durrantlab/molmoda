@@ -224,8 +224,8 @@ function _mergeMols(mols: GLModel[] | IAtom[][] | IFileInfo[]): IAtom[] {
  * TreeNodeList.toFileInfos() to this one. Do not call this function directly.
  *
  * @param  {TreeNodeList} treeNodeList  The list of mol containers.
- * @param  {boolean}         [merge=false]  Whether to merge the models into a
- *                                          single PDB string.
+ * @param  {boolean}      [merge]       Whether to merge the models into a
+ *                                      single PDB string. Default is false.
  * @returns {string[]} The PDB strings.
  */
 export function _convertTreeNodeListToPDB(

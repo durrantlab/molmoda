@@ -6,6 +6,7 @@ jest.mock("@/Core/DynamicImports", () => ({
         dompurify: {
             /**
              * Returns a mock DOMPurify module.
+             *
              * @returns {Promise<any>} A promise that resolves to a mock DOMPurify object.
              */
             get module() {
@@ -13,6 +14,7 @@ jest.mock("@/Core/DynamicImports", () => ({
                 return Promise.resolve({
                     /**
                      * Sanitizes the input HTML or SVG string.
+                     *
                      * @param {string} input The HTML or SVG string to sanitize.
                      * @param {any} [config] Optional configuration for sanitization.
                      * @returns {string} The sanitized string.

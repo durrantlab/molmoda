@@ -26,8 +26,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-types */
-
 import Table from "@/UI/Components/Table/Table.vue";
 import {
     ICellValue,

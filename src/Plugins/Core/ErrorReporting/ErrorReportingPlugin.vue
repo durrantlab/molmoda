@@ -69,6 +69,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
 
     /**
      * The text to display on the action button.
+     *
      * @returns {string} The text to display on the action button.
      */
     get actionBtnTxtToUse(): string {
@@ -80,6 +81,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
 
     /**
      * The text to display on the cancel button.
+     *
      * @returns {string} The text to display on the cancel button.
      */
     get cancelBtnTxtToUse(): string {
@@ -107,6 +109,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
 
     /**
      * The name of the application.
+     *
      * @returns {string} The name of the application.
      */
     get appName(): string {
@@ -116,6 +119,7 @@ export default class ErrorReportingPlugin extends PluginParentClass {
     /**
      * Runs when the user first starts the plugin. For example, if the plugin is
      * in a popup, this function would open the popup.
+     *
      * @param {ISimpleMsg} [errorData]  Information about the message to display.
      * @returns {Promise<void>}       Promise that resolves when the plugin is
      *                                finished starting.
@@ -172,17 +176,21 @@ export default class ErrorReportingPlugin extends PluginParentClass {
      * resource. This function runs a single job in the browser (or calls the
      * JavaScript/WASM libraries to run the job). The job-queue system calls
      * `runJob` directly.
+     *
      * @param {any} args  One of the parameterSets items submitted via the
      *                    `submitJobs` function. Optional.
      * @returns {Promise<void>}  A promise that resolves when the job is done.
      *     Return void if there's nothing to return.
      */
     runJobInBrowser(args: any): Promise<void> {
+        void args;
+        
         return Promise.resolve();
     }
 
     /**
      * Gets the test commands for the plugin. For advanced use.
+     *
      * @returns {ITest[]}  The selenium test command(s).
      */
     async getTests(): Promise<ITest[]> {

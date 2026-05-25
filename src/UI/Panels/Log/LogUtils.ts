@@ -50,7 +50,6 @@ export function describeParameters(params: any): string {
     const keys = Object.keys(params);
     keys.sort();
 
-    // eslint-disable-next-line sonarjs/prefer-immediate-return
     const txt = "";
 
     // TODO: Infinite recursion in some cases. Need to fix this.

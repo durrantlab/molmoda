@@ -152,6 +152,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
   /**
    * Called when the user changes the number of proteins or compounds, as specified in the MoleculeInputParams.
+   *
    * @param {IProtCmpdCounts} val The number of proteins and compounds
    */
   public onMolCountsChanged(val: IProtCmpdCounts) {
@@ -162,6 +163,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
   /**
    * Check if the plugin is allowed to be used.
+   *
    * @returns {string | null} Error message if not allowed, else null.
    */
   checkPluginAllowed(): string | null {
@@ -175,6 +177,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
   /**
    * Polls the PoseView server for the status of a job.
+   *
    * @param {string}   jobId             The ID of the job to poll
    * @param {Function} progressCallback  Callback to report progress
    * @param {number}   pollInterval      The interval at which to poll the
@@ -215,6 +218,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
   /**
    * Generate a PoseView diagram.
+   *
    * @param {string}   pdbString        The PDB file contents
    * @param {string}   sdfString        The SDF file contents
    * @param {Function} progressCallback Callback to report progress
@@ -266,6 +270,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
   /**
    * Run the plugin in the browser.
+   *
    * @returns {Promise<void>} A promise that resolves when the job is complete
    */
   async runJobInBrowser(): Promise<void> {
@@ -357,6 +362,7 @@ export default class PoseViewPlugin extends PluginParentClass {
 
   /**
    * Get the tests for the plugin.
+   *
    * @returns {Promise<ITest[]>} The tests.
    */
   async getTests(): Promise<ITest[]> {
@@ -417,6 +423,7 @@ export default class PoseViewPlugin extends PluginParentClass {
   }
   /**
    * Called when the popup is opened.
+   *
    * @returns {Promise<void>} Resolves when the popup is opened.
    */
   // async onMounted(): Promise<void> {

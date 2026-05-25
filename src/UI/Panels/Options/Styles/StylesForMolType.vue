@@ -35,8 +35,6 @@
 </template>
 
 <script lang="ts">
-/* eslint-disable @typescript-eslint/ban-ts-comment, no-case-declarations */
-
 import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import Section from "@/UI/Layout/Section.vue";
 // import Radios from "@/UI/Forms/Radios/Radios.vue";
@@ -170,6 +168,7 @@ export default class StylesForMolType extends Vue {
 
             // style[repName] should be like {color: 'spectrum'}.
 
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
             style[rep] = defaultStyles[this.molType][0][rep];
 

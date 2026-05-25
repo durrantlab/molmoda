@@ -41,6 +41,7 @@ export default class TourPlugin extends PluginParentClass {
 
     /**
      * Called before the popup opens. It receives the plugin to be toured as a payload.
+     *
      * @param {object} payload The payload containing the plugin instance.
      * @param {PluginParentClass} payload.plugin The plugin to start the tour for.
      * @param {number} [payload.testIndex] The index of the test to use for the tour.
@@ -82,6 +83,7 @@ export default class TourPlugin extends PluginParentClass {
 
     /**
      * This plugin does not run a background job.
+     *
      * @returns {Promise<void>}
      */
     async runJobInBrowser(): Promise<void> {
@@ -90,6 +92,7 @@ export default class TourPlugin extends PluginParentClass {
 
     /**
      * This plugin is not intended to be tested via the automated testing system.
+     *
      * @returns {Promise<ITest>} A failing test configuration.
      */
     async getTests(): Promise<ITest> {

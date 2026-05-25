@@ -22,6 +22,7 @@ interface WorkerResponse {
 
 /**
  * The webworker onmessage handler.
+ * 
  * @param {MessageEvent} e  The message event.
  * @returns {void}
  */

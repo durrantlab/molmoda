@@ -19,6 +19,8 @@ export class FPocketWebQueue extends QueueParent {
         inputBatch: IJobInfo[],
         procs: number
     ): Promise<IJobInfo[]> {
+        void procs;
+
         const inputs = inputBatch.map((jobInfo) => jobInfo.input);
         
         const inputs2 = inputs.map((i) => {
