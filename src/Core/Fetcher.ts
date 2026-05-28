@@ -20,6 +20,10 @@ interface IFetcherOptions {
     responseType: ResponseType;
     formPostData?: any;
     cacheBust?: boolean;
+    // Forwarded to axios as the request config's headers. Needed so POST
+    // callers can set Content-Type explicitly (e.g. form-urlencoded for
+    // PubChem) instead of trusting the body serializer to infer it.
+    headers?: { [key: string]: string };
 }
 
 /**
@@ -189,8 +193,19 @@ type QueueItem = {
     resolve: (value: any) => void;
     reject: (reason: any) => void;
     startTime?: number;
+    requestOptions?: IQueueRequestOptions;
 };
-
+/**
+ * Per-request overrides for a queued fetch. Lets a single enqueue() switch
+ * to POST (formPostData), to a non-default response type (e.g. CSV as TEXT),
+ * and/or to explicit request headers, without changing the queue's shared
+ * defaults.
+ */
+interface IQueueRequestOptions {
+    formPostData?: any;
+    responseType?: ResponseType;
+    headers?: { [key: string]: string };
+}
 /**
  * A queue that handles rate-limited HTTP requests using the fetcher function.
  * Ensures that requests are made at a controlled rate to prevent overwhelming
@@ -229,13 +244,19 @@ export class RateLimitedFetcherQueue {
      * Adds a URL to the fetch queue. The request will be processed according to
      * the rate limits configured for the queue.
      *
-     * @param {string} url - The URL to fetch
+     * @param {string}                url             The URL to fetch.
+     * @param {IQueueRequestOptions} [requestOptions]  Optional per-request
+     *     overrides. Supply formPostData to issue a POST, and/or responseType
+     *     to override the queue default for this one request.
      * @returns {Promise<any>} A promise that resolves with the fetch response
      *                        or rejects if the fetch fails
      */
-    public enqueue(url: string): Promise<any> {
+    public enqueue(
+        url: string,
+        requestOptions?: IQueueRequestOptions
+    ): Promise<any> {
         return new Promise((resolve, reject) => {
-            this.queue.push({ url, resolve, reject });
+            this.queue.push({ url, resolve, reject, requestOptions });
             this.processQueue();
         });
     }
@@ -296,7 +317,17 @@ export class RateLimitedFetcherQueue {
      */
     private async processFetchRequest(item: QueueItem): Promise<void> {
         try {
-            const response = await fetcher(item.url, this.options);
+            // Merge the queue defaults with any per-request overrides so a
+            // single enqueue can flip to POST/CSV (with the right headers)
+            // while leaving every other call on the GET/JSON default.
+            const fetchOptions: IFetcherOptions = {
+                responseType:
+                    item.requestOptions?.responseType ??
+                    this.options.responseType,
+                formPostData: item.requestOptions?.formPostData,
+                headers: item.requestOptions?.headers,
+            };
+            const response = await fetcher(item.url, fetchOptions);
             item.resolve(response);
         } catch (error) {
             item.reject(error);

@@ -19,6 +19,21 @@ interface ICompoundData {
     sortMetric: number;
 }
 
+/** A single assaysummary row, keyed by PubChem column name. */
+export interface IAssayRecord {
+    [column: string]: string;
+}
+
+/**
+ * Result of ranking one compound's assays: either the kept ActiveAssays or
+ * an error string. Deliberately non-discriminated to match the loose shape
+ * the bioassay plugin already consumes (checks .error, then .ActiveAssays).
+ */
+export interface IAssaysResult {
+    ActiveAssays?: IAssayRecord[];
+    error?: string;
+}
+
 /**
  * A helper function that fetches a CID from a SMILES string.
  *
@@ -417,129 +432,303 @@ export async function fetchCompoundsProperties(cid: string): Promise<any> {
 // }
 
 /**
+ * Filters one compound's assay rows to active hits, then ranks and
+ * de-duplicates them. Shared by the single-CID (JSON) and batch (CSV) paths
+ * so both apply identical selection logic; the only difference upstream is
+ * how the rows were obtained.
+ *
+ * @param {string[]}       columns    Column names present in the source.
+ * @param {IAssayRecord[]} assayObjs  All rows for a single CID.
+ * @returns {IAssaysResult} Ranked ActiveAssays, or an error.
+ */
+function _rankActiveAssays(
+    columns: string[],
+    assayObjs: IAssayRecord[]
+): IAssaysResult {
+    const outcomeIndex = columns.indexOf("Activity Outcome");
+    if (outcomeIndex === -1) {
+        return { error: "Activity Outcome column not found in data." };
+    }
+    const hasActivityValue = columns.indexOf("Activity Value [uM]") !== -1;
+    let activeAssays: IAssayRecord[] = assayObjs.filter(
+        (assay) =>
+            assay["Activity Outcome"] === "Active" ||
+            (hasActivityValue && assay["Activity Value [uM]"] !== "")
+    );
+    if (activeAssays.length === 0) {
+        return { error: "No active assays found for the provided CID." };
+    }
+    // Sort the assays by a custom score.
+    activeAssays.sort(
+        (a: { [key: string]: string }, b: { [key: string]: string }) => {
+            // Sort by the number of active compounds in the assay.
+            let aScore = 0;
+            let bScore = 0;
+            // Prioritize confirmatory assays.
+            if (
+                a["Assay Type"] === "Confirmatory" &&
+                b["Assay Type"] !== "Confirmatory"
+            ) {
+                aScore += 1;
+            } else if (
+                a["Assay Type"] !== "Confirmatory" &&
+                b["Assay Type"] === "Confirmatory"
+            ) {
+                bScore += 1;
+            }
+            // Prioritize assays with Target GeneID.
+            if (a["Target GeneID"] !== "" && b["Target GeneID"] === "") {
+                aScore += 1;
+            } else if (
+                a["Target GeneID"] === "" &&
+                b["Target GeneID"] !== ""
+            ) {
+                bScore += 1;
+            }
+            // Compare Activity Value [uM]
+            if (a["Activity Value [uM]"] === "") {
+                a["Activity Value [uM]"] = "100";
+            }
+            if (b["Activity Value [uM]"] === "") {
+                b["Activity Value [uM]"] = "100";
+            }
+            aScore -= parseFloat(a["Activity Value [uM]"]) / 10.0;
+            bScore -= parseFloat(b["Activity Value [uM]"]) / 10.0;
+            return bScore - aScore;
+        }
+    );
+    // Remove entries with duplicate AIDs. Keep only the first one. Not sure
+    // why this happens.
+    let uniqueAssays: IAssayRecord[] = [];
+    const aidSet = new Set<string>();
+    for (const assay of activeAssays) {
+        if (assay["AID"] === "") {
+            // If no AID, just add it to unique list.
+            uniqueAssays.push(assay);
+            continue;
+        }
+        if (!aidSet.has(assay["AID"])) {
+            aidSet.add(assay["AID"]);
+            uniqueAssays.push(assay);
+        }
+    }
+    activeAssays = uniqueAssays;
+    // Entries in the list could have duplicate Target GeneIDs. Keep only
+    // the first one. Put additional ones in new list.
+    uniqueAssays = [];
+    const duplicateAssays: IAssayRecord[] = [];
+    const geneIDs = new Set<string>();
+    for (const assay of activeAssays) {
+        if (assay["Target GeneID"] === "") {
+            // If no gene ID, just add it to unique list.
+            uniqueAssays.push(assay);
+            continue;
+        }
+        if (!geneIDs.has(assay["Target GeneID"])) {
+            geneIDs.add(assay["Target GeneID"]);
+            uniqueAssays.push(assay);
+            continue;
+        }
+        duplicateAssays.push(assay);
+    }
+    const activeAssaysReordered = uniqueAssays.concat(duplicateAssays);
+    return { ActiveAssays: activeAssaysReordered };
+}
+/**
+ * Minimal RFC-4180 CSV parser: handles quoted fields, embedded commas and
+ * newlines, and doubled-quote escapes. Used instead of a naive split()
+ * because PubChem assay names routinely contain commas inside quotes. Swap
+ * for papaparse if/when it is exposed via dynamicImports.
+ *
+ * @param {string} text  Raw CSV text.
+ * @returns {string[][]}  Rows of string cells (header included as row 0).
+ */
+function _parseCsv(text: string): string[][] {
+    const rows: string[][] = [];
+    let field = "";
+    let row: string[] = [];
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (text[i + 1] === '"') {
+                    // Escaped quote inside a quoted field.
+                    field += '"';
+                    i++;
+                } else {
+                    inQuotes = false;
+                }
+            } else {
+                field += ch;
+            }
+        } else if (ch === '"') {
+            inQuotes = true;
+        } else if (ch === ",") {
+            row.push(field);
+            field = "";
+        } else if (ch === "\n") {
+            row.push(field);
+            rows.push(row);
+            row = [];
+            field = "";
+        } else if (ch !== "\r") {
+            // Ignore lone \r so CRLF endings resolve to a single break.
+            field += ch;
+        }
+    }
+    // Flush a trailing field/row not terminated by a newline.
+    if (field !== "" || row.length > 0) {
+        row.push(field);
+        rows.push(row);
+    }
+    return rows;
+}
+/**
+ * Parses a multi-CID assaysummary CSV payload into per-compound rows. The
+ * single returned CSV interleaves rows for every requested CID, so rows are
+ * bucketed by the value in the "CID" column.
+ *
+ * @param {string} csv  The CSV body returned by PubChem.
+ * @returns {{columns: string[]; rowsByCid: {[cid: string]: IAssayRecord[]}}}
+ */
+function _parseAssaySummaryCsv(csv: string): {
+    columns: string[];
+    rowsByCid: { [cid: string]: IAssayRecord[] };
+} {
+    const table = _parseCsv(csv);
+    const rowsByCid: { [cid: string]: IAssayRecord[] } = {};
+    if (table.length === 0) {
+        return { columns: [], rowsByCid };
+    }
+    const columns = table[0];
+    const cidIdx = columns.indexOf("CID");
+    for (let r = 1; r < table.length; r++) {
+        const cells = table[r];
+        const rec: IAssayRecord = {};
+        for (let c = 0; c < columns.length; c++) {
+            rec[columns[c]] = cells[c] ?? "";
+        }
+        const cid = cidIdx === -1 ? "" : cells[cidIdx] ?? "";
+        if (!cid) {
+            continue;
+        }
+        if (!rowsByCid[cid]) {
+            rowsByCid[cid] = [];
+        }
+        rowsByCid[cid].push(rec);
+    }
+    return { columns, rowsByCid };
+}
+/**
+ * Batched counterpart to fetchActiveAssays. PubChem's assaysummary endpoint
+ * accepts many CIDs via an HTTP POST body (cid=2244,1983,...) and answers
+ * with one CSV carrying a CID column, letting a whole compound set be
+ * profiled in a handful of calls instead of one request per CID. Lists are
+ * split into chunks to respect the URL-length cap (mitigated by POST) and
+ * the 30-second per-request timeout (mitigated by chunking).
+ *
+ * @param {string[]} cids         The CIDs to query.
+ * @param {Function} [onProgress]  Optional callback invoked after each chunk
+ *                                 with the count of CIDs processed so far.
+ * @param {number}   [chunkSize]   CIDs per request. Default 50, kept small
+ *                                 because assaysummary returns many rows per
+ *                                 compound and can approach the timeout.
+ * @returns {Promise<{[cid: string]: IAssaysResult}>}  CID -> ranked assays
+ *     (or { error }). Every input CID is present in the map.
+ */
+export async function fetchActiveAssaysBatch(
+    cids: string[],
+    onProgress?: (completed: number) => void,
+    chunkSize = 50
+): Promise<{ [cid: string]: IAssaysResult }> {
+    const resultMap: { [cid: string]: IAssaysResult } = {};
+    let completed = 0;
+    const url =
+        "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/assaysummary/CSV";
+    for (let i = 0; i < cids.length; i += chunkSize) {
+        const chunk = cids.slice(i, i + chunkSize);
+        try {
+            if (chunk.length === 1) {
+                // PubChem's assaysummary POST rejects a bare single CID with
+                // "Missing CID list"; it insists on an actual comma-separated
+                // list. A lone CID is therefore resolved through the proven
+                // single-CID GET path, which yields the same IAssaysResult.
+                resultMap[chunk[0]] = await fetchActiveAssays(chunk[0]);
+            } else {
+                // Build the form-urlencoded body by hand and set the header
+                // explicitly so the cid list reaches PubChem intact.
+                const formPostData = `cid=${encodeURIComponent(
+                    chunk.join(",")
+                )}`;
+            const csv = await pubChemQueue.enqueue(url, {
+                formPostData,
+                responseType: ResponseType.TEXT,
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            });
+                const { columns, rowsByCid } = await _parseAssaySummaryCsv(
+                    csv
+                );
+            for (const cid of chunk) {
+                const rows = rowsByCid[cid] ?? [];
+                if (rows.length === 0) {
+                    // PubChem omits compounds with no assay data entirely.
+                    resultMap[cid] = {
+                        error: "No active assays found for the provided CID.",
+                    };
+                    continue;
+                }
+                resultMap[cid] = _rankActiveAssays(columns, rows);
+                }
+            }
+        } catch (error: any) {
+            const msg =
+                error?.response?.data?.Fault?.Message ??
+                `Network issue occurred: ${error.message}`;
+            for (const cid of chunk) {
+                resultMap[cid] = { error: msg };
+            }
+        }
+        completed += chunk.length;
+        if (onProgress) {
+            onProgress(completed);
+        }
+    }
+    for (const cid of cids) {
+        if (!(cid in resultMap)) {
+            resultMap[cid] = {
+                error: "No active assays found for the provided CID.",
+            };
+        }
+    }
+    return resultMap;
+}
+/**
  * A helper function that fetches active bioassays for a given CID.
  *
  * @param {string} cid The CID of the compound.
- * @returns {Promise<any>} A promise that resolves to an object containing active assays or an error message.
+ * @returns {Promise<IAssaysResult>} Ranked active assays or an error.
  */
-export async function fetchActiveAssays(cid: string): Promise<any> {
+export async function fetchActiveAssays(cid: string): Promise<IAssaysResult> {
     const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${cid}/assaysummary/JSON`;
     try {
         const data = await pubChemQueue.enqueue(url);
-
         const table = data?.Table ?? {};
-        const columns = table?.Columns?.Column ?? [];
+        const columns: string[] = table?.Columns?.Column ?? [];
         const rows = table?.Row ?? [];
-
-        const outcomeIndex = columns.indexOf("Activity Outcome");
-        if (outcomeIndex === -1) {
-            return { error: "Activity Outcome column not found in data." };
-        }
-
-        const activityValueIndex = columns.indexOf("Activity Value [uM]");
-
-        let activeAssays: any[] = [];
-        for (const row of rows) {
+        // Flatten the JSON Table (parallel columns/cells arrays) into keyed
+        // row objects so the ranking logic is shared with the CSV path.
+        const assayObjs: IAssayRecord[] = rows.map((row: any) => {
             const cells = row?.Cell ?? [];
-            if ((cells[outcomeIndex] === "Active") || (activityValueIndex !== -1 && cells[activityValueIndex] !== "")) {
-                const assay: any = {};
-                for (let i = 0; i < columns.length; i++) {
-                    assay[columns[i]] = cells[i];
-                }
-                activeAssays.push(assay);
+            const assay: IAssayRecord = {};
+            for (let i = 0; i < columns.length; i++) {
+                assay[columns[i]] = cells[i];
             }
-        }
-
-        if (activeAssays.length === 0) {
-            return { error: "No active assays found for the provided CID." };
-        }
-
-        // Sort the assays by a custom score.
-        activeAssays.sort(
-            (a: { [key: string]: string }, b: { [key: string]: string }) => {
-                // Sort by the number of active compounds in the assay.
-                let aScore = 0;
-                let bScore = 0;
-
-                // Prioritize confirmatory assays.
-                if (
-                    a["Assay Type"] === "Confirmatory" &&
-                    b["Assay Type"] !== "Confirmatory"
-                ) {
-                    aScore += 1;
-                } else if (
-                    a["Assay Type"] !== "Confirmatory" &&
-                    b["Assay Type"] === "Confirmatory"
-                ) {
-                    bScore += 1;
-                }
-
-                // Prioritize assays with Target GeneID.
-                if (a["Target GeneID"] !== "" && b["Target GeneID"] === "") {
-                    aScore += 1;
-                } else if (
-                    a["Target GeneID"] === "" &&
-                    b["Target GeneID"] !== ""
-                ) {
-                    bScore += 1;
-                }
-
-                // Compare Activity Value [uM]
-                if (a["Activity Value [uM]"] === "") {
-                    a["Activity Value [uM]"] = "100";
-                }
-                if (b["Activity Value [uM]"] === "") {
-                    b["Activity Value [uM]"] = "100";
-                }
-                aScore -= parseFloat(a["Activity Value [uM]"]) / 10.0;
-                bScore -= parseFloat(b["Activity Value [uM]"]) / 10.0;
-
-                return bScore - aScore;
-            }
-        );
-
-        // Remove entries with duplicate AIDs. Keep only the first one. Not sure
-        // why this happens.
-        let uniqueAssays: any[] = [];
-        const aidSet = new Set<string>();
-        for (const assay of activeAssays) {
-            if (assay["AID"] === "") {
-                // If no AID, just add it to unique list.
-                uniqueAssays.push(assay);
-                continue;
-            }
-
-            if (!aidSet.has(assay["AID"])) {
-                aidSet.add(assay["AID"]);
-                uniqueAssays.push(assay);
-            }
-        }
-        activeAssays = uniqueAssays;
-
-        // Entries in the list could have duplicate Target GeneIDs. Keep only
-        // the first one. Put additional ones in new list.
-        uniqueAssays = [];
-        const duplicateAssays: any[] = [];
-        const geneIDs = new Set<string>();
-        for (const assay of activeAssays) {
-            if (assay["Target GeneID"] === "") {
-                // If no gene ID, just add it to unique list.
-                uniqueAssays.push(assay);
-                continue;
-            }
-
-            if (!geneIDs.has(assay["Target GeneID"])) {
-                geneIDs.add(assay["Target GeneID"]);
-                uniqueAssays.push(assay);
-                continue;
-            }
-
-            duplicateAssays.push(assay);
-        }
-
-        const activeAssaysReordered = uniqueAssays.concat(duplicateAssays);
-
-        return { ActiveAssays: activeAssaysReordered };
+            return assay;
+        });
+        return _rankActiveAssays(columns, assayObjs);
     } catch (error: any) {
         if (error.response.data.Fault.Message) {
             return { error: error.response.data.Fault.Message };
@@ -547,7 +736,6 @@ export async function fetchActiveAssays(cid: string): Promise<any> {
         return { error: `Network issue occurred: ${error.message}` };
     }
 }
-
 /**
  * A helper function that calculates the Tanimoto similarity between two fingerprints.
  *
