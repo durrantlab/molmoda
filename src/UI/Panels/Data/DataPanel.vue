@@ -40,6 +40,7 @@ import {
   TreeNodeDataType,
   ITreeNodeData,
   TableHeaderSort,
+  SelectedType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { selectProgramatically } from "@/UI/Navigation/TitleBar/MolSelecting";
 import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
@@ -47,6 +48,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import FormSelectRegion from "@/UI/Forms/FormSelectRegion/FormSelectRegion.vue";
 import { slugify } from "@/Core/Utils/StringUtils";
 import { getTreeVersion } from "@/TreeNodes/TreeCache";
+import { hooksApi } from "@/Api/Hooks";
 /**
  * DataPanel component
  */
@@ -65,7 +67,22 @@ export default class DataPanel extends Vue {
   private cachedMergedTableData: ITableData | null = null;
   private cachedVersion = -1;
   private cachedSelectedSources: string[] = [];
+  // Bumped by the onMoleculesChanged hook. Reading it inside the data getters
+  // makes them depend on molecule mutations (delete, hide/show, select), which
+  // Vue's deep tracking of per-node TreeNode getters does not reliably detect.
+  private molChangeCount = 0;
+  private cachedMolChangeCount = -1;
 
+  /**
+   * Registers a molecule-change listener so the data tables refresh whenever
+   * molecules are deleted, hidden, shown, selected, or deselected. The store's
+   * deep watcher invokes this hook on every molecule mutation.
+   */
+  mounted(): void {
+    hooksApi.onMoleculesChanged(() => {
+      this.molChangeCount++;
+    });
+  }
 
   /**
    * Get the selected data sources.
@@ -138,6 +155,7 @@ export default class DataPanel extends Vue {
     if (
       this.cachedMergedTableData !== null &&
       this.cachedVersion === currentVersion &&
+      this.cachedMolChangeCount === this.molChangeCount &&
       JSON.stringify(sortedSelected) ===
       JSON.stringify(this.cachedSelectedSources)
     ) {
@@ -147,6 +165,7 @@ export default class DataPanel extends Vue {
       this.cachedMergedTableData = null; // Cache null result
       this.cachedVersion = currentVersion;
       this.cachedSelectedSources = sortedSelected;
+      this.cachedMolChangeCount = this.molChangeCount;
       return null;
     }
     // Filter the table data to only include selected sources
@@ -233,6 +252,7 @@ export default class DataPanel extends Vue {
     this.cachedMergedTableData = result;
     this.cachedVersion = currentVersion;
     this.cachedSelectedSources = sortedSelected;
+    this.cachedMolChangeCount = this.molChangeCount;
     return result;
   }
   /**
@@ -247,15 +267,19 @@ export default class DataPanel extends Vue {
     // Note that below is only to ensure reactivity. Very hackish.
     if (allMols.triggerId === "-1") return [];
 
-    // First get all the visible or selected nodes.
-    // const nodes = allMols.flattened.filter(
-    //   // mol_filter_ok
-    //   (x: TreeNode) => x.visible || x.selected !== SelectedType.False
-    // );
+    // Reading the counter establishes a reactive dependency on molecule
+    // mutations so this getter recomputes when molecules are deleted, hidden,
+    // shown, or (de)selected.
+    void this.molChangeCount;
 
-    // NOTE: I changed my mind. Data for all ligands should be shown, not just
-    // visible or selected ones.
-    const nodes = allMols.flattened;
+    // Only show data for molecules that are currently visible or selected, so
+    // hiding/showing (or selecting/deselecting) a molecule updates the table.
+    // Deleted molecules drop out automatically because they are no longer in
+    // the tree.
+    const nodes = allMols.flattened.filter(
+      // mol_filter_ok
+      (x: TreeNode) => x.visible || x.selected !== SelectedType.False
+    );
 
     const dataByTableTitle: { [key: string]: ITreeNodeData[] } = {};
     for (let idx = 0; idx < nodes.length; idx++) {

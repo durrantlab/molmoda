@@ -42,6 +42,7 @@ import { Component } from "vue-facing-decorator";
 import FormInput from "@/UI/Forms/FormInput.vue";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { setPubChemCidOnTreeNode } from "@/Plugins/Optional/PubChem/PubChemCidAssociation";
+import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 
 /**
  * LoadPubChemPlugin
@@ -314,6 +315,14 @@ export default class LoadPubChemPlugin extends PluginParentClass {
             for (let i = 0; i < terminals.length; i++) {
                 setPubChemCidOnTreeNode(terminals.get(i), cidAtImport);
             }
+
+            // The CIDs above are written onto node references that were
+            // already pushed into the reactive store. Because those writes
+            // go through the raw objects rather than Vue's reactive proxies,
+            // they don't notify watchers, so the Data panel won't repopulate
+            // until some later proxy mutation (e.g., selecting the molecule).
+            // Trigger reactivity explicitly so dependent views recompute now.
+            getMoleculesFromStore().triggerReactivity();
         }
 
         // return (
