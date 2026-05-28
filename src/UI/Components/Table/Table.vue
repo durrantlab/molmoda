@@ -6,7 +6,7 @@
         <slot name="afterHeader"></slot>
         <div v-if="allowFilter" class="px-2 pt-1">
             <FilterInput :list="tableDataToUse.rows" :extractTextToFilterFunc="extractRowText"
-                @onFilter="onFilter" v-model="filterStr"></FilterInput>
+                :debounceMs="250" @onFilter="onFilter"></FilterInput>
         </div>
         <div class="table-responsive" :class="{ 'virtual-scroll': shouldVirtualize }"
             :style="scrollContainerStyle" ref="scrollContainer" @scroll="onScroll">
@@ -153,6 +153,9 @@ export default class Table extends Vue {
     // "no active filter" (empty box), in which case every row shows. Mirrors
     // the null-as-unfiltered convention HelpPlugin uses.
     filterStr = "";
+    // filterStr removed entirely: the text now lives inside FilterInput, so it
+    // can't be a render dependency of this component. Only filteredRows drives
+    // a Table re-render, and that changes once per debounced commit.
     filteredRows: { [key: string]: ICellValue }[] | null = null;
     // Per-row searchable-text cache, keyed on the row object. tableDataToUse
     // is a cached computed, so its row objects are stable between keystrokes
@@ -264,14 +267,15 @@ export default class Table extends Vue {
     }
 
     /**
-     * Receives the filtered rows from FilterInput. null (empty search box)
-     * means show everything; an array is the matching subset.
+     * Receives filtered rows from FilterInput. null (empty box) means show
+     * everything; an array is the matching subset.
      *
      * @param {{ [key: string]: ICellValue }[] | null} rows  Filtered rows.
      */
     onFilter(rows: { [key: string]: ICellValue }[] | null): void {
-        this.filteredRows = rows;
+            this.filteredRows = rows;
     }
+
 
     /**
      * Whether the current dataset is large enough to warrant windowing. Small
