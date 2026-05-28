@@ -153,3 +153,16 @@ export type UserArg =
     | IUserSelectRegion
     | IUserArgListSelect
     | IUserArgSelectMolecule;
+
+// Test-only: expose the UserArgType enum on window so the docs/screenshot
+// infrastructure can translate numeric val/type fields back to their
+// declared string names without hardcoding the mapping in Python.  Gated
+// on the ?test= URL parameter so production sessions don't see this.
+if (
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).has("test")
+) {
+    const w = window as any;
+    w.__molmodaEnums = w.__molmodaEnums || {};
+    w.__molmodaEnums.UserArgType = UserArgType;
+}

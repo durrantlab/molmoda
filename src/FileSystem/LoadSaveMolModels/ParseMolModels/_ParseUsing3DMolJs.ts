@@ -16,7 +16,7 @@ export function parseUsing3DMolJs(
     fileInfo: FileInfo,
     formatInfo: IFormatInfo
 ): Promise<TreeNodeList> {
-    console.log("parseUsing3DMolJs called for:", fileInfo.name, "format:", formatInfo.primaryExt);
+    // console.log("parseUsing3DMolJs called for:", fileInfo.name, "format:", formatInfo.primaryExt);
 
     return parseMolecularModelFromTexts(
         [fileInfo],

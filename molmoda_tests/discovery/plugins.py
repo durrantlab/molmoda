@@ -134,11 +134,16 @@ def filter_capturable_plugin_ids(
     plugin_ids: list[tuple[str, int | None]],
     src_glob: str = "./src/**/*Plugin.vue",
 ) -> list[tuple[str, int | None]]:
-    """Drop plugins that cannot or should not be screenshotted.
+    """Drop plugins that have no menu entry to capture.
 
-    Excludes plugins whose source sets ``noPopup = true`` (no visual widget
-    to capture) or ``menuPath = null`` (no menu entry, so the popup cannot
-    be opened by the existing test-driven flow).
+    A plugin is uncapturable for docs only when it has ``menuPath = null``
+    (no menu entry, so there is nothing visual to drive open and no menu
+    image to show users).  Plugins with ``noPopup = true`` are kept: they
+    don't have a popup widget, but they still have a menu entry that users
+    need to find, so the menu screenshot and metadata are still valuable.
+    The capture layer is responsible for branching on noPopup at runtime
+    (read from the live plugin instance via the registry hook) to skip
+    the modal-related work.
 
     Args:
         plugin_ids: Candidate (plugin_id, sub_index) tuples.
@@ -156,7 +161,7 @@ def filter_capturable_plugin_ids(
             # matching file), keep it: the user asked for it explicitly.
             filtered.append((pid, sub_idx))
             continue
-        if _has_no_popup(source) or _has_null_menu_path(source):
+        if _has_null_menu_path(source):
             continue
         filtered.append((pid, sub_idx))
     return filtered

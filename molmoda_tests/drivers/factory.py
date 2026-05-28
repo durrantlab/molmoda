@@ -39,7 +39,11 @@ def make_chrome_driver(options: webdriver.ChromeOptions, root_url: str) -> webdr
     return driver
 
 
-def make_driver(browser: str, root_url: str) -> webdriver.Remote:
+def make_driver(
+    browser: str,
+    root_url: str,
+    device_scale_factor: float | None = None,
+) -> webdriver.Remote:
     """
     Create and return a WebDriver for the specified browser string.
 
@@ -47,6 +51,12 @@ def make_driver(browser: str, root_url: str) -> webdriver.Remote:
         browser:  One of 'chrome', 'chrome-headless', 'firefox',
                   'firefox-headless', 'safari'.
         root_url: The root URL being tested (used for CDP setup on Chrome).
+        device_scale_factor: Optional Chrome device-pixel ratio override.
+            When set (e.g. 2.0), Chrome renders and screenshots at that
+            DPR, producing higher-resolution images.  Chrome-only; ignored
+            for Firefox and Safari because their driver options don't
+            expose an equivalent knob.  Defaults to None (use Chrome's
+            default DPR, normally 1.0 in headless).
 
     Returns:
         A configured WebDriver instance.
@@ -76,6 +86,10 @@ def make_driver(browser: str, root_url: str) -> webdriver.Remote:
         options = webdriver.ChromeOptions()
         options.add_argument("--start-maximized")
         options.add_argument("--window-size=1920,1080")
+        if device_scale_factor is not None:
+            options.add_argument(
+                f"--force-device-scale-factor={device_scale_factor}"
+            )
         driver = make_chrome_driver(options, root_url)
 
     elif browser == "chrome-headless":
@@ -87,6 +101,10 @@ def make_driver(browser: str, root_url: str) -> webdriver.Remote:
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         )
+        if device_scale_factor is not None:
+            options.add_argument(
+                f"--force-device-scale-factor={device_scale_factor}"
+            )
         driver = make_chrome_driver(options, root_url)
 
     else:

@@ -59,6 +59,37 @@ def find_tour_plugin_ids(
     tour_ids.sort()
     return tour_ids
 
+def plugin_has_tour(
+    plugin_id: str,
+    src_glob: str = "./src/**/*Plugin.vue",
+) -> bool:
+    """Return True if the given plugin id has a non-trivial tour.
+
+    Reuses the same source-scan + heuristic as ``find_tour_plugin_ids`` so
+    there is a single source of truth for "does this plugin have a tour?".
+    Callers (e.g. the docs-capture manifest writer) can ask per-plugin
+    without re-globbing or re-implementing the detection logic.
+
+    Args:
+        plugin_id: The plugin identifier to check.
+        src_glob: Glob pattern for Vue plugin source files.
+
+    Returns:
+        True when a matching plugin file declares a non-trivial getTests().
+    """
+    for ts_file in glob.glob(src_glob, recursive=True):
+        with open(ts_file) as f:
+            content = f.read()
+        id_match = re.search(
+            r'[^:]\bpluginId *?= *?"(.+)"', content, re.MULTILINE
+        )
+        if not id_match:
+            continue
+        if id_match[1] != plugin_id:
+            continue
+        return _has_nontrivial_tests(content)
+    return False
+
 
 def _has_nontrivial_tests(source: str) -> bool:
     """Heuristic check for a non-trivial getTests() implementation.

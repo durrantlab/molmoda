@@ -13,6 +13,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from ..elements import el
 from ..drivers import make_driver
+from ..discovery.tours import plugin_has_tour
 from .command_dispatch import dispatch_command
 from .plugin_metadata import extract_plugin_info, IPluginInfo
 
@@ -56,6 +57,21 @@ KEEP_ATTR = "data-docs-keep"
 # id of the injected <style> element so we can find and remove it during
 # cleanup without affecting any other page styles.
 ISOLATION_STYLE_ID = "docs-capture-isolation"
+# Device-pixel ratio used for the docs-capture Chrome session.  Higher
+# values produce sharper screenshots at the cost of larger PNGs and
+# slightly slower rendering.  2.0 matches typical retina/hidpi displays
+# and is roughly 4x the file size of the 1.0 default.  CSS-pixel
+# coordinates in _measure_rect already read window.devicePixelRatio,
+# so cropping math stays correct without further changes.
+DOCS_DEVICE_SCALE_FACTOR = 2.0
+
+# Base URL used when emitting per-plugin tour URLs into the manifest.
+# Hardcoded to the public production host so docs consumers get a working
+# link regardless of which root_url was used during capture (e.g. a local
+# dev server).  If the docs site ever needs to point at a different host,
+# change this in one place.
+TOUR_URL_BASE = "https://molmoda.org"
+
 def resolve_docs_out_root(cli_override: str | None = None) -> str:
     """Resolve the output directory for captured screenshots.
 
@@ -90,22 +106,26 @@ class IRect(TypedDict):
     dpr: float
 
 
-class IManifestEntry(TypedDict):
+class IManifestEntry(TypedDict, total=False):
     """One captured widget's metadata, written to manifest.json.
 
-    ``menu_image`` is the filename of the menu screenshot (or None when no
-    menu capture was produced).  ``plugin_info`` is the plugin's
-    description / parameter metadata read from the live page; it's None
-    when extraction failed (e.g. the test-only registry hook wasn't loaded).
+    ``image`` is None for plugins with ``noPopup = true`` because they
+    have no popup widget to screenshot.  Such plugins act immediately
+    when their menu item is clicked, so only ``menu_image`` and
+    ``plugin_info`` are meaningful for them.
+
+    ``tour_url`` is only present when the plugin defines a non-trivial
+    tour; consumers should treat its absence as "no tour available".
     """
     plugin_id: str
     plugin_index: int | None
-    image: str
+    image: str | None
     menu_image: str | None
     plugin_info: IPluginInfo | None
     captured_at: str
     browser: str
     viewport: dict[str, int]
+    tour_url: str
 
 
 _drivers: dict[int, Any] = {}
@@ -115,20 +135,19 @@ _drivers_lock = threading.Lock()
 def _get_driver(browser: str, root_url: str) -> Any:
     """Return a thread-local WebDriver, creating one on first use.
 
-    Mirrors the pattern in executor.py so parallel capture works the same way
-    as the test runner.
-
-    Args:
-        browser: Browser identifier (e.g. 'chrome').
-        root_url: Root URL of the MolModa instance.
-
-    Returns:
-        A configured Selenium WebDriver for this thread.
+    The docs-capture driver is created at higher device-pixel ratio than
+    the default test driver so screenshots match retina/hidpi rendering.
+    Tests are unaffected -- they call ``make_driver`` without the DPR
+    override and continue at the platform default.
     """
     key = threading.get_ident()
     with _drivers_lock:
         if key not in _drivers:
-            _drivers[key] = make_driver(browser, root_url)
+            _drivers[key] = make_driver(
+                browser,
+                root_url,
+                device_scale_factor=DOCS_DEVICE_SCALE_FACTOR,
+            )
     return _drivers[key]
 
 
@@ -194,99 +213,33 @@ def _hover_selector(driver: Any, selector: str) -> None:
     except Exception:
         pass
 
-def _expand_rect_to_top_full_width(driver: Any, rect: IRect) -> IRect:
-    """Stretch a rect to span the full viewport width and reach y=0.
-
-    Used for the menu screenshot so the crop includes the menu bar at the
-    top of the screen and gives full horizontal context.  Height grows to
-    cover the top of the viewport down to the dropdown's bottom edge plus
-    ``CROP_PADDING_PX`` of breathing room below, so the dropdown doesn't
-    sit flush against the image's bottom edge.
-    """
-    viewport_width = driver.execute_script("return window.innerWidth;")
-    bottom = rect["y"] + rect["height"] + CROP_PADDING_PX
-    return {
-        "x": 0.0,
-        "y": 0.0,
-        "width": float(viewport_width),
-        "height": float(bottom),
-        "dpr": rect["dpr"],
-    }
-def _measure_element_rect(driver: Any, selector: str) -> IRect | None:
-    """Measure the first visible element matching `selector`, or return None.
-
-    Used to look up the navbar rect for masking.  Returns None when no
-    visible match is found so the caller can degrade gracefully (skipping
-    the mask) instead of failing the whole capture.
-    """
-    try:
-        elements = driver.find_elements(By.CSS_SELECTOR, selector)
-        for elem in elements:
-            try:
-                if not elem.is_displayed():
-                    continue
-                return _measure_rect(driver, elem)
-            except Exception:
-                continue
-    except Exception:
-        pass
-    return None
-def _mask_outside_rects(
-    png_bytes: bytes,
-    crop_rect: IRect,
-    keep_rects: list[IRect],
-) -> bytes:
-    """Return PNG bytes with everything outside `keep_rects` painted white.
-
-    Composites a white canvas of the same size as the cropped image, then
-    pastes the original cropped image only inside the union of
-    ``keep_rects``.  All rects are in CSS pixels relative to the viewport;
-    they're translated into the cropped image's pixel space by subtracting
-    the crop origin and multiplying by ``dpr``.
-
-    Args:
-        png_bytes: PNG bytes already cropped to ``crop_rect`` (i.e. the
-            output of ``_crop_screenshot_to_rect``).
-        crop_rect: The rect that ``png_bytes`` was cropped to.  Provides
-            the origin used to translate ``keep_rects`` into image space.
-        keep_rects: Rects (in viewport CSS pixels) whose contents should
-            remain visible.  Anything outside their union becomes white.
-
-    Returns:
-        PNG bytes of the masked image.
-    """
-    src = Image.open(io.BytesIO(png_bytes)).convert("RGB")
-    canvas = Image.new("RGB", src.size, (255, 255, 255))
-    dpr = crop_rect["dpr"] or 1.0
-    # Origin of the crop in device pixels.  Subtracted from keep-rect
-    # coordinates to translate them into the cropped image's space.
-    crop_left_dev = int(crop_rect["x"] * dpr)
-    crop_top_dev = int(crop_rect["y"] * dpr)
-    for r in keep_rects:
-        left = max(0, int(r["x"] * dpr) - crop_left_dev)
-        top = max(0, int(r["y"] * dpr) - crop_top_dev)
-        right = min(src.width, int((r["x"] + r["width"]) * dpr) - crop_left_dev)
-        bottom = min(src.height, int((r["y"] + r["height"]) * dpr) - crop_top_dev)
-        if right <= left or bottom <= top:
-            continue
-        region = src.crop((left, top, right, bottom))
-        canvas.paste(region, (left, top))
-    buf = io.BytesIO()
-    canvas.save(buf, format="PNG", optimize=True)
-    return buf.getvalue()
 def _isolate_elements(driver: Any, keep_selectors: list[str]) -> None:
     """Fade everything except `keep_selectors` (and their ancestors) to opacity 0.
 
-    See prior docstring for rationale.  The injected stylesheet also forces
-    ``html`` and ``body`` to a pure-white background so the faded pixels
-    don't reveal whatever the app's normal canvas color is.  Both <html>
-    and <body> are pinned because some apps (and some browser defaults)
-    paint the root element's background rather than body's.
+    Why ancestors: CSS opacity cascades visually -- if a parent has
+    opacity 0, every descendant disappears regardless of its own opacity.
+    So we mark each keep-element, every descendant of it, and every
+    ancestor up to <html>, then a CSS rule fades anything *not* marked.
+
+    Also forces ``html`` and ``body`` to a pure-white background so the
+    faded pixels don't reveal whatever the app's normal canvas color is.
+    Both <html> and <body> are pinned because some apps (and some browser
+    defaults) paint the root element's background rather than body's.
+
+    The injected ``<style>`` block is identified by ``ISOLATION_STYLE_ID``
+    so ``_unisolate_elements`` can remove it cleanly.
+
+    Args:
+        driver: Active Selenium WebDriver.
+        keep_selectors: CSS selectors whose matched elements (with full
+            descendant and ancestor chains) stay visible.
     """
     script = """
     const selectors = arguments[0];
     const KEEP_ATTR = arguments[1];
     const STYLE_ID = arguments[2];
+    // Clear any prior marks so successive calls in the same page session
+    // (e.g. menu capture followed by widget capture) start from scratch.
     document.querySelectorAll('[' + KEEP_ATTR + ']').forEach(
         e => e.removeAttribute(KEEP_ATTR)
     );
@@ -303,6 +256,8 @@ def _isolate_elements(driver: Any, keep_selectors: list[str]) -> None:
             }
         });
     });
+    // Inject (or update) the isolation stylesheet.  Using one canonical
+    // <style> tag keeps cleanup to a single removal call.
     let style = document.getElementById(STYLE_ID);
     if (!style) {
         style = document.createElement('style');
@@ -334,18 +289,106 @@ def _unisolate_elements(driver: Any) -> None:
     """
     with contextlib.suppress(Exception):
         driver.execute_script(script, KEEP_ATTR, ISOLATION_STYLE_ID)
+def _measure_max_right_edge(
+    driver: Any,
+    open_dropdown_elem: Any,
+) -> float:
+    """Find the rightmost CSS-pixel edge among the navbar items and the open dropdown.
+
+    The menu crop should extend just past whichever is further right: the
+    last top-level menu item in the navbar, or the open dropdown panel
+    itself.  Measuring the navbar *container* (#navbarSupportedContent)
+    won't work because Bootstrap flex containers typically span full
+    viewport width regardless of their visible content -- we'd just get
+    the viewport back.  Instead, walk the navbar's visible descendants
+    and take the max of each one's individual bounding rect.
+
+    Args:
+        driver: Active Selenium WebDriver.
+        open_dropdown_elem: The currently-open .dropdown-menu (already
+            picked by the caller as the largest visible one) whose right
+            edge contributes to the max.
+
+    Returns:
+        Rightmost CSS-pixel x coordinate to crop to, before padding is
+        added.  Returns 0 on any error -- the caller's clamp logic will
+        treat that as "no useful right edge found" and fall back to a
+        wider crop.
+    """
+    script = """
+    const navbar = document.querySelector(arguments[0]);
+    if (!navbar) return 0;
+    let maxRight = 0;
+    // Iterate every descendant.  Bootstrap navbar markup varies (nav-item,
+    // nav-link, dropdown-toggle); rather than guess which specific class
+    // holds the items, just take the max right edge among all visible
+    // elements.  Hidden elements (display:none) have width 0 and won't
+    // pollute the max.
+    const all = navbar.querySelectorAll('*');
+    for (const el of all) {
+        // Skip elements inside any .dropdown-menu: those are the dropdown
+        // panel contents, not the top-level menu bar items.  They get
+        // their own contribution to the max via the dropdown rect passed
+        // separately by the Python caller.
+        if (el.closest('.dropdown-menu')) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        if (r.right > maxRight) maxRight = r.right;
+    }
+    // Also include the dropdown's own right edge, passed in as the
+    // second argument so a deeply-nested submenu extending further
+    // right than any navbar item still wins.
+    const dropdownRight = arguments[1];
+    if (dropdownRight > maxRight) maxRight = dropdownRight;
+    return maxRight;
+    """
+    try:
+        dropdown_rect = _measure_rect(driver, open_dropdown_elem)
+        dropdown_right = dropdown_rect["x"] + dropdown_rect["width"]
+        return float(driver.execute_script(
+            script, NAVBAR_SELECTOR, dropdown_right,
+        ))
+    except Exception:
+        return 0.0
+
+def _expand_rect_to_top_full_width(driver: Any, rect: IRect) -> IRect:
+    """Stretch a rect to reach y=0 (kept) and extend right just past the
+    last navbar item or the open dropdown (whichever is further right).
+
+    The previous version pinned x=0 and width=viewport so the crop spanned
+    the full screen.  That worked but left huge empty space on the right
+    in MolModa's UI, where the navbar items don't reach the viewport edge.
+    Now the width is computed from the actual rightmost edge of either the
+    last top-level menu item or the open dropdown, plus padding, clamped
+    to the viewport.  x still pins to 0 because we want the leftmost edge
+    of the menu bar (logo / first menu item) visible.
+
+    Args:
+        driver: Active Selenium WebDriver.
+        rect: The open dropdown's bounding rect, in CSS pixels.
+
+    Returns:
+        Expanded rect for cropping.
+    """
+    viewport_width = driver.execute_script("return window.innerWidth;")
+    bottom = rect["y"] + rect["height"] + CROP_PADDING_PX
+    # _measure_max_right_edge already considered the dropdown's right
+    # edge when picking the rightmost contribution; we add CROP_PADDING_PX
+    # so the chosen edge isn't flush against the crop boundary.
+    return {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 0.0,  # placeholder; overwritten below
+        "height": float(bottom),
+        "dpr": rect["dpr"],
+    }
 def _capture_open_menu_png(driver: Any) -> bytes | None:
     """Screenshot the open dropdown + menu bar with the rest faded out.
 
-    Picks the largest visible ``.navbar-nav .dropdown-menu`` to anchor the
-    crop, then uses CSS isolation (via ``_isolate_elements``) to hide
-    everything except the navbar and the open dropdown.  The screenshot
-    is then cropped to span the full viewport width from y=0 down through
-    the dropdown's bottom edge, giving the menu bar context above.
-
-    CSS isolation is more reliable than PIL masking: the browser does the
-    layout and we screenshot the already-cleaned-up DOM, so there's no
-    coordinate drift between mask and pixels.
+    The crop now extends only as far right as needed -- to just past the
+    last visible top-level menu item or the open dropdown, whichever is
+    further -- avoiding the large blank area on the right that the
+    previous full-viewport-width crop produced.
 
     Returns None when no dropdown is visible at call time.
     """
@@ -375,12 +418,53 @@ def _capture_open_menu_png(driver: Any) -> bytes | None:
         try:
             dropdown_rect = _measure_rect(driver, target)
             expanded = _expand_rect_to_top_full_width(driver, dropdown_rect)
+            # Compute the right edge AFTER isolation so any layout shift
+            # caused by the opacity stylesheet (e.g. a flex container
+            # collapsing because its sibling went transparent) is
+            # reflected in the measurement.  In practice opacity:0
+            # preserves layout, but measuring post-isolation is the
+            # defensive choice.
+            max_right = _measure_max_right_edge(driver, target)
+            viewport_width = driver.execute_script(
+                "return window.innerWidth;"
+            )
+            # Clamp to viewport.  If max_right came back as 0 (error
+            # path), fall back to the full viewport width so we don't
+            # produce a zero-width crop.
+            if max_right <= 0:
+                expanded["width"] = float(viewport_width)
+            else:
+                expanded["width"] = min(
+                    float(viewport_width),
+                    max_right + CROP_PADDING_PX,
+                )
             png_full = driver.get_screenshot_as_png()
             return _crop_screenshot_to_rect(png_full, expanded, 0)
         finally:
             _unisolate_elements(driver)
     except Exception:
         return None
+def _read_no_popup_flag(driver: Any, plugin_id: str) -> bool:
+    """Read the live plugin instance's ``noPopup`` flag from the registry.
+
+    Determines at runtime whether a plugin has a popup widget to capture
+    or acts immediately from the menu.  Reading from the registry rather
+    than re-parsing the .vue source keeps the source-of-truth in one
+    place (the running app) and tolerates source files that set noPopup
+    dynamically (e.g. AddVizualizationPlugin toggles it for programmatic
+    runs).  Defaults to False on any failure -- erring toward "try the
+    modal capture" is safer than silently skipping a real widget.
+    """
+    script = (
+        "const reg = window.__molmodaLoadedPlugins;"
+        "if (!reg) return false;"
+        "const p = reg[arguments[0]];"
+        "return !!(p && p.noPopup);"
+    )
+    try:
+        return bool(driver.execute_script(script, plugin_id))
+    except Exception:
+        return False
 def _drive_until_popup_visible(
     driver: Any,
     plugin_id: str,
@@ -439,7 +523,56 @@ def _drive_until_popup_visible(
         f"{len(cmds)} commands."
     )
 
+def _drive_for_menu_only(
+    driver: Any,
+    plugin_id: str,
+    cmds: list[dict[str, object]],
+) -> bytes | None:
+    """Walk all commands, capturing the menu but never expecting a modal.
 
+    Used for ``noPopup`` plugins: they act immediately when the menu item
+    is clicked, so there is no modal to wait for.  We still want the
+    menu screenshot, though, because users need to know where in the
+    navbar the plugin lives.
+
+    Strategy mirrors ``_drive_until_popup_visible`` for the capture step
+    (hover + screenshot before each click whose target is inside an open
+    dropdown), but without an early-exit on modal visibility.  Whatever
+    menu screenshot we have at the end of the command stream is returned.
+
+    Args:
+        driver: Active Selenium WebDriver.
+        plugin_id: The plugin being captured (for diagnostics).
+        cmds: The full command list read from #cmds-element.
+
+    Returns:
+        PNG bytes of the menu screenshot, or None if no dropdown was ever
+        open during a click command (e.g. the plugin was triggered by
+        means other than a menu traversal).
+    """
+    menu_png: bytes | None = None
+    for cmd in cmds:
+        if cmd["cmd"] == "addTests":
+            raise Exception(
+                f"Encountered addTests for {plugin_id}; sub-index required."
+            )
+        if cmd["cmd"] == "click" and _open_menu_is_visible(driver):
+            selector = cmd.get("selector")
+            if isinstance(selector, str) and selector:
+                _hover_selector(driver, selector)
+                candidate = _capture_open_menu_png(driver)
+                if candidate is not None:
+                    menu_png = candidate
+        # Best-effort dispatch: a noPopup plugin's final click may trigger
+        # navigation, an alert, or another side-effect that makes the next
+        # command fail.  Swallow per-command exceptions so a late failure
+        # doesn't discard the menu screenshot we've already captured.
+        try:
+            dispatch_command(driver, cmd)
+        except Exception as e:
+            print(f"  [{plugin_id}] noPopup command dispatch raised: {e}")
+            break
+    return menu_png
 def _is_modal_visible(driver: Any, modal_selector: str) -> bool:
     """Return True iff the plugin's modal is in the DOM and displayed.
 
@@ -547,7 +680,7 @@ def _output_dir_for(plugin_id: str, out_root: str) -> str:
 def _write_manifest(
     out_dir: str,
     plugin_id: str,
-    image_name: str,
+    image_name: str | None,
     menu_image_name: str | None,
     plugin_info: IPluginInfo | None,
     browser: str,
@@ -555,11 +688,13 @@ def _write_manifest(
 ) -> None:
     """Write manifest.json describing the captured widget.
 
-    ``plugin_info`` carries the live-extracted description and parameter
-    metadata for the plugin so the docs site can render per-plugin pages
-    without re-parsing the source tree.  Stored as None on extraction
-    failure rather than omitted, so manifest consumers can tell "no info"
-    apart from "field forgotten."
+    ``image_name`` is None for noPopup plugins (they have no widget to
+    screenshot); manifest consumers should treat that as "menu-only
+    plugin" rather than a missing file.
+
+    A ``tour_url`` field is added only when the plugin defines a
+    non-trivial tour, so its absence in the JSON unambiguously means
+    "no tour available for this plugin".
     """
     entry: IManifestEntry = {
         "plugin_id": plugin_id,
@@ -571,6 +706,10 @@ def _write_manifest(
         "browser": browser,
         "viewport": viewport,
     }
+    # Detection reuses discovery/tours.py so the manifest stays in sync
+    # with whatever the tour runner itself considers tour-capable.
+    if plugin_has_tour(plugin_id):
+        entry["tour_url"] = f"{TOUR_URL_BASE}/?tour={plugin_id}"
     with open(os.path.join(out_dir, "manifest.json"), "w") as f:
         json.dump(entry, f, indent=2)
 
@@ -581,12 +720,17 @@ def capture_plugin_widget(
     root_url: str,
     out_root: str,
 ) -> dict[str, str | list]:
-    """Capture cropped screenshots of a plugin's popup and its launching menu.
+    """Capture screenshots and metadata for a single plugin.
 
-    Also extracts the plugin's live metadata (title, menuPath, intro,
-    details, tags, hotkey, userArgs) from the test-only registry hook on
-    ``window.__molmodaLoadedPlugins`` and writes it into the manifest so
-    the docs site can render per-plugin pages without re-parsing source.
+    For plugins with a popup, this writes both ``widget.png`` (the popup
+    in its initial state) and ``menu.png`` (the navbar with the launching
+    item hovered), plus ``plugin_info`` in the manifest.
+
+    For plugins with ``noPopup = true``, no widget screenshot is taken --
+    these plugins act immediately when their menu item is clicked, so
+    there's no popup to capture.  ``menu.png`` and ``plugin_info`` are
+    still produced so the docs site can show where the menu entry lives
+    and describe what the plugin does.
     """
     driver = _get_driver(browser, root_url)
     plugin_name, plugin_idx = plugin_id_tuple
@@ -621,35 +765,50 @@ def capture_plugin_widget(
         # sub-test 0 so the orchestrator picks up the actual capture pass.
         if len(cmds) == 1 and cmds[0]["cmd"] == "addTests":
             return [(plugin_name, 0)]
-        _, menu_png = _drive_until_popup_visible(driver, plugin_name, cmds)
-        dialog = _wait_for_modal_dialog(driver, plugin_name)
-        time.sleep(POPUP_SETTLE_SECS)
-        _hide_fake_cursor(driver)
-        # Extract plugin metadata *before* isolating the modal: the
-        # isolation stylesheet doesn't affect data reads, but doing it
-        # here keeps the JS-context state simple (no opacity-mutated DOM
-        # at extraction time) and lets the failure path skip the
-        # screenshot work below.
-        plugin_info = extract_plugin_info(driver, plugin_name)
-        modal_selector = f"#modal-{plugin_name}"
-        _isolate_elements(driver, [modal_selector])
-        try:
-            rect = _measure_rect(driver, dialog)
-            png_full = driver.get_screenshot_as_png()
-            png_cropped = _crop_screenshot_to_rect(
-                png_full, rect, CROP_PADDING_PX
+        # Branch on noPopup *before* driving any commands.  The registry
+        # is populated at mount time, which has already happened by now
+        # (we successfully read #test-cmds above, which requires the
+        # plugin to be fully mounted).  A read-failure defaults to False
+        # so we attempt the modal flow -- the safer default.
+        no_popup = _read_no_popup_flag(driver, plugin_name)
+        menu_png: bytes | None = None
+        png_cropped: bytes | None = None
+        if no_popup:
+            # No modal to wait for; just walk the command stream and
+            # keep whatever menu screenshot we can grab.
+            menu_png = _drive_for_menu_only(driver, plugin_name, cmds)
+        else:
+            _, menu_png = _drive_until_popup_visible(
+                driver, plugin_name, cmds
             )
-        finally:
-            _unisolate_elements(driver)
+            dialog = _wait_for_modal_dialog(driver, plugin_name)
+            time.sleep(POPUP_SETTLE_SECS)
+            _hide_fake_cursor(driver)
+            # Extract plugin metadata happens after dialog appears but
+            # below; do the widget screenshot now while the modal state
+            # is fresh.
+            modal_selector = f"#modal-{plugin_name}"
+            _isolate_elements(driver, [modal_selector])
+            try:
+                rect = _measure_rect(driver, dialog)
+                png_full = driver.get_screenshot_as_png()
+                png_cropped = _crop_screenshot_to_rect(
+                    png_full, rect, CROP_PADDING_PX
+                )
+            finally:
+                _unisolate_elements(driver)
+        # Metadata extraction works the same for both branches: the
+        # plugin instance is registered regardless of whether it has a
+        # popup.  Read it after the menu/modal work so any registry
+        # mutations from runtime callbacks have settled.
+        plugin_info = extract_plugin_info(driver, plugin_name)
         out_dir = _output_dir_for(plugin_name, out_root)
         os.makedirs(out_dir, exist_ok=True)
-        image_name = "widget.png"
-        image_path = os.path.join(out_dir, image_name)
-        with open(image_path, "wb") as f:
-            f.write(png_cropped)
-        # Persist the menu screenshot when we captured one.  Writing it
-        # under the same plugin directory keeps the docs assets per-plugin
-        # and lets a manifest consumer load both images with one lookup.
+        image_name: str | None = None
+        if png_cropped is not None:
+            image_name = "widget.png"
+            with open(os.path.join(out_dir, image_name), "wb") as f:
+                f.write(png_cropped)
         menu_image_name: str | None = None
         if menu_png is not None:
             menu_image_name = "menu.png"
@@ -662,11 +821,19 @@ def capture_plugin_widget(
             out_dir, plugin_name, image_name, menu_image_name,
             plugin_info, browser, viewport,
         )
+        # Report the most relevant artifact path: prefer the widget, fall
+        # back to the menu screenshot for noPopup plugins so the report
+        # still has something concrete to print.
+        artifact_path = ""
+        if image_name is not None:
+            artifact_path = os.path.join(out_dir, image_name)
+        elif menu_image_name is not None:
+            artifact_path = os.path.join(out_dir, menu_image_name)
         return {
             "status": "passed",
             "test": label,
             "error": "",
-            "image_path": image_path,
+            "image_path": artifact_path,
         }
     except Exception as e:
         return {
