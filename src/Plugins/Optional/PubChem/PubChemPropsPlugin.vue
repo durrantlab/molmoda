@@ -6,7 +6,10 @@
 </template>
 
 <script lang="ts">
-import { fetchCompoundsProperties } from "./PubChemAPI";
+import {
+  fetchCompoundsProperties,
+  fetchCompoundsPropertiesBatch,
+} from "./PubChemAPI";
 import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import {
@@ -18,8 +21,7 @@ import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Component } from "vue-facing-decorator";
 import { ITest } from "@/Testing/TestInterfaces";
-import { pubchemCredit, lookupCid } from "./PubChemCommon";
-
+import { pubchemCredit, lookupCid, lookupCidsBatch } from "./PubChemCommon";
 /**
  * PubChemPropsPlugin
  */
@@ -45,7 +47,16 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
   details =
     "This plugin contacts the online PubChem database to retrieve properties such as molecular weight, molecular formula, etc.";
   dataSetTitle = "Properties";
-
+  /**
+   * Opt into the bulk-processing path in GetPropPluginParent. The PubChem
+   * property endpoint accepts comma-separated CIDs, so we can fetch 100
+   * compounds per call instead of one.
+   *
+   * @returns {boolean}  Always true.
+   */
+  public get supportsBulk(): boolean {
+    return true;
+  }
   /**
    * Check if the plugin is allowed to be used.
    *
@@ -54,13 +65,15 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
   }
-
   /**
-   * Get the properties of the molecule.
+   * Per-molecule fallback path. The CID lives in treeNode.data["PubChem"]
+   * (written by lookupCid as a side effect), so this plugin's results
+   * table contains only the property fields themselves.
    *
    * @param {FileInfo} molFileInfo The molecule file info.
-   * @returns {Promise} The properties. Resolves to undefined if no properties
-   *     found.
+   * @returns {Promise} The properties, or undefined if the SMILES doesn't
+   *     resolve to a PubChem CID (the not-found state is already recorded
+   *     on the tree node so no row is needed here).
    */
   async getMoleculeDetails(
     molFileInfo: FileInfo
@@ -70,21 +83,80 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     }
     const lookup = await lookupCid(molFileInfo);
     if (!lookup.found) {
-      return { CID: lookup.notFoundHtml };
+      return undefined;
     }
-    let properties = await fetchCompoundsProperties(lookup.cid);
+    const properties = await fetchCompoundsProperties(lookup.cid);
     if (properties.error) {
-      return { CID: `${lookup.cidLink}: ${properties.error}` };
+      return { Error: properties.error };
     }
-
-    properties = {
-      CID: lookup.cidLink,
-      ...properties,
-    };
-
     return properties;
   }
 
+  /**
+   * Bulk path. Drops CID from each returned row for the same reason as
+   * getMoleculeDetails: the CID lives in the canonical PubChem entry
+   * written during lookupCidsBatch.
+   *
+   * @param {FileInfo[]} mols        Molecules to process.
+   * @param {Function}   onProgress  Progress reporter.
+   * @returns {Promise<void>}
+   */
+  public async getMoleculesDetailsBatch(
+    mols: FileInfo[],
+    onProgress: (frac: number) => void
+  ): Promise<void> {
+    const valid = mols.filter((m) => m.treeNode);
+    if (valid.length === 0) {
+      onProgress(1);
+      return;
+    }
+    const cidPhaseWeight = 0.4;
+    const propPhaseWeight = 0.6;
+    const lookups = await lookupCidsBatch(valid, (completed) => {
+      onProgress((completed / valid.length) * cidPhaseWeight);
+    });
+    // Group molecules by whether they resolved to a CID. Unresolved ones get
+    // a "not found" row immediately and skip the property fetch.
+    const resolvedCids: string[] = [];
+    const resolvedMols: FileInfo[] = [];
+    for (let i = 0; i < valid.length; i++) {
+      const lookup = lookups[i];
+      const mol = valid[i];
+      if (!lookup.found) {
+        // Not-found state already recorded on the tree node by
+        // lookupCidsBatch; skip emitting a row for this molecule.
+        continue;
+      }
+      resolvedCids.push(lookup.cid);
+      resolvedMols.push(mol);
+    }
+    if (resolvedCids.length === 0) {
+      onProgress(1);
+      return;
+    }
+    const propsMap = await fetchCompoundsPropertiesBatch(
+      resolvedCids,
+      (completed) => {
+        onProgress(
+          cidPhaseWeight +
+            (completed / resolvedCids.length) * propPhaseWeight
+        );
+      }
+    );
+    for (let i = 0; i < resolvedMols.length; i++) {
+      const mol = resolvedMols[i];
+      const cid = resolvedCids[i];
+      const props = propsMap[cid];
+      if (!props || props.error) {
+        this.recordMoleculeResult(mol, {
+          Error: props?.error ?? "Unknown error",
+        });
+        continue;
+      }
+      this.recordMoleculeResult(mol, props);
+    }
+    onProgress(1);
+  }
   /**
    * Get the tests for the plugin.
    *

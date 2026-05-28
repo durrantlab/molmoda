@@ -40,6 +40,8 @@ import { slugify } from "@/Core/Utils/StringUtils";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { Component } from "vue-facing-decorator";
 import FormInput from "@/UI/Forms/FormInput.vue";
+import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
+import { setPubChemCidOnTreeNode } from "@/Plugins/Optional/PubChem/PubChemCidAssociation";
 
 /**
  * LoadPubChemPlugin
@@ -296,11 +298,23 @@ export default class LoadPubChemPlugin extends PluginParentClass {
             return;
         }
 
-        return this.addFileInfoToViewer({
+        // Call parseAndLoadMoleculeFile directly so the returned tree
+        // nodes are accessible (addFileInfoToViewer discards them) and
+        // the known CID can be stamped on each one. Without this stamp,
+        // the property/names/bioassays plugins would later issue a
+        // redundant SMILES->CID lookup against the same CID we just used.
+        const cidAtImport = this.cid;
+        const newTreeNodeList = await parseAndLoadMoleculeFile({
             fileInfo,
             desalt: this.getUserArg("desalt"),
             tag: this.pluginId,
         });
+        if (newTreeNodeList) {
+            const terminals = newTreeNodeList.terminals;
+            for (let i = 0; i < terminals.length; i++) {
+                setPubChemCidOnTreeNode(terminals.get(i), cidAtImport);
+            }
+        }
 
         // return (
         //     loadRemote(

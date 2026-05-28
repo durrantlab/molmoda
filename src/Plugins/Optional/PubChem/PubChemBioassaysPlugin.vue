@@ -62,7 +62,10 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
   }
 
   /**
-   * Get the bioassay data for the selected compound.
+   * Get the bioassay data for the selected compound. Drops CID from the
+   * returned row (it lives in treeNode.data["PubChem"]) and returns
+   * undefined for SMILES with no PubChem match (the not-found state is
+   * already recorded on the node by lookupCid).
    *
    * @param {FileInfo} molFileInfo The file info of the selected compound.
    * @returns {Promise} The bioassay data.
@@ -75,14 +78,13 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
     }
     const lookup = await lookupCid(molFileInfo);
     if (!lookup.found) {
-      return { CID: lookup.notFoundHtml };
+      return undefined;
     }
     const bioassayData = await fetchActiveAssays(lookup.cid);
     if (bioassayData.error) {
-      return { CID: `${lookup.cidLink}: ${bioassayData.error}` };
+      return { Error: bioassayData.error };
     }
-
-    const activeAssays = bioassayData.ActiveAssays; // .slice(0, 10); // Get top 10 bioassays
+    const activeAssays = bioassayData.ActiveAssays;
     const assayDescriptions = activeAssays.map((assay: any) => {
       // Add a string formatted like "DSSTox (FDAMDD) FDA Maximum
       // (Recommended) Daily Dose Database, AID 1234. Target:
@@ -96,9 +98,7 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
 
       return assayDesc;
     });
-    const formattedAssays: { [key: string]: string } = {
-      CID: lookup.cidLink,
-    };
+    const formattedAssays: { [key: string]: string } = {};
     for (let i = 0; i < assayDescriptions.length; i++) {
       formattedAssays[`Assay ${i + 1}`] = assayDescriptions[i];
     }

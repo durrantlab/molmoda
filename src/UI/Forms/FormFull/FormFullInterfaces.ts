@@ -5,6 +5,7 @@ import {
 } from "../MoleculeInputParams/MoleculeInput";
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { MoleculeTypeFilter } from "../FormSelectMolecule/FormSelectMoleculeInterfaces";
+import { getUrlParam } from "@/Core/UrlParams";
 export enum UserArgType {
     Text,
     TextArea,
@@ -159,8 +160,7 @@ export type UserArg =
 // declared string names without hardcoding the mapping in Python.  Gated
 // on the ?test= URL parameter so production sessions don't see this.
 if (
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("test")
+    typeof window !== "undefined" && getUrlParam("test")
 ) {
     const w = window as any;
     w.__molmodaEnums = w.__molmodaEnums || {};

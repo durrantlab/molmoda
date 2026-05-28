@@ -15,6 +15,8 @@
 import {
   fetchSynonyms,
   fetchCompoundsProperties,
+  fetchCompoundsPropertiesBatch,
+  fetchSynonymsBatch,
 } from "./PubChemAPI";
 import { checkCompoundLoaded } from "@/Plugins/CheckUseAllowedUtils";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
@@ -27,8 +29,7 @@ import { GetPropPluginParent } from "../../Parents/GetPropPluginParent";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Component } from "vue-facing-decorator";
 import { ITest } from "@/Testing/TestInterfaces";
-import { pubchemCredit, lookupCid } from "./PubChemCommon";
-
+import { pubchemCredit, lookupCid, lookupCidsBatch } from "./PubChemCommon";
 /**
  * PubChemNamesPlugin
  */
@@ -59,7 +60,17 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
   isProcessing = false;
   processedCount = 0;
   totalToProcess = 0;
-
+  /**
+   * Opt into the bulk-processing path. PubChem's property and synonym
+   * endpoints both accept comma-separated CIDs, so we can collapse what
+   * was three calls per molecule (CID, properties, synonyms) into one
+   * concurrent CID phase followed by two chunked phases.
+   *
+   * @returns {boolean}  Always true.
+   */
+  public get supportsBulk(): boolean {
+    return true;
+  }
   /**
    * Check if the plugin is allowed to run.
    *
@@ -68,12 +79,41 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
   checkPluginAllowed(): string | null {
     return checkCompoundLoaded();
   }
+  /**
+   * Builds the 5-name row for a single molecule. No longer includes the
+   * CID; that lives in treeNode.data["PubChem"].
+   *
+   * @param {string}   iupac     IUPAC name (already lower-cased).
+   * @param {string[]} synonyms  Synonym list (already lower-cased).
+   * @returns {{[key: string]: string}}  The display row.
+   */
+  private buildNamesRow(
+    iupac: string,
+    synonyms: string[]
+  ): { [key: string]: string } {
+    const uniqueNames = new Set<string>([iupac]);
+    for (const synonym of synonyms) {
+      if (uniqueNames.size >= 5) break;
+      uniqueNames.add(synonym);
+    }
+    const finalNames = Array.from(uniqueNames);
+    while (finalNames.length < 5) {
+      finalNames.push("N/A");
+    }
+    return {
+      "Name 1": finalNames[0] || "N/A",
+      "Name 2": finalNames[1] || "N/A",
+      "Name 3": finalNames[2] || "N/A",
+      "Name 4": finalNames[3] || "N/A",
+      "Name 5": finalNames[4] || "N/A",
+    };
+  }
 
   /**
-   * Get the names of the molecule.
+   * Per-molecule fallback path.
    *
    * @param {FileInfo} molFileInfo The molecule file info.
-   * @returns {Promise} The names of the molecule.
+   * @returns {Promise} The names, or undefined if no PubChem match.
    */
   async getMoleculeDetails(
     molFileInfo: FileInfo
@@ -83,13 +123,13 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     }
     const lookup = await lookupCid(molFileInfo);
     if (!lookup.found) {
-      return { CID: lookup.notFoundHtml };
+      return undefined;
     }
 
     // Get IUPAC name and synonyms
     const properties = await fetchCompoundsProperties(lookup.cid);
     if (properties.error) {
-      return { CID: `${lookup.cidLink}: ${properties.error}` };
+      return { Error: properties.error };
 
       // return {
       //   CID: `PubChem compound not found!`,
@@ -103,34 +143,82 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
 
     const iupacName = properties["IUPAC Name"].toLowerCase();
     const synonymsData = await fetchSynonyms(lookup.cid);
-    let synonyms = Array.isArray(synonymsData.Synonyms)
+    const synonyms = Array.isArray(synonymsData.Synonyms)
       ? synonymsData.Synonyms.map((s: string) => s.toLowerCase())
       : [];
+    return this.buildNamesRow(iupacName, synonyms);
+  }
 
-    // Create unique set of names starting with IUPAC
-    const uniqueNames = new Set<string>([iupacName]);
-
-    // Add remaining synonyms until we have 5 unique names
-    for (const synonym of synonyms) {
-      if (uniqueNames.size >= 5) break;
-      uniqueNames.add(synonym);
+  /**
+   * Bulk path: CID resolution, then batched IUPAC, then batched synonyms.
+   *
+   * @param {FileInfo[]} mols        Molecules to process.
+   * @param {Function}   onProgress  Progress reporter.
+   * @returns {Promise<void>}
+   */
+  public async getMoleculesDetailsBatch(
+    mols: FileInfo[],
+    onProgress: (frac: number) => void
+  ): Promise<void> {
+    const valid = mols.filter((m) => m.treeNode);
+    if (valid.length === 0) {
+      onProgress(1);
+      return;
     }
-
-    const finalNames = Array.from(uniqueNames);
-    while (finalNames.length < 5) {
-      finalNames.push("N/A");
+    const cidWeight = 0.3;
+    const propsWeight = 0.35;
+    const synWeight = 0.35;
+    const lookups = await lookupCidsBatch(valid, (completed) => {
+      onProgress((completed / valid.length) * cidWeight);
+    });
+    const resolvedCids: string[] = [];
+    const resolvedMols: FileInfo[] = [];
+    for (let i = 0; i < valid.length; i++) {
+      const lookup = lookups[i];
+      const mol = valid[i];
+      if (!lookup.found) {
+        continue;
+      }
+      resolvedCids.push(lookup.cid);
+      resolvedMols.push(mol);
     }
-
-    // Format for display
-    return {
-      //   Compound: molFileInfo.treeNode.title,
-      CID: lookup.cidLink,
-      "Name 1": finalNames[0] || "N/A",
-      "Name 2": finalNames[1] || "N/A",
-      "Name 3": finalNames[2] || "N/A",
-      "Name 4": finalNames[3] || "N/A",
-      "Name 5": finalNames[4] || "N/A",
-    };
+    if (resolvedCids.length === 0) {
+      onProgress(1);
+      return;
+    }
+    const propsMap = await fetchCompoundsPropertiesBatch(
+      resolvedCids,
+      (completed) => {
+        onProgress(
+          cidWeight + (completed / resolvedCids.length) * propsWeight
+        );
+      }
+    );
+    const synMap = await fetchSynonymsBatch(
+      resolvedCids,
+      (completed) => {
+        onProgress(
+          cidWeight +
+            propsWeight +
+            (completed / resolvedCids.length) * synWeight
+        );
+      }
+    );
+    for (let i = 0; i < resolvedMols.length; i++) {
+      const mol = resolvedMols[i];
+      const cid = resolvedCids[i];
+      const props = propsMap[cid];
+      if (!props || props.error || !props["IUPAC Name"]) {
+        this.recordMoleculeResult(mol, {
+          Error: props?.error ?? "No name data",
+        });
+        continue;
+      }
+      const iupac = String(props["IUPAC Name"]).toLowerCase();
+      const synonyms = (synMap[cid] ?? []).map((s) => s.toLowerCase());
+      this.recordMoleculeResult(mol, this.buildNamesRow(iupac, synonyms));
+    }
+    onProgress(1);
   }
 
   /**

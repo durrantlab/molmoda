@@ -115,6 +115,186 @@ export async function fetchCid(smiles: string): Promise<string> {
 // }
 
 /**
+ * Resolves a list of SMILES strings to PubChem CIDs concurrently. PubChem's
+ * REST API does not support batched SMILES->CID lookup (the SMILES sits in
+ * the URL path), so we fire individual requests through pubChemQueue, which
+ * rate-limits them at 4/sec. The returned array is index-aligned with the
+ * input: position i holds the CID for smilesList[i], or null if not found.
+ *
+ * @param {string[]} smilesList  The SMILES strings to resolve.
+ * @param {Function} [onProgress]  Optional callback invoked after each CID
+ *                                 resolves, with the count of completed
+ *                                 lookups.
+ * @returns {Promise<(string | null)[]>}  Array of CIDs (or null) aligned to input.
+ */
+export async function fetchCidsBatch(
+    smilesList: string[],
+    onProgress?: (completed: number) => void
+): Promise<(string | null)[]> {
+    let completed = 0;
+    const results = await Promise.all(
+        smilesList.map(async (smiles) => {
+            const cid = await fetchCid(smiles);
+            completed += 1;
+            if (onProgress) {
+                onProgress(completed);
+            }
+            // fetchCid returns either a numeric CID string or an error message
+            // beginning with "Error:" / "Network Error:". Normalise to null on
+            // failure so callers don't have to string-match.
+            if (!cid || cid.startsWith("Error") || cid.startsWith("Network")) {
+                return null;
+            }
+            return cid;
+        })
+    );
+    return results;
+}
+
+/**
+ * Fetches properties for many CIDs using PubChem's comma-separated CID form,
+ * issuing one request per chunk of `chunkSize` CIDs. Returns a map from CID
+ * to the same property object shape used by fetchCompoundsProperties (or to
+ * an error object). PubChem may silently omit CIDs that fail, so any input
+ * CID missing from the response is reported as an error in the result map.
+ *
+ * @param {string[]} cids        The CIDs to query.
+ * @param {Function} [onProgress]  Optional callback invoked after each chunk
+ *                                 completes, with the number of CIDs
+ *                                 processed so far.
+ * @param {number}   [chunkSize]  How many CIDs to request per call. Default
+ *                                 100, which matches PubChem's documented
+ *                                 soft limit for property queries.
+ * @returns {Promise<{ [cid: string]: any }>}  CID -> properties (or { error }).
+ */
+export async function fetchCompoundsPropertiesBatch(
+    cids: string[],
+    onProgress?: (completed: number) => void,
+    chunkSize = 100
+): Promise<{ [cid: string]: any }> {
+    const propsPath =
+        "MolecularFormula,MolecularWeight," +
+        "IUPACName,XLogP,ExactMass,TPSA,Complexity,Charge," +
+        "HBondDonorCount,HBondAcceptorCount,RotatableBondCount,HeavyAtomCount," +
+        "AtomStereoCount,BondStereoCount,CovalentUnitCount,Volume3D";
+
+    const resultMap: { [cid: string]: any } = {};
+    let completed = 0;
+
+    for (let i = 0; i < cids.length; i += chunkSize) {
+        const chunk = cids.slice(i, i + chunkSize);
+        const url =
+            `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${chunk.join(
+                ","
+            )}/property/${propsPath}/JSON`;
+        try {
+            const data = await pubChemQueue.enqueue(url);
+            const properties = data?.PropertyTable?.Properties ?? [];
+            for (const prop of properties) {
+                const cidStr = String(prop?.CID ?? "");
+                if (!cidStr) {
+                    continue;
+                }
+                resultMap[cidStr] = {
+                    Formula: prop?.MolecularFormula ?? "N/A",
+                    Weight: prop?.MolecularWeight ?? "N/A",
+                    "IUPAC Name": prop?.IUPACName ?? "N/A",
+                    XLogP: prop?.XLogP ?? "N/A",
+                    "Exact Mass": prop?.ExactMass ?? "N/A",
+                    TPSA: prop?.TPSA ?? "N/A",
+                    Complexity: prop?.Complexity ?? "N/A",
+                    Charge: prop?.Charge ?? "N/A",
+                    HBD: prop?.HBondDonorCount ?? "N/A",
+                    HBA: prop?.HBondAcceptorCount ?? "N/A",
+                    "Rot Bonds": prop?.RotatableBondCount ?? "N/A",
+                    "Heavy Atoms": prop?.HeavyAtomCount ?? "N/A",
+                    "Atom Stereos": prop?.AtomStereoCount ?? "N/A",
+                    "Bond Stereos": prop?.BondStereoCount ?? "N/A",
+                    "Volume (3D)": prop?.Volume3D ?? "N/A",
+                };
+            }
+        } catch (error: any) {
+            // Whole chunk failed: mark every CID in this chunk as errored so
+            // the caller can still produce a row per requested molecule.
+            const msg =
+                error?.response?.data?.Fault?.Message ??
+                `Failed to retrieve properties due to network issue: ${error.message}`;
+            for (const cid of chunk) {
+                resultMap[cid] = { error: msg };
+            }
+        }
+        completed += chunk.length;
+        if (onProgress) {
+            onProgress(completed);
+        }
+    }
+
+    // Any CID that PubChem silently dropped (returned 200 but no row) gets a
+    // sentinel error so the caller knows to render a "not found" row instead
+    // of nothing at all.
+    for (const cid of cids) {
+        if (!(cid in resultMap)) {
+            resultMap[cid] = { error: "No properties returned for this CID." };
+        }
+    }
+    return resultMap;
+}
+
+/**
+ * Fetches synonyms for many CIDs using PubChem's comma-separated CID form.
+ * Same chunking strategy as fetchCompoundsPropertiesBatch.
+ *
+ * @param {string[]} cids         The CIDs to query.
+ * @param {Function} [onProgress]  Optional progress callback.
+ * @param {number}   [chunkSize]  CIDs per request. Default 100.
+ * @returns {Promise<{ [cid: string]: string[] }>}  CID -> synonyms array.
+ *     Missing CIDs map to an empty array.
+ */
+export async function fetchSynonymsBatch(
+    cids: string[],
+    onProgress?: (completed: number) => void,
+    chunkSize = 100
+): Promise<{ [cid: string]: string[] }> {
+    const resultMap: { [cid: string]: string[] } = {};
+    let completed = 0;
+
+    for (let i = 0; i < cids.length; i += chunkSize) {
+        const chunk = cids.slice(i, i + chunkSize);
+        const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/${chunk.join(
+            ","
+        )}/synonyms/JSON`;
+        try {
+            const data = await pubChemQueue.enqueue(url);
+            const infoList = data?.InformationList?.Information ?? [];
+            for (const info of infoList) {
+                const cidStr = String(info?.CID ?? "");
+                if (!cidStr) {
+                    continue;
+                }
+                resultMap[cidStr] = Array.isArray(info?.Synonym)
+                    ? info.Synonym
+                    : [];
+            }
+        } catch {
+            // On chunk failure, leave these CIDs absent; the caller will treat
+            // missing entries as "no synonyms available" rather than as an
+            // error worth surfacing (properties already carry the error path).
+        }
+        completed += chunk.length;
+        if (onProgress) {
+            onProgress(completed);
+        }
+    }
+
+    for (const cid of cids) {
+        if (!(cid in resultMap)) {
+            resultMap[cid] = [];
+        }
+    }
+    return resultMap;
+}
+
+/**
  * A helper function that fetches synonyms for a given CID.
  *
  * @param {string} cid The CID of the compound.

@@ -48,6 +48,7 @@ import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { Component } from "vue-facing-decorator";
+import { setPubChemCidOnTreeNode } from "./PubChemCidAssociation";
 
 enum SearchMode {
   Similar = "similar",
@@ -307,9 +308,13 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
     // Wait for all API calls to complete
     const apiResults = await Promise.all(fetchPromises);
 
-    // Step 2: Create FileInfo objects for all unique compounds
+    // Step 2: Create FileInfo objects for all unique compounds. Track
+    // the CID alongside each FileInfo so it survives the FileInfo ->
+    // mol2 conversion -> TreeNode pipeline and can be stamped on the
+    // resulting tree node.
     const cidsAlreadyAdded = new Set<number>();
     const allFileInfos: FileInfo[] = [];
+    const cidPerFileInfo: number[] = [];
 
     let duplicatesNotAdded = 0;
     let insufficientResultsReturned = 0;
@@ -337,6 +342,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
             contents: compound.SMILES,
           })
         );
+        cidPerFileInfo.push(compound.CID);
         cidsAlreadyAdded.add(compound.CID);
       }
     }
@@ -387,14 +393,17 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
     progressCounts = 0;
     progressTotal = allFileInfos.length;
 
-    // Step 5: Convert to TreeNodes
-    const treeNodePromises = convertedFileInfos.map(async (mol) => {
+    // Step 5: Convert to TreeNodes. Stamp the CID immediately so the
+    // canonical PubChem entry is in place before the node enters the
+    // main tree.
+    const treeNodePromises = convertedFileInfos.map(async (mol, idx) => {
+      const cidForThisMol = cidPerFileInfo[idx];
       const treeNodeList = await parseAndLoadMoleculeFile({
         fileInfo: mol,
         tag: this.pluginId,
         desalt: false,
         gen3D: {
-          whichMols: WhichMolsGen3D.None, // Already generated
+          whichMols: WhichMolsGen3D.None,
         },
         addToTree: false,
         // surpressMsgs: true,
@@ -403,7 +412,11 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
       this.updateProgressInQueueStore(
         0.25 + (0.75 * progressCounts) / progressTotal
       );
-      return treeNodeList && treeNodeList.length > 0 ? treeNodeList.get(0) : undefined;
+      const node = treeNodeList && treeNodeList.length > 0 ? treeNodeList.get(0) : undefined;
+      if (node) {
+        setPubChemCidOnTreeNode(node, String(cidForThisMol));
+      }
+      return node;
     });
 
     let treeNodes = (await Promise.all(
@@ -414,7 +427,19 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
       .filter((n): n is TreeNode => n !== undefined)
       .map((n) => {
         if (n.nodes) {
+          // When the loaded node wraps a single terminal, promote the
+          // terminal and carry the CID along by re-stamping. The setter
+          // is a no-op if the terminal already has a CID, so this is
+          // safe even when the stamp survived the unwrap on its own.
+          const cidFromContainer = (n.data &&
+            n.data["PubChem"]?.data?.CID) || undefined;
           n = n.nodes.terminals.get(0);
+          if (cidFromContainer) {
+            const cidMatch = String(cidFromContainer).match(/\/compound\/(\d+)/);
+            if (cidMatch) {
+              setPubChemCidOnTreeNode(n, cidMatch[1]);
+            }
+          }
         }
         n.type = TreeNodeType.Compound;
         return n;

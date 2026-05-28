@@ -3,6 +3,8 @@
 
 import { IMenuEntry } from "@/UI/Navigation/Menu/Menu";
 import { PluginParentClass } from "./Parents/PluginParentClass/PluginParentClass";
+import { getUrlParam } from "@/Core/UrlParams";
+
 
 // the menu system.
 export const loadedPlugins: { [key: string]: PluginParentClass } = {};
@@ -37,8 +39,7 @@ export function registerLoadedPlugin(plugin: PluginParentClass) {
 // screenshot/docs-capture infrastructure can read plugin metadata.  Gated on
 // the URL parameter so production sessions never see this.
 if (
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).has("test")
+    typeof window !== "undefined" && getUrlParam("test")
 ) {
     (window as any).__molmodaLoadedPlugins = loadedPlugins;
 }
