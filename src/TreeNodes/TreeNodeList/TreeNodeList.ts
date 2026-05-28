@@ -1,9 +1,15 @@
 
-import type { FileInfo } from "@/FileSystem/FileInfo";
+import { FileInfo } from "@/FileSystem/FileInfo";
 import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { ILoadMolParams } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/Types";
 import { getFormatInfoGivenType } from "@/FileSystem/LoadSaveMolModels/Types/MolFormats";
+import {
+    getSmilesFromTreeNode,
+    setSmilesOnTreeNode,
+    isSmilesFormat,
+    extractSmilesFromContents,
+} from "@/FileSystem/LoadSaveMolModels/SmilesCache";
 import { messagesApi } from "@/Api/Messages";
 import type { ITreeNode, TreeNode } from "../TreeNode/TreeNode";
 import { TreeNodeListCopies } from "./_Copy";
@@ -452,9 +458,16 @@ export class TreeNodeList {
         if (!inWorker) {
             spinnerId = messagesApi.startWaitSpinner();
         }
-
-        const fileInfos = await _convertTreeNodeList(this, targetExt, merge);
-
+        let fileInfos: FileInfo[];
+        // When converting to SMILES without merging (the per-molecule case),
+        // reuse any SMILES already cached on each node and only convert the
+        // rest. Merged conversions collapse many molecules into one string, so
+        // they bypass the per-node cache.
+        if (!merge && isSmilesFormat(targetExt)) {
+            fileInfos = await this._toSmilesFileInfosCached(targetExt);
+        } else {
+            fileInfos = await _convertTreeNodeList(this, targetExt, merge);
+        }
         // Update the molecule name in the fileInfo contents
         for (let i = 0; i < fileInfos.length; i++) {
             if (formatInfo && formatInfo.updateMolNameInContents) {
@@ -470,6 +483,64 @@ export class TreeNodeList {
         }
 
         return fileInfos;
+    }
+
+    /**
+     * Per-node SMILES conversion with caching. Nodes that already carry a
+     * cached SMILES are served from the Data-panel entry; the remainder are
+     * converted in one OpenBabel call and their results stamped back onto the
+     * nodes. Output is reassembled in input order so callers that align
+     * outputs with this._nodes by index keep working.
+     *
+     * @param {string} targetExt  The SMILES format to convert to.
+     * @returns {Promise<FileInfo[]>}  One FileInfo per convertible node.
+     */
+    private async _toSmilesFileInfosCached(
+        targetExt: string
+    ): Promise<FileInfo[]> {
+        const results: (FileInfo | undefined)[] = new Array(
+            this._nodes.length
+        );
+        const uncachedNodes: TreeNode[] = [];
+        const uncachedIdxs: number[] = [];
+        for (let i = 0; i < this._nodes.length; i++) {
+            const node = this._nodes[i];
+            const cached = getSmilesFromTreeNode(node);
+            if (cached !== null) {
+                results[i] = new FileInfo({
+                    name: `tmpmol.${targetExt}`,
+                    contents: cached,
+                });
+            } else {
+                uncachedNodes.push(node);
+                uncachedIdxs.push(i);
+            }
+        }
+        if (uncachedNodes.length > 0) {
+            // _convertTreeNodeList returns one FileInfo per input node when not
+            // merging, index-aligned with uncachedNodes.
+            const converted = await _convertTreeNodeList(
+                this.newTreeNodeList(uncachedNodes),
+                targetExt,
+                false
+            );
+            for (let k = 0; k < uncachedIdxs.length; k++) {
+                const fileInfo = converted[k];
+                if (fileInfo === undefined) {
+                    continue;
+                }
+                setSmilesOnTreeNode(
+                    this._nodes[uncachedIdxs[k]],
+                    extractSmilesFromContents(fileInfo.contents)
+                );
+                results[uncachedIdxs[k]] = fileInfo;
+            }
+        }
+        // Drop any holes (nodes that yielded no output) to keep the array
+        // dense, matching _convertTreeNodeList's contract. Safe for SMILES,
+        // which defines no updateMolNameInContents that would rely on index
+        // alignment with this._nodes.
+        return results.filter((f): f is FileInfo => f !== undefined);
     }
 
     /**

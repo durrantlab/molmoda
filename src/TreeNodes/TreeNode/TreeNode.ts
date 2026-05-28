@@ -22,6 +22,12 @@ import { updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Core/GlobalVars";
 import { _convertTreeNodeList } from "@/FileSystem/LoadSaveMolModels/ConvertMolModels/_ConvertTreeNodeList";
+import {
+    getSmilesFromTreeNode,
+    setSmilesOnTreeNode,
+    isSmilesFormat,
+    extractSmilesFromContents,
+} from "@/FileSystem/LoadSaveMolModels/SmilesCache";
 import { toRaw } from "vue";
 
 // Deserialized (object-based) version of TreeNode
@@ -431,6 +437,21 @@ export class TreeNode {
         targetExt: string,
         considerDescendants = false
     ): Promise<FileInfo> {
+        // Reuse a cached SMILES for terminal nodes (those with a model) to skip
+        // a redundant OpenBabel conversion. Container conversions merge many
+        // molecules into one string, so they don't participate in the cache.
+        const canCacheSmiles = !!this.model && isSmilesFormat(targetExt);
+        if (canCacheSmiles) {
+            const cached = getSmilesFromTreeNode(this);
+            if (cached !== null) {
+                return Promise.resolve(
+                    new FileInfo({
+                        name: `tmpmol.${targetExt}`,
+                        contents: cached,
+                    })
+                );
+            }
+        }
         let nodesToConvert: TreeNodeList;
         let merge = false;
         if (this.model) {
@@ -467,7 +488,16 @@ export class TreeNode {
                         `Conversion of node "${this.title}" to "${targetExt}" resulted in an empty file.`
                     );
                 }
-                return fileInfos[0];
+                const result = fileInfos[0];
+                // Stamp the freshly computed SMILES onto this node so the next
+                // conversion is a cache hit and the value shows in the Data panel.
+                if (canCacheSmiles) {
+                    setSmilesOnTreeNode(
+                        this,
+                        extractSmilesFromContents(result.contents)
+                    );
+                }
+                return result;
             })
             .catch((err: Error) => {
                 throw err;
