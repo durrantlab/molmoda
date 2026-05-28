@@ -4,17 +4,15 @@ import {
     TableHeaderSort,
     TreeNodeDataType,
 } from "@/UI/Navigation/TreeView/TreeInterfaces";
-
+import { IDENTITY_DATASET_TITLE } from "@/FileSystem/LoadSaveMolModels/SmilesCache";
 /**
- * Dataset title under treeNode.data where the PubChem CID lives. Single
- * source of truth for a molecule's PubChem CID: every read goes through
- * getPubChemCidFromTreeNode (which reads from here) and every write
- * goes through setPubChemCidOnTreeNode or setPubChemNotFoundOnTreeNode
- * (which write here). Matches the convention used by other PubChem
- * dataset titles like "Properties" and "Names".
+ * Field name within the Identity table that holds the PubChem CID. The CID
+ * shares the Identity table with the SMILES (see SmilesCache) so a molecule's
+ * identity values live in one place. Every read goes through
+ * getPubChemCidFromTreeNode and every write through setPubChemCidOnTreeNode or
+ * setPubChemNotFoundOnTreeNode, keeping this the single source of truth.
  */
-export const PUBCHEM_DATASET_TITLE = "PubChem";
-
+export const PUBCHEM_CID_FIELD = "PubChem CID";
 /**
  * Builds the HTML anchor used wherever a CID is displayed.
  *
@@ -37,7 +35,7 @@ export function buildCidNotFoundHtml(smiles: string): string {
 }
 
 /**
- * Extracts the numeric CID from the value stored in the "PubChem" data
+ * Extracts the numeric CID from the value stored in the "PubChem CID" data
  * cell. The cell normally holds an anchor of the form
  *   <a href=".../compound/2244" ...>2244</a>
  * so the CID is recovered by matching the path. A bare integer is also
@@ -64,9 +62,11 @@ function parseCidFromField(cidField: any): string | null {
 }
 
 /**
- * Helper that writes the PubChem entry on a tree node, creating the
- * data container as needed. Kept private so the only writers are the
- * two public setters below (one for the success path, one for not-found).
+ * Helper that writes the PubChem CID cell into the Identity table, creating
+ * the data container as needed. Merges into any existing Identity entry (which
+ * may already hold the SMILES) rather than overwriting it, so identity fields
+ * coexist. Kept private so the only writers are the two public setters below
+ * (one for the success path, one for not-found).
  *
  * @param {TreeNode} treeNode  The node to write to.
  * @param {string}   cidCell   The HTML to put in the CID cell.
@@ -75,8 +75,13 @@ function writePubChemEntry(treeNode: TreeNode, cidCell: string): void {
     if (!treeNode.data) {
         treeNode.data = {};
     }
-    treeNode.data[PUBCHEM_DATASET_TITLE] = {
-        data: { CID: cidCell },
+    const existing = treeNode.data[IDENTITY_DATASET_TITLE];
+    const existingData =
+        existing && existing.type === TreeNodeDataType.Table && existing.data
+            ? (existing.data as { [key: string]: unknown })
+            : {};
+    treeNode.data[IDENTITY_DATASET_TITLE] = {
+        data: { ...existingData, [PUBCHEM_CID_FIELD]: cidCell },
         type: TreeNodeDataType.Table,
         treeNodeId: treeNode.id,
         headerSort: TableHeaderSort.None,
@@ -108,12 +113,11 @@ export function setPubChemCidOnTreeNode(
 
 /**
  * Records the not-found state on a tree node so the user sees a message
- * under the PubChem section instead of nothing. Does not overwrite a
- * previously recorded successful CID. The cell stores the search link
- * itself, which parseCidFromField intentionally fails to recognise,
- * so subsequent reads through getPubChemCidFromTreeNode return null
- * (i.e. the cache miss propagates correctly even though something is
- * visibly displayed for the user).
+ * instead of nothing. Does not overwrite a previously recorded successful
+ * CID. The cell stores the search link itself, which parseCidFromField
+ * intentionally fails to recognise, so subsequent reads through
+ * getPubChemCidFromTreeNode return null (i.e. the cache miss propagates
+ * correctly even though something is visibly displayed for the user).
  *
  * @param {TreeNode | undefined} treeNode  The node to mark.
  * @param {string}               smiles    SMILES that failed to resolve.
@@ -147,6 +151,7 @@ export function getPubChemCidFromTreeNode(
     if (!treeNode || !treeNode.data) {
         return null;
     }
-    const entry = treeNode.data[PUBCHEM_DATASET_TITLE];
-    return parseCidFromField(entry?.data?.CID);
+    const entry = treeNode.data[IDENTITY_DATASET_TITLE];
+    const data = entry?.data as { [key: string]: unknown } | undefined;
+    return parseCidFromField(data?.[PUBCHEM_CID_FIELD]);
 }
