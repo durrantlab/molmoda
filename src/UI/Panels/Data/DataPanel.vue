@@ -234,6 +234,24 @@ export default class DataPanel extends Vue {
       });
       return { source, headers: tableData.headers, rowMap };
     });
+    // Visible/selected nodes that carry no data contribute no source table, so
+    // the indexing above never registers them and they silently drop out of
+    // the merged view. Seed their entry keys here so the row builder still
+    // emits a row for each, with blank cells across the union of columns. We
+    // restrict to terminal nodes because those are the actual molecules a user
+    // shows or selects (container visibility propagates down to them anyway),
+    // and adding container rows would just duplicate their descendants. The
+    // Set dedupes keys already produced above, so nodes that do have data are
+    // unaffected, and matching path/id keys requires nodePathName to be called
+    // identically to allTableData.
+    const allMols = this.$store.state.molecules as TreeNodeList;
+    allMols.terminals.forEach((node: TreeNode) => {
+      // mol_filter_ok
+      if (node.visible || node.selected !== SelectedType.False) {
+        const entryName = this.nodePathName(node, allMols);
+        entries.add(JSON.stringify([entryName, node.id]));
+      }
+    });
     // Build rows
     const rows: { [key: string]: CellValue }[] = Array.from(entries).map(
       (entry) => {
