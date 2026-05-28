@@ -21,7 +21,7 @@
     </div>
     <Table v-show="mergedTableData !== null" id='data-panel-table' :tableData="tableDataForDisplay"
       :virtualize="true" caption="All Molecular Data" :noFixedTable="true" @rowClicked="rowClicked"
-      :clickableRows="true" downloadFilenameBase="all-molecular-data">
+      :clickableRows="true" downloadFilenameBase="all-molecular-data" :allowFilter="true">
     </Table>
   </span>
 </template>

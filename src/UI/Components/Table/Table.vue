@@ -4,6 +4,10 @@
             {{ caption }}
         </span>
         <slot name="afterHeader"></slot>
+        <div v-if="allowFilter" class="px-2 pt-1">
+            <FilterInput :list="tableDataToUse.rows" :extractTextToFilterFunc="extractRowText"
+                @onFilter="onFilter" v-model="filterStr"></FilterInput>
+        </div>
         <div class="table-responsive" :class="{ 'virtual-scroll': shouldVirtualize }"
             :style="scrollContainerStyle" ref="scrollContainer" @scroll="onScroll">
             <table :class="'table table-hover table-sm mb-0 pb-0 table-borderless' +
@@ -99,6 +103,8 @@ import { slugify } from "@/Core/Utils/StringUtils";
 import { dynamicImports } from "@/Core/DynamicImports";
 import { addToast } from "@/UI/MessageAlerts/Toasts/ToastManager";
 import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
+import { markRaw } from "vue";
+import FilterInput from "../FilterInput.vue";
 
 
 // Unlike ITableData, the keys map to ICellValue, not CellValue (which is slightly broader).
@@ -121,6 +127,7 @@ interface IVirtualWindow {
     components: {
         Tooltip,
         Icon,
+        FilterInput,
     },
 })
 export default class Table extends Vue {
@@ -136,9 +143,27 @@ export default class Table extends Vue {
     // row exactly as before; only callers that pass virtualize get the
     // bounded scroll box and windowed body.
     @Prop({ default: false }) virtualize!: boolean;
+    // Opt-in client-side row filter. Off by default so existing tables are
+    // unchanged; when on, a search field appears under the toggles slot.
+    @Prop({ default: false }) allowFilter!: boolean;
 
     sortColumnName = "";
     sortOrder = "asc";
+    // Current filter text and the rows FilterInput emitted for it. null means
+    // "no active filter" (empty box), in which case every row shows. Mirrors
+    // the null-as-unfiltered convention HelpPlugin uses.
+    filterStr = "";
+    filteredRows: { [key: string]: ICellValue }[] | null = null;
+    // Per-row searchable-text cache, keyed on the row object. tableDataToUse
+    // is a cached computed, so its row objects are stable between keystrokes
+    // and the cache hits on every keystroke after the first; it misses (and
+    // GC's old entries) automatically when the data recomputes and new row
+    // objects appear. markRaw keeps Vue from wrapping it in a reactive proxy,
+    // since it's a plain cache with no need for tracking.
+    private rowTextCache = markRaw(
+        new WeakMap<{ [key: string]: ICellValue }, string>()
+    );
+
     // Virtualization state. Below this row count we render every row so small
     // tables behave as before; above it we window the rows so DOM cost stays
     // bounded regardless of dataset size.
@@ -177,6 +202,78 @@ export default class Table extends Vue {
     }
 
     /**
+     * The rows to actually render: the filtered subset when a filter is
+     * active, otherwise every row. Sorting/formatting/column-hiding all
+     * happen upstream in tableDataToUse, so this only narrows the row set.
+     *
+     * @returns {{ [key: string]: ICellValue }[]} Rows to display.
+     */
+    get displayedRows(): { [key: string]: ICellValue }[] {
+        if (!this.allowFilter || this.filteredRows === null) {
+            return this.tableDataToUse.rows;
+        }
+        return this.filteredRows;
+    }
+
+    /**
+     * Builds the searchable text for one row by joining every visible cell's
+     * display value, memoized per row. HTML is stripped so the search matches
+     * what the user sees rather than markup; the metaData pseudo-column is
+     * skipped. Returns raw (not lowercased) text — FilterInput lowercases.
+     *
+     * Defined as an arrow field (not a method) so `this` stays bound to this
+     * component when FilterInput invokes it as a prop.
+     *
+     * @param {{ [key: string]: ICellValue }} row  A row from tableDataToUse.
+     * @returns {string} Space-joined, HTML-stripped cell text for the row.
+     */
+    extractRowText = (row: { [key: string]: ICellValue }): string => {
+        const cached = this.rowTextCache.get(row);
+        if (cached !== undefined) {
+            return cached;
+        }
+        const parts: string[] = [];
+        for (const key in row) {
+            if (key === "metaData") {
+                continue;
+            }
+            const cell = row[key];
+            if (cell && cell.val !== undefined && cell.val !== null) {
+                parts.push(this.stripHtml(String(cell.val)));
+            }
+        }
+        const text = parts.join(" ");
+        this.rowTextCache.set(row, text);
+        return text;
+    };
+
+    /**
+     * Strips HTML tags via regex rather than DOM parsing. This runs once per
+     * row (results are memoized above), but avoiding a div/innerHTML parse per
+     * cell keeps even the first filter pass fast on large tables. Good enough
+     * for substring matching; exact HTML decoding isn't needed here.
+     *
+     * @param {string} html  The raw cell value, possibly containing HTML.
+     * @returns {string} The text with tags removed.
+     */
+    private stripHtml(html: string): string {
+        return html.replace(/<[^>]*>/g, " ");
+        // const div = document.createElement("div");
+        // div.innerHTML = html;
+        // return div.textContent || div.innerText || "";
+    }
+
+    /**
+     * Receives the filtered rows from FilterInput. null (empty search box)
+     * means show everything; an array is the matching subset.
+     *
+     * @param {{ [key: string]: ICellValue }[] | null} rows  Filtered rows.
+     */
+    onFilter(rows: { [key: string]: ICellValue }[] | null): void {
+        this.filteredRows = rows;
+    }
+
+    /**
      * Whether the current dataset is large enough to warrant windowing. Small
      * tables (and any caller that didn't opt in) skip virtualization to
      * preserve prior behavior.
@@ -186,7 +283,7 @@ export default class Table extends Vue {
     get shouldVirtualize(): boolean {
         return (
             this.virtualize &&
-            this.tableDataToUse.rows.length > this.virtualizationThreshold
+            this.displayedRows.length > this.virtualizationThreshold
         );
     }
 
@@ -198,7 +295,7 @@ export default class Table extends Vue {
      * @returns {IVirtualWindow} The render window and spacer heights.
      */
     get virtualWindow(): IVirtualWindow {
-        const allRows = this.tableDataToUse.rows;
+        const allRows = this.displayedRows;
         const total = allRows.length;
         if (!this.shouldVirtualize) {
             return { startIdx: 0, rows: allRows, topPad: 0, bottomPad: 0 };
