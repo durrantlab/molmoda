@@ -574,12 +574,20 @@ export default class Table extends Vue {
     }
 
     /**
-     * Gets a cell, cast as ICellValue. Just so typescript will be happy.
+     * Gets a cell, cast as ICellValue. Returns an empty-value cell when the
+     * row has no entry for this header, so downstream callers (tooltip text,
+     * v-html, icon checks, row-click) never dereference `.val` on undefined.
+     * A row can lack a header key when tableData changes shape and a stale
+     * filtered/rendered row still in `displayedRows` predates the new column,
+     * so the render iterates new headers over an old row.
      *
      * @param {CellValue} cell  The cell to cast.
-     * @returns {ICellValue} The cell cast as ICellValue.
+     * @returns {ICellValue} The cell as ICellValue, or an empty-value cell.
      */
     getCell(cell: CellValue): ICellValue {
+        if (cell === undefined || cell === null) {
+            return { val: "" };
+        }
         return cell as ICellValue;
     }
 
