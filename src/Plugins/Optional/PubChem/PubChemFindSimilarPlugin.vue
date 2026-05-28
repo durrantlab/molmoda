@@ -48,7 +48,10 @@ import { checkCompoundLoaded } from "../../CheckUseAllowedUtils";
 import { loadHierarchicallyFromTreeNodes } from "@/UI/Navigation/TreeView/TreeUtils";
 import { parseAndLoadMoleculeFile } from "@/FileSystem/LoadSaveMolModels/ParseMolModels/ParseMoleculeFiles";
 import { Component } from "vue-facing-decorator";
-import { setPubChemCidOnTreeNode } from "./PubChemCidAssociation";
+import {
+  getPubChemCidFromTreeNode,
+  setPubChemCidOnTreeNode,
+} from "./PubChemCidAssociation";
 
 enum SearchMode {
   Similar = "similar",
@@ -428,17 +431,15 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
       .map((n) => {
         if (n.nodes) {
           // When the loaded node wraps a single terminal, promote the
-          // terminal and carry the CID along by re-stamping. The setter
-          // is a no-op if the terminal already has a CID, so this is
-          // safe even when the stamp survived the unwrap on its own.
-          const cidFromContainer = (n.data &&
-            n.data["PubChem"]?.data?.CID) || undefined;
+          // terminal and carry the CID along. Step 5 stamped the CID onto
+          // this container through the Identity-table mechanism, so read it
+          // back via the canonical getter and re-stamp it on the promoted
+          // terminal. The setter is a no-op if the terminal already has a
+          // CID, so this is safe even when the stamp survived the unwrap.
+          const cidFromContainer = getPubChemCidFromTreeNode(n);
           n = n.nodes.terminals.get(0);
           if (cidFromContainer) {
-            const cidMatch = String(cidFromContainer).match(/\/compound\/(\d+)/);
-            if (cidMatch) {
-              setPubChemCidOnTreeNode(n, cidMatch[1]);
-            }
+            setPubChemCidOnTreeNode(n, cidFromContainer);
           }
         }
         n.type = TreeNodeType.Compound;
