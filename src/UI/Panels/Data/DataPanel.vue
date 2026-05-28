@@ -19,9 +19,9 @@
         </div>
       </div>
     </div>
-    <Table v-if="mergedTableData !== null" id='data-panel-table' :tableData="mergedTableData"
-      caption="All Molecular Data" :noFixedTable="true" @rowClicked="rowClicked" :clickableRows="true"
-      downloadFilenameBase="all-molecular-data">
+    <Table v-show="mergedTableData !== null" id='data-panel-table' :tableData="tableDataForDisplay"
+      :virtualize="true" caption="All Molecular Data" :noFixedTable="true" @rowClicked="rowClicked"
+      :clickableRows="true" downloadFilenameBase="all-molecular-data">
     </Table>
   </span>
 </template>
@@ -75,15 +75,58 @@ export default class DataPanel extends Vue {
 
   /**
    * Registers a molecule-change listener so the data tables refresh whenever
-   * molecules are deleted, hidden, shown, selected, or deselected. The store's
-   * deep watcher invokes this hook on every molecule mutation.
+   * molecules are deleted, hidden, shown, selected, or deselected, and so the
+   * selected-source set is reconciled off the render path. An immediate
+   * reconcile seeds selection from molecules already present at mount, since
+   * the hook only fires on later mutations.
    */
   mounted(): void {
     hooksApi.onMoleculesChanged(() => {
       this.molChangeCount++;
+      this.reconcileSelectedSources();
     });
+    this.reconcileSelectedSources();
   }
-
+  /**
+   * Brings the selected-source set in line with the current molecule tree:
+   * initializes to all sources on first data, auto-selects newly appeared
+   * sources, and drops selections whose molecule was deleted. Runs from the
+   * molecule-change hook rather than the getter so that reading
+   * selectedSources stays pure and cheap.
+   */
+  private reconcileSelectedSources(): void {
+    const allSources = this.allTableData.map(
+      (entry: [string, ITableData]) => entry[0]
+    );
+    // First population: select everything by default once data exists.
+    if (!this.initialized) {
+      if (allSources.length === 0) {
+        return;
+      }
+      this.selectedSourcesArr = [...allSources];
+      this.knownSources = new Set(allSources);
+      this.initialized = true;
+      return;
+    }
+    if (this.selectedSourcesArr === null) {
+      this.selectedSourcesArr = [];
+    }
+    // Auto-select sources appearing for the first time.
+    const newSources = allSources.filter(
+      (source) => !this.knownSources.has(source)
+    );
+    if (newSources.length > 0) {
+      this.selectedSourcesArr = [...this.selectedSourcesArr, ...newSources];
+      newSources.forEach((source) => this.knownSources.add(source));
+    }
+    // Prune only sources whose molecule no longer exists in the tree. Hidden
+    // molecules remain in the tree, so their selection is preserved and
+    // restored when the molecule is made visible again.
+    const sourcesInTree = this.allSourceTitlesInTree;
+    this.selectedSourcesArr = this.selectedSourcesArr.filter((source) =>
+      sourcesInTree.has(source)
+    );
+  }
   /**
  * Collects every table-source title present anywhere in the molecule tree,
  * regardless of visibility or selection. Used to tell apart sources whose
@@ -110,55 +153,31 @@ export default class DataPanel extends Vue {
   }
 
   /**
-   * Get the selected data sources.
-   * 
+   * Get the selected data sources. Pure read: the underlying set is
+   * maintained by reconcileSelectedSources off the render path, so toggling
+   * checkboxes no longer triggers tree walks or reactive mutations here.
+   *
    * @returns {string[]}  The selected sources.
    */
   get selectedSources(): string[] {
-    const allSources = this.allTableData.map(([source]) => source);
-
-    // Initialize on first load
-    if (!this.initialized && allSources.length > 0) {
-      this.selectedSourcesArr = [...allSources];
-      this.knownSources = new Set(allSources);
-      this.initialized = true;
-      return this.selectedSourcesArr;
-    }
-
-    // Handle subsequent updates
-    if (this.selectedSourcesArr) {
-      // Find genuinely new sources by comparing against known sources
-      const newSources = allSources.filter(
-        (source) => !this.knownSources.has(source)
-      );
-
-      // Add new sources to both selected and known
-      if (newSources.length > 0) {
-        this.selectedSourcesArr = [...this.selectedSourcesArr, ...newSources];
-        newSources.forEach((source) => this.knownSources.add(source));
-      }
-
-      // Prune only sources whose molecule no longer exists in the tree.
-      // Sources that are merely hidden remain in the tree, so their selection
-      // is preserved and restored when the molecule is made visible again.
-      const sourcesInTree = this.allSourceTitlesInTree;
-      this.selectedSourcesArr = this.selectedSourcesArr.filter((source) =>
-        sourcesInTree.has(source)
-      );
-
-      return this.selectedSourcesArr;
-    }
-
-    return [];
+    return this.selectedSourcesArr ?? [];
   }
-
   /**
    * Update selected sources when checkboxes are clicked.
    */
   set selectedSources(value: string[]) {
     this.selectedSourcesArr = value;
   }
-
+  /**
+   * The table data handed to the always-mounted Table. Falls back to an empty
+   * table when nothing is selected so v-show can hide the Table without
+   * unmounting it (a null prop would break Table's tableDataToUse getter).
+   *
+   * @returns {ITableData}  A valid table-data object, never null.
+   */
+  get tableDataForDisplay(): ITableData {
+    return this.mergedTableData ?? { headers: [], rows: [] };
+  }
   /**
    * Whether the table should be allowed to wrap text.
    *

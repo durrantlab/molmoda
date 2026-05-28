@@ -4,9 +4,10 @@
             {{ caption }}
         </span>
         <slot name="afterHeader"></slot>
-
-        <div class="table-responsive">
-            <table :class="'table table-striped table-hover table-sm mb-0 pb-0 table-borderless' +
+        <div class="table-responsive" :class="{ 'virtual-scroll': shouldVirtualize }"
+            :style="scrollContainerStyle" ref="scrollContainer" @scroll="onScroll">
+            <table :class="'table table-hover table-sm mb-0 pb-0 table-borderless' +
+                (shouldVirtualize ? '' : ' table-striped') +
                 (noFixedTable ? '' : ' fixed-table')
                 ">
                 <thead style="border-top: 0">
@@ -41,9 +42,18 @@
                     </tr>
                 </tfoot>
                 <tbody>
-                    <tr v-for="(row, rowIdx) of tableDataToUse.rows" v-bind:key="rowIdx">
-                        <td v-for="header of tableDataToUse.headers" v-bind:key="header.text"
-                            @click="rowClicked(rowIdx, getCell(row[header.text]).val.toString())" class="cell px-2"
+                    <!-- Top spacer reserves the height of the rows scrolled
+                         past, keeping the scrollbar proportional. -->
+                    <tr v-if="virtualWindow.topPad > 0" class="virtual-spacer"
+                        :style="{ height: virtualWindow.topPad + 'px' }">
+                        <td :colspan="tableDataToUse.headers.length"></td>
+                    </tr>    
+                    <tr v-for="(row, localIdx) of virtualWindow.rows"
+                        :key="virtualWindow.startIdx + localIdx"
+                        :class="{ 'row-striped': shouldVirtualize && (virtualWindow.startIdx + localIdx) % 2 === 0 }">
+                     <td v-for="header of tableDataToUse.headers" v-bind:key="header.text"
+                            @click="rowClicked(virtualWindow.startIdx + localIdx, getCell(row[header.text]).val.toString())"
+                            class="cell px-2"
                             :style="clickableRows ? 'cursor: pointer;' : ''">
                             <Tooltip :tip="getCellToolTipText(
                                 getCell(row[header.text])
@@ -66,6 +76,12 @@
                             </Tooltip>
                         </td>
                     </tr>
+                    <!-- Bottom spacer reserves the height of the rows not yet
+                         scrolled into view. -->
+                    <tr v-if="virtualWindow.bottomPad > 0" class="virtual-spacer"
+                        :style="{ height: virtualWindow.bottomPad + 'px' }">
+                        <td :colspan="tableDataToUse.headers.length"></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -75,7 +91,7 @@
 <script lang="ts">
 import { saveData } from "@/Core/FS/FS";
 import Tooltip from "@/UI/MessageAlerts/Tooltip.vue";
-import { Component, Vue, Prop } from "vue-facing-decorator";
+import { Component, Vue, Prop, Watch } from "vue-facing-decorator";
 import { ITableData, CellValue, ICellValue, IHeader } from "./Types";
 import Icon from "../Icon.vue";
 import { IDataRows } from "@/Core/FS/FSInterfaces";
@@ -90,7 +106,14 @@ interface ITableDataInternal {
     headers: IHeader[];
     rows: { [key: string]: ICellValue }[];
 }
-
+// The slice of rows currently rendered, plus the spacer heights that stand in
+// for the rows above and below the window.
+interface IVirtualWindow {
+    startIdx: number;
+    rows: { [key: string]: ICellValue }[];
+    topPad: number;
+    bottomPad: number;
+}
 /**
  * Table component
  */
@@ -109,10 +132,174 @@ export default class Table extends Vue {
     @Prop({ default: false }) clickableRows!: boolean;
     @Prop({ default: "" }) initialSortColumnName!: string;
     @Prop({ default: "asc" }) initialSortOrder!: string;
+    // Opt-in row windowing. Off by default so existing consumers render every
+    // row exactly as before; only callers that pass virtualize get the
+    // bounded scroll box and windowed body.
+    @Prop({ default: false }) virtualize!: boolean;
 
     sortColumnName = "";
     sortOrder = "asc";
+    // Virtualization state. Below this row count we render every row so small
+    // tables behave as before; above it we window the rows so DOM cost stays
+    // bounded regardless of dataset size.
+    private readonly virtualizationThreshold = 80;
+    private readonly overscan = 8;
+    // Seeded so the first paint (before mounted measures the container) shows
+    // a screenful of rows rather than an empty body.
+    private viewportHeight = 400;
+    private scrollTop = 0;
+    // Refined from a real rendered row in measureRowHeight; the default is a
+    // reasonable estimate for a table-sm row at this font size.
+    private estimatedRowHeight = 33;
+    private rowHeightMeasured = false;
+    // Concrete pixel height for the scroll box, computed from the panel rather
+    // than a fixed cap so it fills to the bottom. Seeded so the first paint has
+    // a sane size before measurement runs.
+    private scrollHeightPx = 400;
+    private resizeObserver: ResizeObserver | null = null;
+    private onWindowResize = (): void => {
+        this.updateScrollHeight();
+    };
 
+    /**
+     * Recomputes the scroll-box height when the data changes. This covers the
+     * case where rows arrive (or toggle) after mount and cross the
+     * virtualization threshold: no window resize fires, so without this the
+     * box would stay at its seeded height. nextTick lets the new rows lay out
+     * (which also shifts the box's top) before measuring.
+     */
+    @Watch("tableData")
+    onTableDataChanged(): void {
+        this.$nextTick(() => {
+            this.measureRowHeight();
+            this.updateScrollHeight();
+        });
+    }
+
+    /**
+     * Whether the current dataset is large enough to warrant windowing. Small
+     * tables (and any caller that didn't opt in) skip virtualization to
+     * preserve prior behavior.
+     *
+     * @returns {boolean} True if rows should be windowed.
+     */
+    get shouldVirtualize(): boolean {
+        return (
+            this.virtualize &&
+            this.tableDataToUse.rows.length > this.virtualizationThreshold
+        );
+    }
+
+    /**
+     * Computes the slice of rows to render plus the top/bottom spacer heights.
+     * When not virtualizing, returns every row with zero padding so the
+     * template renders identically to the non-windowed case.
+     *
+     * @returns {IVirtualWindow} The render window and spacer heights.
+     */
+    get virtualWindow(): IVirtualWindow {
+        const allRows = this.tableDataToUse.rows;
+        const total = allRows.length;
+        if (!this.shouldVirtualize) {
+            return { startIdx: 0, rows: allRows, topPad: 0, bottomPad: 0 };
+        }
+        const rh = this.estimatedRowHeight;
+        const visibleCount =
+            Math.ceil(this.viewportHeight / rh) + this.overscan * 2;
+        let start = Math.floor(this.scrollTop / rh) - this.overscan;
+        // Clamp so a stale scrollTop (e.g. after the data shrank) can never
+        // push the window past the end and render an empty slice.
+        start = Math.max(0, Math.min(start, Math.max(0, total - visibleCount)));
+        const end = Math.min(total, start + visibleCount);
+        return {
+            startIdx: start,
+            rows: allRows.slice(start, end),
+            topPad: start * rh,
+            bottomPad: Math.max(0, (total - end) * rh),
+        };
+    }
+    /**
+     * Inline max-height that bounds the scroll box so it clips and scrolls
+     * internally. Empty (no cap) when not virtualizing.
+     *
+     * @returns {{ maxHeight?: string }} Style object for the scroll container.
+     */
+    get scrollContainerStyle(): { maxHeight?: string } {
+        if (!this.shouldVirtualize) {
+            return {};
+        }
+        return { maxHeight: this.scrollHeightPx + "px" };
+    }
+    /**
+     * Tracks scroll position and viewport size so virtualWindow can recompute
+     * the visible slice. Row height is measured lazily on the first scroll,
+     * once a real row exists to measure.
+     *
+     * @param {Event} e  The scroll event.
+     */
+    onScroll(e: Event): void {
+        const target = e.target as HTMLElement;
+        this.scrollTop = target.scrollTop;
+        this.viewportHeight = target.clientHeight;
+        if (!this.rowHeightMeasured) {
+            this.measureRowHeight();
+        }
+    }
+    /**
+     * Measures an actual rendered row to replace the height estimate, so the
+     * spacer math matches real layout. Ignores spacer rows.
+     */
+    private measureRowHeight(): void {
+        const container = this.$refs?.scrollContainer as
+            | HTMLElement
+            | undefined;
+        if (!container) {
+            return;
+        }
+        const row = container.querySelector(
+            "tbody tr:not(.virtual-spacer)"
+        ) as HTMLElement | null;
+        if (row && row.offsetHeight > 0) {
+            this.estimatedRowHeight = row.offsetHeight;
+            this.rowHeightMeasured = true;
+        }
+    }
+    /**
+     * Walks up to the nearest ancestor that actually clips overflow, i.e. the
+     * element whose bottom edge bounds how tall we can be.
+     *
+     * @param {HTMLElement} el  The scroll container.
+     * @returns {HTMLElement} The clipping ancestor, or documentElement.
+     */
+    private findScrollParent(el: HTMLElement): HTMLElement {
+        let node = el.parentElement;
+        while (node) {
+            const overflowY = getComputedStyle(node).overflowY;
+            if (overflowY === "auto" || overflowY === "scroll") {
+                return node;
+            }
+            node = node.parentElement;
+        }
+        return document.documentElement;
+    }
+    /**
+     * Sizes the scroll box to fill from its own top down to the bottom of the
+     * clipping ancestor, so it reaches the panel's bottom and scrolls in place
+     * instead of pushing the panel.
+     */
+    private updateScrollHeight(): void {
+        const el = this.$refs?.scrollContainer as HTMLElement | undefined;
+        if (!el || !this.shouldVirtualize) {
+            return;
+        }
+        const ancestor = this.findScrollParent(el);
+        const available =
+            ancestor.getBoundingClientRect().bottom -
+            el.getBoundingClientRect().top -
+            8; // small gap so the box doesn't touch the panel edge
+        this.scrollHeightPx = Math.max(120, available);
+        this.viewportHeight = this.scrollHeightPx;
+    }
     /**
      * Get the table data to use.
      *
@@ -134,8 +321,10 @@ export default class Table extends Vue {
                 if (rowVal === undefined) {
                     // If the value is undefined, just use an empty string.
                     rowVal = { val: "" };
-  } else if (typeof rowVal === "string" || typeof rowVal === "number") {
-
+                } else if (
+                    typeof rowVal === "string" ||
+                    typeof rowVal === "number"
+                ) {
                     rowVal = { val: rowVal };
   } else {
   // Shallow copy to prevent mutating the prop
@@ -414,8 +603,8 @@ export default class Table extends Vue {
                         // Strip html from val
                         const div = document.createElement("div");
                         div.innerHTML = String(val);
-                        const valStripped = div.textContent || div.innerText || val;
-
+                        const valStripped =
+                            div.textContent || div.innerText || val;
                         row[header.text] = valStripped;
                     }
                 }
@@ -436,6 +625,37 @@ export default class Table extends Vue {
     mounted() {
         this.sortColumnName = this.initialSortColumnName;
         this.sortOrder = this.initialSortOrder;
+        this.$nextTick(() => {
+            this.measureRowHeight();
+            this.updateScrollHeight();
+        });
+        if (this.virtualize) {
+            window.addEventListener("resize", this.onWindowResize);
+            if (typeof ResizeObserver !== "undefined") {
+                const el = this.$refs.scrollContainer as
+                    | HTMLElement
+                    | undefined;
+                const ancestor = el ? this.findScrollParent(el) : null;
+                if (ancestor) {
+                    // Observe the clipping ancestor (not our own element) so
+                    // panel resizes recompute height without a feedback loop.
+                    this.resizeObserver = new ResizeObserver(() =>
+                        this.updateScrollHeight()
+                    );
+                    this.resizeObserver.observe(ancestor);
+                }
+            }
+        }
+    }
+    /**
+     * Tears down the resize listeners.
+     */
+    beforeUnmount() {
+        window.removeEventListener("resize", this.onWindowResize);
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
     }
 }
 </script>
@@ -474,6 +694,35 @@ table {
 .cell {
     white-space: nowrap;
 }
+// Internal scroll for the windowed body. Height is supplied inline by
+// scrollContainerStyle rather than a fixed cap.
+.virtual-scroll {
+    overflow-y: auto;
+    /* Breathing room so the footer (CSV/XLSX/JSON links) clears the panel
+    edge and stays clickable when scrolled all the way down. */
+    padding-bottom: 0.75rem;
+}
+// The floating header needs an opaque background (and to sit above the rows)
+// or scrolled content shows through it.
+.virtual-scroll .sticky-header {
+    background-color: var(--bs-body-bg, #fff);
+    z-index: 2;
+    box-shadow: inset 0 -1px 0 #dee2e6;
+}
+/* Manual striping keyed to the absolute row index. table-striped's
+:nth-of-type parity is unstable once spacer rows shift the window, so we
+stripe explicitly when virtualizing. Applied to cells so it shows through
+Bootstrap's per-cell background, while :hover still wins. */
+.row-striped > td {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+/* Spacers only reserve vertical space; they must never show borders or
+striping or react to hover. */
+.virtual-spacer,
+.virtual-spacer > td {
+    padding: 0;
+    background-color: transparent;
+}
 </style>
 
 <style lang="scss">
@@ -482,4 +731,3 @@ table {
     font-size: 16px;
 }
 </style>
-@/Core/FS/FS
