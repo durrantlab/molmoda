@@ -30,6 +30,8 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { Component } from "vue-facing-decorator";
 import { ITest } from "@/Testing/TestInterfaces";
 import { pubchemCredit, lookupCid, lookupCidsBatch } from "./PubChemCommon";
+import { mergeIntoIdentityTable } from "@/FileSystem/LoadSaveMolModels/SmilesCache";
+
 /**
  * PubChemNamesPlugin
  */
@@ -248,6 +250,35 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
           "#modal-tabledatapopup .subtle-box"
         )
         .click("#modal-tabledatapopup .cancel-btn"),
+    };
+  }
+
+  /**
+   * Writes the retrieved names into the molecule's "Identity" data table
+   * (the same table holding SMILES and the PubChem CID) rather than a
+   * separate "Names" table, so a compound's identity values live in one
+   * place. Still records the row in resultsData so the summary popup is
+   * unaffected. Overrides the parent, which would otherwise write to
+   * data[dataSetTitle].
+   *
+   * @param {FileInfo}             mol    The molecule processed.
+   * @param {{[key: string]: any}} props  The names row to record.
+   */
+  public recordMoleculeResult(
+    mol: FileInfo,
+    props: { [key: string]: any }
+  ): void {
+    if (!mol.treeNode) {
+      return;
+    }
+    // Reassign treeNode.data first so Vue reactivity fires, then merge the
+    // name fields into the shared Identity table alongside SMILES and CID.
+    mol.treeNode.data = { ...mol.treeNode.data };
+    mergeIntoIdentityTable(mol.treeNode, props);
+    const pathName = mol.treeNode.descriptions.pathName(">", 50);
+    this.resultsData[pathName] = {
+      name: pathName,
+      ...props,
     };
   }
 }

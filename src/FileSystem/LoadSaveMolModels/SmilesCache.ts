@@ -69,9 +69,10 @@ export function getSmilesFromTreeNode(
 }
 
 /**
- * Records a SMILES on a tree node under the Identity table, creating the data
- * container as needed. Merges into any existing Identity entry rather than
- * overwriting it, so future identity fields can coexist with SMILES.
+ * Records a SMILES on a tree node under the Identity table. Delegates to
+ * mergeIntoIdentityTable so the read-merge-write logic lives in one place;
+ * the extra empty-string guard is kept here so a blank SMILES is never
+ * written (a meaningless cache entry that would later read back as a hit).
  *
  * @param {TreeNode | undefined} treeNode  The node to write to.
  * @param {string}               smiles    The SMILES to store.
@@ -83,6 +84,26 @@ export function setSmilesOnTreeNode(
     if (!treeNode || !smiles) {
         return;
     }
+    mergeIntoIdentityTable(treeNode, { [SMILES_FIELD]: smiles });
+}
+
+/**
+ * Merges arbitrary fields into a tree node's Identity table, creating the
+ * data container as needed. Reads any existing Identity entry and spreads it
+ * back in so values written by other code paths (SMILES, PubChem CID) coexist
+ * with the new fields rather than being clobbered. This is the shared writer
+ * for callers that need to add identity-level data beyond SMILES/CID.
+ *
+ * @param {TreeNode | undefined}       treeNode  The node to write to.
+ * @param {{ [key: string]: unknown }} fields    The fields to merge in.
+ */
+export function mergeIntoIdentityTable(
+    treeNode: TreeNode | undefined,
+    fields: { [key: string]: unknown }
+): void {
+    if (!treeNode) {
+        return;
+    }
     if (!treeNode.data) {
         treeNode.data = {};
     }
@@ -92,7 +113,7 @@ export function setSmilesOnTreeNode(
             ? (existing.data as { [key: string]: unknown })
             : {};
     treeNode.data[IDENTITY_DATASET_TITLE] = {
-        data: { ...existingData, [SMILES_FIELD]: smiles },
+        data: { ...existingData, ...fields },
         type: TreeNodeDataType.Table,
         treeNodeId: treeNode.id,
         headerSort: TableHeaderSort.None,
