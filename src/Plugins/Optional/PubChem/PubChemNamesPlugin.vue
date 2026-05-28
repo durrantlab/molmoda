@@ -30,7 +30,10 @@ import { TestCmdList } from "@/Testing/TestCmdList";
 import { Component } from "vue-facing-decorator";
 import { ITest } from "@/Testing/TestInterfaces";
 import { pubchemCredit, lookupCid, lookupCidsBatch } from "./PubChemCommon";
-import { mergeIntoIdentityTable } from "@/FileSystem/LoadSaveMolModels/SmilesCache";
+import {
+  IDENTITY_DATASET_TITLE,
+  mergeIntoDataTable,
+} from "@/FileSystem/LoadSaveMolModels/TreeNodeDataCache";
 
 /**
  * PubChemNamesPlugin
@@ -274,7 +277,7 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     // Reassign treeNode.data first so Vue reactivity fires, then merge the
     // name fields into the shared Identity table alongside SMILES and CID.
     mol.treeNode.data = { ...mol.treeNode.data };
-    mergeIntoIdentityTable(mol.treeNode, props);
+    mergeIntoDataTable(mol.treeNode, IDENTITY_DATASET_TITLE, props);
     const pathName = mol.treeNode.descriptions.pathName(">", 50);
     this.resultsData[pathName] = {
       name: pathName,
