@@ -85,6 +85,31 @@ export default class DataPanel extends Vue {
   }
 
   /**
+ * Collects every table-source title present anywhere in the molecule tree,
+ * regardless of visibility or selection. Used to tell apart sources whose
+ * molecule was deleted (truly gone) from sources merely hidden (still in the
+ * tree, will reappear). We prune selection state only for the former, so
+ * hiding then re-showing a molecule restores its previously selected tables.
+ *
+ * @returns {Set<string>}  The table-source titles present in the tree.
+ */
+  private get allSourceTitlesInTree(): Set<string> {
+    // Establish reactive dependency on molecule mutations.
+    void this.molChangeCount;
+    const allMols = this.$store.state.molecules as TreeNodeList;
+    const titles = new Set<string>();
+    allMols.flattened.forEach((node: TreeNode) => {
+      if (node.data === undefined) return;
+      for (const tableTitle of Object.keys(node.data)) {
+        if (node.data[tableTitle].type === TreeNodeDataType.Table) {
+          titles.add(tableTitle);
+        }
+      }
+    });
+    return titles;
+  }
+
+  /**
    * Get the selected data sources.
    * 
    * @returns {string[]}  The selected sources.
@@ -113,9 +138,12 @@ export default class DataPanel extends Vue {
         newSources.forEach((source) => this.knownSources.add(source));
       }
 
-      // Filter out removed sources
+      // Prune only sources whose molecule no longer exists in the tree.
+      // Sources that are merely hidden remain in the tree, so their selection
+      // is preserved and restored when the molecule is made visible again.
+      const sourcesInTree = this.allSourceTitlesInTree;
       this.selectedSourcesArr = this.selectedSourcesArr.filter((source) =>
-        allSources.includes(source)
+        sourcesInTree.has(source)
       );
 
       return this.selectedSourcesArr;
@@ -161,17 +189,20 @@ export default class DataPanel extends Vue {
     ) {
       return this.cachedMergedTableData;
     }
-    if (this.allTableData.length === 0 || this.selectedSources.length === 0) {
+    // Filter the table data to only include selected sources
+    const filteredTableData = this.allTableData.filter(([source]) =>
+      this.selectedSources.includes(source)
+    );
+    // Guard on the filtered (currently visible) selection rather than the raw
+    // selectedSources length. selectedSources can retain titles for hidden
+    // molecules, which must not force an empty table to render.
+    if (filteredTableData.length === 0) {
       this.cachedMergedTableData = null; // Cache null result
       this.cachedVersion = currentVersion;
       this.cachedSelectedSources = sortedSelected;
       this.cachedMolChangeCount = this.molChangeCount;
       return null;
     }
-    // Filter the table data to only include selected sources
-    const filteredTableData = this.allTableData.filter(([source]) =>
-      this.selectedSources.includes(source)
-    );
     // Initialize headers with Entry and id
     const headers = [
       { text: "Entry" },
