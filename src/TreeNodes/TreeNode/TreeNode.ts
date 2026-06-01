@@ -30,6 +30,21 @@ import {
 } from "@/FileSystem/LoadSaveMolModels/SmilesCache";
 import { toRaw } from "vue";
 
+/**
+ * Non-rendered, per-node metadata. Unlike `data`, this never appears in the
+ * Data panel; it records processing context that later operations must
+ * reproduce (e.g. how the molecule was divided when first parsed).
+ */
+export interface ITreeNodeAuxData {
+    /**
+     * Whether covalently bonded compound residues were merged when this
+     * molecule was parsed. Persisted so re-parsing operations (e.g. protein
+     * alignment) can reproduce the original component layout rather than
+     * reverting to the default merge behavior.
+     */
+    mergeBondedCompounds?: boolean;
+}
+
 // Deserialized (object-based) version of TreeNode
 export interface ITreeNode {
     // Properties common to both non-terminal and terminal nodes.
@@ -44,6 +59,7 @@ export interface ITreeNode {
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
     data?: { [key: string]: ITreeNodeData }; // key is title of chart, etc.
+    auxData?: ITreeNodeAuxData; // non-rendered metadata (not shown in Data panel)
     tags?: string[]; // tags for this node. Mostly just plugin ids of plugins used to generate this node.
 
     // These are specifically for terminal nodes
@@ -148,6 +164,7 @@ export class TreeNode {
     focused: boolean;
     viewerDirty: boolean; // triggers 3dmoljs viewer
     data?: { [key: string]: ITreeNodeData }; // key is title of chart, etc.
+    auxData?: ITreeNodeAuxData; // non-rendered metadata (not shown in Data panel)
     tags?: string[]; // tags for this node. Mostly just plugin ids of plugins used to generate this node.
 
     // These are specifically for non-terminal nodes
@@ -187,6 +204,7 @@ export class TreeNode {
         this.focused = params.focused;
         this.viewerDirty = params.viewerDirty;
         this.data = params.data;
+        this.auxData = params.auxData;
         this.tags = params.tags;
         this.nodes = params.nodes;
         this.model = params.model;

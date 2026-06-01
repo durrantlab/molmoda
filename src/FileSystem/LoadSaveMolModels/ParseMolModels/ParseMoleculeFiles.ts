@@ -187,6 +187,17 @@ export function parseAndLoadMoleculeFile(
 
             const mergedTreeNodeList = treeNodeList.merge(topLevelName);
 
+            // Record the effective merge setting on the top-level node. This
+            // is invisible in the Data panel but lets later re-parsing
+            // operations (e.g. protein alignment) reproduce this component
+            // layout instead of silently reverting to the default.
+            mergedTreeNodeList.forEach((topNode) => {
+                topNode.auxData = {
+                    ...(topNode.auxData ?? {}),
+                    mergeBondedCompounds: params.mergeBondedCompounds,
+                };
+            });
+
             // Make sure all molecules have a title. A title of a
             // terminal can be undefined if pasting, for example,
             // `C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)[O-])C(=O)[O-].O.[Ca+2]`

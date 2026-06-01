@@ -223,9 +223,16 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 const loadedNodeContainerList = await parseAndLoadMoleculeFile({
                     fileInfo: newFileInfo,
                     tag: this.pluginId,
-                    addToTree: false
+                    addToTree: false,
+                    // Reproduce the layout the molecule was loaded with.
+                    // Re-parsing otherwise defaults to merging covalently
+                    // bonded compounds, collapsing residues that were
+                    // deliberately kept separate. undefined (older molecules
+                    // or pre-existing sessions) falls back to the load
+                    // default downstream.
+                    mergeBondedCompounds:
+                        originalTopLevelNode.auxData?.mergeBondedCompounds,
                 });
-
                 if (loadedNodeContainerList) {
                     const loadedNodeContainer = loadedNodeContainerList.get(0);
                     loadedNodeContainer.title = `${originalTopLevelNode.title}-aligned`;
