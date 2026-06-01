@@ -112,6 +112,14 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 "If checked, molecules will be initially invisible. You will have to toggle visibility by hand. Useful if you plan to load many molecules at once.",
             val: false,
         } as IUserArgCheckbox,
+        {
+            id: "mergeBondedCompounds",
+            type: UserArgType.Checkbox,
+            label: "Merge covalently bonded compound residues",
+            description:
+                "If checked, separate compound residues that are covalently bonded are combined into a single compound. Uncheck to keep them distinct.",
+            val: true,
+        } as IUserArgCheckbox,
         getGen3DUserArg(
             "Method for generating 3D coordinates",
             "If your file lacks 3D coordinates (e.g., SMILES), choose how to generate those coordinates. Otherwise, this parameter is ignored. Try different methods only if your imported molecules have incorrect geometries."
@@ -357,6 +365,7 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 gen3D: gen3DParams,
                 defaultTitle: "",
                 tag: this.pluginId,
+                mergeBondedCompounds: this.getUserArg("mergeBondedCompounds"),
             },
             this.getUserArg("hideOnLoad")
         );
@@ -407,8 +416,11 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
             { file: "problem_files/pred.rank_0.fixed_now.cif", navSubstring: "pred.rank_0.fixed_now" },
             { file: "problem_files/big_test.molmoda", navSubstring: "Compounds" },
             { file: "problem_files/tmp.can", navSubstring: "tmp" },
-            
-
+            // Loaded with merging on (the default), so the covalently bonded
+            // NADP cofactor and DMSO collapse into a single compound. The
+            // hyphenated title appears only when merging occurs, making it a
+            // reliable positive check.
+            { file: "1KMV.pdb", navSubstring: "NDP:202-DMS:203" },
         ];
         const tests: ITest[] = filesToTest.map((testCase) => {
             const pluginOpenCmdList = new TestCmdList().setUserArg(
@@ -465,7 +477,24 @@ export default class OpenMoleculesPlugin extends PluginParentClass {
                 .click("#modal-yesnomsg .action-btn")
                 .waitUntilRegex("#styles", "no molecules"),
         });
-
+        // With merging disabled, the same fragments stay separate, so DMS:203
+        // appears as its own compound rather than as part of the
+        // NDP:202-DMS:203 merge. Boolean args must be toggled via a click
+        // (setUserArg rejects them); the field id is built from this.pluginId.
+        tests.push({
+            name: "Keep bonded compounds separate when merging disabled (1KMV)",
+            pluginOpen: () => new TestCmdList()
+                .setUserArg(
+                    "formFile",
+                    "file://./src/Testing/mols/1KMV.pdb",
+                    this.pluginId
+                )
+                .click(`#mergeBondedCompounds-${this.pluginId}-item`),
+            afterPluginCloses: () => new TestCmdList()
+                .waitUntilRegex("#styles", "Atoms")
+                .openPlugin("expandall")
+                .waitUntilRegex("#navigator", "DMS:203"),
+        });
         // Tour-only test: demonstrates the plugin UI without requiring an
         // actual file upload, so afterPluginCloses wait conditions that depend
         // on loaded molecules are omitted. JACOB: Can't for the life of me

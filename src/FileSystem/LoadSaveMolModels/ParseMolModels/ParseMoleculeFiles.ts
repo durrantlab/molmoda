@@ -112,7 +112,11 @@ export function parseAndLoadMoleculeFile(
 
     switch (loader) {
         case MolLoader.Mol3D: {
-            promise = parseUsing3DMolJs(params.fileInfo, formatInfo);
+            promise = parseUsing3DMolJs(
+                params.fileInfo,
+                formatInfo,
+                params.mergeBondedCompounds
+            );
             break;
         }
         case MolLoader.OpenBabel: {
@@ -121,7 +125,8 @@ export function parseAndLoadMoleculeFile(
                 formatInfo,
                 params.desalt,
                 params.gen3D,
-                params.surpressMsgs
+                params.surpressMsgs,
+                params.mergeBondedCompounds
             );
             break;
         }

@@ -10,6 +10,10 @@ export interface ILoadMolParams {
     defaultTitle?: string;
     surpressMsgs?: boolean;
     hideOnLoad?: boolean;
+    // When false, separate compounds that are covalently bonded to each other
+    // are left as distinct compounds rather than merged into one. Defaults to
+    // true (merge).
+    mergeBondedCompounds?: boolean;
 }
 
 /**
@@ -26,6 +30,7 @@ export function addDefaultLoadMolParams(
         desalt: false,
         defaultTitle: "Molecule",
         hideOnLoad: false,
+        mergeBondedCompounds: true,
         ...params,
     };
 }

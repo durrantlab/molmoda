@@ -7,6 +7,10 @@ const ctx: Worker = self as any;
 export interface IMolData {
     format: string;
     fileInfo: FileInfo;
+    // When false, the worker keeps covalently bonded compounds as separate
+    // compounds instead of merging them. Optional; treated as true when
+    // omitted so existing callers retain the merge behavior.
+    mergeBondedCompounds?: boolean;
 }
 
 /**

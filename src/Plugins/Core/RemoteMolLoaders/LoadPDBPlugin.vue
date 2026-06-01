@@ -11,7 +11,12 @@ import {
 import { loadPdbIdToFileInfo } from "./RemoteMolLoadersUtils";
 import * as api from "@/Api";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
-import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
+import {
+    UserArg,
+    IUserArgText,
+    IUserArgCheckbox,
+    UserArgType,
+} from "@/UI/Forms/FormFull/FormFullInterfaces";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -106,6 +111,14 @@ export default class LoadPDBPlugin extends PluginParentClass {
                 // return pdb.length === 4;
             },
         } as IUserArgText,
+        {
+            id: "mergeBondedCompounds",
+            type: UserArgType.Checkbox,
+            label: "Merge covalently bonded compound residues",
+            description:
+                "If checked, separate compound residues that are covalently bonded are combined into a single compound. Uncheck to keep them distinct.",
+            val: true,
+        } as IUserArgCheckbox,
     ];
 
     /**
@@ -139,6 +152,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
             await this.addFileInfoToViewer({
                 fileInfo,
                 tag: this.pluginId,
+                mergeBondedCompounds: this.getUserArg("mergeBondedCompounds"),
             });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err: any) {
@@ -268,6 +282,41 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     .waitUntilRegex(
                         "#navigator",
                         "MYR:702-COA:703"
+                    ),
+            },
+            {
+                // With merging on (the default), the covalently bonded NADP
+                // cofactor and DMSO of 1KMV collapse into a single compound,
+                // so the hyphenated title appears. This title only exists
+                // when merging occurs, making it a reliable positive check.
+                name: "Merge adjacent bonded compounds by default (1KMV)",
+                pluginOpen: () => new TestCmdList().setUserArg(
+                    "pdbId",
+                    "1KMV",
+                    this.pluginId
+                ),
+                afterPluginCloses: () => new TestCmdList()
+                    .openPlugin("expandall")
+                    .waitUntilRegex(
+                        "#navigator",
+                        "NDP:202-DMS:203"
+                    ),
+            },
+            {
+                // With merging disabled, the same fragments stay separate, so
+                // DMS:203 appears as its own compound rather than as part of
+                // the NDP:202-DMS:203 merge. Boolean args must be toggled via
+                // a click; the field id follows #{argId}-{pluginId}-item, so
+                // building it from this.pluginId avoids hardcoding the id.
+                name: "Keep bonded compounds separate when merging disabled (1KMV)",
+                pluginOpen: () => new TestCmdList()
+                    .setUserArg("pdbId", "1KMV", this.pluginId)
+                    .click(`#mergeBondedCompounds-${this.pluginId}-item`),
+                afterPluginCloses: () => new TestCmdList()
+                    .openPlugin("expandall")
+                    .waitUntilRegex(
+                        "#navigator",
+                        "DMS:203"
                     ),
             },
         ];

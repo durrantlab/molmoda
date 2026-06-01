@@ -8,13 +8,17 @@ import { IMolData } from "@/Core/WebWorkers/WorkerHelper";
 /**
  * Loads a molecule from text, using a web worker.
  *
- * @param  {FileInfo} fileInfos     The text and name of the molecule.
- * @param  {string}   format        The format of the molecule.
- * @returns {Promise<TreeNode>} A promise that resolves the molecule.
+ * @param  {FileInfo[]} fileInfos             The text and name of the molecules.
+ * @param  {string}     format                The format of the molecule.
+ * @param  {boolean}    [mergeBondedCompounds]  Whether covalently bonded
+ *                                            compounds should be merged into a
+ *                                            single compound. Defaults to true.
+ * @returns {Promise<TreeNodeList>} A promise that resolves the molecule.
  */
 export async function parseMolecularModelFromTexts(
     fileInfos: FileInfo[],
-    format: string
+    format: string,
+    mergeBondedCompounds = true
 ): Promise<TreeNodeList> {
     const parseMolecularModelsWorker = new Worker(
         new URL("./ParseMolecularModels.worker", import.meta.url)
@@ -26,7 +30,7 @@ export async function parseMolecularModelFromTexts(
             // VERY IMPORTANT: The treeNode property is not serializable and will
             // cause a DataCloneError if sent to a worker. We must remove it.
             delete serializableFile.treeNode;
-            return { fileInfo: serializableFile, format };
+            return { fileInfo: serializableFile, format, mergeBondedCompounds };
         }) as IMolData[];
 
         // molecularDataDeserialized is a pure javascript object

@@ -121,12 +121,15 @@ def run_test(
         if plugin_idx is not None:
             url += f"&index={plugin_idx}"
         driver.get(url)
-
-        # Parse the command list from the page.
+        # Parse the command list from the page.  The TS test infrastructure
+        # writes commands into the #test-cmds element (the "test" store
+        # module's "cmds" var).  The old #cmds-element id no longer exists,
+        # so waiting on it would silently block for the full 50s el() timeout
+        # before the first command could ever be dispatched.
         cmds = None
         cmds_str = None
         for _ in range(4):
-            cmds_str = el("#cmds-element", driver).text
+            cmds_str = el("#test-cmds", driver).text
             try:
                 cmds = json.loads(cmds_str)
                 break

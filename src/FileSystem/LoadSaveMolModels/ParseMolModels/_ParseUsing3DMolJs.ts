@@ -6,21 +6,25 @@ import type { FileInfo } from "@/FileSystem/FileInfo";
 /**
  * Uses 3DMol.js to parse the a molecular-model file.
  *
- * @param  {FileInfo}    fileInfo           The file to parse.
- * @param  {IFormatInfo} formatInfo         The format of the file.
+ * @param  {FileInfo}    fileInfo               The file to parse.
+ * @param  {IFormatInfo} formatInfo             The format of the file.
+ * @param  {boolean}     [mergeBondedCompounds]  Whether covalently bonded
+ *                                              compounds should be merged.
+ *                                              Defaults to true.
  * @returns {Promise<TreeNodeList>}  A promise that resolves when the file is
  *    parsed. The promise resolves to a TreeNodeList containing the frames. Can
  *    also resolve void.
  */
 export function parseUsing3DMolJs(
     fileInfo: FileInfo,
-    formatInfo: IFormatInfo
+    formatInfo: IFormatInfo,
+    mergeBondedCompounds = true
 ): Promise<TreeNodeList> {
     // console.log("parseUsing3DMolJs called for:", fileInfo.name, "format:", formatInfo.primaryExt);
-
     return parseMolecularModelFromTexts(
         [fileInfo],
-        formatInfo.primaryExt
+        formatInfo.primaryExt,
+        mergeBondedCompounds
     ).catch((err) => {
         throw err;
     });
