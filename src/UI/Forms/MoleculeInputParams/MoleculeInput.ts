@@ -38,6 +38,9 @@ export interface IMoleculeInputParams {
     allowUserToToggleIncludeMetalsAsProtein?: boolean;
     allowUserToToggleIncludeSolventAsProtein?: boolean;
     allowUserToToggleIncludeNucleicAsProtein?: boolean;
+    includeProteinAssociatedCompoundsAsProtein?: boolean;
+    allowUserToToggleIncludeProteinAssociatedCompoundsAsProtein?: boolean;
+
     // Below is useful if running things in webworkers. Sends input molecules or
     // molecule pairs in batches. If not specified, batching not applied (just
     // flat list of molecules). If set to null, batches according to nprocs.
@@ -86,6 +89,11 @@ export class MoleculeInput {
     allowUserToToggleIncludeMetalsAsProtein = true;
     allowUserToToggleIncludeSolventAsProtein = true;
     allowUserToToggleIncludeNucleicAsProtein = true;
+    // When true, compounds belonging to a molecule that also has a protein are
+    // merged into that molecule's receptor (e.g., to keep cofactors in the
+    // binding site) rather than offered as separate dockable ligands.
+    includeProteinAssociatedCompoundsAsProtein = false;
+    allowUserToToggleIncludeProteinAssociatedCompoundsAsProtein = true;
     proteinFormat = "pdb";
     compoundFormat = "mol2";
 
@@ -149,6 +157,17 @@ export class MoleculeInput {
             this.allowUserToToggleIncludeNucleicAsProtein =
                 params.allowUserToToggleIncludeNucleicAsProtein;
         }
+        if (params.includeProteinAssociatedCompoundsAsProtein !== undefined) {
+            this.includeProteinAssociatedCompoundsAsProtein =
+                params.includeProteinAssociatedCompoundsAsProtein;
+        }
+        if (
+            params.allowUserToToggleIncludeProteinAssociatedCompoundsAsProtein !==
+            undefined
+        ) {
+            this.allowUserToToggleIncludeProteinAssociatedCompoundsAsProtein =
+                params.allowUserToToggleIncludeProteinAssociatedCompoundsAsProtein;
+        }
         // If not specified, use the default batch size.
         if (params.batchSize !== undefined) {
             this.batchSize = params.batchSize;
@@ -202,13 +221,22 @@ export class MoleculeInput {
     private async _gatherProteinAndCompoundTypes(): Promise<
         IProtCmpdTreeNodePair[] | FileInfo[]
     > {
-        const compiledMols = compileMolModels(this.molsToConsider, true);
+        // Fold cofactors into the receptor only when explicitly enabled and both
+        // proteins and compounds are in scope; otherwise compounds stay dockable.
+        const mergeAssociated =
+            this.includeProteinAssociatedCompoundsAsProtein &&
+            this.considerProteins &&
+            this.considerCompounds;
 
+        const compiledMols = compileMolModels(
+            this.molsToConsider,
+            true,
+            mergeAssociated
+        );
         // Remove one or other, if required.
         if (!this.considerProteins) {
             compiledMols.nodeGroups = [];
         }
-
         if (!this.considerCompounds) {
             compiledMols.compoundsNodes = new TreeNodeList();
         }
@@ -221,7 +249,7 @@ export class MoleculeInput {
                 compiledMols.compoundsNodes,
                 this.compoundFormat,
                 false
-              )
+            )
             : [];
 
         const prots = protFileInfos.filter((p) => p !== undefined);

@@ -12,17 +12,25 @@ import { FileInfo } from "@/FileSystem/FileInfo";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
- * Compiles (organizes) all the molecules.
+ * Compile molecules into receptor groups and a compound pool.
  *
- * @param  {IMolsToConsider} molsToConsider   The molecules to compile.
- * @param  {boolean}   separateComponents     Whether to separate components.
- * @returns {ICompiledNodes}  The compiled nodes.
+ * @param {IMolsToConsider} molsToConsider  Which molecules to include.
+ * @param {boolean} separateComponents  Split molecules into component types.
+ * @param {boolean} [mergeProteinAssociatedCompounds]  Fold a molecule's
+ *     compounds into its receptor when it also contains a protein. Defaults to
+ *     false.
+ * @returns {ICompiledNodes}  The compiled grouping.
  */
 export function compileMolModels(
     molsToConsider: IMolsToConsider,
- separateComponents: boolean
+  separateComponents: boolean,
+  mergeProteinAssociatedCompounds = false
 ): ICompiledNodes {
- return compileByMolecule(molsToConsider, separateComponents);
+  return compileByMolecule(
+    molsToConsider,
+    separateComponents,
+    mergeProteinAssociatedCompounds
+  );
 }
 
 /**

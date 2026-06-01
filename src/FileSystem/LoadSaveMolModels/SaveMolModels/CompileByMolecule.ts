@@ -5,16 +5,24 @@ import { IMolsToConsider, ICompiledNodes } from "./Types";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 
 /**
- * Runs the job when the user wants to save in a non-molmoda format, by
- * molecule.
+ * Compile each top-level molecule's terminal nodes into receptor groups plus a
+ * pooled compound list. Used by both the molecule-input gathering path and the
+ * save path.
  *
- * @param {IMolsToConsider} molsToConsider   The molecules to save.
- * @param {boolean}   separateComponents     Whether to separate components into different files.
- * @returns {ICompiledNodes}  The compiled nodes organized by type and grouping.
+ * @param {IMolsToConsider} molsToConsider  Which molecules to include.
+ * @param {boolean} separateComponents  Split each molecule into component types
+ *     rather than treating it as one undifferentiated group.
+ * @param {boolean} [mergeProteinAssociatedCompounds=false]  When true, a
+ *     molecule containing both protein and compound components folds its
+ *     compounds (e.g., cofactors) into that molecule's receptor group instead
+ *     of pooling them as standalone dockable compounds. Has no effect on
+ *     molecules that lack a protein, so ligand-only molecules stay dockable.
+ * @returns {ICompiledNodes}  The compiled grouping.
  */
 export function compileByMolecule(
     molsToConsider: IMolsToConsider,
-    separateComponents: boolean
+  separateComponents: boolean,
+  mergeProteinAssociatedCompounds = false
 ): ICompiledNodes {
     // Not using molmoda format. Create ZIP file with protein and small
     // molecules.
@@ -46,7 +54,19 @@ export function compileByMolecule(
             const nodesByType = new Map<TreeNodeType, TreeNodeList>();
    // Helper lists for legacy output
    const nonCompoundNodesForThisMol = new TreeNodeList();
-
+      // Pre-scan so we know whether this molecule pairs a protein with
+      // compounds before deciding where its compound nodes are routed.
+      let hasProtein = false;
+      let hasCompounds = false;
+      terminalNodes.forEach((node) => {
+        if (node.type === TreeNodeType.Protein) {
+          hasProtein = true;
+        } else if (node.type === TreeNodeType.Compound) {
+          hasCompounds = true;
+        }
+      });
+      const foldCompoundsIntoReceptor =
+        mergeProteinAssociatedCompounds && hasProtein && hasCompounds;
             terminalNodes.forEach((node) => {
                 const type = node.type || TreeNodeType.Other;
                 if (!nodesByType.has(type)) {
@@ -55,14 +75,17 @@ export function compileByMolecule(
                 nodesByType.get(type)?.push(node);
 
     // Legacy population
-    if (type === TreeNodeType.Compound) {
+        if (type === TreeNodeType.Compound && !foldCompoundsIntoReceptor) {
      compoundsNodes.push(node);
     } else {
+          // Non-compound components, and (when folding) the molecule's
+          // compounds, all belong to this molecule's receptor group.
      nonCompoundNodesForThisMol.push(node);
     }
             });
-
-   // Process each type for byType map
+      // byType stays keyed by true chemical type regardless of folding; only
+      // the receptor grouping (nodeGroups/compoundsNodes) reflects the fold,
+      // so existing byType consumers (e.g., save paths) are unaffected.
             nodesByType.forEach((nodes, type) => {
                 if (!byType.has(type)) {
                     byType.set(type, []);

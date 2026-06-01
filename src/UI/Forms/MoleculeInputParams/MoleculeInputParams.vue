@@ -18,6 +18,13 @@
         val.allowUserToToggleIncludeNucleicAsProtein
       " v-model="val.includeNucleicAsProtein" text="Count nucleic acids as part of the protein receptor"
         :id="tag + '-include-nucleic'" />
+      <FormCheckBox v-if="
+        val.considerProteins &&
+        val.considerCompounds &&
+        val.allowUserToToggleIncludeProteinAssociatedCompoundsAsProtein
+      " v-model="val.includeProteinAssociatedCompoundsAsProtein"
+        text="Count protein-associated compounds (e.g., cofactors) as part of the protein receptor"
+        :id="tag + '-include-prot-assoc-cmpds'" />
     </FormWrapper>
     <FormElementDescription :description="summary"></FormElementDescription>
   </span>
@@ -249,7 +256,17 @@ export default class MoleculeInputParams extends Vue {
       whichMols = "the selected";
     }
 
-    const mergedByMols = compileMolModels(this.val.molsToConsider, true);
+    // Mirror the gather path so the run-count preview reflects compounds that
+    // are folded into receptors rather than counted as dockable ligands.
+    const mergeAssociated =
+      this.val.includeProteinAssociatedCompoundsAsProtein &&
+      this.val.considerProteins &&
+      this.val.considerCompounds;
+    const mergedByMols = compileMolModels(
+      this.val.molsToConsider,
+      true,
+      mergeAssociated
+    );
     const nodeGroups = mergedByMols.nodeGroups ?? [];
     const nodeGroupsCount = nodeGroups.length;
     const compoundsNodes = mergedByMols.compoundsNodes ?? [];
@@ -382,7 +399,7 @@ export default class MoleculeInputParams extends Vue {
     const isNewInstance = this.defaultAppliedFor !== newVal;
     this.val = newVal;
     if (isNewInstance) {
-    this.applySelectionAwareDefault();
+      this.applySelectionAwareDefault();
       this.defaultAppliedFor = newVal;
     }
   }
