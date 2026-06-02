@@ -150,8 +150,11 @@ export default class ProtonateCompoundsPlugin extends PluginParentClass {
             this.pluginId,
             "Compounds:protonated"
         );
-        rootNode.addToMainTree(this.pluginId);
-
+        // terminalNodeTitleRevisable=false: convertMolTextsToCompoundTree
+        // already restores each compound's own title; folding the
+        // "Compounds:protonated" group title into a lone compound would
+        // accumulate on repeated protonation.
+        rootNode.addToMainTree(this.pluginId, true, false);
         return;
 
         // // Make sure the filenames are unique.

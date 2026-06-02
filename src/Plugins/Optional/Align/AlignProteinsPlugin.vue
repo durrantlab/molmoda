@@ -208,7 +208,10 @@ export default class AlignProteinsPlugin extends PluginParentClass {
             const clonedRef = clonedRefList.get(0);
             if (clonedRef) {
                 clonedRef.title = `${referenceNode.title}-aligned`;
-                clonedRef.addToMainTree(this.pluginId);
+                // terminalNodeTitleRevisable=false: the "-aligned" title is
+                // set here; folding it into the lone terminal would compound
+                // when the result is later cloned/merged/aligned again.
+                clonedRef.addToMainTree(this.pluginId, true, false);
             }
             // 2. Process and add each aligned mobile molecule.
             for (const newFileInfo of alignedFileInfos) {
@@ -236,7 +239,7 @@ export default class AlignProteinsPlugin extends PluginParentClass {
                 if (loadedNodeContainerList) {
                     const loadedNodeContainer = loadedNodeContainerList.get(0);
                     loadedNodeContainer.title = `${originalTopLevelNode.title}-aligned`;
-                    loadedNodeContainer.addToMainTree(this.pluginId);
+                    loadedNodeContainer.addToMainTree(this.pluginId, true, false);
                 }
             }
         } catch (error: any) {

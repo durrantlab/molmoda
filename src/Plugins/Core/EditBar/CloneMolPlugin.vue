@@ -130,7 +130,10 @@ export default class CloneMolPlugin extends PluginParentClass {
                 .then((treeNodeList: TreeNodeList) => {
                     const node = treeNodeList.get(0);
                     node.title = newName;
-                treeNodeList.addToMainTree(this.pluginId);
+                // terminalNodeTitleRevisable=false: this plugin sets the
+                // top-level title itself, so folding it into the lone
+                // terminal would compound on repeated clones.
+                treeNodeList.addToMainTree(this.pluginId, true, false);
                     return;
                 })
                 .catch((err) => {
@@ -148,7 +151,7 @@ export default class CloneMolPlugin extends PluginParentClass {
                 return mergeTreeNodes(clonedTopLevelNodes, newName);
             })
             .then((mergedTreeNode: TreeNode) => {
-                mergedTreeNode.addToMainTree(this.pluginId);
+                mergedTreeNode.addToMainTree(this.pluginId, true, false);
                 return;
             })
             .catch((err) => {

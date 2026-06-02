@@ -27,6 +27,45 @@ export function saveMolModa(filename: string): Promise<undefined> {
 }
 
 /**
+ * Builds a JSON.stringify replacer that discards only genuinely circular
+ * references (an object that appears somewhere on its own ancestor path),
+ * while preserving shared references that appear in separate branches.
+ *
+ * The earlier implementation tracked every object ever visited in a single
+ * WeakSet, so any object reachable by two paths (e.g. atom objects shared
+ * between an original molecule and a clone the Align plugin derives from it)
+ * was mistaken for a cycle and dropped on its second visit. That silently
+ * stripped the cloned molecule's atoms, which then reloaded with zero
+ * components. Tracking the current path instead fixes this: siblings that
+ * share data are no longer treated as cycles.
+ *
+ * @returns {(key: string, value: any) => any}  A replacer for JSON.stringify.
+ */
+function makeCircularReplacer(): (key: string, value: any) => any {
+    // Path from the root to the value currently being serialized.
+    const ancestors: any[] = [];
+    return function (this: any, key: string, value: any): any {
+        if (typeof value !== "object" || value === null) {
+            return value;
+        }
+        // `this` is the object holding `value`. Pop entries deeper than the
+        // holder so `ancestors` reflects the live path, not every object seen.
+        while (
+            ancestors.length > 0 &&
+            ancestors[ancestors.length - 1] !== this
+        ) {
+            ancestors.pop();
+        }
+        // Drop only true cycles: `value` already on its own ancestor path.
+        if (ancestors.indexOf(value) !== -1) {
+            return undefined;
+        }
+        ancestors.push(value);
+        return value;
+    };
+}
+
+/**
  * Converts the state to a JSON string.
  * 
  * @param {any} state  The state to convert.
@@ -46,24 +85,11 @@ export function stateToJsonStr(state: any): string {
         newState[key] = key === "molecules" ? newMolData : state[key];
     }
 
- const rawCustomStyles = toRaw(customSelsAndStyles);
- if (Object.keys(rawCustomStyles).length > 0) {
-  newState["customSelsAndStyles"] = rawCustomStyles;
- }
-
-    // Custom replacer function to handle circular references
-    const seen = new WeakSet();
-    return JSON.stringify(newState, (key, value) => {
-        if (typeof value === "object" && value !== null) {
-            if (seen.has(value)) {
-                // Circular reference found, discard key or you can replace it with something else
-                // console.warn("Circular reference found in state, discarding key", key);
-                return;
-            }
-            seen.add(value);
-        }
-        return value;
-    });
+    const rawCustomStyles = toRaw(customSelsAndStyles);
+    if (Object.keys(rawCustomStyles).length > 0) {
+        newState["customSelsAndStyles"] = rawCustomStyles;
+    }
+    return JSON.stringify(newState, makeCircularReplacer());
 }
 
 /**

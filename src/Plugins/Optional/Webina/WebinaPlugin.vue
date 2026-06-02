@@ -505,6 +505,43 @@ export default class WebinaPlugin extends PluginParentClass {
     }
 
     /**
+     * Parses the receptor that was docked against into an unattached TreeNode
+     * hierarchy so it can be shown as its own molecule in the Navigator.
+     * Parsing the docked receptor itself (rather than reusing the original
+     * input node) keeps the displayed structure faithful to what Webina used,
+     * including any protein-associated compounds folded into the receptor.
+     *
+     * @param {FileInfo} receptorFileInfo  The receptor used for docking.
+     * @returns {Promise<TreeNode | void>}  The parsed top-level receptor node,
+     *     or void if it could not be parsed.
+     */
+    private _receptorFileInfoToTreeNodePromise(
+        receptorFileInfo: FileInfo
+    ): Promise<TreeNode | void> {
+        // Use a clean name; the input FileInfo's name was reassigned to a
+        // virtual-filesystem path (e.g. "/receptor_0.pdbqt") during job prep.
+        const ext = receptorFileInfo.getFileType() ?? "pdbqt";
+        const fileInfo = new FileInfo({
+            name: `receptor.${ext}`,
+            contents: receptorFileInfo.contents,
+        });
+
+        return parseAndLoadMoleculeFile({
+            fileInfo,
+            tag: this.pluginId,
+            surpressMsgs: false,
+            addToTree: false,
+        } as ILoadMolParams).then((treeNodeList: TreeNodeList | void) => {
+            if (!treeNodeList || treeNodeList.length === 0) {
+                return;
+            }
+            // The merged top-level node carries the receptor's full hierarchy
+            // (chains, plus any metals/solvent/cofactors folded in).
+            return treeNodeList.get(0);
+        });
+    }
+
+    /**
      * Converts the output pdbqt to a TreeNode.
      *
      * @param {string} title       The title of the TreeNode.
@@ -590,6 +627,24 @@ export default class WebinaPlugin extends PluginParentClass {
             );
             return;
         }
+
+        // Capture one receptor FileInfo per unique input protein so the exact
+        // structure docked against can be shown in the Navigator. Keyed by the
+        // originating protein node id to match newTreeNodesByInputProt below.
+        // Built before the input prep reassigns the receptor names (only the
+        // names are mutated; contents stay intact). In pairwise mode every
+        // pair for a given protein shares one prot FileInfo, so first-wins
+        // gives us that protein's receptor.
+        const receptorFileInfoByProtId: { [protId: string]: FileInfo } = {};
+        filePairs.forEach((filePair) => {
+            const protNode = filePair.prot?.treeNode;
+            if (
+                protNode?.id &&
+                receptorFileInfoByProtId[protNode.id] === undefined
+            ) {
+                receptorFileInfoByProtId[protNode.id] = filePair.prot;
+            }
+        });
 
         // TODO: Consider this.userArgsMixin.getUserArgsFlat() instead.
         let userArgs = [
@@ -791,6 +846,48 @@ export default class WebinaPlugin extends PluginParentClass {
                 const protTreeNode = origProtTreeNode as TreeNode;
                 const title = protTreeNode.getAncestry().get(0).title;
 
+                const isFirstPoseForProt =
+                    !newTreeNodesByInputProt[protId];
+
+                // On the first pose for a given protein, add the receptor that
+                // was docked against as its OWN top-level molecule, separate
+                // from the docking results below, so the receptor and the
+                // poses aren't conflated in the Navigator. Added before the
+                // results molecule so it appears above it.
+                if (isFirstPoseForProt) {
+                    const receptorFileInfo =
+                        receptorFileInfoByProtId[protId];
+                    if (receptorFileInfo) {
+                        const receptorNode =
+                            await this._receptorFileInfoToTreeNodePromise(
+                                receptorFileInfo
+                            );
+                        if (receptorNode) {
+                            const receptorRoot =
+                                loadHierarchicallyFromTreeNodes(
+                                    [receptorNode as TreeNode],
+                                    `${title}:docking receptor`
+                                );
+
+                            if (isTest) {
+                                receptorRoot.nodes?.terminals.forEach(
+                                    (n) => {
+                                        n.title += ":testdock";
+                                    }
+                                );
+                            }
+
+                            receptorRoot.addToMainTree(
+                                this.pluginId,
+                                true,
+                                false
+                            );
+                        }
+                    }
+                }
+
+                // The docking results (poses) go in their own top-level
+                // molecule, keyed/merged per protein as before.
                 const rootNode = loadHierarchicallyFromTreeNodes(
                     [node],
                     `${title}:docking`
@@ -804,7 +901,7 @@ export default class WebinaPlugin extends PluginParentClass {
                     });
                 }
 
-                if (!newTreeNodesByInputProt[protId]) {
+                if (isFirstPoseForProt) {
                     // Note: At this point, rootNode contains GLModel (already parsed).
                     rootNode.addToMainTree(this.pluginId, true, false);
                     newTreeNodesByInputProt[protId] = rootNode;

@@ -636,6 +636,39 @@ export class TreeNode {
     }
 
     /**
+     * Removes phantom grouping nodes from this subtree: container nodes that
+     * have ended up with no children and carry no model or region. Such nodes
+     * are misclassified as terminals by `onlyTerminal` (which treats any node
+     * lacking `.nodes` as a leaf), so they would otherwise be handed to the
+     * viewer (logging "no model or region") and could absorb the
+     * single-terminal title revision in `_applyTreePreparation`. Cascades
+     * upward so a parent emptied by pruning is removed too. The root (`this`)
+     * is never removed. Mirrors the prune pattern in ParseMoleculeFiles.ts.
+     */
+    private _pruneEmptyGroupingNodes(): void {
+        let pruned = true;
+        while (pruned) {
+            pruned = false;
+            new TreeNodeList([this]).flattened.forEach((parent: TreeNode) => {
+                if (parent.nodes) {
+                    const before = parent.nodes.length;
+                    parent.nodes = parent.nodes.filter((child: TreeNode) => {
+                        // Keep real terminals (model), region nodes, and any
+                        // container that still has children.
+                        if (child.model) return true;
+                        if (child.region) return true;
+                        if (child.nodes && child.nodes.length > 0) return true;
+                        return false;
+                    });
+                    if (parent.nodes.length < before) {
+                        pruned = true;
+                    }
+                }
+            });
+        }
+    }
+
+    /**
      * Core logic shared by both `prepareForMainTree` and `addToMainTree`.
      * Handles ID reassignment, tag propagation, visibility/selection reset,
      * and single-terminal title revision.
@@ -650,7 +683,10 @@ export class TreeNode {
         if (isTest) {
             expandAndShowAllMolsInTree();
         }
-
+        // Drop phantom grouping nodes before any further processing, so the
+        // tag/visibility passes and the title revision below operate only on
+        // real nodes (and so the viewer is never handed an empty container).
+        this._pruneEmptyGroupingNodes();
         const allNodesInSubtree = new TreeNodeList([this]).flattened;
 
         if (opts.tag) {
@@ -693,9 +729,15 @@ export class TreeNode {
             this.nodes &&
             this.nodes.terminals.length === 1
         ) {
-            this.nodes.terminals.get(0).title = `${this.title}:${
-                this.nodes.terminals.get(0).title
-            }`;
+            const soleTerminal = this.nodes.terminals.get(0);
+            const prefix = `${this.title}:`;
+            // Fold the container title into the lone terminal only once, and
+            // only for a genuine model-bearing terminal. The model check stops
+            // any stray phantom node from absorbing the title; the prefix check
+            // keeps this idempotent if the same title would be re-applied.
+            if (soleTerminal.model && !soleTerminal.title.startsWith(prefix)) {
+                soleTerminal.title = `${prefix}${soleTerminal.title}`;
+            }
         }
     }
 

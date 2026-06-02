@@ -145,7 +145,10 @@ export default class MergeMolsPlugin extends PluginParentClass {
             })
             .then((mergedTreeNode: TreeNode) => {
                 // this.$store.commit("pushToMolecules", mergedTreeNode);
-                mergedTreeNode.addToMainTree(this.pluginId);
+                // terminalNodeTitleRevisable=false: the merged name is set
+                // explicitly above; folding it into a lone terminal would
+                // accumulate across repeated merges.
+                mergedTreeNode.addToMainTree(this.pluginId, true, false);
                 return;
             })
             .catch((err) => {
