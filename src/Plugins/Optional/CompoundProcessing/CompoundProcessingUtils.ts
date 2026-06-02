@@ -47,17 +47,27 @@ export async function convertMolTextsToCompoundTree(
     const treeNodeLists = (await Promise.all(
         treeNodePromises
     )) as (void | TreeNodeList)[];
-
+    // Pair each parse result with its source compound by index *before*
+    // filtering. The promises are index-aligned with `compounds`, but a bare
+    // `.filter(undefined)` would shift that alignment whenever a parse yields
+    // nothing. Restoring the user's title by index (rather than by matching the
+    // freshly parsed title) is what makes renames survive: after the OpenBabel
+    // round-trip the parsed title reflects the converted file's name, which no
+    // longer equals a user-renamed title, so the old value-match silently
+    // failed and reverted to the original name.
     const onlyTreeNodes = treeNodeLists
-        .filter((tl): tl is TreeNodeList => tl !== undefined)
-        .map((tl) => {
+        .map((tl, i) => ({ tl, compound: compounds[i] }))
+        .filter(
+            (entry): entry is { tl: TreeNodeList; compound: FileInfo } =>
+                entry.tl !== undefined
+        )
+        .map(({ tl, compound }) => {
             let node = tl.get(0);
             if (node.nodes) {
                 // Extract the terminal compound node from the container.
                 node = node.nodes.terminals.get(0);
             }
             node.type = TreeNodeType.Compound;
-            const compound = compounds.find((c) => c.auxData === node?.title);
             if (compound && compound.treeNode !== undefined) {
                 node.title = compound.treeNode.title;
             }
