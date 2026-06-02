@@ -98,9 +98,12 @@ export async function parseUsingMolModa(
                 break;
         }
     }
-    // Load custom styles if present
+    // Load custom styles if present, restoring any toggled-off state.
     if (stateFromJson["customSelsAndStyles"]) {
-        replaceAllCustomStyles(stateFromJson["customSelsAndStyles"]);
+        replaceAllCustomStyles(
+            stateFromJson["customSelsAndStyles"],
+            stateFromJson["disabledCustomStyleNames"] || []
+        );
     }
     fixLog();
 

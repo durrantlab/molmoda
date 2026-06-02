@@ -54,6 +54,17 @@ export function isCustomStyleEnabled(name: string): boolean {
 }
 
 /**
+ * Returns the names of all custom styles currently toggled off. Exposed so the
+ * .molmoda saver can persist the disabled state; without it, reloading a saved
+ * session would lose which custom visualizations the user had hidden.
+ *
+ * @returns {string[]} The disabled custom style names.
+ */
+export function getDisabledCustomStyleNames(): string[] {
+    return Array.from(disabledCustomStyleNames);
+}
+
+/**
  * Toggles the enabled/disabled state of a custom style.
  *
  * @param {string} name The name of the custom style to toggle.
@@ -112,11 +123,18 @@ export function addCustomStyle(
 /**
  * Replaces all custom styles with a new set.
  *
- * @param {{ string: ISelAndStyle }} newStyles The new styles to apply.
+ * @param {{ [key: string]: ISelAndStyle }} newStyles  The new styles to apply.
+ * @param {string[]} [disabledNames]  Names that should be restored to the
+ *     disabled (toggled-off) state. Defaults to none, so a fresh set starts
+ *     fully enabled. Passed when reloading a saved session to reproduce the
+ *     user's prior toggle state.
  */
-export function replaceAllCustomStyles(newStyles: {
+export function replaceAllCustomStyles(
+    newStyles: {
     [key: string]: ISelAndStyle;
-}): void {
+    },
+    disabledNames: string[] = []
+): void {
     // Clear existing styles
     for (const name in customSelsAndStyles) {
         delete customSelsAndStyles[name];
@@ -125,6 +143,10 @@ export function replaceAllCustomStyles(newStyles: {
     // Add new styles
     for (const name in newStyles) {
         customSelsAndStyles[name] = newStyles[name];
+    }
+    // Restore the disabled state for any styles that were toggled off.
+    for (const name of disabledNames) {
+        disabledCustomStyleNames.add(name);
     }
     updateStylesInViewer();
 }

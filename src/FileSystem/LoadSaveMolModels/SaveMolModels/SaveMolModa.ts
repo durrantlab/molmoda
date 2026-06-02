@@ -5,7 +5,11 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { molmodaStateKeysToRetain } from "../ParseMolModels/_ParseUsingMolModa";
 import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
 import { toRaw } from "vue";
-import { customSelsAndStyles } from "@/Core/Styling/StyleManager";
+import {
+    customSelsAndStyles,
+    getDisabledCustomStyleNames,
+} from "@/Core/Styling/StyleManager";
+
 
 /**
  * Runs the job when the user wants to save in the .molmoda format.
@@ -88,6 +92,12 @@ export function stateToJsonStr(state: any): string {
     const rawCustomStyles = toRaw(customSelsAndStyles);
     if (Object.keys(rawCustomStyles).length > 0) {
         newState["customSelsAndStyles"] = rawCustomStyles;
+        // Persist which custom visualizations are toggled off so the reloaded
+        // session reproduces the same enabled/disabled state.
+        const disabledCustomStyleNames = getDisabledCustomStyleNames();
+        if (disabledCustomStyleNames.length > 0) {
+            newState["disabledCustomStyleNames"] = disabledCustomStyleNames;
+        }
     }
     return JSON.stringify(newState, makeCircularReplacer());
 }

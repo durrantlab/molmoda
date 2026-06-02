@@ -394,7 +394,11 @@ export class TreeNode {
         // You must add "visible" manually because it's a getter, not a
         // property.
         obj["visible"] = this.visible;
-
+        // Likewise, "selected" is backed by the private "_selected" field
+        // (skipped above because it starts with "_"). Without persisting it,
+        // reloaded nodes have an undefined selected state, which downstream
+        // checks treat as selected, so every molecule appears selected on load.
+        obj["selected"] = this.selected;
         return obj as ITreeNode;
     }
 
