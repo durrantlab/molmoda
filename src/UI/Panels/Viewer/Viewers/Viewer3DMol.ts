@@ -524,6 +524,12 @@ export class Viewer3DMol extends ViewerParent {
       //   this._mol3dObj.render();
       //   this._renderRequest = null;
       // });
+      // console.log(this._mol3dObj.models.map((m: any) => ({
+      //   id: m.getID?.(),
+      //   atoms: m.atoms?.length,
+      //   hasModelData: !!m.modelData,
+      //   ext: m.format,
+      // })));
       this._mol3dObj.render();
     }
 
@@ -873,7 +879,7 @@ C ${maxX} ${maxY} ${maxZ}`;
 
     return Object.entries(obj).some(([_, value]) => {
       void _;
-      
+
       if (value === "@byMolecule") {
         return true;
       }
