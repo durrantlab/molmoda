@@ -520,16 +520,24 @@ export default class ViewerPanel extends Vue {
     // regions if visible == false on the node.
     const viewer = await api.visualization.viewer;
 
+    // Only build viewer models for terminal nodes that are actually visible.
+    // Hidden nodes (e.g. compounds beyond the initial visible count) don't
+    // need a GL model, so adding one just to hide it wastes a parse and a
+    // model creation on every style pass. Skipping them here is what removes
+    // the hidden-compound re-add churn after each subsequent load.
+    const nodesNeedingModels = terminalNodes.filter(
+      (node: TreeNode) => node.visible
+    );
+
     // Partition terminal nodes into those already cached (resolved
     // synchronously) and those needing async model creation. This lets
     // us skip awaiting promises for cached nodes and process their
     // dirty-state immediately.
     const alreadyCached: TreeNode[] = [];
     const needsAddPromises: Promise<TreeNode>[] = [];
-
-    const addPromises = viewer.addTreeNodeList(terminalNodes) || [];
-    for (let i = 0; i < terminalNodes.length; i++) {
-      const node = terminalNodes.get(i);
+    const addPromises = viewer.addTreeNodeList(nodesNeedingModels) || [];
+    for (let i = 0; i < nodesNeedingModels.length; i++) {
+      const node = nodesNeedingModels.get(i);
       const id = node.id as string;
       // If the viewer already has this node cached, the promise from
       // addTreeNodeList is a resolved Promise.resolve(treeNode). We
@@ -543,8 +551,19 @@ export default class ViewerPanel extends Vue {
 
     // Wait only for the genuinely async model additions.
     const newlyAdded: TreeNode[] = await Promise.all(needsAddPromises);
-    const allTreeNodes = alreadyCached.concat(newlyAdded);
 
+    // Invisible terminal nodes that are dirty still need processing so any
+    // model added while they were visible gets hidden/removed. Their model,
+    // if present, is already cached from when they were shown; we add no new
+    // model for them. Invisible nodes that aren't dirty are skipped, which is
+    // what eliminates the churn for compounds that stay hidden across loads.
+    const invisibleDirtyTerminals = terminalNodes
+      .filter((node: TreeNode) => !node.visible && node.viewerDirty)
+      .toArray();
+    
+    const allTreeNodes = alreadyCached
+      .concat(newlyAdded)
+      .concat(invisibleDirtyTerminals);
     const surfacePromises: Promise<any>[] = [];
 
     // Collect visible ids from the full set.
@@ -572,6 +591,12 @@ export default class ViewerPanel extends Vue {
 
       // Clear any surfaces associated with this molecule.
       viewer.clearSurfacesOfMol(treeNode.id as string);
+      // Hiding removes the model and its surfaces, so forget the cached
+      // surface style. Otherwise _setSurfaceStyle, on the next show, sees an
+      // unchanged cached selection and takes the "update existing surface"
+      // path -- but there is no surface to update (it was cleared here), so
+      // the molecule comes back without its surface.
+      delete this.previousSurfaceStylesCache[treeNode.id as string];
     }
 
     for (const treeNode of visibleDirtyNodes) {
