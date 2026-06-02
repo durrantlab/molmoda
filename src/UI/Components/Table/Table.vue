@@ -650,23 +650,30 @@ export default class Table extends Vue {
     /**
      * Runs when the row is clicked. Emits "rowClicked" event.
      *
-     * @param {number} rowIdx  The index of the row that was clicked.
+     * @param {number} rowIdx  Absolute index into displayedRows (the filtered
+     *                         subset when a filter is active, otherwise every
+     *                         row). The template builds this from
+     *                         virtualWindow, whose rows are sliced from
+     *                         displayedRows, so it must be resolved against the
+     *                         same array. Resolving against tableDataToUse.rows
+     *                         (the unfiltered set) selected the wrong molecule
+     *                         whenever a filter was applied.
      * @param {string} cellTxt The text of the cell that was clicked.
      */
     async rowClicked(rowIdx: number, cellTxt?: string) {
-        if (this.tableDataToUse === undefined) {
+        const clickedRow = this.displayedRows[rowIdx];
+        if (clickedRow === undefined) {
             return;
         }
 
         // move meta data to top level for convenience.
         let toEmit = {
-            ...this.tableDataToUse.rows[rowIdx],
+            ...clickedRow,
         };
-
-        if (this.tableDataToUse.rows[rowIdx].metaData.metaData) {
+        if (clickedRow.metaData.metaData) {
             toEmit = {
                 ...toEmit,
-                ...this.tableDataToUse.rows[rowIdx].metaData.metaData,
+                ...clickedRow.metaData.metaData,
             };
             if (toEmit.metaData) {
                 delete toEmit.metaData;
