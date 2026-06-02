@@ -367,13 +367,13 @@ export class Viewer3DMol extends ViewerParent {
     });
 
     if (newMol.atoms.length === 0) {
-      // Sometimes, the way things are parsed, you can have a segment that
-      // contains ONLY altlocs. These are removed by 3dmoljs, resulting in
-      // a molecule with no atoms. That causes an error with rendering. So
-      // let's just remove them here.
-      this._mol3dObj.models = this._mol3dObj.models.filter(
-        (m: any) => m.atoms.length > 0,
-      );
+      // Remove the empty model through 3Dmol's own removeModel API rather
+      // than reassigning this._mol3dObj.models. Swapping the array out from
+      // under 3Dmol leaves its internal model id/index bookkeeping pointing
+      // at the old collection, so zoomTo (which resolves a numeric `model`
+      // selector by indexing that collection) later reads an out-of-range
+      // entry and fails. removeModel keeps that bookkeeping consistent.
+      this._mol3dObj.removeModel(newMol);
     }
 
     // Remove all styles
@@ -596,19 +596,22 @@ export class Viewer3DMol extends ViewerParent {
     if (models.length === 0 && regions.length === 0) {
       return;
     }
-
-    // Resolve each model's ID via getID() when available, falling back to
-    // .id. 3Dmol's zoomTo dereferences these IDs internally via
-    // getAtomsFromSel; an undefined entry causes a TypeError deep in the
-    // library, so we filter aggressively here.
-    const modelIdsToZoom: any[] = [];
+    // 3Dmol's selector treats a numeric `model` entry as a direct index into
+    // this._mol3dObj.models. getID() is a creation-order id that drifts past
+    // the live array length once models are removed (e.g. hidden compounds),
+    // and passing the GLModel object instead makes 3Dmol deep-copy the
+    // selection, recursing through the model's circular atom/bond graph until
+    // the stack overflows. So resolve each model to its CURRENT index in the
+    // live models array, which is always in range and is a plain number.
+    const modelIndexByObj = new Map<GLModel, number>();
+    (this._mol3dObj.models as GLModel[]).forEach((m: GLModel, idx: number) => {
+      modelIndexByObj.set(m, idx);
+    });
+    const modelIdsToZoom: number[] = [];
     for (const m of models) {
-      const resolvedId =
-        typeof (m as any).getID === "function"
-          ? (m as any).getID()
-          : (m as any).id;
-      if (resolvedId !== undefined && resolvedId !== null) {
-        modelIdsToZoom.push(resolvedId);
+      const idx = modelIndexByObj.get(m);
+      if (idx !== undefined) {
+        modelIdsToZoom.push(idx);
       }
     }
 
@@ -688,19 +691,14 @@ C ${maxX} ${maxY} ${maxZ}`;
         // it a valid renderable object for zooming. However, we set opacity to 0
         // so the user doesn't see these dummy atoms.
         tempModel.setStyle({}, { sphere: { radius: 0.1, opacity: 0 } });
-        // Use the model's ID for zooming
-        const id =
-          typeof tempModel.getID === "function"
-            ? tempModel.getID()
-            : tempModel.id;
-        if (id !== undefined && id !== null) {
-          modelIdsToZoom.push(id);
+        // addModel appends to the live array, so look up its current index
+        // rather than relying on getID().
+        const idx = (this._mol3dObj.models as GLModel[]).indexOf(tempModel);
+        if (idx !== -1) {
+          modelIdsToZoom.push(idx);
         }
       }
     }
-
-    // Final generation check right before issuing the animation, in case
-    // a newer zoom was requested during region bounding box computation.
     if (this._zoomGeneration !== myGeneration) {
       if (tempModel) {
         this._mol3dObj.removeModel(tempModel);
