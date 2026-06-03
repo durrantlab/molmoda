@@ -157,7 +157,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
             val: "other",
             placeHolder: "Others label...",
             description:
-                "Label to identify other compounds (inactives or decoys). The names of all compounds that are not known actives must contain this text.",
+                "Label to identify other compounds (inactives or decoys). The names of all compounds that are not known actives must contain this text. Leave blank to treat all non-active compounds as others.",
         } as IUserArgText,
         {
             id: "caseInsensitive",
@@ -248,10 +248,25 @@ export default class EvalScreenPlugin extends PluginParentClass {
     getActivesOthers(): IActivesOthers {
         const actives = this.getUserArg("activesLabel");
         const others = this.getUserArg("otherLabel");
-
+        // The active label is required; without it we have no way to identify
+        // known actives (a blank substring would match every compound).
+        if (actives.trim() === "") {
+            this.analysisVisible = false;
+            this.warnings = [
+                [
+                    "Please provide an active label to identify known-active compounds.",
+                    "danger",
+                ],
+            ];
+            return { labelScores: [], calcAnalysis: false };
+        }
+        // A blank others label means "everything that isn't an active," so
+        // users don't have to label decoys/negatives explicitly.
+        const othersBlank = others.trim() === "";
         const matchingActives = this.dockedCompoundsWithSubstr(actives);
-        const matchingOthers = this.dockedCompoundsWithSubstr(others);
-
+        const matchingOthers = othersBlank
+            ? this.dockedCompoundsWithSubstr(actives, true)
+            : this.dockedCompoundsWithSubstr(others);
         const matchingActiveTitles = new Set(
             matchingActives.map((node) => node.title) as string[]
         );
@@ -263,6 +278,12 @@ export default class EvalScreenPlugin extends PluginParentClass {
         const otherScores = this.getScores(matchingOthers);
 
         this.warnings = [];
+        // Brief pointer to the blank-label shortcut, appended to warnings and
+        // errors. Omitted when the label is already blank, where the
+        // suggestion would be meaningless.
+        const blankOthersHint = othersBlank
+            ? ""
+            : " (Leave blank to treat all non-active compounds as others.)";
         let calcAnalysis = true;
 
         if (activeScores.length === 0) {
@@ -276,10 +297,13 @@ export default class EvalScreenPlugin extends PluginParentClass {
 
         if (otherScores.length === 0) {
             this.analysisVisible = false;
-            this.warnings.push([
-                `No compounds found that contain the other label "${others}".`,
-                "danger",
-            ]);
+            // In blank-label mode an empty "others" set means every compound
+            // matched the active label, so the generic message would be
+            // misleading.
+            const noOthersMsg = othersBlank
+                ? `All compounds match the active label "${actives}", so there are no other (inactive or decoy) compounds to evaluate.`
+                : `No compounds found that contain the other label "${others}".${blankOthersHint}`;
+            this.warnings.push([noOthersMsg, "danger"]);
             calcAnalysis = false;
         }
 
@@ -300,7 +324,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
             this.warnings.push([
                 `${start} labeled as both active ("${actives}") and other ("${others}"). Examples: ${this.examplesSummary(
                     intersection
-                )}.`,
+                )}.${blankOthersHint}`,
                 "danger",
             ]);
             calcAnalysis = false;
@@ -337,7 +361,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
                         allCompoundsNotInActivesOrOthers
                     )}.`;
             }
-            this.warnings.push([msg, "warning"]);
+            this.warnings.push([`${msg}${blankOthersHint}`, "warning"]);
         }
 
         const activesLabeled = activeScores.map((score: number) => {
@@ -539,14 +563,18 @@ export default class EvalScreenPlugin extends PluginParentClass {
     }
 
     /**
-     * Get compounds that have docking scores and contain a substring in their
-     * title.
+     * Get compounds that have docking scores and (optionally) contain a
+     * substring in their title.
      *
-     * @param {string} substr  The substring to search for.
-     * @returns {TreeNodeList}  The compounds that have docking scores and
-     *    contain the substring.
+     * @param {string}  substr          The substring to search for.
+     * @param {boolean} [negate=false]  If true, return compounds whose titles
+     *                                  do NOT contain the substring. Used to
+     *                                  build the decoy/negative set from all
+     *                                  non-active compounds when the others
+     *                                  label is left blank.
+     * @returns {TreeNodeList}  The matching compounds with docking scores.
      */
-    dockedCompoundsWithSubstr(substr: string): TreeNodeList {
+    dockedCompoundsWithSubstr(substr: string, negate = false): TreeNodeList {
         const compounds = this.compoundsWithDockingScores;
         const caseInsensitive = this.getUserArg("caseInsensitive");
 
@@ -558,7 +586,8 @@ export default class EvalScreenPlugin extends PluginParentClass {
             const title = caseInsensitive
                 ? node.title.toLowerCase()
                 : node.title;
-            return title.includes(substr);
+            const matches = title.includes(substr);
+            return negate ? !matches : matches;
         });
     }
 

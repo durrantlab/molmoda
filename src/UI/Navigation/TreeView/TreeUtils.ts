@@ -522,12 +522,21 @@ function getChain(treeNode: TreeNode, availableChains: string[]): string {
  *                                            new hierarchy.
  * @param {boolean} [divideCompoundsByChain]  Whether to divide compounds by
  *                                            chain. Default is true.
+ * @param {boolean} [preserveTerminalTitles]  When true, keep each terminal's
+ *                                            own title (e.g. a cofactor's
+ *                                            residue name) instead of
+ *                                            relabeling it from the container
+ *                                            title. Default is false to
+ *                                            preserve historical behavior for
+ *                                            callers passing an aggregate
+ *                                            container.
  * @returns {TreeNode} The root tree node of the loaded tree.
  */
 export function loadHierarchicallyFromTreeNodes(
     treeNodes: TreeNode[],
     rootNodeTitle: string,
-    divideCompoundsByChain = true
+    divideCompoundsByChain = true,
+    preserveTerminalTitles = false
 ): TreeNode {
     // Consider only the terminal nodes
     const allTreeNodes: TreeNode[] = [];
@@ -535,11 +544,16 @@ export function loadHierarchicallyFromTreeNodes(
         if (treeNode.nodes) {
             const terminalNodes = treeNode.nodes.terminals;
             const nodes = terminalNodes._nodes;
+            // Relabeling terminals from the container title is destructive for
+            // terminals that already carry meaningful names (chains, residue
+            // names). Skip it when the caller wants those preserved.
+            if (!preserveTerminalTitles) {
             if (nodes.length === 1) {
                 nodes[0].title = treeNode.title;
             } else {
                 for (let i = 0; i < nodes.length; i++) {
                     nodes[i].title = `${treeNode.title}:${i + 1}`;
+                    }
                 }
             }
             allTreeNodes.push(...nodes);

@@ -259,6 +259,14 @@ export default class WebinaPlugin extends PluginParentClass {
                 "Docking generates multiple poses; the top-scoring pose is often correct, but sometimes alternatives may be more accurate.",
         } as IUserArgCheckbox,
         {
+            id: "output_receptor",
+            type: UserArgType.Checkbox,
+            label: "Output receptor for debugging",
+            val: false,
+            description:
+                "Adds the processed receptor to the Navigator as its own molecule. Useful for inspecting what was actually docked against.",
+        } as IUserArgCheckbox,
+        {
             id: "webinaAdvancedParams",
             type: UserArgType.Group,
             label: "Advanced docking parameters",
@@ -672,6 +680,9 @@ export default class WebinaPlugin extends PluginParentClass {
 
         let keepOnlyBest = webinaParams["keep_only_best"];
         let maxRotBonds = webinaParams["maxRotBonds"];
+        // Capture before notParams strips it below; this isn't a Webina binary
+        // argument, just a flag for whether to surface the receptor.
+        const outputReceptor = webinaParams["output_receptor"];
 
         // A number of user args aren't actual webina parameters. Remove them.
         const notParams = [
@@ -681,6 +692,7 @@ export default class WebinaPlugin extends PluginParentClass {
             "makemolinputparams",
             "webinaAdvancedParams",
             "maxRotBonds",
+            "output_receptor",
         ];
         notParams.forEach((notParam) => {
             if (webinaParams[notParam] !== undefined) {
@@ -854,7 +866,7 @@ export default class WebinaPlugin extends PluginParentClass {
                 // from the docking results below, so the receptor and the
                 // poses aren't conflated in the Navigator. Added before the
                 // results molecule so it appears above it.
-                if (isFirstPoseForProt) {
+                if (isFirstPoseForProt && outputReceptor) {
                     const receptorFileInfo =
                         receptorFileInfoByProtId[protId];
                     if (receptorFileInfo) {
@@ -863,10 +875,16 @@ export default class WebinaPlugin extends PluginParentClass {
                                 receptorFileInfo
                             );
                         if (receptorNode) {
+                            // Preserve the parsed component titles (protein
+                            // chains, and especially folded-in cofactor residue
+                            // names) rather than overwriting them with the
+                            // "receptor" container title.
                             const receptorRoot =
                                 loadHierarchicallyFromTreeNodes(
                                     [receptorNode as TreeNode],
-                                    `${title}:docking receptor`
+                                    `${title}:docking receptor`,
+                                    true,
+                                    true
                                 );
 
                             if (isTest) {
