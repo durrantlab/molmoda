@@ -878,7 +878,10 @@ async function _fetchExtraCIDs(
     // similarity, so you will separately calculate similarity later and keep
     // the top ones. But I don't want to just get all the smiles, because that
     // seems wasteful/needlessly intense.
-    const numToFetch = Math.min(maxRecords * 5, 1000);
+    let numToFetch = Math.min(maxRecords * 10, 10000);
+    if (numToFetch < maxRecords) {
+        numToFetch = maxRecords;
+    }
 
     url = `${url}&MaxRecords=${numToFetch}`;
 
@@ -919,9 +922,14 @@ export async function fetchSimilarCompounds(
     // search for broader compounds. The UI tells the user this is
     // happening so the behavior isn't surprising.
     try {
+        // Strip stereochemistry once and reuse it for both the PubChem
+        // query and the RDKit query fingerprint. The search ignores stereo,
+        // so scoring against a stereo-bearing query molecule would compare
+        // candidates to a different molecule than the one that produced them.
+        const strippedQuerySmiles = easyStripStereoSMILES(smiles);
         const cids = await _fetchExtraCIDs(
             `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastsimilarity_2d/smiles/${encodeURIComponent(
-                easyStripStereoSMILES(smiles)
+                strippedQuerySmiles
             )}/cids/JSON?Threshold=${threshold}`,
             maxRecords
         );
@@ -947,7 +955,7 @@ export async function fetchSimilarCompounds(
         // need to do that separately. Fortunately, rdkitjs provides this
         // functionalitty.
         const rdkitjs = await dynamicImports.rdkitjs.module;
-        const queryMol = rdkitjs.get_mol(smiles);
+        const queryMol = rdkitjs.get_mol(strippedQuerySmiles);
         const queryFp = queryMol.get_morgan_fp_as_uint8array();
 
         for (const compound of compoundData) {
