@@ -1,10 +1,9 @@
 <template>
-    <Section v-bind:key="molType" :level="2" :title="titleToUse">
+    <Section :level="2" :title="titleToUse">
         <template v-slot:afterTitle>
-            <!-- First, the icon switcher to hide this mol type. -->
-            <IconSwitcher v-if="!isBindingPocket" :useFirst="isVisible" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
-                :icon2Style="{ color: 'lightgray' }" :width="24" @click="toggleVisible(molType)" :clickable="true"
-                title="Visible" tipPlacement="left" />
+            <IconSwitcher :useFirst="eyeUseFirst" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
+                :icon2Style="{ color: 'lightgray' }" :width="24" @click="onEyeClick" :clickable="true"
+                :title="eyeTitle" tipPlacement="left" />
         </template>
 
         <!-- The atoms styling section for this moltype, with optional
@@ -79,6 +78,10 @@ export default class StylesForMolType extends Vue {
     surfaceOption = SurfaceRepresentation.Hidden;
 
     selAndStyleToUse: ISelAndStyle = {};
+
+    // Remembers the pocket representation when it is hidden via the eye toggle,
+    // so the same representation can be restored. Local to this instance.
+    private _previousPocketStyle: ISelAndStyle | null = null;
 
     /** Section heading; falls back to the capitalized mol type. */
     get titleToUse(): string {
@@ -159,6 +162,71 @@ export default class StylesForMolType extends Vue {
             node.visible = this.isVisible;
             node.viewerDirty = true;
         });
+    }
+
+    /**
+     * Whether the binding-pocket layer currently draws any representation.
+     *
+     * @returns {boolean} True if the pocket style has a visible representation.
+     */
+    get bindingPocketShown(): boolean {
+        const s = this.selAndStyleToUse;
+        return !!(
+            s &&
+            (s.sphere || s.stick || s.line || s.cartoon || s.surface)
+        );
+    }
+
+    /**
+     * "Open eye" state for the section's visibility icon.
+     *
+     * @returns {boolean} True when the eye should show as open.
+     */
+    get eyeUseFirst(): boolean {
+        return this.isBindingPocket ? this.bindingPocketShown : this.isVisible;
+    }
+
+    /**
+     * Tooltip for the section's visibility icon.
+     *
+     * @returns {string} The tooltip text.
+     */
+    get eyeTitle(): string {
+        return this.isBindingPocket ? "Toggle binding pocket" : "Visible";
+    }
+
+    /**
+     * Visibility icon click. Normal sections toggle node visibility (which can
+     * make the section appear or disappear); the binding pocket instead only
+     * shows/hides its representation, leaving the section's presence tied to
+     * the protein's own visibility.
+     */
+    onEyeClick() {
+        if (this.isBindingPocket) {
+            this.toggleBindingPocketVisible();
+        } else {
+            this.toggleVisible(this.molType);
+        }
+    }
+
+    /**
+     * Show or hide the binding-pocket representation. Hiding remembers the
+     * current style so it can be restored later; showing with nothing
+     * remembered defaults to sticks.
+     */
+    toggleBindingPocketVisible() {
+        if (this.bindingPocketShown) {
+            this._previousPocketStyle = JSON.parse(
+                JSON.stringify(this.selAndStyleToUse)
+            );
+            StyleManager.setBindingPocketStyle({});
+        } else if (this._previousPocketStyle) {
+            StyleManager.setBindingPocketStyle(this._previousPocketStyle);
+        } else {
+            // Never shown before: default to a stick representation.
+            this.atomsOption = AtomsRepresentation.Stick;
+            this.updateMolecules(AtomsRepresentation.Stick);
+        }
     }
 
     /**
