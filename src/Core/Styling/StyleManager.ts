@@ -17,6 +17,7 @@ import {
     perChainToSelection,
     PocketSelectionsByNodeId,
 } from "./BindingPocket";
+import { allHooks } from "@/Api/Hooks";
 
 // These are the styles actually used. It is initially set to be the same as the
 // defaults, but it will change per user specifications.
@@ -171,6 +172,8 @@ export function getBindingPocketStyle(): ISelAndStyle {
 }
 
 export function setBindingPocketStyle(style: ISelAndStyle): void {
+    // Wire up live recomputation the first time the pocket is used.
+    _registerBindingPocketAutoUpdate();
     _bindingPocketState.style = style;
     updateStylesInViewer();
 }
@@ -185,11 +188,31 @@ function _bindingPocketStyleIsActive(): boolean {
     return !!(s.sphere || s.stick || s.line || s.cartoon || s.surface);
 }
 
+let _bindingPocketAutoUpdateRegistered = false;
+
+/**
+ * Recompute the pocket whenever the molecule set changes, so showing or hiding
+ * a protein or compound refreshes the visualization. bindingPocketSignature()
+ * tracks visibility, so this is a no-op unless the visible protein/compound set
+ * actually changed, and _ensureBindingPocketSelections short-circuits entirely
+ * while the pocket style is inactive. Registered lazily (once) to avoid a
+ * module-load side effect and to only attach when the feature is used.
+ */
+function _registerBindingPocketAutoUpdate(): void {
+    if (_bindingPocketAutoUpdateRegistered) {
+        return;
+    }
+    _bindingPocketAutoUpdateRegistered = true;
+    allHooks.onMoleculesChanged.push(() => {
+        void _ensureBindingPocketSelections();
+    });
+}
+
 /**
  * Recompute pocket residues when needed, then re-apply styles so the pocket
- * paints. Skips work when the pocket is inactive or the molecule set is
- * unchanged, so frequent style-only updates stay cheap. The distance search
- * runs after a microtask yield so the current style pass can paint first.
+ * paints. Skips work when the pocket is inactive or the visible molecule set is
+ * unchanged. The distance search runs after a microtask yield so the current
+ * style pass can paint first.
  */
 async function _ensureBindingPocketSelections(): Promise<void> {
     if (!_bindingPocketStyleIsActive()) {
@@ -207,20 +230,30 @@ async function _ensureBindingPocketSelections(): Promise<void> {
     }
 
     _pocketComputeInFlight = true;
+    let staleResult = false;
     try {
         await Promise.resolve();
         const selections = computeBindingPocketSelections(
             BINDING_POCKET_DISTANCE
         );
-        // Only commit if the molecule set has not changed mid-computation.
+        // Only commit if the visible set has not changed mid-computation.
         if (bindingPocketSignature() === signature) {
             _pocketSelectionsByNodeId = selections;
             _pocketCacheSignature = signature;
             // Re-apply; the signature now matches, so this will not recompute.
             updateStylesInViewer();
+        } else {
+            staleResult = true;
         }
     } finally {
         _pocketComputeInFlight = false;
+    }
+
+    // The visible set moved while computing, so the result was discarded.
+    // Recompute against the current set. This terminates because it returns
+    // early once the signature matches the committed cache.
+    if (staleResult) {
+        void _ensureBindingPocketSelections();
     }
 }
 
