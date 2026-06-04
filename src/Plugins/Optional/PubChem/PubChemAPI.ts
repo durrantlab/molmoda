@@ -620,6 +620,37 @@ function _parseAssaySummaryCsv(csv: string): {
     }
     return { columns, rowsByCid };
 }
+
+/**
+ * Detects PubChem's "no data" response. PubChem answers a CID list with no
+ * assay records using HTTP 404 / PUGREST.NotFound rather than an empty body,
+ * so this must be treated as an empty result, not a transport failure. The
+ * CSV path receives the error body as a string, while the JSON path receives
+ * a Fault object, so both shapes are checked.
+ *
+ * @param {any} error  The error thrown by fetcher/axios.
+ * @returns {boolean}  True if the error represents a PubChem not-found result.
+ */
+function _isPubChemNotFoundError(error: any): boolean {
+    if (error?.response?.status === 404) {
+        return true;
+    }
+    const data = error?.response?.data;
+    if (typeof data === "string") {
+        return (
+            data.includes("PUGREST.NotFound") ||
+            data.includes("No assay data found")
+        );
+    }
+    const faultCode = data?.Fault?.Code;
+    const faultMsg = data?.Fault?.Message;
+    return (
+        faultCode === "PUGREST.NotFound" ||
+        (typeof faultMsg === "string" &&
+            faultMsg.includes("No assay data found"))
+    );
+}
+
 /**
  * Batched counterpart to fetchActiveAssays. PubChem's assaysummary endpoint
  * accepts many CIDs via an HTTP POST body (cid=2244,1983,...) and answers
@@ -684,11 +715,24 @@ export async function fetchActiveAssaysBatch(
                 }
             }
         } catch (error: any) {
-            const msg =
-                error?.response?.data?.Fault?.Message ??
-                `Network issue occurred: ${error.message}`;
-            for (const cid of chunk) {
-                resultMap[cid] = { error: msg };
+            // A 404 / PUGREST.NotFound means none of the CIDs in this chunk
+            // have any assay data. That is an empty result, not a network
+            // failure, so map every CID in the chunk to the same "no active
+            // assays" message the success path uses for individually empty
+            // CIDs. Anything else is a genuine error worth surfacing.
+            if (_isPubChemNotFoundError(error)) {
+                for (const cid of chunk) {
+                    resultMap[cid] = {
+                        error: "No active assays found for the provided CID.",
+                    };
+                }
+            } else {
+                const msg =
+                    error?.response?.data?.Fault?.Message ??
+                    `Network issue occurred: ${error.message}`;
+                for (const cid of chunk) {
+                    resultMap[cid] = { error: msg };
+                }
             }
         }
         completed += chunk.length;
