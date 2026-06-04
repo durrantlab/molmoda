@@ -74,8 +74,8 @@
                             "compounds" }})
                         were active, giving an enrichment factor of
                         <strong>{{
-                            parseFloat(percentTopCompoundsActive) /
-                            parseFloat(percentTotalActives)
+                            (parseFloat(percentTopCompoundsActive) /
+                            parseFloat(percentTotalActives)).toFixed(3)
                         }}</strong>
                         (<strong>{{ percentTopCompoundsActive }}%</strong> /
                         <strong>{{ percentTotalActives }}%</strong>).
@@ -96,6 +96,7 @@ import {
 import { ITest } from "@/Testing/TestInterfaces";
 import {
     IUserArgCheckbox,
+    IUserArgMoleculeInputParams,
     IUserArgText,
     UserArg,
     UserArgType,
@@ -105,6 +106,10 @@ import { ChartRatios } from "@/UI/Components/Charts/ChartInterfaces";
 import { getMoleculesFromStore } from "@/Store/StoreExternalAccess";
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
+import {
+    MoleculeInput,
+    ProcessingMode,
+} from "@/UI/Forms/MoleculeInputParams/MoleculeInput";
 import Alert from "@/UI/Layout/Alert.vue";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "../Core/ActivityFocus/ActivityFocusUtils";
@@ -143,6 +148,27 @@ export default class EvalScreenPlugin extends PluginParentClass {
     ratio = ChartRatios.Ratio4x3;
 
     userArgDefaults: UserArg[] = [
+        {
+            id: "makemolinputparams",
+            type: UserArgType.MoleculeInputParams,
+            val: new MoleculeInput({
+                considerCompounds: true,
+                considerProteins: false,
+                // Default to the full set so evaluation spans every docked
+                // compound (actives and decoys). Most compounds are hidden
+                // after docking, so a "visible" default would silently drop
+                // them and skew the ROC/EF metrics.
+                molsToConsider: {
+                    visible: true,
+                    selected: true,
+                    hiddenAndUnselected: true,
+                },
+                // The evaluation is a single pass over the whole set, so the
+                // widget's run-count summary should read "once ... together"
+                // rather than once-per-compound.
+                processingMode: ProcessingMode.Together,
+            }),
+        } as IUserArgMoleculeInputParams,
         {
             id: "activesLabel",
             label: "",
@@ -188,7 +214,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
         return (
             (100 * this.numActives) /
             (this.numActives + this.numIactives)
-        ).toFixed(0);
+        ).toFixed(1);
     }
 
     /**
@@ -204,7 +230,7 @@ export default class EvalScreenPlugin extends PluginParentClass {
      * @returns {string}  The percent of top compounds that are actives.
      */
     get percentTopCompoundsActive(): string {
-        return ((100 * this.numActivesAtBestEF) / this.bestEFCutoff).toFixed(0);
+        return ((100 * this.numActivesAtBestEF) / this.bestEFCutoff).toFixed(1);
     }
 
     /**
@@ -548,9 +574,11 @@ export default class EvalScreenPlugin extends PluginParentClass {
         if (compounds.length === 0) {
             return `No compounds are currently loaded. ${commonMsg}`;
         }
-
-        compounds = this.compoundsWithDockingScores;
-
+        // Gate on the full docked set, not the molecule-input scope. This
+        // check runs from the menu before the popup (and its scope selector)
+        // exists, and it only decides whether the plugin can open at all; the
+        // user narrows the scope later inside the popup.
+        compounds = this._allCompoundsWithDockingScores;
         if (compounds.length === 0) {
             return `No compounds have docking scores. ${commonMsg}`;
         }
@@ -592,32 +620,68 @@ export default class EvalScreenPlugin extends PluginParentClass {
     }
 
     /**
-     * Get compounds that have docking scores.
+     * Restricts a compound list to the scope chosen in the molecule-input
+     * widget (visible, selected, or all). Mirrors the visibility/selection
+     * filtering MoleculeInput applies internally so the evaluated set matches
+     * what the widget's summary advertises.
      *
-     * @returns {TreeNodeList}  The compounds that have docking scores.
+     * @param {TreeNodeList} compounds  The compounds to filter.
+     * @returns {TreeNodeList}  The compounds within the chosen scope.
      */
-    get compoundsWithDockingScores(): TreeNodeList {
+    private _applyMolInputScope(compounds: TreeNodeList): TreeNodeList {
+        const molInput = this.getUserArg("makemolinputparams");
+        // Once the popup's action button converts this arg to FileInfos, the
+        // MoleculeInput object (and its molsToConsider) is gone; fall back to
+        // the unscoped set in that case.
+        const molsToConsider = (molInput as MoleculeInput)?.molsToConsider;
+        if (!molsToConsider) {
+            return compounds;
+        }
+        // "all" imposes no visibility/selection restriction.
+        if (molsToConsider.hiddenAndUnselected) {
+            return compounds;
+        }
+        if (molsToConsider.visible) {
+            return compounds.filters.keepVisible(true);
+        }
+        if (molsToConsider.selected) {
+            return compounds.filters.keepSelected(true);
+        }
+        return compounds;
+    }
+    /**
+     * All loaded compounds carrying docking scores, ignoring the
+     * molecule-input scope. Used by checkPluginAllowed to decide whether the
+     * plugin can open at all, independent of the visible/selected/all choice
+     * the user later makes inside the popup.
+     *
+     * @returns {TreeNodeList}  Every docked compound currently loaded.
+     */
+    private get _allCompoundsWithDockingScores(): TreeNodeList {
         const treeNodeList = getMoleculesFromStore();
-
-        let compounds = treeNodeList.flattened.filters.keepType(
+        const compounds = treeNodeList.flattened.filters.keepType(
             TreeNodeType.Compound
         );
-
         // Now just keep ones with docking scores.
-        compounds = compounds.filter((node) => {
+        return compounds.filter((node) => {
             if (!node.data) {
                 // No data. Skip.
                 return false;
             }
-
             return Object.keys(node.data)
                 .join("; ")
                 .includes("Docking Scores");
         });
-
-        return compounds;
     }
-
+    /**
+     * Get compounds that have docking scores, restricted to the scope chosen
+     * in the molecule-input widget.
+     *
+     * @returns {TreeNodeList}  The in-scope compounds that have docking scores.
+     */
+    get compoundsWithDockingScores(): TreeNodeList {
+        return this._applyMolInputScope(this._allCompoundsWithDockingScores);
+    }
     /**
      * Runs when the user presses the action button and the popup closes.
      */
