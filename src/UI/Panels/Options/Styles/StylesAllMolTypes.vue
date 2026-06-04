@@ -1,12 +1,10 @@
 <template>
     <Section title="">
-        <span v-for="selStyleForMolType in selStylesForMolTypes" v-bind:key='selStyleForMolType.molType'>
-            <StylesForMolType :selAndStyle="selStyleForMolType.selAndStyle" :molType="selStyleForMolType.molType">
+        <span v-for="section in styleSections" v-bind:key="section.key">
+            <StylesForMolType :selAndStyle="section.selAndStyle" :molType="section.molType"
+                :isBindingPocket="section.isBindingPocket" :titleOverride="section.titleOverride">
             </StylesForMolType>
         </span>
-        <StylesForMolType v-if="showBindingPocket" :selAndStyle="bindingPocketStyle" :molType="proteinType"
-            :isBindingPocket="true" titleOverride="Binding pocket">
-        </StylesForMolType>
         <Section :level="2" title="Hydrogens">
             <template v-slot:afterTitle>
                 <IconSwitcher :useFirst="hydrogenOptionComputed !== 'none'" :iconID1="['far', 'eye']"
@@ -47,6 +45,15 @@ interface ISelStyleForMolType {
     molType: TreeNodeType;
 }
 
+/** One renderable row in the Styles menu (a mol type, or the binding pocket). */
+interface IStyleSection {
+    key: string;
+    molType: TreeNodeType;
+    selAndStyle: ISelAndStyle;
+    isBindingPocket: boolean;
+    titleOverride?: string;
+}
+
 /**
  * StylesAllMolTypes component. This is the component that allows the user to
  * set style and colors on all molecule types. This is the "parent" component
@@ -69,10 +76,6 @@ export default class StylesAllMolTypes extends Vue {
 
     // Store the previous option to restore it when toggling visibility back on
     previousHydrogenOption: string | null = null;
-
-    // The pocket reuses protein styling (cartoon, secondary-structure coloring,
-    // etc.), so it is rendered as a protein-typed StylesForMolType.
-    proteinType = TreeNodeType.Protein;
 
     /**
      * The current binding-pocket style, for binding the pocket controls.
@@ -111,6 +114,70 @@ export default class StylesAllMolTypes extends Vue {
             }
         }
         return false;
+    }
+
+    /**
+     * The Styles menu rows in a fixed, consistent order: compounds, proteins,
+     * the binding pocket (when shown), then the remaining types. The order is
+     * imposed here rather than inherited from tree-traversal order, which
+     * previously made the menu sequence vary between projects.
+     *
+     * @returns {IStyleSection[]} The rows to render, in display order.
+     */
+    get styleSections(): IStyleSection[] {
+        const order: TreeNodeType[] = [
+            TreeNodeType.Compound,
+            TreeNodeType.Protein,
+            TreeNodeType.Nucleic,
+            TreeNodeType.Metal,
+            TreeNodeType.Lipid,
+            TreeNodeType.Ions,
+            TreeNodeType.Solvent,
+        ];
+
+        const byType = new Map<TreeNodeType, ISelStyleForMolType>();
+        for (const entry of this.selStylesForMolTypes) {
+            byType.set(entry.molType, entry);
+        }
+
+        const sections: IStyleSection[] = [];
+        for (const molType of order) {
+            const entry = byType.get(molType);
+            if (entry) {
+                sections.push({
+                    key: molType,
+                    molType: entry.molType,
+                    selAndStyle: entry.selAndStyle,
+                    isBindingPocket: false,
+                });
+            }
+            // The pocket is derived from proteins, so it sits directly after
+            // them (independent of whether a protein row was rendered).
+            if (molType === TreeNodeType.Protein && this.showBindingPocket) {
+                sections.push({
+                    key: "binding-pocket",
+                    molType: TreeNodeType.Protein,
+                    selAndStyle: this.bindingPocketStyle,
+                    isBindingPocket: true,
+                    titleOverride: "Binding pocket",
+                });
+            }
+        }
+
+        // Defensive: surface any visible type not in the explicit order so it
+        // is never silently dropped from the menu.
+        for (const entry of this.selStylesForMolTypes) {
+            if (!order.includes(entry.molType)) {
+                sections.push({
+                    key: entry.molType,
+                    molType: entry.molType,
+                    selAndStyle: entry.selAndStyle,
+                    isBindingPocket: false,
+                });
+            }
+        }
+
+        return sections;
     }
 
     /**

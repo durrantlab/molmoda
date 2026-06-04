@@ -10,7 +10,7 @@ import * as api from "@/Api/";
 
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 
-import { unbondedAtomsStyle } from "@/Core/Styling/SelAndStyleDefinitions";
+import { unbondedAtomsStyle, unbondedMetalsStyle } from "@/Core/Styling/SelAndStyleDefinitions";
 import { Vue } from "vue-facing-decorator";
 // import { ViewerNGL } from "./Viewers/ViewerNGL";
 import { Viewer3DMol } from "./Viewers/Viewer3DMol";
@@ -410,11 +410,11 @@ export default class ViewerPanel extends Vue {
       //     spheresUsed = true;
       //   }
 
-      // Regardless of specified style, anything not bound to other molecule
-      // should be visible (unless sphere, in which case already visible, or
-      // cartoon, in which case some atoms should not be visible).
+      // Bond-less atoms render nothing in a line/stick representation, so give
+      // them a fallback sphere. Non-metals stay small; metals get their van der
+      // Waals radius. The two selections are disjoint.
       if (!convertedSelAndStyle?.style.sphere && !convertedSelAndStyle?.style.cartoon) {
-        // Get the color or colorscheme entry.
+        // Find the molecule's color/colorscheme so unbonded atoms inherit it.
         let colorOrColorScheme = "";
         let colorValue = "";
 
@@ -439,9 +439,14 @@ export default class ViewerPanel extends Vue {
           }
         }
 
-        // console.log(convertedSelAndStyle?.style);
-        let styleUnbonded = JSON.parse(JSON.stringify(unbondedAtomsStyle));
-
+        /**
+         * Clone an unbonded fallback style, apply the inherited color and any
+         * selection highlight, then push it to the viewer for this molecule.
+         *
+         * @param {ISelAndStyle} baseStyle The unbonded style template to apply.
+         */
+        const applyUnbondedStyle = (baseStyle: ISelAndStyle) => {
+          let styleUnbonded = JSON.parse(JSON.stringify(baseStyle));
         if (colorOrColorScheme !== "") {
           // Add color to unbonded style
           for (let key in styleUnbonded) {
@@ -458,20 +463,25 @@ export default class ViewerPanel extends Vue {
         // atoms are visible.
         const selectedStyle = this._changeStyleIfSelected(treeNode, styleUnbonded);
 
-        convertedSelAndStyle = api.visualization.viewerObj?.convertSelectionAndStyle(
+          const converted = api.visualization.viewerObj?.convertSelectionAndStyle(
           selectedStyle,
           treeNode
         );
 
         api.visualization.viewerObj?.setMolecularStyle(
           treeNode.id as string,
-          convertedSelAndStyle?.selection,
-          convertedSelAndStyle?.style,
+            converted?.selection,
+            converted?.style,
           true
         );
+        };
+
+        applyUnbondedStyle(unbondedAtomsStyle);
+        applyUnbondedStyle(unbondedMetalsStyle);
       }
     }
   }
+
   /**
    * Update the styles of the molecules.
    *

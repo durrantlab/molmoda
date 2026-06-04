@@ -1,14 +1,28 @@
 import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { ISelAndStyle } from "./SelAndStyleInterfaces";
 import { colorDefinitionNameToScheme } from "./Colors/ColorSchemeDefinitions";
+import { metalSel } from "@/FileSystem/LoadSaveMolModels/Types/ComponentSelections";
 
 export const unbondedAtomsStyle: ISelAndStyle = {
+    // Bond-less non-metal atoms (lone ions, disconnected atoms). Kept as small
+    // fixed-radius spheres so they read as dots in line/stick views.
     selection: {
         bonds: 0,
+        not: { elem: metalSel.elem },
     },
     sphere: {
         radius: 0.5,
     },
+};
+
+export const unbondedMetalsStyle: ISelAndStyle = {
+    // Bond-less metal atoms render at their per-element van der Waals radius (no
+    // fixed radius), matching the dedicated Metals styling.
+    selection: {
+        bonds: 0,
+        elem: metalSel.elem,
+    },
+    sphere: {},
 };
 
 const _sphereStyle: ISelAndStyle = {
