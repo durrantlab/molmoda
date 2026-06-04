@@ -64,6 +64,27 @@ export class Viewer3DMol extends ViewerParent {
   private _zoomTempModel: GenericModelType | null = null;
 
   /**
+   * requestAnimationFrame id of the in-flight camera tween, or null when no
+   * animation is running. We animate the camera ourselves (see _animateView)
+   * because 3Dmol's animated zoomTo/center run an untracked setTimeout loop
+   * that cannot be stopped; holding this id lets a new zoom or any viewer
+   * interaction cancel the motion cleanly.
+   */
+  private _viewTweenRAF: number | null = null;
+
+  /**
+   * Whether an animated camera motion (zoomTo/center) is currently running.
+   * Lets _cancelMotion skip work when nothing is animating, avoiding a
+   * redundant setView/render on every wheel or mousedown event.
+   */
+  private _motionInFlight = false;
+  /**
+   * Timer that clears _motionInFlight once a motion's animation duration has
+   * elapsed, since 3Dmol gives no completion callback for zoomTo/center.
+   */
+  private _motionTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
    * Removes a model from the viewer.
    *
    * @param  {string} id  The id of the model to remove.
@@ -552,6 +573,110 @@ export class Viewer3DMol extends ViewerParent {
   }
 
   /**
+   * Marks an animated camera motion as in flight for `durationMs`, so a later
+   * interaction or zoom knows there is something to cancel.
+   *
+   * @param {number} durationMs  The motion's animation duration, in ms.
+   */
+  private _beginMotion(durationMs: number): void {
+    this._motionInFlight = true;
+    if (this._motionTimer !== null) {
+      clearTimeout(this._motionTimer);
+    }
+    this._motionTimer = setTimeout(() => {
+      this._motionInFlight = false;
+      this._motionTimer = null;
+    }, durationMs);
+  }
+
+  /**
+   * Linearly interpolates two 3Dmol view arrays
+   * ([posX, posY, posZ, zoom, qx, qy, qz, qw]). Translation and zoom
+   * (indices 0-3) interpolate componentwise; the rotation quaternion
+   * (indices 4-7) uses a normalized lerp with a shortest-path sign flip.
+   * That is exact when the endpoints share an orientation, which is the
+   * usual case here since fit-to-view zooms and centering never rotate the
+   * scene.
+   *
+   * @param {number[]} a  Start view (from getView()).
+   * @param {number[]} b  End view (from getView()).
+   * @param {number}   t  Interpolation fraction in [0, 1].
+   * @returns {number[]}  The interpolated 8-element view array.
+   */
+  private _interpolateView(a: number[], b: number[], t: number): number[] {
+    const view = new Array<number>(8);
+    for (let i = 0; i < 4; i++) {
+      view[i] = a[i] + (b[i] - a[i]) * t;
+    }
+    // Flip the end quaternion's sign on a negative dot product so we take the
+    // shorter arc, then normalized-lerp the four components.
+    const dot = a[4] * b[4] + a[5] * b[5] + a[6] * b[6] + a[7] * b[7];
+    const sign = dot < 0 ? -1 : 1;
+    const qx = a[4] + (sign * b[4] - a[4]) * t;
+    const qy = a[5] + (sign * b[5] - a[5]) * t;
+    const qz = a[6] + (sign * b[6] - a[6]) * t;
+    const qw = a[7] + (sign * b[7] - a[7]) * t;
+    const len = Math.hypot(qx, qy, qz, qw) || 1;
+    view[4] = qx / len;
+    view[5] = qy / len;
+    view[6] = qz / len;
+    view[7] = qw / len;
+    return view;
+  }
+
+  /**
+   * Animates the camera from one view to another with a self-owned
+   * requestAnimationFrame loop. 3Dmol's built-in animated moves run an
+   * untracked setTimeout chain that cannot be stopped, so overlapping motions
+   * fight and jerk; because this loop stores its frame id, _cancelMotion can
+   * stop it the instant a new zoom or a user interaction occurs.
+   *
+   * @param {number[]} startView   The view to animate from.
+   * @param {number[]} endView     The view to animate to.
+   * @param {number}   durationMs  Animation length in milliseconds.
+   */
+  private _animateView(
+    startView: number[],
+    endView: number[],
+    durationMs: number,
+  ): void {
+    this._cancelMotion();
+    const start = performance.now();
+    const tick = (now: number): void => {
+      if (!this._mol3dObj) {
+        // Viewer was unloaded mid-animation; abort.
+        this._viewTweenRAF = null;
+        return;
+      }
+      let t = (now - start) / durationMs;
+      if (t >= 1) {
+        t = 1;
+      }
+      // easeInOutCubic, to mimic the smooth start/stop of 3Dmol's own zoom.
+      const eased =
+        t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      this._mol3dObj.setView(this._interpolateView(startView, endView, eased));
+      if (t < 1) {
+        this._viewTweenRAF = requestAnimationFrame(tick);
+      } else {
+        this._viewTweenRAF = null;
+      }
+    };
+    this._viewTweenRAF = requestAnimationFrame(tick);
+  }
+
+  /**
+   * Cancels any in-flight self-owned camera tween. Safe to call when nothing
+   * is animating.
+   */
+  protected _cancelMotion(): void {
+    if (this._viewTweenRAF !== null) {
+      cancelAnimationFrame(this._viewTweenRAF);
+      this._viewTweenRAF = null;
+    }
+  }
+    
+  /**
    * Zoom in on a set of models. Captures the current zoom generation from
    * the parent so that if a newer zoom is requested while the 750ms
    * animation is in flight, the temporary model cleanup from this zoom
@@ -723,7 +848,17 @@ C ${maxX} ${maxY} ${maxZ}`;
     }
 
     try {
-      this._mol3dObj.zoomTo({ model: modelIdsToZoom }, 750, true);
+      // Let 3Dmol compute the destination view instantly (duration 0 does the
+      // bounding-box math without animating), capture it, snap back to the
+      // start, then animate there with a cancelable self-owned tween. 3Dmol's
+      // animated zoomTo runs an untracked setTimeout loop that cannot be
+      // stopped, so two overlapping animated zooms fight over the camera and
+      // jerk; owning the loop is what actually fixes the bounce.
+      const startView = this._mol3dObj.getView();
+      this._mol3dObj.zoomTo({ model: modelIdsToZoom }, 0);
+      const endView = this._mol3dObj.getView();
+      this._mol3dObj.setView(startView);
+      this._animateView(startView, endView, 750);
     } catch (err) {
       // 3Dmol's zoomTo can throw if a referenced model was removed
       // between lookup and invocation (e.g. a concurrent removeObjects).
@@ -758,8 +893,18 @@ C ${maxX} ${maxY} ${maxZ}`;
    * @param  {number} z  The z coordinate.
    */
   centerOnPoint(x: number, y: number, z: number) {
+    // Stop any in-flight zoom first; a concurrent zoom and this centering
+    // motion would otherwise fight over the camera and jerk.
+    this.cancelZoom();
     // this._mol3dObj.zoomTo({ x: x, y: y, z: z }, 500, true);
-    this._mol3dObj.center({ x: x, y: y, z: z }, 500, false);
+    // Same instant-compute-then-tween approach as zoomToModels, so the
+    // centering animation is cancelable rather than an uncancelable 3Dmol
+    // setTimeout loop.
+    const startView = this._mol3dObj.getView();
+    this._mol3dObj.center({ x: x, y: y, z: z }, 0, false);
+    const endView = this._mol3dObj.getView();
+    this._mol3dObj.setView(startView);
+    this._animateView(startView, endView, 500);
   }
 
   /**
@@ -845,7 +990,20 @@ C ${maxX} ${maxY} ${maxZ}`;
 
     // Adding subtle outline makes things easier to see.
     viewer.setViewStyle({ style: "outline", width: 0.02 });
-
+    // Any direct interaction with the canvas (rotate, pan, scroll-zoom,
+    // touch) should abort an in-flight camera animation; otherwise the
+    // user's motion and the animation fight and the view jerks.
+    const canvas = viewer.getCanvas();
+    if (canvas) {
+      const cancelOnInteract = (): void => {
+        this.cancelZoom();
+      };
+      canvas.addEventListener("mousedown", cancelOnInteract);
+      canvas.addEventListener("wheel", cancelOnInteract, { passive: true });
+      canvas.addEventListener("touchstart", cancelOnInteract, {
+        passive: true,
+      });
+    }
     return this as ViewerParent;
   }
 

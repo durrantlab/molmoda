@@ -700,9 +700,29 @@ export abstract class ViewerParent {
   abstract zoomToModels(ids: string[]): void;
 
   /**
-   * Zoom in on the focused molecules. Increments the zoom generation
-   * counter so that any previously in-flight animated zoom is
-   * effectively cancelled by the concrete viewer implementation.
+   * Cancel any in-flight or pending camera zoom. Bumps the zoom generation
+   * so stale zoomToModels setups abort, and tells the concrete viewer to
+   * stop its running motion. Invoked when a new zoom is issued and on any
+   * user interaction with the viewer (rotate, pan, scroll-zoom), each of
+   * which would otherwise compete with a running animation and jerk the
+   * camera.
+   */
+  public cancelZoom(): void {
+    this._zoomGeneration++;
+    this._cancelMotion();
+  }
+
+  /**
+   * Halt any in-flight animated camera motion in the concrete viewer.
+   *
+   * @returns {void}
+   */
+  protected abstract _cancelMotion(): void;
+
+  /**
+   * Zoom in on the focused molecules. Cancels any in-flight zoom first (which
+   * also increments the zoom generation) so the new zoom does not fight a
+   * still-running animation.
    *
    * @param {string[]} visibleTerminalNodeModelsIds  The visible models. If no
    *                                                 tree nodes are labeled as
@@ -715,10 +735,9 @@ export abstract class ViewerParent {
    *                                                 terminal.
    */
   public zoomOnFocused(visibleTerminalNodeModelsIds?: string[]) {
-    // Increment generation so any in-flight zoom animation from a
-    // previous call is treated as stale and cancelled.
-    this._zoomGeneration++;
-
+    // Cancel any in-flight zoom (and bump the generation) so the new zoom
+    // does not fight a still-running animation.
+    this.cancelZoom();
     let molsToFocusIds: string[] = [];
     const allMols = getMoleculesFromStore();
     const flatNodes = allMols.flattened;
