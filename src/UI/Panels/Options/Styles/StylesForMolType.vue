@@ -1,15 +1,15 @@
 <template>
-    <Section v-bind:key="molType" :level="2" :title="capitalize(molType)">
+    <Section v-bind:key="molType" :level="2" :title="titleToUse">
         <template v-slot:afterTitle>
             <!-- First, the icon switcher to hide this mol type. -->
-            <IconSwitcher :useFirst="isVisible" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
+            <IconSwitcher v-if="!isBindingPocket" :useFirst="isVisible" :iconID1="['far', 'eye']" :iconID2="['far', 'eye-slash']"
                 :icon2Style="{ color: 'lightgray' }" :width="24" @click="toggleVisible(molType)" :clickable="true"
                 title="Visible" tipPlacement="left" />
         </template>
 
         <!-- The atoms styling section for this moltype, with optional
         colorselect. All molecule types have atoms representations. -->
-        <FormSelect :id="'atoms-' + molType" v-model="atomsOption" :options="atomsStyleOptions"
+        <FormSelect :id="'atoms-' + controlSuffix" v-model="atomsOption" :options="atomsStyleOptions"
             @onChange="updateMolecules(atomsOption)"></FormSelect>
         <ColorSchemeSelect v-if="atomsOption !== 'atoms-hidden'" v-model="selAndStyleToUse" :repName="atomsOption"
             :molType="molType" @onChange="updateMolecules(atomsOption)" />
@@ -17,7 +17,7 @@
         <!-- The protein (backbone) styling section for this moltype, with
         optional colorselect. Only if moltype is protein. -->
         <span v-if="molType === 'protein'">
-            <FormSelect :id="'protein-' + molType" v-model="backboneOption" :options="proteinStyleOptions"
+            <FormSelect :id="'protein-' + controlSuffix" v-model="backboneOption" :options="proteinStyleOptions"
                 @onChange="updateMolecules(backboneOption)"></FormSelect>
             <ColorSchemeSelect v-if="backboneOption !== 'backbone-hidden'" v-model="selAndStyleToUse" :repName="backboneOption"
                 :molType="molType" @onChange="updateMolecules(backboneOption)" />
@@ -26,7 +26,7 @@
         <!-- The surface styling section for this moltype, with optional
         colorselect. Only possible if not metal. -->
         <span v-if="molType !== 'metal'">
-            <FormSelect :id="'surface-' + molType" v-model="surfaceOption" :options="metalStyleOptions"
+            <FormSelect :id="'surface-' + controlSuffix" v-model="surfaceOption" :options="metalStyleOptions"
                 @onChange="updateMolecules(surfaceOption)"></FormSelect>
             <ColorSchemeSelect v-if="surfaceOption !== 'surface-hidden'" v-model="selAndStyleToUse" :repName="surfaceOption"
                 :molType="molType" @onChange="updateMolecules(surfaceOption)" />
@@ -68,13 +68,31 @@ import { AtomsRepresentation, BackBoneRepresentation, ISelAndStyle, Representati
 export default class StylesForMolType extends Vue {
     @Prop({ required: true }) selAndStyle!: ISelAndStyle;
     @Prop({ required: true }) molType!: TreeNodeType;
-
+    // When true, edits route to the binding-pocket style layer instead of the
+    // per-mol-type map, and the per-type visibility toggle is hidden (there is
+    // no distinct node to toggle).
+    @Prop({ default: false }) isBindingPocket!: boolean;
+    @Prop({ default: undefined }) titleOverride!: string | undefined;
     isVisible = true;
     atomsOption = AtomsRepresentation.Hidden;
     backboneOption = BackBoneRepresentation.Hidden;
     surfaceOption = SurfaceRepresentation.Hidden;
 
     selAndStyleToUse: ISelAndStyle = {};
+
+    /** Section heading; falls back to the capitalized mol type. */
+    get titleToUse(): string {
+        return this.titleOverride ?? capitalize(this.molType);
+    }
+
+    /**
+     * Suffix for control ids. The pocket reuses protein options (molType
+     * "protein"), so a distinct suffix prevents id collisions with the real
+     * protein section.
+     */
+    get controlSuffix(): string {
+        return this.isBindingPocket ? "binding-pocket" : this.molType;
+    }
 
     /**
      * Watches the selAndStyle prop and updates the local state accordingly.
@@ -215,7 +233,21 @@ export default class StylesForMolType extends Vue {
             case AtomsRepresentation.Sphere:
                 if (style.line) delete style.line;
                 if (style.stick) delete style.stick;
+                // Render space-filling spheres at the per-element van der Waals
+                // radius. 3Dmol uses the vdW radius whenever no fixed radius is
+                // set, so clear any radius carried over from a stick style.
+                if (style[rep] && style[rep]["radius"] !== undefined) {
+                    delete style[rep]["radius"];
+                }
                 break;
+        }
+
+        if (this.isBindingPocket) {
+            // Pocket residues are an independent layer over protein nodes, so
+            // route the style to the binding-pocket setter rather than the
+            // per-mol-type map (which would clobber the protein's own style).
+            StyleManager.setBindingPocketStyle(style);
+            return;
         }
 
         StyleManager.currentSelsAndStyles[this.molType] = [style];

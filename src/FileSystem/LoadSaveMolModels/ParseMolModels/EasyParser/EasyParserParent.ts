@@ -19,6 +19,23 @@ interface IBounds {
     maxZ: number;
 }
 
+/** Identifies a single residue by chain and residue index. */
+export interface IResidueId {
+    chain: string;
+    resi: number;
+}
+
+/**
+ * A spatial grid plus the parser whose atoms it indexes. Lets repeated
+ * proximity queries against one fixed atom set reuse a single grid instead of
+ * rebuilding it per query.
+ */
+export interface IProximityGrid {
+    grid: Map<string, number[]>;
+    parser: EasyParserParent;
+    distance: number;
+}
+
 /**
  * A parent class for easy parsers.
  */
@@ -301,7 +318,10 @@ export abstract class EasyParserParent {
      * @param {number} cellSize The size of each grid cell (should match query distance).
      * @returns {Map<string, number[]>} A map where keys are "x,y,z" indices and values are arrays of atom indices.
      */
-    private _buildSpatialGrid(stride: number, cellSize: number): Map<string, number[]> {
+    private _buildSpatialGrid(
+        stride: number,
+        cellSize: number
+    ): Map<string, number[]> {
         const grid = new Map<string, number[]>();
         for (let i = 0; i < this.length; i += stride) {
             const atom = this.getAtom(i);
@@ -323,26 +343,73 @@ export abstract class EasyParserParent {
         }
         return grid;
     }
+
     /**
-     * Checks if any atom in this parser is within a specified distance of any atom
-     * in another parser, optionally using strides to speed up the check.
-     * Optimized with bounding box check and early exit for distance components.
+     * Test whether (x, y, z) lies within the cutoff of any atom held in a
+     * spatial grid. The grid must use `cellSize` as its cell width so every
+     * atom within the cutoff falls in the 27 cells around the point's cell.
      *
-     * @param {EasyParserParent} otherParser    The other parser to compare
-     *                                          against.
-     * @param {number}           distance       The distance threshold in
-     *                                          Angstroms.
-     * @param {number}           [selfStride]   The step size for iterating
-     *                                          through atoms in this parser.
-     *                                          Must be >= 1. Default is 1
-     *                                          (consider all atoms).
-     * @param {number}           [otherStride]  The step size for iterating
-     *                                          through atoms in the other
-     *                                          parser. Must be >= 1. Default is
-     *                                          1 (consider all atoms).
-     * @returns {boolean} True if at least one pair of atoms (one from each
-     *          parser, considering strides) is within the specified distance,
-     *          false otherwise.
+     * Shared kernel for the grid-based proximity scans in isWithinDistance and
+     * residuesWithinDistanceOf.
+     *
+     * @param {number} x Query x coordinate.
+     * @param {number} y Query y coordinate.
+     * @param {number} z Query z coordinate.
+     * @param {Map<string, number[]>} grid Cell-key -> atom indices, from _buildSpatialGrid.
+     * @param {EasyParserParent} gridParser Parser owning the gridded atoms (for index lookup).
+     * @param {number} cellSize Grid cell width; must equal the grid's build cell size.
+     * @param {number} distanceSqThreshold Squared cutoff distance.
+     * @returns {boolean} True if any gridded atom is within the cutoff.
+     */
+    private _atomNearGriddedSet(
+        x: number,
+        y: number,
+        z: number,
+        grid: Map<string, number[]>,
+        gridParser: EasyParserParent,
+        cellSize: number,
+        distanceSqThreshold: number
+    ): boolean {
+        const cx = Math.floor(x / cellSize);
+        const cy = Math.floor(y / cellSize);
+        const cz = Math.floor(z / cellSize);
+        for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dz = -1; dz <= 1; dz++) {
+                    const cellKey = `${cx + dx},${cy + dy},${cz + dz}`;
+                    const binIndices = grid.get(cellKey);
+                    if (!binIndices) {
+                        continue;
+                    }
+                    for (const idx of binIndices) {
+                        const gAtom = gridParser.getAtom(idx);
+                        const ddx = x - (gAtom.x as number);
+                        const ddy = y - (gAtom.y as number);
+                        const ddz = z - (gAtom.z as number);
+                        if (
+                            ddx * ddx + ddy * ddy + ddz * ddz <=
+                            distanceSqThreshold
+                        ) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determine whether any atom in this parser lies within `distance` of any
+     * atom in `otherParser`. Applies a bounding-box early-out; for larger
+     * inputs it grids the bigger set and queries with the smaller, otherwise it
+     * falls back to a pruned brute-force comparison.
+     *
+     * @param {EasyParserParent} otherParser The parser to compare against.
+     * @param {number} distance The cutoff distance in Angstroms.
+     * @param {number} [selfStride] Sample every Nth atom of this parser (>= 1).
+     * @param {number} [otherStride] Sample every Nth atom of otherParser (>= 1).
+     * @returns {boolean} True if any atom pair is within the cutoff.
      */
     isWithinDistance(
         otherParser: EasyParserParent,
@@ -350,26 +417,18 @@ export abstract class EasyParserParent {
         selfStride = 1,
         otherStride = 1
     ): boolean {
-        // Validate strides
         if (selfStride < 1) {
             throw new Error("selfStride must be >= 1");
         }
         if (otherStride < 1) {
             throw new Error("otherStride must be >= 1");
         }
-
-        const distanceSqThreshold = distance * distance; // Compare squared distances
-
-        // *** Optimization 1: Bounding Box Check ***
+        const distanceSqThreshold = distance * distance;
         const bounds1 = this.getBounds(selfStride);
         const bounds2 = otherParser.getBounds(otherStride);
-
-        // If either molecule has no coordinates, they can't be close
         if (!bounds1 || !bounds2) {
             return false;
         }
-
-        // Check for non-overlap (expanded by distance)
         if (
             bounds1.maxX < bounds2.minX - distance ||
             bounds1.minX > bounds2.maxX + distance ||
@@ -378,24 +437,17 @@ export abstract class EasyParserParent {
             bounds1.maxZ < bounds2.minZ - distance ||
             bounds1.minZ > bounds2.maxZ + distance
         ) {
-            return false; // Bounding boxes are too far apart
+            return false;
         }
-        // *** End Bounding Box Check ***
-        // *** Optimization 3: Spatial Hashing ***
-        // Heuristic: If we have a lot of comparisons to make (NxM > ~5000), build a grid.
-        // We build the grid on the larger molecule to minimize the overhead of grid construction
-        // relative to the number of lookups. Actually, cost is approx (Build N) + (Query M * 27).
-        // Minimizing (N + 27M) suggests we should build the grid on the larger set (N) so we only query 27*M times.
         const count1 = Math.ceil(this.length / selfStride);
         const count2 = Math.ceil(otherParser.length / otherStride);
         if (count1 * count2 > 5000) {
-            // Identify which parser is larger to build the grid on it
+            // Grid the larger set and query with the smaller for fewer tests.
             let gridParser: EasyParserParent;
             let queryParser: EasyParserParent;
             let gridStride: number;
             let queryStride: number;
             if (count1 >= count2) {
-                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 gridParser = this;
                 gridStride = selfStride;
                 queryParser = otherParser;
@@ -403,45 +455,38 @@ export abstract class EasyParserParent {
             } else {
                 gridParser = otherParser;
                 gridStride = otherStride;
-                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 queryParser = this;
                 queryStride = selfStride;
             }
             const grid = gridParser._buildSpatialGrid(gridStride, distance);
             for (let i = 0; i < queryParser.length; i += queryStride) {
                 const qAtom = queryParser.getAtom(i);
-                if (qAtom.x === undefined || qAtom.y === undefined || qAtom.z === undefined) continue;
-                const cx = Math.floor(qAtom.x / distance);
-                const cy = Math.floor(qAtom.y / distance);
-                const cz = Math.floor(qAtom.z / distance);
-                // Check neighbors (3x3x3 block)
-                for (let dx = -1; dx <= 1; dx++) {
-                    for (let dy = -1; dy <= 1; dy++) {
-                        for (let dz = -1; dz <= 1; dz++) {
-                            const key = `${cx + dx},${cy + dy},${cz + dz}`;
-                            const binIndices = grid.get(key);
-                            if (!binIndices) continue;
-                            // Check atoms in this bin
-                            for (const idx of binIndices) {
-                                const gAtom = gridParser.getAtom(idx);
-                                const distSq =
-                                    (qAtom.x - gAtom.x!) ** 2 +
-                                    (qAtom.y - gAtom.y!) ** 2 +
-                                    (qAtom.z - gAtom.z!) ** 2;
-                                if (distSq <= distanceSqThreshold) {
-                                    return true;
-                                }
-                            }
-                        }
-                    }
+                if (
+                    qAtom.x === undefined ||
+                    qAtom.y === undefined ||
+                    qAtom.z === undefined
+                ) {
+                    continue;
+                }
+                if (
+                    this._atomNearGriddedSet(
+                        qAtom.x,
+                        qAtom.y,
+                        qAtom.z,
+                        grid,
+                        gridParser,
+                        distance,
+                        distanceSqThreshold
+                    )
+                ) {
+                    return true;
                 }
             }
             return false;
         }
-        // *** Fallback: Brute Force (Original Logic) ***
+        // Small inputs: pruned brute-force comparison.
         for (let i = 0; i < this.length; i += selfStride) {
             const atom1 = this.getAtom(i);
-            // Ensure atom1 has coordinates
             if (
                 atom1.x === undefined ||
                 atom1.y === undefined ||
@@ -449,14 +494,11 @@ export abstract class EasyParserParent {
             ) {
                 continue;
             }
-            // *** Optimization 2: Cache atom1 coordinates ***
             const x1 = atom1.x;
             const y1 = atom1.y;
             const z1 = atom1.z;
-
             for (let j = 0; j < otherParser.length; j += otherStride) {
                 const atom2 = otherParser.getAtom(j);
-                // Ensure atom2 has coordinates
                 if (
                     atom2.x === undefined ||
                     atom2.y === undefined ||
@@ -464,35 +506,114 @@ export abstract class EasyParserParent {
                 ) {
                     continue;
                 }
-                const x2 = atom2.x; // Cache atom2 coordinate
-
-                // Calculate squared distance component by component for early exit
+                const x2 = atom2.x;
                 const dx = x1 - x2;
                 const dxSq = dx * dx;
                 if (dxSq > distanceSqThreshold) {
-                    continue; // X distance alone is too large
+                    continue;
                 }
-
-                const y2 = atom2.y; // Cache atom2 coordinate
+                const y2 = atom2.y;
                 const dy = y1 - y2;
                 const dySq = dy * dy;
                 if (dxSq + dySq > distanceSqThreshold) {
-                    continue; // X + Y distance is too large
+                    continue;
                 }
-
-                const z2 = atom2.z; // Cache atom2 coordinate
+                const z2 = atom2.z;
                 const dz = z1 - z2;
                 const dzSq = dz * dz;
                 const distanceSq = dxSq + dySq + dzSq;
-
-                // Check if within threshold
                 if (distanceSq <= distanceSqThreshold) {
-                    return true; // Found a pair within distance
+                    return true;
                 }
             }
         }
+        return false;
+    }
 
-        return false; // No pairs found within distance
+    /**
+     * Build a reusable proximity grid over this parser's atoms. When querying
+     * many sets against one fixed set (e.g. every protein against all ligands),
+     * build the grid once and reuse it rather than rebuilding per query.
+     *
+     * @param distance Cutoff in Angstroms; also the grid cell width.
+     * @param stride Sample every Nth atom (>= 1).
+     * @returns A probe usable with residuesNearGrid.
+     */
+    public buildProximityGrid(distance: number, stride = 1): IProximityGrid {
+        return {
+            grid: this._buildSpatialGrid(stride, distance),
+            parser: this,
+            distance,
+        };
+    }
+
+    /**
+     * Collect the residues of this parser that have any atom within the probe's
+     * cutoff of any atom in the probe's gridded set. Once a residue qualifies,
+     * its remaining atoms are skipped.
+     *
+     * @param probe A grid built with buildProximityGrid.
+     * @returns The unique residues within the cutoff.
+     */
+    public residuesNearGrid(probe: IProximityGrid): IResidueId[] {
+        const found = new Map<string, IResidueId>();
+        if (this.length === 0) {
+            return [];
+        }
+        const distSqThreshold = probe.distance * probe.distance;
+        for (let i = 0; i < this.length; i++) {
+            const atom = this.getAtom(i);
+            if (
+                atom.x === undefined ||
+                atom.y === undefined ||
+                atom.z === undefined
+            ) {
+                continue;
+            }
+            const residueKey = `${atom.chain ?? ""}:${atom.resi}`;
+            // The residue is already in the pocket; its other atoms cannot
+            // change the outcome.
+            if (found.has(residueKey)) {
+                continue;
+            }
+            if (
+                this._atomNearGriddedSet(
+                    atom.x,
+                    atom.y,
+                    atom.z,
+                    probe.grid,
+                    probe.parser,
+                    probe.distance,
+                    distSqThreshold
+                )
+            ) {
+                found.set(residueKey, {
+                    chain: atom.chain ?? "",
+                    resi: atom.resi,
+                });
+            }
+        }
+        return Array.from(found.values());
+    }
+
+    /**
+     * Find the residues of this parser within `distance` of any atom in
+     * `otherParser`. Convenience wrapper that grids `otherParser` for a single
+     * query; for repeated queries against the same set, build the grid once
+     * with buildProximityGrid and call residuesNearGrid.
+     *
+     * @param otherParser The parser whose atoms define proximity (e.g. ligand).
+     * @param distance The cutoff distance in Angstroms.
+     * @returns The unique residues of this parser within the cutoff.
+     */
+    public residuesWithinDistanceOf(
+        otherParser: EasyParserParent,
+        distance: number
+    ): IResidueId[] {
+        if (this.length === 0 || otherParser.length === 0) {
+            return [];
+        }
+        return this.residuesNearGrid(otherParser.buildProximityGrid(distance));
     }
 
     /**

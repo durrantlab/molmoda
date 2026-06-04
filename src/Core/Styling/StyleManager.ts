@@ -10,6 +10,13 @@ import { ISelAndStyle } from "./SelAndStyleInterfaces";
 import { defaultStyles } from "./SelAndStyleDefinitions";
 import { messagesApi } from "@/Api/Messages"; // Added import
 import { reactive } from "vue"; // Import reactive
+import {
+    BINDING_POCKET_DISTANCE,
+    bindingPocketSignature,
+    computeBindingPocketSelections,
+    perChainToSelection,
+    PocketSelectionsByNodeId,
+} from "./BindingPocket";
 
 // These are the styles actually used. It is initially set to be the same as the
 // defaults, but it will change per user specifications.
@@ -151,6 +158,72 @@ export function replaceAllCustomStyles(
     updateStylesInViewer();
 }
 
+// Binding-pocket styling is applied as an independent layer over protein nodes
+// (restricted to the pocket residues), so it is held separately from the
+// per-mol-type styles rather than in currentSelsAndStyles.
+const _bindingPocketState = reactive<{ style: ISelAndStyle }>({ style: {} });
+let _pocketSelectionsByNodeId: PocketSelectionsByNodeId = {};
+let _pocketCacheSignature = "";
+let _pocketComputeInFlight = false;
+
+export function getBindingPocketStyle(): ISelAndStyle {
+    return _bindingPocketState.style;
+}
+
+export function setBindingPocketStyle(style: ISelAndStyle): void {
+    _bindingPocketState.style = style;
+    updateStylesInViewer();
+}
+
+/**
+ * A pocket layer is only worth computing/applying when it actually draws
+ * something. With the default "none" style this is false, so the feature adds
+ * negligible cost until the user enables a representation.
+ */
+function _bindingPocketStyleIsActive(): boolean {
+    const s = _bindingPocketState.style;
+    return !!(s.sphere || s.stick || s.line || s.cartoon || s.surface);
+}
+
+/**
+ * Recompute pocket residues when needed, then re-apply styles so the pocket
+ * paints. Skips work when the pocket is inactive or the molecule set is
+ * unchanged, so frequent style-only updates stay cheap. The distance search
+ * runs after a microtask yield so the current style pass can paint first.
+ */
+async function _ensureBindingPocketSelections(): Promise<void> {
+    if (!_bindingPocketStyleIsActive()) {
+        // Drop any stale cache so reactivation triggers a fresh compute.
+        if (Object.keys(_pocketSelectionsByNodeId).length > 0) {
+            _pocketSelectionsByNodeId = {};
+            _pocketCacheSignature = "";
+        }
+        return;
+    }
+
+    const signature = bindingPocketSignature();
+    if (signature === _pocketCacheSignature || _pocketComputeInFlight) {
+        return;
+    }
+
+    _pocketComputeInFlight = true;
+    try {
+        await Promise.resolve();
+        const selections = computeBindingPocketSelections(
+            BINDING_POCKET_DISTANCE
+        );
+        // Only commit if the molecule set has not changed mid-computation.
+        if (bindingPocketSignature() === signature) {
+            _pocketSelectionsByNodeId = selections;
+            _pocketCacheSignature = signature;
+            // Re-apply; the signature now matches, so this will not recompute.
+            updateStylesInViewer();
+        }
+    } finally {
+        _pocketComputeInFlight = false;
+    }
+}
+
 /**
  * Updates the styles in the viewer.
  *
@@ -214,7 +287,8 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
                         if (customSelAndStyle.moleculeId) {
                             // This style is for a specific molecule.
                             if (
-                                customSelAndStyle.moleculeId === terminalNode.id
+                                customSelAndStyle.moleculeId ===
+                                terminalNode.id
                             ) {
                                 terminalNode.styles.push(customSelAndStyle);
                             }
@@ -223,6 +297,23 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
                             terminalNode.styles.push(customSelAndStyle);
                         }
                     }
+                }
+            }
+            // Overlay the binding-pocket layer on protein nodes, restricted to
+            // this node's pocket residues. Added as an extra style so it stacks
+            // on top of the protein's own representation.
+            if (
+                molType === TreeNodeType.Protein &&
+                _bindingPocketStyleIsActive()
+            ) {
+                const perChain =
+                    _pocketSelectionsByNodeId[terminalNode.id as string];
+                if (perChain) {
+                    const pocketStyle = JSON.parse(
+                        JSON.stringify(_bindingPocketState.style)
+                    ) as ISelAndStyle;
+                    pocketStyle.selection = perChainToSelection(perChain);
+                    terminalNode.styles.push(pocketStyle);
                 }
             }
             // Mark this for rerendering in viewer.
@@ -234,4 +325,7 @@ export function updateStylesInViewer(treeNodeType?: TreeNodeType) {
     // Update all molecules. Note that this triggers reactivity
     // onTreeviewChanged() in ViewerPanel.vue.
     setStoreVar("molecules", molecules);
+    // Fire-and-forget: computes pocket residues off the critical path and
+    // re-applies styles once ready.
+    void _ensureBindingPocketSelections();
 }

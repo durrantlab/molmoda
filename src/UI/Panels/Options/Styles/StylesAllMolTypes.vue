@@ -4,6 +4,9 @@
             <StylesForMolType :selAndStyle="selStyleForMolType.selAndStyle" :molType="selStyleForMolType.molType">
             </StylesForMolType>
         </span>
+        <StylesForMolType v-if="showBindingPocket" :selAndStyle="bindingPocketStyle" :molType="proteinType"
+            :isBindingPocket="true" titleOverride="Binding pocket">
+        </StylesForMolType>
         <Section :level="2" title="Hydrogens">
             <template v-slot:afterTitle>
                 <IconSwitcher :useFirst="hydrogenOptionComputed !== 'none'" :iconID1="['far', 'eye']"
@@ -30,7 +33,7 @@ import { TreeNodeType } from "@/UI/Navigation/TreeView/TreeInterfaces";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import StylesForMolType from "./StylesForMolType.vue";
 import { HydrogenDisplayType, ISelAndStyle } from "@/Core/Styling/SelAndStyleInterfaces";
-import { currentSelsAndStyles, customSelsAndStyles, updateStylesInViewer } from "@/Core/Styling/StyleManager";
+import { currentSelsAndStyles, customSelsAndStyles, getBindingPocketStyle, updateStylesInViewer } from "@/Core/Styling/StyleManager";
 import { IUserArgOption } from "@/UI/Forms/FormFull/FormFullInterfaces";
 import IconSwitcher from "@/UI/Navigation/TitleBar/IconBar/IconSwitcher.vue";
 
@@ -66,6 +69,49 @@ export default class StylesAllMolTypes extends Vue {
 
     // Store the previous option to restore it when toggling visibility back on
     previousHydrogenOption: string | null = null;
+
+    // The pocket reuses protein styling (cartoon, secondary-structure coloring,
+    // etc.), so it is rendered as a protein-typed StylesForMolType.
+    proteinType = TreeNodeType.Protein;
+
+    /**
+     * The current binding-pocket style, for binding the pocket controls.
+     *
+     * @returns {ISelAndStyle} The pocket style layer.
+     */
+    get bindingPocketStyle(): ISelAndStyle {
+        return getBindingPocketStyle();
+    }
+
+    /**
+     * Whether to show the binding-pocket section. A pocket can only exist when
+     * there is at least one visible protein (the layer renders on protein
+     * nodes) and at least one compound (which defines the pocket geometry).
+     *
+     * @returns {boolean} True if the pocket section should be shown.
+     */
+    get showBindingPocket(): boolean {
+        const terminals = (
+            this.$store.state.molecules as TreeNodeList
+        ).filters.onlyTerminal;
+        let hasVisibleProtein = false;
+        let hasCompound = false;
+        for (let i = 0; i < terminals.length; i++) {
+            const node = terminals.get(i);
+            if (!node.model) {
+                continue;
+            }
+            if (node.type === TreeNodeType.Protein && node.visible) {
+                hasVisibleProtein = true;
+            } else if (node.type === TreeNodeType.Compound) {
+                hasCompound = true;
+            }
+            if (hasVisibleProtein && hasCompound) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Computed property for the hydrogen display option.
@@ -140,6 +186,9 @@ export default class StylesAllMolTypes extends Vue {
         for (const styleName in customSelsAndStyles) {
             customSelsAndStyles[styleName].hydrogens = hydrogenType;
         }
+
+        // Keep the pocket layer in sync with the global hydrogen setting.
+        getBindingPocketStyle().hydrogens = hydrogenType;
 
         // Trigger viewer update
         updateStylesInViewer();
