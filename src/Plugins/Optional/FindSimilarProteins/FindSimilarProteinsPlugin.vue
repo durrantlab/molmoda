@@ -502,12 +502,19 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                         referenceTitle = referenceNode.getAncestry().get(0).title;
                     } else {
                         const pdbId = referenceObj as string;
-                        referenceFileInfo = await loadPdbIdToFileInfo(pdbId);
+                        const downloadedReference =
+                            await loadPdbIdToFileInfo(pdbId);
                         referenceTitle = pdbId;
                         await this.addFileInfoToViewer({
-                            fileInfo: referenceFileInfo,
+                            fileInfo: downloadedReference,
                             tag: this.pluginId,
                         });
+                        // A downloaded reference may arrive as CIF, but the
+                        // alignment worker runs purely on PDB. Convert before
+                        // using it as the alignment template.
+                        referenceFileInfo = await this._ensurePdbFileInfo(
+                            downloadedReference
+                        );
                     }
                 }
 
@@ -547,18 +554,42 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                         }
 
                         if (align && referenceFileInfo) {
-                            const aligned = await alignFileInfos(referenceFileInfo, [
-                                mobileFileInfo,
-                            ]);
+                            // Downloaded hits may be CIF (e.g. 7H2V.cif). The
+                            // worker assumes PDB contents (mobilePdbs) and
+                            // reads its superposition back as .pdb, so convert
+                            // first to keep US-align's output round-trip valid.
+                            const pdbMobileFileInfo =
+                                await this._ensurePdbFileInfo(mobileFileInfo);
+                            if (pdbMobileFileInfo === null) {
+                                const origExt =
+                                    mobileFileInfo.getFormatInfo()
+                                        ?.primaryExt ?? "pdb";
+                                console.warn(
+                                    `Could not prepare ${pdbId} as PDB for alignment; loading unaligned structure.`
+                                );
+                                mobileFileInfo.name = `${pdbId}-failed-to-align-to-${referenceTitle}.${origExt}`;
+                            } else {
+                                const aligned = await alignFileInfos(
+                                    referenceFileInfo,
+                                    [pdbMobileFileInfo]
+                                );
                             if (aligned.length > 0) {
                                 mobileFileInfo = aligned[0];
                                 mobileFileInfo.name = `${pdbId}-aligned-to-${referenceTitle}.pdb`;
                             } else {
-                                console.warn(`Alignment failed for ${pdbId}, loading unaligned structure.`);
+                                    // US-align produced no result for this
+                                    // hit. Load it unaligned but flag the
+                                    // failure in the title so it is obvious in
+                                    // the Navigator.
+                                    console.warn(
+                                        `Alignment failed for ${pdbId}, loading unaligned structure.`
+                                    );
+                                    mobileFileInfo = pdbMobileFileInfo;
+                                    mobileFileInfo.name = `${pdbId}-failed-to-align-to-${referenceTitle}.pdb`;
+                                }
                             }
                         }
-
-                        // Check if ligands are present if required (and not already added above)
+                        
       const tempList = await parseAndLoadMoleculeFile({
                             fileInfo: mobileFileInfo,
                             tag: this.pluginId,
@@ -586,6 +617,35 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
         } finally {
             messagesApi.stopWaitSpinner(spinnerId);
         }
+    }
+
+    /**
+     * Ensures a downloaded structure is PDB-formatted before US-align uses it.
+     * loadPdbIdToFileInfo returns whatever format the PDB ID exposes, which
+     * can be CIF; the alignment worker is driven entirely through PDB strings
+     * and reads its superposition back as .pdb, so CIF input makes that read
+     * fail even when a TM-score is computed. Re-exporting through the standard
+     * parse pipeline yields dependable PDB regardless of source format.
+     *
+     * @param {FileInfo} fileInfo The downloaded structure (PDB or CIF).
+     * @returns {Promise<FileInfo | null>} A PDB FileInfo, or null if the
+     *     structure could not be parsed or converted.
+     */
+    private async _ensurePdbFileInfo(
+        fileInfo: FileInfo
+    ): Promise<FileInfo | null> {
+        if (fileInfo.getFormatInfo()?.primaryExt === "pdb") {
+            return fileInfo;
+        }
+        const parsed = await parseAndLoadMoleculeFile({
+            fileInfo,
+            tag: this.pluginId,
+            addToTree: false,
+        } as ILoadMolParams);
+        if (!parsed || parsed.length === 0) {
+            return null;
+        }
+        return parsed.get(0).toFileInfo("pdb", true);
     }
 
     /**
