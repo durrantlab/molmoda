@@ -7,7 +7,7 @@ import { IContributorCredit, ISoftwareCredit } from "../../PluginInterfaces";
 import { PluginParentClass } from "@/Plugins/Parents/PluginParentClass/PluginParentClass";
 import PluginComponent from "@/Plugins/Parents/PluginComponent/PluginComponent.vue";
 import { UserArg, IUserArgText } from "@/UI/Forms/FormFull/FormFullInterfaces";
-import { setStoreVar } from "@/Store/StoreExternalAccess";
+import { setProjectTitle } from "@/Store/StoreExternalAccess";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
@@ -59,7 +59,7 @@ export default class RenameProjectPlugin extends PluginParentClass {
    */
   onPopupDone() {
     const newTitle = this.getUserArg("newProjectTitle");
-    setStoreVar("projectTitle", newTitle);
+    setProjectTitle(newTitle);
     this.closePopup();
   }
 
@@ -87,7 +87,13 @@ export default class RenameProjectPlugin extends PluginParentClass {
         "My New Project Name",
         this.pluginId
       ),
-      afterPluginCloses: () => new TestCmdList(), // Vuex store change will be tested by tab title change which is not easy to check here.
+      // Renaming the project must propagate to document.title, which the
+      // browser surfaces via the <title> element (the tab text). Asserting on
+      // it here guards against the title-sync regression.
+      afterPluginCloses: () => new TestCmdList().waitUntilRegex(
+        "title",
+        "My New Project Name"
+      ),
     };
   }
 }

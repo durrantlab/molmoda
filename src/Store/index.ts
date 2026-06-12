@@ -14,6 +14,7 @@ import { newTreeNodeList } from "@/TreeNodes/TreeNodeMakers";
 import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
 import { incrementTreeVersion } from "@/TreeNodes/TreeCache";
 import { appName } from "@/Core/GlobalVars";
+import { updateDocumentTitle } from "@/Core/GlobalVars";
 
 const _commonMutations = {
     /**
@@ -198,10 +199,11 @@ export function setupVueXStore(): Store<any> {
     };
 
     store = createStore(storeVars);
+
     store.watch(
         (state: any) => state.projectTitle,
         (newTitle: string) => {
-            document.title = newTitle ? `${newTitle} - ${appName}` : appName;
+            updateDocumentTitle(newTitle);
         },
         { immediate: true }
     );

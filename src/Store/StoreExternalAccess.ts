@@ -2,6 +2,7 @@ import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { NameValPair } from "./StoreInterfaces";
 import { beginBatchTreeUpdate, endBatchTreeUpdate } from "@/TreeNodes/TreeCache";
 import { type TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
+import { updateDocumentTitle } from "@/Core/GlobalVars";
 
 let store: any;
 
@@ -31,6 +32,21 @@ export function setStoreVar(name: string, value: any, module = "") {
             module: module,
         } as NameValPair);
     }
+}
+
+/**
+ * Sets the project title in the store and updates the browser tab title.
+ *
+ * The store watcher also derives document.title from projectTitle, but Vue
+ * watchers flush asynchronously. Updating the tab here as well guarantees the
+ * rename is reflected immediately and gives renaming a single entry point, so
+ * future call sites stay in sync without each remembering to touch the title.
+ *
+ * @param {string} title  The new project title.
+ */
+export function setProjectTitle(title: string): void {
+    setStoreVar("projectTitle", title);
+    updateDocumentTitle(title);
 }
 
 /**

@@ -475,9 +475,14 @@ export default class Table extends Vue {
         if (this.sortColumnName !== "") {
             dataToUse.rows.sort((a, b) => {
                 const colName = this.sortColumnName as string;
-                const aVal = a[colName] as ICellValue;
-                const bVal = b[colName] as ICellValue;
-
+                // A stale sortColumnName can outlive the column it names: when
+                // tableData changes shape (a column is hidden/deleted, or the
+                // dataset is replaced with one lacking that column), the rows
+                // no longer carry that key and a[colName]/b[colName] come back
+                // undefined. Default to an empty-value cell so the comparator
+                // never dereferences undefined.
+                const aVal = (a[colName] ?? { val: "" }) as ICellValue;
+                const bVal = (b[colName] ?? { val: "" }) as ICellValue;
                 const val1 =
                     aVal.sortVal !== undefined ? aVal.sortVal : aVal.val;
                 const val2 =

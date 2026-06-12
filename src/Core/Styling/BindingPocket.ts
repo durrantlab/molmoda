@@ -30,7 +30,7 @@ interface IVisibleProteinsAndCompounds {
 
 /**
  * Collect visible protein and compound terminal nodes that carry a model.
- * Pockets are defined across the whole workspace, so nodes are not grouped by
+ * Pockets are defined across the whole project, so nodes are not grouped by
  * parent structure.
  */
 function _visibleProteinsAndCompounds(
@@ -69,11 +69,11 @@ function _residuesToPerChain(residues: IResidueId[]): IPerChainResidues {
 }
 
 /**
- * Compute binding-pocket residues for every visible protein in the workspace.
+ * Compute binding-pocket residues for every visible protein in the project.
  *
  * First pass: aggregate the atoms of all visible compounds into one set. Second
  * pass: test each visible protein against that set. Compounds and proteins are
- * compared across the whole workspace, regardless of which structure they
+ * compared across the whole project, regardless of which structure they
  * belong to.
  *
  * Optimizations: the compound set is aggregated and gridded once, then reused

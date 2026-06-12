@@ -97,3 +97,14 @@ export async function setupGlobalVars(): Promise<void> {
     console.log("Last compiled: " + appCompileTime);
 }
 
+/**
+ * Sets document.title from the current project title, appending the app name.
+ * Centralized so the store watcher and any explicit project-title setter format
+ * the browser-tab title identically, keeping the tab in sync with the active
+ * project.
+ *
+ * @param {string} projectTitle  The current project title (may be empty).
+ */
+export function updateDocumentTitle(projectTitle: string): void {
+    document.title = projectTitle ? `${projectTitle} - ${appName}` : appName;
+}
