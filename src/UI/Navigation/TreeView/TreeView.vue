@@ -35,6 +35,8 @@ import { TreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import FilterInput from "@/UI/Components/FilterInput.vue";
 import ContextMenu from "../ContextMenu/ContextMenu.vue";
 import * as api from "@/Api";
+import { hooksApi, allHooks } from "@/Api/Hooks";
+
 /**
  * TreeView component
  */
@@ -58,6 +60,10 @@ export default class TreeView extends Vue {
     scrollTop = 0;
     containerHeight = 0;
     resizeObserver: ResizeObserver | null = null;
+    // Holds the registered onMoleculesChanged hook so it can be torn down on
+    // unmount. The hooks API only exposes an add, so removal splices the array
+    // directly; without this a remounted panel would stack duplicate hooks.
+    private onMoleculesChangedHook: (() => void) | null = null;
 
     /**
      * Clears any selected molecules. This is called when the user clicks on the
@@ -311,12 +317,47 @@ export default class TreeView extends Vue {
     }
 
     /**
+     * Drops nodes from the active filter snapshot that no longer exist in the
+     * live tree. filteredTreeNodes is a one-time snapshot emitted by
+     * FilterInput, so deletions made elsewhere (e.g. the delete plugin) would
+     * otherwise linger in the filtered view until the filter is cleared.
+     * Reassigning the array triggers a re-render of the (possibly virtualized)
+     * filtered list.
+     */
+    private pruneFilteredNodes(): void {
+        if (this.filteredTreeNodes === null) {
+            return;
+        }
+        // storeMolecules.flattened is recomputed fresh here: the store watcher
+        // calls incrementTreeVersion() before firing this hook, invalidating
+        // the flattened cache.
+        const liveIds = new Set<string | undefined>(
+            (this.storeMolecules as TreeNodeList).flattened
+                .toArray()
+                .map((node: TreeNode) => node.id)
+        );
+        const pruned = this.filteredTreeNodes.filter((node: TreeNode) =>
+            liveIds.has(node.id)
+        );
+        // Only reassign when something actually dropped, so unrelated molecule
+        // changes (e.g. visibility toggles) don't force needless re-renders.
+        if (pruned.length !== this.filteredTreeNodes.length) {
+            this.filteredTreeNodes = pruned;
+        }
+    }
+
+    /**
      * Lifecycle hook: called when the component is mounted.
      */
     mounted() {
         this.setupResizeObserver();
+        // Only the root list owns the filter, so only it needs to prune the
+        // filtered snapshot when molecules change.
+        if (this.depth === 0) {
+            this.onMoleculesChangedHook = (): void => this.pruneFilteredNodes();
+            hooksApi.onMoleculesChanged(this.onMoleculesChangedHook);
+        }
     }
-
     /**
      * Lifecycle hook: called before the component is unmounted.
      */
@@ -324,6 +365,15 @@ export default class TreeView extends Vue {
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
             this.resizeObserver = null;
+        }
+        if (this.onMoleculesChangedHook) {
+            const idx = allHooks.onMoleculesChanged.indexOf(
+                this.onMoleculesChangedHook
+            );
+            if (idx !== -1) {
+                allHooks.onMoleculesChanged.splice(idx, 1);
+            }
+            this.onMoleculesChangedHook = null;
         }
     }
 }
