@@ -48,7 +48,7 @@ import * as StyleManager from "@/Core/Styling/StyleManager";
 import { defaultStyles } from "@/Core/Styling/SelAndStyleDefinitions";
 import { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import { capitalize } from "@/Core/Utils/StringUtils";
-import { AtomsRepresentation, BackBoneRepresentation, ISelAndStyle, Representation, SurfaceRepresentation } from "@/Core/Styling/SelAndStyleInterfaces";
+import { AtomsRepresentation, BackBoneRepresentation, ISelAndStyle, Representation, SurfaceRepresentation, ALLOW_LINES_REP } from "@/Core/Styling/SelAndStyleInterfaces";
 
 /**
  * StylesForMolType component. This contains all the representations (and color
@@ -129,12 +129,18 @@ export default class StylesForMolType extends Vue {
         ] as IUserArgOption[];
 
         if (this.molType !== "metal") {
-            options.push(
-                ...([
-                    { description: "Atoms: Lines", val: AtomsRepresentation.Line },
-                    { description: "Atoms: Sticks", val: AtomsRepresentation.Stick },
-                ] as IUserArgOption[])
-            );
+            // Lines are gated behind ALLOW_LINES_REP; sticks remain the
+            // preferred thin representation.
+            if (ALLOW_LINES_REP) {
+                options.push({
+                    description: "Atoms: Lines",
+                    val: AtomsRepresentation.Line,
+                } as IUserArgOption);
+            }
+            options.push({
+                description: "Atoms: Sticks",
+                val: AtomsRepresentation.Stick,
+            } as IUserArgOption);
         }
 
         options.push({

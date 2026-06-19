@@ -35,6 +35,7 @@ import {
   BackBoneRepresentation,
   SurfaceRepresentation,
   Representation,
+  ALLOW_LINES_REP,
 } from "@/Core/Styling/SelAndStyleInterfaces";
 import * as StyleManager from "@/Core/Styling/StyleManager";
 import ColorSchemeSelect from "@/UI/Panels/Options/Styles/ColorSchemeSelect.vue";
@@ -211,7 +212,10 @@ export default class AddVizualizationPlugin extends PluginParentClass {
       options: [
         { description: "Sphere", val: AtomsRepresentation.Sphere },
         { description: "Stick", val: AtomsRepresentation.Stick },
-        { description: "Line", val: AtomsRepresentation.Line },
+        // Lines are gated behind ALLOW_LINES_REP; sticks supersede them.
+        ...(ALLOW_LINES_REP
+          ? [{ description: "Line", val: AtomsRepresentation.Line }]
+          : []),
         { description: "Cartoon", val: BackBoneRepresentation.Cartoon },
         { description: "Surface", val: SurfaceRepresentation.Surface },
       ] as IUserArgOption[],
@@ -580,7 +584,10 @@ export default class AddVizualizationPlugin extends PluginParentClass {
     const representations = [
       { name: "Sphere", value: AtomsRepresentation.Sphere },
       { name: "Stick", value: AtomsRepresentation.Stick },
-      { name: "Line", value: AtomsRepresentation.Line },
+      // Only test the line representation when it is user-selectable.
+      ...(ALLOW_LINES_REP
+        ? [{ name: "Line", value: AtomsRepresentation.Line }]
+        : []),
       { name: "Cartoon", value: BackBoneRepresentation.Cartoon },
       { name: "Surface", value: SurfaceRepresentation.Surface },
     ];

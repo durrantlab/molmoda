@@ -1,5 +1,13 @@
 import { IColorScheme } from "./Colors/ColorInterfaces";
 
+/**
+ * Master switch for the "lines" atom representation. Lines are disabled in
+ * favor of sticks, but the supporting code (style handling, backward-compat
+ * detection of existing line styles) is retained so the option can be
+ * re-enabled by flipping this flag to true.
+ */
+export const ALLOW_LINES_REP = false;
+
 export enum HydrogenDisplayType {
  All = "all",
  Polar = "polar",
