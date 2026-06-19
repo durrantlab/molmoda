@@ -24,6 +24,28 @@ import { allHooks } from "@/Api/Hooks";
 export const currentSelsAndStyles: { [key in TreeNodeType]: ISelAndStyle[] } =
     JSON.parse(JSON.stringify(defaultStyles));
 
+/**
+ * Replaces the per-mol-type styles with a restored set, mutating the existing
+ * object in place (it is exported as a const, so it cannot be reassigned).
+ * Only keys present in `newStyles` are overwritten, so a type absent from a
+ * saved session keeps its default styling. This is what lets a reloaded
+ * .molmoda reproduce the user's per-component representations instead of
+ * reverting to defaults the next time updateStylesInViewer rebuilds node
+ * styles from this map.
+ *
+ * @param {Partial<Record<TreeNodeType, ISelAndStyle[]>>} newStyles  The styles
+ *     to restore, keyed by mol type.
+ */
+export function replaceAllCurrentStyles(
+    newStyles: Partial<Record<TreeNodeType, ISelAndStyle[]>>
+): void {
+    for (const key of Object.keys(newStyles) as TreeNodeType[]) {
+        if (key in currentSelsAndStyles) {
+            currentSelsAndStyles[key] = newStyles[key] as ISelAndStyle[];
+        }
+    }
+}
+
 // These are the custom styles that the user can add. They are applied to every
 // molecule.
 export const customSelsAndStyles: { [key: string]: ISelAndStyle } = reactive({

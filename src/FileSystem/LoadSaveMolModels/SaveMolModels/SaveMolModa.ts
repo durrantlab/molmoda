@@ -6,7 +6,9 @@ import { molmodaStateKeysToRetain } from "../ParseMolModels/_ParseUsingMolModa";
 import { setStoreIsDirty } from "@/Core/SaveOnClose/DirtyStore";
 import { toRaw } from "vue";
 import {
+    currentSelsAndStyles,
     customSelsAndStyles,
+    getBindingPocketStyle,
     getDisabledCustomStyleNames,
 } from "@/Core/Styling/StyleManager";
 
@@ -98,6 +100,17 @@ export function stateToJsonStr(state: any): string {
         if (disabledCustomStyleNames.length > 0) {
             newState["disabledCustomStyleNames"] = disabledCustomStyleNames;
         }
+    }
+    // Persist the per-mol-type representations the user chose. Without this,
+    // reloading reverts every component to its default style, since
+    // updateStylesInViewer rebuilds each node's styles from this map and it
+    // would otherwise be back at module defaults on load.
+    newState["currentSelsAndStyles"] = currentSelsAndStyles;
+    // Persist the binding-pocket layer only when it actually draws something,
+    // so older readers and files are unaffected when no pocket is configured.
+    const bindingPocketStyle = getBindingPocketStyle();
+    if (Object.keys(bindingPocketStyle).length > 0) {
+        newState["bindingPocketStyle"] = bindingPocketStyle;
     }
     return JSON.stringify(newState, makeCircularReplacer());
 }

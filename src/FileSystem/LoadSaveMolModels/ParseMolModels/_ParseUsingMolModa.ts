@@ -8,11 +8,15 @@ import type { ITreeNode } from "@/TreeNodes/TreeNode/TreeNode";
 import type { TreeNodeList } from "@/TreeNodes/TreeNodeList/TreeNodeList";
 import type { ILog } from "@/UI/Panels/Log/LogUtils";
 import { ViewerParent } from "@/UI/Panels/Viewer/Viewers/ViewerParent";
-import { replaceAllCustomStyles } from "@/Core/Styling/StyleManager";
 import { goldenLayout } from "@/UI/Layout/GoldenLayout/GoldenLayoutCommon";
 import { layoutApi } from "@/Api/Layout";
 import { sanitizeHtml } from "@/Core/Security/Sanitize";
 import { isMobile } from "@/Core/GlobalVars";
+import {
+    replaceAllCurrentStyles,
+    replaceAllCustomStyles,
+    setBindingPocketStyle,
+} from "@/Core/Styling/StyleManager";
 export const molmodaStateKeysToRetain = [
     "molecules",
     "log",
@@ -33,6 +37,14 @@ export async function parseUsingMolModa(
     fileInfo: FileInfo
 ): Promise<void | TreeNodeList> {
     const stateFromJson = await jsonStrToState(fileInfo.contents);
+    // Restore per-mol-type styles before adding molecules. addToMainTree
+    // triggers updateStylesInViewer, which rebuilds each node's styles from
+    // this map; restoring first keeps the loaded representations from being
+    // overwritten with module defaults. Absent in older files, where this is a
+    // no-op and the prior default-styling behavior is preserved.
+    if (stateFromJson["currentSelsAndStyles"]) {
+        replaceAllCurrentStyles(stateFromJson["currentSelsAndStyles"]);
+    }
     // Update vueX store
     for (const key of molmodaStateKeysToRetain) {
         let viewer: ViewerParent;
@@ -104,6 +116,12 @@ export async function parseUsingMolModa(
             stateFromJson["customSelsAndStyles"],
             stateFromJson["disabledCustomStyleNames"] || []
         );
+    }
+    // Restore the binding-pocket layer after molecules are present, since its
+    // residue selection is computed from the loaded protein/compound set.
+    // Older files omit this key, leaving the pocket inactive as before.
+    if (stateFromJson["bindingPocketStyle"]) {
+        setBindingPocketStyle(stateFromJson["bindingPocketStyle"]);
     }
     fixLog();
 
