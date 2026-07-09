@@ -1,17 +1,11 @@
 <template>
   <span>
-    <PluginComponent
-      v-model="open"
-      :infoPayload="infoPayload"
-      @onPopupDone="onPopupDone"
-      actionBtnTxt="Get Names"
-      @onUserArgChanged="onUserArgChanged"
-      @onMolCountsChanged="onMolCountsChanged"
-    ></PluginComponent>
+    <PluginComponent v-model="open" :infoPayload="infoPayload" @onPopupDone="onPopupDone" actionBtnTxt="Get Names"
+      @onUserArgChanged="onUserArgChanged" @onMolCountsChanged="onMolCountsChanged"></PluginComponent>
   </span>
 </template>
-  
-  <script lang="ts">
+
+<script lang="ts">
 import {
   fetchSynonyms,
   fetchCompoundsProperties,
@@ -204,8 +198,8 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
       (completed) => {
         onProgress(
           cidWeight +
-            propsWeight +
-            (completed / resolvedCids.length) * synWeight
+          propsWeight +
+          (completed / resolvedCids.length) * synWeight
         );
       }
     );
@@ -286,8 +280,8 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
   }
 }
 </script>
-  
-  <style scoped lang="scss">
+
+<style scoped lang="scss">
 .progress {
   height: 1.5rem;
 }
