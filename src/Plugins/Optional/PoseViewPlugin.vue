@@ -369,7 +369,11 @@ export default class PoseViewPlugin extends PluginParentClass {
     const defaultTest: ITest = {
       beforePluginOpens: () => new TestCmdList()
         .loadExampleMolecule()
-        .selectMoleculeInTree("Protein"),
+        .waitUntilRegex(
+          "#navigator",
+          "4WP4"
+        )
+        .selectMoleculeInTree("4WP4"),
       afterPluginCloses: () => new TestCmdList()
         .waitUntilRegex(
           "#modal-simplesvgpopup",
@@ -378,12 +382,12 @@ export default class PoseViewPlugin extends PluginParentClass {
         .waitUntilRegex("#modal-simplesvgpopup .svg-wrapper", "<svg")
         .click("#modal-simplesvgpopup .cancel-btn"),
     };
+    
+    // name: "XSS Sanitization Test",
     const xssPayloadProtein =
       "<b onclick=alert('protein-xss')>XSS Protein</b>";
     const xssPayloadCompound =
       "<i onmouseover=alert('compound-xss')>XSS Compound</i>";
-
-    // name: "XSS Sanitization Test",
     const xssTest: ITest = {
       beforePluginOpens: () => new TestCmdList()
         .loadExampleMolecule()
@@ -398,9 +402,8 @@ export default class PoseViewPlugin extends PluginParentClass {
         .click('#navigator div[data-label="Compounds"] span.rename')
         .text("#newName-renamemol-item", xssPayloadCompound)
         .pressPopupButton(".action-btn", "renamemol")
-        .waitUntilRegex("#navigator", "XSS Compound"), // Wait for rename to appear
-      // The plugin will find the visible molecules, no need to re-select
-      // them with their tricky names.
+        .waitUntilRegex("#navigator", "XSS Compound") // Wait for rename to appear
+        .selectMoleculeInTree("4WP4"),
       pluginOpen: () => new TestCmdList()
         // Inside the plugin, the MoleculeInput will automatically pick up the visible renamed nodes.
         // The action button should be enabled.

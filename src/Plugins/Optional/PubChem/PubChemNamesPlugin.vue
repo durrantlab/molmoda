@@ -122,7 +122,9 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
     }
     const lookup = await lookupCid(molFileInfo);
     if (!lookup.found) {
-      return undefined;
+      // Record the not-found notice as a name row so molecules absent from
+      // PubChem still show up in the results table instead of being dropped.
+      return this.buildNamesRow(lookup.notFoundHtml, []);
     }
 
     // Get IUPAC name and synonyms
@@ -176,6 +178,12 @@ export default class PubChemNamesPlugin extends GetPropPluginParent {
       const lookup = lookups[i];
       const mol = valid[i];
       if (!lookup.found) {
+        // Surface the not-found notice as a result row so molecules missing
+        // from PubChem still appear in the results table rather than vanishing.
+        this.recordMoleculeResult(
+          mol,
+          this.buildNamesRow(lookup.notFoundHtml, [])
+        );
         continue;
       }
       resolvedCids.push(lookup.cid);

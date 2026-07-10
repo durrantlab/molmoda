@@ -83,7 +83,9 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
     }
     const lookup = await lookupCid(molFileInfo);
     if (!lookup.found) {
-      return undefined;
+      
+      
+      return { Formula: lookup.notFoundHtml };
     }
     const properties = await fetchCompoundsProperties(lookup.cid);
     if (properties.error) {
@@ -123,8 +125,9 @@ export default class PubChemPropsPlugin extends GetPropPluginParent {
       const lookup = lookups[i];
       const mol = valid[i];
       if (!lookup.found) {
-        // Not-found state already recorded on the tree node by
-        // lookupCidsBatch; skip emitting a row for this molecule.
+        
+        
+        this.recordMoleculeResult(mol, { Formula: lookup.notFoundHtml });
         continue;
       }
       resolvedCids.push(lookup.cid);

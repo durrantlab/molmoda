@@ -118,7 +118,9 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
     }
     const lookup = await lookupCid(molFileInfo);
     if (!lookup.found) {
-      return undefined;
+      // Surface unresolved compounds as a visible row instead of dropping
+      // them; otherwise a mixed selection silently hides the misses.
+      return { "Assay 1": lookup.notFoundHtml };
     }
     const bioassayData = await fetchActiveAssays(lookup.cid);
     if (bioassayData.error) {
@@ -156,6 +158,12 @@ export default class PubChemBioassaysPlugin extends GetPropPluginParent {
     for (let i = 0; i < valid.length; i++) {
       const lookup = lookups[i];
       if (!lookup.found) {
+        // Record a "not found" row rather than skipping. formattedTableData
+        // only renders error rows when every result errored, so a skipped
+        // miss alongside a hit disappears from the summary table entirely.
+        this.recordMoleculeResult(valid[i], {
+          "Assay 1": lookup.notFoundHtml,
+        });
         continue;
       }
       resolvedCids.push(lookup.cid);
