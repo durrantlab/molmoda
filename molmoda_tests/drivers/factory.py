@@ -67,10 +67,10 @@ def make_driver(
         driver.maximize_window()
 
     elif browser == "firefox-headless":
-        input(
-            "Could get an error here (untested). Involving e.php. If so, it's because "
-            "firefox-headless doesn't send the Origin header with 'localhost' in it..."
-        )
+        # input(
+        #     "Could get an error here (untested). Involving e.php. If so, it's because "
+        #     "firefox-headless doesn't send the Origin header with 'localhost' in it..."
+        # )
         options = webdriver.FirefoxOptions()
         options.add_argument("-headless")
         options.add_argument("--width=1920")

@@ -489,6 +489,11 @@ export class TestCmdList {
      */
     public pressPopupButton(selector: string, pluginId: string): TestCmdList {
         this.click(`#modal-${pluginId} ${selector}`);
+        // Pressing a popup button typically closes or advances the modal. On
+        // Firefox the modal-backdrop lingers briefly while fading out and still
+        // intercepts pointer events, so a follow-up click (e.g. selecting a
+        // tree node) is reported as obscured. Pause to let the backdrop detach.
+        this.wait(1);
         return this;
     }
 

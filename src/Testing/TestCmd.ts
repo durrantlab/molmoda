@@ -94,14 +94,23 @@ function addTestDefaults(
         // If the plugin has a popup, add a wait after closing it to prevent
         // intercepted click errors.
         if (!plugin.noPopup) {
-            const waitCmd = new TestWaitUntilNotRegex(
-                "body",
-                'class="modal-open"'
-            ).cmd;
+            // After the modal closes, Bootstrap removes the "modal-open" class
+            // from body before the ".modal-backdrop" element finishes fading
+            // out and is detached. On Firefox the lingering backdrop still
+            // intercepts pointer events, so a subsequent menu click is reported
+            // as obscured. A brief pause lets the backdrop fade and detach on
+            // its own. The pause precedes the class check so that the injected
+            // commands never end on a Wait when they become the whole
+            // afterPluginCloses list (the trailing-Wait guard below would
+            // otherwise reject it); ordering is immaterial to correctness.
+            const waitCmds = [
+                new TestWait(1).cmd,
+                new TestWaitUntilNotRegex("body", 'class="modal-open"').cmd,
+            ];
             if (test.afterPluginCloses) {
-                test.afterPluginCloses.unshift(waitCmd);
+                test.afterPluginCloses.unshift(...waitCmds);
             } else {
-                test.afterPluginCloses = [waitCmd];
+                test.afterPluginCloses = waitCmds;
             }
         }
         // Now consider test.afterPluginCloses. If logJob, use that to wait for
