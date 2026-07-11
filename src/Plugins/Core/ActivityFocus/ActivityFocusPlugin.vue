@@ -169,9 +169,14 @@ export default class ActivityFocusPlugin extends PluginParentClass {
           //   `#selectedMode-${this.pluginId}-item`
           // )
           .setUserArg("selectedMode", Tag.Docking, this.pluginId)
-          .waitUntilRegex(
-            `#modal-${this.pluginId} .alert-info`,
-            "Focus on computational prediction"
+          // A note step (not waitUntilRegex) anchored to the alert. The tour
+          // engine waits for `.alert-info` to render before showing this step,
+          // so it still gates on the description appearing, but without the
+          // wait step's dual pollers that race when the condition is already
+          // true at highlight time.
+          .tourNote(
+            "Selecting an activity shows a short description of what it emphasizes. Here we've chosen 'Docking', which focuses on predicting protein-ligand interactions.",
+            `#modal-${this.pluginId} .alert-info`
           ),
       closePlugin: () =>
         new TestCmdList()

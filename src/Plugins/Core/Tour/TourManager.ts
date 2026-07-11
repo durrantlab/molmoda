@@ -11,6 +11,7 @@ import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { injectDriverCss, handlePopoverRender } from "./TourStyles";
 import { isElementInViewport, smoothScrollIntoView, waitForElementStability, waitForElement, isElementValueCorrect, findScrollableParent, isElementVisibleInScrollParent, smoothScrollInScrollParent } from "./TourUtils";
 import { ITourContext, findUserArgAndRefineSelector, createClickStep, createInputStep, createWaitStep, createNoteStep, createDefaultArgStep } from "./TourSteps";
+import { pluginsApi } from "@/Api/Plugins";
 
 /**
  * Manages the creation and execution of interactive tours using driver.js,
@@ -362,6 +363,11 @@ export class TourManager {
             this.isRunning = false;
             return;
         }
+        
+        if (!(await this._openPluginIfNoMenuPath(plugin))) {
+            this.isRunning = false;
+            return;
+        }
 
         const driverSteps = await this._convertTestToDriverSteps(
             testToRun,
@@ -374,6 +380,50 @@ export class TourManager {
             this.driver.drive();
         } else {
             this.isRunning = false;
+        }
+    }
+
+    /**
+     * Opens a plugin's modal directly when it has no menu path. Plugins with
+     * menuPath === null cannot be reached via menu-navigation steps, so without
+     * this the tour highlights modal elements that never render and then blocks
+     * indefinitely in waitForElement, hanging the tour.
+     *
+     * @param {PluginParentClass} plugin The plugin whose modal should be opened.
+     * @returns {Promise<boolean>} True when the modal is ready (or already open,
+     *     or not applicable); false if it could not be opened in time.
+     */
+    private async _openPluginIfNoMenuPath(
+        plugin: PluginParentClass
+    ): Promise<boolean> {
+        if (plugin.menuPath !== null || plugin.noPopup) {
+            return true;
+        }
+        const modalSelector = `#modal-${plugin.pluginId}`;
+        
+        if (document.querySelector(modalSelector)) {
+            return true;
+        }
+        pluginsApi.runPlugin(plugin.pluginId);
+        
+        
+        
+        const flatArgs = plugin.userArgsMixin.getUserArgsFlat();
+        const firstArg = flatArgs.find(
+            (arg) => arg.type !== UserArgType.Alert && arg.enabled !== false
+        );
+        const targetSelector = firstArg
+            ? `${modalSelector} #${firstArg.id}-${plugin.pluginId}-item`
+            : modalSelector;
+        try {
+            await waitForElement(targetSelector, 10000);
+            return true;
+        } catch (error) {
+            console.error(error);
+            messagesApi.popupError(
+                `Could not open the ${plugin.title} plugin for the tour. The tour will now end.`
+            );
+            return false;
         }
     }
 
