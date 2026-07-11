@@ -11,7 +11,7 @@
         <FormSelect :id="'atoms-' + controlSuffix" v-model="atomsOption" :options="atomsStyleOptions"
             @onChange="updateMolecules(atomsOption)"></FormSelect>
         <ColorSchemeSelect v-if="atomsOption !== 'atoms-hidden'" v-model="selAndStyleToUse" :repName="atomsOption"
-            :molType="molType" @onChange="updateMolecules(atomsOption)" />
+            :molType="molType" :idContext="controlSuffix" @onChange="updateMolecules(atomsOption)" />
 
         <!-- The protein (backbone) styling section for this moltype, with
         optional colorselect. Only if moltype is protein. -->
@@ -19,7 +19,7 @@
             <FormSelect :id="'protein-' + controlSuffix" v-model="backboneOption" :options="proteinStyleOptions"
                 @onChange="updateMolecules(backboneOption)"></FormSelect>
             <ColorSchemeSelect v-if="backboneOption !== 'backbone-hidden'" v-model="selAndStyleToUse" :repName="backboneOption"
-                :molType="molType" @onChange="updateMolecules(backboneOption)" />
+                :molType="molType" :idContext="controlSuffix" @onChange="updateMolecules(backboneOption)" />
         </span>
 
         <!-- The surface styling section for this moltype, with optional
@@ -28,7 +28,7 @@
             <FormSelect :id="'surface-' + controlSuffix" v-model="surfaceOption" :options="metalStyleOptions"
                 @onChange="updateMolecules(surfaceOption)"></FormSelect>
             <ColorSchemeSelect v-if="surfaceOption !== 'surface-hidden'" v-model="selAndStyleToUse" :repName="surfaceOption"
-                :molType="molType" @onChange="updateMolecules(surfaceOption)" />
+                :molType="molType" :idContext="controlSuffix" @onChange="updateMolecules(surfaceOption)" />
         </span>
     </Section>
 </template>

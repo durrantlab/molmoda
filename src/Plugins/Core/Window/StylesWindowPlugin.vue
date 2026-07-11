@@ -62,7 +62,11 @@ export default class StylesWindowPlugin extends PluginParentClass {
      * @returns {ITest[]}  The selenium test commands.
      */
     async getTests(): Promise<ITest[]> {
-        const colorSchemeSelector = "#colorscheme-colorscheme-form-item";
+        // Each color-scheme widget now renders a per-context id encoding its
+        // molecule type and representation, so the selector must match the
+        // widget that is active at each step rather than a single shared id.
+        const colorSchemeSelector = (molType: string, rep: string): string =>
+            `#colorscheme-colorscheme-${molType}-${rep}-form-item`;
 
         return [
             {
@@ -72,12 +76,12 @@ export default class StylesWindowPlugin extends PluginParentClass {
                     .selectMoleculeInTree("Compounds")
                     // Atoms Style
                     .text("#atoms-compound", "Atoms: Spheres").wait(1)
-                    .text(colorSchemeSelector, "Color by Solid").wait(1)
+                    .text(colorSchemeSelector("compound", "sphere"), "Color by Solid").wait(1)
                     .text("#atoms-compound", "Atoms: Sticks").wait(1)
-                    .text(colorSchemeSelector, "Color Carbons").wait(1)
+                    .text(colorSchemeSelector("compound", "stick"), "Color Carbons").wait(1)
                     // Surface Style
                     .text("#surface-compound", "Surface").wait(1)
-                    .text(colorSchemeSelector, "Color by Element").wait(1)
+                    .text(colorSchemeSelector("compound", "surface"), "Color by Element").wait(1)
                     // Reset to standard
                     .text("#surface-compound", "Surface: Hidden").wait(1)
                     .text("#atoms-compound", "Atoms: Sticks").wait(1)
@@ -85,19 +89,19 @@ export default class StylesWindowPlugin extends PluginParentClass {
                     // --- Test Protein Styles ---
                     // Atoms Style
                     .text("#atoms-protein", "Atoms: Spheres").wait(1)
-                    .text(colorSchemeSelector, "Color by Chain").wait(1)
+                    .text(colorSchemeSelector("protein", "sphere"), "Color by Chain").wait(1)
                     .text("#atoms-protein", "Atoms: Sticks").wait(1)
-                    .text(colorSchemeSelector, "Color by Element").wait(1)
+                    .text(colorSchemeSelector("protein", "stick"), "Color by Element").wait(1)
                     .text("#atoms-protein", "Atoms: Sticks").wait(1)
                     .text("#atoms-protein", "Atoms: Hidden").wait(1)
                     // Backbone Style
                     .text("#protein-protein", "Backbone: Cartoon").wait(1)
-                    .text(colorSchemeSelector, "Color by Spectrum").wait(1)
-                    .text(colorSchemeSelector, "Color by Chain").wait(1)
+                    .text(colorSchemeSelector("protein", "cartoon"), "Color by Spectrum").wait(1)
+                    .text(colorSchemeSelector("protein", "cartoon"), "Color by Chain").wait(1)
                     .text("#protein-protein", "Backbone: Hidden").wait(1)
                     // Surface Style
                     .text("#surface-protein", "Surface").wait(1)
-                    .text(colorSchemeSelector, "Color by Solid").wait(1)
+                    .text(colorSchemeSelector("protein", "surface"), "Color by Solid").wait(1)
                     .text("#surface-protein", "Surface: Hidden").wait(1)
                     // Hydrogens
                     .text("#hydrogens", "Polar Only").wait(1)
@@ -109,12 +113,12 @@ export default class StylesWindowPlugin extends PluginParentClass {
                     .selectMoleculeInTree("Solvent")
                     // Atoms Style
                     .text("#atoms-solvent", "Atoms: Spheres").wait(1)
-                    .text(colorSchemeSelector, "Color by Solid").wait(1)
+                    .text(colorSchemeSelector("solvent", "sphere"), "Color by Solid").wait(1)
                     .text("#atoms-solvent", "Atoms: Sticks").wait(1)
                     .text("#atoms-solvent", "Atoms: Hidden").wait(1)
                     // Surface Style
                     .text("#surface-solvent", "Surface").wait(1)
-                    .text(colorSchemeSelector, "Color by Element").wait(1)
+                    .text(colorSchemeSelector("solvent", "surface"), "Color by Element").wait(1)
                     .text("#surface-solvent", "Surface: Hidden").wait(1)
                     // Reset to standard (usually sticks or spheres for solvent)
                     .text("#atoms-solvent", "Atoms: Sticks").wait(1)

@@ -1,6 +1,6 @@
 <template>
   <div :class="cls">
-    <FormFull v-model="constructedColorForm" id="colorscheme-form" spacing="0"></FormFull>
+    <FormFull v-model="constructedColorForm" :id="formId" spacing="0"></FormFull>
   </div>
 </template>
 
@@ -49,8 +49,23 @@ export default class ColorSchemeSelect extends Vue {
   @Prop({ default: "ms-2" }) cls!: string;
   @Prop({ type: Array, default: () => [] }) excludeSchemeNames!: string[];
 
+  
+  @Prop({ default: "" }) idContext!: string;
   colorSchemeOptionsForSelect = new ColorSchemeOptionsForSelect();
 
+  /**
+   * Builds the DOM id for the embedded FormFull. The id encodes the molecule
+   * type (or a caller-supplied context) and the representation so that
+   * multiple color-scheme widgets rendered on the same panel each get a
+   * distinct id rather than all sharing one.
+   *
+   * @returns {string} A FormFull id unique to this widget's context and representation.
+   */
+  get formId(): string {
+    const context = this.idContext || this.molType;
+    return `colorscheme-${context}-${this.repName}-form`;
+  }
+  
   /**
    * Gets the color form.
    *
