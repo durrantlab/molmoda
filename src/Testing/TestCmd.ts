@@ -128,14 +128,18 @@ function addTestDefaults(
             }
         }
         // It should not end in a wait (validation).
-        if (
+        // Composite helpers such as pressPopupButton append their own trailing
+        // wait, so an author's afterPluginCloses can legitimately end in one.
+        // Strip any redundant trailing waits instead of throwing, which would
+        // abort command generation and leave the runner with no commands.
+        while (
             test.afterPluginCloses.length > 0 &&
             test.afterPluginCloses[test.afterPluginCloses.length - 1].cmd ===
                 TestCommand.Wait
         ) {
-            throw new Error("Last command cannot be a wait.");
+            test.afterPluginCloses.pop();
         }
-        // Always add a wait at the end of the test.
+
         test.afterPluginCloses.push(new TestWait(1).cmd);
     }
 }

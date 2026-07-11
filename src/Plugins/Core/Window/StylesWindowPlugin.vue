@@ -68,13 +68,27 @@ export default class StylesWindowPlugin extends PluginParentClass {
             {
                 beforePluginOpens: () => new TestCmdList().loadExampleMolecule(true).selectMoleculeInTree("Protein"),
                 pluginOpen: () => new TestCmdList()
+                    // --- Test Compound Styles ---
+                    .selectMoleculeInTree("Compounds")
+                    // Atoms Style
+                    .text("#atoms-compound", "Atoms: Spheres").wait(1)
+                    .text(colorSchemeSelector, "Color by Solid").wait(1)
+                    .text("#atoms-compound", "Atoms: Sticks").wait(1)
+                    .text(colorSchemeSelector, "Color Carbons").wait(1)
+                    // Surface Style
+                    .text("#surface-compound", "Surface").wait(1)
+                    .text(colorSchemeSelector, "Color by Element").wait(1)
+                    // Reset to standard
+                    .text("#surface-compound", "Surface: Hidden").wait(1)
+                    .text("#atoms-compound", "Atoms: Sticks").wait(1)
+
                     // --- Test Protein Styles ---
                     // Atoms Style
                     .text("#atoms-protein", "Atoms: Spheres").wait(1)
                     .text(colorSchemeSelector, "Color by Chain").wait(1)
                     .text("#atoms-protein", "Atoms: Sticks").wait(1)
                     .text(colorSchemeSelector, "Color by Element").wait(1)
-                    .text("#atoms-protein", "Atoms: Lines").wait(1)
+                    .text("#atoms-protein", "Atoms: Sticks").wait(1)
                     .text("#atoms-protein", "Atoms: Hidden").wait(1)
                     // Backbone Style
                     .text("#protein-protein", "Backbone: Cartoon").wait(1)
@@ -90,26 +104,13 @@ export default class StylesWindowPlugin extends PluginParentClass {
                     .text("#hydrogens", "Hide All").wait(1)
                     .text("#hydrogens", "Show All").wait(1)
 
-                    // --- Test Compound Styles ---
-                    .selectMoleculeInTree("Compounds")
-                    // Atoms Style
-                    .text("#atoms-compound", "Atoms: Spheres").wait(1)
-                    .text(colorSchemeSelector, "Color by Solid").wait(1)
-                    .text("#atoms-compound", "Atoms: Sticks").wait(1)
-                    .text(colorSchemeSelector, "Color Carbons").wait(1)
-                    // Surface Style
-                    .text("#surface-compound", "Surface").wait(1)
-                    .text(colorSchemeSelector, "Color by Element").wait(1)
-                    .text("#surface-compound", "Surface: Hidden").wait(1)
-                    // Reset to standard
-                    .text("#atoms-compound", "Atoms: Sticks").wait(1)
 
                     // --- Test Solvent Styles ---
                     .selectMoleculeInTree("Solvent")
                     // Atoms Style
                     .text("#atoms-solvent", "Atoms: Spheres").wait(1)
                     .text(colorSchemeSelector, "Color by Solid").wait(1)
-                    .text("#atoms-solvent", "Atoms: Lines").wait(1)
+                    .text("#atoms-solvent", "Atoms: Sticks").wait(1)
                     .text("#atoms-solvent", "Atoms: Hidden").wait(1)
                     // Surface Style
                     .text("#surface-solvent", "Surface").wait(1)
