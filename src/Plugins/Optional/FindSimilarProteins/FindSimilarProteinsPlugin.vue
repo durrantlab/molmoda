@@ -411,7 +411,15 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                 "Query Protein": Array.from(data.queries).join(", "),
             })),
         };
-
+        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
+        const alignStructures = this.getUserArg("alignStructures") as boolean;
+        // Run the download/align pass (which shows a blocking full-screen wait
+        // spinner) before opening the results popup. If the popup opens first,
+        // the spinner renders on top of it and swallows pointer events, leaving
+        // the Ok button visible but unclickable until the spinner clears.
+        if (downloadStructures) {
+            await this._downloadAndAlignStructures(allJobOutputs, alignStructures);
+        }
         messagesApi.popupTableData(
             "Similar Proteins Found",
             `Found ${sortedResults.length} unique similar proteins.`,
@@ -420,13 +428,6 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
             3,
             "similar-proteins-results"
         );
-
-        const downloadStructures = this.getUserArg("downloadStructures") as boolean;
-        const alignStructures = this.getUserArg("alignStructures") as boolean;
-
-        if (downloadStructures) {
-            await this._downloadAndAlignStructures(allJobOutputs, alignStructures);
-        }
     }
 
     /**
