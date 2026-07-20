@@ -6,9 +6,37 @@ import random
 import time
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from typing import TypedDict
 from ..drivers import allowed_threads
 from .executor import run_test, quit_all_drivers
+
+
+class _FailedSummary(TypedDict):
+    """Per-plugin accumulation of failed subjob indices for the rerun hint."""
+
+    indices: set[int]
+    no_index_failed: bool
+
+
+def _format_test_label(plugin_name: str, plugin_index: int | None) -> str:
+    """Render a test's display label using a 1-based subjob index.
+
+    The subjob index is stored 0-based internally (it indexes into the
+    plugin's test array and feeds the ``&index=`` URL param), but the CLI
+    accepts it 1-based and converts back with ``int(arg) - 1``. Formatting
+    every human-facing line 1-based keeps the report, the live status lines,
+    and the ``RUN AGAIN`` hint agreeing with what the user actually types.
+
+    Args:
+        plugin_name: The plugin id.
+        plugin_index: The 0-based subjob index, or None for a whole-plugin test.
+
+    Returns:
+        The plugin name, suffixed with ``" #N"`` (1-based) when indexed.
+    """
+    if plugin_index is None:
+        return plugin_name
+    return f"{plugin_name} #{plugin_index + 1}"
 
 
 def run_browser_suite(
@@ -58,13 +86,18 @@ def run_browser_suite(
                             # addTests: expand sub-tests into the queue.
                             remaining = result + remaining
                             continue
-
+                        label = _format_test_label(test[0], test[1])
                         print(
                             f"{result['status'][:1].upper()}{result['status'][1:]}: "
-                            f"{result['test']} {result['error']}"
+                            f"{label} {result['error']}"
                         )
-
-                        enriched = {**result, "try": try_idx + 1, "browser": browser}
+                        enriched = {
+                            **result,
+                            "try": try_idx + 1,
+                            "browser": browser,
+                            "plugin_name": test[0],
+                            "plugin_index": test[1],
+                        }
                         if result["status"] == "passed":
                             passed_tests.append(enriched)
                         else:
@@ -72,18 +105,16 @@ def run_browser_suite(
                             failed_tests.append(enriched)
 
                     except Exception as e:
-                        label = (
-                            f"{test[0]}"
-                            f"{f' #{test[1] + 1}' if test[1] is not None else ''}"
-                        )
                         print(f"Test {test} raised an exception: {e}")
                         failed_this_round.append(test)
                         failed_tests.append({
                             "status": "failed",
-                            "test": label,
+                            "test": _format_test_label(test[0], test[1]),
                             "error": str(e),
                             "try": try_idx + 1,
                             "browser": browser,
+                            "plugin_name": test[0],
+                            "plugin_index": test[1],
                         })
                     finally:
                         del futures_map[future]
@@ -111,37 +142,41 @@ def print_report(
     """Print a human-readable summary of test results."""
     print("\nTests that passed:")
     for r in passed_tests:
-        print(f"   {r['test']}-{r['browser']} (try {r['try']})")
-
+        label = _format_test_label(r["plugin_name"], r["plugin_index"])
+        print(f"   {label}-{r['browser']} (try {r['try']})")
     print("\nTests that failed:")
-    unique_failed = {f"{t['test']}-{t['browser']}": t for t in failed_tests}.values()
+    unique_failed = {
+        (t["plugin_name"], t["plugin_index"], t["browser"]): t
+        for t in failed_tests
+    }.values()
     if not unique_failed:
         print("   None!")
     else:
         for r in unique_failed:
-            print(f"   {r['test']}-{r['browser']} (Final Error: {r['error']})")
-
+            label = _format_test_label(r["plugin_name"], r["plugin_index"])
+            print(f"   {label}-{r['browser']} (Final Error: {r['error']})")
     print(f"\n{root_url}\n")
 
     if failed_tests:
-        failed_summary: dict[str, dict] = {}
+        failed_summary: dict[str, _FailedSummary] = {}
         for t in failed_tests:
-            parts = t["test"].split(" #")
-            name = parts[0]
+            name = t["plugin_name"]
+            idx = t["plugin_index"]
             if name not in failed_summary:
                 failed_summary[name] = {"indices": set(), "no_index_failed": False}
-            if len(parts) > 1:
-                failed_summary[name]["indices"].add(int(parts[1]))
-            else:
+            if idx is None:
                 failed_summary[name]["no_index_failed"] = True
-
-        run_again_parts = []
+            else:
+                failed_summary[name]["indices"].add(idx + 1)
+        run_again_parts: list[str] = []
         for name in sorted(failed_summary):
             summary = failed_summary[name]
             if summary["no_index_failed"]:
                 run_again_parts.append(name)
             elif summary["indices"]:
-                indices_str = "".join(str(i) for i in sorted(summary["indices"]))
+                indices_str = ",".join(
+                    str(i) for i in sorted(summary["indices"])
+                )
                 run_again_parts.append(f"{name}({indices_str})")
 
         print(f" RUN AGAIN (FAILED)?: {' '.join(run_again_parts)}")
