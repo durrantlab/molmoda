@@ -27,7 +27,15 @@ def do_logs_have_errors(driver, browser: str) -> str | bool:
     Returns the joined error messages as a string, or False if none found.
     Firefox drivers lack get_log(), so always returns False for Firefox.
     """
-    if "firefox" in browser.lower():
+    # geckodriver and safaridriver do not implement the (non-standard)
+    # `GET /session/{id}/log` endpoint. Chrome does. Calling get_log()
+    # against Safari does not fail fast: safaridriver leaves the request
+    # hanging until the client-side HTTP read timeout (120s) fires, which
+    # both wedges the current session (seen as "Read timed out") and
+    # poisons every subsequent test reusing that session (seen as
+    # "#test-cmds not found after 50 seconds"). Skip log collection for
+    # Safari for the same reason it is already skipped for Firefox.
+    if "firefox" in browser.lower() or "safari" in browser.lower():
         return False
 
     logs = driver.get_log("browser")
