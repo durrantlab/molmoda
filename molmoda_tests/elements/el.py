@@ -51,9 +51,41 @@ class el:
     @text.setter
     def text(self, value: str):
         with contextlib.suppress(Exception):
-            self.el.clear()
-        with contextlib.suppress(Exception):
             value = html.unescape(value)
+        if self.el.tag_name.lower() == "select":
+            # safaridriver's "select option" command silently fails to commit
+            # on WebKit: the element is a real <select> with the target option
+            # present, yet selectedIndex stays -1 and the bound Vue model stays
+            # empty. Chrome and Firefox honor the command. tag_name is compared
+            # case-insensitively because safaridriver returns it uppercased.
+            # Set the option by matching visible text in the DOM, assign
+            # selectedIndex and value directly, then dispatch input and change
+            # so Vue's handler observes the settled value. Mirrors the native
+            # set-value-then-dispatch approach the tour runner uses for range
+            # inputs, and works uniformly across all three drivers.
+            matched = self.driver.execute_script(
+                "var sel = arguments[0], want = arguments[1];"
+                "for (var i = 0; i < sel.options.length; i++) {"
+                "  if (sel.options[i].text.trim() === want) {"
+                "    sel.selectedIndex = i;"
+                "    sel.value = sel.options[i].value;"
+                "    sel.dispatchEvent(new Event('input', {bubbles: true}));"
+                "    sel.dispatchEvent(new Event('change', {bubbles: true}));"
+                "    return true;"
+                "  }"
+                "}"
+                "return false;",
+                self.el,
+                value,
+            )
+            if not matched:
+                self.throw_error(
+                    f"{self.selector} has no option with text [[{value}]]"
+                )
+            self.check_errors()
+            return
+        with contextlib.suppress(Exception):
+            self.el.clear()
         if value == "BACKSPACE":
             self.el.send_keys(Keys.BACKSPACE)
         else:

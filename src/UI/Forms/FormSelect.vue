@@ -1,8 +1,7 @@
 <template>
   <span>
     <div class="input-group">
-   <select class="form-select form-select-sm" :id="id" :disabled="disabled" @input="handleInput" @change="handleInput" :value="modelValue">
-        <!-- <option selected>Open this select menu</option> -->
+      <select class="form-select form-select-sm" :id="id" :disabled="disabled" @input="handleInput" @change="handleInput" :value="modelValue">
         <option v-for="opt in optionsToUse" :value="opt.val" v-bind:key="opt.val" :disabled="opt.disabled === true">
           {{ opt.description }}
         </option>
@@ -53,23 +52,11 @@ export default class FormSelect extends Vue {
     });
   }
 
-  /**
-   * Let the parent component know of any changes.
-   *
-   * @param {any} e  The value.
-   */
   handleInput(e: any) {
     this.$emit("update:modelValue", e.target.value);
-
-    // In some circumstances (e.g., changing values in an object), not reactive.
-    // Emit also "onChange" to signal the value has changed.
     this.$emit("onChange", e.target.value);
   }
 
-  /**
-   * Validates that the current modelValue is present in the options. Logs a
-   * console warning if it's not.
-   */
   private validateModelValue() {
     // Note: The select element will render with nothing selected if modelValue
     // is not a valid option value. This check is for developer awareness.

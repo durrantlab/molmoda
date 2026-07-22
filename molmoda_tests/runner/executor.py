@@ -19,6 +19,68 @@ from selenium import webdriver
 _drivers: dict[int, Any] = {}
 _drivers_lock = threading.Lock()
 
+# Wraps console.warn/console.error in the page and buffers each message on
+# window.__consoleLogs. Idempotent via window.__consoleHooked so re-running it
+# never stacks wrappers, and it calls the originals so anything already
+# listening (e.g. Chrome DevTools) is unaffected. Capped so a long-lived page
+# cannot grow the buffer without bound.
+_CONSOLE_CAPTURE_JS = """
+window.__consoleLogs = window.__consoleLogs || [];
+if (!window.__consoleHooked) {
+    window.__consoleHooked = true;
+    ['warn', 'error'].forEach(function (level) {
+        var orig = console[level].bind(console);
+        console[level] = function () {
+            var args = Array.prototype.slice.call(arguments);
+            window.__consoleLogs.push(level + ': ' + args.map(String).join(' '));
+            if (window.__consoleLogs.length > 500) {
+                window.__consoleLogs.shift();
+            }
+            orig.apply(console, arguments);
+        };
+    });
+}
+"""
+
+
+def _install_console_capture(driver: Any) -> None:
+    """Hook console.warn/error in the current page so messages are readable later.
+
+    Safari exposes no way to open Web Inspector from automation and does not
+    implement Selenium's get_log("browser"), so console output is otherwise
+    invisible during a Safari run. Buffering the messages on the page lets the
+    Python side read them back with execute_script on any driver. Must run
+    after each navigation, since a page load clears window.
+
+    Args:
+        driver: The WebDriver whose current page should be instrumented.
+    """
+    with contextlib.suppress(Exception):
+        driver.execute_script(_CONSOLE_CAPTURE_JS)
+
+
+def _drain_console_logs(driver: Any) -> list[str]:
+    """Return the buffered console messages and clear the buffer.
+
+    Draining rather than re-reading keeps each printout scoped to the messages
+    produced since the previous command, which is what lets a warning be
+    attributed to the command that triggered it.
+
+    Args:
+        driver: The WebDriver whose page buffer should be read.
+
+    Returns:
+        The captured message strings, oldest first. Empty when the hook is
+        absent or nothing was logged.
+    """
+    with contextlib.suppress(Exception):
+        logs = driver.execute_script(
+            "var l = window.__consoleLogs || []; "
+            "window.__consoleLogs = []; return l;"
+        )
+        return list(logs) if logs else []
+    return []
+
 
 def do_logs_have_errors(driver, browser: str) -> str | bool:
     """
@@ -156,6 +218,11 @@ def run_test(
         if plugin_idx is not None:
             url += f"&index={plugin_idx}"
         driver.get(url)
+
+        # Re-install here because driver.get() cleared window; this is the only
+        # point in the run that navigates, so per-test reuse still gets the hook.
+        _install_console_capture(driver)
+
         # Parse the command list from the page.  The TS test infrastructure
         # writes commands into the #test-cmds element (the "test" store
         # module's "cmds" var).  The old #cmds-element id no longer exists,
@@ -199,6 +266,11 @@ def run_test(
         if is_single_test_run:
             print(f"\nAn error occurred during test '{plugin_id_tuple[0]}'.")
             print(f"Error details: {e}")
+            logs = _drain_console_logs(driver)
+            if logs:
+                print("=== buffered console ===")
+                for line in logs:
+                    print(f"    {line}")
             input("The browser remains open for inspection. Press Enter to close it and proceed.")
         raise
 
