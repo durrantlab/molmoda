@@ -13,7 +13,7 @@ from typing import Any
 from ..elements import el
 from ..drivers import make_driver
 from .command_dispatch import dispatch_command
-
+from selenium import webdriver
 
 # Thread-local driver registry: maps thread id -> WebDriver instance.
 _drivers: dict[int, Any] = {}
@@ -88,21 +88,47 @@ def get_or_create_driver(browser: str, root_url: str):
     return _drivers[key]
 
 
+def _quit_driver(driver: webdriver.Remote, browser: str) -> None:
+    """Tear down a single driver, adding Safari's extra process cleanup.
+
+    safaridriver can leave the Safari process alive after quit() and permits
+    only one session per host, so a lingering process blocks the next session.
+    Chrome and Firefox need no such handling.
+
+    Args:
+        driver: The WebDriver instance to close.
+        browser: Browser key, used to trigger Safari-only cleanup.
+    """
+    try:
+        driver.quit()
+    except Exception:
+        pass
+    if browser == "safari":
+        time.sleep(1)
+        os.system("pkill -9 Safari > /dev/null 2>&1")
+        time.sleep(1)
+def reset_current_driver(browser: str) -> None:
+    """Discard this thread's cached driver so the next test gets a fresh one.
+
+    A reused Safari session that has crashed or left a modal open otherwise
+    poisons every subsequent test in the same retry round, since the driver is
+    never recreated mid-round. Dropping it after a failure confines the fault
+    to the test that actually failed.
+
+    Args:
+        browser: Browser key, forwarded to the teardown helper.
+    """
+    key = threading.get_ident()
+    with _drivers_lock:
+        driver = _drivers.pop(key, None)
+    if driver is not None:
+        _quit_driver(driver, browser)
 def quit_all_drivers(browser: str):
-    """Quit every driver in the registry and clear it."""
+    
     with _drivers_lock:
         for driver in _drivers.values():
-            try:
-                driver.quit()
-            except Exception:
-                pass
-            if browser == "safari":
-                time.sleep(1)
-                os.system("pkill -9 Safari > /dev/null 2>&1")
-                time.sleep(1)
+            _quit_driver(driver, browser)
         _drivers.clear()
-
-
 def run_test(
     plugin_id_tuple: tuple[str, int | None],
     browser: str,
@@ -117,6 +143,7 @@ def run_test(
       - A list of (plugin_name, index) tuples when the test signals addTests
     """
     driver = get_or_create_driver(browser, root_url)
+    test_failed = False
 
     try:
         plugin_name, plugin_idx = plugin_id_tuple
@@ -168,6 +195,7 @@ def run_test(
         return {"status": "passed", "test": test_lbl, "error": ""}
 
     except Exception as e:
+        test_failed = True
         if is_single_test_run:
             print(f"\nAn error occurred during test '{plugin_id_tuple[0]}'.")
             print(f"Error details: {e}")
@@ -179,3 +207,5 @@ def run_test(
             driver.execute_script(
                 "window.localStorage.clear(); window.sessionStorage.clear();"
             )
+        if test_failed and browser == "safari" and not is_single_test_run:
+            reset_current_driver(browser)
