@@ -1,3 +1,4 @@
+import { BrowserType, detectBrowser } from "@/Core/HostOs";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { sendResponseToMainThread } from "@/Core/WebWorkers/WorkerHelper";
 import { FileInfo } from "../FileInfo";
@@ -26,6 +27,30 @@ let stdErr = "";
  * @returns {Promise<any>}  A promise that resolves to an object that describes
  *     the result and execution.
  */
+/**
+ * Reports whether an error thrown by the OpenBabel WASM module is a native
+ * call-stack overflow. Safari's JavaScriptCore has a smaller native stack than
+ * V8/SpiderMonkey, so OpenBabel's deep parser recursion on large structures
+ * overflows there even when the same file parses fine elsewhere. We match this
+ * case so the failure can be turned into an honest, user-facing message instead
+ * of a silent "{ERROR}" placeholder that flows downstream as if it were data.
+ *
+ * @param err The value thrown from mod.callMain.
+ * @returns True if the error looks like a stack-overflow condition.
+ */
+function isCallStackOverflow(err: unknown): boolean {
+    const name = err instanceof Error ? err.name : "";
+    const message = (
+        err instanceof Error ? err.message ?? "" : String(err)
+    ).toLowerCase();
+    const mentionsOverflow =
+        message.includes("maximum call stack") ||
+        message.includes("call stack size") ||
+        message.includes("stack overflow") ||
+        message.includes("too much recursion");
+    return name === "RangeError" || mentionsOverflow;
+}
+
 function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
     // Create the oBabelMod only once per webworker
     if (oBabelModReady === undefined) {
@@ -267,7 +292,20 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 console.log(args);
                 console.log(inputFiles[0].contents);
                 stdOutOrErr += err;
-                stdErr += err;
+                if (isCallStackOverflow(err)) {
+                    // OpenBabelQueue decides whether to show the error modal by
+                    // scanning stdErr for the substring "error" (case-insensitive),
+                    // so the message must contain that word to surface at all.
+                    let overflowMsg =
+                        "Error: unable to load this structure. It is too large to convert in this browser.";
+                    if (detectBrowser() === BrowserType.Safari) {
+                        overflowMsg +=
+                            " You might try opening the file in Google Chrome instead.";
+                    }
+                    stdErr += overflowMsg;
+                } else {
+                    stdErr += err;
+                }
             }
 
             const filesAfterRun = mod.files.readDir(tmpDir);
