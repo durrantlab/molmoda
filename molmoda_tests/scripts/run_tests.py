@@ -27,15 +27,17 @@ def main():
 
     all_passed: list[dict] = []
     all_failed: list[dict] = []
-
-    for browser in browsers:
-        print(f"\nBrowser: {browser}\n")
-        passed, failed = run_browser_suite(plugin_ids, browser, root_url)
-        all_passed.extend(passed)
-        all_failed.extend(failed)
-
+    interrupted = False
+    try:
+        for browser in browsers:
+            print(f"\nBrowser: {browser}\n")
+            run_browser_suite(plugin_ids, browser, root_url, all_passed, all_failed)
+    except KeyboardInterrupt:
+        interrupted = True
+        print("\n\nInterrupted with Ctrl-C. Showing results collected so far.")
     print_report(all_passed, all_failed, root_url)
-
+    if interrupted:
+        return
     input("Press Enter to run all jest unit tests...")
     os.system("node_modules/.bin/jest")
 

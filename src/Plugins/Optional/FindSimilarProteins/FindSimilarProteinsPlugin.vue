@@ -528,13 +528,13 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
 
                         // If filtering by ligands, check BEFORE alignment to save time
                         if (hasLigands) {
-       const tempList = await parseAndLoadMoleculeFile({
+                            const tempList = await parseAndLoadMoleculeFile({
                                 fileInfo: mobileFileInfo,
                                 tag: this.pluginId,
-        addToTree: false
-       });
+                                addToTree: false
+                            });
 
-       if (!tempList) {
+                            if (!tempList) {
                                 console.warn(`Failed to parse structure for PDB ID ${pdbId}.`);
                                 continue;
                             }
@@ -591,13 +591,13 @@ export default class FindSimilarProteinsPlugin extends PluginParentClass {
                             }
                         }
                         
-      const tempList = await parseAndLoadMoleculeFile({
+                        const tempList = await parseAndLoadMoleculeFile({
                             fileInfo: mobileFileInfo,
                             tag: this.pluginId,
                             addToTree: false,
                         } as ILoadMolParams);
 
-      if (!tempList) {
+                        if (!tempList) {
                             console.warn(`Failed to load structure for PDB ID ${pdbId}.`);
                             continue;
                         }
@@ -741,6 +741,9 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
 
             // Test 5: Two full FASTA sequences
+            // Two FASTA sequences (fastaText1 + fastaText2). Two queries at
+            // max_results 10 with alignment means ~20 structure downloads;
+            // on Safari that can exceed the default table-popup wait.
             {
                 beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(),
@@ -748,12 +751,13 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .setUserArg("inputType", "Use FASTA text", this.pluginId)
                     .setUserArg(
                         "fastaText",
-                        `${fastaText1}\n${fastaText2}`,
+                        `${fastaText1}
+${fastaText2}`,
                         "findsimilarproteins"
                     )
                     .setUserArg("max_results", 10, this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR", 150)
                     .click("#modal-tabledatapopup .cancel-btn")
                     // .waitUntilRegex("#navigator", "1CMX-aligned-to-1AAR") // From fastaText1
                     // .waitUntilRegex("#navigator", "1LVC-aligned-to-1IQ5"), // From fastaText2 (Calmodulin)
@@ -762,6 +766,8 @@ DIDGDGQVNYEEFVQMMTAK*`;
             },
 
             // Test 6: Two raw sequences
+            // Two raw sequences (rawSeq1 + rawSeq2). Same download-heavy shape
+            // as the test above, so it gets the same extended popup wait.
             {
                 beforePluginOpens: () => new TestCmdList()
                     .loadExampleMolecule(undefined),
@@ -769,12 +775,13 @@ DIDGDGQVNYEEFVQMMTAK*`;
                     .setUserArg("inputType", "Use FASTA text", this.pluginId)
                     .setUserArg(
                         "fastaText",
-                        `${rawSeq1}\n\n${rawSeq2}`,
+                        `${rawSeq1}
+${rawSeq2}`,
                         "findsimilarproteins"
                     )
                     .setUserArg("max_results", 10, this.pluginId),
                 afterPluginCloses: () => new TestCmdList()
-                    .waitUntilRegex("#modal-tabledatapopup", "1AAR")
+                    .waitUntilRegex("#modal-tabledatapopup", "1AAR", 150)
                     .click("#modal-tabledatapopup .cancel-btn")
                     .waitUntilRegex("#navigator", "1CMX-aligned-to-") // From rawSeq1
                     .waitUntilRegex("#navigator", "1LVC-aligned-to-"), // From rawSeq2 (Calmodulin)

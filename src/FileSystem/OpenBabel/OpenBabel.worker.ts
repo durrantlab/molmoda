@@ -317,6 +317,7 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
             };
         })
         .catch((err: Error) => {
+            console.log("STACK (runBabel)", err.stack);
             throw err;
         });
 }
@@ -434,6 +435,7 @@ self.onmessage = (params: MessageEvent) => {
             return;
         })
         .catch((err: Error) => {
+            console.log("STACK (onmessage)", err.stack);
             throw err;
         });
 };

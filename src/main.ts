@@ -82,33 +82,49 @@ import { setupGlobalVars } from "./Core/GlobalVars";
  * The main function.
  */
 async function main() {
-    await setupGlobalVars();
-    errorReportingSetup();
-    loadFontAwesomeFonts();
-    setupTests();
-    setupSaveOnClose();
-    setupTags();
+    try {
+        await setupGlobalVars();
+        errorReportingSetup();
+        loadFontAwesomeFonts();
+        setupTests();
+        setupSaveOnClose();
+        setupTags();
 
-    defineMakerFuncs();
-    setupGlobalKeyListeners();
-    // setupUpDownTreeNav();
+        defineMakerFuncs();
+        setupGlobalKeyListeners();
+        // setupUpDownTreeNav();
 
-    // api.sys.loadStatus.pluginsLoaded = true;
+        // api.sys.loadStatus.pluginsLoaded = true;
 
-    // console.warn("Below now meaningless?");
-    // api.sys.loadStatus.menuFinalized = true;
-    const store = setupVueXStore();
-    applySettings(await getSettings());
+        // console.warn("Below now meaningless?");
+        // api.sys.loadStatus.menuFinalized = true;
+        const store = setupVueXStore();
+        applySettings(await getSettings());
 
-    createApp(App)
-        .component("font-awesome-icon", FontAwesomeIcon)
-        .use(store)
-        .mount("#app");
+        createApp(App)
+            .component("font-awesome-icon", FontAwesomeIcon)
+            .use(store)
+            .mount("#app");
 
-    // Love page load. Google analytics detects this automatically, but my
-    // custom logging system does not.
-    logEvent("page", "load");
+        // Love page load. Google analytics detects this automatically, but my
+        // custom logging system does not.
+        logEvent("page", "load");
 
+    } catch (err) {
+        // Without this, a bootstrap failure before mount() leaves an empty
+        // #app and no surfaced error. On Safari that is invisible to the test
+        // harness, since do_logs_have_errors() skips Safari console logs, so
+        // the runner blocks on the #test-cmds WebDriverWait until timeout.
+        // Rendering into #app also gives the human a readable failure instead
+        // of a black screen.
+        console.error("MolModa failed to start:", err);
+        const appEl = document.getElementById("app");
+        if (appEl) {
+            appEl.textContent = `MolModa failed to start: ${String(err)}`;
+        }
+        throw err;
+    }
+}
     // console.warn("BELOW IS PLAYING WITH REACTION");
 
 //     const t = async function () {
@@ -176,6 +192,6 @@ async function main() {
 //     // );
 
 //     // const img = await generatePoseView("", "");
-}
+
 
 main();

@@ -18,6 +18,12 @@ export interface ITestCommand {
     data?: any;
   /** Optional custom message for tour display, used by click steps. */
   tourMessage?: string;
+    /**
+     * Per-step override (in seconds) for waitUntilRegex. Omitted for the
+     * default; set only on download-heavy steps whose element can legitimately
+     * take longer than the standard 50s wait to appear.
+     */
+    timeout?: number;
 }
 
 export interface ITest {

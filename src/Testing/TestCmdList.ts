@@ -78,14 +78,19 @@ export class TestCmdList {
     }
 
     /**
-     * Wait until a given regex matches the text of an element.
-     *
-     * @param {string} selector  The CSS selector for the element.
-     * @param {string} regex     The regex to match.
-     * @returns {TestCmdList} This TestCmdList (for chaining).
+     * @param {string} selector  The element to watch.
+     * @param {string} regex  The pattern that must appear.
+     * @param {number} [timeoutSecs]  Optional per-step wait override in
+     *     seconds, for steps whose element can legitimately exceed the default
+     *     wait (e.g. long download/align sequences).
+     * @returns {TestCmdList} This list, for chaining.
      */
-    public waitUntilRegex(selector: string, regex: string): TestCmdList {
-        this.tests.push(new TestWaitUntilRegex(selector, regex));
+    public waitUntilRegex(
+        selector: string,
+        regex: string,
+        timeoutSecs?: number
+    ): TestCmdList {
+        this.tests.push(new TestWaitUntilRegex(selector, regex, timeoutSecs));
         return this;
     }
 

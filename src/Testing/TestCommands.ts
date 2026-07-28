@@ -154,17 +154,20 @@ export class TestText extends TestCmdParent {
 export class TestWaitUntilRegex extends TestCmdParent {
     private selector: string;
     private regex: string;
+    private timeout: number | undefined;
 
     /**
-     * Creates an instance of TestWaitUntilRegex.
-     *
-     * @param  {string} selector  The selector to monitor.
-     * @param  {string} regex  The regex to wait for.
+     * @param {string} selector  The element to watch.
+     * @param {string} regex  The pattern that must appear in the element.
+     * @param {number} [timeout]  Optional per-step wait override in seconds.
+     *     Left undefined for the default; supplied for steps that can take
+     *     longer than the standard wait (e.g. many structure downloads).
      */
-    constructor(selector: string, regex: string) {
+    constructor(selector: string, regex: string, timeout?: number) {
         super();
         this.selector = selector;
         this.regex = regex;
+        this.timeout = timeout;
     }
 
     /**
@@ -179,6 +182,7 @@ export class TestWaitUntilRegex extends TestCmdParent {
             selector: this.selector,
             cmd: TestCommand.WaitUntilRegex,
             data: this.regex,
+            timeout: this.timeout,
         };
     }
 }

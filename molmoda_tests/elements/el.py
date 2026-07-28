@@ -64,11 +64,15 @@ class el:
             # set-value-then-dispatch approach the tour runner uses for range
             # inputs, and works uniformly across all three drivers.
             matched = self.driver.execute_script(
-                "var sel = arguments[0], want = arguments[1];"
+                "var sel = arguments[0];"
+                "var want = ('' + arguments[1]).trim().toLowerCase();"
                 "for (var i = 0; i < sel.options.length; i++) {"
-                "  if (sel.options[i].text.trim() === want) {"
+                "  var opt = sel.options[i];"
+                "  var optText = (opt.text || '').trim().toLowerCase();"
+                "  var optVal = (opt.value || '').trim().toLowerCase();"
+                "  if (optText === want || optVal === want) {"
                 "    sel.selectedIndex = i;"
-                "    sel.value = sel.options[i].value;"
+                "    sel.value = opt.value;"
                 "    sel.dispatchEvent(new Event('input', {bubbles: true}));"
                 "    sel.dispatchEvent(new Event('change', {bubbles: true}));"
                 "    return true;"
@@ -117,16 +121,18 @@ class el:
                 f"{self.selector} still [[{text}]] after {timeout} seconds"
             )
 
-    def wait_until_contains_regex(self, regex: str):
+    def wait_until_contains_regex(self, regex: str, timeout: int | None = None):
         """Block until the element's text matches `regex`."""
+        if timeout is None:
+            timeout = self.timeout
         try:
             regex = html.unescape(regex)
             WebDriverWait(
-                self.driver, self.timeout, poll_frequency=self.poll_frequency_secs
+                self.driver, timeout, poll_frequency=self.poll_frequency_secs
             ).until(lambda d: re.search(regex, self.text))
         except TimeoutException:
             self.throw_error(
-                f"{self.selector} does not contain [[{regex}]] after {self.timeout} seconds; "
+                f"{self.selector} does not contain [[{regex}]] after {timeout} seconds; "
                 f"Actual text: [[{self.text}]]"
             )
 

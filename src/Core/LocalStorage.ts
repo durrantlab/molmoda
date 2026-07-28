@@ -10,18 +10,71 @@ const memoryStorage: { [key: string]: any } = {};
 
 let lastCookieMsgTime = 0;
 
+// How long to wait for an IndexedDB operation before giving up. WebKit/Safari
+// can leave indexedDB.open() (and the first transaction) pending indefinitely,
+// notably when a prior connection from a reused browser session has not closed.
+// main() awaits getSettings() before mount(), so an unbounded request stalls
+// the whole app on a blank page. On timeout we fall back to in-memory storage
+// so the app still starts.
+const DB_OP_TIMEOUT_MS = 5000;
+
+// Set once an IndexedDB request times out or errors, so later calls skip the DB
+// (avoiding a fresh multi-second stall per settings key) and use memoryStorage.
+let _dbUnavailable = false;
+
+/**
+ * Races an IndexedDB operation against a timeout so a hung Safari request can
+ * never block the caller. On timeout or error the database is marked
+ * unavailable so subsequent calls skip it and fall back to in-memory storage.
+ *
+ * @param {Promise<T>} op  The database operation to guard.
+ * @returns {Promise<T | undefined>}  The result, or undefined if it did not
+ *     settle in time or rejected.
+ */
+async function guardDbOp<T>(op: Promise<T>): Promise<T | undefined> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<undefined>((resolve) => {
+        timer = setTimeout(() => {
+            _dbUnavailable = true;
+            resolve(undefined);
+        }, DB_OP_TIMEOUT_MS);
+    });
+    try {
+        return await Promise.race([op, timeout]);
+    } catch {
+        _dbUnavailable = true;
+        return undefined;
+    } finally {
+        if (timer !== undefined) {
+            clearTimeout(timer);
+        }
+    }
+}
+
 /**
  * Creates a database if it doesn't exist.
  *
- * @returns {Promise<any>}  A promise that resolves the database.
+ * @returns {Promise<any>}  A promise that resolves the database, or undefined
+ *     if IndexedDB is unavailable (e.g. a Safari open-hang).
  */
 async function createDatabaseIfNeeded(): Promise<any> {
+    if (_dbUnavailable) {
+        return undefined;
+    }
     if (_db === undefined) {
         const dexie = await dynamicImports.dexie.module;
-        _db = new dexie.Dexie("MolModa");
-        _db.version(1).stores({
+        const db = new dexie.Dexie("MolModa");
+        db.version(1).stores({
             data: "++key",
         });
+        // Open explicitly under a timeout rather than letting Dexie auto-open
+        // on first access, so a WebKit open-hang cannot block bootstrap.
+        const opened = await guardDbOp(db.open());
+        if (opened === undefined) {
+            _dbUnavailable = true;
+            return undefined;
+        }
+        _db = db;
     }
     return _db;
 }
@@ -87,7 +140,13 @@ async function cookiesAllowed(showWarning = true): Promise<boolean> {
  */
 async function getItemFromDB(key: string) {
     const db = await createDatabaseIfNeeded();
-    return await db.data.where("key").equals(key).first();
+    if (db === undefined) {
+        // IndexedDB unavailable; mirror the memoryStorage shape used elsewhere.
+        return memoryStorage[key] === undefined
+            ? undefined
+            : { value: memoryStorage[key] };
+    }
+    return await guardDbOp(db.data.where("key").equals(key).first());
 }
 
 /**
@@ -175,6 +234,11 @@ export async function localStorageSetItem(
     }
 
     const db = await createDatabaseIfNeeded();
+    if (db === undefined) {
+        // IndexedDB unavailable; keep the value in memory for this session.
+        memoryStorage[key] = valueToStore;
+        return;
+    }
 
     const expireTimestamp =
         daysToExpire === undefined
@@ -182,11 +246,13 @@ export async function localStorageSetItem(
             : new Date().getTime() + daysToExpire * 24 * 60 * 60 * 1000;
 
     // Overwrites if already exists (unlike .add).
-    await db.data.put({
+    await guardDbOp(
+        db.data.put({
         key,
         value: valueToStore,
         expireTimestamp,
-    });
+        })
+    );
 }
 
 /**
@@ -197,7 +263,11 @@ export async function localStorageSetItem(
  */
 export async function localStorageRemoveItem(key: string): Promise<void> {
     const db = await createDatabaseIfNeeded();
-    await db.data.where("key").equals(key).delete();
+    if (db === undefined) {
+        delete memoryStorage[key];
+        return;
+    }
+    await guardDbOp(db.data.where("key").equals(key).delete());
 }
 
 /**
@@ -207,5 +277,11 @@ export async function localStorageRemoveItem(key: string): Promise<void> {
  */
 async function clearLocalStorage(): Promise<void> {
     const db = await createDatabaseIfNeeded();
-    await db.data.clear();
+    if (db === undefined) {
+        for (const key in memoryStorage) {
+            delete memoryStorage[key];
+        }
+        return;
+    }
+    await guardDbOp(db.data.clear());
 }

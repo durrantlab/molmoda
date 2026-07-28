@@ -36,7 +36,15 @@ def dispatch_command(driver: Any, cmd: ITestCommand) -> None:
     elif name == "wait":
         time.sleep(cmd["data"])
     elif name == "waitUntilRegex":
-        el(cmd["selector"], driver).wait_until_contains_regex(cmd["data"])
+        # The el(...) constructor blocks until the element exists, using its
+        # own default timeout. For a modal that has not opened yet, that
+        # constructor is the gate, not wait_until_contains_regex, so the
+        # per-step override has to reach both.
+        timeout = cmd.get("timeout")
+        kwargs = {} if timeout is None else {"timeout": timeout}
+        el(cmd["selector"], driver, **kwargs).wait_until_contains_regex(
+            cmd["data"], timeout
+        )
     elif name == "waitUntilNotRegex":
         el(cmd["selector"], driver).wait_until_does_not_contain_regex(cmd["data"])
     elif name == "upload":

@@ -43,8 +43,10 @@ def run_browser_suite(
     plugin_ids: list[tuple[str, int | None]],
     browser: str,
     root_url: str,
-    max_retries: int = 4,
-) -> tuple[list[dict], list[dict]]:
+    passed_tests: list[dict],
+    failed_tests: list[dict],
+    max_retries: int = 2,
+) -> None:
     """
     Run all tests for a single browser with retry logic and threading.
 
@@ -59,9 +61,6 @@ def run_browser_suite(
         keys: status, test, error, try, browser.
     """
     is_single = len(plugin_ids) == 1
-    passed_tests: list[dict] = []
-    failed_tests: list[dict] = []
-
     remaining = plugin_ids.copy()
 
     for try_idx in range(max_retries):
@@ -70,55 +69,66 @@ def run_browser_suite(
 
         with ThreadPoolExecutor(max_workers=allowed_threads[browser]) as executor:
             futures_map: dict = {}
-
-            while remaining or futures_map:
-                while remaining:
-                    test = remaining.pop()
-                    future = executor.submit(run_test, test, browser, root_url, is_single)
-                    futures_map[future] = test
-
-                for future in as_completed(futures_map):
-                    test = futures_map[future]
-                    try:
-                        result = future.result()
-
-                        if isinstance(result, list):
-                            # addTests: expand sub-tests into the queue.
-                            remaining = result + remaining
-                            continue
-                        label = _format_test_label(test[0], test[1])
-                        print(
-                            f"{result['status'][:1].upper()}{result['status'][1:]}: "
-                            f"{label} {result['error']}"
-                        )
-                        enriched = {
-                            **result,
-                            "try": try_idx + 1,
-                            "browser": browser,
-                            "plugin_name": test[0],
-                            "plugin_index": test[1],
-                        }
-                        if result["status"] == "passed":
-                            passed_tests.append(enriched)
-                        else:
+            try:
+                while remaining or futures_map:
+                    while remaining:
+                        test = remaining.pop()
+                        future = executor.submit(run_test, test, browser, root_url, is_single)
+                        futures_map[future] = test
+                    for future in as_completed(futures_map):
+                        test = futures_map[future]
+                        try:
+                            result = future.result()
+                            if isinstance(result, list):
+                                remaining = result + remaining
+                                continue
+                            label = _format_test_label(test[0], test[1])
+                            print(
+                                f"{result['status'][:1].upper()}{result['status'][1:]}: "
+                                f"{label} {result['error']}"
+                            )
+                            enriched = {
+                                **result,
+                                "try": try_idx + 1,
+                                "browser": browser,
+                                "plugin_name": test[0],
+                                "plugin_index": test[1],
+                            }
+                            if result["status"] == "passed":
+                                passed_tests.append(enriched)
+                            else:
+                                failed_this_round.append(test)
+                                failed_tests.append(enriched)
+                        except Exception as e:
+                            print(f"Test {test} raised an exception: {e}")
                             failed_this_round.append(test)
-                            failed_tests.append(enriched)
-
-                    except Exception as e:
-                        print(f"Test {test} raised an exception: {e}")
-                        failed_this_round.append(test)
-                        failed_tests.append({
-                            "status": "failed",
-                            "test": _format_test_label(test[0], test[1]),
-                            "error": str(e),
-                            "try": try_idx + 1,
-                            "browser": browser,
-                            "plugin_name": test[0],
-                            "plugin_index": test[1],
-                        })
-                    finally:
-                        del futures_map[future]
-
+                            failed_tests.append({
+                                "status": "failed",
+                                "test": _format_test_label(test[0], test[1]),
+                                "error": str(e),
+                                "try": try_idx + 1,
+                                "browser": browser,
+                                "plugin_name": test[0],
+                                "plugin_index": test[1],
+                            })
+                        finally:
+                            del futures_map[future]
+            except KeyboardInterrupt:
+                # Stop dispatching queued work and mark everything that never
+                # reached a verdict as failed so the report's rerun list is
+                # complete even when the run is aborted early.
+                executor.shutdown(wait=False, cancel_futures=True)
+                for test in list(remaining) + list(futures_map.values()):
+                    failed_tests.append({
+                        "status": "failed",
+                        "test": _format_test_label(test[0], test[1]),
+                        "error": "Interrupted (Ctrl-C) before completion",
+                        "try": try_idx + 1,
+                        "browser": browser,
+                        "plugin_name": test[0],
+                        "plugin_index": test[1],
+                    })
+                raise
         quit_all_drivers(browser)
 
         remaining = sorted(failed_this_round)
@@ -130,9 +140,6 @@ def run_browser_suite(
             for i in remaining
         )
         print(f"Will retry the following tests: {ids_str}")
-
-    return passed_tests, failed_tests
-
 
 def print_report(
     passed_tests: list[dict],

@@ -42,16 +42,15 @@ def main() -> None:
     all_passed: list[dict[str, str]] = []
     all_failed: list[dict[str, str]] = []
     all_skipped: list[dict[str, str]] = []
-
-    for browser in browsers:
-        print(f"\nBrowser: {browser}\n")
-        passed, failed, skipped = run_tour_suite(
-            plugin_ids, browser, root_url, serial=serial,
-        )
-        all_passed.extend(passed)
-        all_failed.extend(failed)
-        all_skipped.extend(skipped)
-
+    try:
+        for browser in browsers:
+            print(f"\nBrowser: {browser}\n")
+            run_tour_suite(
+                plugin_ids, browser, root_url,
+                all_passed, all_failed, all_skipped, serial=serial,
+            )
+    except KeyboardInterrupt:
+        print("\n\nInterrupted with Ctrl-C. Showing results collected so far.")
     print_tour_report(all_passed, all_failed, all_skipped, root_url)
 
 

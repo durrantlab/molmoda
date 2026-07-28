@@ -243,6 +243,14 @@ export default class Popup extends Vue {
     if (api.tour.isTourRunning()) {
       return;
     }
+    // Enter inside a textarea is a newline, not a popup submit. Without this
+    // guard the event bubbles to the modal-level keypress handler and submits
+    // the popup. Engines differ in whether that Enter surfaces here (it does
+    // under SafariDriver, closing the modal mid-test), so guard
+    // unconditionally rather than sniffing the browser.
+    if ((e.target as HTMLElement | null)?.tagName === "TEXTAREA") {
+      return;
+    }
     if (e.key === "Enter" && this.submitOnEnter) {
       if (this.actionBtnTxt && this.isActionBtnEnabled) {
         this.actionBtn();

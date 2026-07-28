@@ -1,6 +1,8 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { dynamicImports } from "../DynamicImports";
 import { DataFormat, IData } from "./FSInterfaces";
+import { isTest, isLocalHost } from "@/Core/GlobalVars";
+import { detectBrowser, BrowserType } from "@/Core/HostOs";
 
 /**
  * Adds an extension if missing.
@@ -204,13 +206,29 @@ function _dataURIToBlob(dataURI: string): Blob {
     return new Blob([ab], { type: mimeString });
 }
 
-/**
- * Saves a dataURI representing a PNG image to a file.
- *
- * @param  {string} fileName The name of the file to save.
- * @param  {string} pngUri   The dataURI representing the PNG image.
- */
+// Captured PNG artifact exposed on the window during Safari test runs so a
+// test can inspect the output without a real download. See savePngUri.
+interface IMolmodaTestWindow extends Window {
+    __molmodaLastSavedPng?: { fileName: string; pngUri: string };
+}
+
 export function savePngUri(fileName: string, pngUri: string) {
+    // Safari surfaces a native "Do you want to allow downloads on
+    // localhost?" permission dialog whenever a download is triggered.
+    // WebDriver cannot see or dismiss that dialog, and safaridriver exposes
+    // no capability (and Safari no scriptable preference) to pre-authorize
+    // downloads, so the driver-factory route is a dead end. The prompt is
+    // localhost-specific, so we only skip the real download under
+    // Safari-in-test on localhost, stashing the PNG on a window global
+    // instead. Chrome, Firefox, and non-localhost Safari runs download
+    // normally.
+    if (isTest && isLocalHost && detectBrowser() === BrowserType.Safari) {
+        (window as IMolmodaTestWindow).__molmodaLastSavedPng = {
+            fileName,
+            pngUri,
+        };
+        return;
+    }
     dynamicImports.fileSaver.module
         .then((fileSaver) => {
             const blob = _dataURIToBlob(pngUri);
