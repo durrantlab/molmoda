@@ -503,7 +503,7 @@ export default class PubChemFindSimilarPlugin extends PluginParentClass {
         pluginOpen: () => new TestCmdList()
           .setUserArg("searchmode", "Larger Compounds (Superstructures)", this.pluginId)
           .setUserArg("maxresults", 10, this.pluginId)
-          .setUserArg("gen3D", Gen3DLevel.None, this.pluginId), // Test no 3D gen
+          .setUserArg("gen3D", Gen3DLevel.Better, this.pluginId), // Test "better" 3D gen
         afterPluginCloses: () => new TestCmdList().waitUntilRegex(
           "#navigator",
           "substructure_"

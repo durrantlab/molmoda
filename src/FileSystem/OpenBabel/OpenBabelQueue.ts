@@ -61,7 +61,18 @@ export class OpenBabelQueue extends QueueParent {
                             details = details.replace(/\s{2,}/g, " ");
                             details = details.trim();
                             details = details.replace(/\n/g, " ");
+                            if (
+                                stdErr.includes(
+                                    "Google Chrome instead"
+                                )
+                            ) {
+                                // The worker message already reads as a complete
+                                // explanation and carries its own "Technical
+                                // details:", so omit the prefix to avoid duplicating it.
+                                errorMessage = `Could not process '${input.inputFile.name}'. The structure may be too large or the format incorrect. ${details}`;
+                            } else {
                             errorMessage = `Could not process '${input.inputFile.name}'. The structure may be too large or the format incorrect. Technical details: ${details}`;
+                            }
                         }
                         errorMessages.push(errorMessage);
                     }

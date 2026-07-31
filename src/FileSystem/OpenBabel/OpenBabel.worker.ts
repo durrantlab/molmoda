@@ -1,4 +1,3 @@
-import { BrowserType, detectBrowser } from "@/Core/HostOs";
 import { randomID } from "@/Core/Utils/MiscUtils";
 import { sendResponseToMainThread } from "@/Core/WebWorkers/WorkerHelper";
 import { FileInfo } from "../FileInfo";
@@ -51,7 +50,11 @@ function isCallStackOverflow(err: unknown): boolean {
     return name === "RangeError" || mentionsOverflow;
 }
 
-function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
+function runBabel(
+    args: string[],
+    inputFiles: FileInfo[],
+    isSafari: boolean
+): Promise<any> {
     // Create the oBabelMod only once per webworker
     if (oBabelModReady === undefined) {
         // These functions aim to make it easier to access the file system.
@@ -293,15 +296,19 @@ function runBabel(args: string[], inputFiles: FileInfo[]): Promise<any> {
                 console.log(inputFiles[0].contents);
                 stdOutOrErr += err;
                 if (isCallStackOverflow(err)) {
-                    // OpenBabelQueue decides whether to show the error modal by
-                    // scanning stdErr for the substring "error" (case-insensitive),
-                    // so the message must contain that word to surface at all.
-                    let overflowMsg =
-                        "Error: unable to load this structure. It is too large to convert in this browser.";
-                    if (detectBrowser() === BrowserType.Safari) {
+                    // OpenBabelQueue shows the error modal by scanning stdErr for
+                    // the substring "error"; String(err) is a RangeError here, so
+                    // it carries that word. The "too large to convert in this
+                    // browser" phrase is also the marker OpenBabelQueue keys on to
+                    // drop its own "Technical details:" prefix, avoiding a duplicate.
+                    let overflowMsg = "";
+                    // let overflowMsg =
+                        // "Unable to load this structure. It is too large to convert in this browser.";
+                    if (isSafari) {
                         overflowMsg +=
                             " You might try opening the file in Google Chrome instead.";
                     }
+                    overflowMsg += ` Technical details: ${String(err)}`;
                     stdErr += overflowMsg;
                 } else {
                     stdErr += err;
@@ -441,9 +448,10 @@ self.onmessage = (params: MessageEvent) => {
     }
 
     currentlyRunning = true;
-    const argsSets = params.data.map((d: any) => d.args); // params.data.argsSets as string[][];
-    const inputFiles = params.data.map((d: any) => d.inputFile); // params.data.inputFiles as FileInfo[];
-    // const outputFilePath = params.outputFilePath as string;
+    const argsSets = params.data.map((d: any) => d.args);
+    const inputFiles = params.data.map((d: any) => d.inputFile);
+    const isSafari =
+        params.data.length > 0 ? params.data[0].isSafari === true : false;
 
     const promises = argsSets.map((args: string[]) => {
         // TODO: You're sending all inputFiles for each runBabel call, because
@@ -462,8 +470,7 @@ self.onmessage = (params: MessageEvent) => {
         if (pdbToPdbPromise !== false) {
             return pdbToPdbPromise;
         }
-
-        return runBabel(args, inputFiles);
+        return runBabel(args, inputFiles, isSafari);
     });
 
     Promise.all(promises)

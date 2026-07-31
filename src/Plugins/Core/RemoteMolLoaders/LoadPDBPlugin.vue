@@ -22,6 +22,7 @@ import { ITest } from "@/Testing/TestInterfaces";
 import { TestCmdList } from "@/Testing/TestCmdList";
 import { Tag } from "@/Plugins/Core/ActivityFocus/ActivityFocusUtils";
 import { Component } from "vue-facing-decorator";
+import { detectBrowser, BrowserType } from "@/Core/HostOs";
 
 /**
  * LoadPDBPlugin
@@ -168,6 +169,25 @@ export default class LoadPDBPlugin extends PluginParentClass {
     }
 
     /**
+     * Builds the post-close expectation for the 7VBA CIF-fallback tests. 7VBA
+     * has no legacy PDB file, so it loads via CIF through OpenBabel, whose deep
+     * parser recursion overflows Safari's smaller native stack. On Safari we
+     * therefore expect the explanatory error modal recommending Chrome, since
+     * the structure cannot load; other browsers load it as normal.
+     *
+     * @returns {TestCmdList}  The command list asserting the browser-appropriate outcome.
+     */
+    private expect7VBAOutcome(): TestCmdList {
+        if (detectBrowser() === BrowserType.Safari) {
+            return new TestCmdList().waitUntilRegex(
+                "#modal-simplemsg",
+                "Google Chrome instead"
+            );
+        }
+        return new TestCmdList().waitUntilRegex("#navigator", "7VBA");
+    }
+
+    /**
      * Gets the test commands for the plugin. For advanced use.
      *
      * @gooddefault
@@ -207,10 +227,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "7VBA",
                     this.pluginId
                 ),
-                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "7VBA"
-                ),
+                afterPluginCloses: () => this.expect7VBAOutcome(),
             },
 
             // Check error checking
@@ -239,10 +256,7 @@ export default class LoadPDBPlugin extends PluginParentClass {
                     "7VBA",
                     this.pluginId
                 ),
-                afterPluginCloses: () => new TestCmdList().waitUntilRegex(
-                    "#navigator",
-                    "7VBA"
-                ),
+                afterPluginCloses: () => this.expect7VBAOutcome(),
             },
 
             {

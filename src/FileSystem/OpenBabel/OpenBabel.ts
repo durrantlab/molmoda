@@ -15,6 +15,7 @@ import { getSetting } from "@/Plugins/Core/Settings/LoadSaveSettings";
 import { isTest } from "@/Core/GlobalVars";
 import { getFileType } from "../FileUtils2";
 import { randomID } from "@/Core/Utils/MiscUtils";
+import { detectBrowser, BrowserType } from "@/Core/HostOs";
 
 export enum WhichMolsGen3D {
     All,
@@ -167,6 +168,8 @@ async function runOpenBabel(
         (f as FileInfo).serialize ? (f as FileInfo).serialize() : f
     );
 
+    const isSafari = detectBrowser() === BrowserType.Safari;
+
     // Construct payloads by "zipping" the inputFiles and argsLists together.
     const payloads: any[] = [];
     for (let i = 0; i < inputFiles.length; i++) {
@@ -174,6 +177,7 @@ async function runOpenBabel(
             args: argsLists[i],
             inputFile: inputFiles[i],
             surpressMsgs,
+            isSafari,
         });
     }
 

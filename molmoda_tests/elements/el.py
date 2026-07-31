@@ -167,7 +167,17 @@ class el:
     def upload_file(self, file_path: str):
         """Send a file path to a file-input element."""
         import os
+        import stat
         file_path = os.path.realpath(file_path)
+        # safaridriver refuses to select files that are not world-readable,
+        # unlike Chrome and Firefox. Add read permissions before sending the
+        # path so uploads work regardless of the file's committed mode.
+        with contextlib.suppress(OSError):
+            mode = os.stat(file_path).st_mode
+            os.chmod(
+                file_path,
+                mode | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH,
+            )
         self.el.send_keys(file_path)
         self.check_errors()
 

@@ -24,7 +24,7 @@ import { logEvent } from "./Core/Analytics";
 // import * as api from "@/Api";
 // import { PopupVariant } from "@/UI/MessageAlerts/Popups/InterfacesAndEnums";
 import { setupGlobalKeyListeners } from "./Core/HotKeys";
-import { setupGlobalVars } from "./Core/GlobalVars";
+import { appName, setupGlobalVars } from "./Core/GlobalVars";
 // import { getObabelFormats } from "./FileSystem/OpenBabel/OpenBabel";
 
 // api.sys.loadStatus.started = true;
@@ -117,10 +117,10 @@ async function main() {
         // the runner blocks on the #test-cmds WebDriverWait until timeout.
         // Rendering into #app also gives the human a readable failure instead
         // of a black screen.
-        console.error("MolModa failed to start:", err);
+        console.error(`${appName} failed to start: ${String(err)}`);
         const appEl = document.getElementById("app");
         if (appEl) {
-            appEl.textContent = `MolModa failed to start: ${String(err)}`;
+            appEl.textContent = `${appName} failed to start: ${String(err)}`;
         }
         throw err;
     }
