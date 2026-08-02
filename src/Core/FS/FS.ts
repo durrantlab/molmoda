@@ -1,7 +1,7 @@
 import { FileInfo } from "@/FileSystem/FileInfo";
 import { dynamicImports } from "../DynamicImports";
 import { DataFormat, IData } from "./FSInterfaces";
-import { isTest, isLocalHost } from "@/Core/GlobalVars";
+import { isTest } from "@/Core/GlobalVars";
 import { detectBrowser, BrowserType } from "@/Core/HostOs";
 
 /**
@@ -34,6 +34,44 @@ import { detectBrowser, BrowserType } from "@/Core/HostOs";
 //     return params;
 // }
 
+
+interface IFileSaver {
+    saveAs: (data: Blob, filename: string) => void;
+}
+
+/**
+ * Whether the real browser download should be skipped for this session.
+ *
+ * safaridriver shows a native save panel on every download that Selenium cannot
+ * dismiss, hanging the WebDriver session ("A command failed due to an internal
+ * error"). During tests we skip the download and record the filename instead.
+ * Gated only on isTest and Safari, not the host, because the suite runs against
+ * remote servers (e.g. beta.molmoda.org) as well as localhost.
+ *
+ * @returns True when running under a Safari test.
+ */
+function _shouldSuppressDownload(): boolean {
+    return isTest && detectBrowser() === BrowserType.Safari;
+}
+
+/**
+ * Save a blob to disk, or record it without downloading when running under
+ * Safari's WebDriver, so the undismissable native save panel never blocks tests.
+ *
+ * @param fileSaver The resolved FileSaver module.
+ * @param blob The file contents to save.
+ * @param fileName The name to save the file under.
+ */
+function _saveAs(fileSaver: IFileSaver, blob: Blob, fileName: string): void {
+    if (_shouldSuppressDownload()) {
+        const testWindow = window as IMolmodaTestWindow;
+        testWindow.__molmodaSavedFiles = testWindow.__molmodaSavedFiles || [];
+        testWindow.__molmodaSavedFiles.push(fileName);
+        return;
+    }
+    fileSaver.saveAs(blob, fileName);
+}
+
 /**
  * Saves a text file.
  *
@@ -64,7 +102,7 @@ export function saveTxt(params: FileInfo): Promise<any> {
         const blob = new Blob([params.contents as string], {
             type: "text/plain;charset=utf-8",
         });
-        fileSaver.saveAs(blob, params.name);
+        _saveAs(fileSaver, blob, params.name);
         return;
     });
 
@@ -118,7 +156,7 @@ export function saveSvg(params: FileInfo): Promise<any> {
         const blob = new Blob([params.contents as string], {
             type: "image/svg+xml", // Correct MIME type for SVG
         });
-        fileSaver.saveAs(blob, params.name);
+        _saveAs(fileSaver, blob, params.name);
         return;
     });
 }
@@ -170,7 +208,7 @@ export function saveZipWithTxtFiles(
     return Promise.all(promises).then((payload: any[]) => {
         const fileSaver = payload[0];
         const zipBlob = payload[1];
-        fileSaver.saveAs(zipBlob, compressedName);
+        _saveAs(fileSaver, zipBlob, compressedName);
         return;
     });
 }
@@ -210,6 +248,7 @@ function _dataURIToBlob(dataURI: string): Blob {
 // test can inspect the output without a real download. See savePngUri.
 interface IMolmodaTestWindow extends Window {
     __molmodaLastSavedPng?: { fileName: string; pngUri: string };
+    __molmodaSavedFiles?: string[];
 }
 
 export function savePngUri(fileName: string, pngUri: string) {
@@ -222,7 +261,7 @@ export function savePngUri(fileName: string, pngUri: string) {
     // Safari-in-test on localhost, stashing the PNG on a window global
     // instead. Chrome, Firefox, and non-localhost Safari runs download
     // normally.
-    if (isTest && isLocalHost && detectBrowser() === BrowserType.Safari) {
+    if (_shouldSuppressDownload()) {
         (window as IMolmodaTestWindow).__molmodaLastSavedPng = {
             fileName,
             pngUri,
@@ -357,7 +396,7 @@ export function saveData(
                     }
                 }
                 const blob = new Blob([buffer], { type: blobType });
-                fileSaver.saveAs(blob, filename);
+                _saveAs(fileSaver, blob, filename);
                 return;
             })
             .catch((err: any) => {

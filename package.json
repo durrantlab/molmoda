@@ -1,10 +1,12 @@
 {
     "name": "MolModa",
-    "version": "2026.7.30",
+    "version": "2026.7.31",
     "private": false,
     "scripts": {
         "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",
+        "clean": "rm -rf dist .temp_cache",
         "build": "cd utils && ./before_compile.sh && cd .. && vue-cli-service --progress --verbose build && cd utils && ./after_compile.sh && cd ..",
+        "build:clean": "npm run clean && npm run build",
         "lint": "eslint src/",
         "docs": "vue-cli-service build --mode docs; jsdoc dist/js/app.js",
         "docs2": "jsdoc -r -c jsdoc.json src/",

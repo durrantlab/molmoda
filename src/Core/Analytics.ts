@@ -55,7 +55,7 @@ async function injectGoogleAnalyticsScriptIfNeeded() {
 }
 
 /**
- * Logs an event internally.
+ * Logs an event internally. NOTE: Not used.
  * 
  * @param  {string} eventName   The event name.
  * @param  {string} eventAction The event action.
@@ -111,9 +111,10 @@ export async function logEvent(
     eventAction: string // e.g., "jobSubmitted"
     // eventOptions?: Record<string, any>
 ) {
-    // Always log IP internally for record keeping. It is anonymized client
+    // Always log IP internally for record keeping. It is anonymized server
     // side, with minimal information stored. I believe it is compliant.
-    _logInternal(eventName, eventAction);
+    // NOTE: decided to remove this internal logging.
+    // _logInternal(eventName, eventAction);
 
     // If running from localhost, do a console log instead.
     const url = window.location.href;

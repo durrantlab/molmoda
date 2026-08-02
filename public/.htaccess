@@ -12,8 +12,17 @@ ExpiresDefault "access plus 1 year"
 # Set Cache-Control header
 <FilesMatch "\.(jpg|jpeg|png|gif|svg|css|js)$">
     Header set Cache-Control "max-age=31536000, public"
+    Header set Cross-Origin-Resource-Policy "same-origin"
 </FilesMatch>
-
+# The webpack runtime chunk map can go stale under a recurring filename, so it
+# must never be long-cached. Same reasoning as index.html. This block follows
+# the broad .js rule above so it overrides the long-cache directive.
+<FilesMatch "^runtime~.*\.js$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Cross-Origin-Resource-Policy "same-origin"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>
 # Prevent caching of index.html
 <FilesMatch "^index\.html$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
@@ -28,6 +37,5 @@ AddType application/javascript .js
 <IfModule mod_headers.c>
     Header set Cross-Origin-Embedder-Policy "require-corp"
     Header set Cross-Origin-Opener-Policy "same-origin"
-    # Replace 'self' with your domain if you need to allow specific origins
-    Header set Permissions-Policy "shared-array-buffer=(self)"
+    Header set Permissions-Policy "cross-origin-isolated=(self)"
 </IfModule>
