@@ -1,6 +1,8 @@
 {
     "name": "MolModa",
     "version": "2026.8.4",
+    "license": "GPL-2.0-only",
+    "author": "Jacob D. Durrant",
     "private": false,
     "scripts": {
         "serve": "cd utils && ./before_compile.sh && cd .. && vue-cli-service serve && cd utils && ./after_compile.sh && cd ..",
