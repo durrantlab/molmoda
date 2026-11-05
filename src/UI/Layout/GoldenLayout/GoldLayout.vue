@@ -27,7 +27,11 @@
                                         <span v-html="appDescription"> </span>
                                         {{ appName }} is freely accessible for
                                         personal, academic, and commercial use,
-                                        without login or registration.
+                                        without login or registration. The
+                                        <a href="https://github.com/durrantlab/molmoda"
+                                        target="_blank">source code</a> is released
+                                        under <a href="https://github.com/durrantlab/molmoda/blob/main/LICENSE.md"
+                                        target="_blank">GPL-2.0-only</a>.
                                     </p>
                                     <p>
                                         To get started, take a look at the
